@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.vector.VectorGroupByOperator;
 import org.apache.hadoop.io.Text;
+import org.apache.hive.common.util.DateUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -30,14 +31,13 @@ import java.text.ParseException;
 public class VectorUDFDateString extends StringUnaryUDF {
   private static final long serialVersionUID = 1L;
 
-  private transient static SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-
   private static final Logger LOG = LoggerFactory.getLogger(
       VectorUDFDateString.class.getName());
 
   public VectorUDFDateString(int colNum, int outputColumn) {
     super(colNum, outputColumn, new StringUnaryUDF.IUDFUnaryString() {
       Text t = new Text();
+      final transient SimpleDateFormat formatter = DateUtils.getDateFormat();
 
       @Override
       public Text evaluate(Text s) {

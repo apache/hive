@@ -18,8 +18,9 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TestVectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -31,15 +32,28 @@ import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.internal.runners.statements.Fail;
+
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
 
 public class TestVectorDateExpressions {
+
+  private ExecutorService runner;
+
   /* copied over from VectorUDFTimestampFieldLong */
   private TimestampWritable toTimestampWritable(long daysSinceEpoch) {
     Timestamp ts = new Timestamp(DateWritable.daysToMillis((int) daysSinceEpoch));
@@ -412,6 +426,60 @@ public class TestVectorDateExpressions {
     verifyUDFWeekOfYear(batch);
   }
 
+  @Before
+  public void setUp() throws Exception {
+    runner =
+        Executors.newFixedThreadPool(3,
+            new ThreadFactoryBuilder().setNameFormat("date-tester-thread-%d").build());
+  }
+
+  private static final class MultiThreadedDateFormatTest implements Callable<Void> {
+    @Override
+    public Void call() throws Exception {
+      int batchSize = 1024;
+      VectorUDFDateString udf = new VectorUDFDateString(0, 1);
+      VectorizedRowBatch batch = new VectorizedRowBatch(2, batchSize);
+      BytesColumnVector in = new BytesColumnVector(batchSize);
+      BytesColumnVector out = new BytesColumnVector(batchSize);
+      batch.cols[0] = in;
+      batch.cols[1] = out;
+      for (int i = 0; i < batchSize; i++) {
+        byte[] data = String.format("1999-%02d-%02d", 1 + (i % 12), 1 + (i % 15)).getBytes("UTF-8");
+        in.setRef(i, data, 0, data.length);
+        in.isNull[i] = false;
+      }
+      udf.evaluate(batch);
+      // bug if it throws an exception
+      return (Void) null;
+    }
+  }
+
+  // 5s timeout
+  @Test(timeout = 5000)
+  public void testMultiThreadedVectorUDFDate() {
+    List<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
+    for (int i = 0; i < 200; i++) {
+      tasks.add(new MultiThreadedDateFormatTest());
+    }
+    try {
+      List<Future<Void>> results = runner.invokeAll(tasks);
+      for (Future<Void> f : results) {
+        Assert.assertNull(f.get());
+      }
+    } catch (InterruptedException ioe) {
+      Assert.fail("Interrupted while running tests");
+    } catch (Exception e) {
+      Assert.fail("Multi threaded operations threw unexpected Exception: " + e.getMessage());
+    }
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    if (runner != null) {
+      runner.shutdownNow();
+    }
+  }
+
   public static void main(String[] args) {
     TestVectorDateExpressions self = new TestVectorDateExpressions();
     self.testVectorUDFYear();
@@ -419,5 +487,6 @@ public class TestVectorDateExpressions {
     self.testVectorUDFDayOfMonth();
     self.testVectorUDFWeekOfYear();
     self.testVectorUDFUnixTimeStamp();
+    self.testMultiThreadedVectorUDFDate();
   }
 }
