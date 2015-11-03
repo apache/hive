@@ -80,3 +80,16 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 2012-02-10 20:30:00	2012-02-11 08:30:00	2012-02-11 12:30:00	2012-02-11 04:30:00	2012-02-11 04:30:00	2012-02-11 04:30:00	NULL	NULL
+PREHOOK: query: select
+from_utc_timestamp('2012-02-11-04:30:00', 'UTC'),
+from_utc_timestamp('2012-02-11-04:30:00', 'PST')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select
+from_utc_timestamp('2012-02-11-04:30:00', 'UTC'),
+from_utc_timestamp('2012-02-11-04:30:00', 'PST')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+NULL	NULL
