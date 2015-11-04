@@ -102,6 +102,17 @@ public class HiveDecimal implements Comparable<HiveDecimal> {
   public String toString() {
      return bd.toPlainString();
   }
+  
+  /**
+   * Return a string representation of the number with the number of decimal digits as
+   * the given scale. Please note that this is different from toString().
+   * @param scale the number of digits after the decimal point
+   * @return the string representation of exact number of decimal digits
+   */
+  public String toFormatString(int scale) {
+    return (bd.scale() == scale ? bd :
+      bd.setScale(scale, RoundingMode.HALF_UP)).toPlainString();
+  }
 
   public HiveDecimal setScale(int i) {
     return new HiveDecimal(bd.setScale(i, RoundingMode.HALF_UP));

@@ -65,7 +65,7 @@ POSTHOOK: query: select * from acidjoin3 order by name
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acidjoin3
 #### A masked pattern was here ####
-aaa	35	3
+aaa	35	3.00
 bbb	32	3.01
 ccc	32	3.02
 ddd	35	3.03
