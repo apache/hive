@@ -12,4 +12,4 @@ order by c1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-13009100
+13009100.000

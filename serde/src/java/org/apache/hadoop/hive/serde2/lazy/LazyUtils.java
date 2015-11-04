@@ -304,8 +304,9 @@ public final class LazyUtils {
       break;
     }
     case DECIMAL: {
+      HiveDecimalObjectInspector decimalOI = (HiveDecimalObjectInspector) oi;
       LazyHiveDecimal.writeUTF8(out,
-        ((HiveDecimalObjectInspector) oi).getPrimitiveJavaObject(o));
+        decimalOI.getPrimitiveJavaObject(o), decimalOI.scale());
       break;
     }
     default: {

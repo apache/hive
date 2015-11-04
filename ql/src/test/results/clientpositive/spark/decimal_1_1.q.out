@@ -26,9 +26,9 @@ POSTHOOK: query: select * from decimal_1_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_1_1
 #### A masked pattern was here ####
-0
-0
-0
+0.0
+0.0
+0.0
 0.1
 0.2
 0.9
@@ -37,13 +37,13 @@ NULL
 0.3
 NULL
 NULL
-0
-0
+0.0
+0.0
 NULL
-0
-0
-0
-0
+0.0
+0.0
+0.0
+0.0
 -0.1
 -0.2
 -0.9
@@ -52,10 +52,10 @@ NULL
 -0.3
 NULL
 NULL
-0
-0
+0.0
+0.0
 NULL
-0
+0.0
 PREHOOK: query: select d from decimal_1_1 order by d desc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_1_1
@@ -69,18 +69,18 @@ POSTHOOK: Input: default@decimal_1_1
 0.3
 0.2
 0.1
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
+0.0
+0.0
+0.0
+0.0
+0.0
+0.0
+0.0
+0.0
+0.0
+0.0
+0.0
+0.0
 -0.1
 -0.2
 -0.3

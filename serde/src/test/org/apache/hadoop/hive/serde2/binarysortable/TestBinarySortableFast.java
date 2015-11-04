@@ -62,8 +62,7 @@ public class TestBinarySortableFast extends TestCase {
       int[] perFieldWriteLengths = new int[MyTestPrimitiveClass.primitiveCount];
       for (int index = 0; index < MyTestPrimitiveClass.primitiveCount; index++) {
         Object object = t.getPrimitiveObject(index);
-        PrimitiveCategory primitiveCategory = t.getPrimitiveCategory(index);
-        VerifyFast.serializeWrite(binarySortableSerializeWrite, primitiveCategory, object);
+        VerifyFast.serializeWrite(binarySortableSerializeWrite, primitiveTypeInfoMap.get(t)[index], object);
         perFieldWriteLengths[index] = output.getLength();
       }
       perFieldWriteLengthsArray[i] = perFieldWriteLengths;

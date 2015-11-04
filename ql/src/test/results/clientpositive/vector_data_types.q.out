@@ -153,7 +153,7 @@ POSTHOOK: Input: default@over1korc
 #### A masked pattern was here ####
 NULL	374	65560	4294967516	65.43	22.48	true	oscar quirinius	2013-03-01 09:11:58.703316	16.86	mathematics
 NULL	409	65536	4294967490	46.97	25.92	false	fred miller	2013-03-01 09:11:58.703116	33.45	history
-NULL	473	65720	4294967324	80.74	40.6	false	holly falkner	2013-03-01 09:11:58.703111	18.8	mathematics
+NULL	473	65720	4294967324	80.74	40.6	false	holly falkner	2013-03-01 09:11:58.703111	18.80	mathematics
 -3	275	65622	4294967302	71.78	8.49	false	wendy robinson	2013-03-01 09:11:58.703294	95.39	undecided
 -3	344	65733	4294967363	0.56	11.96	true	rachel thompson	2013-03-01 09:11:58.703276	88.46	wind surfing
 -3	376	65548	4294967431	96.78	43.23	false	fred ellison	2013-03-01 09:11:58.703233	75.39	education
@@ -239,7 +239,7 @@ POSTHOOK: Input: default@over1korc
 #### A masked pattern was here ####
 NULL	374	65560	4294967516	65.43	22.48	true	oscar quirinius	2013-03-01 09:11:58.703316	16.86	mathematics
 NULL	409	65536	4294967490	46.97	25.92	false	fred miller	2013-03-01 09:11:58.703116	33.45	history
-NULL	473	65720	4294967324	80.74	40.6	false	holly falkner	2013-03-01 09:11:58.703111	18.8	mathematics
+NULL	473	65720	4294967324	80.74	40.6	false	holly falkner	2013-03-01 09:11:58.703111	18.80	mathematics
 -3	275	65622	4294967302	71.78	8.49	false	wendy robinson	2013-03-01 09:11:58.703294	95.39	undecided
 -3	344	65733	4294967363	0.56	11.96	true	rachel thompson	2013-03-01 09:11:58.703276	88.46	wind surfing
 -3	376	65548	4294967431	96.78	43.23	false	fred ellison	2013-03-01 09:11:58.703233	75.39	education

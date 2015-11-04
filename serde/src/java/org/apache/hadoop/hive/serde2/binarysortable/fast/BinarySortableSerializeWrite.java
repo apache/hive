@@ -366,7 +366,7 @@ public final class BinarySortableSerializeWrite implements SerializeWrite {
    * DECIMAL.
    */
   @Override
-  public void writeHiveDecimal(HiveDecimal dec) throws IOException {
+  public void writeHiveDecimal(HiveDecimal dec, int scale) throws IOException {
     final boolean invert = columnSortOrderIsDesc[++index];
 
     // This field is not a null.

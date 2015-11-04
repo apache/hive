@@ -713,7 +713,7 @@ public class LazyBinarySerializeWrite implements SerializeWrite {
    * DECIMAL.
    */
   @Override
-  public void writeHiveDecimal(HiveDecimal v) throws IOException {
+  public void writeHiveDecimal(HiveDecimal v, int scale) throws IOException {
 
     // Every 8 fields we write a NULL byte.
     if ((fieldIndex % 8) == 0) {

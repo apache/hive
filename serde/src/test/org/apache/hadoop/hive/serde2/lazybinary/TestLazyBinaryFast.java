@@ -60,8 +60,7 @@ public class TestLazyBinaryFast extends TestCase {
 
       for (int index = 0; index < MyTestPrimitiveClass.primitiveCount; index++) {
         Object object = t.getPrimitiveObject(index);
-        PrimitiveCategory primitiveCategory = t.getPrimitiveCategory(index);
-        VerifyFast.serializeWrite(lazyBinarySerializeWrite, primitiveCategory, object);
+        VerifyFast.serializeWrite(lazyBinarySerializeWrite, primitiveTypeInfosArray[i][index], object);
       }
 
       BytesWritable bytesWritable = new BytesWritable();

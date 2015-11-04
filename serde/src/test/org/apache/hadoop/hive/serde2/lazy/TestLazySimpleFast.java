@@ -61,8 +61,7 @@ public class TestLazySimpleFast extends TestCase {
 
       for (int index = 0; index < MyTestPrimitiveClass.primitiveCount; index++) {
         Object object = t.getPrimitiveObject(index);
-        PrimitiveCategory primitiveCategory = t.getPrimitiveCategory(index);
-        VerifyFast.serializeWrite(lazySimpleSerializeWrite, primitiveCategory, object);
+        VerifyFast.serializeWrite(lazySimpleSerializeWrite, primitiveTypeInfosArray[i][index], object);
       }
 
       BytesWritable bytesWritable = new BytesWritable();

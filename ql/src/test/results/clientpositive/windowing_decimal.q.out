@@ -57,32 +57,32 @@ from part_dec
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_dec
 #### A masked pattern was here ####
-Manufacturer#1	1173.15	1173.15	2346.3
-Manufacturer#1	1173.15	1173.15	2346.3
-Manufacturer#1	1414.42	1173.15	3760.72
-Manufacturer#1	1602.59	1173.15	5363.31
-Manufacturer#1	1632.66	1173.15	6995.97
-Manufacturer#1	1753.76	1173.15	8749.73
-Manufacturer#2	1690.68	1690.68	1690.68
-Manufacturer#2	1698.66	1690.68	3389.34
-Manufacturer#2	1701.6	1690.68	5090.94
-Manufacturer#2	1800.7	1690.68	6891.64
-Manufacturer#2	2031.98	1690.68	8923.62
-Manufacturer#3	1190.27	1190.27	1190.27
-Manufacturer#3	1337.29	1190.27	2527.56
-Manufacturer#3	1410.39	1190.27	3937.95
-Manufacturer#3	1671.68	1190.27	5609.63
-Manufacturer#3	1922.98	1190.27	7532.61
-Manufacturer#4	1206.26	1206.26	1206.26
-Manufacturer#4	1290.35	1206.26	2496.61
-Manufacturer#4	1375.42	1206.26	3872.03
-Manufacturer#4	1620.67	1206.26	5492.7
-Manufacturer#4	1844.92	1206.26	7337.62
-Manufacturer#5	1018.1	1018.1	1018.1
-Manufacturer#5	1464.48	1018.1	2482.58
-Manufacturer#5	1611.66	1018.1	4094.24
-Manufacturer#5	1788.73	1018.1	5882.97
-Manufacturer#5	1789.69	1018.1	7672.66
+Manufacturer#1	1173.150	1173.150	2346.300
+Manufacturer#1	1173.150	1173.150	2346.300
+Manufacturer#1	1414.420	1173.150	3760.720
+Manufacturer#1	1602.590	1173.150	5363.310
+Manufacturer#1	1632.660	1173.150	6995.970
+Manufacturer#1	1753.760	1173.150	8749.730
+Manufacturer#2	1690.680	1690.680	1690.680
+Manufacturer#2	1698.660	1690.680	3389.340
+Manufacturer#2	1701.600	1690.680	5090.940
+Manufacturer#2	1800.700	1690.680	6891.640
+Manufacturer#2	2031.980	1690.680	8923.620
+Manufacturer#3	1190.270	1190.270	1190.270
+Manufacturer#3	1337.290	1190.270	2527.560
+Manufacturer#3	1410.390	1190.270	3937.950
+Manufacturer#3	1671.680	1190.270	5609.630
+Manufacturer#3	1922.980	1190.270	7532.610
+Manufacturer#4	1206.260	1206.260	1206.260
+Manufacturer#4	1290.350	1206.260	2496.610
+Manufacturer#4	1375.420	1206.260	3872.030
+Manufacturer#4	1620.670	1206.260	5492.700
+Manufacturer#4	1844.920	1206.260	7337.620
+Manufacturer#5	1018.100	1018.100	1018.100
+Manufacturer#5	1464.480	1018.100	2482.580
+Manufacturer#5	1611.660	1018.100	4094.240
+Manufacturer#5	1788.730	1018.100	5882.970
+Manufacturer#5	1789.690	1018.100	7672.660
 PREHOOK: query: select p_mfgr, p_retailprice, 
 first_value(p_retailprice) over(partition by p_mfgr order by p_retailprice range between 5 preceding and current row) ,
 sum(p_retailprice) over(partition by p_mfgr order by p_retailprice range between 5 preceding and current row)
@@ -97,29 +97,29 @@ from part_dec
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_dec
 #### A masked pattern was here ####
-Manufacturer#1	1173.15	1173.15	2346.3
-Manufacturer#1	1173.15	1173.15	2346.3
-Manufacturer#1	1414.42	1414.42	1414.42
-Manufacturer#1	1602.59	1602.59	1602.59
-Manufacturer#1	1632.66	1632.66	1632.66
-Manufacturer#1	1753.76	1753.76	1753.76
-Manufacturer#2	1690.68	1690.68	1690.68
-Manufacturer#2	1698.66	1698.66	1698.66
-Manufacturer#2	1701.6	1698.66	3400.26
-Manufacturer#2	1800.7	1800.7	1800.7
-Manufacturer#2	2031.98	2031.98	2031.98
-Manufacturer#3	1190.27	1190.27	1190.27
-Manufacturer#3	1337.29	1337.29	1337.29
-Manufacturer#3	1410.39	1410.39	1410.39
-Manufacturer#3	1671.68	1671.68	1671.68
-Manufacturer#3	1922.98	1922.98	1922.98
-Manufacturer#4	1206.26	1206.26	1206.26
-Manufacturer#4	1290.35	1290.35	1290.35
-Manufacturer#4	1375.42	1375.42	1375.42
-Manufacturer#4	1620.67	1620.67	1620.67
-Manufacturer#4	1844.92	1844.92	1844.92
-Manufacturer#5	1018.1	1018.1	1018.1
-Manufacturer#5	1464.48	1464.48	1464.48
-Manufacturer#5	1611.66	1611.66	1611.66
-Manufacturer#5	1788.73	1788.73	1788.73
-Manufacturer#5	1789.69	1788.73	3578.42
+Manufacturer#1	1173.150	1173.150	2346.300
+Manufacturer#1	1173.150	1173.150	2346.300
+Manufacturer#1	1414.420	1414.420	1414.420
+Manufacturer#1	1602.590	1602.590	1602.590
+Manufacturer#1	1632.660	1632.660	1632.660
+Manufacturer#1	1753.760	1753.760	1753.760
+Manufacturer#2	1690.680	1690.680	1690.680
+Manufacturer#2	1698.660	1698.660	1698.660
+Manufacturer#2	1701.600	1698.660	3400.260
+Manufacturer#2	1800.700	1800.700	1800.700
+Manufacturer#2	2031.980	2031.980	2031.980
+Manufacturer#3	1190.270	1190.270	1190.270
+Manufacturer#3	1337.290	1337.290	1337.290
+Manufacturer#3	1410.390	1410.390	1410.390
+Manufacturer#3	1671.680	1671.680	1671.680
+Manufacturer#3	1922.980	1922.980	1922.980
+Manufacturer#4	1206.260	1206.260	1206.260
+Manufacturer#4	1290.350	1290.350	1290.350
+Manufacturer#4	1375.420	1375.420	1375.420
+Manufacturer#4	1620.670	1620.670	1620.670
+Manufacturer#4	1844.920	1844.920	1844.920
+Manufacturer#5	1018.100	1018.100	1018.100
+Manufacturer#5	1464.480	1464.480	1464.480
+Manufacturer#5	1611.660	1611.660	1611.660
+Manufacturer#5	1788.730	1788.730	1788.730
+Manufacturer#5	1789.690	1788.730	3578.420
