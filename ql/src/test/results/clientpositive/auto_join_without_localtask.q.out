@@ -79,6 +79,7 @@ STAGE PLANS:
               key expressions: _col0 (type: string), _col1 (type: string)
               sort order: ++
               Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+              TopN Hash Memory Usage: 0.1
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
@@ -389,6 +390,7 @@ STAGE PLANS:
               key expressions: _col0 (type: string), _col1 (type: string)
               sort order: ++
               Statistics: Num rows: 302 Data size: 3213 Basic stats: COMPLETE Column stats: NONE
+              TopN Hash Memory Usage: 0.1
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
@@ -780,6 +782,7 @@ STAGE PLANS:
               key expressions: _col0 (type: string), _col1 (type: string)
               sort order: ++
               Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+              TopN Hash Memory Usage: 0.1
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)

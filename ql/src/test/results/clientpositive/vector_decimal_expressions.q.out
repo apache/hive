@@ -42,6 +42,7 @@ STAGE PLANS:
                   key expressions: _col0 (type: decimal(25,14)), _col1 (type: decimal(26,14)), _col2 (type: double), _col3 (type: double), _col4 (type: decimal(12,10)), _col5 (type: int), _col6 (type: smallint), _col7 (type: tinyint), _col8 (type: bigint), _col9 (type: boolean), _col10 (type: double), _col11 (type: float), _col12 (type: string), _col13 (type: timestamp)
                   sort order: ++++++++++++++
                   Statistics: Num rows: 228 Data size: 39491 Basic stats: COMPLETE Column stats: NONE
+                  TopN Hash Memory Usage: 0.1
       Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator

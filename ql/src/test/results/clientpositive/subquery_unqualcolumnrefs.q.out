@@ -212,6 +212,7 @@ STAGE PLANS:
               sort order: ++
               Map-reduce partition columns: p2_mfgr (type: string)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              TopN Hash Memory Usage: 0.1
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: int)
@@ -380,6 +381,7 @@ STAGE PLANS:
               sort order: ++
               Map-reduce partition columns: p_mfgr (type: string)
               Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+              TopN Hash Memory Usage: 0.1
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: int)
@@ -814,6 +816,7 @@ STAGE PLANS:
               sort order: ++
               Map-reduce partition columns: p_mfgr (type: string)
               Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+              TopN Hash Memory Usage: 0.1
               value expressions: p_name (type: string)
       Reduce Operator Tree:
         Select Operator
@@ -969,6 +972,7 @@ STAGE PLANS:
               sort order: ++
               Map-reduce partition columns: p_mfgr (type: string)
               Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+              TopN Hash Memory Usage: 0.1
               value expressions: p_name (type: string)
       Reduce Operator Tree:
         Select Operator

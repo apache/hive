@@ -416,6 +416,7 @@ STAGE PLANS:
                       key expressions: _col0 (type: string), _col1 (type: bigint)
                       sort order: ++
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                      TopN Hash Memory Usage: 0.1
                       value expressions: _col2 (type: string), _col3 (type: double), _col4 (type: bigint)
                 Filter Operator
                   predicate: (KEY._col0 >= 5) (type: boolean)

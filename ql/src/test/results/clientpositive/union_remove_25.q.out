@@ -291,6 +291,7 @@ STAGE PLANS:
                 Reduce Output Operator
                   sort order: 
                   Statistics: Num rows: 500 Data size: 5000 Basic stats: COMPLETE Column stats: NONE
+                  TopN Hash Memory Usage: 0.1
                   value expressions: _col0 (type: string), _col1 (type: string)
       Reduce Operator Tree:
         Select Operator
@@ -341,6 +342,7 @@ STAGE PLANS:
                 Reduce Output Operator
                   sort order: 
                   Statistics: Num rows: 500 Data size: 5000 Basic stats: COMPLETE Column stats: NONE
+                  TopN Hash Memory Usage: 0.1
                   value expressions: _col0 (type: string), _col1 (type: string)
       Reduce Operator Tree:
         Select Operator
@@ -473,6 +475,7 @@ STAGE PLANS:
                 Reduce Output Operator
                   sort order: 
                   Statistics: Num rows: 1000 Data size: 10000 Basic stats: COMPLETE Column stats: NONE
+                  TopN Hash Memory Usage: 0.1
                   value expressions: _col0 (type: string), _col1 (type: string), _col3 (type: string)
       Reduce Operator Tree:
         Select Operator
@@ -524,6 +527,7 @@ STAGE PLANS:
                 Reduce Output Operator
                   sort order: 
                   Statistics: Num rows: 1000 Data size: 10000 Basic stats: COMPLETE Column stats: NONE
+                  TopN Hash Memory Usage: 0.1
                   value expressions: _col0 (type: string), _col1 (type: string), _col3 (type: string)
       Reduce Operator Tree:
         Select Operator

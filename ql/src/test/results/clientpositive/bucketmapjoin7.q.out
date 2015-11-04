@@ -251,6 +251,8 @@ STAGE PLANS:
                     sort order: ++
                     Statistics: Num rows: 378 Data size: 1514 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
+                    TopN: 1
+                    TopN Hash Memory Usage: 0.1
                     auto parallelism: false
       Local Work:
         Map Reduce Local Work

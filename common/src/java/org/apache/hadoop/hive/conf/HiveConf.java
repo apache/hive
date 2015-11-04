@@ -1156,8 +1156,8 @@ public class HiveConf extends Configuration {
     HIVELIMITOPTMAXFETCH("hive.limit.optimize.fetch.max", 50000,
         "Maximum number of rows allowed for a smaller subset of data for simple LIMIT, if it is a fetch query. \n" +
         "Insert queries are not restricted by this limit."),
-    HIVELIMITPUSHDOWNMEMORYUSAGE("hive.limit.pushdown.memory.usage", -1f,
-        "The max memory to be used for hash in RS operator for top K selection."),
+    HIVELIMITPUSHDOWNMEMORYUSAGE("hive.limit.pushdown.memory.usage", 0.1f, new RatioValidator(),
+        "The fraction of available memory to be used for buffering rows in Reducesink operator for limit pushdown optimization."),
     HIVELIMITTABLESCANPARTITION("hive.limit.query.max.table.partition", -1,
         "This controls how many partitions can be scanned for each partitioned table.\n" +
         "The default value \"-1\" means no limit."),

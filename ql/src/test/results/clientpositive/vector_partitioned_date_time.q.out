@@ -276,6 +276,7 @@ STAGE PLANS:
                 key expressions: _col5 (type: int), _col2 (type: date)
                 sort order: ++
                 Statistics: Num rows: 137 Data size: 39456 Basic stats: COMPLETE Column stats: NONE
+                TopN Hash Memory Usage: 0.1
                 value expressions: _col0 (type: string), _col1 (type: string), _col3 (type: timestamp), _col4 (type: float)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -301,6 +302,7 @@ STAGE PLANS:
               key expressions: _col5 (type: int), _col2 (type: date)
               sort order: ++
               Statistics: Num rows: 25 Data size: 7200 Basic stats: COMPLETE Column stats: NONE
+              TopN Hash Memory Usage: 0.1
               value expressions: _col0 (type: string), _col1 (type: string), _col3 (type: timestamp), _col4 (type: float)
       Reduce Operator Tree:
         Select Operator
@@ -1029,6 +1031,7 @@ STAGE PLANS:
                 key expressions: _col4 (type: int), _col5 (type: date)
                 sort order: ++
                 Statistics: Num rows: 137 Data size: 31776 Basic stats: COMPLETE Column stats: NONE
+                TopN Hash Memory Usage: 0.1
                 value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: timestamp), _col3 (type: float)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -1054,6 +1057,7 @@ STAGE PLANS:
               key expressions: _col4 (type: int), _col5 (type: date)
               sort order: ++
               Statistics: Num rows: 25 Data size: 5775 Basic stats: COMPLETE Column stats: NONE
+              TopN Hash Memory Usage: 0.1
               value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: timestamp), _col3 (type: float)
       Reduce Operator Tree:
         Select Operator
@@ -1830,6 +1834,7 @@ STAGE PLANS:
                 key expressions: _col4 (type: int), _col5 (type: timestamp)
                 sort order: ++
                 Statistics: Num rows: 137 Data size: 33968 Basic stats: COMPLETE Column stats: NONE
+                TopN Hash Memory Usage: 0.1
                 value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: date), _col3 (type: float)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -1855,6 +1860,7 @@ STAGE PLANS:
               key expressions: _col4 (type: int), _col5 (type: timestamp)
               sort order: ++
               Statistics: Num rows: 25 Data size: 6175 Basic stats: COMPLETE Column stats: NONE
+              TopN Hash Memory Usage: 0.1
               value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: date), _col3 (type: float)
       Reduce Operator Tree:
         Select Operator

@@ -43,6 +43,7 @@ STAGE PLANS:
                       key expressions: _col0 (type: string)
                       sort order: +
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      TopN Hash Memory Usage: 0.1
                       value expressions: _col1 (type: string)
         Reducer 2 
             Reduce Operator Tree:
@@ -156,6 +157,7 @@ STAGE PLANS:
                       key expressions: _col0 (type: string)
                       sort order: +
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      TopN Hash Memory Usage: 0.1
                       value expressions: _col1 (type: string)
         Reducer 2 
             Reduce Operator Tree:
@@ -269,6 +271,7 @@ STAGE PLANS:
                       key expressions: _col0 (type: string)
                       sort order: +
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      TopN Hash Memory Usage: 0.1
                       value expressions: _col1 (type: string)
         Reducer 2 
             Reduce Operator Tree:

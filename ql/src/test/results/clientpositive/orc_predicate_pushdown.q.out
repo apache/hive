@@ -778,6 +778,7 @@ STAGE PLANS:
                   key expressions: _col3 (type: string)
                   sort order: -
                   Statistics: Num rows: 4 Data size: 1186 Basic stats: COMPLETE Column stats: NONE
+                  TopN Hash Memory Usage: 0.1
                   value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double)
       Reduce Operator Tree:
         Select Operator
@@ -846,6 +847,7 @@ STAGE PLANS:
                   key expressions: _col3 (type: string)
                   sort order: -
                   Statistics: Num rows: 4 Data size: 1186 Basic stats: COMPLETE Column stats: NONE
+                  TopN Hash Memory Usage: 0.1
                   value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double)
       Reduce Operator Tree:
         Select Operator
@@ -980,6 +982,7 @@ STAGE PLANS:
                   key expressions: _col3 (type: string)
                   sort order: -
                   Statistics: Num rows: 1 Data size: 296 Basic stats: COMPLETE Column stats: NONE
+                  TopN Hash Memory Usage: 0.1
                   value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double)
       Reduce Operator Tree:
         Select Operator
@@ -1004,6 +1007,7 @@ STAGE PLANS:
               key expressions: _col3 (type: string)
               sort order: -
               Statistics: Num rows: 1 Data size: 296 Basic stats: COMPLETE Column stats: NONE
+              TopN Hash Memory Usage: 0.1
               value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double)
       Reduce Operator Tree:
         Select Operator
@@ -1077,6 +1081,7 @@ STAGE PLANS:
                   key expressions: _col3 (type: string)
                   sort order: -
                   Statistics: Num rows: 1 Data size: 296 Basic stats: COMPLETE Column stats: NONE
+                  TopN Hash Memory Usage: 0.1
                   value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double)
       Reduce Operator Tree:
         Select Operator
@@ -1101,6 +1106,7 @@ STAGE PLANS:
               key expressions: _col3 (type: string)
               sort order: -
               Statistics: Num rows: 1 Data size: 296 Basic stats: COMPLETE Column stats: NONE
+              TopN Hash Memory Usage: 0.1
               value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double)
       Reduce Operator Tree:
         Select Operator

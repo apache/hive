@@ -298,6 +298,7 @@ STAGE PLANS:
                     sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+                    TopN Hash Memory Usage: 0.1
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -466,6 +467,7 @@ STAGE PLANS:
                     sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+                    TopN Hash Memory Usage: 0.1
         Reducer 2 
             Reduce Operator Tree:
               Join Operator

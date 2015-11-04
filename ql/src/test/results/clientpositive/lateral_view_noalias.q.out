@@ -172,6 +172,7 @@ STAGE PLANS:
                       Reduce Output Operator
                         sort order: 
                         Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                        TopN Hash Memory Usage: 0.1
                         value expressions: _col0 (type: string), _col1 (type: int)
               Select Operator
                 expressions: map('key1':100,'key2':200) (type: map<string,int>)
@@ -193,6 +194,7 @@ STAGE PLANS:
                         Reduce Output Operator
                           sort order: 
                           Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                          TopN Hash Memory Usage: 0.1
                           value expressions: _col0 (type: string), _col1 (type: int)
       Reduce Operator Tree:
         Select Operator
@@ -269,6 +271,7 @@ STAGE PLANS:
                       Reduce Output Operator
                         sort order: 
                         Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                        TopN Hash Memory Usage: 0.1
                         value expressions: _col0 (type: string), _col1 (type: int)
               Select Operator
                 expressions: map('key1':100,'key2':200) (type: map<string,int>)
@@ -290,6 +293,7 @@ STAGE PLANS:
                         Reduce Output Operator
                           sort order: 
                           Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                          TopN Hash Memory Usage: 0.1
                           value expressions: _col0 (type: string), _col1 (type: int)
       Reduce Operator Tree:
         Select Operator

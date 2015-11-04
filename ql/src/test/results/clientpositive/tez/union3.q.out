@@ -64,6 +64,7 @@ STAGE PLANS:
                       Reduce Output Operator
                         sort order: 
                         Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                        TopN Hash Memory Usage: 0.1
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -77,6 +78,7 @@ STAGE PLANS:
                       Reduce Output Operator
                         sort order: 
                         Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                        TopN Hash Memory Usage: 0.1
         Map 7 
             Map Operator Tree:
                 TableScan
@@ -90,6 +92,7 @@ STAGE PLANS:
                       Reduce Output Operator
                         sort order: 
                         Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                        TopN Hash Memory Usage: 0.1
         Map 9 
             Map Operator Tree:
                 TableScan
@@ -103,6 +106,7 @@ STAGE PLANS:
                       Reduce Output Operator
                         sort order: 
                         Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                        TopN Hash Memory Usage: 0.1
         Reducer 10 
             Reduce Operator Tree:
               Limit

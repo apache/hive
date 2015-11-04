@@ -23,6 +23,7 @@ STAGE PLANS:
                 key expressions: 1 (type: int)
                 sort order: +
                 Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                TopN Hash Memory Usage: 0.1
                 value expressions: _col0 (type: string), _col1 (type: string)
       Reduce Operator Tree:
         Select Operator
@@ -58,7 +59,7 @@ POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 #### A masked pattern was here ####
-97	val_97	hello	world
+238	val_238	hello	world
 PREHOOK: query: create table testpartbucket (key string, value string) partitioned by (ds string, hr string) clustered by(key) sorted by(key) into 2 buckets
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

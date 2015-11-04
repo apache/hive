@@ -343,6 +343,7 @@ STAGE PLANS:
               key expressions: _col0 (type: string)
               sort order: +
               Statistics: Num rows: 1000 Data size: 459356 Basic stats: COMPLETE Column stats: NONE
+              TopN Hash Memory Usage: 0.1
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string)
