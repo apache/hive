@@ -91,7 +91,8 @@
                     mv $BASE_DIR/spark-${spark.version} $BASE_DIR/$finalName
                   }
                   mkdir -p $DOWNLOAD_DIR
-                  download "http://repos.jenkins.cloudera.com/cdh5.7.0-static/cdh/5/spark-latest.tar.gz" "spark"
+                  CDH_VERSION=$(echo ${spark.version}|cut -d- -f2)
+                  download "http://repos.jenkins.cloudera.com/${CDH_VERSION}-static/cdh/5/spark-latest.tar.gz" "spark"
                   cp -f $HIVE_ROOT/data/conf/spark/log4j.properties $BASE_DIR/spark/conf/
                 </echo>
               </target>
