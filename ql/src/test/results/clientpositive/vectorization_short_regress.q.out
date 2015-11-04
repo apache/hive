@@ -920,6 +920,7 @@ STAGE PLANS:
                   key expressions: _col0 (type: int), _col1 (type: double), _col2 (type: timestamp), _col3 (type: string), _col4 (type: boolean), _col5 (type: tinyint), _col6 (type: float), _col7 (type: timestamp), _col8 (type: smallint), _col9 (type: bigint), _col10 (type: bigint), _col11 (type: int), _col12 (type: double), _col13 (type: smallint), _col14 (type: smallint), _col15 (type: smallint), _col16 (type: double), _col17 (type: double), _col18 (type: float), _col19 (type: double), _col20 (type: double), _col21 (type: tinyint), _col22 (type: double)
                   sort order: +++++++++++++++++++++++
                   Statistics: Num rows: 9898 Data size: 2128105 Basic stats: COMPLETE Column stats: NONE
+                  TopN Hash Memory Usage: 0.1
       Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
@@ -1171,6 +1172,7 @@ STAGE PLANS:
                   key expressions: _col0 (type: int), _col1 (type: bigint), _col2 (type: string), _col3 (type: boolean), _col4 (type: float), _col5 (type: double), _col6 (type: timestamp), _col7 (type: smallint), _col8 (type: string), _col9 (type: boolean), _col10 (type: double), _col11 (type: double), _col12 (type: double), _col13 (type: double), _col14 (type: float), _col15 (type: float), _col16 (type: float), _col17 (type: double), _col18 (type: double), _col19 (type: bigint), _col20 (type: double), _col21 (type: smallint), _col22 (type: bigint), _col23 (type: double), _col24 (type: smallint)
                   sort order: +++++++++++++++++++++++++
                   Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+                  TopN Hash Memory Usage: 0.1
       Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
@@ -1371,6 +1373,7 @@ STAGE PLANS:
                   key expressions: _col8 (type: boolean), _col1 (type: string), _col3 (type: timestamp), _col5 (type: float), _col6 (type: bigint), _col1 (type: string), _col4 (type: double), _col0 (type: int), _col7 (type: smallint), _col4 (type: double), _col9 (type: int), _col10 (type: bigint), _col11 (type: bigint), _col12 (type: float), _col13 (type: bigint), _col14 (type: double), _col15 (type: double), _col16 (type: bigint), _col17 (type: double), _col18 (type: double), _col19 (type: double), _col20 (type: smallint), _col21 (type: int)
                   sort order: +++++++++++++++++++++++
                   Statistics: Num rows: 10922 Data size: 2348269 Basic stats: COMPLETE Column stats: NONE
+                  TopN Hash Memory Usage: 0.1
                   value expressions: _col2 (type: boolean)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -1630,6 +1633,7 @@ STAGE PLANS:
                   key expressions: _col5 (type: smallint), _col1 (type: string), _col2 (type: double), _col3 (type: float), _col4 (type: bigint), _col6 (type: double), _col7 (type: int), _col8 (type: float), _col9 (type: double), _col10 (type: double), _col11 (type: double), _col12 (type: float), _col13 (type: int), _col14 (type: double), _col15 (type: double)
                   sort order: +++++++++++++++
                   Statistics: Num rows: 3868 Data size: 831633 Basic stats: COMPLETE Column stats: NONE
+                  TopN Hash Memory Usage: 0.1
                   value expressions: _col0 (type: timestamp)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -1866,6 +1870,7 @@ STAGE PLANS:
               key expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: double), _col3 (type: double), _col4 (type: bigint), _col5 (type: double), _col6 (type: int), _col7 (type: double), _col8 (type: int), _col9 (type: bigint), _col10 (type: bigint)
               sort order: +++++++++++
               Statistics: Num rows: 1251 Data size: 268968 Basic stats: COMPLETE Column stats: NONE
+              TopN Hash Memory Usage: 0.1
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: smallint), KEY.reducesinkkey1 (type: int), KEY.reducesinkkey2 (type: double), KEY.reducesinkkey3 (type: double), KEY.reducesinkkey4 (type: bigint), KEY.reducesinkkey5 (type: double), KEY.reducesinkkey6 (type: int), KEY.reducesinkkey7 (type: double), KEY.reducesinkkey8 (type: int), KEY.reducesinkkey9 (type: bigint), KEY.reducesinkkey10 (type: bigint)
@@ -2334,6 +2339,7 @@ STAGE PLANS:
               key expressions: _col0 (type: timestamp), _col1 (type: string), _col2 (type: double), _col3 (type: double), _col4 (type: double), _col5 (type: double), _col6 (type: double), _col7 (type: double), _col8 (type: bigint), _col9 (type: bigint), _col10 (type: double), _col11 (type: tinyint), _col12 (type: double), _col13 (type: double), _col14 (type: double), _col15 (type: double), _col16 (type: double), _col17 (type: double), _col18 (type: double), _col19 (type: double), _col20 (type: double), _col21 (type: double), _col22 (type: double), _col23 (type: double), _col24 (type: double), _col25 (type: double), _col26 (type: double), _col27 (type: tinyint), _col28 (type: double), _col29 (type: double), _col30 (type: double), _col31 (type: double), _col32 (type: double), _col33 (type: double), _col34 (type: bigint), _col35 (type: double), _col36 (type: bigint), _col37 (type: bigint), _col38 (type: double)
               sort order: +++++++++++++++++++++++++++++++++++++++
               Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
+              TopN Hash Memory Usage: 0.1
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: timestamp), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey2 (type: double), KEY.reducesinkkey3 (type: double), KEY.reducesinkkey4 (type: double), KEY.reducesinkkey5 (type: double), KEY.reducesinkkey4 (type: double), KEY.reducesinkkey7 (type: double), KEY.reducesinkkey8 (type: bigint), KEY.reducesinkkey9 (type: bigint), KEY.reducesinkkey10 (type: double), KEY.reducesinkkey11 (type: tinyint), KEY.reducesinkkey12 (type: double), KEY.reducesinkkey13 (type: double), KEY.reducesinkkey14 (type: double), KEY.reducesinkkey15 (type: double), KEY.reducesinkkey16 (type: double), KEY.reducesinkkey17 (type: double), KEY.reducesinkkey18 (type: double), KEY.reducesinkkey19 (type: double), KEY.reducesinkkey20 (type: double), KEY.reducesinkkey21 (type: double), KEY.reducesinkkey22 (type: double), KEY.reducesinkkey23 (type: double), KEY.reducesinkkey24 (type: double), KEY.reducesinkkey25 (type: double), KEY.reducesinkkey26 (type: double), KEY.reducesinkkey27 (type: tinyint), KEY.reducesinkkey28 (type: double), KEY.reducesinkkey29 (type: double), KEY.reducesinkkey30 (type: double), KEY.reducesinkkey31 (type: double), KEY.reducesinkkey32 (type: double), KEY.reducesinkkey33 (type: double), KEY.reducesinkkey34 (type: bigint), KEY.reducesinkkey35 (type: double), KEY.reducesinkkey36 (type: bigint), KEY.reducesinkkey8 (type: bigint), KEY.reducesinkkey38 (type: double)

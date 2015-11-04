@@ -69,6 +69,7 @@ STAGE PLANS:
                 key expressions: _col0 (type: double)
                 sort order: +
                 Statistics: Num rows: 200 Data size: 54496 Basic stats: COMPLETE Column stats: NONE
+                TopN Hash Memory Usage: 0.1
       Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator

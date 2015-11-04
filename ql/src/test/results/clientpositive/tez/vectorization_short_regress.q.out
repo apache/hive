@@ -949,6 +949,7 @@ STAGE PLANS:
                         key expressions: _col0 (type: int), _col1 (type: double), _col2 (type: timestamp), _col3 (type: string), _col4 (type: boolean), _col5 (type: tinyint), _col6 (type: float), _col7 (type: timestamp), _col8 (type: smallint), _col9 (type: bigint), _col10 (type: bigint), _col11 (type: int), _col12 (type: double), _col13 (type: smallint), _col14 (type: smallint), _col15 (type: smallint), _col16 (type: double), _col17 (type: double), _col18 (type: float), _col19 (type: double), _col20 (type: double), _col21 (type: tinyint), _col22 (type: double)
                         sort order: +++++++++++++++++++++++
                         Statistics: Num rows: 9898 Data size: 2128105 Basic stats: COMPLETE Column stats: NONE
+                        TopN Hash Memory Usage: 0.1
             Execution mode: vectorized
         Reducer 2 
             Execution mode: vectorized
@@ -1207,6 +1208,7 @@ STAGE PLANS:
                         key expressions: _col0 (type: int), _col1 (type: bigint), _col2 (type: string), _col3 (type: boolean), _col4 (type: float), _col5 (type: double), _col6 (type: timestamp), _col7 (type: smallint), _col8 (type: string), _col9 (type: boolean), _col10 (type: double), _col11 (type: double), _col12 (type: double), _col13 (type: double), _col14 (type: float), _col15 (type: float), _col16 (type: float), _col17 (type: double), _col18 (type: double), _col19 (type: bigint), _col20 (type: double), _col21 (type: smallint), _col22 (type: bigint), _col23 (type: double), _col24 (type: smallint)
                         sort order: +++++++++++++++++++++++++
                         Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+                        TopN Hash Memory Usage: 0.1
             Execution mode: vectorized
         Reducer 2 
             Execution mode: vectorized
@@ -1414,6 +1416,7 @@ STAGE PLANS:
                         key expressions: _col8 (type: boolean), _col1 (type: string), _col3 (type: timestamp), _col5 (type: float), _col6 (type: bigint), _col1 (type: string), _col4 (type: double), _col0 (type: int), _col7 (type: smallint), _col4 (type: double), _col9 (type: int), _col10 (type: bigint), _col11 (type: bigint), _col12 (type: float), _col13 (type: bigint), _col14 (type: double), _col15 (type: double), _col16 (type: bigint), _col17 (type: double), _col18 (type: double), _col19 (type: double), _col20 (type: smallint), _col21 (type: int)
                         sort order: +++++++++++++++++++++++
                         Statistics: Num rows: 10922 Data size: 2348269 Basic stats: COMPLETE Column stats: NONE
+                        TopN Hash Memory Usage: 0.1
                         value expressions: _col2 (type: boolean)
             Execution mode: vectorized
         Reducer 2 
@@ -1680,6 +1683,7 @@ STAGE PLANS:
                         key expressions: _col5 (type: smallint), _col1 (type: string), _col2 (type: double), _col3 (type: float), _col4 (type: bigint), _col6 (type: double), _col7 (type: int), _col8 (type: float), _col9 (type: double), _col10 (type: double), _col11 (type: double), _col12 (type: float), _col13 (type: int), _col14 (type: double), _col15 (type: double)
                         sort order: +++++++++++++++
                         Statistics: Num rows: 3868 Data size: 831633 Basic stats: COMPLETE Column stats: NONE
+                        TopN Hash Memory Usage: 0.1
                         value expressions: _col0 (type: timestamp)
             Execution mode: vectorized
         Reducer 2 
@@ -1913,6 +1917,7 @@ STAGE PLANS:
                     key expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: double), _col3 (type: double), _col4 (type: bigint), _col5 (type: double), _col6 (type: int), _col7 (type: double), _col8 (type: int), _col9 (type: bigint), _col10 (type: bigint)
                     sort order: +++++++++++
                     Statistics: Num rows: 1251 Data size: 268968 Basic stats: COMPLETE Column stats: NONE
+                    TopN Hash Memory Usage: 0.1
         Reducer 3 
             Execution mode: vectorized
             Reduce Operator Tree:
@@ -2375,6 +2380,7 @@ STAGE PLANS:
                     key expressions: _col0 (type: timestamp), _col1 (type: string), _col2 (type: double), _col3 (type: double), _col4 (type: double), _col5 (type: double), _col6 (type: double), _col7 (type: double), _col8 (type: bigint), _col9 (type: bigint), _col10 (type: double), _col11 (type: tinyint), _col12 (type: double), _col13 (type: double), _col14 (type: double), _col15 (type: double), _col16 (type: double), _col17 (type: double), _col18 (type: double), _col19 (type: double), _col20 (type: double), _col21 (type: double), _col22 (type: double), _col23 (type: double), _col24 (type: double), _col25 (type: double), _col26 (type: double), _col27 (type: tinyint), _col28 (type: double), _col29 (type: double), _col30 (type: double), _col31 (type: double), _col32 (type: double), _col33 (type: double), _col34 (type: bigint), _col35 (type: double), _col36 (type: bigint), _col37 (type: bigint), _col38 (type: double)
                     sort order: +++++++++++++++++++++++++++++++++++++++
                     Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
+                    TopN Hash Memory Usage: 0.1
         Reducer 3 
             Execution mode: vectorized
             Reduce Operator Tree:

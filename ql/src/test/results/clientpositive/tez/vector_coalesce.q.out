@@ -41,6 +41,7 @@ STAGE PLANS:
                         key expressions: null (type: double), _col1 (type: string), _col2 (type: int), _col3 (type: float), _col4 (type: smallint), _col5 (type: string)
                         sort order: ++++++
                         Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
+                        TopN Hash Memory Usage: 0.1
             Execution mode: vectorized
         Reducer 2 
             Execution mode: vectorized
@@ -131,6 +132,7 @@ STAGE PLANS:
                         key expressions: null (type: tinyint), _col1 (type: double), _col2 (type: int), _col3 (type: double)
                         sort order: ++++
                         Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
+                        TopN Hash Memory Usage: 0.1
             Execution mode: vectorized
         Reducer 2 
             Execution mode: vectorized
@@ -219,6 +221,7 @@ STAGE PLANS:
                         key expressions: null (type: float), null (type: bigint), 0.0 (type: float)
                         sort order: +++
                         Statistics: Num rows: 3072 Data size: 660491 Basic stats: COMPLETE Column stats: NONE
+                        TopN Hash Memory Usage: 0.1
             Execution mode: vectorized
         Reducer 2 
             Execution mode: vectorized
@@ -309,6 +312,7 @@ STAGE PLANS:
                         key expressions: _col0 (type: timestamp), _col1 (type: timestamp), _col2 (type: timestamp)
                         sort order: +++
                         Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+                        TopN Hash Memory Usage: 0.1
             Execution mode: vectorized
         Reducer 2 
             Execution mode: vectorized
@@ -397,6 +401,7 @@ STAGE PLANS:
                         key expressions: null (type: float), null (type: bigint), null (type: float)
                         sort order: +++
                         Statistics: Num rows: 3072 Data size: 660491 Basic stats: COMPLETE Column stats: NONE
+                        TopN Hash Memory Usage: 0.1
             Execution mode: vectorized
         Reducer 2 
             Execution mode: vectorized

@@ -74,6 +74,7 @@ STAGE PLANS:
                   key expressions: _col0 (type: timestamp), _col1 (type: double), _col2 (type: boolean), _col3 (type: string), _col4 (type: float), _col5 (type: double), _col6 (type: double), _col7 (type: double), _col8 (type: float), _col9 (type: double), _col10 (type: double), _col11 (type: double), _col12 (type: float), _col13 (type: double)
                   sort order: ++++++++++++++
                   Statistics: Num rows: 9216 Data size: 1981473 Basic stats: COMPLETE Column stats: NONE
+                  TopN Hash Memory Usage: 0.1
       Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
@@ -243,6 +244,7 @@ STAGE PLANS:
                   key expressions: _col0 (type: timestamp), _col1 (type: double), _col2 (type: boolean), _col3 (type: string), _col4 (type: float), _col5 (type: double), _col6 (type: double), _col7 (type: double), _col8 (type: float), _col9 (type: double), _col10 (type: double), _col11 (type: double), _col12 (type: float), _col13 (type: double)
                   sort order: ++++++++++++++
                   Statistics: Num rows: 9216 Data size: 1981473 Basic stats: COMPLETE Column stats: NONE
+                  TopN Hash Memory Usage: 0.1
       Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator

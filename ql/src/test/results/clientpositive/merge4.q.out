@@ -2790,6 +2790,7 @@ STAGE PLANS:
                   Reduce Output Operator
                     sort order: 
                     Statistics: Num rows: 1 Data size: 259 Basic stats: COMPLETE Column stats: COMPLETE
+                    TopN Hash Memory Usage: 0.1
                     value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
           TableScan
             alias: src
@@ -2806,6 +2807,7 @@ STAGE PLANS:
                   Reduce Output Operator
                     sort order: 
                     Statistics: Num rows: 1 Data size: 259 Basic stats: COMPLETE Column stats: COMPLETE
+                    TopN Hash Memory Usage: 0.1
                     value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
       Reduce Operator Tree:
         Select Operator

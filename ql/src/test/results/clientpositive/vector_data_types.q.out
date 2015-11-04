@@ -120,6 +120,7 @@ STAGE PLANS:
                 key expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: int)
                 sort order: +++
                 Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
+                TopN Hash Memory Usage: 0.1
                 value expressions: _col3 (type: bigint), _col4 (type: float), _col5 (type: double), _col6 (type: boolean), _col7 (type: string), _col8 (type: timestamp), _col9 (type: decimal(4,2)), _col10 (type: binary)
       Reduce Operator Tree:
         Select Operator
@@ -205,6 +206,7 @@ STAGE PLANS:
                 key expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: int)
                 sort order: +++
                 Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
+                TopN Hash Memory Usage: 0.1
                 value expressions: _col3 (type: bigint), _col4 (type: float), _col5 (type: double), _col6 (type: boolean), _col7 (type: string), _col8 (type: timestamp), _col9 (type: decimal(4,2)), _col10 (type: binary)
       Execution mode: vectorized
       Reduce Operator Tree:

@@ -80,6 +80,7 @@ STAGE PLANS:
                       Reduce Output Operator
                         sort order: 
                         Statistics: Num rows: 2 Data size: 172 Basic stats: COMPLETE Column stats: COMPLETE
+                        TopN Hash Memory Usage: 0.1
         Reducer 2 
             Reduce Operator Tree:
               Limit

@@ -106,6 +106,7 @@ STAGE PLANS:
                   key expressions: _col0 (type: char(20))
                   sort order: +
                   Statistics: Num rows: 250 Data size: 49500 Basic stats: COMPLETE Column stats: NONE
+                  TopN Hash Memory Usage: 0.1
                   value expressions: _col1 (type: bigint), _col2 (type: bigint)
         Reducer 3 
             Execution mode: vectorized
@@ -234,6 +235,7 @@ STAGE PLANS:
                   key expressions: _col0 (type: char(20))
                   sort order: -
                   Statistics: Num rows: 250 Data size: 49500 Basic stats: COMPLETE Column stats: NONE
+                  TopN Hash Memory Usage: 0.1
                   value expressions: _col1 (type: bigint), _col2 (type: bigint)
         Reducer 3 
             Execution mode: vectorized

@@ -74,6 +74,7 @@ STAGE PLANS:
               key expressions: _col0 (type: int), _col1 (type: double), _col2 (type: decimal(20,10)), _col3 (type: decimal(23,14))
               sort order: ++++
               Statistics: Num rows: 763 Data size: 180068 Basic stats: COMPLETE Column stats: NONE
+              TopN Hash Memory Usage: 0.1
               value expressions: _col4 (type: decimal(20,10))
       Reduce Operator Tree:
         Select Operator

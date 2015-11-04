@@ -273,6 +273,7 @@ STAGE PLANS:
                         Reduce Output Operator
                           sort order: 
                           Statistics: Num rows: 10 Data size: 2960 Basic stats: COMPLETE Column stats: NONE
+                          TopN Hash Memory Usage: 0.1
                           value expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float), _col4 (type: tinyint)
             Execution mode: vectorized
         Reducer 2 
@@ -656,6 +657,7 @@ STAGE PLANS:
                         Reduce Output Operator
                           sort order: 
                           Statistics: Num rows: 10 Data size: 2960 Basic stats: COMPLETE Column stats: NONE
+                          TopN Hash Memory Usage: 0.1
                           value expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float), _col4 (type: tinyint)
             Execution mode: vectorized
         Reducer 2 
@@ -1506,6 +1508,7 @@ STAGE PLANS:
                       key expressions: _col2 (type: int)
                       sort order: +
                       Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
+                      TopN Hash Memory Usage: 0.1
                       value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col3 (type: bigint), _col4 (type: float)
             Execution mode: vectorized
         Reducer 2 
@@ -1835,6 +1838,9 @@ POSTHOOK: Input: default@over1k_part2_orc
 POSTHOOK: Input: default@over1k_part2_orc@ds=foo/t=27
 POSTHOOK: Input: default@over1k_part2_orc@ds=foo/t=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
+409	65536	4294967490	46.97	foo	NULL
+374	65560	4294967516	65.43	foo	NULL
+473	65720	4294967324	80.74	foo	NULL
 405	65536	4294967508	82.24	foo	27
 457	65570	4294967464	81.58	foo	27
 256	65599	4294967383	89.55	foo	27
@@ -1851,9 +1857,6 @@ POSTHOOK: Input: default@over1k_part2_orc@ds=foo/t=__HIVE_DEFAULT_PARTITION__
 329	65778	4294967451	6.63	foo	27
 401	65779	4294967402	97.39	foo	27
 262	65787	4294967371	57.35	foo	27
-409	65536	4294967490	46.97	foo	NULL
-374	65560	4294967516	65.43	foo	NULL
-473	65720	4294967324	80.74	foo	NULL
 PREHOOK: query: select count(*) from over1k_part2_orc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over1k_part2_orc
@@ -1982,6 +1985,9 @@ POSTHOOK: Input: default@over1k_part2_orc
 POSTHOOK: Input: default@over1k_part2_orc@ds=foo/t=27
 POSTHOOK: Input: default@over1k_part2_orc@ds=foo/t=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
+409	65536	4294967490	46.97	foo	NULL
+374	65560	4294967516	65.43	foo	NULL
+473	65720	4294967324	80.74	foo	NULL
 405	65536	4294967508	82.24	foo	27
 457	65570	4294967464	81.58	foo	27
 256	65599	4294967383	89.55	foo	27
@@ -1998,9 +2004,6 @@ POSTHOOK: Input: default@over1k_part2_orc@ds=foo/t=__HIVE_DEFAULT_PARTITION__
 329	65778	4294967451	6.63	foo	27
 401	65779	4294967402	97.39	foo	27
 262	65787	4294967371	57.35	foo	27
-409	65536	4294967490	46.97	foo	NULL
-374	65560	4294967516	65.43	foo	NULL
-473	65720	4294967324	80.74	foo	NULL
 PREHOOK: query: select count(*) from over1k_part2_orc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over1k_part2_orc
@@ -2312,6 +2315,9 @@ POSTHOOK: Input: default@over1k_part_buck_sort2_orc
 POSTHOOK: Input: default@over1k_part_buck_sort2_orc@t=27
 POSTHOOK: Input: default@over1k_part_buck_sort2_orc@t=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
+409	65536	4294967490	46.97	NULL
+374	65560	4294967516	65.43	NULL
+473	65720	4294967324	80.74	NULL
 329	65778	4294967451	6.63	27
 367	65675	4294967518	12.32	27
 278	65622	4294967516	25.67	27
@@ -2328,9 +2334,6 @@ POSTHOOK: Input: default@over1k_part_buck_sort2_orc@t=__HIVE_DEFAULT_PARTITION__
 503	65628	4294967371	95.07	27
 401	65779	4294967402	97.39	27
 340	65677	4294967461	98.96	27
-409	65536	4294967490	46.97	NULL
-374	65560	4294967516	65.43	NULL
-473	65720	4294967324	80.74	NULL
 PREHOOK: query: explain select count(*) from over1k_part_buck_sort2_orc
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select count(*) from over1k_part_buck_sort2_orc
@@ -2527,6 +2530,9 @@ POSTHOOK: Input: default@over1k_part_buck_sort2_orc
 POSTHOOK: Input: default@over1k_part_buck_sort2_orc@t=27
 POSTHOOK: Input: default@over1k_part_buck_sort2_orc@t=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
+409	65536	4294967490	46.97	NULL
+374	65560	4294967516	65.43	NULL
+473	65720	4294967324	80.74	NULL
 329	65778	4294967451	6.63	27
 367	65675	4294967518	12.32	27
 278	65622	4294967516	25.67	27
@@ -2543,9 +2549,6 @@ POSTHOOK: Input: default@over1k_part_buck_sort2_orc@t=__HIVE_DEFAULT_PARTITION__
 503	65628	4294967371	95.07	27
 401	65779	4294967402	97.39	27
 340	65677	4294967461	98.96	27
-409	65536	4294967490	46.97	NULL
-374	65560	4294967516	65.43	NULL
-473	65720	4294967324	80.74	NULL
 PREHOOK: query: explain select count(*) from over1k_part_buck_sort2_orc
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select count(*) from over1k_part_buck_sort2_orc

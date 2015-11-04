@@ -49,6 +49,7 @@ STAGE PLANS:
                         Reduce Output Operator
                           sort order: 
                           Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                          TopN Hash Memory Usage: 0.1
                           value expressions: _col0 (type: string)
         Map 3 
             Map Operator Tree:
@@ -68,6 +69,7 @@ STAGE PLANS:
                         Reduce Output Operator
                           sort order: 
                           Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                          TopN Hash Memory Usage: 0.1
                           value expressions: _col0 (type: string)
         Map 5 
             Map Operator Tree:
@@ -87,6 +89,7 @@ STAGE PLANS:
                         Reduce Output Operator
                           sort order: 
                           Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                          TopN Hash Memory Usage: 0.1
                           value expressions: _col0 (type: string)
         Reducer 2 
             Reduce Operator Tree:
@@ -258,6 +261,7 @@ STAGE PLANS:
                     Reduce Output Operator
                       sort order: 
                       Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                      TopN Hash Memory Usage: 0.1
                       value expressions: _col0 (type: string), _col1 (type: string)
         Reducer 3 
             Reduce Operator Tree:
@@ -381,6 +385,7 @@ STAGE PLANS:
                         Reduce Output Operator
                           sort order: 
                           Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                          TopN Hash Memory Usage: 0.1
                           value expressions: _col0 (type: string)
         Map 3 
             Map Operator Tree:
@@ -400,6 +405,7 @@ STAGE PLANS:
                         Reduce Output Operator
                           sort order: 
                           Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                          TopN Hash Memory Usage: 0.1
                           value expressions: _col0 (type: string)
         Map 5 
             Map Operator Tree:
@@ -419,6 +425,7 @@ STAGE PLANS:
                         Reduce Output Operator
                           sort order: 
                           Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                          TopN Hash Memory Usage: 0.1
                           value expressions: _col0 (type: string)
         Reducer 2 
             Reduce Operator Tree:
@@ -595,6 +602,7 @@ STAGE PLANS:
                         Reduce Output Operator
                           sort order: 
                           Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                          TopN Hash Memory Usage: 0.1
                           value expressions: _col0 (type: string)
         Map 3 
             Map Operator Tree:
@@ -614,6 +622,7 @@ STAGE PLANS:
                         Reduce Output Operator
                           sort order: 
                           Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                          TopN Hash Memory Usage: 0.1
                           value expressions: _col0 (type: string)
         Map 5 
             Map Operator Tree:
@@ -633,6 +642,7 @@ STAGE PLANS:
                         Reduce Output Operator
                           sort order: 
                           Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                          TopN Hash Memory Usage: 0.1
                           value expressions: _col0 (type: string)
         Reducer 2 
             Reduce Operator Tree:
@@ -796,6 +806,7 @@ STAGE PLANS:
                         Reduce Output Operator
                           sort order: 
                           Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                          TopN Hash Memory Usage: 0.1
                           value expressions: _col0 (type: string)
         Map 3 
             Map Operator Tree:
@@ -815,6 +826,7 @@ STAGE PLANS:
                         Reduce Output Operator
                           sort order: 
                           Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                          TopN Hash Memory Usage: 0.1
                           value expressions: _col0 (type: string)
         Map 5 
             Map Operator Tree:
@@ -834,6 +846,7 @@ STAGE PLANS:
                         Reduce Output Operator
                           sort order: 
                           Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                          TopN Hash Memory Usage: 0.1
                           value expressions: _col0 (type: string)
         Reducer 2 
             Reduce Operator Tree:

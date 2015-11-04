@@ -44,6 +44,7 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  TopN Hash Memory Usage: 0.1
                   value expressions: _col1 (type: double)
       Reduce Operator Tree:
         Group By Operator
@@ -69,6 +70,7 @@ STAGE PLANS:
             Reduce Output Operator
               sort order: 
               Statistics: Num rows: 5 Data size: 50 Basic stats: COMPLETE Column stats: NONE
+              TopN Hash Memory Usage: 0.1
               value expressions: _col0 (type: string), _col1 (type: double)
       Reduce Operator Tree:
         Select Operator
