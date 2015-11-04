@@ -41,6 +41,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 public class WebHCatJTShim23 implements WebHCatJTShim {
   private static final Log LOG = LogFactory.getLog(WebHCatJTShim23.class);
@@ -139,7 +140,8 @@ public class WebHCatJTShim23 implements WebHCatJTShim {
     }
     catch(IOException ex) {
       String msg = ex.getMessage();
-      if(msg != null && msg.contains("ApplicationNotFoundException")) {
+      if(msg != null && (msg.contains("ApplicationNotFoundException") ||
+          Pattern.compile("History file.*not found").matcher(msg).find())) {
         LOG.info("Job(" + jobid + ") not found: " + msg);
         return null;
       }
