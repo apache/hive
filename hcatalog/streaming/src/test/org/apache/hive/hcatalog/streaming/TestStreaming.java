@@ -204,7 +204,7 @@ public class TestStreaming {
 
     dropDB(msClient, dbName2);
     String loc2 = dbFolder.newFolder(dbName2 + ".db").toString();
-    partLoc2 = createDbAndTable(driver, dbName2, tblName2, partitionVals, colNames, colTypes, bucketCols, partNames, loc2, 2);
+    partLoc2 = createDbAndTable(driver, dbName2, tblName2, null, colNames, colTypes, bucketCols, null, loc2, 2);
 
     String loc3 = dbFolder.newFolder("testing5.db").toString();
     createStoreSales("testing5", loc3);
@@ -477,15 +477,38 @@ public class TestStreaming {
 
   @Test
   public void testEndpointConnection() throws Exception {
-    // 1) Basic
-    HiveEndPoint endPt = new HiveEndPoint(metaStoreURI, dbName, tblName
-            , partitionVals);
+    // For partitioned table, partitionVals are specified
+    HiveEndPoint endPt = new HiveEndPoint(metaStoreURI, dbName, tblName, partitionVals);
     StreamingConnection connection = endPt.newConnection(false, null); //shouldn't throw
     connection.close();
 
-    // 2) Leave partition unspecified
-    endPt = new HiveEndPoint(metaStoreURI, dbName, tblName, null);
+    // For unpartitioned table, partitionVals are not specified
+    endPt = new HiveEndPoint(metaStoreURI, dbName2, tblName2, null);
     endPt.newConnection(false, null).close(); // should not throw
+
+    // For partitioned table, partitionVals are not specified
+    try {
+      endPt = new HiveEndPoint(metaStoreURI, dbName, tblName, null);
+      connection = endPt.newConnection(true);
+      Assert.assertTrue("ConnectionError was not thrown", false);
+      connection.close();
+    } catch (ConnectionError e) {
+      // expecting this exception
+      String errMsg = "doesn't specify any partitions for partitioned table";
+      Assert.assertTrue(e.toString().endsWith(errMsg));
+    }
+
+    // For unpartitioned table, partition values are specified
+    try {
+      endPt = new HiveEndPoint(metaStoreURI, dbName2, tblName2, partitionVals);
+      connection = endPt.newConnection(false);
+      Assert.assertTrue("ConnectionError was not thrown", false);
+      connection.close();
+    } catch (ConnectionError e) {
+      // expecting this exception
+      String errMsg = "specifies partitions for unpartitioned table";
+      Assert.assertTrue(e.toString().endsWith(errMsg));
+    }
   }
 
   @Test

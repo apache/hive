@@ -279,22 +279,47 @@ public class HiveEndPoint {
       }
     }
 
-    private void checkEndPoint(HiveEndPoint endPoint, IMetaStoreClient msClient) throws InvalidTable {
-      // 1 - check if TBLPROPERTIES ('transactional'='true') is set on table
+    /**
+     * Checks the validity of endpoint
+     * @param endPoint the HiveEndPoint to be checked
+     * @param msClient the metastore client
+     * @throws InvalidTable
+     */
+    private void checkEndPoint(HiveEndPoint endPoint, IMetaStoreClient msClient)
+        throws InvalidTable, ConnectionError {
+      Table t;
       try {
-        Table t = msClient.getTable(endPoint.database, endPoint.table);
-        Map<String, String> params = t.getParameters();
-        if(params != null) {
-          String transactionalProp = params.get("transactional");
-          if (transactionalProp != null && transactionalProp.equalsIgnoreCase("true")) {
-            return;
-          }
-        }
-        LOG.error("'transactional' property is not set on Table " + endPoint);
-        throw new InvalidTable(endPoint.database, endPoint.table, "\'transactional\' property is not set on Table");
+        t = msClient.getTable(endPoint.database, endPoint.table);
       } catch (Exception e) {
-        LOG.warn("Unable to check if Table is transactional. " + endPoint, e);
+        LOG.warn("Unable to check the endPoint: " + endPoint, e);
         throw new InvalidTable(endPoint.database, endPoint.table, e);
+      }
+
+      // 1 - check if TBLPROPERTIES ('transactional'='true') is set on table
+      Map<String, String> params = t.getParameters();
+      if (params != null) {
+        String transactionalProp = params.get("transactional");
+        if (transactionalProp == null || !transactionalProp.equalsIgnoreCase("true")) {
+          LOG.error("'transactional' property is not set on Table " + endPoint);
+          throw new InvalidTable(endPoint.database, endPoint.table, "\'transactional\' property" +
+              " is not set on Table");          }
+      }
+
+      // 2 - check if partitionvals are legitimate
+      if (t.getPartitionKeys() != null && !t.getPartitionKeys().isEmpty()
+          && endPoint.partitionVals.isEmpty()) {
+        // Invalid if table is partitioned, but endPoint's partitionVals is empty
+        String errMsg = "HiveEndPoint " + endPoint + " doesn't specify any partitions for " +
+            "partitioned table";
+        LOG.error(errMsg);
+        throw new ConnectionError(errMsg);
+      }
+      if ((t.getPartitionKeys() == null || t.getPartitionKeys().isEmpty())
+          && !endPoint.partitionVals.isEmpty()) {
+        // Invalid if table is not partitioned, but endPoint's partitionVals is not empty
+        String errMsg = "HiveEndPoint" + endPoint + " specifies partitions for unpartitioned table";
+        LOG.error(errMsg);
+        throw new ConnectionError(errMsg);
       }
     }
 

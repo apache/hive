@@ -20,6 +20,10 @@ package org.apache.hive.hcatalog.streaming;
 
 public class ConnectionError extends StreamingException {
 
+  public ConnectionError(String msg) {
+    super(msg);
+  }
+
   public ConnectionError(String msg, Exception innerEx) {
     super(msg, innerEx);
   }
