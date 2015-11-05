@@ -21,7 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.UUID;
+import java.util.Collection;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -78,11 +78,11 @@ public class SparkUtilities {
    */
   public static URI uploadToHDFS(URI source, HiveConf conf) throws IOException {
     Path localFile = new Path(source.getPath());
-    // give the uploaded file a UUID
-    Path remoteFile = new Path(SessionState.getHDFSSessionPath(conf),
-        UUID.randomUUID() + "-" + getFileName(source));
+    Path remoteFile = new Path(SessionState.getHDFSSessionPath(conf), getFileName(source));
     FileSystem fileSystem = FileSystem.get(conf);
-    fileSystem.copyFromLocalFile(localFile, remoteFile);
+    // Overwrite if the remote file already exists. Whether the file can be added
+    // on executor is up to spark, i.e. spark.files.overwrite
+    fileSystem.copyFromLocalFile(false, true, localFile, remoteFile);
     Path fullPath = fileSystem.getFileStatus(remoteFile).getPath();
     return fullPath.toUri();
   }
