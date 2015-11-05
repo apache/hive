@@ -175,7 +175,8 @@ public class HiveConf extends Configuration {
    */
   public static final HiveConf.ConfVars[] metaConfVars = {
       HiveConf.ConfVars.METASTORE_TRY_DIRECT_SQL,
-      HiveConf.ConfVars.METASTORE_TRY_DIRECT_SQL_DDL
+      HiveConf.ConfVars.METASTORE_TRY_DIRECT_SQL_DDL,
+      HiveConf.ConfVars.METASTORE_CLIENT_SOCKET_TIMEOUT
   };
 
   static {
