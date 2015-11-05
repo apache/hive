@@ -116,7 +116,7 @@ public class MapredContext {
     udfs.clear();
   }
 
-  void setup(GenericUDF genericUDF) {
+  public void setup(GenericUDF genericUDF) {
     if (needConfigure(genericUDF)) {
       genericUDF.configure(this);
     }
