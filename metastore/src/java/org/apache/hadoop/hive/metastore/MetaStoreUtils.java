@@ -51,11 +51,9 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
-import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -79,6 +77,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge;
 import org.apache.hive.common.util.ReflectionUtil;
@@ -632,9 +631,6 @@ public class MetaStoreUtils {
    * Two types are compatible if we have internal functions to cast one to another.
    */
   static private boolean areColTypesCompatible(String oldType, String newType) {
-    if (oldType.equals(newType)) {
-      return true;
-    }
 
     /*
      * RCFile default serde (ColumnarSerde) serializes the values in such a way that the
@@ -645,12 +641,9 @@ public class MetaStoreUtils {
      * Primitive types like INT, STRING, BIGINT, etc are compatible with each other and are
      * not blocked.
      */
-    if(serdeConstants.PrimitiveTypes.contains(oldType.toLowerCase()) &&
-        serdeConstants.PrimitiveTypes.contains(newType.toLowerCase())) {
-      return true;
-    }
 
-    return false;
+    return TypeInfoUtils.implicitConvertible(TypeInfoUtils.getTypeInfoFromTypeString(oldType),
+      TypeInfoUtils.getTypeInfoFromTypeString(newType));
   }
 
   public static final int MAX_MS_TYPENAME_LENGTH = 2000; // 4000/2, for an unlikely unicode case

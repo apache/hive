@@ -8,9 +8,9 @@ select * from src where key = 238;
 
 select * from partition_test_partitioned where dt is not null;
 select key+key, value from partition_test_partitioned where dt is not null;
-
+set hive.metastore.disallow.incompatible.col.type.changes=false;
 alter table partition_test_partitioned change key key int;
-
+reset hive.metastore.disallow.incompatible.col.type.changes;
 select key+key, value from partition_test_partitioned where dt is not null;
 select * from partition_test_partitioned where dt is not null;
 

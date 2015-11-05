@@ -637,7 +637,7 @@ public class HiveConf extends Configuration {
         "as nulls, so we should set this parameter if we wish to reverse that behaviour. For others, " +
         "pruning is the correct behaviour"),
     METASTORE_DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES(
-        "hive.metastore.disallow.incompatible.col.type.changes", false,
+        "hive.metastore.disallow.incompatible.col.type.changes", true,
         "If true (default is false), ALTER TABLE operations which change the type of a\n" +
         "column (say STRING) to an incompatible type (say MAP) are disallowed.\n" +
         "RCFile default SerDe (ColumnarSerDe) serializes the values in such a way that the\n" +

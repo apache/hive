@@ -1,5 +1,5 @@
 set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.LineageLogger;
-
+set hive.metastore.disallow.incompatible.col.type.changes=false;
 drop table if exists d1;
 create table d1(a int);
 
@@ -202,3 +202,4 @@ insert into dest_dp3 partition (y=2, m, d) select first, word, month m, day d wh
 insert into dest_dp2 partition (y=1, m) select f, w, m
 insert into dest_dp1 partition (year=0) select f, w;
 
+reset hive.metastore.disallow.incompatible.col.type.changes;

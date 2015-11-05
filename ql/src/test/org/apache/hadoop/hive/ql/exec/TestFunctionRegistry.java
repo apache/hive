@@ -80,7 +80,7 @@ public class TestFunctionRegistry extends TestCase {
   }
 
   private void implicit(TypeInfo a, TypeInfo b, boolean convertible) {
-    assertEquals(convertible, FunctionRegistry.implicitConvertible(a, b));
+    assertEquals(convertible, TypeInfoUtils.implicitConvertible(a, b));
   }
 
   public void testImplicitConversion() {
