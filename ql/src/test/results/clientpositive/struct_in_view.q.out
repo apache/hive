@@ -1,0 +1,118 @@
+PREHOOK: query: drop table testreserved
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table testreserved
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table testreserved (data struct<`end`:string, id: string>)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testreserved
+POSTHOOK: query: create table testreserved (data struct<`end`:string, id: string>)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testreserved
+PREHOOK: query: create view testreservedview as select data.`end` as data_end, data.id as data_id from testreserved
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@testreserved
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testreservedview
+POSTHOOK: query: create view testreservedview as select data.`end` as data_end, data.id as data_id from testreserved
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@testreserved
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testreservedview
+PREHOOK: query: describe extended testreservedview
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@testreservedview
+POSTHOOK: query: describe extended testreservedview
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@testreservedview
+data_end            	string              	                    
+data_id             	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: select data.`end` from testreserved
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testreserved
+#### A masked pattern was here ####
+POSTHOOK: query: select data.`end` from testreserved
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testreserved
+#### A masked pattern was here ####
+PREHOOK: query: drop view testreservedview
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@testreservedview
+PREHOOK: Output: default@testreservedview
+POSTHOOK: query: drop view testreservedview
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@testreservedview
+POSTHOOK: Output: default@testreservedview
+PREHOOK: query: drop table testreserved
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@testreserved
+PREHOOK: Output: default@testreserved
+POSTHOOK: query: drop table testreserved
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@testreserved
+POSTHOOK: Output: default@testreserved
+PREHOOK: query: create table s (default struct<src:struct<`end`:struct<key:string>, id: string>, id: string>)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@s
+POSTHOOK: query: create table s (default struct<src:struct<`end`:struct<key:string>, id: string>, id: string>)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@s
+PREHOOK: query: create view vs1 as select default.src.`end`.key from s
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@s
+PREHOOK: Output: database:default
+PREHOOK: Output: default@vs1
+POSTHOOK: query: create view vs1 as select default.src.`end`.key from s
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@s
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@vs1
+PREHOOK: query: describe extended vs1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@vs1
+POSTHOOK: query: describe extended vs1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@vs1
+key                 	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: create view vs2 as select default.src.`end` from s
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@s
+PREHOOK: Output: database:default
+PREHOOK: Output: default@vs2
+POSTHOOK: query: create view vs2 as select default.src.`end` from s
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@s
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@vs2
+PREHOOK: query: describe extended vs2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@vs2
+POSTHOOK: query: describe extended vs2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@vs2
+end                 	struct<key:string>  	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: drop view vs1
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@vs1
+PREHOOK: Output: default@vs1
+POSTHOOK: query: drop view vs1
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@vs1
+POSTHOOK: Output: default@vs1
+PREHOOK: query: drop view vs2
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@vs2
+PREHOOK: Output: default@vs2
+POSTHOOK: query: drop view vs2
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@vs2
+POSTHOOK: Output: default@vs2

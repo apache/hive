@@ -26,6 +26,8 @@ import java.io.Serializable;
 import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -155,6 +157,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnListDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
+import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
@@ -10496,8 +10499,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       return nodeOutputs;
     }
 
+    Map<ExprNodeDesc,String> nodeToText = new HashMap<>();
+    List<Entry<ASTNode, ExprNodeDesc>> fieldDescList = new ArrayList<>();
+
     for (Map.Entry<ASTNode, ExprNodeDesc> entry : nodeOutputs.entrySet()) {
       if (!(entry.getValue() instanceof ExprNodeColumnDesc)) {
+        // we need to translate the ExprNodeFieldDesc too, e.g., identifiers in
+        // struct<>.
+        if (entry.getValue() instanceof ExprNodeFieldDesc) {
+          fieldDescList.add(entry);
+        }
         continue;
       }
       ASTNode node = entry.getKey();
@@ -10513,7 +10524,33 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       replacementText.append(HiveUtils.unparseIdentifier(tmp[0], conf));
       replacementText.append(".");
       replacementText.append(HiveUtils.unparseIdentifier(tmp[1], conf));
+      nodeToText.put(columnDesc, replacementText.toString());
       unparseTranslator.addTranslation(node, replacementText.toString());
+    }
+
+    if (fieldDescList.size() != 0) {
+      // Sorting the list based on the length of fieldName
+      // For example, in Column[a].b.c and Column[a].b, Column[a].b should be
+      // unparsed before Column[a].b.c
+      Collections.sort(fieldDescList, new Comparator<Map.Entry<ASTNode, ExprNodeDesc>>() {
+        public int compare(Entry<ASTNode, ExprNodeDesc> o1, Entry<ASTNode, ExprNodeDesc> o2) {
+          ExprNodeFieldDesc fieldDescO1 = (ExprNodeFieldDesc) o1.getValue();
+          ExprNodeFieldDesc fieldDescO2 = (ExprNodeFieldDesc) o2.getValue();
+          return fieldDescO1.toString().length() < fieldDescO2.toString().length() ? -1 : 1;
+        }
+      });
+      for (Map.Entry<ASTNode, ExprNodeDesc> entry : fieldDescList) {
+        ASTNode node = entry.getKey();
+        ExprNodeFieldDesc fieldDesc = (ExprNodeFieldDesc) entry.getValue();
+        ExprNodeDesc exprNodeDesc = fieldDesc.getDesc();
+        String fieldName = fieldDesc.getFieldName();
+        StringBuilder replacementText = new StringBuilder();
+        replacementText.append(nodeToText.get(exprNodeDesc));
+        replacementText.append(".");
+        replacementText.append(HiveUtils.unparseIdentifier(fieldName, conf));
+        nodeToText.put(fieldDesc, replacementText.toString());
+        unparseTranslator.addTranslation(node, replacementText.toString());
+      }
     }
 
     return nodeOutputs;
