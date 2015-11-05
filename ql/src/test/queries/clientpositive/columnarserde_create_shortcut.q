@@ -22,5 +22,7 @@ SELECT * FROM columnShortcutTable;
 
 ALTER TABLE columnShortcutTable ADD COLUMNS (c string);
 SELECT * FROM columnShortcutTable;
+set hive.metastore.disallow.incompatible.col.type.changes=false;
 ALTER TABLE columnShortcutTable REPLACE COLUMNS (key int);
+reset hive.metastore.disallow.incompatible.col.type.changes;
 SELECT * FROM columnShortcutTable;

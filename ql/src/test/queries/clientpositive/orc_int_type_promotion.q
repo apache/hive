@@ -1,3 +1,4 @@
+set hive.metastore.disallow.incompatible.col.type.changes=false;
 create table if not exists alltypes (
  bo boolean,
  ti tinyint,
@@ -77,3 +78,4 @@ select * from src_part_orc limit 10;
 
 alter table src_part_orc change key key bigint;
 select * from src_part_orc limit 10;
+reset hive.metastore.disallow.incompatible.col.type.changes;

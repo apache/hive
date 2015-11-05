@@ -23,6 +23,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -45,6 +46,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
 
 /**
@@ -52,6 +54,25 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
  *
  */
 public final class TypeInfoUtils {
+
+  public static List<PrimitiveCategory> numericTypeList = new ArrayList<PrimitiveCategory>();
+  // The ordering of types here is used to determine which numeric types
+  // are common/convertible to one another. Probably better to rely on the
+  // ordering explicitly defined here than to assume that the enum values
+  // that were arbitrarily assigned in PrimitiveCategory work for our purposes.
+  public static EnumMap<PrimitiveCategory, Integer> numericTypes =
+      new EnumMap<PrimitiveCategory, Integer>(PrimitiveCategory.class);
+
+  static {
+    registerNumericType(PrimitiveCategory.BYTE, 1);
+    registerNumericType(PrimitiveCategory.SHORT, 2);
+    registerNumericType(PrimitiveCategory.INT, 3);
+    registerNumericType(PrimitiveCategory.LONG, 4);
+    registerNumericType(PrimitiveCategory.FLOAT, 5);
+    registerNumericType(PrimitiveCategory.DOUBLE, 6);
+    registerNumericType(PrimitiveCategory.DECIMAL, 7);
+    registerNumericType(PrimitiveCategory.STRING, 8);
+  }
 
   private TypeInfoUtils() {
     // prevent instantiation
@@ -266,7 +287,7 @@ public final class TypeInfoUtils {
      *
      * tokenize("map<int,string>") should return
      * ["map","<","int",",","string",">"]
-     * 
+     *
      * Note that we add '$' in new Calcite return path. As '$' will not appear
      * in any type in Hive, it is safe to do so.
      */
@@ -809,5 +830,77 @@ public final class TypeInfoUtils {
       default:
         return 0;
     }
+  }
+
+  public static void registerNumericType(PrimitiveCategory primitiveCategory, int level) {
+    numericTypeList.add(primitiveCategory);
+    numericTypes.put(primitiveCategory, level);
+  }
+
+  public static boolean implicitConvertible(PrimitiveCategory from, PrimitiveCategory to) {
+    if (from == to) {
+      return true;
+    }
+
+    PrimitiveGrouping fromPg = PrimitiveObjectInspectorUtils.getPrimitiveGrouping(from);
+    PrimitiveGrouping toPg = PrimitiveObjectInspectorUtils.getPrimitiveGrouping(to);
+
+    // Allow implicit String to Double conversion
+    if (fromPg == PrimitiveGrouping.STRING_GROUP && to == PrimitiveCategory.DOUBLE) {
+      return true;
+    }
+    // Allow implicit String to Decimal conversion
+    if (fromPg == PrimitiveGrouping.STRING_GROUP && to == PrimitiveCategory.DECIMAL) {
+      return true;
+    }
+    // Void can be converted to any type
+    if (from == PrimitiveCategory.VOID) {
+      return true;
+    }
+
+    // Allow implicit String to Date conversion
+    if (fromPg == PrimitiveGrouping.DATE_GROUP && toPg == PrimitiveGrouping.STRING_GROUP) {
+      return true;
+    }
+    // Allow implicit Numeric to String conversion
+    if (fromPg == PrimitiveGrouping.NUMERIC_GROUP && toPg == PrimitiveGrouping.STRING_GROUP) {
+      return true;
+    }
+    // Allow implicit String to varchar conversion, and vice versa
+    if (fromPg == PrimitiveGrouping.STRING_GROUP && toPg == PrimitiveGrouping.STRING_GROUP) {
+      return true;
+    }
+
+    // Allow implicit conversion from Byte -> Integer -> Long -> Float -> Double
+    // Decimal -> String
+    Integer f = numericTypes.get(from);
+    Integer t = numericTypes.get(to);
+    if (f == null || t == null) {
+      return false;
+    }
+    if (f.intValue() > t.intValue()) {
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * Returns whether it is possible to implicitly convert an object of Class
+   * from to Class to.
+   */
+  public static boolean implicitConvertible(TypeInfo from, TypeInfo to) {
+    if (from.equals(to)) {
+      return true;
+    }
+
+    // Reimplemented to use PrimitiveCategory rather than TypeInfo, because
+    // 2 TypeInfos from the same qualified type (varchar, decimal) should still be
+    // seen as equivalent.
+    if (from.getCategory() == Category.PRIMITIVE && to.getCategory() == Category.PRIMITIVE) {
+      return implicitConvertible(
+          ((PrimitiveTypeInfo) from).getPrimitiveCategory(),
+          ((PrimitiveTypeInfo) to).getPrimitiveCategory());
+    }
+    return false;
   }
 }

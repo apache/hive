@@ -112,7 +112,7 @@ OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat';
 
 -- Insert data into a partition
 INSERT INTO TABLE episodes_partitioned_serdeproperties PARTITION (doctor_pt) SELECT title, air_date, doctor, doctor as doctor_pt FROM episodes;
-
+set hive.metastore.disallow.incompatible.col.type.changes=false;
 -- Evolve the table schema by adding new array field "cast_and_crew"
 ALTER TABLE episodes_partitioned_serdeproperties
 SET SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
@@ -144,5 +144,6 @@ WITH SERDEPROPERTIES ('avro.schema.literal'='{
   ]
 }');
 
+reset hive.metastore.disallow.incompatible.col.type.changes;
 -- Try selecting from the evolved table
 SELECT * FROM episodes_partitioned_serdeproperties;

@@ -565,7 +565,7 @@ public class TestHCatClient {
       client.createTable(HCatCreateTableDesc.create(dbName, tableName, oldSchema).build());
 
       List<HCatFieldSchema> newSchema = Arrays.asList(new HCatFieldSchema("completely", Type.DOUBLE, ""),
-          new HCatFieldSchema("new", Type.FLOAT, ""),
+          new HCatFieldSchema("new", Type.STRING, ""),
           new HCatFieldSchema("fields", Type.STRING, ""));
 
       client.updateTableSchema(dbName, tableName, newSchema);
