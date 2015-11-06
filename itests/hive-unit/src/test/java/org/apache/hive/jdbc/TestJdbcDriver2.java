@@ -1854,7 +1854,15 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
     assertEquals(SET_COLUMN_NAME, md.getColumnLabel(1));
 
     //check if there is data in the resultset
-    assertTrue("Nothing returned by set -v", res.next());
+    int numLines = 0;
+    while (res.next()){
+      numLines++;
+      String rline = res.getString(1);
+      assertFalse("set output must not contain hidden variables such as the metastore password:"+rline,
+          rline.contains(HiveConf.ConfVars.METASTOREPWD.varname) && !(rline.contains(HiveConf.ConfVars.HIVE_CONF_HIDDEN_LIST.varname)));
+        // the only conf allowed to have the metastore pwd keyname is the hidden list configuration value
+    }
+    assertTrue("Nothing returned by set -v", numLines > 0);
 
     res.close();
     stmt.close();
