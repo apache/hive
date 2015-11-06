@@ -985,6 +985,17 @@ public class HybridHashTableContainer
       int keyHash = HashCodeUtil.murmurHash(bytes, offset, length);
       partitionId = keyHash & (hashPartitions.length - 1);
 
+      if (!bloom1.testLong(keyHash)) {
+        /*
+         * if the keyHash is missing in the bloom filter, then the value cannot exist in any of the
+         * spilled partition - return NOMATCH
+         */
+        dummyRow = null;
+        aliasFilter = (byte) 0xff;
+        hashMapResult.forget();
+        return JoinResult.NOMATCH;
+      }
+
       // If the target hash table is on disk, spill this row to disk as well to be processed later
       if (isOnDisk(partitionId)) {
         return JoinUtil.JoinResult.SPILL;
