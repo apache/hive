@@ -76,6 +76,7 @@ public class TestObjectStore {
     objectStore = new ObjectStore();
     objectStore.setConf(conf);
 
+    Deadline.registerIfNot(100000);
     try {
       objectStore.dropDatabase(DB1);
     } catch (Exception e) {
@@ -166,6 +167,7 @@ public class TestObjectStore {
     Partition part2 = new Partition(value2, DB1, TABLE1, 222, 222, sd, partitionParams);
     objectStore.addPartition(part2);
 
+    Deadline.startTimer("getPartition");
     List<Partition> partitions = objectStore.getPartitions(DB1, TABLE1, 10);
     Assert.assertEquals(2, partitions.size());
     Assert.assertEquals(111, partitions.get(0).getCreateTime());
