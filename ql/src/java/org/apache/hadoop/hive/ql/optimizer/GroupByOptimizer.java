@@ -212,11 +212,7 @@ public class GroupByOptimizer implements Transform {
         convertGroupByMapSideSortedGroupBy(hiveConf, groupByOp, depth);
       }
       else if (optimizeDistincts && !HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED)) {
-        // In test mode, dont change the query plan. However, setup a query property
         pGraphContext.getQueryProperties().setHasMapGroupBy(true);
-        if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_MAP_GROUPBY_SORT_TESTMODE)) {
-          return;
-        }
         ReduceSinkOperator reduceSinkOp =
             (ReduceSinkOperator)groupByOp.getChildOperators().get(0);
         GroupByDesc childGroupByDesc =
@@ -518,11 +514,7 @@ public class GroupByOptimizer implements Transform {
     // The operators specified by depth and removed from the tree.
     protected void convertGroupByMapSideSortedGroupBy(
         HiveConf conf, GroupByOperator groupByOp, int depth) {
-      // In test mode, dont change the query plan. However, setup a query property
       pGraphContext.getQueryProperties().setHasMapGroupBy(true);
-      if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_MAP_GROUPBY_SORT_TESTMODE)) {
-        return;
-      }
 
       if (removeChildren(groupByOp, depth)) {
         // Use bucketized hive input format - that makes sure that one mapper reads the entire file

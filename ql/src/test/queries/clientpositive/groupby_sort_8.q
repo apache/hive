@@ -18,10 +18,4 @@ EXPLAIN
 select count(distinct key) from T1;
 select count(distinct key) from T1;
 
-set hive.map.groupby.sorted.testmode=true;
--- In testmode, the plan is not changed
-EXPLAIN
-select count(distinct key) from T1;
-select count(distinct key) from T1;
-
 DROP TABLE T1;

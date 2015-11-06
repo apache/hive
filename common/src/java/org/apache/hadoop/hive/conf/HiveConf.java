@@ -862,14 +862,10 @@ public class HiveConf extends Configuration {
     HIVEMULTIGROUPBYSINGLEREDUCER("hive.multigroupby.singlereducer", true,
         "Whether to optimize multi group by query to generate single M/R  job plan. If the multi group by query has \n" +
         "common group by keys, it will be optimized to generate single M/R job."),
-    HIVE_MAP_GROUPBY_SORT("hive.map.groupby.sorted", false,
+    HIVE_MAP_GROUPBY_SORT("hive.map.groupby.sorted", true,
         "If the bucketing/sorting properties of the table exactly match the grouping key, whether to perform \n" +
         "the group by in the mapper by using BucketizedHiveInputFormat. The only downside to this\n" +
         "is that it limits the number of mappers to the number of files."),
-    HIVE_MAP_GROUPBY_SORT_TESTMODE("hive.map.groupby.sorted.testmode", false,
-        "If the bucketing/sorting properties of the table exactly match the grouping key, whether to perform \n" +
-        "the group by in the mapper by using BucketizedHiveInputFormat. If the test mode is set, the plan\n" +
-        "is not converted, but a query property is set to denote the same."),
     HIVE_GROUPBY_ORDERBY_POSITION_ALIAS("hive.groupby.orderby.position.alias", false,
         "Whether to enable using Column Position Alias in Group By or Order By"),
     HIVE_NEW_JOB_GROUPING_SET_CARDINALITY("hive.new.job.grouping.set.cardinality", 30,
