@@ -2,7 +2,6 @@ set hive.enforce.bucketing = true;
 set hive.enforce.sorting = true;
 set hive.exec.reducers.max = 10;
 set hive.map.groupby.sorted=true;
-set hive.map.groupby.sorted.testmode=true;
 
 CREATE TABLE T1(key STRING, val STRING)
 CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE;

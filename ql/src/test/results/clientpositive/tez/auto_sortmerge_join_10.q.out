@@ -245,8 +245,8 @@ STAGE PLANS:
   Stage: Stage-1
     Tez
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (BROADCAST_EDGE)
-        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Map 1 <- Map 3 (BROADCAST_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -259,18 +259,34 @@ STAGE PLANS:
                     Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
-                      bucketGroup: true
                       keys: key (type: int)
-                      mode: hash
+                      mode: final
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col1 (type: bigint)
-        Map 4 
+                      Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: _col0 (type: int)
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                        Map Join Operator
+                          condition map:
+                               Inner Join 0 to 1
+                          keys:
+                            0 _col0 (type: int)
+                            1 _col0 (type: int)
+                          input vertices:
+                            1 Map 3
+                          Statistics: Num rows: 3 Data size: 23 Basic stats: COMPLETE Column stats: NONE
+                          HybridGraceHashJoin: true
+                          Group By Operator
+                            aggregations: count()
+                            mode: hash
+                            outputColumnNames: _col0
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                            Reduce Output Operator
+                              sort order: 
+                              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                              value expressions: _col0 (type: bigint)
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -288,37 +304,6 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0)
-                keys: KEY._col0 (type: int)
-                mode: mergepartial
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col0 (type: int)
-                  outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-                  Map Join Operator
-                    condition map:
-                         Inner Join 0 to 1
-                    keys:
-                      0 _col0 (type: int)
-                      1 _col0 (type: int)
-                    input vertices:
-                      1 Map 4
-                    Statistics: Num rows: 3 Data size: 23 Basic stats: COMPLETE Column stats: NONE
-                    HybridGraceHashJoin: true
-                    Group By Operator
-                      aggregations: count()
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col0 (type: bigint)
-        Reducer 3 
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
