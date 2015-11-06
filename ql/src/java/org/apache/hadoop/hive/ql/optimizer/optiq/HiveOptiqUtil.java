@@ -210,8 +210,8 @@ public class HiveOptiqUtil {
       leftKeys.add(origLeftInputSize + i);
       rightKeys.add(origRightInputSize + i);
       RexNode cond = rexBuilder.makeCall(SqlStdOperatorTable.EQUALS,
-          rexBuilder.makeInputRef(newLeftFields.get(i).getType(), newLeftOffset + i),
-          rexBuilder.makeInputRef(newLeftFields.get(i).getType(), newRightOffset + i));
+          rexBuilder.makeInputRef(newLeftFields.get(origLeftInputSize + i).getType(), newLeftOffset + i),
+          rexBuilder.makeInputRef(newRightFields.get(origRightInputSize + i).getType(), newRightOffset + i));
       if (outJoinCond == null) {
         outJoinCond = cond;
       } else {
