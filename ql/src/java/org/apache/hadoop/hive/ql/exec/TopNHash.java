@@ -103,8 +103,13 @@ public class TopNHash {
       return; // topN == 0 will cause a short-circuit, don't need any initialization
     }
 
+    // Used Memory = totalMemory() - freeMemory();
+    // Total Free Memory = maxMemory() - Used Memory;
+    long totalFreeMemory = Runtime.getRuntime().maxMemory() -
+      Runtime.getRuntime().totalMemory() + Runtime.getRuntime().freeMemory();
+
     // limit * 64 : compensation of arrays for key/value/hashcodes
-    this.threshold = (long) (memUsage * Runtime.getRuntime().freeMemory()) - topN * 64L;
+    this.threshold = (long) (memUsage * totalFreeMemory) - topN * 64L;
     if (threshold < 0) {
       return;
     }
