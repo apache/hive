@@ -114,14 +114,14 @@ STAGE PLANS:
                       name: default.orc_rn1
             Filter Operator
               predicate: ((rn >= 100) and (rn < 1000)) (type: boolean)
-              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: rn (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

@@ -144,10 +144,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1
-                  Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
                       keys:
                         0 key (type: string)
@@ -250,6 +250,7 @@ STAGE PLANS:
                       aggregations: count()
                       mode: hash
                       outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
                         table:

@@ -1176,13 +1176,17 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string)
                     outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Filter Operator
                       predicate: (_col0 < 10) (type: boolean)
+                      Statistics: Num rows: 333 Data size: 3537 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
+                        Statistics: Num rows: 333 Data size: 3537 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1190,8 +1194,10 @@ STAGE PLANS:
                             name: default.src_multi1
                     Filter Operator
                       predicate: ((_col0 > 10) and (_col0 < 20)) (type: boolean)
+                      Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
+                        Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1201,13 +1207,17 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string)
                     outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Filter Operator
                       predicate: (_col0 < 10) (type: boolean)
+                      Statistics: Num rows: 333 Data size: 3537 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
+                        Statistics: Num rows: 333 Data size: 3537 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1215,8 +1225,10 @@ STAGE PLANS:
                             name: default.src_multi1
                     Filter Operator
                       predicate: ((_col0 > 10) and (_col0 < 20)) (type: boolean)
+                      Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
+                        Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1347,13 +1359,17 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string)
                     outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Filter Operator
                       predicate: (_col0 < 10) (type: boolean)
+                      Statistics: Num rows: 333 Data size: 3537 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
+                        Statistics: Num rows: 333 Data size: 3537 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1361,8 +1377,10 @@ STAGE PLANS:
                             name: default.src_multi1
                     Filter Operator
                       predicate: ((_col0 > 10) and (_col0 < 20)) (type: boolean)
+                      Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
+                        Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1372,13 +1390,17 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string)
                     outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Filter Operator
                       predicate: (_col0 < 10) (type: boolean)
+                      Statistics: Num rows: 333 Data size: 3537 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
+                        Statistics: Num rows: 333 Data size: 3537 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1386,8 +1408,10 @@ STAGE PLANS:
                             name: default.src_multi1
                     Filter Operator
                       predicate: ((_col0 > 10) and (_col0 < 20)) (type: boolean)
+                      Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
+                        Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1518,13 +1542,17 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string)
                     outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Filter Operator
                       predicate: (_col0 < 10) (type: boolean)
+                      Statistics: Num rows: 333 Data size: 3537 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
+                        Statistics: Num rows: 333 Data size: 3537 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1532,8 +1560,10 @@ STAGE PLANS:
                             name: default.src_multi1
                     Filter Operator
                       predicate: ((_col0 > 10) and (_col0 < 20)) (type: boolean)
+                      Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
+                        Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1543,13 +1573,17 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string)
                     outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Filter Operator
                       predicate: (_col0 < 10) (type: boolean)
+                      Statistics: Num rows: 333 Data size: 3537 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
+                        Statistics: Num rows: 333 Data size: 3537 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1557,8 +1591,10 @@ STAGE PLANS:
                             name: default.src_multi1
                     Filter Operator
                       predicate: ((_col0 > 10) and (_col0 < 20)) (type: boolean)
+                      Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
+                        Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1689,13 +1725,17 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string)
                     outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Filter Operator
                       predicate: (_col0 < 10) (type: boolean)
+                      Statistics: Num rows: 333 Data size: 3537 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
+                        Statistics: Num rows: 333 Data size: 3537 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1703,8 +1743,10 @@ STAGE PLANS:
                             name: default.src_multi1
                     Filter Operator
                       predicate: ((_col0 > 10) and (_col0 < 20)) (type: boolean)
+                      Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
+                        Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1714,13 +1756,17 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string)
                     outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Filter Operator
                       predicate: (_col0 < 10) (type: boolean)
+                      Statistics: Num rows: 333 Data size: 3537 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
+                        Statistics: Num rows: 333 Data size: 3537 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1728,8 +1774,10 @@ STAGE PLANS:
                             name: default.src_multi1
                     Filter Operator
                       predicate: ((_col0 > 10) and (_col0 < 20)) (type: boolean)
+                      Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
+                        Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

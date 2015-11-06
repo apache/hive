@@ -110,26 +110,49 @@ STAGE PLANS:
             Reduce Operator Tree:
               Limit
                 Number of rows: 1
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                 Select Operator
                   expressions: 4 (type: int)
                   outputColumnNames: _col0
+<<<<<<< HEAD
                   File Output Operator
                     compressed: false
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+=======
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 4 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+>>>>>>> d823fc8... HIVE-8769 : Physical optimizer : Incorrect CE results in a shuffle join instead of a Map join (PK/FK pattern not detected) (Pengcheng Xiong via Ashutosh Chauhan)
         Reducer 2 
             Reduce Operator Tree:
               Limit
                 Number of rows: 1
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+<<<<<<< HEAD
                 Reduce Output Operator
                   key expressions: 1 (type: int)
                   sort order: +
                   Map-reduce partition columns: 1 (type: int)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
         Reducer 3 
+=======
+                Select Operator
+                  expressions: 1 (type: int)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 4 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+        Reducer 4 
+>>>>>>> d823fc8... HIVE-8769 : Physical optimizer : Incorrect CE results in a shuffle join instead of a Map join (PK/FK pattern not detected) (Pengcheng Xiong via Ashutosh Chauhan)
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int)
@@ -145,6 +168,7 @@ STAGE PLANS:
               Limit
                 Number of rows: 1
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+<<<<<<< HEAD
                 Reduce Output Operator
                   key expressions: 2 (type: int)
                   sort order: +
@@ -162,12 +186,26 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 9 
+=======
+                Select Operator
+                  expressions: 2 (type: int)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 4 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+        Reducer 8 
+>>>>>>> d823fc8... HIVE-8769 : Physical optimizer : Incorrect CE results in a shuffle join instead of a Map join (PK/FK pattern not detected) (Pengcheng Xiong via Ashutosh Chauhan)
             Reduce Operator Tree:
               Limit
                 Number of rows: 1
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                 Select Operator
                   expressions: 3 (type: int)
                   outputColumnNames: _col0
+<<<<<<< HEAD
                   File Output Operator
                     compressed: false
                     table:
@@ -176,6 +214,16 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Union 4 
             Vertex: Union 4
+=======
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 4 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+        Union 3 
+            Vertex: Union 3
+>>>>>>> d823fc8... HIVE-8769 : Physical optimizer : Incorrect CE results in a shuffle join instead of a Map join (PK/FK pattern not detected) (Pengcheng Xiong via Ashutosh Chauhan)
 
   Stage: Stage-0
     Fetch Operator

@@ -1143,14 +1143,14 @@ STAGE PLANS:
             Statistics: Num rows: 2 Data size: 1686 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (not bo1) (type: boolean)
-              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
+              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: bo1 (type: boolean)
                 outputColumnNames: _col0
-                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

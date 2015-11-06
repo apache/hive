@@ -70,11 +70,14 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s2
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string)
                     outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
+                      Statistics: Num rows: 501 Data size: 5584 Basic stats: COMPLETE Column stats: PARTIAL
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -83,8 +86,10 @@ STAGE PLANS:
                     Select Operator
                       expressions: _col0 (type: string), _col1 (type: string), _col1 (type: string)
                       outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 501 Data size: 228456 Basic stats: COMPLETE Column stats: PARTIAL
                       File Output Operator
                         compressed: false
+                        Statistics: Num rows: 501 Data size: 228456 Basic stats: COMPLETE Column stats: PARTIAL
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -96,11 +101,14 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: 'tst1' (type: string), UDFToString(_col0) (type: string)
                   outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 272 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
+                    Statistics: Num rows: 501 Data size: 5584 Basic stats: COMPLETE Column stats: PARTIAL
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -109,8 +117,10 @@ STAGE PLANS:
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col1 (type: string)
                     outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 501 Data size: 228456 Basic stats: COMPLETE Column stats: PARTIAL
                     File Output Operator
                       compressed: false
+                      Statistics: Num rows: 501 Data size: 228456 Basic stats: COMPLETE Column stats: PARTIAL
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

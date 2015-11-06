@@ -283,7 +283,7 @@ STAGE PLANS:
                 keys: _col5 (type: int)
                 mode: complete
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
                   aggregations: sum(hash(_col0)), sum(hash(_col1))
                   mode: hash
@@ -713,7 +713,7 @@ STAGE PLANS:
                 keys: _col0 (type: int)
                 mode: complete
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
                   aggregations: sum(hash(_col0)), sum(hash(_col1))
                   mode: hash
@@ -1140,7 +1140,7 @@ STAGE PLANS:
                 keys: _col10 (type: int)
                 mode: complete
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
                   aggregations: sum(hash(_col0)), sum(hash(_col1))
                   mode: hash

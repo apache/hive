@@ -13,11 +13,11 @@ STAGE PLANS:
         TableScan
           alias: _dummy_table
           Row Limit Per Split: 1
-          Statistics: Num rows: 0 Data size: 1 Basic stats: PARTIAL Column stats: COMPLETE
+          Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: 100.001 (type: decimal(6,3))
             outputColumnNames: _col0
-            Statistics: Num rows: 0 Data size: 1 Basic stats: PARTIAL Column stats: COMPLETE
+            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: explain select 100.000BD
@@ -35,11 +35,11 @@ STAGE PLANS:
         TableScan
           alias: _dummy_table
           Row Limit Per Split: 1
-          Statistics: Num rows: 0 Data size: 1 Basic stats: PARTIAL Column stats: COMPLETE
+          Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: 100.000 (type: decimal(3,0))
             outputColumnNames: _col0
-            Statistics: Num rows: 0 Data size: 1 Basic stats: PARTIAL Column stats: COMPLETE
+            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: explain select 0.000BD
@@ -57,11 +57,11 @@ STAGE PLANS:
         TableScan
           alias: _dummy_table
           Row Limit Per Split: 1
-          Statistics: Num rows: 0 Data size: 1 Basic stats: PARTIAL Column stats: COMPLETE
+          Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: 0.000 (type: decimal(1,0))
             outputColumnNames: _col0
-            Statistics: Num rows: 0 Data size: 1 Basic stats: PARTIAL Column stats: COMPLETE
+            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: explain select 0.100BD
@@ -79,11 +79,11 @@ STAGE PLANS:
         TableScan
           alias: _dummy_table
           Row Limit Per Split: 1
-          Statistics: Num rows: 0 Data size: 1 Basic stats: PARTIAL Column stats: COMPLETE
+          Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: 0.100 (type: decimal(1,1))
             outputColumnNames: _col0
-            Statistics: Num rows: 0 Data size: 1 Basic stats: PARTIAL Column stats: COMPLETE
+            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: explain select 0.010BD
@@ -101,11 +101,11 @@ STAGE PLANS:
         TableScan
           alias: _dummy_table
           Row Limit Per Split: 1
-          Statistics: Num rows: 0 Data size: 1 Basic stats: PARTIAL Column stats: COMPLETE
+          Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: 0.010 (type: decimal(2,2))
             outputColumnNames: _col0
-            Statistics: Num rows: 0 Data size: 1 Basic stats: PARTIAL Column stats: COMPLETE
+            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: explain select cast(0.010 as decimal(6,3))
@@ -123,11 +123,11 @@ STAGE PLANS:
         TableScan
           alias: _dummy_table
           Row Limit Per Split: 1
-          Statistics: Num rows: 0 Data size: 1 Basic stats: PARTIAL Column stats: COMPLETE
+          Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: CAST( 0.01 AS decimal(6,3)) (type: decimal(6,3))
             outputColumnNames: _col0
-            Statistics: Num rows: 0 Data size: 1 Basic stats: PARTIAL Column stats: COMPLETE
+            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: explain select 0.09765625BD * 0.09765625BD * 0.0125BD * 578992BD
@@ -145,14 +145,14 @@ STAGE PLANS:
           TableScan
             alias: _dummy_table
             Row Limit Per Split: 1
-            Statistics: Num rows: 0 Data size: 1 Basic stats: PARTIAL Column stats: COMPLETE
+            Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: (((0.09765625 * 0.09765625) * 0.0125) * 578992) (type: decimal(27,20))
               outputColumnNames: _col0
-              Statistics: Num rows: 0 Data size: 1 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 0 Data size: 1 Basic stats: PARTIAL Column stats: COMPLETE
+                Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

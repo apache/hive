@@ -84,10 +84,12 @@ STAGE PLANS:
                 0 _col0 (type: string)
                 1 _col0 (type: string)
               outputColumnNames: _col2, _col3
+              Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: sum(hash(_col2,_col3))
                 mode: hash
                 outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   table:
@@ -144,10 +146,12 @@ STAGE PLANS:
                 0 _col0 (type: string)
                 1 _col0 (type: string)
               outputColumnNames: _col2, _col3
+              Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: sum(hash(_col2,_col3))
                 mode: hash
                 outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   table:
@@ -330,10 +334,12 @@ STAGE PLANS:
                 0 _col0 (type: string)
                 1 _col0 (type: string)
               outputColumnNames: _col2, _col3
+              Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: sum(hash(_col2,_col3))
                 mode: hash
                 outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   table:
@@ -535,10 +541,12 @@ STAGE PLANS:
                 0 _col0 (type: string)
                 1 _col0 (type: string)
               outputColumnNames: _col2, _col3
+              Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: sum(hash(_col2,_col3))
                 mode: hash
                 outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   table:
@@ -767,10 +775,12 @@ STAGE PLANS:
                 1 _col0 (type: string)
                 2 _col0 (type: string)
               outputColumnNames: _col2, _col3
+              Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: sum(hash(_col2,_col3))
                 mode: hash
                 outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   table:
@@ -840,10 +850,12 @@ STAGE PLANS:
                 1 _col0 (type: string)
                 2 _col0 (type: string)
               outputColumnNames: _col2, _col3
+              Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: sum(hash(_col2,_col3))
                 mode: hash
                 outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   table:
@@ -891,10 +903,12 @@ STAGE PLANS:
                 1 _col0 (type: string)
                 2 _col0 (type: string)
               outputColumnNames: _col2, _col3
+              Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: sum(hash(_col2,_col3))
                 mode: hash
                 outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   table:
@@ -1143,10 +1157,12 @@ STAGE PLANS:
                 1 _col0 (type: string)
                 2 _col0 (type: string)
               outputColumnNames: _col2, _col3
+              Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: sum(hash(_col2,_col3))
                 mode: hash
                 outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   table:
@@ -1216,10 +1232,12 @@ STAGE PLANS:
                 1 _col0 (type: string)
                 2 _col0 (type: string)
               outputColumnNames: _col2, _col3
+              Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: sum(hash(_col2,_col3))
                 mode: hash
                 outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   table:
@@ -1460,10 +1478,12 @@ STAGE PLANS:
                 1 _col0 (type: string)
                 2 _col0 (type: string)
               outputColumnNames: _col2, _col3
+              Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: sum(hash(_col2,_col3))
                 mode: hash
                 outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   table:
@@ -1726,10 +1746,12 @@ STAGE PLANS:
                 1 _col0 (type: string)
                 2 _col0 (type: string)
               outputColumnNames: _col2, _col3
+              Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: sum(hash(_col2,_col3))
                 mode: hash
                 outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   table:
@@ -1992,10 +2014,12 @@ STAGE PLANS:
                 1 _col0 (type: string)
                 2 _col0 (type: string)
               outputColumnNames: _col2, _col3
+              Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: sum(hash(_col2,_col3))
                 mode: hash
                 outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   table:

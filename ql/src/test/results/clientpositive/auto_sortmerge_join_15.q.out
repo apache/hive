@@ -61,6 +61,7 @@ STAGE PLANS:
         b 
           TableScan
             alias: b
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             HashTable Sink Operator
               keys:
                 0 key (type: int)
@@ -71,6 +72,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
             Map Join Operator
               condition map:
                    Left Outer Join0 to 1
@@ -162,6 +164,7 @@ STAGE PLANS:
         a 
           TableScan
             alias: a
+            Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
             HashTable Sink Operator
               keys:
                 0 key (type: int)
@@ -172,6 +175,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Map Join Operator
               condition map:
                    Right Outer Join0 to 1

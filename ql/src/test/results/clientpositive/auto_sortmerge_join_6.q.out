@@ -422,8 +422,10 @@ STAGE PLANS:
         b 
           TableScan
             alias: b
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: UDFToDouble(key) is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 UDFToDouble(key) (type: double)
@@ -432,8 +434,10 @@ STAGE PLANS:
         c 
           TableScan
             alias: c
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: UDFToDouble(key) is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 UDFToDouble(key) (type: double)
@@ -445,8 +449,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: UDFToDouble(key) is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -455,10 +461,12 @@ STAGE PLANS:
                   0 UDFToDouble(key) (type: double)
                   1 UDFToDouble(key) (type: double)
                   2 UDFToDouble(key) (type: double)
+                Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
                   outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
                     table:
@@ -503,8 +511,10 @@ STAGE PLANS:
         a 
           TableScan
             alias: a
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: UDFToDouble(key) is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 UDFToDouble(key) (type: double)
@@ -513,8 +523,10 @@ STAGE PLANS:
         c 
           TableScan
             alias: c
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: UDFToDouble(key) is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 UDFToDouble(key) (type: double)
@@ -526,8 +538,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: UDFToDouble(key) is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -536,10 +550,12 @@ STAGE PLANS:
                   0 UDFToDouble(key) (type: double)
                   1 UDFToDouble(key) (type: double)
                   2 UDFToDouble(key) (type: double)
+                Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
                   outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
                     table:
@@ -562,8 +578,10 @@ STAGE PLANS:
         a 
           TableScan
             alias: a
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: UDFToDouble(key) is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 UDFToDouble(key) (type: double)
@@ -572,8 +590,10 @@ STAGE PLANS:
         b 
           TableScan
             alias: b
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: UDFToDouble(key) is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 UDFToDouble(key) (type: double)
@@ -585,8 +605,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: c
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: UDFToDouble(key) is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -595,10 +617,12 @@ STAGE PLANS:
                   0 UDFToDouble(key) (type: double)
                   1 UDFToDouble(key) (type: double)
                   2 UDFToDouble(key) (type: double)
+                Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
                   outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
                     table:
@@ -984,8 +1008,10 @@ STAGE PLANS:
         b 
           TableScan
             alias: b
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: UDFToDouble(key) is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 UDFToDouble(key) (type: double)
@@ -994,8 +1020,10 @@ STAGE PLANS:
         c 
           TableScan
             alias: c
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: UDFToDouble(key) is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 UDFToDouble(key) (type: double)
@@ -1007,8 +1035,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: UDFToDouble(key) is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -1017,10 +1047,12 @@ STAGE PLANS:
                   0 UDFToDouble(key) (type: double)
                   1 UDFToDouble(key) (type: double)
                   2 UDFToDouble(key) (type: double)
+                Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
                   outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
                     table:
@@ -1065,8 +1097,10 @@ STAGE PLANS:
         a 
           TableScan
             alias: a
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: UDFToDouble(key) is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 UDFToDouble(key) (type: double)
@@ -1075,8 +1109,10 @@ STAGE PLANS:
         c 
           TableScan
             alias: c
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: UDFToDouble(key) is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 UDFToDouble(key) (type: double)
@@ -1088,8 +1124,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: UDFToDouble(key) is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -1098,10 +1136,12 @@ STAGE PLANS:
                   0 UDFToDouble(key) (type: double)
                   1 UDFToDouble(key) (type: double)
                   2 UDFToDouble(key) (type: double)
+                Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
                   outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
                     table:
@@ -1124,8 +1164,10 @@ STAGE PLANS:
         a 
           TableScan
             alias: a
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: UDFToDouble(key) is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 UDFToDouble(key) (type: double)
@@ -1134,8 +1176,10 @@ STAGE PLANS:
         b 
           TableScan
             alias: b
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: UDFToDouble(key) is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 UDFToDouble(key) (type: double)
@@ -1147,8 +1191,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: c
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: UDFToDouble(key) is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -1157,10 +1203,12 @@ STAGE PLANS:
                   0 UDFToDouble(key) (type: double)
                   1 UDFToDouble(key) (type: double)
                   2 UDFToDouble(key) (type: double)
+                Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
                   outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
                     table:
@@ -1281,8 +1329,10 @@ STAGE PLANS:
         b 
           TableScan
             alias: b
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 key (type: int)
@@ -1291,8 +1341,10 @@ STAGE PLANS:
         c 
           TableScan
             alias: c
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 key (type: int)
@@ -1304,8 +1356,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -1348,8 +1402,10 @@ STAGE PLANS:
         a 
           TableScan
             alias: a
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 key (type: int)
@@ -1358,8 +1414,10 @@ STAGE PLANS:
         c 
           TableScan
             alias: c
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 key (type: int)
@@ -1371,8 +1429,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -1415,8 +1475,10 @@ STAGE PLANS:
         a 
           TableScan
             alias: a
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 key (type: int)
@@ -1425,8 +1487,10 @@ STAGE PLANS:
         b 
           TableScan
             alias: b
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 key (type: int)
@@ -1438,8 +1502,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: c
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1

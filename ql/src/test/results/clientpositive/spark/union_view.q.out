@@ -1,0 +1,1107 @@
+PREHOOK: query: CREATE TABLE src_union_1 (key int, value string) PARTITIONED BY (ds string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_union_1
+POSTHOOK: query: CREATE TABLE src_union_1 (key int, value string) PARTITIONED BY (ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_union_1
+PREHOOK: query: CREATE INDEX src_union_1_key_idx ON TABLE src_union_1(key) AS 'COMPACT' WITH DEFERRED REBUILD
+PREHOOK: type: CREATEINDEX
+PREHOOK: Input: default@src_union_1
+POSTHOOK: query: CREATE INDEX src_union_1_key_idx ON TABLE src_union_1(key) AS 'COMPACT' WITH DEFERRED REBUILD
+POSTHOOK: type: CREATEINDEX
+POSTHOOK: Input: default@src_union_1
+POSTHOOK: Output: default@default__src_union_1_src_union_1_key_idx__
+PREHOOK: query: CREATE TABLE src_union_2 (key int, value string) PARTITIONED BY (ds string, part_1 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_union_2
+POSTHOOK: query: CREATE TABLE src_union_2 (key int, value string) PARTITIONED BY (ds string, part_1 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_union_2
+PREHOOK: query: CREATE INDEX src_union_2_key_idx ON TABLE src_union_2(key) AS 'COMPACT' WITH DEFERRED REBUILD
+PREHOOK: type: CREATEINDEX
+PREHOOK: Input: default@src_union_2
+POSTHOOK: query: CREATE INDEX src_union_2_key_idx ON TABLE src_union_2(key) AS 'COMPACT' WITH DEFERRED REBUILD
+POSTHOOK: type: CREATEINDEX
+POSTHOOK: Input: default@src_union_2
+POSTHOOK: Output: default@default__src_union_2_src_union_2_key_idx__
+PREHOOK: query: CREATE TABLE src_union_3(key int, value string) PARTITIONED BY (ds string, part_1 string, part_2 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_union_3
+POSTHOOK: query: CREATE TABLE src_union_3(key int, value string) PARTITIONED BY (ds string, part_1 string, part_2 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_union_3
+PREHOOK: query: CREATE INDEX src_union_3_key_idx ON TABLE src_union_3(key) AS 'COMPACT' WITH DEFERRED REBUILD
+PREHOOK: type: CREATEINDEX
+PREHOOK: Input: default@src_union_3
+POSTHOOK: query: CREATE INDEX src_union_3_key_idx ON TABLE src_union_3(key) AS 'COMPACT' WITH DEFERRED REBUILD
+POSTHOOK: type: CREATEINDEX
+POSTHOOK: Input: default@src_union_3
+POSTHOOK: Output: default@default__src_union_3_src_union_3_key_idx__
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: src_union_1
+          filterExpr: ((key = 86) and (ds = '1')) (type: boolean)
+          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+          Filter Operator
+            predicate: (key = 86) (type: boolean)
+            Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: 86 (type: int), value (type: string), '1' (type: string)
+              outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              ListSink
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: src_union_2
+          filterExpr: ((key = 86) and (ds = '2')) (type: boolean)
+          Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+          Filter Operator
+            predicate: (key = 86) (type: boolean)
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: 86 (type: int), value (type: string), '2' (type: string)
+              outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              ListSink
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: src_union_3
+          filterExpr: ((key = 86) and (ds = '3')) (type: boolean)
+          Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+          Filter Operator
+            predicate: (key = 86) (type: boolean)
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: 86 (type: int), value (type: string), '3' (type: string)
+              outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              ListSink
+
+86	val_86	1
+86	val_86	2
+86	val_86	2
+86	val_86	3
+86	val_86	3
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src_union_1
+                  filterExpr: (ds = '1') (type: boolean)
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: count(1)
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: bigint)
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src_union_2
+                  filterExpr: (ds = '2') (type: boolean)
+                  Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: count(1)
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: bigint)
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src_union_3
+                  filterExpr: (ds = '3') (type: boolean)
+                  Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: count(1)
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: bigint)
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+500
+1000
+1000
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src_union_1
+                  filterExpr: ((key = 86) and (ds = '1')) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (key = 86) (type: boolean)
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: value (type: string)
+                      outputColumnNames: _col1
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: 86 (type: int), _col1 (type: string), '1' (type: string)
+                        outputColumnNames: _col0, _col1, _col2
+                        Statistics: Num rows: 252 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 252 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                          table:
+                              input format: org.apache.hadoop.mapred.TextInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: src_union_2
+                  filterExpr: ((key = 86) and (ds = '1')) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Filter Operator
+                    predicate: ((key = 86) and (ds = '1')) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                    Select Operator
+                      expressions: value (type: string)
+                      outputColumnNames: _col1
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                      Select Operator
+                        expressions: 86 (type: int), _col1 (type: string), '1' (type: string)
+                        outputColumnNames: _col0, _col1, _col2
+                        Statistics: Num rows: 252 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 252 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                          table:
+                              input format: org.apache.hadoop.mapred.TextInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: src_union_3
+                  filterExpr: ((key = 86) and (ds = '1')) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Filter Operator
+                    predicate: ((key = 86) and (ds = '1')) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                    Select Operator
+                      expressions: value (type: string)
+                      outputColumnNames: _col1
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                      Select Operator
+                        expressions: 86 (type: int), _col1 (type: string), '1' (type: string)
+                        outputColumnNames: _col0, _col1, _col2
+                        Statistics: Num rows: 252 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 252 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                          table:
+                              input format: org.apache.hadoop.mapred.TextInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src_union_1
+                  filterExpr: ((key = 86) and (ds = '2')) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Filter Operator
+                    predicate: ((key = 86) and (ds = '2')) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                    Select Operator
+                      expressions: value (type: string)
+                      outputColumnNames: _col1
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                      Select Operator
+                        expressions: 86 (type: int), _col1 (type: string), '2' (type: string)
+                        outputColumnNames: _col0, _col1, _col2
+                        Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                          table:
+                              input format: org.apache.hadoop.mapred.TextInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: src_union_2
+                  filterExpr: ((key = 86) and (ds = '2')) (type: boolean)
+                  Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (key = 86) (type: boolean)
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: value (type: string)
+                      outputColumnNames: _col1
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: 86 (type: int), _col1 (type: string), '2' (type: string)
+                        outputColumnNames: _col0, _col1, _col2
+                        Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                          table:
+                              input format: org.apache.hadoop.mapred.TextInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: src_union_3
+                  filterExpr: ((key = 86) and (ds = '2')) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Filter Operator
+                    predicate: ((key = 86) and (ds = '2')) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                    Select Operator
+                      expressions: value (type: string)
+                      outputColumnNames: _col1
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                      Select Operator
+                        expressions: 86 (type: int), _col1 (type: string), '2' (type: string)
+                        outputColumnNames: _col0, _col1, _col2
+                        Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                          table:
+                              input format: org.apache.hadoop.mapred.TextInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src_union_1
+                  filterExpr: ((key = 86) and (ds = '3')) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Filter Operator
+                    predicate: ((key = 86) and (ds = '3')) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                    Select Operator
+                      expressions: value (type: string)
+                      outputColumnNames: _col1
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                      Select Operator
+                        expressions: 86 (type: int), _col1 (type: string), '3' (type: string)
+                        outputColumnNames: _col0, _col1, _col2
+                        Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                          table:
+                              input format: org.apache.hadoop.mapred.TextInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: src_union_2
+                  filterExpr: ((key = 86) and (ds = '3')) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Filter Operator
+                    predicate: ((key = 86) and (ds = '3')) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                    Select Operator
+                      expressions: value (type: string)
+                      outputColumnNames: _col1
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                      Select Operator
+                        expressions: 86 (type: int), _col1 (type: string), '3' (type: string)
+                        outputColumnNames: _col0, _col1, _col2
+                        Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                          table:
+                              input format: org.apache.hadoop.mapred.TextInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: src_union_3
+                  filterExpr: ((key = 86) and (ds = '3')) (type: boolean)
+                  Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (key = 86) (type: boolean)
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: value (type: string)
+                      outputColumnNames: _col1
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: 86 (type: int), _col1 (type: string), '3' (type: string)
+                        outputColumnNames: _col0, _col1, _col2
+                        Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                          table:
+                              input format: org.apache.hadoop.mapred.TextInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (SORT, 1), Map 3 (SORT, 1), Map 4 (SORT, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src_union_1
+                  filterExpr: ((key = 86) and ds is not null) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (key = 86) (type: boolean)
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: value (type: string), ds (type: string)
+                      outputColumnNames: _col1, _col2
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: _col1 (type: string), _col2 (type: string)
+                        outputColumnNames: _col1, _col2
+                        Statistics: Num rows: 1250 Data size: 13280 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col2 (type: string)
+                          sort order: +
+                          Statistics: Num rows: 1250 Data size: 13280 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col1 (type: string)
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: src_union_2
+                  filterExpr: ((key = 86) and ds is not null) (type: boolean)
+                  Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (key = 86) (type: boolean)
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: value (type: string), ds (type: string)
+                      outputColumnNames: _col1, _col2
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: _col1 (type: string), _col2 (type: string)
+                        outputColumnNames: _col1, _col2
+                        Statistics: Num rows: 1250 Data size: 13280 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col2 (type: string)
+                          sort order: +
+                          Statistics: Num rows: 1250 Data size: 13280 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col1 (type: string)
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: src_union_3
+                  filterExpr: ((key = 86) and ds is not null) (type: boolean)
+                  Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (key = 86) (type: boolean)
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: value (type: string), ds (type: string)
+                      outputColumnNames: _col1, _col2
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: _col1 (type: string), _col2 (type: string)
+                        outputColumnNames: _col1, _col2
+                        Statistics: Num rows: 1250 Data size: 13280 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col2 (type: string)
+                          sort order: +
+                          Statistics: Num rows: 1250 Data size: 13280 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col1 (type: string)
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: 86 (type: int), VALUE._col1 (type: string), KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1250 Data size: 13280 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1250 Data size: 13280 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+86	val_86	1
+86	val_86	2
+86	val_86	2
+86	val_86	3
+86	val_86	3
+86	val_86	1
+86	val_86	2
+86	val_86	2
+86	val_86	3
+86	val_86	3
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP, 1), Map 3 (GROUP, 1), Map 4 (GROUP, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src_union_1
+                  filterExpr: (ds = '1') (type: boolean)
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: count(1)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col0 (type: bigint)
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: src_union_2
+                  filterExpr: (ds = '1') (type: boolean)
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Filter Operator
+                    predicate: (ds = '1') (type: boolean)
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                    Select Operator
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                      Select Operator
+                        Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          aggregations: count(1)
+                          mode: hash
+                          outputColumnNames: _col0
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          Reduce Output Operator
+                            sort order: 
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                            value expressions: _col0 (type: bigint)
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: src_union_3
+                  filterExpr: (ds = '1') (type: boolean)
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Filter Operator
+                    predicate: (ds = '1') (type: boolean)
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                    Select Operator
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                      Select Operator
+                        Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          aggregations: count(1)
+                          mode: hash
+                          outputColumnNames: _col0
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          Reduce Output Operator
+                            sort order: 
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                            value expressions: _col0 (type: bigint)
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP, 1), Map 3 (GROUP, 1), Map 4 (GROUP, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src_union_1
+                  filterExpr: (ds = '2') (type: boolean)
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Filter Operator
+                    predicate: (ds = '2') (type: boolean)
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                    Select Operator
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                      Select Operator
+                        Statistics: Num rows: 1002 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          aggregations: count(1)
+                          mode: hash
+                          outputColumnNames: _col0
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          Reduce Output Operator
+                            sort order: 
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                            value expressions: _col0 (type: bigint)
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: src_union_2
+                  filterExpr: (ds = '2') (type: boolean)
+                  Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      Statistics: Num rows: 1002 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: count(1)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col0 (type: bigint)
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: src_union_3
+                  filterExpr: (ds = '2') (type: boolean)
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Filter Operator
+                    predicate: (ds = '2') (type: boolean)
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                    Select Operator
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                      Select Operator
+                        Statistics: Num rows: 1002 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          aggregations: count(1)
+                          mode: hash
+                          outputColumnNames: _col0
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          Reduce Output Operator
+                            sort order: 
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                            value expressions: _col0 (type: bigint)
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP, 1), Map 3 (GROUP, 1), Map 4 (GROUP, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src_union_1
+                  filterExpr: (ds = '3') (type: boolean)
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Filter Operator
+                    predicate: (ds = '3') (type: boolean)
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                    Select Operator
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                      Select Operator
+                        Statistics: Num rows: 1002 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          aggregations: count(1)
+                          mode: hash
+                          outputColumnNames: _col0
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          Reduce Output Operator
+                            sort order: 
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                            value expressions: _col0 (type: bigint)
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: src_union_2
+                  filterExpr: (ds = '3') (type: boolean)
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Filter Operator
+                    predicate: (ds = '3') (type: boolean)
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                    Select Operator
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                      Select Operator
+                        Statistics: Num rows: 1002 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          aggregations: count(1)
+                          mode: hash
+                          outputColumnNames: _col0
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          Reduce Output Operator
+                            sort order: 
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                            value expressions: _col0 (type: bigint)
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: src_union_3
+                  filterExpr: (ds = '3') (type: boolean)
+                  Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      Statistics: Num rows: 1002 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: count(1)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col0 (type: bigint)
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+500
+1000
+1000
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src_union_1
+                  filterExpr: ((key = 86) and (ds = '4')) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Filter Operator
+                    predicate: ((key = 86) and (ds = '4')) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                    Select Operator
+                      expressions: value (type: string)
+                      outputColumnNames: _col1
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                      Select Operator
+                        expressions: 86 (type: int), _col1 (type: string), '4' (type: string)
+                        outputColumnNames: _col0, _col1, _col2
+                        Statistics: Num rows: 252 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 252 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                          table:
+                              input format: org.apache.hadoop.mapred.TextInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: src_union_2
+                  filterExpr: ((key = 86) and (ds = '4')) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Filter Operator
+                    predicate: ((key = 86) and (ds = '4')) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                    Select Operator
+                      expressions: value (type: string)
+                      outputColumnNames: _col1
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                      Select Operator
+                        expressions: 86 (type: int), _col1 (type: string), '4' (type: string)
+                        outputColumnNames: _col0, _col1, _col2
+                        Statistics: Num rows: 252 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 252 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                          table:
+                              input format: org.apache.hadoop.mapred.TextInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: src_union_3
+                  filterExpr: ((key = 86) and (ds = '4')) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (key = 86) (type: boolean)
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: value (type: string)
+                      outputColumnNames: _col1
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: 86 (type: int), _col1 (type: string), '4' (type: string)
+                        outputColumnNames: _col0, _col1, _col2
+                        Statistics: Num rows: 252 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 252 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                          table:
+                              input format: org.apache.hadoop.mapred.TextInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+86	val_86	4
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP, 1), Map 3 (GROUP, 1), Map 4 (GROUP, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src_union_1
+                  filterExpr: (ds = '4') (type: boolean)
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Filter Operator
+                    predicate: (ds = '4') (type: boolean)
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                    Select Operator
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                      Select Operator
+                        Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          aggregations: count(1)
+                          mode: hash
+                          outputColumnNames: _col0
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          Reduce Output Operator
+                            sort order: 
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                            value expressions: _col0 (type: bigint)
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: src_union_2
+                  filterExpr: (ds = '4') (type: boolean)
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Filter Operator
+                    predicate: (ds = '4') (type: boolean)
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                    Select Operator
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                      Select Operator
+                        Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          aggregations: count(1)
+                          mode: hash
+                          outputColumnNames: _col0
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          Reduce Output Operator
+                            sort order: 
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                            value expressions: _col0 (type: bigint)
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: src_union_3
+                  filterExpr: (ds = '4') (type: boolean)
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: count(1)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col0 (type: bigint)
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+500

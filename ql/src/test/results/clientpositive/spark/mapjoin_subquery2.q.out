@@ -92,14 +92,14 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 2 
+        Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: x
-                  Statistics: Num rows: 0 Data size: 13 Basic stats: PARTIAL Column stats: NONE
+                  alias: y
+                  Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: id is not null (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
                       keys:
                         0 id (type: int)
@@ -110,10 +110,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: z
-                  Statistics: Num rows: 0 Data size: 6 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: id is not null (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
                       keys:
                         0 _col0 (type: int)
@@ -125,14 +125,14 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 2 
             Map Operator Tree:
                 TableScan
-                  alias: y
-                  Statistics: Num rows: 0 Data size: 6 Basic stats: PARTIAL Column stats: NONE
+                  alias: x
+                  Statistics: Num rows: 1 Data size: 13 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: id is not null (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 13 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
@@ -141,12 +141,12 @@ STAGE PLANS:
                         1 id (type: int)
                       outputColumnNames: _col0, _col1, _col5, _col6
                       input vertices:
-                        1 Map 2
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                        0 Map 1
+                      Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col6 (type: int), _col5 (type: string), _col0 (type: int), _col1 (type: string)
                         outputColumnNames: _col0, _col1, _col2, _col3
-                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                         Map Join Operator
                           condition map:
                                Inner Join 0 to 1
@@ -156,10 +156,10 @@ STAGE PLANS:
                           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                           input vertices:
                             1 Map 3
-                          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                           File Output Operator
                             compressed: false
-                            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                            Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                             table:
                                 input format: org.apache.hadoop.mapred.TextInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

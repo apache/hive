@@ -89,29 +89,29 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p2
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
                     predicate: p2_name is not null (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Reduce Output Operator
                       key expressions: p2_name (type: string)
                       sort order: +
                       Map-reduce partition columns: p2_name (type: string)
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                       value expressions: p2_partkey (type: int), p2_mfgr (type: string), p2_brand (type: string), p2_type (type: string), p2_size (type: int), p2_container (type: string), p2_retailprice (type: double), p2_comment (type: string)
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: p3
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
                     predicate: p3_name is not null (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Reduce Output Operator
                       key expressions: p3_name (type: string)
                       sort order: +
                       Map-reduce partition columns: p3_name (type: string)
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                       value expressions: p3_partkey (type: int), p3_mfgr (type: string), p3_brand (type: string), p3_type (type: string), p3_size (type: int), p3_container (type: string), p3_retailprice (type: double), p3_comment (type: string)
         Reducer 2 
             Reduce Operator Tree:
@@ -178,29 +178,29 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p2
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
                     predicate: p2_name is not null (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Reduce Output Operator
                       key expressions: p2_name (type: string)
                       sort order: +
                       Map-reduce partition columns: p2_name (type: string)
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                       value expressions: p2_partkey (type: int), p2_mfgr (type: string), p2_brand (type: string), p2_type (type: string), p2_size (type: int), p2_container (type: string), p2_retailprice (type: double), p2_comment (type: string)
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: p3
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
                     predicate: p3_name is not null (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Reduce Output Operator
                       key expressions: p3_name (type: string)
                       sort order: +
                       Map-reduce partition columns: p3_name (type: string)
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                       value expressions: p3_partkey (type: int), p3_mfgr (type: string), p3_brand (type: string), p3_type (type: string), p3_size (type: int), p3_container (type: string), p3_retailprice (type: double), p3_comment (type: string)
         Reducer 2 
             Reduce Operator Tree:
@@ -264,27 +264,27 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p2
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
                     predicate: p2_name is not null (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Reduce Output Operator
                       sort order: 
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                       value expressions: p2_partkey (type: int), p2_name (type: string), p2_mfgr (type: string), p2_brand (type: string), p2_type (type: string), p2_size (type: int), p2_container (type: string), p2_retailprice (type: double), p2_comment (type: string)
         Map 5 
             Map Operator Tree:
                 TableScan
                   alias: p3
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
                     predicate: p3_name is not null (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Reduce Output Operator
                       key expressions: p3_name (type: string)
                       sort order: +
                       Map-reduce partition columns: p3_name (type: string)
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                       value expressions: p3_partkey (type: int), p3_mfgr (type: string), p3_brand (type: string), p3_type (type: string), p3_size (type: int), p3_container (type: string), p3_retailprice (type: double), p3_comment (type: string)
         Reducer 2 
             Reduce Operator Tree:
@@ -365,27 +365,27 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p2
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
                     predicate: ((p2_partkey = 1) and p2_name is not null) (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Reduce Output Operator
                       sort order: 
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                       value expressions: p2_name (type: string), p2_mfgr (type: string), p2_brand (type: string), p2_type (type: string), p2_size (type: int), p2_container (type: string), p2_retailprice (type: double), p2_comment (type: string)
         Map 5 
             Map Operator Tree:
                 TableScan
                   alias: p3
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
                     predicate: p3_name is not null (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Reduce Output Operator
                       key expressions: p3_name (type: string)
                       sort order: +
                       Map-reduce partition columns: p3_name (type: string)
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                       value expressions: p3_partkey (type: int), p3_mfgr (type: string), p3_brand (type: string), p3_type (type: string), p3_size (type: int), p3_container (type: string), p3_retailprice (type: double), p3_comment (type: string)
         Reducer 2 
             Reduce Operator Tree:

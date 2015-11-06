@@ -415,16 +415,16 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: fact_daily
-          Statistics: Num rows: 0 Data size: 24 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 1 Data size: 24 Basic stats: PARTIAL Column stats: NONE
           GatherStats: false
           Filter Operator
             isSamplingPred: false
             predicate: (x = 484) (type: boolean)
-            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: 484 (type: int), y (type: string)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
               ListSink
 
 PREHOOK: query: -- List Bucketing Query
@@ -492,27 +492,27 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: fact_daily
-            Statistics: Num rows: 0 Data size: 24 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 24 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: (x = 484) (type: boolean)
-              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: y (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count(1)
                   keys: _col0 (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: string)
                     sort order: +
                     Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: _col1 (type: bigint)
                     auto parallelism: false
@@ -574,13 +574,13 @@ STAGE PLANS:
           keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
-            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat

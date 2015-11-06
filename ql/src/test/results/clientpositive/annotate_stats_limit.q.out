@@ -160,6 +160,6 @@ STAGE PLANS:
             Statistics: Num rows: 8 Data size: 804 Basic stats: COMPLETE Column stats: COMPLETE
             Limit
               Number of rows: 0
-              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
+              Statistics: Num rows: 1 Data size: 102 Basic stats: COMPLETE Column stats: COMPLETE
               ListSink
 
