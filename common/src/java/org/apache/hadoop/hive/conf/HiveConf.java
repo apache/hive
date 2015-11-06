@@ -2104,6 +2104,10 @@ public class HiveConf extends Configuration {
         METASTOREPWD.varname + "," + HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname,
         "Comma separated list of configuration options which should not be read by normal user like passwords"),
 
+    HIVE_CONF_INTERNAL_VARIABLE_LIST("hive.conf.internal.variable.list",
+        "hive.added.files.path,hive.added.jars.path,hive.added.archives.path",
+        "Comma separated list of variables which are used internally and should not be configurable."),
+
     // If this is set all move tasks at the end of a multi-insert query will only begin once all
     // outputs are ready
     HIVE_MULTI_INSERT_MOVE_TASKS_SHARE_DEPENDENCIES(
@@ -2634,7 +2638,7 @@ public class HiveConf extends Configuration {
     }
     if (restrictList.contains(name)) {
       throw new IllegalArgumentException("Cannot modify " + name + " at runtime. It is in the list"
-          + "of parameters that can't be modified at runtime");
+          + " of parameters that can't be modified at runtime");
     }
     String oldValue = name != null ? get(name) : null;
     if (name == null || value == null || !value.equals(oldValue)) {
@@ -3329,9 +3333,18 @@ public class HiveConf extends Configuration {
         restrictList.add(entry.trim());
       }
     }
+
+    String internalVariableListStr = this.getVar(ConfVars.HIVE_CONF_INTERNAL_VARIABLE_LIST);
+    if (internalVariableListStr != null) {
+      for (String entry : internalVariableListStr.split(",")) {
+        restrictList.add(entry.trim());
+      }
+    }
+
     restrictList.add(ConfVars.HIVE_IN_TEST.varname);
     restrictList.add(ConfVars.HIVE_CONF_RESTRICTED_LIST.varname);
     restrictList.add(ConfVars.HIVE_CONF_HIDDEN_LIST.varname);
+    restrictList.add(ConfVars.HIVE_CONF_INTERNAL_VARIABLE_LIST.varname);
   }
 
   private void setupHiddenSet() {
