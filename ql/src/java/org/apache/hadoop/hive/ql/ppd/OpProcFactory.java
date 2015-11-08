@@ -702,13 +702,20 @@ public final class OpProcFactory {
      * @param ewi
      */
     protected void logExpr(Node nd, ExprWalkerInfo ewi) {
+      if (!LOG.isDebugEnabled()) return;
       for (Entry<String, List<ExprNodeDesc>> e : ewi.getFinalCandidates()
           .entrySet()) {
-        LOG.info("Pushdown Predicates of " + nd.getName() + " For Alias : "
-            + e.getKey());
+        StringBuilder sb = new StringBuilder("Pushdown predicates of ").append(nd.getName())
+            .append(" for alias ").append(e.getKey()).append(": ");
+        boolean isFirst = true;
         for (ExprNodeDesc n : e.getValue()) {
-          LOG.info("\t" + n.getExprString());
+          if (!isFirst) {
+            sb.append("; ");
+          }
+          isFirst = false;
+          sb.append(n.getExprString());
         }
+        LOG.debug(sb.toString());
       }
     }
 
