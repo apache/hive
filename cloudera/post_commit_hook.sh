@@ -41,7 +41,8 @@ MVN_REPO_LOCAL=${WORKSPACE:-$HOME}/.m2/repository
 # Add any test to be excluded in alphabetical order to keep readability, starting with files, and
 # then directories.
 declare -a EXCLUDE_TESTS=(
-  ".*org/apache/hadoop/hive/ql/parse/TestParseNegative"
+  ".*org/apache/hadoop/hive/ql/exec/.*"
+  ".*org/apache/hadoop/hive/ql/parse/.*"
   ".*org/apache/hive/hcatalog/mapreduce/.*"
   ".*org/apache/hive/hcatalog/pig/.*"
 )

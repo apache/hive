@@ -79,7 +79,7 @@ def find_qtestgen(pomtree):
     for plugin in plugins.findall("%splugin" % PREFIX_XMLNS):
         if plugin.find("%sgroupId" % PREFIX_XMLNS).text == "org.apache.maven.plugins":
             executions = plugin.find("%sexecutions" % PREFIX_XMLNS)
-            for execution in executions.iter("%sexecution" % PREFIX_XMLNS):
+            for execution in executions.findall("%sexecution" % PREFIX_XMLNS):
                 if execution.find("%sid" % PREFIX_XMLNS).text == "generate-tests-sources":
                     target = execution.find("%sconfiguration" % PREFIX_XMLNS) \
                         .find("%starget" % PREFIX_XMLNS)
