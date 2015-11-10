@@ -104,22 +104,7 @@ public class KeyWrapperFactory {
 
     @Override
     public void setHashKey() {
-      if (keys == null) {
-        hashcode = 0;
-      } else {
-        hashcode = 1;
-        for (Object element : keys) {
-          hashcode = 31 * hashcode;
-          if(element != null) {
-            if(element instanceof LazyDouble) {
-              long v = Double.doubleToLongBits(((LazyDouble)element).getWritableObject().get());
-              hashcode = hashcode + (int) (v ^ (v >>> 32));
-            } else {
-              hashcode = hashcode + element.hashCode();
-            }
-          }
-        }
-      }
+      hashcode = ObjectInspectorUtils.writableArrayHashCode(keys);
     }
 
     @Override

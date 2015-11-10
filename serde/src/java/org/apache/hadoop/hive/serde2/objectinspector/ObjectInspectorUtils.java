@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.lazy.LazyDouble;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.ObjectInspectorOptions;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.AbstractPrimitiveWritableObjectInspector;
@@ -71,6 +72,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectIn
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableStringObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.BytesWritable;
+import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.util.StringUtils;
 
@@ -95,6 +97,30 @@ public final class ObjectInspectorUtils {
    */
   public enum ObjectInspectorCopyOption {
     DEFAULT, JAVA, WRITABLE
+  }
+
+  /**
+   * Calculates the hash code for array of Objects that contains writables. This is used
+   * to work around the buggy Hadoop DoubleWritable hashCode implementation. This should
+   * only be used for process-local hash codes; don't replace stored hash codes like bucketing.
+   */
+  public static int writableArrayHashCode(Object[] keys) {
+    if (keys == null) return 0;
+    int hashcode = 1;
+    for (Object element : keys) {
+      hashcode = 31 * hashcode;
+      if (element == null) continue;
+      if (element instanceof LazyDouble) {
+        long v = Double.doubleToLongBits(((LazyDouble)element).getWritableObject().get());
+        hashcode = hashcode + (int) (v ^ (v >>> 32));
+      } else if (element instanceof DoubleWritable){
+        long v = Double.doubleToLongBits(((DoubleWritable)element).get());
+        hashcode = hashcode + (int) (v ^ (v >>> 32));
+      } else {
+        hashcode = hashcode + element.hashCode();
+      }
+    }
+    return hashcode;
   }
 
   /**
