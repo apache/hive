@@ -3106,6 +3106,7 @@ public class HiveConf extends Configuration {
     ConfVars.OUTPUT_FILE_EXTENSION.varname,
     ConfVars.SHOW_JOB_FAIL_DEBUG_INFO.varname,
     ConfVars.TASKLOG_DEBUG_TIMEOUT.varname,
+    ConfVars.HIVEQUERYID.varname,
   };
 
   /**
