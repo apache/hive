@@ -225,12 +225,14 @@ public class SQLOperation extends ExecuteStatementOperation {
               SessionState.setCurrentSessionState(parentSessionState);
               // Set current OperationLog in this async thread for keeping on saving query log.
               registerCurrentOperationLog();
+              registerLoggingContext();
               try {
                 runQuery(opConfig);
               } catch (HiveSQLException e) {
                 setOperationException(e);
                 LOG.error("Error running hive query: ", e);
               } finally {
+                unregisterLoggingContext();
                 unregisterOperationLog();
               }
               return null;

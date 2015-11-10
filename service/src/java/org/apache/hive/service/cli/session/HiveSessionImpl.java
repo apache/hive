@@ -24,6 +24,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +40,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.FetchFormatter;
 import org.apache.hadoop.hive.ql.exec.ListSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -431,6 +433,18 @@ public class HiveSessionImpl implements HiveSession {
       boolean runAsync)
           throws HiveSQLException {
     acquire(true);
+
+    // Create the queryId if the client doesn't pass in.
+    // Reuse the client's queryId if exists.
+    if (confOverlay == null) {
+      confOverlay = new HashMap<String, String>();
+    }
+    String queryId = confOverlay.get(HiveConf.ConfVars.HIVEQUERYID.varname);
+    if (queryId == null || queryId.isEmpty()) {
+      queryId = QueryPlan.makeQueryId();
+      confOverlay.put(HiveConf.ConfVars.HIVEQUERYID.varname, queryId);
+      sessionState.getConf().setVar(HiveConf.ConfVars.HIVEQUERYID, queryId);
+    }
 
     OperationManager operationManager = getOperationManager();
     ExecuteStatementOperation operation = operationManager
