@@ -110,7 +110,6 @@ import org.apache.thrift.transport.TTransportFactory;
 import javax.jdo.JDOException;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -1706,6 +1705,23 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throw e;
       } finally {
         endFunction("get_table", t != null, ex, name);
+      }
+      return t;
+    }
+
+    @Override
+    public List<TableMeta> get_table_meta(String dbnames, String tblNames, List<String> tblTypes)
+        throws MetaException, NoSuchObjectException {
+      List<TableMeta> t = null;
+      startTableFunction("get_table_metas", dbnames, tblNames);
+      Exception ex = null;
+      try {
+        t = getMS().getTableMeta(dbnames, tblNames, tblTypes);
+      } catch (Exception e) {
+        ex = e;
+        throw newMetaException(e);
+      } finally {
+        endFunction("get_table_metas", t != null, ex);
       }
       return t;
     }
@@ -5249,6 +5265,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     private static MetaException newMetaException(Exception e) {
+      if (e instanceof MetaException) {
+        return (MetaException)e;
+      }
       MetaException me = new MetaException(e.toString());
       me.initCause(e);
       return me;

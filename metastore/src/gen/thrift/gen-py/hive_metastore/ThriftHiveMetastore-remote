@@ -45,6 +45,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  void drop_table(string dbname, string name, bool deleteData)')
   print('  void drop_table_with_environment_context(string dbname, string name, bool deleteData, EnvironmentContext environment_context)')
   print('   get_tables(string db_name, string pattern)')
+  print('   get_table_meta(string db_patterns, string tbl_patterns,  tbl_types)')
   print('   get_all_tables(string db_name)')
   print('  Table get_table(string dbname, string tbl_name)')
   print('   get_table_objects_by_name(string dbname,  tbl_names)')
@@ -348,6 +349,12 @@ elif cmd == 'get_tables':
     print('get_tables requires 2 args')
     sys.exit(1)
   pp.pprint(client.get_tables(args[0],args[1],))
+
+elif cmd == 'get_table_meta':
+  if len(args) != 3:
+    print('get_table_meta requires 3 args')
+    sys.exit(1)
+  pp.pprint(client.get_table_meta(args[0],args[1],eval(args[2]),))
 
 elif cmd == 'get_all_tables':
   if len(args) != 1:

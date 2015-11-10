@@ -772,6 +772,13 @@ struct GetAllFunctionsResponse {
   1: optional list<Function> functions
 }
 
+struct TableMeta {
+  1: required string dbName;
+  2: required string tableName;
+  3: required string tableType;
+  4: optional string comments;
+}
+
 exception MetaException {
   1: string message
 }
@@ -890,6 +897,8 @@ service ThriftHiveMetastore extends fb303.FacebookService
       4:EnvironmentContext environment_context)
                        throws(1:NoSuchObjectException o1, 2:MetaException o3)
   list<string> get_tables(1: string db_name, 2: string pattern) throws (1: MetaException o1)
+  list<TableMeta> get_table_meta(1: string db_patterns, 2: string tbl_patterns, 3: list<string> tbl_types)
+                       throws (1: MetaException o1)
   list<string> get_all_tables(1: string db_name) throws (1: MetaException o1)
 
   Table get_table(1:string dbname, 2:string tbl_name)

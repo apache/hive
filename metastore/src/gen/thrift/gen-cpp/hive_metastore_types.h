@@ -349,6 +349,8 @@ class ClearFileMetadataRequest;
 
 class GetAllFunctionsResponse;
 
+class TableMeta;
+
 class MetaException;
 
 class UnknownTableException;
@@ -6153,6 +6155,69 @@ class GetAllFunctionsResponse {
 void swap(GetAllFunctionsResponse &a, GetAllFunctionsResponse &b);
 
 inline std::ostream& operator<<(std::ostream& out, const GetAllFunctionsResponse& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _TableMeta__isset {
+  _TableMeta__isset() : comments(false) {}
+  bool comments :1;
+} _TableMeta__isset;
+
+class TableMeta {
+ public:
+
+  TableMeta(const TableMeta&);
+  TableMeta& operator=(const TableMeta&);
+  TableMeta() : dbName(), tableName(), tableType(), comments() {
+  }
+
+  virtual ~TableMeta() throw();
+  std::string dbName;
+  std::string tableName;
+  std::string tableType;
+  std::string comments;
+
+  _TableMeta__isset __isset;
+
+  void __set_dbName(const std::string& val);
+
+  void __set_tableName(const std::string& val);
+
+  void __set_tableType(const std::string& val);
+
+  void __set_comments(const std::string& val);
+
+  bool operator == (const TableMeta & rhs) const
+  {
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(tableName == rhs.tableName))
+      return false;
+    if (!(tableType == rhs.tableType))
+      return false;
+    if (__isset.comments != rhs.__isset.comments)
+      return false;
+    else if (__isset.comments && !(comments == rhs.comments))
+      return false;
+    return true;
+  }
+  bool operator != (const TableMeta &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const TableMeta & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(TableMeta &a, TableMeta &b);
+
+inline std::ostream& operator<<(std::ostream& out, const TableMeta& obj)
 {
   obj.printTo(out);
   return out;

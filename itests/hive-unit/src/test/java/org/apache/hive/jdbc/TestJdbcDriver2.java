@@ -42,6 +42,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
+import java.lang.Exception;
+import java.lang.Object;
+import java.lang.String;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
@@ -56,8 +59,11 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -134,6 +140,7 @@ public class TestJdbcDriver2 {
         stmt1.execute("DROP DATABASE " + db + " CASCADE");
       }
     }
+    stmt1.execute("create database testdb");
     stmt1.close();
     con1.close();
   }
@@ -147,12 +154,20 @@ public class TestJdbcDriver2 {
 
     stmt.execute("set hive.support.concurrency = false");
 
-    // drop table. ignore error.
-    try {
-      stmt.execute("drop table " + tableName);
-    } catch (Exception ex) {
-      fail(ex.toString());
-    }
+    createTestTables(stmt, "", true);
+    createTestTables(stmt, "testdb.", false);
+  }
+
+  private void createTestTables(Statement stmt, String prefix, boolean loadData)
+      throws SQLException {
+
+    // drop test tables/views
+    dropTestTables(stmt, prefix);
+
+    String tableName = prefix + this.tableName;
+    String partitionedTableName = prefix + this.partitionedTableName;
+    String dataTypeTableName = prefix + this.dataTypeTableName;
+    String viewName = prefix + this.viewName;
 
     // create table
     stmt.execute("create table " + tableName
@@ -160,35 +175,25 @@ public class TestJdbcDriver2 {
         + tableComment + "'");
 
     // load data
-    stmt.execute("load data local inpath '"
-        + dataFilePath.toString() + "' into table " + tableName);
-
-    // also initialize a paritioned table to test against.
-
-    // drop table. ignore error.
-    try {
-      stmt.execute("drop table " + partitionedTableName);
-    } catch (Exception ex) {
-      fail(ex.toString());
+    if (loadData) {
+      stmt.execute("load data local inpath '"
+          + dataFilePath.toString() + "' into table " + tableName);
     }
 
+    // also initialize a paritioned table to test against.
     stmt.execute("create table " + partitionedTableName
         + " (under_col int, value string) comment '"+partitionedTableComment
         +"' partitioned by (" + partitionedColumnName + " STRING)");
 
     // load data
-    stmt.execute("load data local inpath '"
-        + dataFilePath.toString() + "' into table " + partitionedTableName
-        + " PARTITION (" + partitionedColumnName + "="
-        + partitionedColumnValue + ")");
-
-    // drop table. ignore error.
-    try {
-      stmt.execute("drop table " + dataTypeTableName);
-    } catch (Exception ex) {
-      fail(ex.toString());
+    if (loadData) {
+      stmt.execute("load data local inpath '"
+          + dataFilePath.toString() + "' into table " + partitionedTableName
+          + " PARTITION (" + partitionedColumnName + "="
+          + partitionedColumnValue + ")");
     }
 
+    // tables with various types
     stmt.execute("create table " + dataTypeTableName
         + " (c1 int, c2 boolean, c3 double, c4 string,"
         + " c5 array<int>, c6 map<int,string>, c7 map<string,string>,"
@@ -208,20 +213,37 @@ public class TestJdbcDriver2 {
         + ") comment'" + dataTypeTableComment
         +"' partitioned by (dt STRING)");
 
-    stmt.execute("load data local inpath '"
-        + dataTypeDataFilePath.toString() + "' into table " + dataTypeTableName
-        + " PARTITION (dt='20090619')");
-
-    // drop view. ignore error.
-    try {
-      stmt.execute("drop view " + viewName);
-    } catch (Exception ex) {
-      fail(ex.toString());
+    if (loadData) {
+      stmt.execute("load data local inpath '"
+          + dataTypeDataFilePath.toString() + "' into table " + dataTypeTableName
+          + " PARTITION (dt='20090619')");
     }
 
     // create view
     stmt.execute("create view " + viewName + " comment '"+viewComment
         +"' as select * from "+ tableName);
+  }
+
+  // drop test tables/views. ignore error.
+  private void dropTestTables(Statement stmt, String prefix) throws SQLException {
+    String tableName = prefix + this.tableName;
+    String partitionedTableName = prefix + this.partitionedTableName;
+    String dataTypeTableName = prefix + this.dataTypeTableName;
+    String viewName = prefix + this.viewName;
+
+    executeWithIgnore(stmt, "drop table " + tableName);
+    executeWithIgnore(stmt, "drop table " + partitionedTableName);
+    executeWithIgnore(stmt, "drop table " + dataTypeTableName);
+    executeWithIgnore(stmt, "drop view " + viewName);
+  }
+
+  private void executeWithIgnore(Statement stmt, String sql) throws SQLException {
+  // drop table. ignore error.
+    try {
+      stmt.execute(sql);
+    } catch (Exception ex) {
+      fail(ex.toString());
+    }
   }
 
   private static Connection getConnection(String postfix) throws SQLException {
@@ -244,9 +266,8 @@ public class TestJdbcDriver2 {
     // drop table
     Statement stmt = con.createStatement();
     assertNotNull("Statement is null", stmt);
-    stmt.execute("drop table " + tableName);
-    stmt.execute("drop table " + partitionedTableName);
-    stmt.execute("drop table " + dataTypeTableName);
+    dropTestTables(stmt, "");
+    dropTestTables(stmt, "testdb.");
 
     con.close();
     assertTrue("Connection should be closed", con.isClosed());
@@ -1123,25 +1144,77 @@ public class TestJdbcDriver2 {
    * @throws SQLException
    */
   private void getTablesTest(String tableTypeName, String viewTypeName) throws SQLException {
-    Map<String, Object[]> tests = new HashMap<String, Object[]>();
-    tests.put("test%jdbc%", new Object[]{"testhivejdbcdriver_table"
-        , "testhivejdbcdriverpartitionedtable"
-        , "testhivejdbcdriverview"});
-    tests.put("%jdbcdriver\\_table", new Object[]{"testhivejdbcdriver_table"});
-    tests.put("testhivejdbcdriver\\_table", new Object[]{"testhivejdbcdriver_table"});
-    tests.put("test_ivejdbcdri_er\\_table", new Object[]{"testhivejdbcdriver_table"});
-    tests.put("test_ivejdbcdri_er_table", new Object[]{"testhivejdbcdriver_table"});
-    tests.put("test_ivejdbcdri_er%table", new Object[]{
-        "testhivejdbcdriver_table", "testhivejdbcdriverpartitionedtable" });
-    tests.put("%jdbc%", new Object[]{ "testhivejdbcdriver_table"
-        , "testhivejdbcdriverpartitionedtable"
-        , "testhivejdbcdriverview"});
-    tests.put("", new Object[]{});
+    String[] ALL = null;
+    String[] VIEW_ONLY = {viewTypeName};
+    String[] TABLE_ONLY = {tableTypeName};
+    String[] VIEWORTABLE = {tableTypeName, viewTypeName};
 
-    for (String checkPattern: tests.keySet()) {
-      ResultSet rs = con.getMetaData().getTables("default", null, checkPattern, null);
+    Map<Object[], String[]> tests = new IdentityHashMap<Object[], String[]>();
+    tests.put(new Object[] { null, "test%jdbc%", ALL}, new String[]{
+        "default.testhivejdbcdriver_table",
+        "default.testhivejdbcdriverpartitionedtable",
+        "default.testhivejdbcdriverview",
+        "testdb.testhivejdbcdriver_table",
+        "testdb.testhivejdbcdriverpartitionedtable",
+        "testdb.testhivejdbcdriverview"});
+    tests.put(new Object[] { "test%", "test%jdbc%", ALL}, new String[]{
+        "testdb.testhivejdbcdriver_table",
+        "testdb.testhivejdbcdriverpartitionedtable",
+        "testdb.testhivejdbcdriverview"});
+    tests.put(new Object[] { "test%", "test%jdbc%", VIEW_ONLY}, new String[]{
+        "testdb.testhivejdbcdriverview"});
+
+    tests.put(new Object[] { null, "%jdbcdriver\\_table", VIEWORTABLE}, new String[]{
+        "default.testhivejdbcdriver_table",
+        "testdb.testhivejdbcdriver_table"});
+    tests.put(new Object[] { "def%", "%jdbcdriver\\_table", VIEWORTABLE}, new String[]{
+        "default.testhivejdbcdriver_table"});
+    tests.put(new Object[] { "def%", "%jdbcdriver\\_table", VIEW_ONLY}, new String[0]);
+
+    tests.put(new Object[] { null, "testhivejdbcdriver\\_table", ALL}, new String[]{
+        "default.testhivejdbcdriver_table",
+        "testdb.testhivejdbcdriver_table"});
+    tests.put(new Object[] { "%faul%", "testhivejdbcdriver\\_table", ALL}, new String[]{
+        "default.testhivejdbcdriver_table"});
+    tests.put(new Object[] { "%faul%", "testhivejdbcdriver\\_table", TABLE_ONLY}, new String[]{
+        "default.testhivejdbcdriver_table"});
+
+    tests.put(new Object[] { null, "test_ivejdbcdri_er\\_table", ALL}, new String[]{
+        "default.testhivejdbcdriver_table",
+        "testdb.testhivejdbcdriver_table"});
+    tests.put(new Object[] { "test__", "test_ivejdbcdri_er\\_table", ALL}, new String[]{
+        "testdb.testhivejdbcdriver_table"});
+
+    tests.put(new Object[] { null, "test_ivejdbcdri_er_table", ALL}, new String[]{
+        "default.testhivejdbcdriver_table",
+        "testdb.testhivejdbcdriver_table"});
+    tests.put(new Object[] { null, "test_ivejdbcdri_er%table", ALL}, new String[]{
+        "default.testhivejdbcdriver_table",
+        "default.testhivejdbcdriverpartitionedtable",
+        "testdb.testhivejdbcdriver_table",
+        "testdb.testhivejdbcdriverpartitionedtable"});
+    tests.put(new Object[] { null, "%jdbc%", ALL}, new String[]{
+        "default.testhivejdbcdriver_table",
+        "default.testhivejdbcdriverpartitionedtable",
+        "default.testhivejdbcdriverview",
+        "testdb.testhivejdbcdriver_table",
+        "testdb.testhivejdbcdriverpartitionedtable",
+        "testdb.testhivejdbcdriverview"});
+    tests.put(new Object[] { "%", "%jdbc%", VIEW_ONLY}, new String[]{
+        "default.testhivejdbcdriverview",
+        "testdb.testhivejdbcdriverview"});
+    tests.put(new Object[] { null, "", ALL}, new String[]{});
+
+    for (Map.Entry<Object[], String[]> entry : tests.entrySet()) {
+      Object[] checkPattern = entry.getKey();
+      String debugString = checkPattern[0] + ", " + checkPattern[1] + ", " +
+          Arrays.toString((String[]) checkPattern[2]);
+
+      Set<String> expectedTables = new HashSet<String>(Arrays.asList(entry.getValue()));
+      ResultSet rs = con.getMetaData().getTables(null,
+          (String)checkPattern[0], (String)checkPattern[1], (String[])checkPattern[2]);
       ResultSetMetaData resMeta = rs.getMetaData();
-      assertEquals(5, resMeta.getColumnCount());
+      assertEquals(10, resMeta.getColumnCount());
       assertEquals("TABLE_CAT", resMeta.getColumnName(1));
       assertEquals("TABLE_SCHEM", resMeta.getColumnName(2));
       assertEquals("TABLE_NAME", resMeta.getColumnName(3));
@@ -1150,9 +1223,11 @@ public class TestJdbcDriver2 {
 
       int cnt = 0;
       while (rs.next()) {
+        String resultDbName = rs.getString("TABLE_SCHEM");
         String resultTableName = rs.getString("TABLE_NAME");
-        assertEquals("Get by index different from get by name.", rs.getString(3), resultTableName);
-        assertEquals("Excpected a different table.", tests.get(checkPattern)[cnt], resultTableName);
+        assertTrue("Invalid table " + resultDbName + "." + resultTableName + " for test " + debugString,
+            expectedTables.contains(resultDbName + "." + resultTableName));
+
         String resultTableComment = rs.getString("REMARKS");
         assertTrue("Missing comment on the table.", resultTableComment.length()>0);
         String tableType = rs.getString("TABLE_TYPE");
@@ -1164,18 +1239,9 @@ public class TestJdbcDriver2 {
         cnt++;
       }
       rs.close();
-      assertEquals("Received an incorrect number of tables.", tests.get(checkPattern).length, cnt);
+      assertEquals("Received an incorrect number of tables for test " + debugString,
+          expectedTables.size(), cnt);
     }
-
-    // only ask for the views.
-    ResultSet rs = con.getMetaData().getTables("default", null, null
-        , new String[]{viewTypeName});
-    int cnt=0;
-    while (rs.next()) {
-      cnt++;
-    }
-    rs.close();
-    assertEquals("Incorrect number of views found.", 1, cnt);
   }
 
   @Test
@@ -1198,6 +1264,8 @@ public class TestJdbcDriver2 {
 
     assertTrue(rs.next());
     assertEquals("default", rs.getString(1));
+    assertTrue(rs.next());
+    assertEquals("testdb", rs.getString(1));
 
     assertFalse(rs.next());
     rs.close();
@@ -1270,7 +1338,7 @@ public class TestJdbcDriver2 {
     tests.put(new String[]{"%jdbcdriver\\_table%", "_%"}, 2);
 
     for (String[] checkPattern: tests.keySet()) {
-      ResultSet rs = con.getMetaData().getColumns(null, null, checkPattern[0],
+      ResultSet rs = con.getMetaData().getColumns(null, "default", checkPattern[0],
           checkPattern[1]);
 
       // validate the metadata for the getColumns result set

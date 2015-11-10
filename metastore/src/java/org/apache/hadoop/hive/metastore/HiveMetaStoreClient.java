@@ -131,6 +131,7 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.metastore.api.TableStatsRequest;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
@@ -1312,6 +1313,37 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
       MetaStoreUtils.logAndThrowMetaException(e);
     }
     return null;
+  }
+
+  @Override
+  public List<TableMeta> getTableMeta(String dbPatterns, String tablePatterns, List<String> tableTypes)
+      throws MetaException {
+    try {
+      return filterNames(client.get_table_meta(dbPatterns, tablePatterns, tableTypes));
+    } catch (Exception e) {
+      MetaStoreUtils.logAndThrowMetaException(e);
+    }
+    return null;
+  }
+
+  private List<TableMeta> filterNames(List<TableMeta> metas) throws MetaException {
+    Map<String, TableMeta> sources = new LinkedHashMap<>();
+    Map<String, List<String>> dbTables = new LinkedHashMap<>();
+    for (TableMeta meta : metas) {
+      sources.put(meta.getDbName() + "." + meta.getTableName(), meta);
+      List<String> tables = dbTables.get(meta.getDbName());
+      if (tables == null) {
+        dbTables.put(meta.getDbName(), tables = new ArrayList<String>());
+      }
+      tables.add(meta.getTableName());
+    }
+    List<TableMeta> filtered = new ArrayList<>();
+    for (Map.Entry<String, List<String>> entry : dbTables.entrySet()) {
+      for (String table : filterHook.filterTableNames(entry.getKey(), entry.getValue())) {
+        filtered.add(sources.get(entry.getKey() + "." + table));
+      }
+    }
+    return filtered;
   }
 
   /** {@inheritDoc} */
