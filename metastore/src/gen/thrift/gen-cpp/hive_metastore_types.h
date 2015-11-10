@@ -5528,6 +5528,73 @@ class GetAllFunctionsResponse {
 
 void swap(GetAllFunctionsResponse &a, GetAllFunctionsResponse &b);
 
+typedef struct _TableMeta__isset {
+  _TableMeta__isset() : comments(false) {}
+  bool comments;
+} _TableMeta__isset;
+
+class TableMeta {
+ public:
+
+  static const char* ascii_fingerprint; // = "2748901DF3E03B56075825ABF0FCFD25";
+  static const uint8_t binary_fingerprint[16]; // = {0x27,0x48,0x90,0x1D,0xF3,0xE0,0x3B,0x56,0x07,0x58,0x25,0xAB,0xF0,0xFC,0xFD,0x25};
+
+  TableMeta() : dbName(), tableName(), tableType(), comments() {
+  }
+
+  virtual ~TableMeta() throw() {}
+
+  std::string dbName;
+  std::string tableName;
+  std::string tableType;
+  std::string comments;
+
+  _TableMeta__isset __isset;
+
+  void __set_dbName(const std::string& val) {
+    dbName = val;
+  }
+
+  void __set_tableName(const std::string& val) {
+    tableName = val;
+  }
+
+  void __set_tableType(const std::string& val) {
+    tableType = val;
+  }
+
+  void __set_comments(const std::string& val) {
+    comments = val;
+    __isset.comments = true;
+  }
+
+  bool operator == (const TableMeta & rhs) const
+  {
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(tableName == rhs.tableName))
+      return false;
+    if (!(tableType == rhs.tableType))
+      return false;
+    if (__isset.comments != rhs.__isset.comments)
+      return false;
+    else if (__isset.comments && !(comments == rhs.comments))
+      return false;
+    return true;
+  }
+  bool operator != (const TableMeta &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const TableMeta & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(TableMeta &a, TableMeta &b);
+
 typedef struct _MetaException__isset {
   _MetaException__isset() : message(false) {}
   bool message;

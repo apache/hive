@@ -528,7 +528,7 @@ public class ThriftTestObj implements org.apache.thrift.TBase<ThriftTestObj, Thr
                 struct.field3 = new ArrayList<InnerStruct>(_list0.size);
                 for (int _i1 = 0; _i1 < _list0.size; ++_i1)
                 {
-                  InnerStruct _elem2; // optional
+                  InnerStruct _elem2; // required
                   _elem2 = new InnerStruct();
                   _elem2.read(iprot);
                   struct.field3.add(_elem2);
@@ -636,7 +636,7 @@ public class ThriftTestObj implements org.apache.thrift.TBase<ThriftTestObj, Thr
           struct.field3 = new ArrayList<InnerStruct>(_list5.size);
           for (int _i6 = 0; _i6 < _list5.size; ++_i6)
           {
-            InnerStruct _elem7; // optional
+            InnerStruct _elem7; // required
             _elem7 = new InnerStruct();
             _elem7.read(iprot);
             struct.field3.add(_elem7);

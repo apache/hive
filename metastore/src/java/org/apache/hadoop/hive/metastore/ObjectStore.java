@@ -53,6 +53,7 @@ import javax.jdo.datastore.DataStoreCache;
 import javax.jdo.identity.IntIdentity;
 
 import com.google.common.annotations.VisibleForTesting;
+
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
 import org.apache.commons.logging.Log;
@@ -104,6 +105,7 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
@@ -720,6 +722,9 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public List<String> getDatabases(String pattern) throws MetaException {
+    if (pattern == null || pattern.equals("*")) {
+      return getAllDatabases();
+    }
     boolean commited = false;
     List<String> databases = null;
     Query query = null;
@@ -761,7 +766,28 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public List<String> getAllDatabases() throws MetaException {
-    return getDatabases(".*");
+    boolean commited = false;
+    List<String> databases = null;
+
+    String queryStr = "select name from org.apache.hadoop.hive.metastore.model.MDatabase";
+    Query query = null;
+    
+    openTransaction();
+    try {
+      query = pm.newQuery(queryStr);
+      query.setResult("name");
+      databases = new ArrayList<String>((Collection<String>) query.execute());
+      commited = commitTransaction();
+    } finally {
+      if (!commited) {
+        rollbackTransaction();
+      }
+      if (query != null) {
+        query.closeAll();
+      }
+    }
+    Collections.sort(databases);
+    return databases;
   }
 
   private MType getMType(Type type) {
@@ -1038,6 +1064,84 @@ public class ObjectStore implements RawStore, Configurable {
       }
     }
     return tbls;
+  }
+
+  @Override
+  public List<TableMeta> getTableMeta(String dbNames, String tableNames, List<String> tableTypes)
+      throws MetaException {
+
+    boolean commited = false;
+    Query query = null;
+    List<TableMeta> metas = new ArrayList<TableMeta>();
+    try {
+      openTransaction();
+      // Take the pattern and split it on the | to get all the composing
+      // patterns
+      StringBuilder builder = new StringBuilder();
+      if (dbNames != null && !dbNames.equals("*")) {
+        appendPatternCondition(builder, "database.name", dbNames);
+      }
+      if (tableNames != null && !tableNames.equals("*")) {
+        appendPatternCondition(builder, "tableName", tableNames);
+      }
+      if (tableTypes != null && !tableTypes.isEmpty()) {
+        appendSimpleCondition(builder, "tableType", tableTypes.toArray(new String[0]));
+      }
+
+      query = pm.newQuery(MTable.class, builder.toString());
+      Collection<MTable> tables = (Collection<MTable>) query.execute();
+      for (MTable table : tables) {
+        TableMeta metaData = new TableMeta(
+            table.getDatabase().getName(), table.getTableName(), table.getTableType());
+        metaData.setComments(table.getParameters().get("comment"));
+        metas.add(metaData);
+      }
+      commited = commitTransaction();
+    } finally {
+      if (!commited) {
+        rollbackTransaction();
+      }
+      if (query != null) {
+        query.closeAll();
+      }
+    }
+    return metas;
+  }
+
+  private StringBuilder appendPatternCondition(StringBuilder builder,
+      String fieldName, String elements) {
+      elements = HiveStringUtils.normalizeIdentifier(elements);
+    return appendCondition(builder, fieldName, elements.split("\\|"), true);
+  }
+
+  private StringBuilder appendSimpleCondition(StringBuilder builder,
+      String fieldName, String[] elements) {
+    return appendCondition(builder, fieldName, elements, false);
+  }
+
+  private StringBuilder appendCondition(StringBuilder builder,
+      String fieldName, String[] elements, boolean pattern) {
+    if (builder.length() > 0) {
+      builder.append(" && ");
+    }
+    builder.append(" (");
+    int length = builder.length();
+    for (String element : elements) {
+      if (pattern) {
+        element = "(?i)" + element.replaceAll("\\*", ".*");
+      }
+      if (builder.length() > length) {
+        builder.append(" || ");
+      }
+      builder.append(fieldName);
+      if (pattern) {
+        builder.append(".matches(\"").append(element).append("\")");
+      } else {
+        builder.append(" == \"").append(element).append("\"");
+      }
+    }
+    builder.append(" )");
+    return builder;
   }
 
   @Override
