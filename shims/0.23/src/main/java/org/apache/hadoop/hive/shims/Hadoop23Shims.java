@@ -1300,11 +1300,14 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     options.setSkipCRC(true);
     options.preserve(FileAttribute.BLOCKSIZE);
     try {
+      conf.setBoolean("mapred.mapper.new-api", true);
       DistCp distcp = new DistCp(conf, options);
       distcp.execute();
       return true;
     } catch (Exception e) {
       throw new IOException("Cannot execute DistCp process: " + e, e);
+    } finally {
+      conf.setBoolean("mapred.mapper.new-api", false);
     }
   }
 
