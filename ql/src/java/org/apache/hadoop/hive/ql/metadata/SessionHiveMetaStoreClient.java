@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
+import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -161,11 +162,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     Matcher matcher = pattern.matcher("");
     Set<String> combinedTableNames = new HashSet<String>();
     for (String tableName : tables.keySet()) {
-      if (matcher == null) {
-        matcher = pattern.matcher(tableName);
-      } else {
-        matcher.reset(tableName);
-      }
+      matcher.reset(tableName);
       if (matcher.matches()) {
         combinedTableNames.add(tableName);
       }
@@ -176,6 +173,55 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     tableNames = new ArrayList<String>(combinedTableNames);
     Collections.sort(tableNames);
     return tableNames;
+  }
+  
+  @Override
+  public List<TableMeta> getTableMeta(String dbPatterns, String tablePatterns, List<String> tableTypes)
+      throws MetaException {
+    List<TableMeta> tableMetas = super.getTableMeta(dbPatterns, tablePatterns, tableTypes);
+    Map<String, Map<String, Table>> tmpTables = getTempTables();
+    if (tmpTables.isEmpty()) {
+      return tableMetas;
+    }
+
+    List<Matcher> dbPatternList = new ArrayList<>();
+    for (String element : dbPatterns.split("\\|")) {
+      dbPatternList.add(Pattern.compile(element.replaceAll("\\*", ".*")).matcher(""));
+    }
+    List<Matcher> tblPatternList = new ArrayList<>();
+    for (String element : tablePatterns.split("\\|")) {
+      tblPatternList.add(Pattern.compile(element.replaceAll("\\*", ".*")).matcher(""));
+    }
+    StringBuilder builder = new StringBuilder();
+    for (Map.Entry<String, Map<String, Table>> outer : tmpTables.entrySet()) {
+      if (!matchesAny(outer.getKey(), dbPatternList)) {
+        continue;
+      }
+      for (Map.Entry<String, Table> inner : outer.getValue().entrySet()) {
+        Table table = inner.getValue();
+        String tableName = table.getTableName();
+        String typeString = table.getTableType().name();
+        if (tableTypes != null && !tableTypes.contains(typeString)) {
+          continue;
+        }
+        if (!matchesAny(inner.getKey(), tblPatternList)) {
+          continue;
+        }
+        TableMeta tableMeta = new TableMeta(table.getDbName(), tableName, typeString);
+        tableMeta.setComments(table.getProperty("comment"));
+        tableMetas.add(tableMeta);
+      }
+    }
+    return tableMetas;
+  }
+  
+  private boolean matchesAny(String string, List<Matcher> matchers) {
+    for (Matcher matcher : matchers) {
+      if (matcher.reset(string).matches()) {
+        return true;
+      }
+    }
+    return matchers.isEmpty();
   }
 
   @Override
@@ -508,12 +554,16 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
   }
 
   public static Map<String, Table> getTempTablesForDatabase(String dbName) {
+    return getTempTables().get(dbName);
+  }
+  
+  public static Map<String, Map<String, Table>> getTempTables() {
     SessionState ss = SessionState.get();
     if (ss == null) {
       LOG.debug("No current SessionState, skipping temp tables");
-      return null;
+      return Collections.emptyMap();
     }
-    return ss.getTempTables().get(dbName);
+    return ss.getTempTables();
   }
 
   private Map<String, ColumnStatisticsObj> getTempTableColumnStatsForTable(String dbName,

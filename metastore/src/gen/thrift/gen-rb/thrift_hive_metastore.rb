@@ -366,6 +366,22 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_tables failed: unknown result')
     end
 
+    def get_table_meta(db_patterns, tbl_patterns, tbl_types)
+      send_get_table_meta(db_patterns, tbl_patterns, tbl_types)
+      return recv_get_table_meta()
+    end
+
+    def send_get_table_meta(db_patterns, tbl_patterns, tbl_types)
+      send_message('get_table_meta', Get_table_meta_args, :db_patterns => db_patterns, :tbl_patterns => tbl_patterns, :tbl_types => tbl_types)
+    end
+
+    def recv_get_table_meta()
+      result = receive_message(Get_table_meta_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_table_meta failed: unknown result')
+    end
+
     def get_all_tables(db_name)
       send_get_all_tables(db_name)
       return recv_get_all_tables()
@@ -2469,6 +2485,17 @@ module ThriftHiveMetastore
         result.o1 = o1
       end
       write_result(result, oprot, 'get_tables', seqid)
+    end
+
+    def process_get_table_meta(seqid, iprot, oprot)
+      args = read_args(iprot, Get_table_meta_args)
+      result = Get_table_meta_result.new()
+      begin
+        result.success = @handler.get_table_meta(args.db_patterns, args.tbl_patterns, args.tbl_types)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'get_table_meta', seqid)
     end
 
     def process_get_all_tables(seqid, iprot, oprot)
@@ -4602,6 +4629,44 @@ module ThriftHiveMetastore
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRING}},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_table_meta_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    DB_PATTERNS = 1
+    TBL_PATTERNS = 2
+    TBL_TYPES = 3
+
+    FIELDS = {
+      DB_PATTERNS => {:type => ::Thrift::Types::STRING, :name => 'db_patterns'},
+      TBL_PATTERNS => {:type => ::Thrift::Types::STRING, :name => 'tbl_patterns'},
+      TBL_TYPES => {:type => ::Thrift::Types::LIST, :name => 'tbl_types', :element => {:type => ::Thrift::Types::STRING}}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_table_meta_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::TableMeta}},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
     }
 

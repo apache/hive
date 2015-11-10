@@ -22,14 +22,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
-import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.ql.metadata.TableIterable;
+import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObjectUtils;
-import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.service.cli.FetchOrientation;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.OperationState;
@@ -48,7 +45,7 @@ public class GetTablesOperation extends MetadataOperation {
   private final String catalogName;
   private final String schemaName;
   private final String tableName;
-  private final List<String> tableTypes = new ArrayList<String>();
+  private final List<String> tableTypeList;
   private final RowSet rowSet;
   private final TableTypeMapping tableTypeMapping;
 
@@ -58,7 +55,14 @@ public class GetTablesOperation extends MetadataOperation {
   .addStringColumn("TABLE_SCHEM", "Schema name.")
   .addStringColumn("TABLE_NAME", "Table name.")
   .addStringColumn("TABLE_TYPE", "The table type, e.g. \"TABLE\", \"VIEW\", etc.")
-  .addStringColumn("REMARKS", "Comments about the table.");
+  .addStringColumn("REMARKS", "Comments about the table.")
+  .addStringColumn("TYPE_CAT", "The types catalog.")
+  .addStringColumn("TYPE_SCHEM", "The types schema.")
+  .addStringColumn("TYPE_NAME", "Type name.")
+  .addStringColumn("SELF_REFERENCING_COL_NAME", 
+      "Name of the designated \"identifier\" column of a typed table.")
+  .addStringColumn("REF_GENERATION", 
+      "Specifies how values in SELF_REFERENCING_COL_NAME are created.");
 
   protected GetTablesOperation(HiveSession parentSession,
       String catalogName, String schemaName, String tableName,
@@ -72,7 +76,12 @@ public class GetTablesOperation extends MetadataOperation {
     tableTypeMapping =
         TableTypeMappingFactory.getTableTypeMapping(tableMappingStr);
     if (tableTypes != null) {
-      this.tableTypes.addAll(tableTypes);
+      tableTypeList = new ArrayList<String>();
+      for (String tableType : tableTypes) {
+        tableTypeList.add(tableTypeMapping.mapToHiveType(tableType.trim()));
+      }
+    } else {
+      tableTypeList = null;
     }
     this.rowSet = RowSetFactory.create(RESULT_SET_SCHEMA, getProtocolVersion());
   }
@@ -91,23 +100,17 @@ public class GetTablesOperation extends MetadataOperation {
       }
 
       String tablePattern = convertIdentifierPattern(tableName, true);
-      int maxBatchSize = SessionState.get().getConf().getIntVar(ConfVars.METASTORE_BATCH_RETRIEVE_MAX);
 
-      for (String dbName : metastoreClient.getDatabases(schemaPattern)) {
-        List<String> tableNames = metastoreClient.getTables(dbName, tablePattern);
-        for (Table table : new TableIterable(metastoreClient, dbName, tableNames, maxBatchSize)) {
-          Object[] rowData = new Object[] {
+      for (TableMeta tableMeta : 
+          metastoreClient.getTableMeta(schemaPattern, tablePattern, tableTypeList)) {
+        rowSet.addRow(new Object[] {
               DEFAULT_HIVE_CATALOG,
-              table.getDbName(),
-              table.getTableName(),
-              tableTypeMapping.mapToClientType(table.getTableType()),
-              table.getParameters().get("comment")
-              };
-          if (tableTypes.isEmpty() || tableTypes.contains(
-                tableTypeMapping.mapToClientType(table.getTableType()))) {
-            rowSet.addRow(rowData);
-          }
-        }
+              tableMeta.getDbName(),
+              tableMeta.getTableName(),
+              tableTypeMapping.mapToClientType(tableMeta.getTableType()),
+              tableMeta.getComments(),
+              null, null, null, null, null
+              });
       }
       setState(OperationState.FINISHED);
     } catch (Exception e) {

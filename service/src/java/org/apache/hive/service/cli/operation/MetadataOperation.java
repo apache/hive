@@ -18,7 +18,6 @@
 
 package org.apache.hive.service.cli.operation;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -95,16 +94,30 @@ public abstract class MetadataOperation extends Operation {
    * other hand is done locally inside the hive code and that requires the regex wildchar
    * format '.*'  This is driven by the datanucleusFormat flag.
    */
-  private String convertPattern(final String pattern, boolean datanucleusFormat) {
+  private String convertPattern(String pattern, boolean datanucleusFormat) {
     String wStr;
     if (datanucleusFormat) {
       wStr = "*";
     } else {
       wStr = ".*";
     }
-    return pattern
-        .replaceAll("([^\\\\])%", "$1" + wStr).replaceAll("\\\\%", "%").replaceAll("^%", wStr)
-        .replaceAll("([^\\\\])_", "$1.").replaceAll("\\\\_", "_").replaceAll("^_", ".");
+    pattern = replaceAll(pattern, "([^\\\\])%", "$1" + wStr);
+    pattern = replaceAll(pattern, "\\\\%", "%");
+    pattern = replaceAll(pattern, "^%", wStr);
+    pattern = replaceAll(pattern, "([^\\\\])_", "$1.");
+    pattern = replaceAll(pattern, "\\\\_", "_");
+    pattern = replaceAll(pattern, "^_", ".");
+    return pattern;
+  }
+  
+  private String replaceAll(String input, final String pattern, final String replace) {
+    while (true) {
+      String replaced = input.replaceAll(pattern, replace);
+      if (replaced.equals(input)) {
+        return replaced;
+      }
+      input = replaced;
+    }
   }
 
   protected boolean isAuthV2Enabled(){

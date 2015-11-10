@@ -62,6 +62,7 @@ import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
@@ -71,7 +72,6 @@ import org.apache.hadoop.hive.metastore.hbase.HBaseFilterPlanUtil.PlanResult;
 import org.apache.hadoop.hive.metastore.hbase.HBaseFilterPlanUtil.ScanPlan;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
-import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hive.common.util.HiveStringUtils;
@@ -487,13 +487,45 @@ public class HBaseStore implements RawStore {
     boolean commit = false;
     openTransaction();
     try {
-      List<Table> tables = getHBase().scanTables(HiveStringUtils.normalizeIdentifier(dbName),
-          pattern==null?null:HiveStringUtils.normalizeIdentifier(likeToRegex(pattern)));
-      List<String> tableNames = new ArrayList<String>(tables.size());
-      for (Table table : tables) tableNames.add(table.getTableName());
+      List<String> tableNames = getTableNamesInTx(dbName, pattern);
       commit = true;
       return tableNames;
     } catch (IOException e) {
+      LOG.error("Unable to get tables ", e);
+      throw new MetaException("Unable to get tables, " + e.getMessage());
+    } finally {
+      commitOrRoleBack(commit);
+    }
+  }
+
+  private List<String> getTableNamesInTx(String dbName, String pattern) throws IOException {
+    List<Table> tables = getHBase().scanTables(HiveStringUtils.normalizeIdentifier(dbName),
+        pattern==null?null:HiveStringUtils.normalizeIdentifier(likeToRegex(pattern)));
+    List<String> tableNames = new ArrayList<String>(tables.size());
+    for (Table table : tables) tableNames.add(table.getTableName());
+    return tableNames;
+  }
+
+  @Override
+  public List<TableMeta> getTableMeta(String dbNames, String tableNames, List<String> tableTypes)
+      throws MetaException {
+    boolean commit = false;
+    openTransaction();
+    try {
+      List<TableMeta> metas = new ArrayList<>();
+      for (String dbName : getDatabases(dbNames)) {
+        for (Table table : getTableObjectsByName(dbName, getTableNamesInTx(dbName, tableNames))) {
+          if (tableTypes == null || tableTypes.contains(table.getTableType())) {
+            TableMeta metaData = new TableMeta(
+              table.getDbName(), table.getTableName(), table.getTableType());
+            metaData.setComments(table.getParameters().get("comment"));
+            metas.add(metaData);
+          }
+        }
+      }
+      commit = true;
+      return metas;
+    } catch (Exception e) {
       LOG.error("Unable to get tables ", e);
       throw new MetaException("Unable to get tables, " + e.getMessage());
     } finally {
@@ -1660,7 +1692,7 @@ public class HBaseStore implements RawStore {
     openTransaction();
     try {
       List<ColumnStatistics> cs =
-          getHBase().getPartitionStatistics(dbName, tblName, partNames,  partVals, colNames);
+          getHBase().getPartitionStatistics(dbName, tblName, partNames, partVals, colNames);
       commit = true;
       return cs;
     } catch (IOException e) {
