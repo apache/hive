@@ -312,7 +312,8 @@ public class PlanModifierForASTConv {
     boolean validChild = true;
     RelNode child = sortNode.getInput();
 
-    if (!(HiveCalciteUtil.limitRelNode(sortNode) && HiveCalciteUtil.orderRelNode(child))
+    if (!(HiveCalciteUtil.limitRelNode(sortNode) && HiveCalciteUtil.orderRelNode(child)
+            && HiveCalciteUtil.limitRelNode(child))
         && !(child instanceof Project)) {
       validChild = false;
     }

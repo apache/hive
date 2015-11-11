@@ -487,7 +487,7 @@ public class HiveOpConverter {
       if (this.semanticAnalyzer != null && semanticAnalyzer.getQB() != null
           && semanticAnalyzer.getQB().getParseInfo() != null)
         this.semanticAnalyzer.getQB().getParseInfo().setOuterQueryLimit(limit);
-      ArrayList<ColumnInfo> cinfoLst = createColInfos(inputOp);
+      ArrayList<ColumnInfo> cinfoLst = createColInfos(resultOp);
       resultOp = OperatorFactory.getAndMakeChild(limitDesc,
           new RowSchema(cinfoLst), resultOp);
 
@@ -1059,10 +1059,6 @@ public class HiveOpConverter {
   }
 
   private static JoinType extractJoinType(HiveJoin join) {
-    // UNIQUE
-    if (join.isDistinct()) {
-      return JoinType.UNIQUE;
-    }
     // SEMIJOIN
     if (join.isLeftSemiJoin()) {
       return JoinType.LEFTSEMI;
@@ -1080,6 +1076,7 @@ public class HiveOpConverter {
       resultJoinType = JoinType.RIGHTOUTER;
       break;
     default:
+      // TODO: UNIQUE JOIN
       resultJoinType = JoinType.INNER;
       break;
     }
