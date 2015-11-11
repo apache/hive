@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
 import java.io.IOException;
@@ -50,6 +51,12 @@ public interface Writer {
    * @throws IOException
    */
   void addRow(Object row) throws IOException;
+
+  /**
+   * Add a row batch to the ORC file.
+   * @param batch the rows to add
+   */
+  void addRowBatch(VectorizedRowBatch batch) throws IOException;
 
   /**
    * Flush all of the buffers and close the file. No methods on this writer

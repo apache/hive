@@ -83,22 +83,31 @@ public abstract class ColumnVector {
   }
 
   /**
-     * Resets the column to default state
-     *  - fills the isNull array with false
-     *  - sets noNulls to true
-     *  - sets isRepeating to false
-     */
-    public void reset() {
-      if (!noNulls) {
-        Arrays.fill(isNull, false);
-      }
-      noNulls = true;
-      isRepeating = false;
-      preFlattenNoNulls = true;
-      preFlattenIsRepeating = false;
+   * Resets the column to default state
+   *  - fills the isNull array with false
+   *  - sets noNulls to true
+   *  - sets isRepeating to false
+   */
+  public void reset() {
+    if (!noNulls) {
+      Arrays.fill(isNull, false);
     }
+    noNulls = true;
+    isRepeating = false;
+    preFlattenNoNulls = true;
+    preFlattenIsRepeating = false;
+  }
 
-    abstract public void flatten(boolean selectedInUse, int[] sel, int size);
+  /**
+   * Sets the isRepeating flag. Recurses over structs and unions so that the
+   * flags are set correctly.
+   * @param isRepeating
+   */
+  public void setRepeating(boolean isRepeating) {
+    this.isRepeating = isRepeating;
+  }
+
+  abstract public void flatten(boolean selectedInUse, int[] sel, int size);
 
     // Simplify vector by brute-force flattening noNulls if isRepeating
     // This can be used to reduce combinatorial explosion of code paths in VectorExpressions

@@ -1166,6 +1166,10 @@ public class RecordReaderImpl implements RecordReader {
     return ((float) rowBaseInStripe + rowInStripe) / totalRowCount;
   }
 
+  MetadataReader getMetadataReader() {
+    return metadata;
+  }
+
   private int findStripe(long rowNumber) {
     for (int i = 0; i < stripes.size(); i++) {
       StripeInformation stripe = stripes.get(i);
