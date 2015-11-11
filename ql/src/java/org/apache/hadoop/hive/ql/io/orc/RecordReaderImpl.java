@@ -60,6 +60,7 @@ class RecordReaderImpl implements RecordReader {
 
   static final Log LOG = LogFactory.getLog(RecordReaderImpl.class);
   private static final boolean isLogDebugEnabled = LOG.isDebugEnabled();
+  private static final Object UNKNOWN_VALUE = new Object();
 
   private final Path path;
   private final FSDataInputStream file;
@@ -313,7 +314,7 @@ class RecordReaderImpl implements RecordReader {
         return Boolean.TRUE;
       }
     } else {
-      return null;
+      return UNKNOWN_VALUE; // null is not safe here
     }
   }
 
@@ -362,6 +363,8 @@ class RecordReaderImpl implements RecordReader {
       } else {
         return TruthValue.NULL;
       }
+    } else if (min == UNKNOWN_VALUE) {
+      return TruthValue.YES_NO_NULL;
     }
 
     TruthValue result;
