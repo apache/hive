@@ -53,6 +53,7 @@ import org.apache.hadoop.io.Text;
 public class RecordReaderImpl implements RecordReader {
   static final Logger LOG = LoggerFactory.getLogger(RecordReaderImpl.class);
   private static final boolean isLogDebugEnabled = LOG.isDebugEnabled();
+  private static final Object UNKNOWN_VALUE = new Object();
   private final Path path;
   private final long firstRow;
   private final List<StripeInformation> stripes =
@@ -310,7 +311,7 @@ public class RecordReaderImpl implements RecordReader {
         return Boolean.TRUE;
       }
     } else {
-      return null;
+      return UNKNOWN_VALUE; // null is not safe here
     }
   }
 
@@ -359,6 +360,8 @@ public class RecordReaderImpl implements RecordReader {
       } else {
         return TruthValue.NULL;
       }
+    } else if (min == UNKNOWN_VALUE) {
+      return TruthValue.YES_NO_NULL;
     }
 
     TruthValue result;
