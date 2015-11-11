@@ -55,6 +55,11 @@ class StringRedBlackTree extends RedBlackTree {
     return addNewKey();
   }
 
+  public int add(byte[] bytes, int offset, int length) {
+    newKey.set(bytes, offset, length);
+    return addNewKey();
+  }
+
   @Override
   protected int compareValue(int position) {
     int start = keyOffsets.get(position);

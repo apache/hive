@@ -131,4 +131,12 @@ public class UnionColumnVector extends ColumnVector {
       fields[i].unFlatten();
     }
   }
+
+  @Override
+  public void setRepeating(boolean isRepeating) {
+    super.setRepeating(isRepeating);
+    for(int i=0; i < fields.length; ++i) {
+      fields[i].setRepeating(isRepeating);
+    }
+  }
 }

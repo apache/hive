@@ -172,10 +172,12 @@ class MemoryManager {
 
   /**
    * Give the memory manager an opportunity for doing a memory check.
+   * @param rows number of rows added
    * @throws IOException
    */
-  void addedRow() throws IOException {
-    if (++rowsAddedSinceCheck >= ROWS_BETWEEN_CHECKS) {
+  void addedRow(int rows) throws IOException {
+    rowsAddedSinceCheck += rows;
+    if (rowsAddedSinceCheck >= ROWS_BETWEEN_CHECKS) {
       notifyWriters();
     }
   }

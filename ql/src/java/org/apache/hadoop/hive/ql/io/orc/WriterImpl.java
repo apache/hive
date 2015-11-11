@@ -26,6 +26,7 @@ import java.lang.management.ManagementFactory;
 import java.nio.ByteBuffer;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +41,16 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.ListColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.MapColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.UnionColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.filters.BloomFilterIO;
 import org.apache.hadoop.hive.ql.io.orc.CompressionCodec.Modifier;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile.CompressionStrategy;
@@ -582,7 +593,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
   private abstract static class TreeWriter {
     protected final int id;
     protected final ObjectInspector inspector;
-    private final BitFieldWriter isPresent;
+    protected final BitFieldWriter isPresent;
     private final boolean isCompressed;
     protected final ColumnStatisticsImpl indexStatistics;
     protected final ColumnStatisticsImpl stripeColStatistics;
@@ -704,6 +715,73 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
         isPresent.write(obj == null ? 0 : 1);
         if(obj == null) {
           foundNulls = true;
+        }
+      }
+    }
+
+    /**
+     * Handle the top level object write.
+     *
+     * This default method is used for all types except structs, which are the
+     * typical case. VectorizedRowBatch assumes the top level object is a
+     * struct, so we use the first column for all other types.
+     * @param batch the batch to write from
+     * @param offset the row to start on
+     * @param length the number of rows to write
+     * @throws IOException
+     */
+    void writeRootBatch(VectorizedRowBatch batch, int offset,
+                        int length) throws IOException {
+      writeBatch(batch.cols[0], offset, length);
+    }
+
+    /**
+     * Write the values from the given vector from offset for length elements.
+     * @param vector the vector to write from
+     * @param offset the first value from the vector to write
+     * @param length the number of values from the vector to write
+     * @throws IOException
+     */
+    void writeBatch(ColumnVector vector, int offset,
+                    int length) throws IOException {
+      if (vector.noNulls) {
+        indexStatistics.increment(length);
+        if (isPresent != null) {
+          for (int i = 0; i < length; ++i) {
+            isPresent.write(1);
+          }
+        }
+      } else {
+        if (vector.isRepeating) {
+          boolean isNull = vector.isNull[0];
+          if (isPresent != null) {
+            for (int i = 0; i < length; ++i) {
+              isPresent.write(isNull ? 0 : 1);
+            }
+          }
+          if (isNull) {
+            foundNulls = true;
+            indexStatistics.setNull();
+          } else {
+            indexStatistics.increment(length);
+          }
+        } else {
+          // count the number of non-null values
+          int nonNullCount = 0;
+          for(int i = 0; i < length; ++i) {
+            boolean isNull = vector.isNull[i + offset];
+            if (!isNull) {
+              nonNullCount += 1;
+            }
+            if (isPresent != null) {
+              isPresent.write(isNull ? 0 : 1);
+            }
+          }
+          indexStatistics.increment(nonNullCount);
+          if (nonNullCount != length) {
+            foundNulls = true;
+            indexStatistics.setNull();
+          }
         }
       }
     }
@@ -876,8 +954,32 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       super.write(obj);
       if (obj != null) {
         boolean val = ((BooleanObjectInspector) inspector).get(obj);
-        indexStatistics.updateBoolean(val);
+        indexStatistics.updateBoolean(val, 1);
         writer.write(val ? 1 : 0);
+      }
+    }
+
+    @Override
+    void writeBatch(ColumnVector vector, int offset,
+                    int length) throws IOException {
+      super.writeBatch(vector, offset, length);
+      LongColumnVector vec = (LongColumnVector) vector;
+      if (vector.isRepeating) {
+        if (vector.noNulls || !vector.isNull[0]) {
+          int value = vec.vector[0] == 0 ? 0 : 1;
+          indexStatistics.updateBoolean(value != 0, length);
+          for(int i=0; i < length; ++i) {
+            writer.write(value);
+          }
+        }
+      } else {
+        for(int i=0; i < length; ++i) {
+          if (vec.noNulls || !vec.isNull[i + offset]) {
+            int value = vec.vector[i + offset] == 0 ? 0 : 1;
+            writer.write(value);
+            indexStatistics.updateBoolean(value != 0, 1);
+          }
+        }
       }
     }
 
@@ -915,11 +1017,41 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       super.write(obj);
       if (obj != null) {
         byte val = ((ByteObjectInspector) inspector).get(obj);
-        indexStatistics.updateInteger(val);
+        indexStatistics.updateInteger(val, 1);
         if (createBloomFilter) {
           bloomFilter.addLong(val);
         }
         writer.write(val);
+      }
+    }
+
+    @Override
+    void writeBatch(ColumnVector vector, int offset,
+                    int length) throws IOException {
+      super.writeBatch(vector, offset, length);
+      LongColumnVector vec = (LongColumnVector) vector;
+      if (vector.isRepeating) {
+        if (vector.noNulls || !vector.isNull[0]) {
+          byte value = (byte) vec.vector[0];
+          indexStatistics.updateInteger(value, length);
+          if (createBloomFilter) {
+            bloomFilter.addLong(value);
+          }
+          for(int i=0; i < length; ++i) {
+            writer.write(value);
+          }
+        }
+      } else {
+        for(int i=0; i < length; ++i) {
+          if (vec.noNulls || !vec.isNull[i + offset]) {
+            byte value = (byte) vec.vector[i + offset];
+            writer.write(value);
+            indexStatistics.updateInteger(value, 1);
+            if (createBloomFilter) {
+              bloomFilter.addLong(value);
+            }
+          }
+        }
       }
     }
 
@@ -994,12 +1126,42 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
         } else {
           val = shortInspector.get(obj);
         }
-        indexStatistics.updateInteger(val);
+        indexStatistics.updateInteger(val, 1);
         if (createBloomFilter) {
           // integers are converted to longs in column statistics and during SARG evaluation
           bloomFilter.addLong(val);
         }
         writer.write(val);
+      }
+    }
+
+    @Override
+    void writeBatch(ColumnVector vector, int offset,
+                    int length) throws IOException {
+      super.writeBatch(vector, offset, length);
+      LongColumnVector vec = (LongColumnVector) vector;
+      if (vector.isRepeating) {
+        if (vector.noNulls || !vector.isNull[0]) {
+          long value = vec.vector[0];
+          indexStatistics.updateInteger(value, length);
+          if (createBloomFilter) {
+            bloomFilter.addLong(value);
+          }
+          for(int i=0; i < length; ++i) {
+            writer.write(value);
+          }
+        }
+      } else {
+        for(int i=0; i < length; ++i) {
+          if (vec.noNulls || !vec.isNull[i + offset]) {
+            long value = vec.vector[i + offset];
+            writer.write(value);
+            indexStatistics.updateInteger(value, 1);
+            if (createBloomFilter) {
+              bloomFilter.addLong(value);
+            }
+          }
+        }
       }
     }
 
@@ -1049,6 +1211,37 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     }
 
     @Override
+    void writeBatch(ColumnVector vector, int offset,
+                    int length) throws IOException {
+      super.writeBatch(vector, offset, length);
+      DoubleColumnVector vec = (DoubleColumnVector) vector;
+      if (vector.isRepeating) {
+        if (vector.noNulls || !vector.isNull[0]) {
+          float value = (float) vec.vector[0];
+          indexStatistics.updateDouble(value);
+          if (createBloomFilter) {
+            bloomFilter.addDouble(value);
+          }
+          for(int i=0; i < length; ++i) {
+            utils.writeFloat(stream, value);
+          }
+        }
+      } else {
+        for(int i=0; i < length; ++i) {
+          if (vec.noNulls || !vec.isNull[i + offset]) {
+            float value = (float) vec.vector[i + offset];
+            utils.writeFloat(stream, value);
+            indexStatistics.updateDouble(value);
+            if (createBloomFilter) {
+              bloomFilter.addDouble(value);
+            }
+          }
+        }
+      }
+    }
+
+
+    @Override
     void writeStripe(OrcProto.StripeFooter.Builder builder,
                      int requiredIndexEntries) throws IOException {
       super.writeStripe(builder, requiredIndexEntries);
@@ -1093,6 +1286,36 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     }
 
     @Override
+    void writeBatch(ColumnVector vector, int offset,
+                    int length) throws IOException {
+      super.writeBatch(vector, offset, length);
+      DoubleColumnVector vec = (DoubleColumnVector) vector;
+      if (vector.isRepeating) {
+        if (vector.noNulls || !vector.isNull[0]) {
+          double value = vec.vector[0];
+          indexStatistics.updateDouble(value);
+          if (createBloomFilter) {
+            bloomFilter.addDouble(value);
+          }
+          for(int i=0; i < length; ++i) {
+            utils.writeDouble(stream, value);
+          }
+        }
+      } else {
+        for(int i=0; i < length; ++i) {
+          if (vec.noNulls || !vec.isNull[i + offset]) {
+            double value = vec.vector[i + offset];
+            utils.writeDouble(stream, value);
+            indexStatistics.updateDouble(value);
+            if (createBloomFilter) {
+              bloomFilter.addDouble(value);
+            }
+          }
+        }
+      }
+    }
+
+    @Override
     void writeStripe(OrcProto.StripeFooter.Builder builder,
                      int requiredIndexEntries) throws IOException {
       super.writeStripe(builder, requiredIndexEntries);
@@ -1107,16 +1330,16 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     }
   }
 
-  private static class StringTreeWriter extends TreeWriter {
+  private static abstract class StringBaseTreeWriter extends TreeWriter {
     private static final int INITIAL_DICTIONARY_SIZE = 4096;
     private final OutStream stringOutput;
     private final IntegerWriter lengthOutput;
     private final IntegerWriter rowOutput;
-    private final StringRedBlackTree dictionary =
+    protected final StringRedBlackTree dictionary =
         new StringRedBlackTree(INITIAL_DICTIONARY_SIZE);
-    private final DynamicIntArray rows = new DynamicIntArray();
-    private final PositionedOutputStream directStreamOutput;
-    private final IntegerWriter directLengthOutput;
+    protected final DynamicIntArray rows = new DynamicIntArray();
+    protected final PositionedOutputStream directStreamOutput;
+    protected final IntegerWriter directLengthOutput;
     private final List<OrcProto.RowIndexEntry> savedRowIndex =
         new ArrayList<OrcProto.RowIndexEntry>();
     private final boolean buildIndex;
@@ -1124,12 +1347,12 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     // If the number of keys in a dictionary is greater than this fraction of
     //the total number of non-null rows, turn off dictionary encoding
     private final double dictionaryKeySizeThreshold;
-    private boolean useDictionaryEncoding = true;
+    protected boolean useDictionaryEncoding = true;
     private boolean isDirectV2 = true;
     private boolean doneDictionaryCheck;
     private final boolean strideDictionaryCheck;
 
-    StringTreeWriter(int columnId,
+    StringBaseTreeWriter(int columnId,
                      ObjectInspector inspector,
                      TypeDescription schema,
                      StreamFactory writer,
@@ -1171,7 +1394,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       super.write(obj);
       if (obj != null) {
         Text val = getTextValue(obj);
-        if (useDictionaryEncoding || !strideDictionaryCheck) {
+        if (useDictionaryEncoding) {
           rows.add(dictionary.add(val));
         } else {
           // write data and length
@@ -1180,7 +1403,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
         }
         indexStatistics.updateString(val);
         if (createBloomFilter) {
-          bloomFilter.addBytes(val.getBytes(), val.getLength());
+          bloomFilter.addBytes(val.getBytes(), 0, val.getLength());
         }
       }
     }
@@ -1364,10 +1587,69 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     }
   }
 
+  private static class StringTreeWriter extends StringBaseTreeWriter {
+    StringTreeWriter(int columnId,
+                   ObjectInspector inspector,
+                   TypeDescription schema,
+                   StreamFactory writer,
+                   boolean nullable) throws IOException {
+      super(columnId, inspector, schema, writer, nullable);
+    }
+
+    @Override
+    void writeBatch(ColumnVector vector, int offset,
+                    int length) throws IOException {
+      super.writeBatch(vector, offset, length);
+      BytesColumnVector vec = (BytesColumnVector) vector;
+      if (vector.isRepeating) {
+        if (vector.noNulls || !vector.isNull[0]) {
+          if (useDictionaryEncoding) {
+            int id = dictionary.add(vec.vector[0], vec.start[0], vec.length[0]);
+            for(int i=0; i < length; ++i) {
+              rows.add(id);
+            }
+          } else {
+            for(int i=0; i < length; ++i) {
+              directStreamOutput.write(vec.vector[0], vec.start[0],
+                  vec.length[0]);
+              directLengthOutput.write(vec.length[0]);
+            }
+          }
+          indexStatistics.updateString(vec.vector[0], vec.start[0],
+              vec.length[0], length);
+          if (createBloomFilter) {
+            bloomFilter.addBytes(vec.vector[0], vec.start[0], vec.length[0]);
+          }
+        }
+      } else {
+        for(int i=0; i < length; ++i) {
+          if (vec.noNulls || !vec.isNull[i + offset]) {
+            if (useDictionaryEncoding) {
+              rows.add(dictionary.add(vec.vector[offset + i],
+                  vec.start[offset + i], vec.length[offset + i]));
+            } else {
+              directStreamOutput.write(vec.vector[offset + i],
+                  vec.start[offset + i], vec.length[offset + i]);
+              directLengthOutput.write(vec.length[offset + i]);
+            }
+            indexStatistics.updateString(vec.vector[offset + i],
+                vec.start[offset + i], vec.length[offset + i], 1);
+            if (createBloomFilter) {
+              bloomFilter.addBytes(vec.vector[offset + i],
+                  vec.start[offset + i], vec.length[offset + i]);
+            }
+          }
+        }
+      }
+    }
+  }
+
   /**
    * Under the covers, char is written to ORC the same way as string.
    */
-  private static class CharTreeWriter extends StringTreeWriter {
+  private static class CharTreeWriter extends StringBaseTreeWriter {
+    private final int itemLength;
+    private final byte[] padding;
 
     CharTreeWriter(int columnId,
         ObjectInspector inspector,
@@ -1375,6 +1657,8 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
         StreamFactory writer,
         boolean nullable) throws IOException {
       super(columnId, inspector, schema, writer, nullable);
+      itemLength = schema.getMaxLength();
+      padding = new byte[itemLength];
     }
 
     /**
@@ -1385,12 +1669,79 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       return (((HiveCharObjectInspector) inspector)
           .getPrimitiveWritableObject(obj)).getTextValue();
     }
+
+    @Override
+    void writeBatch(ColumnVector vector, int offset,
+                    int length) throws IOException {
+      super.writeBatch(vector, offset, length);
+      BytesColumnVector vec = (BytesColumnVector) vector;
+      if (vector.isRepeating) {
+        if (vector.noNulls || !vector.isNull[0]) {
+          byte[] ptr;
+          int ptrOffset;
+          if (vec.length[0] >= itemLength) {
+            ptr = vec.vector[0];
+            ptrOffset = vec.start[0];
+          } else {
+            ptr = padding;
+            ptrOffset = 0;
+            System.arraycopy(vec.vector[0], vec.start[0], ptr, 0,
+                vec.length[0]);
+            Arrays.fill(ptr, vec.length[0], itemLength, (byte) ' ');
+          }
+          if (useDictionaryEncoding) {
+            int id = dictionary.add(ptr, ptrOffset, itemLength);
+            for(int i=0; i < length; ++i) {
+              rows.add(id);
+            }
+          } else {
+            for(int i=0; i < length; ++i) {
+              directStreamOutput.write(ptr, ptrOffset, itemLength);
+              directLengthOutput.write(itemLength);
+            }
+          }
+          indexStatistics.updateString(ptr, ptrOffset, itemLength, length);
+          if (createBloomFilter) {
+            bloomFilter.addBytes(ptr, ptrOffset, itemLength);
+          }
+        }
+      } else {
+        for(int i=0; i < length; ++i) {
+          if (vec.noNulls || !vec.isNull[i + offset]) {
+            byte[] ptr;
+            int ptrOffset;
+            if (vec.length[offset + i] >= itemLength) {
+              ptr = vec.vector[offset + i];
+              ptrOffset = vec.start[offset + i];
+            } else {
+              // it is the wrong length, so copy it
+              ptr = padding;
+              ptrOffset = 0;
+              System.arraycopy(vec.vector[offset + i], vec.start[offset + i],
+                  ptr, 0, vec.length[offset + i]);
+              Arrays.fill(ptr, vec.length[offset + i], itemLength, (byte) ' ');
+            }
+            if (useDictionaryEncoding) {
+              rows.add(dictionary.add(ptr, ptrOffset, itemLength));
+            } else {
+              directStreamOutput.write(ptr, ptrOffset, itemLength);
+              directLengthOutput.write(itemLength);
+            }
+            indexStatistics.updateString(ptr, ptrOffset, itemLength, 1);
+            if (createBloomFilter) {
+              bloomFilter.addBytes(ptr, ptrOffset, itemLength);
+            }
+          }
+        }
+      }
+    }
   }
 
   /**
    * Under the covers, varchar is written to ORC the same way as string.
    */
-  private static class VarcharTreeWriter extends StringTreeWriter {
+  private static class VarcharTreeWriter extends StringBaseTreeWriter {
+    private final int maxLength;
 
     VarcharTreeWriter(int columnId,
         ObjectInspector inspector,
@@ -1398,6 +1749,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
         StreamFactory writer,
         boolean nullable) throws IOException {
       super(columnId, inspector, schema, writer, nullable);
+      maxLength = schema.getMaxLength();
     }
 
     /**
@@ -1407,6 +1759,55 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     Text getTextValue(Object obj) {
       return (((HiveVarcharObjectInspector) inspector)
           .getPrimitiveWritableObject(obj)).getTextValue();
+    }
+
+    @Override
+    void writeBatch(ColumnVector vector, int offset,
+                    int length) throws IOException {
+      super.writeBatch(vector, offset, length);
+      BytesColumnVector vec = (BytesColumnVector) vector;
+      if (vector.isRepeating) {
+        if (vector.noNulls || !vector.isNull[0]) {
+          int itemLength = Math.min(vec.length[0], maxLength);
+          if (useDictionaryEncoding) {
+            int id = dictionary.add(vec.vector[0], vec.start[0], itemLength);
+            for(int i=0; i < length; ++i) {
+              rows.add(id);
+            }
+          } else {
+            for(int i=0; i < length; ++i) {
+              directStreamOutput.write(vec.vector[0], vec.start[0],
+                  itemLength);
+              directLengthOutput.write(itemLength);
+            }
+          }
+          indexStatistics.updateString(vec.vector[0], vec.start[0],
+              itemLength, length);
+          if (createBloomFilter) {
+            bloomFilter.addBytes(vec.vector[0], vec.start[0], itemLength);
+          }
+        }
+      } else {
+        for(int i=0; i < length; ++i) {
+          if (vec.noNulls || !vec.isNull[i + offset]) {
+            int itemLength = Math.min(vec.length[offset + i], maxLength);
+            if (useDictionaryEncoding) {
+              rows.add(dictionary.add(vec.vector[offset + i],
+                  vec.start[offset + i], itemLength));
+            } else {
+              directStreamOutput.write(vec.vector[offset + i],
+                  vec.start[offset + i], itemLength);
+              directLengthOutput.write(itemLength);
+            }
+            indexStatistics.updateString(vec.vector[offset + i],
+                vec.start[offset + i], itemLength, 1);
+            if (createBloomFilter) {
+              bloomFilter.addBytes(vec.vector[offset + i],
+                  vec.start[offset + i], itemLength);
+            }
+          }
+        }
+      }
     }
   }
 
@@ -1449,10 +1850,46 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
         length.write(val.getLength());
         indexStatistics.updateBinary(val);
         if (createBloomFilter) {
-          bloomFilter.addBytes(val.getBytes(), val.getLength());
+          bloomFilter.addBytes(val.getBytes(), 0, val.getLength());
         }
       }
     }
+
+    @Override
+    void writeBatch(ColumnVector vector, int offset,
+                    int length) throws IOException {
+      super.writeBatch(vector, offset, length);
+      BytesColumnVector vec = (BytesColumnVector) vector;
+      if (vector.isRepeating) {
+        if (vector.noNulls || !vector.isNull[0]) {
+          for(int i=0; i < length; ++i) {
+            stream.write(vec.vector[0], vec.start[0],
+                  vec.length[0]);
+            this.length.write(vec.length[0]);
+          }
+          indexStatistics.updateBinary(vec.vector[0], vec.start[0],
+              vec.length[0], length);
+          if (createBloomFilter) {
+            bloomFilter.addBytes(vec.vector[0], vec.start[0], vec.length[0]);
+          }
+        }
+      } else {
+        for(int i=0; i < length; ++i) {
+          if (vec.noNulls || !vec.isNull[i + offset]) {
+            stream.write(vec.vector[offset + i],
+                vec.start[offset + i], vec.length[offset + i]);
+            this.length.write(vec.length[offset + i]);
+            indexStatistics.updateBinary(vec.vector[offset + i],
+                vec.start[offset + i], vec.length[offset + i], 1);
+            if (createBloomFilter) {
+              bloomFilter.addBytes(vec.vector[offset + i],
+                  vec.start[offset + i], vec.length[offset + i]);
+            }
+          }
+        }
+      }
+    }
+
 
     @Override
     void writeStripe(OrcProto.StripeFooter.Builder builder,
@@ -1472,6 +1909,8 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
   }
 
   static final int MILLIS_PER_SECOND = 1000;
+  static final int NANOS_PER_SECOND = 1000000000;
+  static final int MILLIS_PER_NANO  = 1000000;
   static final String BASE_TIMESTAMP_STRING = "2015-01-01 00:00:00";
 
   private static class TimestampTreeWriter extends TreeWriter {
@@ -1519,6 +1958,47 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
         nanos.write(formatNanos(val.getNanos()));
         if (createBloomFilter) {
           bloomFilter.addLong(val.getTime());
+        }
+      }
+    }
+
+    @Override
+    void writeBatch(ColumnVector vector, int offset,
+                    int length) throws IOException {
+      super.writeBatch(vector, offset, length);
+      LongColumnVector vec = (LongColumnVector) vector;
+      if (vector.isRepeating) {
+        if (vector.noNulls || !vector.isNull[0]) {
+          long value = vec.vector[0];
+          long valueMillis = value / MILLIS_PER_NANO;
+          indexStatistics.updateTimestamp(valueMillis);
+          if (createBloomFilter) {
+            bloomFilter.addLong(valueMillis);
+          }
+          final long secs = value / NANOS_PER_SECOND - base_timestamp;
+          final long nano = formatNanos((int) (value % NANOS_PER_SECOND));
+          for(int i=0; i < length; ++i) {
+            seconds.write(secs);
+            nanos.write(nano);
+          }
+        }
+      } else {
+        for(int i=0; i < length; ++i) {
+          if (vec.noNulls || !vec.isNull[i + offset]) {
+            long value = vec.vector[i + offset];
+            long valueMillis = value / MILLIS_PER_NANO;
+            long valueSecs = value /NANOS_PER_SECOND - base_timestamp;
+            int valueNanos = (int) (value % NANOS_PER_SECOND);
+            if (valueNanos < 0) {
+              valueNanos += NANOS_PER_SECOND;
+            }
+            seconds.write(valueSecs);
+            nanos.write(formatNanos(valueNanos));
+            indexStatistics.updateTimestamp(valueMillis);
+            if (createBloomFilter) {
+              bloomFilter.addLong(valueMillis);
+            }
+          }
         }
       }
     }
@@ -1583,6 +2063,36 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
         writer.write(val.getDays());
         if (createBloomFilter) {
           bloomFilter.addLong(val.getDays());
+        }
+      }
+    }
+
+    @Override
+    void writeBatch(ColumnVector vector, int offset,
+                    int length) throws IOException {
+      super.writeBatch(vector, offset, length);
+      LongColumnVector vec = (LongColumnVector) vector;
+      if (vector.isRepeating) {
+        if (vector.noNulls || !vector.isNull[0]) {
+          int value = (int) vec.vector[0];
+          indexStatistics.updateDate(value);
+          if (createBloomFilter) {
+            bloomFilter.addLong(value);
+          }
+          for(int i=0; i < length; ++i) {
+            writer.write(value);
+          }
+        }
+      } else {
+        for(int i=0; i < length; ++i) {
+          if (vec.noNulls || !vec.isNull[i + offset]) {
+            int value = (int) vec.vector[i + offset];
+            writer.write(value);
+            indexStatistics.updateDate(value);
+            if (createBloomFilter) {
+              bloomFilter.addLong(value);
+            }
+          }
         }
       }
     }
@@ -1660,6 +2170,40 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     }
 
     @Override
+    void writeBatch(ColumnVector vector, int offset,
+                    int length) throws IOException {
+      super.writeBatch(vector, offset, length);
+      DecimalColumnVector vec = (DecimalColumnVector) vector;
+      if (vector.isRepeating) {
+        if (vector.noNulls || !vector.isNull[0]) {
+          HiveDecimal value = vec.vector[0].getHiveDecimal();
+          indexStatistics.updateDecimal(value);
+          if (createBloomFilter) {
+            bloomFilter.addString(value.toString());
+          }
+          for(int i=0; i < length; ++i) {
+            SerializationUtils.writeBigInteger(valueStream,
+                value.unscaledValue());
+            scaleStream.write(value.scale());
+          }
+        }
+      } else {
+        for(int i=0; i < length; ++i) {
+          if (vec.noNulls || !vec.isNull[i + offset]) {
+            HiveDecimal value = vec.vector[i + offset].getHiveDecimal();
+            SerializationUtils.writeBigInteger(valueStream,
+                value.unscaledValue());
+            scaleStream.write(value.scale());
+            indexStatistics.updateDecimal(value);
+            if (createBloomFilter) {
+              bloomFilter.addString(value.toString());
+            }
+          }
+        }
+      }
+    }
+
+    @Override
     void writeStripe(OrcProto.StripeFooter.Builder builder,
                      int requiredIndexEntries) throws IOException {
       super.writeStripe(builder, requiredIndexEntries);
@@ -1685,13 +2229,21 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
                      boolean nullable) throws IOException {
       super(columnId, inspector, schema, writer, nullable);
       List<TypeDescription> children = schema.getChildren();
-      StructObjectInspector structObjectInspector =
-        (StructObjectInspector) inspector;
-      fields = structObjectInspector.getAllStructFieldRefs();
+      if (inspector != null) {
+        StructObjectInspector structObjectInspector =
+            (StructObjectInspector) inspector;
+        fields = structObjectInspector.getAllStructFieldRefs();
+      } else {
+        fields = null;
+      }
       childrenWriters = new TreeWriter[children.size()];
       for(int i=0; i < childrenWriters.length; ++i) {
-        ObjectInspector childOI = i < fields.size() ?
-            fields.get(i).getFieldObjectInspector() : null;
+        ObjectInspector childOI;
+        if (fields != null && i < fields.size()) {
+          childOI = fields.get(i).getFieldObjectInspector();
+        } else {
+          childOI = null;
+        }
         childrenWriters[i] = createTreeWriter(
           childOI, children.get(i), writer,
           true);
@@ -1708,6 +2260,60 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
           StructField field = fields.get(i);
           TreeWriter writer = childrenWriters[i];
           writer.write(insp.getStructFieldData(obj, field));
+        }
+      }
+    }
+
+    @Override
+    void writeRootBatch(VectorizedRowBatch batch, int offset,
+                        int length) throws IOException {
+      // update the statistics for the root column
+      indexStatistics.increment(length);
+      // I'm assuming that the root column isn't nullable so that I don't need
+      // to update isPresent.
+      for(int i=0; i < childrenWriters.length; ++i) {
+        childrenWriters[i].writeBatch(batch.cols[i], offset, length);
+      }
+    }
+
+    private static void writeFields(StructColumnVector vector,
+                                    TreeWriter[] childrenWriters,
+                                    int offset, int length) throws IOException {
+      for(int field=0; field < childrenWriters.length; ++field) {
+        childrenWriters[field].writeBatch(vector.fields[field], offset, length);
+      }
+    }
+
+    @Override
+    void writeBatch(ColumnVector vector, int offset,
+                    int length) throws IOException {
+      super.writeBatch(vector, offset, length);
+      StructColumnVector vec = (StructColumnVector) vector;
+      if (vector.isRepeating) {
+        if (vector.noNulls || !vector.isNull[0]) {
+          writeFields(vec, childrenWriters, offset, length);
+        }
+      } else if (vector.noNulls) {
+        writeFields(vec, childrenWriters, offset, length);
+      } else {
+        // write the records in runs
+        int currentRun = 0;
+        boolean started = false;
+        for(int i=0; i < length; ++i) {
+          if (!vec.isNull[i + offset]) {
+            if (!started) {
+              started = true;
+              currentRun = i;
+            }
+          } else if (started) {
+            started = false;
+            writeFields(vec, childrenWriters, offset + currentRun,
+                i - currentRun);
+          }
+        }
+        if (started) {
+          writeFields(vec, childrenWriters, offset + currentRun,
+              length - currentRun);
         }
       }
     }
@@ -1734,8 +2340,11 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
                    boolean nullable) throws IOException {
       super(columnId, inspector, schema, writer, nullable);
       this.isDirectV2 = isNewWriteFormat(writer);
-      ObjectInspector childOI =
-        ((ListObjectInspector) inspector).getListElementObjectInspector();
+      ObjectInspector childOI = null;
+      if (inspector != null) {
+        childOI =
+            ((ListObjectInspector) inspector).getListElementObjectInspector();
+      }
       childrenWriters = new TreeWriter[1];
       childrenWriters[0] =
         createTreeWriter(childOI, schema.getChildren().get(0), writer, true);
@@ -1771,6 +2380,52 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     }
 
     @Override
+    void writeBatch(ColumnVector vector, int offset,
+                    int length) throws IOException {
+      super.writeBatch(vector, offset, length);
+      ListColumnVector vec = (ListColumnVector) vector;
+      if (vector.isRepeating) {
+        if (vector.noNulls || !vector.isNull[0]) {
+          int childOffset = (int) vec.offsets[0];
+          int childLength = (int) vec.lengths[0];
+          for(int i=0; i < length; ++i) {
+            lengths.write(childLength);
+            childrenWriters[0].writeBatch(vec.child, childOffset, childLength);
+          }
+          if (createBloomFilter) {
+            bloomFilter.addLong(childLength);
+          }
+        }
+      } else {
+        // write the elements in runs
+        int currentOffset = 0;
+        int currentLength = 0;
+        for(int i=0; i < length; ++i) {
+          if (!vec.isNull[i + offset]) {
+            int nextLength = (int) vec.lengths[offset + i];
+            int nextOffset = (int) vec.offsets[offset + i];
+            lengths.write(nextLength);
+            if (currentLength == 0) {
+              currentOffset = nextOffset;
+              currentLength = nextLength;
+            } else if (currentOffset + currentLength != nextOffset) {
+              childrenWriters[0].writeBatch(vec.child, currentOffset,
+                  currentLength);
+              currentOffset = nextOffset;
+              currentLength = nextLength;
+            } else {
+              currentLength += nextLength;
+            }
+          }
+        }
+        if (currentLength != 0) {
+          childrenWriters[0].writeBatch(vec.child, currentOffset,
+              currentLength);
+        }
+      }
+    }
+
+    @Override
     void writeStripe(OrcProto.StripeFooter.Builder builder,
                      int requiredIndexEntries) throws IOException {
       super.writeStripe(builder, requiredIndexEntries);
@@ -1799,15 +2454,19 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
                   boolean nullable) throws IOException {
       super(columnId, inspector, schema, writer, nullable);
       this.isDirectV2 = isNewWriteFormat(writer);
-      MapObjectInspector insp = (MapObjectInspector) inspector;
       childrenWriters = new TreeWriter[2];
       List<TypeDescription> children = schema.getChildren();
+      ObjectInspector keyInsp = null;
+      ObjectInspector valueInsp = null;
+      if (inspector != null) {
+        MapObjectInspector insp = (MapObjectInspector) inspector;
+        keyInsp = insp.getMapKeyObjectInspector();
+        valueInsp = insp.getMapValueObjectInspector();
+      }
       childrenWriters[0] =
-        createTreeWriter(insp.getMapKeyObjectInspector(), children.get(0),
-                         writer, true);
+        createTreeWriter(keyInsp, children.get(0), writer, true);
       childrenWriters[1] =
-        createTreeWriter(insp.getMapValueObjectInspector(), children.get(1),
-                         writer, true);
+        createTreeWriter(valueInsp, children.get(1), writer, true);
       lengths = createIntegerWriter(writer.createStream(columnId,
           OrcProto.Stream.Kind.LENGTH), false, isDirectV2, writer);
       recordPosition(rowIndexPosition);
@@ -1843,6 +2502,57 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     }
 
     @Override
+    void writeBatch(ColumnVector vector, int offset,
+                    int length) throws IOException {
+      super.writeBatch(vector, offset, length);
+      MapColumnVector vec = (MapColumnVector) vector;
+      if (vector.isRepeating) {
+        if (vector.noNulls || !vector.isNull[0]) {
+          int childOffset = (int) vec.offsets[0];
+          int childLength = (int) vec.lengths[0];
+          for(int i=0; i < length; ++i) {
+            lengths.write(childLength);
+            childrenWriters[0].writeBatch(vec.keys, childOffset, childLength);
+            childrenWriters[1].writeBatch(vec.values, childOffset, childLength);
+          }
+          if (createBloomFilter) {
+            bloomFilter.addLong(childLength);
+          }
+        }
+      } else {
+        // write the elements in runs
+        int currentOffset = 0;
+        int currentLength = 0;
+        for(int i=0; i < length; ++i) {
+          if (!vec.isNull[i + offset]) {
+            int nextLength = (int) vec.lengths[offset + i];
+            int nextOffset = (int) vec.offsets[offset + i];
+            lengths.write(nextLength);
+            if (currentLength == 0) {
+              currentOffset = nextOffset;
+              currentLength = nextLength;
+            } else if (currentOffset + currentLength != nextOffset) {
+              childrenWriters[0].writeBatch(vec.keys, currentOffset,
+                  currentLength);
+              childrenWriters[1].writeBatch(vec.values, currentOffset,
+                  currentLength);
+              currentOffset = nextOffset;
+              currentLength = nextLength;
+            } else {
+              currentLength += nextLength;
+            }
+          }
+        }
+        if (currentLength != 0) {
+          childrenWriters[0].writeBatch(vec.keys, currentOffset,
+              currentLength);
+          childrenWriters[1].writeBatch(vec.values, currentOffset,
+              currentLength);
+        }
+      }
+    }
+
+    @Override
     void writeStripe(OrcProto.StripeFooter.Builder builder,
                      int requiredIndexEntries) throws IOException {
       super.writeStripe(builder, requiredIndexEntries);
@@ -1869,13 +2579,17 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
                   StreamFactory writer,
                   boolean nullable) throws IOException {
       super(columnId, inspector, schema, writer, nullable);
-      UnionObjectInspector insp = (UnionObjectInspector) inspector;
-      List<ObjectInspector> choices = insp.getObjectInspectors();
+      List<ObjectInspector> choices = null;
+      if (inspector != null) {
+        UnionObjectInspector insp = (UnionObjectInspector) inspector;
+        choices = insp.getObjectInspectors();
+      }
       List<TypeDescription> children = schema.getChildren();
       childrenWriters = new TreeWriter[children.size()];
       for(int i=0; i < childrenWriters.length; ++i) {
-        childrenWriters[i] = createTreeWriter(choices.get(i),
-                                              children.get(i), writer, true);
+        childrenWriters[i] =
+            createTreeWriter(choices != null ? choices.get(i) : null,
+                             children.get(i), writer, true);
       }
       tags =
         new RunLengthByteWriter(writer.createStream(columnId,
@@ -1894,6 +2608,54 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
           bloomFilter.addLong(tag);
         }
         childrenWriters[tag].write(insp.getField(obj));
+      }
+    }
+
+    @Override
+    void writeBatch(ColumnVector vector, int offset,
+                    int length) throws IOException {
+      super.writeBatch(vector, offset, length);
+      UnionColumnVector vec = (UnionColumnVector) vector;
+      if (vector.isRepeating) {
+        if (vector.noNulls || !vector.isNull[0]) {
+          byte tag = (byte) vec.tags[0];
+          for(int i=0; i < length; ++i) {
+            tags.write(tag);
+          }
+          if (createBloomFilter) {
+            bloomFilter.addLong(tag);
+          }
+          childrenWriters[tag].writeBatch(vec.fields[tag], offset, length);
+        }
+      } else {
+        // write the records in runs of the same tag
+        byte prevTag = 0;
+        int currentRun = 0;
+        boolean started = false;
+        for(int i=0; i < length; ++i) {
+          if (!vec.isNull[i + offset]) {
+            byte tag = (byte) vec.tags[offset + i];
+            tags.write(tag);
+            if (!started) {
+              started = true;
+              currentRun = i;
+              prevTag = tag;
+            } else if (tag != prevTag) {
+              childrenWriters[prevTag].writeBatch(vec.fields[prevTag],
+                  offset + currentRun, i - currentRun);
+              currentRun = i;
+              prevTag = tag;
+            }
+          } else if (started) {
+            started = false;
+            childrenWriters[prevTag].writeBatch(vec.fields[prevTag],
+                offset + currentRun, i - currentRun);
+          }
+        }
+        if (started) {
+          childrenWriters[prevTag].writeBatch(vec.fields[prevTag],
+              offset + currentRun, length - currentRun);
+        }
       }
     }
 
@@ -2365,7 +3127,31 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
         createRowIndexEntry();
       }
     }
-    memoryManager.addedRow();
+    memoryManager.addedRow(1);
+  }
+
+  @Override
+  public void addRowBatch(VectorizedRowBatch batch) throws IOException {
+    if (buildIndex) {
+      // Batch the writes up to the rowIndexStride so that we can get the
+      // right size indexes.
+      int posn = 0;
+      while (posn < batch.size) {
+        int chunkSize = Math.min(batch.size - posn,
+            rowIndexStride - rowsInIndex);
+        treeWriter.writeRootBatch(batch, posn, chunkSize);
+        posn += chunkSize;
+        rowsInIndex += chunkSize;
+        rowsInStripe += chunkSize;
+        if (rowsInIndex >= rowIndexStride) {
+          createRowIndexEntry();
+        }
+      }
+    } else {
+      rowsInStripe += batch.size;
+      treeWriter.writeRootBatch(batch, 0, batch.size);
+    }
+    memoryManager.addedRow(batch.size);
   }
 
   @Override
