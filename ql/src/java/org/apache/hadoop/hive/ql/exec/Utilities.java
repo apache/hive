@@ -2150,7 +2150,12 @@ public final class Utilities {
       List<String> realFiles = new ArrayList<String>(files.size());
       for (String one : files) {
         try {
-          realFiles.add(realFile(one, conf));
+          String onefile = realFile(one, conf);
+          if (onefile != null) {
+            realFiles.add(realFile(one, conf));
+          } else {
+            LOG.warn("The file " + one + " does not exist.");
+          }
         } catch (IOException e) {
           throw new RuntimeException("Cannot validate file " + one + "due to exception: "
               + e.getMessage(), e);
