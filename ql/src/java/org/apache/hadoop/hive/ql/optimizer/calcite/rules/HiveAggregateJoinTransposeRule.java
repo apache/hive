@@ -296,6 +296,14 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
           Mappings.apply2(mapping, aggregate.getGroupSets()), newAggCalls);
     }
     call.transformTo(r);
+    // Add original tree as well for potential alternative transformation.
+    // This is modeled after LoptOptimizeJoinRule::findBestOrderings() in
+    // which rule adds multiple transformations and Planner picks the cheapest one.
+    // Hep planner will automatically pick the one with lower cost among two.
+    // For details, see: HepPlanner:applyTransformationResults()
+    // In this case, if ndv is close to # of rows, i.e., group by is not resulting
+    // in any deduction, doing this transformation is not useful.
+    call.transformTo(aggregate);
   }
 
   /** Computes the closure of a set of columns according to a given list of
