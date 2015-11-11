@@ -815,8 +815,10 @@ public class TestOrcRawRecordMerger {
     MemoryManager mgr = new MemoryManager(conf){
       int rowsAddedSinceCheck = 0;
 
-      synchronized void addedRow() throws IOException {
-        if (++rowsAddedSinceCheck >= 2) {
+      @Override
+      synchronized void addedRow(int rows) throws IOException {
+        rowsAddedSinceCheck += rows;
+        if (rowsAddedSinceCheck >= 2) {
           notifyWriters();
           rowsAddedSinceCheck = 0;
         }
@@ -912,8 +914,10 @@ public class TestOrcRawRecordMerger {
     MemoryManager mgr = new MemoryManager(conf){
       int rowsAddedSinceCheck = 0;
 
-      synchronized void addedRow() throws IOException {
-        if (++rowsAddedSinceCheck >= 2) {
+      @Override
+      synchronized void addedRow(int rows) throws IOException {
+        rowsAddedSinceCheck += rows;
+        if (rowsAddedSinceCheck >= 2) {
           notifyWriters();
           rowsAddedSinceCheck = 0;
         }

@@ -52,17 +52,16 @@ public class TestColumnStatistics {
 
     ColumnStatisticsImpl stats1 = ColumnStatisticsImpl.create(schema);
     ColumnStatisticsImpl stats2 = ColumnStatisticsImpl.create(schema);
-    stats1.updateInteger(10);
-    stats1.updateInteger(10);
-    stats2.updateInteger(1);
-    stats2.updateInteger(1000);
+    stats1.updateInteger(10, 2);
+    stats2.updateInteger(1, 1);
+    stats2.updateInteger(1000, 1);
     stats1.merge(stats2);
     IntegerColumnStatistics typed = (IntegerColumnStatistics) stats1;
     assertEquals(1, typed.getMinimum());
     assertEquals(1000, typed.getMaximum());
     stats1.reset();
-    stats1.updateInteger(-10);
-    stats1.updateInteger(10000);
+    stats1.updateInteger(-10, 1);
+    stats1.updateInteger(10000, 1);
     stats1.merge(stats2);
     assertEquals(-10, typed.getMinimum());
     assertEquals(10000, typed.getMaximum());
@@ -101,11 +100,14 @@ public class TestColumnStatistics {
     stats1.updateString(new Text("david"));
     stats1.updateString(new Text("charles"));
     stats2.updateString(new Text("anne"));
-    stats2.updateString(new Text("erin"));
+    byte[] erin = new byte[]{0, 1, 2, 3, 4, 5, 101, 114, 105, 110};
+    stats2.updateString(erin, 6, 4, 5);
+    assertEquals(24, ((StringColumnStatistics)stats2).getSum());
     stats1.merge(stats2);
     StringColumnStatistics typed = (StringColumnStatistics) stats1;
     assertEquals("anne", typed.getMinimum());
     assertEquals("erin", typed.getMaximum());
+    assertEquals(39, typed.getSum());
     stats1.reset();
     stats1.updateString(new Text("aaa"));
     stats1.updateString(new Text("zzz"));

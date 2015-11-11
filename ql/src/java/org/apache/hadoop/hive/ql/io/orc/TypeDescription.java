@@ -18,6 +18,17 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
+import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.ListColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.MapColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.UnionColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -262,6 +273,69 @@ public class TypeDescription {
       root.assignIds(0);
     }
     return maxId;
+  }
+
+  private ColumnVector createColumn() {
+    switch (category) {
+      case BOOLEAN:
+      case BYTE:
+      case SHORT:
+      case INT:
+      case LONG:
+      case TIMESTAMP:
+      case DATE:
+        return new LongColumnVector();
+      case FLOAT:
+      case DOUBLE:
+        return new DoubleColumnVector();
+      case DECIMAL:
+        return new DecimalColumnVector(precision, scale);
+      case STRING:
+      case BINARY:
+      case CHAR:
+      case VARCHAR:
+        return new BytesColumnVector();
+      case STRUCT: {
+        ColumnVector[] fieldVector = new ColumnVector[children.size()];
+        for(int i=0; i < fieldVector.length; ++i) {
+          fieldVector[i] = children.get(i).createColumn();
+        }
+        return new StructColumnVector(VectorizedRowBatch.DEFAULT_SIZE,
+                fieldVector);
+      }
+      case UNION: {
+        ColumnVector[] fieldVector = new ColumnVector[children.size()];
+        for(int i=0; i < fieldVector.length; ++i) {
+          fieldVector[i] = children.get(i).createColumn();
+        }
+        return new UnionColumnVector(VectorizedRowBatch.DEFAULT_SIZE,
+            fieldVector);
+      }
+      case LIST:
+        return new ListColumnVector(VectorizedRowBatch.DEFAULT_SIZE,
+            children.get(0).createColumn());
+      case MAP:
+        return new MapColumnVector(VectorizedRowBatch.DEFAULT_SIZE,
+            children.get(0).createColumn(), children.get(1).createColumn());
+      default:
+        throw new IllegalArgumentException("Unknown type " + category);
+    }
+  }
+
+  public VectorizedRowBatch createRowBatch() {
+    VectorizedRowBatch result;
+    if (category == Category.STRUCT) {
+      result = new VectorizedRowBatch(children.size(),
+          VectorizedRowBatch.DEFAULT_SIZE);
+      for(int i=0; i < result.cols.length; ++i) {
+        result.cols[i] = children.get(i).createColumn();
+      }
+    } else {
+      result = new VectorizedRowBatch(1, VectorizedRowBatch.DEFAULT_SIZE);
+      result.cols[0] = createColumn();
+    }
+    result.reset();
+    return result;
   }
 
   /**

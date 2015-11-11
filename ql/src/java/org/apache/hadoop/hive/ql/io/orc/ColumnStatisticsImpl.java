@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.WritableComparator;
 
 class ColumnStatisticsImpl implements ColumnStatistics {
 
@@ -47,9 +48,9 @@ class ColumnStatisticsImpl implements ColumnStatistics {
     }
 
     @Override
-    void updateBoolean(boolean value) {
+    void updateBoolean(boolean value, int repetitions) {
       if (value) {
-        trueCount += 1;
+        trueCount += repetitions;
       }
     }
 
@@ -132,7 +133,7 @@ class ColumnStatisticsImpl implements ColumnStatistics {
     }
 
     @Override
-    void updateInteger(long value) {
+    void updateInteger(long value, int repetitions) {
       if (!hasMinimum) {
         hasMinimum = true;
         minimum = value;
@@ -144,7 +145,7 @@ class ColumnStatisticsImpl implements ColumnStatistics {
       }
       if (!overflow) {
         boolean wasPositive = sum >= 0;
-        sum += value;
+        sum += value * repetitions;
         if ((value >= 0) == wasPositive) {
           overflow = (sum >= 0) != wasPositive;
         }
@@ -398,6 +399,23 @@ class ColumnStatisticsImpl implements ColumnStatistics {
     }
 
     @Override
+    void updateString(byte[] bytes, int offset, int length, int repetitions) {
+      if (minimum == null) {
+        maximum = minimum = new Text();
+        maximum.set(bytes, offset, length);
+      } else if (WritableComparator.compareBytes(minimum.getBytes(), 0,
+          minimum.getLength(), bytes, offset, length) > 0) {
+        minimum = new Text();
+        minimum.set(bytes, offset, length);
+      } else if (WritableComparator.compareBytes(maximum.getBytes(), 0,
+          maximum.getLength(), bytes, offset, length) < 0) {
+        maximum = new Text();
+        maximum.set(bytes, offset, length);
+      }
+      sum += length * repetitions;
+    }
+
+    @Override
     void merge(ColumnStatisticsImpl other) {
       if (other instanceof StringStatisticsImpl) {
         StringStatisticsImpl str = (StringStatisticsImpl) other;
@@ -495,6 +513,11 @@ class ColumnStatisticsImpl implements ColumnStatistics {
     @Override
     void updateBinary(BytesWritable value) {
       sum += value.getLength();
+    }
+
+    @Override
+    void updateBinary(byte[] bytes, int offset, int length, int repetitions) {
+      sum += length * repetitions;
     }
 
     @Override
@@ -700,6 +723,18 @@ class ColumnStatisticsImpl implements ColumnStatistics {
     }
 
     @Override
+    void updateDate(int value) {
+      if (minimum == null) {
+        minimum = value;
+        maximum = value;
+      } else if (minimum > value) {
+        minimum = value;
+      } else if (maximum < value) {
+        maximum = value;
+      }
+    }
+
+    @Override
     void merge(ColumnStatisticsImpl other) {
       if (other instanceof DateStatisticsImpl) {
         DateStatisticsImpl dateStats = (DateStatisticsImpl) other;
@@ -809,6 +844,18 @@ class ColumnStatisticsImpl implements ColumnStatistics {
     }
 
     @Override
+    void updateTimestamp(long value) {
+      if (minimum == null) {
+        minimum = value;
+        maximum = value;
+      } else if (minimum > value) {
+        minimum = value;
+      } else if (maximum < value) {
+        maximum = value;
+      }
+    }
+
+    @Override
     void merge(ColumnStatisticsImpl other) {
       if (other instanceof TimestampStatisticsImpl) {
         TimestampStatisticsImpl timestampStats = (TimestampStatisticsImpl) other;
@@ -889,15 +936,19 @@ class ColumnStatisticsImpl implements ColumnStatistics {
     count += 1;
   }
 
+  void increment(int count) {
+    this.count += count;
+  }
+
   void setNull() {
     hasNull = true;
   }
 
-  void updateBoolean(boolean value) {
+  void updateBoolean(boolean value, int repetitions) {
     throw new UnsupportedOperationException("Can't update boolean");
   }
 
-  void updateInteger(long value) {
+  void updateInteger(long value, int repetitions) {
     throw new UnsupportedOperationException("Can't update integer");
   }
 
@@ -909,8 +960,16 @@ class ColumnStatisticsImpl implements ColumnStatistics {
     throw new UnsupportedOperationException("Can't update string");
   }
 
+  void updateString(byte[] bytes, int offset, int length, int repetitions) {
+    throw new UnsupportedOperationException("Can't update string");
+  }
+
   void updateBinary(BytesWritable value) {
     throw new UnsupportedOperationException("Can't update binary");
+  }
+
+  void updateBinary(byte[] bytes, int offset, int length, int repetitions) {
+    throw new UnsupportedOperationException("Can't update string");
   }
 
   void updateDecimal(HiveDecimal value) {
@@ -921,7 +980,15 @@ class ColumnStatisticsImpl implements ColumnStatistics {
     throw new UnsupportedOperationException("Can't update date");
   }
 
+  void updateDate(int value) {
+    throw new UnsupportedOperationException("Can't update date");
+  }
+
   void updateTimestamp(Timestamp value) {
+    throw new UnsupportedOperationException("Can't update timestamp");
+  }
+
+  void updateTimestamp(long value) {
     throw new UnsupportedOperationException("Can't update timestamp");
   }
 
