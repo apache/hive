@@ -614,46 +614,34 @@ public abstract class VectorMapJoinCommonOperator extends MapJoinOperator implem
   }
 
   @Override
-  protected Pair<MapJoinTableContainer[], MapJoinTableContainerSerDe[]> loadHashTable(
-      ExecMapperContext mapContext, MapredContext mrContext) throws HiveException {
-
-    Pair<MapJoinTableContainer[], MapJoinTableContainerSerDe[]> pair;
+  protected void completeInitializationOp(Object[] os) throws HiveException {
+    // setup mapJoinTables and serdes
+    super.completeInitializationOp(os);
 
     VectorMapJoinDesc vectorDesc = conf.getVectorDesc();
     HashTableImplementationType hashTableImplementationType = vectorDesc.hashTableImplementationType();
     switch (vectorDesc.hashTableImplementationType()) {
     case OPTIMIZED:
       {
-        // Using Tez's HashTableLoader, create either a MapJoinBytesTableContainer or
-        // HybridHashTableContainer.
-        pair = super.loadHashTable(mapContext, mrContext);
-
         // Create our vector map join optimized hash table variation *above* the
         // map join table container.
-        MapJoinTableContainer[] mapJoinTableContainers = pair.getLeft();
         vectorMapJoinHashTable = VectorMapJoinOptimizedCreateHashTable.createHashTable(conf,
-                mapJoinTableContainers[posSingleVectorMapJoinSmallTable]);
+                mapJoinTables[posSingleVectorMapJoinSmallTable]);
       }
       break;
 
     case FAST:
       {
-        // Use our VectorMapJoinFastHashTableLoader to create a VectorMapJoinTableContainer.
-        pair = super.loadHashTable(mapContext, mrContext);
-
         // Get our vector map join fast hash table variation from the
         // vector map join table container.
-        MapJoinTableContainer[] mapJoinTableContainers = pair.getLeft();
         VectorMapJoinTableContainer vectorMapJoinTableContainer =
-                (VectorMapJoinTableContainer) mapJoinTableContainers[posSingleVectorMapJoinSmallTable];
+                (VectorMapJoinTableContainer) mapJoinTables[posSingleVectorMapJoinSmallTable];
         vectorMapJoinHashTable = vectorMapJoinTableContainer.vectorMapJoinHashTable();
       }
       break;
     default:
       throw new RuntimeException("Unknown vector map join hash table implementation type " + hashTableImplementationType.name());
     }
-
-    return pair;
   }
 
   /*
