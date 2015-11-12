@@ -29,8 +29,8 @@ import java.util.Stack;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
@@ -53,7 +53,7 @@ import org.apache.hadoop.hive.ql.plan.SparkWork;
  * works.
  */
 public class CombineEquivalentWorkResolver implements PhysicalPlanResolver {
-  protected static transient Log LOG = LogFactory.getLog(CombineEquivalentWorkResolver.class);
+  protected static transient Logger LOG = LoggerFactory.getLogger(CombineEquivalentWorkResolver.class);
 
   @Override
   public PhysicalContext resolve(PhysicalContext pctx) throws SemanticException {

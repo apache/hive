@@ -18,7 +18,7 @@
 package org.apache.hadoop.hive.ql.index;
 
 import java.io.Serializable;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -34,7 +34,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
  */
 public class HiveIndexQueryContext {
 
-  private HashSet<ReadEntity> additionalSemanticInputs; // additional inputs to add to the parse context when
+  private Set<ReadEntity> additionalSemanticInputs; // additional inputs to add to the parse context when
                                                         // merging the index query tasks
   private String indexInputFormat;        // input format to set on the TableScanOperator to activate indexing
   private String indexIntermediateFile;   // name of intermediate file written by the index query for the
@@ -52,12 +52,12 @@ public class HiveIndexQueryContext {
     this.queryTasks = null;
   }
 
-  public HashSet<ReadEntity> getAdditionalSemanticInputs() {
+  public Set<ReadEntity> getAdditionalSemanticInputs() {
     return additionalSemanticInputs;
   }
-  public void addAdditionalSemanticInputs(HashSet<ReadEntity> additionalParseInputs) {
+  public void addAdditionalSemanticInputs(Set<ReadEntity> additionalParseInputs) {
     if (this.additionalSemanticInputs == null) {
-      this.additionalSemanticInputs = new HashSet<ReadEntity>();
+      this.additionalSemanticInputs = new LinkedHashSet<ReadEntity>();
     }
     this.additionalSemanticInputs.addAll(additionalParseInputs);
   }

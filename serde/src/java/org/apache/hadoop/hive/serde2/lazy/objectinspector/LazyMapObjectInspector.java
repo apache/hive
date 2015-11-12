@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.serde2.lazy.objectinspector;
 
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.serde2.lazy.LazyMap;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyObjectInspectorParameters;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyObjectInspectorParametersImpl;
@@ -37,7 +37,7 @@ import org.apache.hadoop.io.Text;
  */
 public class LazyMapObjectInspector implements MapObjectInspector {
 
-  public static final Log LOG = LogFactory.getLog(LazyMapObjectInspector.class
+  public static final Logger LOG = LoggerFactory.getLogger(LazyMapObjectInspector.class
       .getName());
 
   private ObjectInspector mapKeyObjectInspector;

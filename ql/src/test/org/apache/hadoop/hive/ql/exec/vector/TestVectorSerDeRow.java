@@ -57,21 +57,10 @@ import org.apache.hadoop.hive.serde2.lazy.fast.LazySimpleSerializeWrite;
 import org.apache.hadoop.hive.serde2.lazybinary.fast.LazyBinaryDeserializeRead;
 import org.apache.hadoop.hive.serde2.lazybinary.fast.LazyBinarySerializeWrite;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableByteObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableDateObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableDoubleObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableFloatObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableIntObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableLongObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableShortObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableStringObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.hive.serde2.fast.SerializeWrite;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.BytesWritable;
@@ -415,10 +404,10 @@ public class TestVectorSerDeRow extends TestCase {
   private Output serializeRow(Object[] row, RandomRowObjectSource source, SerializeWrite serializeWrite) throws HiveException, IOException {
     Output output = new Output();
     serializeWrite.set(output);
-    PrimitiveCategory[] primitiveCategories = source.primitiveCategories();
-    for (int i = 0; i < primitiveCategories.length; i++) {
+    PrimitiveTypeInfo[] primitiveTypeInfos = source.primitiveTypeInfos();
+    for (int i = 0; i < primitiveTypeInfos.length; i++) {
       Object object = row[i];
-      PrimitiveCategory primitiveCategory = primitiveCategories[i];
+      PrimitiveCategory primitiveCategory = primitiveTypeInfos[i].getPrimitiveCategory();
       switch (primitiveCategory) {
       case BOOLEAN:
         {
@@ -529,7 +518,7 @@ public class TestVectorSerDeRow extends TestCase {
         {
           HiveDecimalWritable expectedWritable = (HiveDecimalWritable) object;
           HiveDecimal value = expectedWritable.getHiveDecimal();
-          serializeWrite.writeHiveDecimal(value);
+          serializeWrite.writeHiveDecimal(value, ((DecimalTypeInfo)primitiveTypeInfos[i]).scale());
         }
         break;
       default:

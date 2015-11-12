@@ -27,8 +27,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -70,7 +70,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 public class StatsNoJobTask extends Task<StatsNoJobWork> implements Serializable {
 
   private static final long serialVersionUID = 1L;
-  private static transient final Log LOG = LogFactory.getLog(StatsNoJobTask.class);
+  private static transient final Logger LOG = LoggerFactory.getLogger(StatsNoJobTask.class);
   private static ConcurrentMap<String, Partition> partUpdates;
   private static Table table;
   private static String tableFullName;

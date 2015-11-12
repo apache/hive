@@ -17,8 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -39,7 +39,7 @@ import org.apache.hadoop.io.LongWritable;
 @Description(name = "sum_list", value = "_FUNC_(x) - Returns the sum of a set of numbers")
 public class GenericUDAFSumList extends AbstractGenericUDAFResolver {
 
-  static final Log LOG = LogFactory.getLog(GenericUDAFSumList.class.getName());
+  static final Logger LOG = LoggerFactory.getLogger(GenericUDAFSumList.class.getName());
 
   @Override
   public GenericUDAFEvaluator getEvaluator(GenericUDAFParameterInfo info)

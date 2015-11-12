@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import junit.framework.Assert;
+
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -47,7 +48,7 @@ import java.util.List;
  */
 public class TestHiveMetaStoreTxns {
 
-  private HiveConf conf = new HiveConf();
+  private final HiveConf conf = new HiveConf();
   private IMetaStoreClient client;
 
   public TestHiveMetaStoreTxns() throws Exception {

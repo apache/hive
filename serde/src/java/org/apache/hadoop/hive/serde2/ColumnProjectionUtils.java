@@ -21,21 +21,20 @@ package org.apache.hadoop.hive.serde2;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
 
 /**
  * ColumnProjectionUtils.
  *
  */
 public final class ColumnProjectionUtils {
-  public static final Log LOG = LogFactory.getLog(ColumnProjectionUtils.class);
+  public static final Logger LOG = LoggerFactory.getLogger(ColumnProjectionUtils.class);
 
   public static final String READ_COLUMN_IDS_CONF_STR = "hive.io.file.readcolumn.ids";
   public static final String READ_ALL_COLUMNS = "hive.io.file.read.all.columns";
@@ -149,14 +148,14 @@ public final class ColumnProjectionUtils {
     List<Integer> result = new ArrayList<Integer>(list.length);
     for (String element : list) {
       // it may contain duplicates, remove duplicates
-      // TODO: WTF? This would break many assumptions elsewhere if it did.
-      //       Column names' and column ids' lists are supposed to be correlated.
       Integer toAdd = Integer.parseInt(element);
       if (!result.contains(toAdd)) {
         result.add(toAdd);
-      } else if (LOG.isInfoEnabled()) {
-        LOG.info("Duplicate ID " + toAdd + " in column ID list");
       }
+      // NOTE: some code uses this list to correlate with column names, and yet these lists may
+      //       contain duplicates, which this call will remove and the other won't. As far as I can
+      //       tell, no code will actually use these two methods together; all is good if the code
+      //       gets the ID list without relying on this method. Or maybe it just works by magic.
     }
     return result;
   }

@@ -21,6 +21,7 @@ import java.sql.Date;
 import java.sql.Timestamp;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.vector.*;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
@@ -83,6 +84,10 @@ public class VectorUDFAdaptor extends VectorExpression {
     writers = VectorExpressionWriterFactory.getExpressionWriters(expr.getChildren());
     for (int i = 0; i < childrenOIs.length; i++) {
       childrenOIs[i] = writers[i].getObjectInspector();
+    }
+    MapredContext context = MapredContext.get();
+    if (context != null) {
+      context.setup(genericUDF);
     }
     outputOI = VectorExpressionWriterFactory.genVectorExpressionWritable(expr)
         .getObjectInspector();

@@ -22,13 +22,13 @@ import java.util.Arrays;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveVariableSource;
 import org.apache.hadoop.hive.conf.VariableSubstitution;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * AddResourceProcessor.
@@ -36,7 +36,7 @@ import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
  */
 public class AddResourceProcessor implements CommandProcessor {
 
-  public static final Log LOG = LogFactory.getLog(AddResourceProcessor.class
+  public static final Logger LOG = LoggerFactory.getLogger(AddResourceProcessor.class
       .getName());
   public static final LogHelper console = new LogHelper(LOG);
 

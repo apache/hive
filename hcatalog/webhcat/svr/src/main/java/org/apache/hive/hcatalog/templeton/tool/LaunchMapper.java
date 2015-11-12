@@ -18,8 +18,8 @@
  */
 package org.apache.hive.hcatalog.templeton.tool;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -73,7 +73,7 @@ public class LaunchMapper extends Mapper<NullWritable, NullWritable, Text, Text>
    * This class currently sends everything to stderr, but it should probably use Log4J - 
    * it will end up in 'syslog' of this Map task.  For example, look for KeepAlive heartbeat msgs.
    */
-  private static final Log LOG = LogFactory.getLog(LaunchMapper.class);
+  private static final Logger LOG = LoggerFactory.getLogger(LaunchMapper.class);
   /**
    * When a Pig job is submitted and it uses HCat, WebHCat may be configured to ship hive tar
    * to the target node.  Pig on the target node needs some env vars configured.
@@ -481,7 +481,7 @@ public class LaunchMapper extends Mapper<NullWritable, NullWritable, Text, Text>
         try {
           state.close();
         } catch (IOException e) {
-          LOG.warn(e);
+          LOG.warn("Caught exception while closing job state ", e);
         }
       }
     }

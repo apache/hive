@@ -21,8 +21,8 @@ package org.apache.hadoop.hive.serde2;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
@@ -30,8 +30,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
 public class CustomNonSettableStructObjectInspector1 extends
 StructObjectInspector {
-  public static final Log LOG = LogFactory
-      .getLog(CustomNonSettableStructObjectInspector1.class.getName());
+  public static final Logger LOG = LoggerFactory
+      .getLogger(CustomNonSettableStructObjectInspector1.class.getName());
 
   protected static class MyField implements StructField {
     protected int fieldID;

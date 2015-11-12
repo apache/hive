@@ -28,8 +28,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.antlr.runtime.tree.Tree;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.AnalyzeRewriteContext;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
 
@@ -111,7 +111,7 @@ public class QBParseInfo {
 
 
   @SuppressWarnings("unused")
-  private static final Log LOG = LogFactory.getLog(QBParseInfo.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(QBParseInfo.class.getName());
 
   public QBParseInfo(String alias, boolean isSubQ) {
     aliasToSrc = new HashMap<String, ASTNode>();

@@ -19,8 +19,6 @@ package org.apache.hadoop.hive.accumulo.predicate.compare;
 
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
-
 /**
  * Set of comparison operations over a string constant. Used for Hive predicates involving string
  * comparison.
@@ -29,7 +27,6 @@ import org.apache.log4j.Logger;
  */
 public class StringCompare implements PrimitiveComparison {
   @SuppressWarnings("unused")
-  private static final Logger log = Logger.getLogger(StringCompare.class);
 
   private String constant;
 

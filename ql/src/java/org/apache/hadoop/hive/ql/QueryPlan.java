@@ -35,8 +35,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.ExplainTask;
@@ -69,7 +67,6 @@ import org.apache.thrift.transport.TMemoryBuffer;
 public class QueryPlan implements Serializable {
   private static final long serialVersionUID = 1L;
 
-  private static final Log LOG = LogFactory.getLog(QueryPlan.class.getName());
 
   private String queryString;
 

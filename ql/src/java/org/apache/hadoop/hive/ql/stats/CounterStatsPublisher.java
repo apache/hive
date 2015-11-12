@@ -20,14 +20,14 @@ package org.apache.hadoop.hive.ql.stats;
 
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.mapred.Reporter;
 
 public class CounterStatsPublisher implements StatsPublisher {
 
-  private static final Log LOG = LogFactory.getLog(CounterStatsPublisher.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(CounterStatsPublisher.class.getName());
 
   private Reporter reporter;
 

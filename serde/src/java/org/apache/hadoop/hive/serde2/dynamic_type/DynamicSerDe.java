@@ -23,8 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
@@ -56,7 +56,7 @@ import org.apache.thrift.transport.TIOStreamTransport;
     DynamicSerDe.META_TABLE_NAME})
 public class DynamicSerDe extends AbstractSerDe {
 
-  public static final Log LOG = LogFactory.getLog(DynamicSerDe.class.getName());
+  public static final Logger LOG = LoggerFactory.getLogger(DynamicSerDe.class.getName());
 
   private String type_name;
   private DynamicSerDeStructBase bt;

@@ -27,8 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -56,8 +56,8 @@ import org.apache.hadoop.mapred.OutputFormat;
 public class Partition implements Serializable {
 
   @SuppressWarnings("nls")
-  static final private Log LOG = LogFactory
-      .getLog("hive.ql.metadata.Partition");
+  private static final Logger LOG = LoggerFactory
+      .getLogger("hive.ql.metadata.Partition");
 
   private Table table;
   private org.apache.hadoop.hive.metastore.api.Partition tPartition;
@@ -467,10 +467,23 @@ public class Partition implements Serializable {
   }
 
   public List<FieldSchema> getCols() {
+    return getColsInternal(false);
+  }
+
+  public List<FieldSchema> getColsForMetastore() {
+    return getColsInternal(true);
+  }
+
+  private List<FieldSchema> getColsInternal(boolean forMs) {
 
     try {
-      if (Table.hasMetastoreBasedSchema(SessionState.getSessionConf(), tPartition.getSd())) {
+      String serializationLib = tPartition.getSd().getSerdeInfo().getSerializationLib();
+      // Do the lightweight check for general case.
+      if (Table.hasMetastoreBasedSchema(SessionState.getSessionConf(), serializationLib)) {
         return tPartition.getSd().getCols();
+      } else if (forMs && !Table.shouldStoreFieldsInMetastore(
+          SessionState.getSessionConf(), serializationLib, table.getParameters())) {
+        return Hive.getFieldsFromDeserializerForMsStorage(table, getDeserializer());
       }
       return MetaStoreUtils.getFieldsFromDeserializer(table.getTableName(), getDeserializer());
     } catch (Exception e) {

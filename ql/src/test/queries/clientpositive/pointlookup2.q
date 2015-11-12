@@ -14,7 +14,7 @@ from pcr_t1
 insert overwrite table pcr_t2 select ds, key, value where ds='2000-04-08' and key=2;
 
 set hive.optimize.point.lookup.min=2;
-set hive.optimize.point.lookup.extract=true;
+set hive.optimize.partition.columns.separate=true;
 
 explain extended
 select key, value, ds

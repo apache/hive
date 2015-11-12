@@ -22,8 +22,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.zookeeper.CreateMode;
@@ -56,7 +56,7 @@ public class JobStateTracker {
   private String jobid;
 
   // The logger
-  private static final Log LOG = LogFactory.getLog(JobStateTracker.class);
+  private static final Logger LOG = LoggerFactory.getLogger(JobStateTracker.class);
 
   /**
    * Constructor for a new node -- takes the jobid of an existing job

@@ -21,8 +21,8 @@ package org.apache.hadoop.hive.ql.exec;
 import com.google.common.collect.Iterables;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -164,6 +164,7 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
+import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
 import org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe;
@@ -223,7 +224,7 @@ import static org.apache.hadoop.util.StringUtils.stringifyException;
  **/
 public class DDLTask extends Task<DDLWork> implements Serializable {
   private static final long serialVersionUID = 1L;
-  private static final Log LOG = LogFactory.getLog("hive.ql.exec.DDLTask");
+  private static final Logger LOG = LoggerFactory.getLogger("hive.ql.exec.DDLTask");
 
   private static final int separator = Utilities.tabCode;
   private static final int terminator = Utilities.newLineCode;
@@ -3023,7 +3024,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           cols.addAll(tbl.getPartCols());
         }
       } else {
-        cols = Hive.getFieldsFromDeserializer(colPath, deserializer);
+        cols = Hive.getFieldsFromDeserializer(colPath, deserializer); // TODO#: here - desc
         if (descTbl.isFormatted()) {
           // when column name is specified in describe table DDL, colPath will
           // will be table_name.column_name
@@ -3256,7 +3257,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       tbl.setDbName(Utilities.getDatabaseName(alterTbl.getNewName()));
       tbl.setTableName(Utilities.getTableName(alterTbl.getNewName()));
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDCOLS) {
-      List<FieldSchema> oldCols = (part == null ? tbl.getCols() : part.getCols());
+      List<FieldSchema> oldCols = (part == null
+          ? tbl.getColsForMetastore() : part.getColsForMetastore());
       StorageDescriptor sd = (part == null ? tbl.getTTable().getSd() : part.getTPartition().getSd());
       List<FieldSchema> newCols = alterTbl.getNewCols();
       String serializationLib = sd.getSerdeInfo().getSerializationLib();
@@ -3284,7 +3286,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         sd.setCols(oldCols);
       }
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.RENAMECOLUMN) {
-      List<FieldSchema> oldCols = (part == null ? tbl.getCols() : part.getCols());
+      List<FieldSchema> oldCols = (part == null
+          ? tbl.getColsForMetastore() : part.getColsForMetastore());
       StorageDescriptor sd = (part == null ? tbl.getTTable().getSd() : part.getTPartition().getSd());
       List<FieldSchema> newCols = new ArrayList<FieldSchema>();
       Iterator<FieldSchema> iterOldCols = oldCols.iterator();
@@ -3378,16 +3381,27 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDSERDE) {
       StorageDescriptor sd = (part == null ? tbl.getTTable().getSd() : part.getTPartition().getSd());
       String serdeName = alterTbl.getSerdeName();
+      String oldSerdeName = sd.getSerdeInfo().getSerializationLib();
       sd.getSerdeInfo().setSerializationLib(serdeName);
       if ((alterTbl.getProps() != null) && (alterTbl.getProps().size() > 0)) {
         sd.getSerdeInfo().getParameters().putAll(alterTbl.getProps());
       }
       if (part != null) {
+        // TODO: wtf? This doesn't do anything.
         part.getTPartition().getSd().setCols(part.getTPartition().getSd().getCols());
       } else {
-        if (!Table.hasMetastoreBasedSchema(conf, serdeName)) {
-          tbl.setFields(Hive.getFieldsFromDeserializer(tbl.getTableName(), tbl.
-              getDeserializer()));
+        if (Table.shouldStoreFieldsInMetastore(conf, serdeName, tbl.getParameters())
+            && !Table.hasMetastoreBasedSchema(conf, oldSerdeName)) {
+          // If new SerDe needs to store fields in metastore, but the old serde doesn't, save
+          // the fields so that new SerDe could operate. Note that this may fail if some fields
+          // from old SerDe are too long to be stored in metastore, but there's nothing we can do.
+          try {
+            Deserializer oldSerde = MetaStoreUtils.getDeserializer(
+                conf, tbl.getTTable(), false, oldSerdeName);
+            tbl.setFields(Hive.getFieldsFromDeserializer(tbl.getTableName(), oldSerde));
+          } catch (MetaException ex) {
+            throw new HiveException(ex);
+          }
         }
       }
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDFILEFORMAT) {
@@ -3717,7 +3731,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   private int dropDatabase(Hive db, DropDatabaseDesc dropDb)
       throws HiveException {
     try {
-      db.dropDatabase(dropDb.getDatabaseName(), true, dropDb.getIfExists(), dropDb.isCasdade());
+      String dbName = dropDb.getDatabaseName();
+      db.dropDatabase(dbName, true, dropDb.getIfExists(), dropDb.isCasdade());
+      // Unregister the functions as well
+      if (dropDb.isCasdade()) {
+        FunctionRegistry.unregisterPermanentFunctions(dbName);
+      }
     }
     catch (NoSuchObjectException ex) {
       throw new HiveException(ex, ErrorMsg.DATABASE_NOT_EXISTS, dropDb.getDatabaseName());
@@ -4189,9 +4208,20 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     Map<String, String> partitionSpecs = exchangePartition.getPartitionSpecs();
     Table destTable = exchangePartition.getDestinationTable();
     Table sourceTable = exchangePartition.getSourceTable();
-    db.exchangeTablePartitions(partitionSpecs, sourceTable.getDbName(),
+    List<Partition> partitions =
+        db.exchangeTablePartitions(partitionSpecs, sourceTable.getDbName(),
         sourceTable.getTableName(),destTable.getDbName(),
         destTable.getTableName());
+
+    for(Partition partition : partitions) {
+      // Reuse the partition specs from dest partition since they should be the same
+      work.getOutputs().add(new WriteEntity(new Partition(sourceTable, partition.getSpec(), null),
+          WriteEntity.WriteType.DELETE));
+
+      work.getOutputs().add(new WriteEntity(new Partition(destTable, partition.getSpec(), null),
+          WriteEntity.WriteType.INSERT));
+    }
+
     return 0;
   }
 

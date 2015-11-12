@@ -26,6 +26,8 @@ import java.io.Serializable;
 import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -155,6 +157,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnListDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
+import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
@@ -213,6 +216,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.io.IOUtils;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -730,6 +734,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   /**
+   * Convert a string to Text format and write its bytes in the same way TextOutputFormat would do.
+   * This is needed to properly encode non-ascii characters.
+   */
+  private static void writeAsText(String text, FSDataOutputStream out) throws IOException {
+    Text to = new Text(text);
+    out.write(to.getBytes(), 0, to.getLength());
+  }
+
+  /**
    * Generate a temp table out of a value clause
    * See also {@link #preProcessForInsert(ASTNode, QB)}
    */
@@ -807,10 +820,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             fields.add(new FieldSchema("tmp_values_col" + nextColNum++, "string", ""));
           }
           if (isFirst) isFirst = false;
-          else out.writeBytes("\u0001");
-          out.writeBytes(unparseExprForValuesClause(value));
+          else writeAsText("\u0001", out);
+          writeAsText(unparseExprForValuesClause(value), out);
         }
-        out.writeBytes("\n");
+        writeAsText("\n", out);
         firstRow = false;
       }
       out.close();
@@ -2230,7 +2243,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           if (conf.getBoolVar(HiveConf.ConfVars.HIVEOUTERJOINSUPPORTSFILTERS)) {
             joinTree.getFilters().get(0).add(joinCond);
           } else {
-            LOG.warn(ErrorMsg.OUTERJOIN_USES_FILTERS);
+            LOG.warn(ErrorMsg.OUTERJOIN_USES_FILTERS.getErrorCodedMsg());
             joinTree.getFiltersForPushing().get(0).add(joinCond);
           }
         } else {
@@ -2319,7 +2332,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           if (conf.getBoolVar(HiveConf.ConfVars.HIVEOUTERJOINSUPPORTSFILTERS)) {
             joinTree.getFilters().get(1).add(joinCond);
           } else {
-            LOG.warn(ErrorMsg.OUTERJOIN_USES_FILTERS);
+            LOG.warn(ErrorMsg.OUTERJOIN_USES_FILTERS.getErrorCodedMsg());
             joinTree.getFiltersForPushing().get(1).add(joinCond);
           }
         } else {
@@ -2339,7 +2352,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (conf.getBoolVar(HiveConf.ConfVars.HIVEOUTERJOINSUPPORTSFILTERS)) {
           joinTree.getFilters().get(0).add(joinCond);
         } else {
-          LOG.warn(ErrorMsg.OUTERJOIN_USES_FILTERS);
+          LOG.warn(ErrorMsg.OUTERJOIN_USES_FILTERS.getErrorCodedMsg());
           joinTree.getFiltersForPushing().get(0).add(joinCond);
         }
       } else {
@@ -2351,7 +2364,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (conf.getBoolVar(HiveConf.ConfVars.HIVEOUTERJOINSUPPORTSFILTERS)) {
           joinTree.getFilters().get(1).add(joinCond);
         } else {
-          LOG.warn(ErrorMsg.OUTERJOIN_USES_FILTERS);
+          LOG.warn(ErrorMsg.OUTERJOIN_USES_FILTERS.getErrorCodedMsg());
           joinTree.getFiltersForPushing().get(1).add(joinCond);
         }
       } else {
@@ -2501,7 +2514,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           if (conf.getBoolVar(HiveConf.ConfVars.HIVEOUTERJOINSUPPORTSFILTERS)) {
             joinTree.getFilters().get(0).add(joinCond);
           } else {
-            LOG.warn(ErrorMsg.OUTERJOIN_USES_FILTERS);
+            LOG.warn(ErrorMsg.OUTERJOIN_USES_FILTERS.getErrorCodedMsg());
             joinTree.getFiltersForPushing().get(0).add(joinCond);
           }
         } else {
@@ -2513,7 +2526,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           if (conf.getBoolVar(HiveConf.ConfVars.HIVEOUTERJOINSUPPORTSFILTERS)) {
             joinTree.getFilters().get(1).add(joinCond);
           } else {
-            LOG.warn(ErrorMsg.OUTERJOIN_USES_FILTERS);
+            LOG.warn(ErrorMsg.OUTERJOIN_USES_FILTERS.getErrorCodedMsg());
             joinTree.getFiltersForPushing().get(1).add(joinCond);
           }
         } else {
@@ -6643,7 +6656,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     LOG.info("Modifying config values for ACID write");
     conf.setBoolVar(ConfVars.HIVEOPTREDUCEDEDUPLICATION, true);
     conf.setIntVar(ConfVars.HIVEOPTREDUCEDEDUPLICATIONMINREDUCER, 1);
-    conf.setBoolVar(ConfVars.HIVE_HADOOP_SUPPORTS_SUBDIRECTORIES, true);
     conf.set(AcidUtils.CONF_ACID_KEY, "true");
     conf.setBoolVar(ConfVars.HIVEOPTSORTDYNAMICPARTITION, false);
 
@@ -8452,7 +8464,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           // for outer joins, it should not exceed 16 aliases (short type)
           if (!node.getNoOuterJoin() || !target.getNoOuterJoin()) {
             if (node.getRightAliases().length + target.getRightAliases().length + 1 > 16) {
-              LOG.info(ErrorMsg.JOINNODE_OUTERJOIN_MORETHAN_16);
+              LOG.info(ErrorMsg.JOINNODE_OUTERJOIN_MORETHAN_16.getErrorCodedMsg());
               continueScanning = continueJoinMerge();
               continue;
             }
@@ -9539,6 +9551,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (partitions != null) {
           for (Partition partn : partitions) {
             // inputs.add(new ReadEntity(partn)); // is this needed at all?
+	      LOG.info("XXX: adding part: "+partn);
             outputs.add(new WriteEntity(partn, WriteEntity.WriteType.DDL_NO_LOCK));
           }
         }
@@ -10289,6 +10302,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         FieldSchema fieldSchema = derivedSchema.get(i);
         // Modify a copy, not the original
         fieldSchema = new FieldSchema(fieldSchema);
+        // TODO: there's a potential problem here if some table uses external schema like Avro,
+        //       with a very large type name. It seems like the view does not derive the SerDe from
+        //       the table, so it won't be able to just get the type from the deserializer like the
+        //       table does; we won't be able to properly store the type in the RDBMS metastore.
+        //       Not sure if these large cols could be in resultSchema. Ignore this for now 0_o
         derivedSchema.set(i, fieldSchema);
         sb.append(HiveUtils.unparseIdentifier(fieldSchema.getName(), conf));
         sb.append(" AS ");
@@ -10491,8 +10509,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       return nodeOutputs;
     }
 
+    Map<ExprNodeDesc,String> nodeToText = new HashMap<>();
+    List<Entry<ASTNode, ExprNodeDesc>> fieldDescList = new ArrayList<>();
+
     for (Map.Entry<ASTNode, ExprNodeDesc> entry : nodeOutputs.entrySet()) {
       if (!(entry.getValue() instanceof ExprNodeColumnDesc)) {
+        // we need to translate the ExprNodeFieldDesc too, e.g., identifiers in
+        // struct<>.
+        if (entry.getValue() instanceof ExprNodeFieldDesc) {
+          fieldDescList.add(entry);
+        }
         continue;
       }
       ASTNode node = entry.getKey();
@@ -10508,7 +10534,33 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       replacementText.append(HiveUtils.unparseIdentifier(tmp[0], conf));
       replacementText.append(".");
       replacementText.append(HiveUtils.unparseIdentifier(tmp[1], conf));
+      nodeToText.put(columnDesc, replacementText.toString());
       unparseTranslator.addTranslation(node, replacementText.toString());
+    }
+
+    if (fieldDescList.size() != 0) {
+      // Sorting the list based on the length of fieldName
+      // For example, in Column[a].b.c and Column[a].b, Column[a].b should be
+      // unparsed before Column[a].b.c
+      Collections.sort(fieldDescList, new Comparator<Map.Entry<ASTNode, ExprNodeDesc>>() {
+        public int compare(Entry<ASTNode, ExprNodeDesc> o1, Entry<ASTNode, ExprNodeDesc> o2) {
+          ExprNodeFieldDesc fieldDescO1 = (ExprNodeFieldDesc) o1.getValue();
+          ExprNodeFieldDesc fieldDescO2 = (ExprNodeFieldDesc) o2.getValue();
+          return fieldDescO1.toString().length() < fieldDescO2.toString().length() ? -1 : 1;
+        }
+      });
+      for (Map.Entry<ASTNode, ExprNodeDesc> entry : fieldDescList) {
+        ASTNode node = entry.getKey();
+        ExprNodeFieldDesc fieldDesc = (ExprNodeFieldDesc) entry.getValue();
+        ExprNodeDesc exprNodeDesc = fieldDesc.getDesc();
+        String fieldName = fieldDesc.getFieldName();
+        StringBuilder replacementText = new StringBuilder();
+        replacementText.append(nodeToText.get(exprNodeDesc));
+        replacementText.append(".");
+        replacementText.append(HiveUtils.unparseIdentifier(fieldName, conf));
+        nodeToText.put(fieldDesc, replacementText.toString());
+        unparseTranslator.addTranslation(node, replacementText.toString());
+      }
     }
 
     return nodeOutputs;
@@ -10543,7 +10595,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           Table tbl = usedp.getTable();
 
           LOG.debug("validated " + usedp.getName());
-          LOG.debug(usedp.getTable());
+          LOG.debug(usedp.getTable().getTableName());
           conflictingArchive = ArchiveUtils
               .conflictingArchiveNameOrNull(db, tbl, usedp.getSpec());
         } catch (HiveException e) {
@@ -10909,7 +10961,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               + dbName + "." + tblName);
         }
         Map<String, Table> tables = SessionHiveMetaStoreClient.getTempTablesForDatabase(dbName);
-        if (tables != null && tables.containsKey(tblName)) {
+        if (tables != null && tables.containsKey(tblName) && !ctx.getExplain())  {
           throw new SemanticException("Temporary table " + dbName + "." + tblName
               + " already exists");
         }
@@ -10918,7 +10970,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // dumpTable is only used to check the conflict for non-temporary tables
         try {
           Table dumpTable = db.newTable(dbDotTab);
-          if (null != db.getTable(dumpTable.getDbName(), dumpTable.getTableName(), false)) {
+          if (null != db.getTable(dumpTable.getDbName(), dumpTable.getTableName(), false) && !ctx.getExplain()) {
             throw new SemanticException(ErrorMsg.TABLE_ALREADY_EXISTS.getMsg(dbDotTab));
           }
         } catch (HiveException e) {

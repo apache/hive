@@ -24,8 +24,8 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
@@ -40,7 +40,7 @@ import java.util.Arrays;
  * only by Hive unit & queries tests.
  */
 public class CryptoProcessor implements CommandProcessor {
-  public static final Log LOG = LogFactory.getLog(CryptoProcessor.class.getName());
+  public static final Logger LOG = LoggerFactory.getLogger(CryptoProcessor.class.getName());
 
   private HadoopShims.HdfsEncryptionShim encryptionShim;
 

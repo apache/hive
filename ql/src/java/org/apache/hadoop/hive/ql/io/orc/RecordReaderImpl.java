@@ -29,8 +29,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -51,8 +51,9 @@ import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.io.Text;
 
 public class RecordReaderImpl implements RecordReader {
-  static final Log LOG = LogFactory.getLog(RecordReaderImpl.class);
+  static final Logger LOG = LoggerFactory.getLogger(RecordReaderImpl.class);
   private static final boolean isLogDebugEnabled = LOG.isDebugEnabled();
+  private static final Object UNKNOWN_VALUE = new Object();
   private final Path path;
   private final long firstRow;
   private final List<StripeInformation> stripes =
@@ -310,7 +311,7 @@ public class RecordReaderImpl implements RecordReader {
         return Boolean.TRUE;
       }
     } else {
-      return null;
+      return UNKNOWN_VALUE; // null is not safe here
     }
   }
 
@@ -359,6 +360,8 @@ public class RecordReaderImpl implements RecordReader {
       } else {
         return TruthValue.NULL;
       }
+    } else if (min == UNKNOWN_VALUE) {
+      return TruthValue.YES_NO_NULL;
     }
 
     TruthValue result;

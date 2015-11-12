@@ -27,15 +27,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 /**
  * The implementation of SearchArguments.
  */
 final class SearchArgumentImpl implements SearchArgument {
-  public static final Log LOG = LogFactory.getLog(SearchArgumentImpl.class);
 
   static final class PredicateLeafImpl implements PredicateLeaf {
     private final Operator operator;

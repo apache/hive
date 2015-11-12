@@ -334,7 +334,7 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
     this.bigTablePartSpecToFileMapping = partToFileMapping;
   }
 
-  @Explain(displayName = "BucketMapJoin", explainLevels = { Level.EXTENDED }, displayOnlyOnTrue = true)
+  @Explain(displayName = "BucketMapJoin", explainLevels = { Level.USER, Level.EXTENDED }, displayOnlyOnTrue = true)
   public boolean isBucketMapJoin() {
     return isBucketMapJoin;
   }
@@ -343,7 +343,7 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
     this.isBucketMapJoin = isBucketMapJoin;
   }
 
-  @Explain(displayName = "HybridGraceHashJoin", displayOnlyOnTrue = true)
+  @Explain(displayName = "HybridGraceHashJoin", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED }, displayOnlyOnTrue = true)
   public boolean isHybridHashJoin() {
     return isHybridHashJoin;
   }

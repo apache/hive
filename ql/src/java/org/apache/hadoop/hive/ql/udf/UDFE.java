@@ -18,8 +18,8 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -33,7 +33,7 @@ import org.apache.hadoop.hive.serde2.io.DoubleWritable;
    )
 public class UDFE extends UDF {
   @SuppressWarnings("unused")
-  private static Log LOG = LogFactory.getLog(UDFE.class.getName() );
+  private static final Logger LOG = LoggerFactory.getLogger(UDFE.class.getName() );
   DoubleWritable result = new DoubleWritable();
 
   public UDFE() {

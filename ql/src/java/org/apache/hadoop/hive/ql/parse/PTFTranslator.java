@@ -31,8 +31,8 @@ import java.util.Stack;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.tree.TreeWizard;
 import org.antlr.runtime.tree.TreeWizard.ContextVisitor;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -102,7 +102,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 public class PTFTranslator {
 
-  private static final Log LOG = LogFactory.getLog("org.apache.hadoop.hive.ql.parse");
+  private static final Logger LOG = LoggerFactory.getLogger("org.apache.hadoop.hive.ql.parse");
 
   HiveConf hCfg;
   LeadLagInfo llInfo;

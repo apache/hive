@@ -40,8 +40,8 @@ import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -105,7 +105,7 @@ import com.google.common.collect.Lists;
 
 public class HiveOpConverter {
 
-  private static final Log LOG = LogFactory.getLog(HiveOpConverter.class);
+  private static final Logger LOG = LoggerFactory.getLogger(HiveOpConverter.class);
 
   public static enum HIVEAGGOPMODE {
     NO_SKEW_NO_MAP_SIDE_AGG, // Corresponds to SemAnalyzer genGroupByPlan1MR
@@ -487,7 +487,7 @@ public class HiveOpConverter {
       if (this.semanticAnalyzer != null && semanticAnalyzer.getQB() != null
           && semanticAnalyzer.getQB().getParseInfo() != null)
         this.semanticAnalyzer.getQB().getParseInfo().setOuterQueryLimit(limit);
-      ArrayList<ColumnInfo> cinfoLst = createColInfos(inputOp);
+      ArrayList<ColumnInfo> cinfoLst = createColInfos(resultOp);
       resultOp = OperatorFactory.getAndMakeChild(limitDesc,
           new RowSchema(cinfoLst), resultOp);
 
@@ -1059,10 +1059,6 @@ public class HiveOpConverter {
   }
 
   private static JoinType extractJoinType(HiveJoin join) {
-    // UNIQUE
-    if (join.isDistinct()) {
-      return JoinType.UNIQUE;
-    }
     // SEMIJOIN
     if (join.isLeftSemiJoin()) {
       return JoinType.LEFTSEMI;
@@ -1080,6 +1076,7 @@ public class HiveOpConverter {
       resultJoinType = JoinType.RIGHTOUTER;
       break;
     default:
+      // TODO: UNIQUE JOIN
       resultJoinType = JoinType.INNER;
       break;
     }

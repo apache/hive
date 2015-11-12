@@ -22,8 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -43,8 +43,8 @@ public class AvgPartitionSizeBasedBigTableSelectorForAutoSMJ
     extends SizeBasedBigTableSelectorForAutoSMJ
     implements BigTableSelectorForAutoSMJ {
 
-  private static final Log LOG = LogFactory
-      .getLog(AvgPartitionSizeBasedBigTableSelectorForAutoSMJ.class.getName());
+  private static final Logger LOG = LoggerFactory
+      .getLogger(AvgPartitionSizeBasedBigTableSelectorForAutoSMJ.class.getName());
 
   public int getBigTablePosition(ParseContext parseCtx, JoinOperator joinOp,
       Set<Integer> bigTableCandidates)

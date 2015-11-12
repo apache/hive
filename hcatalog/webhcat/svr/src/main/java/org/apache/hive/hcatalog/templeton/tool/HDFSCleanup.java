@@ -27,8 +27,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hive.hcatalog.templeton.tool.TempletonStorage.Type;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This does periodic cleanup
@@ -48,7 +48,7 @@ public class HDFSCleanup extends Thread {
   protected static long maxage = 1000L * 60L * 60L * 24L * 7L;
 
   // The logger
-  private static final Log LOG = LogFactory.getLog(HDFSCleanup.class);
+  private static final Logger LOG = LoggerFactory.getLogger(HDFSCleanup.class);
 
   // Handle to cancel loop
   private boolean stop = false;

@@ -15,8 +15,8 @@ import java.util.SortedSet;
 import java.util.Stack;
 import java.util.TreeSet;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.StatsTask;
@@ -49,7 +49,7 @@ import org.apache.hadoop.hive.ql.plan.TezWork;
  */
 public class SerializeFilter implements PhysicalPlanResolver {
 
-  protected static transient final Log LOG = LogFactory.getLog(SerializeFilter.class);
+  protected static transient final Logger LOG = LoggerFactory.getLogger(SerializeFilter.class);
 
   public class Serializer implements Dispatcher {
 

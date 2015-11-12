@@ -25,8 +25,8 @@ import java.util.List;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Function;
@@ -53,7 +53,7 @@ import org.apache.hadoop.util.StringUtils;
  */
 public class FunctionTask extends Task<FunctionWork> {
   private static final long serialVersionUID = 1L;
-  private static transient final Log LOG = LogFactory.getLog(FunctionTask.class);
+  private static transient final Logger LOG = LoggerFactory.getLogger(FunctionTask.class);
 
   public FunctionTask() {
     super();
@@ -237,7 +237,7 @@ public class FunctionTask extends Task<FunctionWork> {
       throws HiveException {
     // If this is a non-local warehouse, then adding resources from the local filesystem
     // may mean that other clients will not be able to access the resources.
-    // So disallow resources from local filesystem in this case. 
+    // So disallow resources from local filesystem in this case.
     if (resources != null && resources.size() > 0) {
       try {
         String localFsScheme = FileSystem.getLocal(db.getConf()).getUri().getScheme();
@@ -258,7 +258,7 @@ public class FunctionTask extends Task<FunctionWork> {
       } catch (HiveException e) {
         throw e;
       } catch (Exception e) {
-        LOG.error(e);
+        LOG.error("Exception caught in checkLocalFunctionResources", e);
         throw new HiveException(e);
       }
     }

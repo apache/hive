@@ -125,20 +125,21 @@ public class NullUtil {
   public static void setNullAndDivBy0DataEntriesDouble(
       DoubleColumnVector v, boolean selectedInUse, int[] sel, int n, LongColumnVector denoms) {
     assert v.isRepeating || !denoms.isRepeating;
+    final boolean realNulls = !v.noNulls;
     v.noNulls = false;
     long[] vector = denoms.vector;
-    if (v.isRepeating && (v.isNull[0] = (v.isNull[0] || vector[0] == 0))) {
+    if (v.isRepeating && (v.isNull[0] = ((realNulls && v.isNull[0]) || vector[0] == 0))) {
       v.vector[0] = DoubleColumnVector.NULL_VALUE;
     } else if (selectedInUse) {
       for (int j = 0; j != n; j++) {
         int i = sel[j];
-        if (v.isNull[i] = (v.isNull[i] || vector[i] == 0)) {
+        if (v.isNull[i] = ((realNulls && v.isNull[i]) || vector[i] == 0)) {
           v.vector[i] = DoubleColumnVector.NULL_VALUE;
         }
       }
     } else {
       for (int i = 0; i != n; i++) {
-        if (v.isNull[i] = (v.isNull[i] || vector[i] == 0)) {
+        if (v.isNull[i] = ((realNulls && v.isNull[i]) || vector[i] == 0)) {
           v.vector[i] = DoubleColumnVector.NULL_VALUE;
         }
       }
@@ -152,20 +153,21 @@ public class NullUtil {
   public static void setNullAndDivBy0DataEntriesDouble(
       DoubleColumnVector v, boolean selectedInUse, int[] sel, int n, DoubleColumnVector denoms) {
     assert v.isRepeating || !denoms.isRepeating;
+    final boolean realNulls = !v.noNulls;
     v.noNulls = false;
     double[] vector = denoms.vector;
-    if (v.isRepeating && (v.isNull[0] = (v.isNull[0] || vector[0] == 0))) {
+    if (v.isRepeating && (v.isNull[0] = ((realNulls && v.isNull[0]) || vector[0] == 0))) {
       v.vector[0] = DoubleColumnVector.NULL_VALUE;
     } else if (selectedInUse) {
       for (int j = 0; j != n; j++) {
         int i = sel[j];
-        if (v.isNull[i] = (v.isNull[i] || vector[i] == 0)) {
+        if (v.isNull[i] = ((realNulls && v.isNull[i]) || vector[i] == 0)) {
           v.vector[i] = DoubleColumnVector.NULL_VALUE;
         }
       }
     } else {
       for (int i = 0; i != n; i++) {
-        if (v.isNull[i] = (v.isNull[i] || vector[i] == 0)) {
+        if (v.isNull[i] = ((realNulls && v.isNull[i]) || vector[i] == 0)) {
           v.vector[i] = DoubleColumnVector.NULL_VALUE;
         }
       }
@@ -234,6 +236,13 @@ public class NullUtil {
       int n, boolean selectedInUse) {
 
     outputColVector.noNulls = inputColVector1.noNulls && inputColVector2.noNulls;
+
+    if (outputColVector.noNulls) {
+      // the inputs might not always have isNull initialized for
+      // inputColVector1.isNull[i] || inputColVector2.isNull[i] to be valid
+      Arrays.fill(outputColVector.isNull, false);
+      return;
+    }
 
     if (inputColVector1.noNulls && !inputColVector2.noNulls) {
       if (inputColVector2.isRepeating) {

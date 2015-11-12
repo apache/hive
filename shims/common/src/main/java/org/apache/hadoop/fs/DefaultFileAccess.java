@@ -28,8 +28,8 @@ import java.util.List;
 
 import javax.security.auth.login.LoginException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.permission.FsAction;
@@ -45,7 +45,7 @@ import org.apache.hadoop.security.UserGroupInformation;
  */
 public class DefaultFileAccess {
 
-  private static Log LOG = LogFactory.getLog(DefaultFileAccess.class);
+  private static Logger LOG = LoggerFactory.getLogger(DefaultFileAccess.class);
 
   private static List<String> emptyGroups = new ArrayList<String>(0);
 

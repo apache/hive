@@ -21,8 +21,8 @@ package org.apache.hive.hcatalog.templeton;
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.shims.HadoopShims.WebHCatJTShim;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.JobID;
@@ -33,7 +33,7 @@ import org.apache.hive.hcatalog.templeton.tool.JobState;
  * Delete a job
  */
 public class DeleteDelegator extends TempletonDelegator {
-  private static final Log LOG = LogFactory.getLog(DeleteDelegator.class);
+  private static final Logger LOG = LoggerFactory.getLogger(DeleteDelegator.class);
   public DeleteDelegator(AppConfig appConf) {
     super(appConf);
   }

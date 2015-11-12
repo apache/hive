@@ -20,8 +20,8 @@ import java.net.InetSocketAddress;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileContext;
 import org.apache.hadoop.fs.Path;
@@ -36,7 +36,7 @@ import org.apache.tez.runtime.library.api.TezRuntimeConfiguration;
 import com.google.common.base.Preconditions;
 
 public class MiniLlapCluster extends AbstractService {
-  private static final Log LOG = LogFactory.getLog(MiniLlapCluster.class);
+  private static final Logger LOG = LoggerFactory.getLogger(MiniLlapCluster.class);
 
   private final File testWorkDir;
   private final long execBytesPerService;

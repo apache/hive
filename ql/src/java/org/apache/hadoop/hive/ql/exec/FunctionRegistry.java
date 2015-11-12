@@ -22,7 +22,6 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -32,8 +31,8 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo.FunctionResource;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -144,7 +143,7 @@ import org.apache.hive.common.util.AnnotationUtils;
  */
 public final class FunctionRegistry {
 
-  private static final Log LOG = LogFactory.getLog(FunctionRegistry.class);
+  private static final Logger LOG = LoggerFactory.getLogger(FunctionRegistry.class);
 
   /*
    * PTF variables
@@ -558,30 +557,6 @@ public final class FunctionRegistry {
     return synonyms;
   }
 
-  // The ordering of types here is used to determine which numeric types
-  // are common/convertible to one another. Probably better to rely on the
-  // ordering explicitly defined here than to assume that the enum values
-  // that were arbitrarily assigned in PrimitiveCategory work for our purposes.
-  static EnumMap<PrimitiveCategory, Integer> numericTypes =
-      new EnumMap<PrimitiveCategory, Integer>(PrimitiveCategory.class);
-  static List<PrimitiveCategory> numericTypeList = new ArrayList<PrimitiveCategory>();
-
-  static void registerNumericType(PrimitiveCategory primitiveCategory, int level) {
-    numericTypeList.add(primitiveCategory);
-    numericTypes.put(primitiveCategory, level);
-  }
-
-  static {
-    registerNumericType(PrimitiveCategory.BYTE, 1);
-    registerNumericType(PrimitiveCategory.SHORT, 2);
-    registerNumericType(PrimitiveCategory.INT, 3);
-    registerNumericType(PrimitiveCategory.LONG, 4);
-    registerNumericType(PrimitiveCategory.FLOAT, 5);
-    registerNumericType(PrimitiveCategory.DOUBLE, 6);
-    registerNumericType(PrimitiveCategory.DECIMAL, 7);
-    registerNumericType(PrimitiveCategory.STRING, 8);
-  }
-
   /**
    * Check if the given type is numeric. String is considered numeric when used in
    * numeric operators.
@@ -702,15 +677,15 @@ public final class FunctionRegistry {
           (PrimitiveTypeInfo)a, (PrimitiveTypeInfo)b,PrimitiveCategory.STRING);
     }
 
-    if (FunctionRegistry.implicitConvertible(a, b)) {
+    if (TypeInfoUtils.implicitConvertible(a, b)) {
       return getTypeInfoForPrimitiveCategory((PrimitiveTypeInfo)a, (PrimitiveTypeInfo)b, pcB);
     }
-    if (FunctionRegistry.implicitConvertible(b, a)) {
+    if (TypeInfoUtils.implicitConvertible(b, a)) {
       return getTypeInfoForPrimitiveCategory((PrimitiveTypeInfo)a, (PrimitiveTypeInfo)b, pcA);
     }
-    for (PrimitiveCategory t : numericTypeList) {
-      if (FunctionRegistry.implicitConvertible(pcA, t)
-          && FunctionRegistry.implicitConvertible(pcB, t)) {
+    for (PrimitiveCategory t : TypeInfoUtils.numericTypeList) {
+      if (TypeInfoUtils.implicitConvertible(pcA, t)
+          && TypeInfoUtils.implicitConvertible(pcB, t)) {
         return getTypeInfoForPrimitiveCategory((PrimitiveTypeInfo)a, (PrimitiveTypeInfo)b, t);
       }
     }
@@ -759,9 +734,9 @@ public final class FunctionRegistry {
       return TypeInfoFactory.doubleTypeInfo;
     }
 
-    for (PrimitiveCategory t : numericTypeList) {
-      if (FunctionRegistry.implicitConvertible(pcA, t)
-          && FunctionRegistry.implicitConvertible(pcB, t)) {
+    for (PrimitiveCategory t : TypeInfoUtils.numericTypeList) {
+      if (TypeInfoUtils.implicitConvertible(pcA, t)
+          && TypeInfoUtils.implicitConvertible(pcB, t)) {
         return getTypeInfoForPrimitiveCategory((PrimitiveTypeInfo)a, (PrimitiveTypeInfo)b, t);
       }
     }
@@ -790,8 +765,8 @@ public final class FunctionRegistry {
     if (pgB == PrimitiveGrouping.DATE_GROUP && pgA == PrimitiveGrouping.STRING_GROUP) {
       return PrimitiveCategory.STRING;
     }
-    Integer ai = numericTypes.get(pcA);
-    Integer bi = numericTypes.get(pcB);
+    Integer ai = TypeInfoUtils.numericTypes.get(pcA);
+    Integer bi = TypeInfoUtils.numericTypes.get(pcB);
     if (ai == null || bi == null) {
       // If either is not a numeric type, return null.
       return null;
@@ -868,73 +843,6 @@ public final class FunctionRegistry {
     }
 
     return TypeInfoFactory.getStructTypeInfo(names, typeInfos);
-  }
-
-  public static boolean implicitConvertible(PrimitiveCategory from, PrimitiveCategory to) {
-    if (from == to) {
-      return true;
-    }
-
-    PrimitiveGrouping fromPg = PrimitiveObjectInspectorUtils.getPrimitiveGrouping(from);
-    PrimitiveGrouping toPg = PrimitiveObjectInspectorUtils.getPrimitiveGrouping(to);
-
-    // Allow implicit String to Double conversion
-    if (fromPg == PrimitiveGrouping.STRING_GROUP && to == PrimitiveCategory.DOUBLE) {
-      return true;
-    }
-    // Allow implicit String to Decimal conversion
-    if (fromPg == PrimitiveGrouping.STRING_GROUP && to == PrimitiveCategory.DECIMAL) {
-      return true;
-    }
-    // Void can be converted to any type
-    if (from == PrimitiveCategory.VOID) {
-      return true;
-    }
-
-    // Allow implicit String to Date conversion
-    if (fromPg == PrimitiveGrouping.DATE_GROUP && toPg == PrimitiveGrouping.STRING_GROUP) {
-      return true;
-    }
-    // Allow implicit Numeric to String conversion
-    if (fromPg == PrimitiveGrouping.NUMERIC_GROUP && toPg == PrimitiveGrouping.STRING_GROUP) {
-      return true;
-    }
-    // Allow implicit String to varchar conversion, and vice versa
-    if (fromPg == PrimitiveGrouping.STRING_GROUP && toPg == PrimitiveGrouping.STRING_GROUP) {
-      return true;
-    }
-
-    // Allow implicit conversion from Byte -> Integer -> Long -> Float -> Double
-    // Decimal -> String
-    Integer f = numericTypes.get(from);
-    Integer t = numericTypes.get(to);
-    if (f == null || t == null) {
-      return false;
-    }
-    if (f.intValue() > t.intValue()) {
-      return false;
-    }
-    return true;
-  }
-
-  /**
-   * Returns whether it is possible to implicitly convert an object of Class
-   * from to Class to.
-   */
-  public static boolean implicitConvertible(TypeInfo from, TypeInfo to) {
-    if (from.equals(to)) {
-      return true;
-    }
-
-    // Reimplemented to use PrimitiveCategory rather than TypeInfo, because
-    // 2 TypeInfos from the same qualified type (varchar, decimal) should still be
-    // seen as equivalent.
-    if (from.getCategory() == Category.PRIMITIVE && to.getCategory() == Category.PRIMITIVE) {
-      return implicitConvertible(
-          ((PrimitiveTypeInfo) from).getPrimitiveCategory(),
-          ((PrimitiveTypeInfo) to).getPrimitiveCategory());
-    }
-    return false;
   }
 
   /**
@@ -1105,7 +1013,7 @@ public final class FunctionRegistry {
       // but there is a conversion cost.
       return 1;
     }
-    if (!exact && implicitConvertible(argumentPassed, argumentAccepted)) {
+    if (!exact && TypeInfoUtils.implicitConvertible(argumentPassed, argumentAccepted)) {
       return 1;
     }
 
@@ -1273,9 +1181,9 @@ public final class FunctionRegistry {
             acceptedIsPrimitive = true;
             acceptedPrimCat = ((PrimitiveTypeInfo) accepted).getPrimitiveCategory();
           }
-          if (acceptedIsPrimitive && numericTypes.containsKey(acceptedPrimCat)) {
+          if (acceptedIsPrimitive && TypeInfoUtils.numericTypes.containsKey(acceptedPrimCat)) {
             // We're looking for the udf with the smallest maximum numeric type.
-            int typeValue = numericTypes.get(acceptedPrimCat);
+            int typeValue = TypeInfoUtils.numericTypes.get(acceptedPrimCat);
             maxNumericType = typeValue > maxNumericType ? typeValue : maxNumericType;
           } else if (!accepted.equals(reference)) {
             // There are non-numeric arguments that don't match from one UDF to
@@ -1569,6 +1477,15 @@ public final class FunctionRegistry {
   public static void unregisterPermanentFunction(String functionName) throws HiveException {
     system.unregisterFunction(functionName);
     unregisterTemporaryUDF(functionName);
+  }
+
+  /**
+   * Unregisters all the functions under the database dbName
+   * @param dbName specified database name
+   * @throws HiveException
+   */
+  public static void unregisterPermanentFunctions(String dbName) throws HiveException {
+    system.unregisterFunctions(dbName);
   }
 
   private FunctionRegistry() {

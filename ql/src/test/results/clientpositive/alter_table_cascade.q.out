@@ -833,16 +833,16 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter_table_cascade
 POSTHOOK: Input: default@alter_table_cascade@p1=xyz/p2=123
 #### A masked pattern was here ####
-Beck	0	xyz	123
-Beck	77.341	xyz	123
-Beck	79.9	xyz	123
-Cluck	5.96	xyz	123
-Mary	33.33	xyz	123
-Mary	4.329	xyz	123
-Snow	55.71	xyz	123
-Tom	-12.25	xyz	123
-Tom	19	xyz	123
-Tom	234.79	xyz	123
+Beck	0.0000	xyz	123
+Beck	77.3410	xyz	123
+Beck	79.9000	xyz	123
+Cluck	5.9600	xyz	123
+Mary	33.3300	xyz	123
+Mary	4.3290	xyz	123
+Snow	55.7100	xyz	123
+Tom	-12.2500	xyz	123
+Tom	19.0000	xyz	123
+Tom	234.7900	xyz	123
 PREHOOK: query: select * from alter_table_cascade where p1='abc'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alter_table_cascade
@@ -873,16 +873,16 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter_table_cascade
 POSTHOOK: Input: default@alter_table_cascade@p1=__HIVE_DEFAULT_PARTITION__/p2=123
 #### A masked pattern was here ####
-Beck	0	__HIVE_DEFAULT_PARTITION__	123
-Beck	77.341	__HIVE_DEFAULT_PARTITION__	123
-Beck	79.9	__HIVE_DEFAULT_PARTITION__	123
-Cluck	5.96	__HIVE_DEFAULT_PARTITION__	123
-Mary	33.33	__HIVE_DEFAULT_PARTITION__	123
-Mary	4.329	__HIVE_DEFAULT_PARTITION__	123
-Snow	55.71	__HIVE_DEFAULT_PARTITION__	123
-Tom	-12.25	__HIVE_DEFAULT_PARTITION__	123
-Tom	19	__HIVE_DEFAULT_PARTITION__	123
-Tom	234.79	__HIVE_DEFAULT_PARTITION__	123
+Beck	0.0000	__HIVE_DEFAULT_PARTITION__	123
+Beck	77.3410	__HIVE_DEFAULT_PARTITION__	123
+Beck	79.9000	__HIVE_DEFAULT_PARTITION__	123
+Cluck	5.9600	__HIVE_DEFAULT_PARTITION__	123
+Mary	33.3300	__HIVE_DEFAULT_PARTITION__	123
+Mary	4.3290	__HIVE_DEFAULT_PARTITION__	123
+Snow	55.7100	__HIVE_DEFAULT_PARTITION__	123
+Tom	-12.2500	__HIVE_DEFAULT_PARTITION__	123
+Tom	19.0000	__HIVE_DEFAULT_PARTITION__	123
+Tom	234.7900	__HIVE_DEFAULT_PARTITION__	123
 PREHOOK: query: -- 
 
 drop table if exists alter_table_restrict

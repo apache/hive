@@ -17,9 +17,9 @@
  */
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.type.HiveChar;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
@@ -31,7 +31,7 @@ import org.apache.hive.common.util.HiveStringUtils;
 
 public class WritableHiveVarcharObjectInspector extends AbstractPrimitiveWritableObjectInspector
 implements SettableHiveVarcharObjectInspector {
-  private static final Log LOG = LogFactory.getLog(WritableHiveVarcharObjectInspector.class);
+  private static final Logger LOG = LoggerFactory.getLogger(WritableHiveVarcharObjectInspector.class);
 
   // no-arg ctor required for Kyro serialization
   public WritableHiveVarcharObjectInspector() {

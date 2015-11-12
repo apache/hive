@@ -25,8 +25,8 @@ import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -44,7 +44,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 public class UDTFOperator extends Operator<UDTFDesc> implements Serializable {
   private static final long serialVersionUID = 1L;
 
-  protected static final Log LOG = LogFactory.getLog(UDTFOperator.class.getName());
+  protected static final Logger LOG = LoggerFactory.getLogger(UDTFOperator.class.getName());
 
   StructObjectInspector udtfInputOI = null;
   Object[] objToSendToUDTF = null;

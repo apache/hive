@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast;
 
 import java.io.IOException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashMultiSetResult;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinLongHashMultiSet;
@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableKeyType;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.io.BytesWritable;
+import org.apache.hive.common.util.HashCodeUtil;
 
 /*
  * An single long value multi-set optimized for vector map join.
@@ -37,7 +38,7 @@ public class VectorMapJoinFastLongHashMultiSet
              extends VectorMapJoinFastLongHashTable
              implements VectorMapJoinLongHashMultiSet {
 
-  public static final Log LOG = LogFactory.getLog(VectorMapJoinFastLongHashMultiSet.class);
+  public static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinFastLongHashMultiSet.class);
 
   @Override
   public VectorMapJoinHashMultiSetResult createHashMultiSetResult() {
@@ -67,7 +68,7 @@ public class VectorMapJoinFastLongHashMultiSet
 
     optimizedHashMultiSetResult.forget();
 
-    long hashCode = VectorMapJoinFastLongHashUtil.hashKey(key);
+    long hashCode = HashCodeUtil.calculateLongHashCode(key);
     long count = findReadSlot(key, hashCode);
     JoinUtil.JoinResult joinResult;
     if (count == -1) {

@@ -54,7 +54,7 @@ public class TestLog4j2Appenders {
     appender.addToLogger(logger.getName(), Level.INFO);
     appender.start();
 
-    // Log to the string appender
+    // Logger to the string appender
     logger.info("Hello!");
     logger.info(" World");
 

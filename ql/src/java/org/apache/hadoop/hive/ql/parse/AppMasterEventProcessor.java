@@ -22,8 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
@@ -37,7 +37,7 @@ import org.apache.hadoop.hive.ql.plan.DynamicPruningEventDesc;
  */
 public class AppMasterEventProcessor implements NodeProcessor {
 
-  static final private Log LOG = LogFactory.getLog(AppMasterEventProcessor.class.getName());
+  static final private Logger LOG = LoggerFactory.getLogger(AppMasterEventProcessor.class.getName());
 
   @Override
   public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)

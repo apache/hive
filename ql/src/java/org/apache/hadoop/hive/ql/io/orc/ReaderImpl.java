@@ -26,8 +26,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
@@ -49,7 +49,7 @@ import com.google.protobuf.CodedInputStream;
 
 public class ReaderImpl implements Reader {
 
-  private static final Log LOG = LogFactory.getLog(ReaderImpl.class);
+  private static final Logger LOG = LoggerFactory.getLogger(ReaderImpl.class);
 
   private static final int DIRECTORY_SIZE_GUESS = 16 * 1024;
 
@@ -278,7 +278,7 @@ public class ReaderImpl implements Reader {
    * @param path the data source path for error messages
    * @param version the version of hive that wrote the file.
    */
-  static void checkOrcVersion(Log log, Path path, List<Integer> version) {
+  static void checkOrcVersion(Logger log, Path path, List<Integer> version) {
     if (version.size() >= 1) {
       int major = version.get(0);
       int minor = 0;

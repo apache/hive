@@ -40,8 +40,6 @@ import org.apache.hive.hcatalog.data.schema.HCatSchema;
 
 public abstract class HCatBaseOutputFormat extends OutputFormat<WritableComparable<?>, HCatRecord> {
 
-//  static final private Log LOG = LogFactory.getLog(HCatBaseOutputFormat.class);
-
   /**
    * Gets the table schema for the table specified in the HCatOutputFormat.setOutput call
    * on the specified job context.

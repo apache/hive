@@ -1,0 +1,60 @@
+PREHOOK: query: CREATE TABLE T1(key INT, value INT) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T1
+POSTHOOK: query: CREATE TABLE T1(key INT, value INT) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/groupby_groupingid.txt' INTO TABLE T1
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@t1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/groupby_groupingid.txt' INTO TABLE T1
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@t1
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+SELECT key, value, GROUPING__ID, count(*)
+FROM T1
+GROUP BY key, value
+GROUPING SETS ((), (key))
+HAVING GROUPING__ID = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+SELECT key, value, GROUPING__ID, count(*)
+FROM T1
+GROUP BY key, value
+GROUPING SETS ((), (key))
+HAVING GROUPING__ID = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+1	NULL	1	2
+2	NULL	1	1
+3	NULL	1	2
+4	NULL	1	1
+PREHOOK: query: SELECT key, value, GROUPING__ID, count(*)
+FROM T1
+GROUP BY key, value
+GROUPING SETS ((), (key))
+HAVING GROUPING__ID = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key, value, GROUPING__ID, count(*)
+FROM T1
+GROUP BY key, value
+GROUPING SETS ((), (key))
+HAVING GROUPING__ID = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+1	NULL	1	2
+2	NULL	1	1
+3	NULL	1	2
+4	NULL	1	1

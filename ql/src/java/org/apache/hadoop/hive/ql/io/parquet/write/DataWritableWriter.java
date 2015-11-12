@@ -13,8 +13,8 @@
  */
 package org.apache.hadoop.hive.ql.io.parquet.write;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTimeUtils;
@@ -59,7 +59,7 @@ import java.util.Map;
  * This class is only used through DataWritableWriteSupport class.
  */
 public class DataWritableWriter {
-  private static final Log LOG = LogFactory.getLog(DataWritableWriter.class);
+  private static final Logger LOG = LoggerFactory.getLogger(DataWritableWriter.class);
   protected final RecordConsumer recordConsumer;
   private final GroupType schema;
 

@@ -24,8 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
@@ -49,13 +49,14 @@ import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
+import org.slf4j.LoggerFactory;
 
 /**
  * OperationManager.
  *
  */
 public class OperationManager extends AbstractService {
-  private final Log LOG = LogFactory.getLog(OperationManager.class.getName());
+  private final Logger LOG = LoggerFactory.getLogger(OperationManager.class.getName());
   private final Map<OperationHandle, Operation> handleToOperation =
       new HashMap<OperationHandle, Operation>();
 
@@ -91,7 +92,7 @@ public class OperationManager extends AbstractService {
     Appender ap = LogDivertAppender.createInstance(this, OperationLog.getLoggingLevel(loggingMode));
     LoggerContext context = (LoggerContext) LogManager.getContext(false);
     Configuration configuration = context.getConfiguration();
-    LoggerConfig loggerConfig = configuration.getLoggerConfig(LogManager.getLogger().getName());
+    LoggerConfig loggerConfig = configuration.getLoggerConfig(LoggerFactory.getLogger(getClass()).getName());
     loggerConfig.addAppender(ap, null, null);
     context.updateLoggers();
     ap.start();

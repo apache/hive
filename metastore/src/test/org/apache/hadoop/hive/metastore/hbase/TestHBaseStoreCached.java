@@ -18,8 +18,8 @@
  */
 package org.apache.hadoop.hive.metastore.hbase;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.client.Delete;
@@ -76,7 +76,7 @@ import java.util.TreeMap;
  *
  */
 public class TestHBaseStoreCached {
-  private static final Log LOG = LogFactory.getLog(TestHBaseStoreCached.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(TestHBaseStoreCached.class.getName());
   static Map<String, String> emptyParameters = new HashMap<String, String>();
 
   @Rule public ExpectedException thrown = ExpectedException.none();

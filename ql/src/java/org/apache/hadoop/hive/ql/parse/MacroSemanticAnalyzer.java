@@ -28,8 +28,8 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.LinkedHashSet;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
@@ -59,8 +59,8 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
  *
  */
 public class MacroSemanticAnalyzer extends BaseSemanticAnalyzer {
-  private static final Log LOG = LogFactory
-      .getLog(MacroSemanticAnalyzer.class);
+  private static final Logger LOG = LoggerFactory
+      .getLogger(MacroSemanticAnalyzer.class);
 
   public MacroSemanticAnalyzer(HiveConf conf) throws SemanticException {
     super(conf);

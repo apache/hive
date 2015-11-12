@@ -176,27 +176,36 @@ public class Conn {
    */
   Connection openConnection(String connStr) throws Exception {
     String driver = "org.apache.hadoop.hive.jdbc.HiveDriver";
-    String url = "jdbc:hive://";
+    StringBuilder url = new StringBuilder();
     String usr = "";
     String pwd = "";
     if (connStr != null) {
       String[] c = connStr.split(";");
       if (c.length >= 1) {
         driver = c[0];
-      } 
+      }
       if (c.length >= 2) {
-        url = c[1];
+        url.append(c[1]);
       }
-      if (c.length >= 3) {
-        usr = c[2];
+      else {
+        url.append("jdbc:hive://");
       }
-      if (c.length >= 4) {
-        pwd = c[3];
+      for (int i = 2; i < c.length; i++) {
+        if (c[i].contains("=")) {
+          url.append(";");
+          url.append(c[i]);          
+        }
+        else if (usr.isEmpty()) {
+          usr = c[i];
+        }
+        else if (pwd.isEmpty()) {
+          pwd = c[i];
+        }
       }
     }
     Class.forName(driver);
     timer.start();
-    Connection conn = DriverManager.getConnection(url, usr, pwd);
+    Connection conn = DriverManager.getConnection(url.toString(), usr, pwd);
     timer.stop();
     if (info) {
       exec.info(null, "Open connection: " + url + " (" + timer.format() + ")");

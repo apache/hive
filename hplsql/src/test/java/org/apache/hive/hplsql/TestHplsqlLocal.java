@@ -44,6 +44,11 @@ public class TestHplsqlLocal {
   }
 
   @Test
+  public void testBool() throws Exception {
+    run("bool");
+  }
+  
+  @Test
   public void testBoolExpr() throws Exception {
     run("bool_expr");
   }
@@ -89,6 +94,16 @@ public class TestHplsqlLocal {
   }
 
   @Test
+  public void testCreatePackage() throws Exception {
+    run("create_package");
+  }
+  
+  @Test
+  public void testCreatePackage2() throws Exception {
+    run("create_package2");
+  }
+
+  @Test
   public void testCreateProcedure() throws Exception {
     run("create_procedure");
   }
@@ -102,6 +117,11 @@ public class TestHplsqlLocal {
     run("create_procedure_no_params");
   }
 
+  @Test
+  public void testDatatypes() throws Exception {
+    run("datatypes");
+  }
+  
   @Test
   public void testDate() throws Exception {
     run("date");
@@ -117,6 +137,11 @@ public class TestHplsqlLocal {
     run("declare");
   }
 
+  @Test
+  public void testDeclare2() throws Exception {
+    run("declare2");
+  }
+  
   @Test
   public void testDeclareCondition() throws Exception {
     run("declare_condition");
@@ -155,6 +180,11 @@ public class TestHplsqlLocal {
   @Test
   public void testExpr() throws Exception {
     run("expr");
+  }
+
+  @Test
+  public void testFloat() throws Exception {
+    run("float");
   }
 
   @Test
@@ -294,6 +324,16 @@ public class TestHplsqlLocal {
   @Test
   public void testValuesInto() throws Exception {
     run("values_into");
+  }
+  
+  @Test
+  public void testVarScope() throws Exception {
+    run("var_scope");
+  }
+  
+  @Test
+  public void testVarScope2() throws Exception {
+    run("var_scope2");
   }
 
   @Test

@@ -24,8 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HConstants;
@@ -83,7 +83,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 public class HiveHBaseTableInputFormat extends TableInputFormatBase
     implements InputFormat<ImmutableBytesWritable, ResultWritable> {
 
-  static final Log LOG = LogFactory.getLog(HiveHBaseTableInputFormat.class);
+  static final Logger LOG = LoggerFactory.getLogger(HiveHBaseTableInputFormat.class);
   private static final Object hbaseTableMonitor = new Object();
 
   @Override

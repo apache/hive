@@ -24,22 +24,23 @@ import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
 import org.apache.zookeeper.Watcher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class ZooKeeperHiveClientHelper {
-  static final Log LOG = LogFactory.getLog(ZooKeeperHiveClientHelper.class.getName());
+  static final Logger LOG = LoggerFactory.getLogger(ZooKeeperHiveClientHelper.class.getName());
   // Pattern for key1=value1;key2=value2
   private static final Pattern kvPattern = Pattern.compile("([^=;]*)=([^;]*)[;]?");
   /**
    * A no-op watcher class
    */
   static class DummyWatcher implements Watcher {
+    @Override
     public void process(org.apache.zookeeper.WatchedEvent event) {
     }
   }
@@ -105,8 +106,7 @@ class ZooKeeperHiveClientHelper {
               + " published by the server.");
         }
         // Set host
-        if ((matcher.group(1).equals("hive.server2.thrift.bind.host"))
-            && (connParams.getHost() == null)) {
+        if (matcher.group(1).equals("hive.server2.thrift.bind.host")) {
           connParams.setHost(matcher.group(2));
         }
         // Set transportMode
@@ -115,7 +115,7 @@ class ZooKeeperHiveClientHelper {
           connParams.getSessionVars().put(JdbcConnectionParams.TRANSPORT_MODE, matcher.group(2));
         }
         // Set port
-        if ((matcher.group(1).equals("hive.server2.thrift.port")) && !(connParams.getPort() > 0)) {
+        if (matcher.group(1).equals("hive.server2.thrift.port")) {
           connParams.setPort(Integer.parseInt(matcher.group(2)));
         }
         if ((matcher.group(1).equals("hive.server2.thrift.http.port"))
@@ -159,7 +159,7 @@ class ZooKeeperHiveClientHelper {
         }
         // KERBEROS
         // If delegation token is passed from the client side, do not set the principal
-        if (matcher.group(2).equalsIgnoreCase("hive.server2.authentication.kerberos.principal")
+        if (matcher.group(1).equalsIgnoreCase("hive.server2.authentication.kerberos.principal")
             && !(connParams.getSessionVars().containsKey(JdbcConnectionParams.AUTH_TYPE) && connParams
                 .getSessionVars().get(JdbcConnectionParams.AUTH_TYPE)
                 .equalsIgnoreCase(JdbcConnectionParams.AUTH_TOKEN))

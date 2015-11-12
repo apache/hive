@@ -1,4 +1,3 @@
-set hive.mapred.supports.subdirectories=true;
 set hive.optimize.listbucketing=true;
 set mapred.input.dir.recursive=true;	
 set hive.merge.mapfiles=false;	

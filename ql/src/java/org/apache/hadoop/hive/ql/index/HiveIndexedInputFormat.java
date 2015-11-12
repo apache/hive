@@ -27,8 +27,8 @@ import java.util.Map;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -52,7 +52,7 @@ import org.apache.hadoop.mapred.JobConf;
  * Uses a blockfilter file to specify the blocks to query.
  */
 public class HiveIndexedInputFormat extends HiveInputFormat {
-  public static final Log l4j = LogFactory.getLog("HiveIndexInputFormat");
+  public static final Logger l4j = LoggerFactory.getLogger("HiveIndexInputFormat");
   private final String indexFile;
 
   public HiveIndexedInputFormat() {

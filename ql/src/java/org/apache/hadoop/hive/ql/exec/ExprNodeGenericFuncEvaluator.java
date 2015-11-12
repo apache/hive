@@ -18,8 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
@@ -40,8 +40,8 @@ import java.util.List;
  */
 public class ExprNodeGenericFuncEvaluator extends ExprNodeEvaluator<ExprNodeGenericFuncDesc> {
 
-  private static final Log LOG = LogFactory
-      .getLog(ExprNodeGenericFuncEvaluator.class.getName());
+  private static final Logger LOG = LoggerFactory
+      .getLogger(ExprNodeGenericFuncEvaluator.class.getName());
 
   transient GenericUDF genericUDF;
   transient Object rowObject;

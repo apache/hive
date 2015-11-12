@@ -18,12 +18,12 @@
 
 package org.apache.hadoop.hive.llap;
 
-import org.apache.commons.logging.Log;
+import org.slf4j.Logger;
 
 public class LogLevels {
   private final boolean isT, isD, isI, isW, isE;
 
-  public LogLevels(Log log) {
+  public LogLevels(Logger log) {
     isT = log.isTraceEnabled();
     isD = log.isDebugEnabled();
     isI = log.isInfoEnabled();

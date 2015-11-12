@@ -78,11 +78,9 @@ public class MapJoinKeyObject extends MapJoinKey {
 
   @Override
   public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + Arrays.hashCode(key);
-    return result;
+    return ObjectInspectorUtils.writableArrayHashCode(key);
   }
+
   @Override
   public boolean equals(Object obj) {
     if (this == obj)

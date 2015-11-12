@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.hbase;
 
 import java.io.IOException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.client.Durability;
@@ -53,7 +53,7 @@ public class HiveHBaseTableOutputFormat extends
     TableOutputFormat<ImmutableBytesWritable> implements
     OutputFormat<ImmutableBytesWritable, Object> {
 
-  static final Log LOG = LogFactory.getLog(HiveHBaseTableOutputFormat.class);
+  static final Logger LOG = LoggerFactory.getLogger(HiveHBaseTableOutputFormat.class);
   public static final String HBASE_WAL_ENABLED = "hive.hbase.wal.enabled";
 
   /**

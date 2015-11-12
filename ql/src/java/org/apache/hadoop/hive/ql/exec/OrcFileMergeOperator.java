@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.exec;
 import java.io.IOException;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.orc.CompressionKind;
@@ -40,7 +40,7 @@ import org.apache.hadoop.hive.shims.CombineHiveKey;
  */
 public class OrcFileMergeOperator extends
     AbstractFileMergeOperator<OrcFileMergeDesc> {
-  public final static Log LOG = LogFactory.getLog("OrcFileMergeOperator");
+  public final static Logger LOG = LoggerFactory.getLogger("OrcFileMergeOperator");
 
   // These parameters must match for all orc files involved in merging. If it
   // does not merge, the file will be put into incompatible file set and will

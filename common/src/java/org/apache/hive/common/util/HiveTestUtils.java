@@ -25,15 +25,16 @@ import java.io.InputStreamReader;
 import java.net.URL;
 
 import com.google.common.io.Files;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @InterfaceAudience.Private
 @InterfaceStability.Unstable
 public class HiveTestUtils {
-  public static final Log LOG = LogFactory.getLog(HiveTestUtils.class);
+  public static final Logger LOG = LoggerFactory.getLogger(HiveTestUtils.class);
 
   public final static String JAVA_FILE_EXT = ".java";
   public final static String CLAZZ_FILE_EXT = ".class";
@@ -51,6 +52,7 @@ public class HiveTestUtils {
   private static void executeCmd(String[] cmdArr, File dir) throws IOException, InterruptedException {
     final Process p1 = Runtime.getRuntime().exec(cmdArr, null, dir);
     new Thread(new Runnable() {
+      @Override
       public void run() {
         BufferedReader input = new BufferedReader(new InputStreamReader(p1.getErrorStream()));
         String line;

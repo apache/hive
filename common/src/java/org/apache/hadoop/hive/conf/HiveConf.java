@@ -19,9 +19,8 @@
 package org.apache.hadoop.hive.conf;
 
 import com.google.common.base.Joiner;
+
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hadoop.hive.conf.Validator.PatternSet;
@@ -35,8 +34,11 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Shell;
 import org.apache.hive.common.HiveCompat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.security.auth.login.LoginException;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -63,7 +65,7 @@ public class HiveConf extends Configuration {
   protected String hiveJar;
   protected Properties origProp;
   protected String auxJars;
-  private static final Log l4j = LogFactory.getLog(HiveConf.class);
+  private static final Logger l4j = LoggerFactory.getLogger(HiveConf.class);
   private static boolean loadMetastoreConfig = false;
   private static boolean loadHiveServer2Config = false;
   private static URL hiveDefaultURL = null;
@@ -81,6 +83,7 @@ public class HiveConf extends Configuration {
 
   private Pattern modWhiteListPattern = null;
   private volatile boolean isSparkConfigUpdated = false;
+  private static final int LOG_PREFIX_LENGTH = 64;
 
   public boolean getSparkConfigUpdated() {
     return isSparkConfigUpdated;
@@ -634,7 +637,7 @@ public class HiveConf extends Configuration {
         "as nulls, so we should set this parameter if we wish to reverse that behaviour. For others, " +
         "pruning is the correct behaviour"),
     METASTORE_DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES(
-        "hive.metastore.disallow.incompatible.col.type.changes", false,
+        "hive.metastore.disallow.incompatible.col.type.changes", true,
         "If true (default is false), ALTER TABLE operations which change the type of a\n" +
         "column (say STRING) to an incompatible type (say MAP) are disallowed.\n" +
         "RCFile default SerDe (ColumnarSerDe) serializes the values in such a way that the\n" +
@@ -859,14 +862,10 @@ public class HiveConf extends Configuration {
     HIVEMULTIGROUPBYSINGLEREDUCER("hive.multigroupby.singlereducer", true,
         "Whether to optimize multi group by query to generate single M/R  job plan. If the multi group by query has \n" +
         "common group by keys, it will be optimized to generate single M/R job."),
-    HIVE_MAP_GROUPBY_SORT("hive.map.groupby.sorted", false,
+    HIVE_MAP_GROUPBY_SORT("hive.map.groupby.sorted", true,
         "If the bucketing/sorting properties of the table exactly match the grouping key, whether to perform \n" +
         "the group by in the mapper by using BucketizedHiveInputFormat. The only downside to this\n" +
         "is that it limits the number of mappers to the number of files."),
-    HIVE_MAP_GROUPBY_SORT_TESTMODE("hive.map.groupby.sorted.testmode", false,
-        "If the bucketing/sorting properties of the table exactly match the grouping key, whether to perform \n" +
-        "the group by in the mapper by using BucketizedHiveInputFormat. If the test mode is set, the plan\n" +
-        "is not converted, but a query property is set to denote the same."),
     HIVE_GROUPBY_ORDERBY_POSITION_ALIAS("hive.groupby.orderby.position.alias", false,
         "Whether to enable using Column Position Alias in Group By or Order By"),
     HIVE_NEW_JOB_GROUPING_SET_CARDINALITY("hive.new.job.grouping.set.cardinality", 30,
@@ -912,11 +911,15 @@ public class HiveConf extends Configuration {
         "The default SerDe Hive will use for storage formats that do not specify a SerDe."),
 
     SERDESUSINGMETASTOREFORSCHEMA("hive.serdes.using.metastore.for.schema",
-        "org.apache.hadoop.hive.ql.io.orc.OrcSerde,org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe," +
-        "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe,org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe," +
-        "org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe,org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe," +
-        "org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe,org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe",
-        "SerDes retriving schema from metastore. This an internal parameter. Check with the hive dev. team"),
+        "org.apache.hadoop.hive.ql.io.orc.OrcSerde," +
+        "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe," +
+        "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe," +
+        "org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe," +
+        "org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe," +
+        "org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe," +
+        "org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe," +
+        "org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe",
+        "SerDes retrieving schema from metastore. This is an internal parameter."),
 
     HIVEHISTORYFILELOC("hive.querylog.location",
         "${system:java.io.tmpdir}" + File.separator + "${system:user.name}",
@@ -1256,8 +1259,8 @@ public class HiveConf extends Configuration {
          "Whether to transform OR clauses in Filter operators into IN clauses"),
     HIVEPOINTLOOKUPOPTIMIZERMIN("hive.optimize.point.lookup.min", 31,
              "Minimum number of OR clauses needed to transform into IN clauses"),
-    HIVEPOINTLOOKUPOPTIMIZEREXTRACT("hive.optimize.point.lookup.extract", true,
-                 "Extract partial expressions when optimizing point lookup IN clauses"),
+   HIVEPARTITIONCOLUMNSEPARATOR("hive.optimize.partition.columns.separate", true,
+            "Extract partition columns from IN clauses"),
     // Constant propagation optimizer
     HIVEOPTCONSTANTPROPAGATION("hive.optimize.constant.propagation", true, "Whether to enable constant propagation optimizer"),
     HIVEIDENTITYPROJECTREMOVER("hive.optimize.remove.identity.project", true, "Removes identity project from operator tree"),
@@ -1306,11 +1309,6 @@ public class HiveConf extends Configuration {
         "number of reducers are few, so the number of files anyway are small. However, with this optimization,\n" +
         "we are increasing the number of files possibly by a big margin. So, we merge aggressively."),
     HIVEOPTCORRELATION("hive.optimize.correlation", false, "exploit intra-query correlations."),
-
-    HIVE_HADOOP_SUPPORTS_SUBDIRECTORIES("hive.mapred.supports.subdirectories", false,
-        "Whether the version of Hadoop which is running supports sub-directories for tables/partitions. \n" +
-        "Many Hive optimizations can be applied if the Hadoop version supports sub-directories for\n" +
-        "tables/partitions. It was added by MAPREDUCE-1501"),
 
     HIVE_OPTIMIZE_SKEWJOIN_COMPILETIME("hive.optimize.skewjoin.compiletime", false,
         "Whether to create a separate plan for skewed keys for the tables in the join.\n" +
@@ -2102,6 +2100,10 @@ public class HiveConf extends Configuration {
         METASTOREPWD.varname + "," + HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname,
         "Comma separated list of configuration options which should not be read by normal user like passwords"),
 
+    HIVE_CONF_INTERNAL_VARIABLE_LIST("hive.conf.internal.variable.list",
+        "hive.added.files.path,hive.added.jars.path,hive.added.archives.path",
+        "Comma separated list of variables which are used internally and should not be configurable."),
+
     // If this is set all move tasks at the end of a multi-insert query will only begin once all
     // outputs are ready
     HIVE_MULTI_INSERT_MOVE_TASKS_SHARE_DEPENDENCIES(
@@ -2204,7 +2206,10 @@ public class HiveConf extends Configuration {
         "Exceeding this will trigger a flush irrelevant of memory pressure condition."),
     HIVE_VECTORIZATION_GROUPBY_FLUSH_PERCENT("hive.vectorized.groupby.flush.percent", (float) 0.1,
         "Percent of entries in the group by aggregation hash flushed when the memory threshold is exceeded."),
-
+    HIVE_VECTORIZATION_REDUCESINK_NEW_ENABLED("hive.vectorized.execution.reducesink.new.enabled", true,
+        "This flag should be set to true to enable the new vectorization\n" +
+        "of queries using ReduceSink.\ni" +
+        "The default value is true."),
     HIVE_TYPE_CHECK_ON_INSERT("hive.typecheck.on.insert", true, "This property has been extended to control "
         + "whether to check, convert, and normalize partition value to conform to its column type in "
         + "partition operations including but not limited to insert, such as alter, describe etc."),
@@ -2303,9 +2308,10 @@ public class HiveConf extends Configuration {
     LLAP_ORC_CACHE_MAX_ALLOC("hive.llap.io.cache.orc.alloc.max", 16 * 1024 * 1024,
         "Maximum allocation possible from LLAP low-level cache for ORC. Should be as large as\n" +
         "the largest expected ORC compression buffer size. Must be power of 2."),
-    LLAP_ORC_CACHE_ARENA_SIZE("hive.llap.io.cache.orc.arena.size", 128 * 1024 * 1024,
-        "Arena size for ORC low-level cache; cache will be allocated in arena-sized steps.\n" +
-        "Must presently be a power of two."),
+    LLAP_ORC_CACHE_ARENA_COUNT("hive.llap.io.cache.orc.arena.count", 8,
+        "Arena count for LLAP low-level cache; cache will be allocated in the steps of\n" +
+        "(size/arena_count) bytes. This size must be <= 1Gb and >= max allocation; if it is\n" +
+        "not the case, an adjusted size will be used. Using powers of 2 is recommended."),
     LLAP_ORC_CACHE_MAX_SIZE("hive.llap.io.cache.orc.size", 1024L * 1024 * 1024,
         "Maximum size for ORC low-level cache; must be a multiple of arena size."),
     LLAP_ORC_CACHE_ALLOCATE_DIRECT("hive.llap.io.cache.direct", true,
@@ -2386,7 +2392,10 @@ public class HiveConf extends Configuration {
     HIVE_TEZ_ENABLE_MEMORY_MANAGER("hive.tez.enable.memory.manager", true,
         "Enable memory manager for tez"),
     HIVE_HASH_TABLE_INFLATION_FACTOR("hive.hash.table.inflation.factor", (float) 2.0,
-        "Expected inflation factor between disk/in memory representation of hash tables");
+        "Expected inflation factor between disk/in memory representation of hash tables"),
+    HIVE_LOG_TRACE_ID("hive.log.trace.id", "",
+        "Log tracing id that can be used by upstream clients for tracking respective logs. " +
+        "Truncated to " + LOG_PREFIX_LENGTH + " characters. Defaults to use auto-generated session id.");
 
 
     public final String varname;
@@ -2625,7 +2634,7 @@ public class HiveConf extends Configuration {
     }
     if (restrictList.contains(name)) {
       throw new IllegalArgumentException("Cannot modify " + name + " at runtime. It is in the list"
-          + "of parameters that can't be modified at runtime");
+          + " of parameters that can't be modified at runtime");
     }
     String oldValue = name != null ? get(name) : null;
     if (name == null || value == null || !value.equals(oldValue)) {
@@ -2832,6 +2841,20 @@ public class HiveConf extends Configuration {
     return conf.get(var.varname, defaultVal);
   }
 
+  public String getLogIdVar(String defaultValue) {
+    String retval = getVar(ConfVars.HIVE_LOG_TRACE_ID);
+    if (retval.equals("")) {
+      l4j.info("Using the default value passed in for log id: " + defaultValue);
+      retval = defaultValue;
+    }
+    if (retval.length() > LOG_PREFIX_LENGTH) {
+      l4j.warn("The original log id prefix is " + retval + " has been truncated to "
+          + retval.substring(0, LOG_PREFIX_LENGTH - 1));
+      retval = retval.substring(0, LOG_PREFIX_LENGTH - 1);
+    }
+    return retval;
+  }
+
   public static void setVar(Configuration conf, ConfVars var, String val) {
     assert (var.valClass == String.class) : var.varname;
     conf.set(var.varname, val);
@@ -2884,6 +2907,7 @@ public class HiveConf extends Configuration {
     isSparkConfigUpdated = other.isSparkConfigUpdated;
     origProp = (Properties)other.origProp.clone();
     restrictList.addAll(other.restrictList);
+    hiddenSet.addAll(other.hiddenSet);
     modWhiteListPattern = other.modWhiteListPattern;
   }
 
@@ -3061,7 +3085,6 @@ public class HiveConf extends Configuration {
     ConfVars.HIVE_EXECUTION_ENGINE.varname,
     ConfVars.HIVE_EXIM_URI_SCHEME_WL.varname,
     ConfVars.HIVE_FILE_MAX_FOOTER.varname,
-    ConfVars.HIVE_HADOOP_SUPPORTS_SUBDIRECTORIES.varname,
     ConfVars.HIVE_INSERT_INTO_MULTILEVEL_DIRS.varname,
     ConfVars.HIVE_LOCALIZE_RESOURCE_NUM_WAIT_ATTEMPTS.varname,
     ConfVars.HIVE_MULTI_INSERT_MOVE_TASKS_SHARE_DEPENDENCIES.varname,
@@ -3307,9 +3330,18 @@ public class HiveConf extends Configuration {
         restrictList.add(entry.trim());
       }
     }
+
+    String internalVariableListStr = this.getVar(ConfVars.HIVE_CONF_INTERNAL_VARIABLE_LIST);
+    if (internalVariableListStr != null) {
+      for (String entry : internalVariableListStr.split(",")) {
+        restrictList.add(entry.trim());
+      }
+    }
+
     restrictList.add(ConfVars.HIVE_IN_TEST.varname);
     restrictList.add(ConfVars.HIVE_CONF_RESTRICTED_LIST.varname);
     restrictList.add(ConfVars.HIVE_CONF_HIDDEN_LIST.varname);
+    restrictList.add(ConfVars.HIVE_CONF_INTERNAL_VARIABLE_LIST.varname);
   }
 
   private void setupHiddenSet() {

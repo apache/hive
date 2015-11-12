@@ -29,8 +29,8 @@ import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.ChecksumException;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -340,7 +340,7 @@ import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.*;
  */
 public class RCFile {
 
-  private static final Log LOG = LogFactory.getLog(RCFile.class);
+  private static final Logger LOG = LoggerFactory.getLogger(RCFile.class);
 
   // internal variable
   public static final String COLUMN_NUMBER_METADATA_STR = "hive.io.rcfile.column.number";

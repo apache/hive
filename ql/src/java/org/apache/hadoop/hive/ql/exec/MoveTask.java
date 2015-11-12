@@ -18,8 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
@@ -69,6 +69,7 @@ import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -79,7 +80,7 @@ import java.util.Map;
 public class MoveTask extends Task<MoveWork> implements Serializable {
 
   private static final long serialVersionUID = 1L;
-  private static transient final Log LOG = LogFactory.getLog(MoveTask.class);
+  private static transient final Logger LOG = LoggerFactory.getLogger(MoveTask.class);
 
   public MoveTask() {
     super();
@@ -426,7 +427,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
               // For DP, WriteEntity creation is deferred at this stage so we need to update
               // queryPlan here.
               if (queryPlan.getOutputs() == null) {
-                queryPlan.setOutputs(new HashSet<WriteEntity>());
+                queryPlan.setOutputs(new LinkedHashSet<WriteEntity>());
               }
               queryPlan.getOutputs().add(enty);
 

@@ -23,11 +23,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
@@ -54,7 +55,7 @@ import org.apache.hadoop.hive.ql.ppd.ExprWalkerInfo.ExprInfo;
  */
 public final class ExprWalkerProcFactory {
 
-  private static final Log LOG = LogFactory.getLog(ExprWalkerProcFactory.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(ExprWalkerProcFactory.class.getName());
 
   /**
    * ColumnExprProcessor.
@@ -84,6 +85,17 @@ public final class ExprWalkerProcFactory {
         // replace the output expression with the input expression so that
         // parent op can understand this expression
         ExprNodeDesc exp = op.getColumnExprMap().get(colref.getColumn());
+        // if the operator is a groupby and we are referencing the grouping
+        // id column, we cannot push the predicate
+        if (op instanceof GroupByOperator) {
+          GroupByOperator groupBy = (GroupByOperator) op;
+          if (groupBy.getConf().isGroupingSetsPresent()) {
+            int groupingSetPlaceholderPos = groupBy.getConf().getKeys().size() - 1;
+            if (colref.getColumn().equals(groupBy.getSchema().getColumnNames().get(groupingSetPlaceholderPos))) {
+              exp = null;
+            }
+          }
+        }
         if (exp == null) {
           // means that expression can't be pushed either because it is value in
           // group by

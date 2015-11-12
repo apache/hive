@@ -24,8 +24,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.mapred.JobConf;
 
@@ -33,7 +33,7 @@ import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 
 public class KryoSerializer {
-  private static final Log LOG = LogFactory.getLog(KryoSerializer.class);
+  private static final Logger LOG = LoggerFactory.getLogger(KryoSerializer.class);
 
   public static byte[] serialize(Object object) {
     ByteArrayOutputStream stream = new ByteArrayOutputStream();

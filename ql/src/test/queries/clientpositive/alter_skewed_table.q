@@ -1,5 +1,3 @@
-set hive.mapred.supports.subdirectories=true;
-
 create table original (key STRING, value STRING);
 
 describe formatted original;

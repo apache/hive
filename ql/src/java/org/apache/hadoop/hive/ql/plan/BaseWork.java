@@ -26,8 +26,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.mapred.JobConf;
@@ -40,7 +40,7 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
  */
 @SuppressWarnings({"serial"})
 public abstract class BaseWork extends AbstractOperatorDesc {
-  static final private Log LOG = LogFactory.getLog(BaseWork.class);
+  static final private Logger LOG = LoggerFactory.getLogger(BaseWork.class);
 
   // dummyOps is a reference to all the HashTableDummy operators in the
   // plan. These have to be separately initialized when we setup a task.
@@ -108,7 +108,7 @@ public abstract class BaseWork extends AbstractOperatorDesc {
 
   public abstract void replaceRoots(Map<Operator<?>, Operator<?>> replacementMap);
 
-  public abstract Set<Operator<?>> getAllRootOperators();
+  public abstract Set<Operator<? extends OperatorDesc>> getAllRootOperators();
 
   public Set<Operator<?>> getAllOperators() {
 
@@ -134,7 +134,7 @@ public abstract class BaseWork extends AbstractOperatorDesc {
    * Returns a set containing all leaf operators from the operator tree in this work.
    * @return a set containing all leaf operators in this operator tree.
    */
-  public Set<Operator<?>> getAllLeafOperators() {
+  public Set<Operator<? extends OperatorDesc>> getAllLeafOperators() {
     Set<Operator<?>> returnSet = new LinkedHashSet<Operator<?>>();
     Set<Operator<?>> opSet = getAllRootOperators();
     Stack<Operator<?>> opStack = new Stack<Operator<?>>();

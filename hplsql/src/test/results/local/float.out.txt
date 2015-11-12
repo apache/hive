@@ -1,0 +1,6 @@
+Ln:1 DECLARE float_test FLOAT = 0.0
+Ln:2 SET float_test = 2.1
+Ln:3 PRINT
+2.1
+Ln:4 PRINT
+2.1

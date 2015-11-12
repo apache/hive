@@ -32,8 +32,8 @@ import java.util.Set;
 
 import junit.framework.TestCase;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
@@ -82,7 +82,7 @@ import org.junit.Test;
 import com.google.common.collect.Lists;
 
 public abstract class TestHiveMetaStore extends TestCase {
-  private static final Log LOG = LogFactory.getLog(TestHiveMetaStore.class);
+  private static final Logger LOG = LoggerFactory.getLogger(TestHiveMetaStore.class);
   protected static HiveMetaStoreClient client;
   protected static HiveConf hiveConf;
   protected static Warehouse warehouse;

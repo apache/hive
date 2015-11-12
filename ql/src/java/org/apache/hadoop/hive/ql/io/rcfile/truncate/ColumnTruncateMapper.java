@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.io.rcfile.truncate;
 
 import java.io.IOException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -68,7 +68,7 @@ public class ColumnTruncateMapper extends MapReduceBase implements
   Path dpPath;
   ColumnTruncateWork work;
 
-  public final static Log LOG = LogFactory.getLog(ColumnTruncateMapper.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(ColumnTruncateMapper.class.getName());
 
   public ColumnTruncateMapper() {
   }

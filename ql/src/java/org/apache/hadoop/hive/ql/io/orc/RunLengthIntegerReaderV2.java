@@ -21,8 +21,8 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.io.orc.RunLengthIntegerWriterV2.EncodingType;
@@ -33,7 +33,7 @@ import org.apache.hadoop.hive.ql.io.orc.RunLengthIntegerWriterV2.EncodingType;
  * compression techniques.
  */
 public class RunLengthIntegerReaderV2 implements IntegerReader {
-  public static final Log LOG = LogFactory.getLog(RunLengthIntegerReaderV2.class);
+  public static final Logger LOG = LoggerFactory.getLogger(RunLengthIntegerReaderV2.class);
 
   private InStream input;
   private final boolean signed;

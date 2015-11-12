@@ -40,8 +40,8 @@ import javax.security.sasl.SaslServer;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -76,7 +76,7 @@ import org.apache.thrift.transport.TTransportFactory;
  * to avoid maintenance errors.
  */
 public abstract class HadoopThriftAuthBridge {
-  private static final Log LOG = LogFactory.getLog(HadoopThriftAuthBridge.class);
+  private static final Logger LOG = LoggerFactory.getLogger(HadoopThriftAuthBridge.class);
 
   public Client createClient() {
     return new Client();
@@ -425,8 +425,8 @@ public abstract class HadoopThriftAuthBridge {
     }
 
 
-    public void startDelegationTokenSecretManager(Configuration conf, Object rawStore, ServerMode smode)
-        throws IOException{
+    public void startDelegationTokenSecretManager(Configuration conf, Object hms, ServerMode smode)
+        throws IOException {
       long secretKeyInterval =
           conf.getLong(DELEGATION_KEY_UPDATE_INTERVAL_KEY,
               DELEGATION_KEY_UPDATE_INTERVAL_DEFAULT);
@@ -440,7 +440,7 @@ public abstract class HadoopThriftAuthBridge {
           DELEGATION_TOKEN_GC_INTERVAL_DEFAULT);
 
       DelegationTokenStore dts = getTokenStore(conf);
-      dts.init(rawStore, smode);
+      dts.init(hms, smode);
       secretManager = new TokenStoreDelegationTokenSecretManager(secretKeyInterval,
           tokenMaxLifetime,
           tokenRenewInterval,

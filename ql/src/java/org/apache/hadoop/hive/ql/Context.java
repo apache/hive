@@ -31,8 +31,8 @@ import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.antlr.runtime.TokenRewriteStream;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileStatus;
@@ -62,7 +62,7 @@ public class Context {
   private Path resFile;
   private Path resDir;
   private FileSystem resFs;
-  private static final Log LOG = LogFactory.getLog("hive.ql.Context");
+  private static final Logger LOG = LoggerFactory.getLogger("hive.ql.Context");
   private Path[] resDirPaths;
   private int resDirFilesNum;
   boolean initialized;
@@ -347,7 +347,9 @@ public class Context {
     for (Map.Entry<String, Path> entry : fsScratchDirs.entrySet()) {
       try {
         Path p = entry.getValue();
-        p.getFileSystem(conf).delete(p, true);
+        FileSystem fs = p.getFileSystem(conf);
+        fs.delete(p, true);
+        fs.cancelDeleteOnExit(p);
       } catch (Exception e) {
         LOG.warn("Error Removing Scratch: "
             + StringUtils.stringifyException(e));

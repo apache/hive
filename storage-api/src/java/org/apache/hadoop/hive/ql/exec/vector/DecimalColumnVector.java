@@ -17,9 +17,7 @@
  */
 
 package org.apache.hadoop.hive.ql.exec.vector;
-import java.io.IOException;
 import java.math.BigInteger;
-
 
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.common.type.HiveDecimal;

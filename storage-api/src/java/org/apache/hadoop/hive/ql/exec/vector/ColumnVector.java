@@ -36,7 +36,8 @@ public abstract class ColumnVector {
   /*
    * The current kinds of column vectors.
    */
-  public enum Type {
+  public static enum Type {
+    NONE,    // Useful when the type of column vector has not be determined yet.
     LONG,
     DOUBLE,
     BYTES,

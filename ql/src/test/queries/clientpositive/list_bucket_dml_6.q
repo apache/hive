@@ -1,4 +1,3 @@
-set hive.mapred.supports.subdirectories=true;
 set hive.exec.dynamic.partition=true;
 set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.input.format=org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;

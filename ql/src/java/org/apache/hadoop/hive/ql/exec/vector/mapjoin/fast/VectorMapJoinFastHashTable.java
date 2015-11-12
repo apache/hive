@@ -18,12 +18,12 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashTable;
 
 public abstract class VectorMapJoinFastHashTable implements VectorMapJoinHashTable {
-  public static final Log LOG = LogFactory.getLog(VectorMapJoinFastHashTable.class);
+  public static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinFastHashTable.class);
 
   protected int logicalHashBucketCount;
   protected int logicalHashBucketMask;

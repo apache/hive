@@ -22,10 +22,6 @@ import org.apache.hadoop.hive.serde2.WriteBuffers;
 
 public class VectorMapJoinFastBytesHashUtil {
 
-  public static long hashKey(byte[] bytes, int start, int length) {
-    return WriteBuffers.murmurHash(bytes, start, length);
-  }
-
   public static String displayBytes(byte[] bytes, int start, int length) {
     StringBuilder sb = new StringBuilder();
     for (int i = start; i < start + length; i++) {

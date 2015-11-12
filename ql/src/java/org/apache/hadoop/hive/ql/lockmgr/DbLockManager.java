@@ -17,8 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.lockmgr;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
@@ -42,7 +42,7 @@ import java.util.Set;
 public class DbLockManager implements HiveLockManager{
 
   static final private String CLASS_NAME = DbLockManager.class.getName();
-  static final private Log LOG = LogFactory.getLog(CLASS_NAME);
+  static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
   private static final long MAX_SLEEP = 15000;
   private HiveLockManagerCtx context;

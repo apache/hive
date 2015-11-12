@@ -21,8 +21,8 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -44,7 +44,7 @@ import org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer;
  * of the user performing the drop
  */
 public class MetaDataExportListener extends MetaStorePreEventListener {
-  public static final Log LOG = LogFactory.getLog(MetaDataExportListener.class);
+  public static final Logger LOG = LoggerFactory.getLogger(MetaDataExportListener.class);
 
   /** Configure the export listener */
   public MetaDataExportListener(Configuration config) {

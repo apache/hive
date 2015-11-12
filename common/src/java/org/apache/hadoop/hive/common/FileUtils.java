@@ -28,8 +28,6 @@ import java.security.PrivilegedExceptionAction;
 import java.util.BitSet;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -46,15 +44,18 @@ import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Shell;
 import org.apache.hive.common.util.ShutdownHookManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
  * Collection of file manipulation utilities common across Hive.
  */
 public final class FileUtils {
-  private static final Log LOG = LogFactory.getLog(FileUtils.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(FileUtils.class.getName());
 
   public static final PathFilter HIDDEN_FILES_PATH_FILTER = new PathFilter() {
+    @Override
     public boolean accept(Path p) {
       String name = p.getName();
       return !name.startsWith("_") && !name.startsWith(".");
@@ -62,6 +63,7 @@ public final class FileUtils {
   };
 
   public static final PathFilter STAGING_DIR_PATH_FILTER = new PathFilter() {
+    @Override
     public boolean accept(Path p) {
       String name = p.getName();
       return !name.startsWith(".");

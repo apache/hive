@@ -18,13 +18,14 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashMapResult;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinLongHashMap;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableKeyType;
 import org.apache.hadoop.io.BytesWritable;
+import org.apache.hive.common.util.HashCodeUtil;
 
 /*
  * An single long value map optimized for vector map join.
@@ -33,7 +34,7 @@ public class VectorMapJoinFastLongHashMap
              extends VectorMapJoinFastLongHashTable
              implements VectorMapJoinLongHashMap {
 
-  public static final Log LOG = LogFactory.getLog(VectorMapJoinFastLongHashMap.class);
+  public static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinFastLongHashMap.class);
 
   protected VectorMapJoinFastValueStore valueStore;
 
@@ -67,7 +68,7 @@ public class VectorMapJoinFastLongHashMap
 
     optimizedHashMapResult.forget();
 
-    long hashCode = VectorMapJoinFastLongHashUtil.hashKey(key);
+    long hashCode = HashCodeUtil.calculateLongHashCode(key);
     // LOG.debug("VectorMapJoinFastLongHashMap lookup " + key + " hashCode " + hashCode);
     long valueRef = findReadSlot(key, hashCode);
     JoinUtil.JoinResult joinResult;

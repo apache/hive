@@ -4,8 +4,9 @@ set hive.input.format = org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 create table T1(key string, value string) partitioned by (dt string) stored as rcfile;
 alter table T1 set serde 'org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe';
 insert overwrite table T1 partition (dt='1') select * from src where key = 238 or key = 97;
-
+set hive.metastore.disallow.incompatible.col.type.changes=false;
 alter table T1 change key key int;
+reset hive.metastore.disallow.incompatible.col.type.changes;
 insert overwrite table T1 partition (dt='2') select * from src where key = 238 or key = 97;
 
 alter table T1 change key key string;

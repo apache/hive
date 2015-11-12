@@ -18,8 +18,8 @@
 
 package org.apache.hadoop.hive.ql.stats;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.tez.common.counters.TezCounters;
@@ -32,7 +32,7 @@ import org.apache.tez.common.counters.TezCounters;
  */
 public class CounterStatsAggregatorTez implements StatsAggregator {
 
-  private static final Log LOG = LogFactory.getLog(CounterStatsAggregatorTez.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(CounterStatsAggregatorTez.class.getName());
 
   private TezCounters counters;
   private final CounterStatsAggregator mrAggregator;

@@ -42,7 +42,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
@@ -52,7 +53,7 @@ import com.google.common.base.Preconditions;
  * {@link ColumnMapping}s
  */
 public class AccumuloRowSerializer {
-  private static final Logger log = Logger.getLogger(AccumuloRowSerializer.class);
+  private static final Logger log = LoggerFactory.getLogger(AccumuloRowSerializer.class);
 
   private final int rowIdOffset;
   private final ByteStream.Output output;

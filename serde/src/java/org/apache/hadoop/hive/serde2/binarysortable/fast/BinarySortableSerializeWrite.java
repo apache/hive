@@ -23,8 +23,8 @@ import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.Arrays;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
@@ -32,13 +32,8 @@ import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe;
-import org.apache.hadoop.hive.serde2.binarysortable.InputByteBuffer;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
-import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
-import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
-import org.apache.hadoop.hive.serde2.lazy.LazyHiveIntervalDayTime;
-import org.apache.hadoop.hive.serde2.lazy.LazyHiveIntervalYearMonth;
 import org.apache.hadoop.hive.serde2.fast.SerializeWrite;
 import org.apache.hive.common.util.DateUtils;
 
@@ -47,8 +42,8 @@ import org.apache.hive.common.util.DateUtils;
  *
  * This is an alternative way to serialize than what is provided by BinarySortableSerDe.
  */
-public class BinarySortableSerializeWrite implements SerializeWrite {
-  public static final Log LOG = LogFactory.getLog(BinarySortableSerializeWrite.class.getName());
+public final class BinarySortableSerializeWrite implements SerializeWrite {
+  public static final Logger LOG = LoggerFactory.getLogger(BinarySortableSerializeWrite.class.getName());
 
   private Output output;
 
@@ -371,7 +366,7 @@ public class BinarySortableSerializeWrite implements SerializeWrite {
    * DECIMAL.
    */
   @Override
-  public void writeHiveDecimal(HiveDecimal dec) throws IOException {
+  public void writeHiveDecimal(HiveDecimal dec, int scale) throws IOException {
     final boolean invert = columnSortOrderIsDesc[++index];
 
     // This field is not a null.

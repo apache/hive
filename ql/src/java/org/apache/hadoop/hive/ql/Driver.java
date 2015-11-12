@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -35,8 +36,8 @@ import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -120,12 +121,14 @@ import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hive.common.util.ShutdownHookManager;
 
 public class Driver implements CommandProcessor {
 
   static final private String CLASS_NAME = Driver.class.getName();
-  static final private Log LOG = LogFactory.getLog(CLASS_NAME);
+  private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   static final private LogHelper console = new LogHelper(LOG);
+  static final int SHUTDOWN_HOOK_PRIORITY = 0;
 
   private int maxRows = 100;
   ByteStream.Output bos = new ByteStream.Output();
@@ -298,9 +301,7 @@ public class Driver implements CommandProcessor {
   }
 
   public Driver() {
-    conf = (SessionState.get() != null) ? SessionState.get().getConf() : null;
-    isParallelEnabled = (conf != null)
-        && HiveConf.getBoolVar(conf, ConfVars.HIVE_SERVER2_PARALLEL_COMPILATION);
+    this((SessionState.get() != null) ? SessionState.get().getConf() : null);
   }
 
   /**
@@ -391,7 +392,20 @@ public class Driver implements CommandProcessor {
 
     try {
       // Initialize the transaction manager.  This must be done before analyze is called.
-      SessionState.get().initTxnMgr(conf);
+      final HiveTxnManager txnManager = SessionState.get().initTxnMgr(conf);
+      // In case when user Ctrl-C twice to kill Hive CLI JVM, we want to release locks
+      ShutdownHookManager.addShutdownHook(
+          new Runnable() {
+            @Override
+            public void run() {
+              try {
+                releaseLocksAndCommitOrRollback(false, txnManager);
+              } catch (LockException e) {
+                LOG.warn("Exception when releasing locks in ShutdownHook for Driver: " +
+                    e.getMessage());
+              }
+            }
+          }, SHUTDOWN_HOOK_PRIORITY);
 
       command = new VariableSubstitution(new HiveVariableSource() {
         @Override
@@ -538,7 +552,7 @@ public class Driver implements CommandProcessor {
    *
    * @param sem semantic analyzer for analyzed query
    * @param plan query plan
-   * @param astStringTree AST tree dump
+   * @param astTree AST tree dump
    * @throws java.io.IOException
    */
   private String getExplainOutput(BaseSemanticAnalyzer sem, QueryPlan plan,
@@ -615,8 +629,12 @@ public class Driver implements CommandProcessor {
           continue;
         }
         if (write.getType() == Entity.Type.DATABASE) {
-          authorizer.authorize(write.getDatabase(),
-              null, op.getOutputRequiredPrivileges());
+          if (!op.equals(HiveOperation.IMPORT)){
+            // We skip DB check for import here because we already handle it above
+            // as a CTAS check.
+            authorizer.authorize(write.getDatabase(),
+                null, op.getOutputRequiredPrivileges());
+          }
           continue;
         }
 
@@ -1046,15 +1064,21 @@ public class Driver implements CommandProcessor {
   /**
    * @param commit if there is an open transaction and if true, commit,
    *               if false rollback.  If there is no open transaction this parameter is ignored.
+   * @param txnManager an optional existing transaction manager retrieved earlier from the session
    *
    **/
-  private void releaseLocksAndCommitOrRollback(boolean commit)
+  private void releaseLocksAndCommitOrRollback(boolean commit, HiveTxnManager txnManager)
       throws LockException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.RELEASE_LOCKS);
 
-    SessionState ss = SessionState.get();
-    HiveTxnManager txnMgr = ss.getTxnMgr();
+    HiveTxnManager txnMgr;
+    if (txnManager == null) {
+      SessionState ss = SessionState.get();
+      txnMgr = ss.getTxnMgr();
+    } else {
+      txnMgr = txnManager;
+    }
     // If we've opened a transaction we need to commit or rollback rather than explicitly
     // releasing the locks.
     if (txnMgr.isTxnOpen()) {
@@ -1085,6 +1109,10 @@ public class Driver implements CommandProcessor {
    * while keeping the result around.
    */
   private void releaseResources() {
+    if (SessionState.get() != null) {
+      SessionState.get().getLineageState().clear();
+    }
+
     if (plan != null) {
       fetchTask = plan.getFetchTask();
       if (fetchTask != null) {
@@ -1199,7 +1227,7 @@ public class Driver implements CommandProcessor {
     }
     if (ret != 0) {
       try {
-        releaseLocksAndCommitOrRollback(false);
+        releaseLocksAndCommitOrRollback(false, null);
       } catch (LockException e) {
         LOG.warn("Exception in releasing locks. "
             + org.apache.hadoop.util.StringUtils.stringifyException(e));
@@ -1213,10 +1241,6 @@ public class Driver implements CommandProcessor {
     errorMessage = null;
     SQLState = null;
     downstreamError = null;
-
-    if (!validateConfVariables()) {
-      return createProcessorResponse(12);
-    }
 
     HiveDriverRunHookContext hookContext = new HiveDriverRunHookContextImpl(conf, command);
     // Get all the driver run hooks and pre-execute them.
@@ -1284,7 +1308,7 @@ public class Driver implements CommandProcessor {
         if(plan.getAutoCommitValue() && !txnManager.getAutoCommit()) {
           /*here, if there is an open txn, we want to commit it; this behavior matches
           * https://docs.oracle.com/javase/6/docs/api/java/sql/Connection.html#setAutoCommit(boolean)*/
-          releaseLocksAndCommitOrRollback(true);
+          releaseLocksAndCommitOrRollback(true, null);
           txnManager.setAutoCommit(true);
         }
         else if(!plan.getAutoCommitValue() && txnManager.getAutoCommit()) {
@@ -1312,10 +1336,10 @@ public class Driver implements CommandProcessor {
     //if needRequireLock is false, the release here will do nothing because there is no lock
     try {
       if(txnManager.getAutoCommit() || plan.getOperation() == HiveOperation.COMMIT) {
-        releaseLocksAndCommitOrRollback(true);
+        releaseLocksAndCommitOrRollback(true, null);
       }
       else if(plan.getOperation() == HiveOperation.ROLLBACK) {
-        releaseLocksAndCommitOrRollback(false);
+        releaseLocksAndCommitOrRollback(false, null);
       }
       else {
         //txn (if there is one started) is not finished
@@ -1346,7 +1370,7 @@ public class Driver implements CommandProcessor {
   private CommandProcessorResponse rollback(CommandProcessorResponse cpr) {
     //console.printError(cpr.toString());
     try {
-      releaseLocksAndCommitOrRollback(false);
+      releaseLocksAndCommitOrRollback(false, null);
     }
     catch (LockException e) {
       LOG.error("rollback() FAILED: " + cpr);//make sure not to loose 
@@ -1397,26 +1421,6 @@ public class Driver implements CommandProcessor {
 
   private CommandProcessorResponse createProcessorResponse(int ret) {
     return new CommandProcessorResponse(ret, errorMessage, SQLState, downstreamError);
-  }
-
-  /**
-   * Validate configuration variables.
-   *
-   * @return
-   */
-  private boolean validateConfVariables() {
-    boolean valid = true;
-    if ((!conf.getBoolVar(HiveConf.ConfVars.HIVE_HADOOP_SUPPORTS_SUBDIRECTORIES))
-        && ((conf.getBoolVar(HiveConf.ConfVars.HADOOPMAPREDINPUTDIRRECURSIVE)) || (conf
-              .getBoolVar(HiveConf.ConfVars.HIVEOPTLISTBUCKETING)) || ((conf
-                  .getBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_UNION_REMOVE))))) {
-      errorMessage = "FAILED: Hive Internal Error: "
-          + ErrorMsg.SUPPORT_DIR_MUST_TRUE_FOR_LIST_BUCKETING.getMsg();
-      SQLState = ErrorMsg.SUPPORT_DIR_MUST_TRUE_FOR_LIST_BUCKETING.getSQLState();
-      console.printError(errorMessage + "\n");
-      valid = false;
-    }
-    return valid;
   }
 
   /**
@@ -1636,7 +1640,7 @@ public class Driver implements CommandProcessor {
       // remove incomplete outputs.
       // Some incomplete outputs may be added at the beginning, for eg: for dynamic partitions.
       // remove them
-      HashSet<WriteEntity> remOutputs = new HashSet<WriteEntity>();
+      HashSet<WriteEntity> remOutputs = new LinkedHashSet<WriteEntity>();
       for (WriteEntity output : plan.getOutputs()) {
         if (!output.isComplete()) {
           remOutputs.add(output);
@@ -1713,7 +1717,6 @@ public class Driver implements CommandProcessor {
 
     if (SessionState.get() != null) {
       try {
-        SessionState.get().getLineageState().clear();
         SessionState.get().getHiveHistory().logPlanProgress(plan);
       } catch (Exception e) {
         // ignore
@@ -1915,7 +1918,7 @@ public class Driver implements CommandProcessor {
     destroyed = true;
     if (!hiveLocks.isEmpty()) {
       try {
-        releaseLocksAndCommitOrRollback(false);
+        releaseLocksAndCommitOrRollback(false, null);
       } catch (LockException e) {
         LOG.warn("Exception when releasing locking in destroy: " +
             e.getMessage());

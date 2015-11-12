@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.metadata;
 
 import com.google.common.collect.Sets;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -139,7 +139,7 @@ import static org.apache.hadoop.hive.serde.serdeConstants.STRING_TYPE_NAME;
 @SuppressWarnings({"deprecation", "rawtypes"})
 public class Hive {
 
-  static final private Log LOG = LogFactory.getLog("hive.ql.metadata.Hive");
+  static final private Logger LOG = LoggerFactory.getLogger("hive.ql.metadata.Hive");
 
   private HiveConf conf = null;
   private IMetaStoreClient metaStoreClient;
@@ -781,6 +781,16 @@ public class Hive {
     }
   }
 
+  public static List<FieldSchema> getFieldsFromDeserializerForMsStorage(
+      Table tbl, Deserializer deserializer) throws SerDeException, MetaException {
+    List<FieldSchema> schema = MetaStoreUtils.getFieldsFromDeserializer(
+        tbl.getTableName(), tbl.getDeserializer());
+    for (FieldSchema field : schema) {
+      field.setType(MetaStoreUtils.TYPE_FROM_DESERIALIZER);
+    }
+    return schema;
+  }
+
   /**
    *
    * @param tableName
@@ -905,8 +915,11 @@ public class Hive {
       List<Order> sortCols = new ArrayList<Order>();
       int k = 0;
       Table metaBaseTbl = new Table(baseTbl);
-      for (int i = 0; i < metaBaseTbl.getCols().size(); i++) {
-        FieldSchema col = metaBaseTbl.getCols().get(i);
+      // Even though we are storing these in metastore, get regular columns. Indexes on lengthy
+      // types from e.g. Avro schema will just fail to create the index table (by design).
+      List<FieldSchema> cols = metaBaseTbl.getCols();
+      for (int i = 0; i < cols.size(); i++) {
+        FieldSchema col = cols.get(i);
         if (indexedCols.contains(col.getName())) {
           indexTblCols.add(col);
           sortCols.add(new Order(col.getName(), 1));
@@ -1612,20 +1625,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
       FileStatus[] leafStatus = HiveStatsUtils.getFileStatusRecurse(loadPath, numDP+1, fs);
       // Check for empty partitions
       for (FileStatus s : leafStatus) {
-        // Check if the hadoop version supports sub-directories for tables/partitions
-        if (s.isDir() &&
-          !conf.getBoolVar(HiveConf.ConfVars.HIVE_HADOOP_SUPPORTS_SUBDIRECTORIES)) {
-          // No leaves in this directory
-          LOG.info("NOT moving empty directory: " + s.getPath());
-        } else {
-          try {
-            validatePartitionNameCharacters(
-                Warehouse.getPartValuesFromPartName(s.getPath().getParent().toString()));
-          } catch (MetaException e) {
-            throw new HiveException(e);
-          }
-          validPartitions.add(s.getPath().getParent());
+        try {
+          validatePartitionNameCharacters(
+            Warehouse.getPartValuesFromPartName(s.getPath().getParent().toString()));
+        } catch (MetaException e) {
+          throw new HiveException(e);
         }
+        validPartitions.add(s.getPath().getParent());
       }
 
       int partsToLoad = validPartitions.size();
@@ -2085,7 +2091,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
       List<org.apache.hadoop.hive.metastore.api.Partition> tParts = getMSC().dropPartitions(
           dbName, tblName, partExprs, dropOptions);
-      return convertFromMetastore(tbl, tParts, null);
+      return convertFromMetastore(tbl, tParts);
     } catch (NoSuchObjectException e) {
       throw new HiveException("Partition or table doesn't exist.", e);
     } catch (Exception e) {
@@ -2329,22 +2335,20 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
     List<org.apache.hadoop.hive.metastore.api.Partition> tParts = getMSC().listPartitionsByFilter(
         tbl.getDbName(), tbl.getTableName(), filter, (short)-1);
-    return convertFromMetastore(tbl, tParts, null);
+    return convertFromMetastore(tbl, tParts);
   }
 
   private static List<Partition> convertFromMetastore(Table tbl,
-      List<org.apache.hadoop.hive.metastore.api.Partition> src,
-      List<Partition> dest) throws HiveException {
-    if (src == null) {
-      return dest;
+      List<org.apache.hadoop.hive.metastore.api.Partition> partitions) throws HiveException {
+    if (partitions == null) {
+      return new ArrayList<Partition>();
     }
-    if (dest == null) {
-      dest = new ArrayList<Partition>(src.size());
+
+    List<Partition> results = new ArrayList<Partition>(partitions.size());
+    for (org.apache.hadoop.hive.metastore.api.Partition tPart : partitions) {
+      results.add(new Partition(tbl, tPart));
     }
-    for (org.apache.hadoop.hive.metastore.api.Partition tPart : src) {
-      dest.add(new Partition(tbl, tPart));
-    }
-    return dest;
+    return results;
   }
 
   /**
@@ -2364,7 +2368,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         new ArrayList<org.apache.hadoop.hive.metastore.api.Partition>();
     boolean hasUnknownParts = getMSC().listPartitionsByExpr(tbl.getDbName(),
         tbl.getTableName(), exprBytes, defaultPartitionName, (short)-1, msParts);
-    convertFromMetastore(tbl, msParts, result);
+    result.addAll(convertFromMetastore(tbl, msParts));
     return hasUnknownParts;
   }
 
@@ -2538,12 +2542,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
             continue;
           }
 
-          if (!conf.getBoolVar(HiveConf.ConfVars.HIVE_HADOOP_SUPPORTS_SUBDIRECTORIES) &&
-            !HiveConf.getVar(conf, HiveConf.ConfVars.STAGINGDIR).equals(itemSource.getName()) &&
-            item.isDir()) {
-            throw new HiveException("checkPaths: " + src.getPath()
-                + " has nested directory " + itemSource);
-          }
           // Strip off the file type, if any so we don't make:
           // 000000_0.gz -> 000000_0.gz_copy_1
           String name = itemSource.getName();
@@ -2647,13 +2645,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
     try {
       destFs = destf.getFileSystem(conf);
     } catch (IOException e) {
-      LOG.error(e);
+      LOG.error("Failed to get dest fs", e);
       throw new HiveException(e.getMessage(), e);
     }
     try {
       srcFs = srcf.getFileSystem(conf);
     } catch (IOException e) {
-      LOG.error(e);
+      LOG.error("Failed to get dest fs", e);
       throw new HiveException(e.getMessage(), e);
     }
 
@@ -3001,12 +2999,15 @@ private void constructOneLBLocationMap(FileStatus fSta,
     return ShimLoader.getMajorVersion().startsWith("0.20");
   }
 
-  public void exchangeTablePartitions(Map<String, String> partitionSpecs,
+  public List<Partition> exchangeTablePartitions(Map<String, String> partitionSpecs,
       String sourceDb, String sourceTable, String destDb,
       String destinationTableName) throws HiveException {
     try {
-      getMSC().exchange_partition(partitionSpecs, sourceDb, sourceTable, destDb,
+      List<org.apache.hadoop.hive.metastore.api.Partition> partitions =
+        getMSC().exchange_partitions(partitionSpecs, sourceDb, sourceTable, destDb,
         destinationTableName);
+
+      return convertFromMetastore(getTable(destDb, destinationTableName), partitions);
     } catch (Exception ex) {
       LOG.error(StringUtils.stringifyException(ex));
       throw new HiveException(ex);

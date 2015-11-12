@@ -34,6 +34,8 @@
     <Root level="${sys:hive.log.level}">
       <AppenderRef ref="${sys:hive.root.logger}"/>
     </Root>
+    <!-- HiveConnection logs useful info for dynamic service discovery -->
+    <logger name="org.apache.hive.jdbc.HiveConnection" level="INFO"/>
   </Loggers>
 
 </Configuration>

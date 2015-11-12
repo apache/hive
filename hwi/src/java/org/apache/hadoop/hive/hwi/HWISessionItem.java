@@ -26,8 +26,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.sql.SQLException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.cli.OptionsProcessor;
 import org.apache.hadoop.hive.common.LogUtils;
@@ -47,7 +47,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
  */
 public class HWISessionItem implements Runnable, Comparable<HWISessionItem> {
 
-  protected static final Log l4j = LogFactory.getLog(HWISessionItem.class
+  protected static final Logger l4j = LoggerFactory.getLogger(HWISessionItem.class
       .getName());
 
   /** Represents the state a session item can be in. */
@@ -146,7 +146,7 @@ public class HWISessionItem implements Runnable, Comparable<HWISessionItem> {
     try {
       LogUtils.initHiveLog4j();
     } catch (LogInitializationException e) {
-      l4j.warn(e);
+      l4j.warn("Initialization Error", e);
     }
     conf = new HiveConf(SessionState.class);
     ss = new CliSessionState(conf);

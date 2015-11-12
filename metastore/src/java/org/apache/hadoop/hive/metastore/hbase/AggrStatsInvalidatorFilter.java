@@ -19,8 +19,8 @@
 package org.apache.hadoop.hive.metastore.hbase;
 
 import com.google.protobuf.InvalidProtocolBufferException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.CellUtil;
 import org.apache.hadoop.hbase.exceptions.DeserializationException;
@@ -36,8 +36,8 @@ import java.util.List;
  * Filter for scanning aggregates stats table
  */
 public class AggrStatsInvalidatorFilter extends FilterBase {
-  private static final Log LOG =
-      LogFactory.getLog(AggrStatsInvalidatorFilter.class.getName());
+  private static final Logger LOG =
+      LoggerFactory.getLogger(AggrStatsInvalidatorFilter.class.getName());
   private final List<HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry> entries;
   private final long runEvery;
   private final long maxCacheEntryLife;

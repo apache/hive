@@ -21,8 +21,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.apache.spark.JavaSparkListener;
 import org.apache.spark.executor.TaskMetrics;
 import org.apache.spark.scheduler.SparkListenerJobStart;
@@ -33,7 +34,7 @@ import com.google.common.collect.Maps;
 
 public class JobMetricsListener extends JavaSparkListener {
 
-  private static final Log LOG = LogFactory.getLog(JobMetricsListener.class);
+  private static final Logger LOG = LoggerFactory.getLogger(JobMetricsListener.class);
 
   private final Map<Integer, int[]> jobIdToStageId = Maps.newHashMap();
   private final Map<Integer, Integer> stageIdToJobId = Maps.newHashMap();

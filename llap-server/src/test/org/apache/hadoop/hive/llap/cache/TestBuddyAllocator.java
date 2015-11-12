@@ -27,8 +27,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.io.Allocator.AllocatorOutOfMemoryException;
 import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
@@ -37,7 +37,7 @@ import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 import org.junit.Test;
 
 public class TestBuddyAllocator {
-  private static final Log LOG = LogFactory.getLog(TestBuddyAllocator.class);
+  private static final Logger LOG = LoggerFactory.getLogger(TestBuddyAllocator.class);
   private final Random rdm = new Random(2284);
 
   private static class DummyMemoryManager implements MemoryManager {
@@ -57,6 +57,10 @@ public class TestBuddyAllocator {
 
     @Override
     public void updateMaxSize(long maxSize) {
+    }
+
+    @Override
+    public void forceReservedMemory(int memoryToEvict) {
     }
   }
 
@@ -280,7 +284,7 @@ public class TestBuddyAllocator {
     Configuration conf = new Configuration();
     conf.setInt(ConfVars.LLAP_ORC_CACHE_MIN_ALLOC.varname, min);
     conf.setInt(ConfVars.LLAP_ORC_CACHE_MAX_ALLOC.varname, max);
-    conf.setInt(ConfVars.LLAP_ORC_CACHE_ARENA_SIZE.varname, arena);
+    conf.setInt(ConfVars.LLAP_ORC_CACHE_ARENA_COUNT.varname, total/arena);
     conf.setLong(ConfVars.LLAP_ORC_CACHE_MAX_SIZE.varname, total);
     return conf;
   }

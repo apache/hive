@@ -18,16 +18,17 @@
 
 package org.apache.hadoop.hive.llap.io.api.impl;
 
+import org.apache.hadoop.hive.llap.LogLevels;
+
 import java.io.IOException;
 import java.util.concurrent.Executors;
 
 import javax.management.ObjectName;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.llap.LogLevels;
 import org.apache.hadoop.hive.llap.cache.BuddyAllocator;
 import org.apache.hadoop.hive.llap.cache.Cache;
 import org.apache.hadoop.hive.llap.cache.EvictionAwareAllocator;
@@ -56,7 +57,7 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
-  public static final Log LOG = LogFactory.getLog(LlapIoImpl.class);
+  public static final Logger LOG = LoggerFactory.getLogger(LlapIoImpl.class);
   public static final LogLevels LOGL = new LogLevels(LOG);
 
   private final ColumnVectorProducer cvp;

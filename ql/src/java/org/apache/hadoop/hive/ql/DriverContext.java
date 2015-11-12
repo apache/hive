@@ -40,9 +40,9 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * DriverContext.
@@ -50,7 +50,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
  */
 public class DriverContext {
 
-  private static final Log LOG = LogFactory.getLog(Driver.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(Driver.class.getName());
   private static final SessionState.LogHelper console = new SessionState.LogHelper(LOG);
 
   private static final int SLEEP_TIME = 2000;
@@ -189,6 +189,7 @@ public class DriverContext {
     // extract stats keys from StatsTask
     List<Task<?>> rootTasks = plan.getRootTasks();
     NodeUtils.iterateTask(rootTasks, StatsTask.class, new Function<StatsTask>() {
+      @Override
       public void apply(StatsTask statsTask) {
         statsTasks.put(statsTask.getWork().getAggKey(), statsTask);
       }
@@ -212,6 +213,7 @@ public class DriverContext {
     }
     final List<String> statKeys = new ArrayList<String>(1);
     NodeUtils.iterate(operators, FileSinkOperator.class, new Function<FileSinkOperator>() {
+      @Override
       public void apply(FileSinkOperator fsOp) {
         if (fsOp.getConf().isGatherStats()) {
           statKeys.add(fsOp.getConf().getStatsAggPrefix());

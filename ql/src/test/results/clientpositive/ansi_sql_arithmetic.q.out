@@ -44,7 +44,7 @@ POSTHOOK: query: select cast(key as int) / cast(key as int) from src limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-1
+1.00000000000
 PREHOOK: query: -- With ansi sql arithmetic disabled, int / int => double
 explain select cast(key as int) / cast(key as int) from src limit 1
 PREHOOK: type: QUERY

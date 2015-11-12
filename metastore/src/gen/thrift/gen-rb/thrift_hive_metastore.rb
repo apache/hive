@@ -366,6 +366,22 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_tables failed: unknown result')
     end
 
+    def get_table_meta(db_patterns, tbl_patterns, tbl_types)
+      send_get_table_meta(db_patterns, tbl_patterns, tbl_types)
+      return recv_get_table_meta()
+    end
+
+    def send_get_table_meta(db_patterns, tbl_patterns, tbl_types)
+      send_message('get_table_meta', Get_table_meta_args, :db_patterns => db_patterns, :tbl_patterns => tbl_patterns, :tbl_types => tbl_types)
+    end
+
+    def recv_get_table_meta()
+      result = receive_message(Get_table_meta_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_table_meta failed: unknown result')
+    end
+
     def get_all_tables(db_name)
       send_get_all_tables(db_name)
       return recv_get_all_tables()
@@ -764,6 +780,25 @@ module ThriftHiveMetastore
       raise result.o3 unless result.o3.nil?
       raise result.o4 unless result.o4.nil?
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'exchange_partition failed: unknown result')
+    end
+
+    def exchange_partitions(partitionSpecs, source_db, source_table_name, dest_db, dest_table_name)
+      send_exchange_partitions(partitionSpecs, source_db, source_table_name, dest_db, dest_table_name)
+      return recv_exchange_partitions()
+    end
+
+    def send_exchange_partitions(partitionSpecs, source_db, source_table_name, dest_db, dest_table_name)
+      send_message('exchange_partitions', Exchange_partitions_args, :partitionSpecs => partitionSpecs, :source_db => source_db, :source_table_name => source_table_name, :dest_db => dest_db, :dest_table_name => dest_table_name)
+    end
+
+    def recv_exchange_partitions()
+      result = receive_message(Exchange_partitions_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      raise result.o4 unless result.o4.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'exchange_partitions failed: unknown result')
     end
 
     def get_partition_with_auth(db_name, tbl_name, part_vals, user_name, group_names)
@@ -2452,6 +2487,17 @@ module ThriftHiveMetastore
       write_result(result, oprot, 'get_tables', seqid)
     end
 
+    def process_get_table_meta(seqid, iprot, oprot)
+      args = read_args(iprot, Get_table_meta_args)
+      result = Get_table_meta_result.new()
+      begin
+        result.success = @handler.get_table_meta(args.db_patterns, args.tbl_patterns, args.tbl_types)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'get_table_meta', seqid)
+    end
+
     def process_get_all_tables(seqid, iprot, oprot)
       args = read_args(iprot, Get_all_tables_args)
       result = Get_all_tables_result.new()
@@ -2773,6 +2819,23 @@ module ThriftHiveMetastore
         result.o4 = o4
       end
       write_result(result, oprot, 'exchange_partition', seqid)
+    end
+
+    def process_exchange_partitions(seqid, iprot, oprot)
+      args = read_args(iprot, Exchange_partitions_args)
+      result = Exchange_partitions_result.new()
+      begin
+        result.success = @handler.exchange_partitions(args.partitionSpecs, args.source_db, args.source_table_name, args.dest_db, args.dest_table_name)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      rescue ::NoSuchObjectException => o2
+        result.o2 = o2
+      rescue ::InvalidObjectException => o3
+        result.o3 = o3
+      rescue ::InvalidInputException => o4
+        result.o4 = o4
+      end
+      write_result(result, oprot, 'exchange_partitions', seqid)
     end
 
     def process_get_partition_with_auth(seqid, iprot, oprot)
@@ -4577,6 +4640,44 @@ module ThriftHiveMetastore
     ::Thrift::Struct.generate_accessors self
   end
 
+  class Get_table_meta_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    DB_PATTERNS = 1
+    TBL_PATTERNS = 2
+    TBL_TYPES = 3
+
+    FIELDS = {
+      DB_PATTERNS => {:type => ::Thrift::Types::STRING, :name => 'db_patterns'},
+      TBL_PATTERNS => {:type => ::Thrift::Types::STRING, :name => 'tbl_patterns'},
+      TBL_TYPES => {:type => ::Thrift::Types::LIST, :name => 'tbl_types', :element => {:type => ::Thrift::Types::STRING}}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_table_meta_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::TableMeta}},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
   class Get_all_tables_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
     DB_NAME = 1
@@ -5495,6 +5596,54 @@ module ThriftHiveMetastore
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::Partition},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchObjectException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::InvalidObjectException},
+      O4 => {:type => ::Thrift::Types::STRUCT, :name => 'o4', :class => ::InvalidInputException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Exchange_partitions_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    PARTITIONSPECS = 1
+    SOURCE_DB = 2
+    SOURCE_TABLE_NAME = 3
+    DEST_DB = 4
+    DEST_TABLE_NAME = 5
+
+    FIELDS = {
+      PARTITIONSPECS => {:type => ::Thrift::Types::MAP, :name => 'partitionSpecs', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}},
+      SOURCE_DB => {:type => ::Thrift::Types::STRING, :name => 'source_db'},
+      SOURCE_TABLE_NAME => {:type => ::Thrift::Types::STRING, :name => 'source_table_name'},
+      DEST_DB => {:type => ::Thrift::Types::STRING, :name => 'dest_db'},
+      DEST_TABLE_NAME => {:type => ::Thrift::Types::STRING, :name => 'dest_table_name'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Exchange_partitions_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+    O3 = 3
+    O4 = 4
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Partition}},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchObjectException},
       O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::InvalidObjectException},

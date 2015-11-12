@@ -18,8 +18,8 @@
 
 package org.apache.hadoop.hive.hbase;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.mapreduce.TableSnapshotInputFormatImpl;
@@ -37,7 +37,7 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class HBaseTableSnapshotInputFormatUtil {
 
-  private static final Log LOG = LogFactory.getLog(HBaseTableSnapshotInputFormatUtil.class);
+  private static final Logger LOG = LoggerFactory.getLogger(HBaseTableSnapshotInputFormatUtil.class);
 
   /** The class we look for to determine if hbase snapshots are supported. */
   private static final String TABLESNAPSHOTINPUTFORMAT_CLASS

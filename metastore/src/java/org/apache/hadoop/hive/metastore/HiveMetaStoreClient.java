@@ -47,8 +47,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.security.auth.login.LoginException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
@@ -131,6 +131,7 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.metastore.api.TableStatsRequest;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
@@ -187,7 +188,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   private int retries = 5;
   private long retryDelaySeconds = 0;
 
-  static final protected Log LOG = LogFactory.getLog("hive.metastore");
+  static final protected Logger LOG = LoggerFactory.getLogger("hive.metastore");
 
   public HiveMetaStoreClient(HiveConf conf)
     throws MetaException {
@@ -656,6 +657,22 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
       String destinationTableName) throws MetaException,
       NoSuchObjectException, InvalidObjectException, TException {
     return client.exchange_partition(partitionSpecs, sourceDb, sourceTable,
+        destDb, destinationTableName);
+  }
+
+  /**
+   * Exchange the partitions between two tables
+   * @param partitionSpecs partitions specs of the parent partition to be exchanged
+   * @param destDb the db of the destination table
+   * @param destinationTableName the destination table name
+   @ @return new partitions after exchanging
+   */
+  @Override
+  public List<Partition> exchange_partitions(Map<String, String> partitionSpecs,
+      String sourceDb, String sourceTable, String destDb,
+      String destinationTableName) throws MetaException,
+      NoSuchObjectException, InvalidObjectException, TException {
+    return client.exchange_partitions(partitionSpecs, sourceDb, sourceTable,
         destDb, destinationTableName);
   }
 
@@ -1296,6 +1313,37 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
       MetaStoreUtils.logAndThrowMetaException(e);
     }
     return null;
+  }
+
+  @Override
+  public List<TableMeta> getTableMeta(String dbPatterns, String tablePatterns, List<String> tableTypes)
+      throws MetaException {
+    try {
+      return filterNames(client.get_table_meta(dbPatterns, tablePatterns, tableTypes));
+    } catch (Exception e) {
+      MetaStoreUtils.logAndThrowMetaException(e);
+    }
+    return null;
+  }
+
+  private List<TableMeta> filterNames(List<TableMeta> metas) throws MetaException {
+    Map<String, TableMeta> sources = new LinkedHashMap<>();
+    Map<String, List<String>> dbTables = new LinkedHashMap<>();
+    for (TableMeta meta : metas) {
+      sources.put(meta.getDbName() + "." + meta.getTableName(), meta);
+      List<String> tables = dbTables.get(meta.getDbName());
+      if (tables == null) {
+        dbTables.put(meta.getDbName(), tables = new ArrayList<String>());
+      }
+      tables.add(meta.getTableName());
+    }
+    List<TableMeta> filtered = new ArrayList<>();
+    for (Map.Entry<String, List<String>> entry : dbTables.entrySet()) {
+      for (String table : filterHook.filterTableNames(entry.getKey(), entry.getValue())) {
+        filtered.add(sources.get(entry.getKey() + "." + table));
+      }
+    }
+    return filtered;
   }
 
   /** {@inheritDoc} */

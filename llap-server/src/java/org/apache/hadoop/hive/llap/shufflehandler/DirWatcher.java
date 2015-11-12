@@ -41,13 +41,13 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.llap.shufflehandler.ShuffleHandler.AttemptPathIdentifier;
 
 class DirWatcher {
 
-  private static final Log LOG = LogFactory.getLog(DirWatcher.class);
+  private static final Logger LOG = LoggerFactory.getLogger(DirWatcher.class);
 
   private static enum Type {
     BASE, // App Base Dir / ${dagDir}

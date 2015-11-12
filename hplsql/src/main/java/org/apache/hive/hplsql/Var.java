@@ -47,6 +47,8 @@ public class Var {
 	int len;
 	int scale;
 	
+	boolean constant = false;
+	
 	public Var() {
 	  type = Type.NULL;  
 	}
@@ -155,7 +157,10 @@ public class Var {
 	 * Cast a new value to the variable 
 	 */
 	public Var cast(Var val) {
- 	  if (val == null || val.value == null) {
+	  if (constant) {
+	    return this;
+	  }
+	  else if (val == null || val.value == null) {
 	    value = null;
 	  }
  	  else if (type == Type.DERIVED_TYPE) {
@@ -179,6 +184,11 @@ public class Var {
 	      value = BigDecimal.valueOf(val.doubleValue());
 	    }
 	  }
+	  else if (type == Type.DOUBLE) {
+	    if (val.type == Type.BIGINT || val.type == Type.DECIMAL) {
+        value = Double.valueOf(val.doubleValue());
+      }
+	  }
 	  else if (type == Type.DATE) {
 	    value = Utils.toDate(val.toString());
     }
@@ -192,7 +202,7 @@ public class Var {
    * Cast a new string value to the variable 
    */
   public Var cast(String val) {
-    if (type == Type.STRING) {
+    if (!constant && type == Type.STRING) {
       if (len != 0 ) {
         int l = val.length();
         if (l > len) {
@@ -209,27 +219,29 @@ public class Var {
 	 * Set the new value 
 	 */
 	public void setValue(String str) {
-	  if(type == Type.STRING) {
+	  if(!constant && type == Type.STRING) {
 	    value = str;
 	  }
 	}
 	
 	public Var setValue(Long val) {
-    if (type == Type.BIGINT) {
+    if (!constant && type == Type.BIGINT) {
       value = val;
     }
     return this;
   }
 	
 	public Var setValue(Boolean val) {
-    if (type == Type.BOOL) {
+    if (!constant && type == Type.BOOL) {
       value = val;
     }
     return this;
   }
 	
 	public void setValue(Object value) {
-    this.value = value;
+	  if (!constant) { 
+      this.value = value;
+	  }
   }
 	
 	/**
@@ -280,7 +292,14 @@ public class Var {
    */
   void setType(int type) {
     this.type = defineType(type);
-  }	
+  }
+  
+  /**
+   * Set the variable as constant
+   */
+  void setConstant(boolean constant) {
+    this.constant = constant;
+  }
 	
 	/**
    * Define the data type from string representation
@@ -290,16 +309,22 @@ public class Var {
       return Type.NULL;
     }
     else if (type.equalsIgnoreCase("INT") || type.equalsIgnoreCase("INTEGER") || type.equalsIgnoreCase("BIGINT") ||
-      type.equalsIgnoreCase("SMALLINT") || type.equalsIgnoreCase("TINYINT")) {
+             type.equalsIgnoreCase("SMALLINT") || type.equalsIgnoreCase("TINYINT") ||
+             type.equalsIgnoreCase("BINARY_INTEGER") || type.equalsIgnoreCase("PLS_INTEGER") ||
+             type.equalsIgnoreCase("SIMPLE_INTEGER")) {
       return Type.BIGINT;
     }
-    else if (type.equalsIgnoreCase("CHAR") || type.equalsIgnoreCase("VARCHAR") || type.equalsIgnoreCase("STRING")) {
+    else if (type.equalsIgnoreCase("CHAR") || type.equalsIgnoreCase("VARCHAR") || type.equalsIgnoreCase("STRING") ||
+             type.equalsIgnoreCase("XML")) {
       return Type.STRING;
     }
-    else if (type.equalsIgnoreCase("DEC") || type.equalsIgnoreCase("DECIMAL") || type.equalsIgnoreCase("NUMERIC")) {
+    else if (type.equalsIgnoreCase("DEC") || type.equalsIgnoreCase("DECIMAL") || type.equalsIgnoreCase("NUMERIC") ||
+             type.equalsIgnoreCase("NUMBER")) {
       return Type.DECIMAL;
     }
-    else if (type.equalsIgnoreCase("FLOAT") || type.toUpperCase().startsWith("DOUBLE")) {
+    else if (type.equalsIgnoreCase("REAL") || type.equalsIgnoreCase("FLOAT") || type.toUpperCase().startsWith("DOUBLE") ||
+             type.equalsIgnoreCase("BINARY_FLOAT") || type.toUpperCase().startsWith("BINARY_DOUBLE") ||
+             type.equalsIgnoreCase("SIMPLE_FLOAT") || type.toUpperCase().startsWith("SIMPLE_DOUBLE")) {
       return Type.DOUBLE;
     }
     else if (type.equalsIgnoreCase("DATE")) {
@@ -307,6 +332,9 @@ public class Var {
     }
     else if (type.equalsIgnoreCase("TIMESTAMP")) {
       return Type.TIMESTAMP;
+    }
+    else if (type.equalsIgnoreCase("BOOL") || type.equalsIgnoreCase("BOOLEAN")) {
+      return Type.BOOL;
     }
     else if (type.equalsIgnoreCase("SYS_REFCURSOR")) {
       return Type.CURSOR;
@@ -488,6 +516,12 @@ public class Var {
   public double doubleValue() {
     if (type == Type.DOUBLE) {
       return ((Double)value).doubleValue();
+    }
+    else if (type == Type.BIGINT) {
+      return ((Long)value).doubleValue();
+    }
+    else if (type == Type.DECIMAL) {
+      return ((BigDecimal)value).doubleValue();
     }
     return -1;
   }

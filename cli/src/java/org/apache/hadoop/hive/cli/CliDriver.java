@@ -49,11 +49,11 @@ import jline.console.completer.ArgumentCompleter.ArgumentDelimiter;
 import jline.console.completer.ArgumentCompleter.AbstractArgumentDelimiter;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.cli.CliSessionState;
+import org.apache.hadoop.hive.cli.OptionsProcessor;
 import org.apache.hadoop.hive.common.HiveInterruptUtils;
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
@@ -78,6 +78,8 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import sun.misc.Signal;
 import sun.misc.SignalHandler;
@@ -99,20 +101,25 @@ public class CliDriver {
   private final LogHelper console;
   protected ConsoleReader reader;
   private Configuration conf;
+  private final String originalThreadName;
 
   public CliDriver() {
     SessionState ss = SessionState.get();
     conf = (ss != null) ? ss.getConf() : new Configuration();
-    Log LOG = LogFactory.getLog("CliDriver");
+    Logger LOG = LoggerFactory.getLogger("CliDriver");
     if (LOG.isDebugEnabled()) {
-      LOG.debug("CliDriver inited with classpath " + System.getProperty("java.class.path"));
+      LOG.debug("CliDriver inited with classpath {}", System.getProperty("java.class.path"));
     }
     console = new LogHelper(LOG);
+    originalThreadName = Thread.currentThread().getName();
   }
 
   public int processCmd(String cmd) {
     CliSessionState ss = (CliSessionState) SessionState.get();
     ss.setLastCommand(cmd);
+
+    String callerInfo = ss.getConf().getLogIdVar(ss.getSessionId());
+    Thread.currentThread().setName(callerInfo + " " + originalThreadName);
     // Flush the print stream, so it doesn't include output from the last command
     ss.err.flush();
     String cmd_trimmed = cmd.trim();
@@ -182,6 +189,7 @@ public class CliDriver {
       }
     }
 
+    Thread.currentThread().setName(originalThreadName);
     return ret;
   }
 
@@ -342,7 +350,6 @@ public class CliDriver {
       // Hook up the custom Ctrl+C handler while processing this line
       interruptSignal = new Signal("INT");
       oldSignal = Signal.handle(interruptSignal, new SignalHandler() {
-        private final Thread cliThread = Thread.currentThread();
         private boolean interruptRequested;
 
         @Override
@@ -699,6 +706,7 @@ public class CliDriver {
       SessionState.start(ss);
     }
 
+    Thread.currentThread().setName(conf.getLogIdVar(ss.getSessionId()) + " " + originalThreadName);
     // execute cli driver work
     try {
       return executeDriver(ss, conf, oproc);

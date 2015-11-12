@@ -28,8 +28,8 @@ import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.io.Text;
@@ -55,7 +55,7 @@ import org.apache.thrift.transport.TTransportException;
 public class TCTLSeparatedProtocol extends TProtocol implements
     ConfigurableTProtocol, WriteNullsProtocol, SkippableTProtocol {
 
-  static final Log LOG = LogFactory.getLog(TCTLSeparatedProtocol.class
+  static final Logger LOG = LoggerFactory.getLogger(TCTLSeparatedProtocol.class
       .getName());
 
   static byte ORDERED_TYPE = (byte) -1;

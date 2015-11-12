@@ -28,8 +28,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Multimaps;
 
 import org.apache.commons.cli.OptionBuilder;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -110,7 +110,6 @@ import org.apache.thrift.transport.TTransportFactory;
 import javax.jdo.JDOException;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -146,7 +145,7 @@ import static org.apache.hadoop.hive.metastore.MetaStoreUtils.validateName;
  * TODO:pc remove application logic to a separate interface.
  */
 public class HiveMetaStore extends ThriftHiveMetastore {
-  public static final Log LOG = LogFactory.getLog(HiveMetaStore.class);
+  public static final Logger LOG = LoggerFactory.getLogger(HiveMetaStore.class);
 
   // boolean that tells if the HiveMetaStore (remote) server is being used.
   // Can be used to determine if the calls to metastore api (HMSHandler) are being made with
@@ -197,7 +196,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   }
 
   public static class HMSHandler extends FacebookBase implements IHMSHandler {
-    public static final Log LOG = HiveMetaStore.LOG;
+    public static final Logger LOG = HiveMetaStore.LOG;
     private String rawStoreClassName;
     private final HiveConf hiveConf; // stores datastore (jpox) properties,
                                      // right now they come from jpox.properties
@@ -242,7 +241,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         "ugi=%s\t" + // ugi
             "ip=%s\t" + // remote IP
             "cmd=%s\t"; // command
-    public static final Log auditLog = LogFactory.getLog(
+    public static final Logger auditLog = LoggerFactory.getLogger(
         HiveMetaStore.class.getName() + ".audit");
     private static final ThreadLocal<Formatter> auditFormatter =
         new ThreadLocal<Formatter>() {
@@ -509,7 +508,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           rs.setConf(conf);
           return rs;
         } catch (Exception e) {
-          LOG.fatal("Unable to instantiate raw store directly in fastpath mode");
+          LOG.error("Unable to instantiate raw store directly in fastpath mode", e);
           throw new RuntimeException(e);
         }
       }
@@ -1710,6 +1709,23 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return t;
     }
 
+    @Override
+    public List<TableMeta> get_table_meta(String dbnames, String tblNames, List<String> tblTypes)
+        throws MetaException, NoSuchObjectException {
+      List<TableMeta> t = null;
+      startTableFunction("get_table_metas", dbnames, tblNames);
+      Exception ex = null;
+      try {
+        t = getMS().getTableMeta(dbnames, tblNames, tblTypes);
+      } catch (Exception e) {
+        ex = e;
+        throw newMetaException(e);
+      } finally {
+        endFunction("get_table_metas", t != null, ex);
+      }
+      return t;
+    }
+
     /**
      * Equivalent of get_table, but does not log audits and fire pre-event listener.
      * Meant to be used for calls made by other hive classes, that are not using the
@@ -2467,6 +2483,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         String sourceDbName, String sourceTableName, String destDbName,
         String destTableName) throws MetaException, NoSuchObjectException,
         InvalidObjectException, InvalidInputException, TException {
+      exchange_partitions(partitionSpecs, sourceDbName, sourceTableName, destDbName, destTableName);
+      return new Partition();
+    }
+
+    @Override
+    public List<Partition> exchange_partitions(Map<String, String> partitionSpecs,
+        String sourceDbName, String sourceTableName, String destDbName,
+        String destTableName) throws MetaException, NoSuchObjectException,
+        InvalidObjectException, InvalidInputException, TException {
       boolean success = false;
       boolean pathCreated = false;
       RawStore ms = getMS();
@@ -2501,6 +2526,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Path destPath = new Path(destinationTable.getSd().getLocation(),
           Warehouse.makePartName(partitionKeysPresent, partValsPresent));
       try {
+        List<Partition> destPartitions = new ArrayList<Partition>();
         for (Partition partition: partitionsToExchange) {
           Partition destPartition = new Partition(partition);
           destPartition.setDbName(destDbName);
@@ -2509,6 +2535,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               Warehouse.makePartName(destinationTable.getPartitionKeys(), partition.getValues()));
           destPartition.getSd().setLocation(destPartitionPath.toString());
           ms.addPartition(destPartition);
+          destPartitions.add(destPartition);
           ms.dropPartition(partition.getDbName(), sourceTable.getTableName(),
             partition.getValues());
         }
@@ -2524,6 +2551,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
          */
         pathCreated = wh.renameDir(sourcePath, destPath);
         success = ms.commitTransaction();
+        return destPartitions;
       } finally {
         if (!success || !pathCreated) {
           ms.rollbackTransaction();
@@ -2532,7 +2560,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           }
         }
       }
-      return new Partition();
     }
 
     private boolean drop_partition_common(RawStore ms, String db_name, String tbl_name,
@@ -5147,7 +5174,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
       } catch (Exception original) {
         ex = original;
-        LOG.error(original);
+        LOG.error("Exception caught in mark partition event ", original);
         if (original instanceof NoSuchObjectException) {
           throw (NoSuchObjectException) original;
         } else if (original instanceof UnknownTableException) {
@@ -5180,7 +5207,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ret = getMS().isPartitionMarkedForEvent(db_name, tbl_name, partName, evtType);
       } catch (Exception original) {
-        LOG.error(original);
+        LOG.error("Exception caught for isPartitionMarkedForEvent ",original);
         ex = original;
         if (original instanceof NoSuchObjectException) {
           throw (NoSuchObjectException) original;
@@ -5238,6 +5265,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     private static MetaException newMetaException(Exception e) {
+      if (e instanceof MetaException) {
+        return (MetaException)e;
+      }
       MetaException me = new MetaException(e.toString());
       me.initCause(e);
       return me;
@@ -5974,7 +6004,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             conf.getVar(HiveConf.ConfVars.METASTORE_KERBEROS_KEYTAB_FILE),
             conf.getVar(HiveConf.ConfVars.METASTORE_KERBEROS_PRINCIPAL));
         // start delegation token manager
-        saslServer.startDelegationTokenSecretManager(conf, baseHandler.getMS(), ServerMode.METASTORE);
+        saslServer.startDelegationTokenSecretManager(conf, baseHandler, ServerMode.METASTORE);
         transFactory = saslServer.createTransportFactory(
                 MetaStoreUtils.getMetaStoreSaslProperties(conf));
         processor = saslServer.wrapProcessor(
@@ -6197,8 +6227,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       houseKeeper.start(conf);
     }
     catch (Exception ex) {
-      LOG.fatal("Failed to start " + houseKeeper.getClass() +
-        ".  The system will not handle " + houseKeeper.getServiceDescription()  +
+      LOG.error("Failed to start {}" , houseKeeper.getClass() +
+        ".  The system will not handle {} " , houseKeeper.getServiceDescription(),
         ".  Root Cause: ", ex);
     }
   }

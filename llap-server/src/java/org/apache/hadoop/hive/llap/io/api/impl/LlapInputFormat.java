@@ -111,7 +111,8 @@ public class LlapInputFormat
 
     private Throwable pendingError = null;
     /** Vector that is currently being processed by our user. */
-    private boolean isDone = false, isClosed = false;
+    private boolean isDone = false;
+    private final boolean isClosed = false;
     private ConsumerFeedback<ColumnVectorBatch> feedback;
     private final QueryFragmentCounters counters;
     private long firstReturnTime;
@@ -261,7 +262,7 @@ public class LlapInputFormat
         LlapIoImpl.LOG.info("close called; closed " + isClosed + ", done " + isDone
             + ", err " + pendingError + ", pending " + pendingData.size());
       }
-      LlapIoImpl.LOG.info(counters); // This is where counters are logged!
+      LlapIoImpl.LOG.info("Llap counters: {}" ,counters); // This is where counters are logged!
       feedback.stop();
       rethrowErrorIfAny();
     }

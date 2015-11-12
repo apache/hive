@@ -27,8 +27,8 @@ import java.util.concurrent.Future;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.HashTableLoaderFactory;
@@ -85,7 +85,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
  */
 public abstract class VectorMapJoinCommonOperator extends MapJoinOperator implements VectorizationContextRegion {
   private static final long serialVersionUID = 1L;
-  private static final Log LOG = LogFactory.getLog(VectorMapJoinCommonOperator.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinCommonOperator.class.getName());
 
   // Whether this operator is an outer join.
   protected boolean isOuterJoin;
@@ -168,7 +168,7 @@ public abstract class VectorMapJoinCommonOperator extends MapJoinOperator implem
 
   // This helper object deserializes LazyBinary format small table values into columns of a row
   // in a vectorized row batch.
-  protected transient VectorDeserializeRow smallTableVectorDeserializeRow;
+  protected transient VectorDeserializeRow<LazyBinaryDeserializeRead> smallTableVectorDeserializeRow;
 
   // This a 2nd batch with the same "column schema" as the big table batch that can be used to
   // build join output results in.  If we can create some join output results in the big table
@@ -445,7 +445,7 @@ public abstract class VectorMapJoinCommonOperator extends MapJoinOperator implem
     outputProjection = projectionMapping.getOutputColumns();
     outputTypeNames = projectionMapping.getTypeNames();
 
-    if (LOG.isDebugEnabled()) {
+    if (isLogDebugEnabled) {
       int[] orderDisplayable = new int[order.length];
       for (int i = 0; i < order.length; i++) {
         orderDisplayable[i] = (int) order[i];
@@ -507,7 +507,7 @@ public abstract class VectorMapJoinCommonOperator extends MapJoinOperator implem
    * columns and new scratch columns.
    */
   protected void setupVOutContext(List<String> outputColumnNames) {
-    if (LOG.isDebugEnabled()) {
+    if (isLogDebugEnabled) {
       LOG.debug(taskName + ", " + getOperatorId() + " VectorMapJoinCommonOperator constructor outputColumnNames " + outputColumnNames);
     }
     if (outputColumnNames.size() != outputProjection.length) {
@@ -519,7 +519,7 @@ public abstract class VectorMapJoinCommonOperator extends MapJoinOperator implem
       int outputColumn = outputProjection[i];
       vOutContext.addProjectionColumn(columnName, outputColumn);
 
-      if (LOG.isDebugEnabled()) {
+      if (isLogDebugEnabled) {
         LOG.debug(taskName + ", " + getOperatorId() + " VectorMapJoinCommonOperator constructor addProjectionColumn " + i + " columnName " + columnName + " outputColumn " + outputColumn);
       }
     }
@@ -554,7 +554,7 @@ public abstract class VectorMapJoinCommonOperator extends MapJoinOperator implem
   protected void initializeOp(Configuration hconf) throws HiveException {
     super.initializeOp(hconf);
 
-    if (LOG.isDebugEnabled()) {
+    if (isLogDebugEnabled) {
       // Determine the name of our map or reduce task for debug tracing.
       BaseWork work = Utilities.getMapWork(hconf);
       if (work == null) {
@@ -575,10 +575,11 @@ public abstract class VectorMapJoinCommonOperator extends MapJoinOperator implem
      * Create our vectorized copy row and deserialize row helper objects.
      */
     if (smallTableMapping.getCount() > 0) {
-      smallTableVectorDeserializeRow = new VectorDeserializeRow(
-                      new LazyBinaryDeserializeRead(
-                          VectorizedBatchUtil.primitiveTypeInfosFromTypeNames(
-                              smallTableMapping.getTypeNames())));
+      smallTableVectorDeserializeRow =
+          new VectorDeserializeRow<LazyBinaryDeserializeRead>(
+              new LazyBinaryDeserializeRead(
+                  VectorizedBatchUtil.primitiveTypeInfosFromTypeNames(
+                      smallTableMapping.getTypeNames())));
       smallTableVectorDeserializeRow.init(smallTableMapping.getOutputColumns());
     }
 
@@ -600,7 +601,7 @@ public abstract class VectorMapJoinCommonOperator extends MapJoinOperator implem
     needCommonSetup = true;
     needHashTableSetup = true;
 
-    if (LOG.isDebugEnabled()) {
+    if (isLogDebugEnabled) {
       int[] currentScratchColumns = vOutContext.currentScratchColumns();
       LOG.debug(taskName + ", " + getOperatorId() + " VectorMapJoinCommonOperator initializeOp currentScratchColumns " + Arrays.toString(currentScratchColumns));
 
@@ -615,46 +616,34 @@ public abstract class VectorMapJoinCommonOperator extends MapJoinOperator implem
   }
 
   @Override
-  protected Pair<MapJoinTableContainer[], MapJoinTableContainerSerDe[]> loadHashTable(
-      ExecMapperContext mapContext, MapredContext mrContext) throws HiveException {
-
-    Pair<MapJoinTableContainer[], MapJoinTableContainerSerDe[]> pair;
+  protected void completeInitializationOp(Object[] os) throws HiveException {
+    // setup mapJoinTables and serdes
+    super.completeInitializationOp(os);
 
     VectorMapJoinDesc vectorDesc = conf.getVectorDesc();
     HashTableImplementationType hashTableImplementationType = vectorDesc.hashTableImplementationType();
     switch (vectorDesc.hashTableImplementationType()) {
     case OPTIMIZED:
       {
-        // Using Tez's HashTableLoader, create either a MapJoinBytesTableContainer or
-        // HybridHashTableContainer.
-        pair = super.loadHashTable(mapContext, mrContext);
-
         // Create our vector map join optimized hash table variation *above* the
         // map join table container.
-        MapJoinTableContainer[] mapJoinTableContainers = pair.getLeft();
         vectorMapJoinHashTable = VectorMapJoinOptimizedCreateHashTable.createHashTable(conf,
-                mapJoinTableContainers[posSingleVectorMapJoinSmallTable]);
+                mapJoinTables[posSingleVectorMapJoinSmallTable]);
       }
       break;
 
     case FAST:
       {
-        // Use our VectorMapJoinFastHashTableLoader to create a VectorMapJoinTableContainer.
-        pair = super.loadHashTable(mapContext, mrContext);
-
         // Get our vector map join fast hash table variation from the
         // vector map join table container.
-        MapJoinTableContainer[] mapJoinTableContainers = pair.getLeft();
         VectorMapJoinTableContainer vectorMapJoinTableContainer =
-                (VectorMapJoinTableContainer) mapJoinTableContainers[posSingleVectorMapJoinSmallTable];
+                (VectorMapJoinTableContainer) mapJoinTables[posSingleVectorMapJoinSmallTable];
         vectorMapJoinHashTable = vectorMapJoinTableContainer.vectorMapJoinHashTable();
       }
       break;
     default:
       throw new RuntimeException("Unknown vector map join hash table implementation type " + hashTableImplementationType.name());
     }
-
-    return pair;
   }
 
   /*
@@ -737,7 +726,7 @@ public abstract class VectorMapJoinCommonOperator extends MapJoinOperator implem
 
       overflowBatch.cols[outputColumn] = VectorizedRowBatchCtx.allocateColumnVector(columnVectorTypeName, VectorizedRowBatch.DEFAULT_SIZE);
 
-      if (LOG.isDebugEnabled()) {
+      if (isLogDebugEnabled) {
         LOG.debug(taskName + ", " + getOperatorId() + " VectorMapJoinCommonOperator initializeOp overflowBatch outputColumn " + outputColumn + " class " + overflowBatch.cols[outputColumn].getClass().getSimpleName());
       }
     }
@@ -748,7 +737,7 @@ public abstract class VectorMapJoinCommonOperator extends MapJoinOperator implem
    */
   protected void commonSetup(VectorizedRowBatch batch) throws HiveException {
 
-    if (LOG.isDebugEnabled()) {
+    if (isLogDebugEnabled) {
       LOG.debug("VectorMapJoinInnerCommonOperator commonSetup begin...");
       displayBatchColumns(batch, "batch");
       displayBatchColumns(overflowBatch, "overflowBatch");

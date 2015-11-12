@@ -54,8 +54,8 @@ import org.apache.calcite.sql.validate.SqlValidatorUtil;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
 import org.apache.calcite.util.Util;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveMultiJoin;
@@ -80,7 +80,7 @@ import com.google.common.collect.Sets;
 
 public class HiveCalciteUtil {
 
-  private static final Log LOG = LogFactory.getLog(HiveCalciteUtil.class);
+  private static final Logger LOG = LoggerFactory.getLogger(HiveCalciteUtil.class);
 
 
   /**
@@ -234,8 +234,8 @@ public class HiveCalciteUtil {
       leftKeys.add(origLeftInputSize + i);
       rightKeys.add(origRightInputSize + i);
       RexNode cond = rexBuilder.makeCall(SqlStdOperatorTable.EQUALS,
-          rexBuilder.makeInputRef(newLeftFields.get(i).getType(), newLeftOffset + i),
-          rexBuilder.makeInputRef(newLeftFields.get(i).getType(), newRightOffset + i));
+          rexBuilder.makeInputRef(newLeftFields.get(origLeftInputSize + i).getType(), newLeftOffset + i),
+          rexBuilder.makeInputRef(newRightFields.get(origRightInputSize + i).getType(), newRightOffset + i));
       if (outJoinCond == null) {
         outJoinCond = cond;
       } else {
@@ -714,7 +714,10 @@ public class HiveCalciteUtil {
     ExprNodeConverter exprConv = new ExprNodeConverter(inputTabAlias, inputRel.getRowType(),
         new HashSet<Integer>(), inputRel.getCluster().getTypeFactory());
     for (int index = 0; index < rexInputRefs.size(); index++) {
-      if (exprs.get(index) instanceof RexLiteral) {
+      // The following check is only a guard against failures.
+      // TODO: Knowing which expr is constant in GBY's aggregation function
+      // arguments could be better done using Metadata provider of Calcite.
+      if (exprs != null && index < exprs.size() && exprs.get(index) instanceof RexLiteral) {
         ExprNodeDesc exprNodeDesc = exprConv.visitLiteral((RexLiteral) exprs.get(index));
         exprNodes.add(exprNodeDesc);
       } else {

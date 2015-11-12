@@ -251,7 +251,7 @@ POSTHOOK: query: SELECT * FROM orc_pred WHERE t>2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
-124	336	65664	4294967435	74.72	42.47	true	bob davidson	2013-03-01 09:11:58.703302	45.4	yard duty
+124	336	65664	4294967435	74.72	42.47	true	bob davidson	2013-03-01 09:11:58.703302	45.40	yard duty
 PREHOOK: query: SELECT * FROM orc_pred WHERE t>2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_pred
@@ -260,7 +260,7 @@ POSTHOOK: query: SELECT * FROM orc_pred WHERE t>2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
-124	336	65664	4294967435	74.72	42.47	true	bob davidson	2013-03-01 09:11:58.703302	45.4	yard duty
+124	336	65664	4294967435	74.72	42.47	true	bob davidson	2013-03-01 09:11:58.703302	45.40	yard duty
 PREHOOK: query: SELECT SUM(HASH(t)) FROM orc_pred
   WHERE t IS NOT NULL
   AND t < 0

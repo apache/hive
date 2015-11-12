@@ -32,8 +32,8 @@ import java.util.Set;
 import java.util.Stack;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
@@ -78,6 +78,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hive.common.util.DateUtils;
@@ -93,7 +94,7 @@ import com.google.common.collect.Lists;
  */
 public class TypeCheckProcFactory {
 
-  protected static final Log LOG = LogFactory.getLog(TypeCheckProcFactory.class
+  protected static final Logger LOG = LoggerFactory.getLogger(TypeCheckProcFactory.class
       .getName());
 
   protected TypeCheckProcFactory() {
@@ -903,7 +904,7 @@ public class TypeCheckProcFactory {
 
         if (myt.getCategory() == Category.LIST) {
           // Only allow integer index for now
-          if (!FunctionRegistry.implicitConvertible(children.get(1).getTypeInfo(),
+          if (!TypeInfoUtils.implicitConvertible(children.get(1).getTypeInfo(),
               TypeInfoFactory.intTypeInfo)) {
             throw new SemanticException(SemanticAnalyzer.generateErrorMessage(
                   expr, ErrorMsg.INVALID_ARRAYINDEX_TYPE.getMsg()));
@@ -913,7 +914,7 @@ public class TypeCheckProcFactory {
           TypeInfo t = ((ListTypeInfo) myt).getListElementTypeInfo();
           desc = new ExprNodeGenericFuncDesc(t, FunctionRegistry.getGenericUDFForIndex(), children);
         } else if (myt.getCategory() == Category.MAP) {
-          if (!FunctionRegistry.implicitConvertible(children.get(1).getTypeInfo(),
+          if (!TypeInfoUtils.implicitConvertible(children.get(1).getTypeInfo(),
               ((MapTypeInfo) myt).getMapKeyTypeInfo())) {
             throw new SemanticException(ErrorMsg.INVALID_MAPINDEX_TYPE
                 .getMsg(expr));

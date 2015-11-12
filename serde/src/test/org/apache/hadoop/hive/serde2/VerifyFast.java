@@ -259,12 +259,12 @@ public class VerifyFast {
     }
   }
 
-  public static void serializeWrite(SerializeWrite serializeWrite, PrimitiveCategory primitiveCategory, Object object) throws IOException {
+  public static void serializeWrite(SerializeWrite serializeWrite, PrimitiveTypeInfo primitiveTypeInfo, Object object) throws IOException {
     if (object == null) {
       serializeWrite.writeNull();
       return;
     }
-    switch (primitiveCategory) {
+    switch (primitiveTypeInfo.getPrimitiveCategory()) {
       case BOOLEAN:
       {
         boolean value = (Boolean) object;
@@ -330,7 +330,8 @@ public class VerifyFast {
     case DECIMAL:
       {
         HiveDecimal value = (HiveDecimal) object;
-        serializeWrite.writeHiveDecimal(value);
+        DecimalTypeInfo decTypeInfo = (DecimalTypeInfo)primitiveTypeInfo;
+        serializeWrite.writeHiveDecimal(value, decTypeInfo.scale());
       }
       break;
     case DATE:
@@ -365,7 +366,7 @@ public class VerifyFast {
       }
       break;
     default:
-      throw new Error("Unknown primitive category " + primitiveCategory.name());
+      throw new Error("Unknown primitive category " + primitiveTypeInfo.getPrimitiveCategory().name());
     }
   }
 }

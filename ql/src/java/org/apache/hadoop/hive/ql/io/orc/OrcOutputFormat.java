@@ -24,8 +24,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
@@ -66,7 +66,7 @@ import org.apache.hadoop.util.Progressable;
 public class OrcOutputFormat extends FileOutputFormat<NullWritable, OrcSerdeRow>
                         implements AcidOutputFormat<NullWritable, OrcSerdeRow> {
 
-  private static final Log LOG = LogFactory.getLog(OrcOutputFormat.class);
+  private static final Logger LOG = LoggerFactory.getLogger(OrcOutputFormat.class);
 
   static TypeDescription convertTypeInfo(TypeInfo info) {
     switch (info.getCategory()) {

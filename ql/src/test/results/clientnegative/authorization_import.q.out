@@ -1,0 +1,48 @@
+PREHOOK: query: drop table if exists import_auth_t1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists import_auth_t1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table import_auth_t1 ( dep_id int comment "department id") stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@import_auth_t1
+POSTHOOK: query: create table import_auth_t1 ( dep_id int comment "department id") stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@import_auth_t1
+#### A masked pattern was here ####
+PREHOOK: query: export table import_auth_t1 to 'ql/test/data/exports/import_auth_t1'
+PREHOOK: type: EXPORT
+PREHOOK: Input: default@import_auth_t1
+#### A masked pattern was here ####
+POSTHOOK: query: export table import_auth_t1 to 'ql/test/data/exports/import_auth_t1'
+POSTHOOK: type: EXPORT
+POSTHOOK: Input: default@import_auth_t1
+#### A masked pattern was here ####
+PREHOOK: query: set role admin
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role admin
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: create database importer
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:importer
+POSTHOOK: query: create database importer
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:importer
+PREHOOK: query: use importer
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:importer
+POSTHOOK: query: use importer
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:importer
+PREHOOK: query: show roles
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: show roles
+POSTHOOK: type: SHOW_ROLES
+admin
+public
+PREHOOK: query: set role public
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role public
+POSTHOOK: type: SHOW_ROLES
+FAILED: HiveAccessControlException Permission denied: Principal [name=hive_test_user, type=USER] does not have following privileges for operation IMPORT [[OBJECT OWNERSHIP] on Object [type=DATABASE, name=importer]]

@@ -110,8 +110,9 @@ public class FilterStructColumnInList extends FilterStringColumnInList implement
             break;
 
           case DECIMAL:
+            DecimalColumnVector decColVector = ((DecimalColumnVector) colVec);
             binarySortableSerializeWrite.writeHiveDecimal(
-                ((DecimalColumnVector) colVec).vector[adjustedIndex].getHiveDecimal());
+                decColVector.vector[adjustedIndex].getHiveDecimal(), decColVector.scale);
             break;
 
           default:

@@ -22,8 +22,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
 import org.apache.hadoop.hive.ql.history.HiveHistory.Listener;
 import org.apache.hadoop.hive.ql.history.HiveHistory.QueryInfo;
@@ -38,7 +38,7 @@ public class HiveHistoryViewer implements Listener {
 
   String historyFile;
   String sessionId;
-  private static final Log LOG = LogFactory.getLog(HiveHistoryViewer.class);
+  private static final Logger LOG = LoggerFactory.getLogger(HiveHistoryViewer.class);
 
   // Job Hash Map
   private final HashMap<String, QueryInfo> jobInfoMap = new HashMap<String, QueryInfo>();

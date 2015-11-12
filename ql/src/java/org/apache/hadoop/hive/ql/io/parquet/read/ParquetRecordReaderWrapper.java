@@ -17,8 +17,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -55,7 +55,7 @@ import org.apache.parquet.schema.MessageTypeParser;
 import com.google.common.base.Strings;
 
 public class ParquetRecordReaderWrapper  implements RecordReader<NullWritable, ArrayWritable> {
-  public static final Log LOG = LogFactory.getLog(ParquetRecordReaderWrapper.class);
+  public static final Logger LOG = LoggerFactory.getLogger(ParquetRecordReaderWrapper.class);
 
   private final long splitLen; // for getPos()
 

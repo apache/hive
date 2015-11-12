@@ -33,8 +33,8 @@ import java.util.Set;
 
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -42,7 +42,7 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.thrift.TException;
 
 class VerifyingObjectStore extends ObjectStore {
-  private static final Log LOG = LogFactory.getLog(VerifyingObjectStore.class);
+  private static final Logger LOG = LoggerFactory.getLogger(VerifyingObjectStore.class);
 
   public VerifyingObjectStore() {
     super();

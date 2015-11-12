@@ -28,14 +28,15 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 public class SparkClientUtilities {
-  protected static final transient Log LOG = LogFactory.getLog(SparkClientUtilities.class);
+  protected static final transient Logger LOG = LoggerFactory.getLogger(SparkClientUtilities.class);
+
   private static final Map<String, Long> downloadedFiles = new ConcurrentHashMap<>();
 
   /**

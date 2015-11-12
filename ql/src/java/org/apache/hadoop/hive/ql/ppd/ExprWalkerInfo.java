@@ -24,8 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -52,7 +52,7 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
 
   }
 
-  protected static final Log LOG = LogFactory.getLog(OpProcFactory.class.getName());
+  protected static final Logger LOG = LoggerFactory.getLogger(OpProcFactory.class.getName());
   private Operator<? extends OperatorDesc> op = null;
 
   /**

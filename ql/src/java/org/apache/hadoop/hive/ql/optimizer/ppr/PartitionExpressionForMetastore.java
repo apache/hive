@@ -22,8 +22,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.metastore.Metastore.SplitInfo;
 import org.apache.hadoop.hive.metastore.Metastore.SplitInfos;
 import org.apache.hadoop.hive.metastore.PartitionExpressionProxy;
@@ -43,7 +43,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
  * The basic implementation of PartitionExpressionProxy that uses ql package classes.
  */
 public class PartitionExpressionForMetastore implements PartitionExpressionProxy {
-  private static final Log LOG = LogFactory.getLog(PartitionExpressionForMetastore.class);
+  private static final Logger LOG = LoggerFactory.getLogger(PartitionExpressionForMetastore.class);
 
   @Override
   public String convertExprToFilter(byte[] exprBytes) throws MetaException {

@@ -24,8 +24,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.ql.exec.CommonMergeJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -69,7 +69,7 @@ import org.apache.tez.runtime.library.api.KeyValuesReader;
 @SuppressWarnings("deprecation")
 public class ReduceRecordSource implements RecordSource {
 
-  public static final Log l4j = LogFactory.getLog(ReduceRecordSource.class);
+  public static final Logger l4j = LoggerFactory.getLogger(ReduceRecordSource.class);
 
   private static final String CLASS_NAME = ReduceRecordSource.class.getName();
 
@@ -94,9 +94,9 @@ public class ReduceRecordSource implements RecordSource {
 
   private boolean vectorized = false;
 
-  private VectorDeserializeRow keyBinarySortableDeserializeToRow;
+  private VectorDeserializeRow<BinarySortableDeserializeRead> keyBinarySortableDeserializeToRow;
 
-  private VectorDeserializeRow valueLazyBinaryDeserializeToRow;
+  private VectorDeserializeRow<LazyBinaryDeserializeRead> valueLazyBinaryDeserializeToRow;
 
   private VectorizedRowBatch batch;
 
@@ -184,7 +184,7 @@ public class ReduceRecordSource implements RecordSource {
         BinarySortableSerDe binarySortableSerDe = (BinarySortableSerDe) inputKeyDeserializer;
 
         keyBinarySortableDeserializeToRow =
-                  new VectorDeserializeRow(
+                  new VectorDeserializeRow<BinarySortableDeserializeRead>(
                         new BinarySortableDeserializeRead(
                                   VectorizedBatchUtil.primitiveTypeInfosFromStructObjectInspector(
                                       keyStructInspector),
@@ -194,7 +194,7 @@ public class ReduceRecordSource implements RecordSource {
         final int valuesSize = valueStructInspectors.getAllStructFieldRefs().size();
         if (valuesSize > 0) {
           valueLazyBinaryDeserializeToRow =
-                  new VectorDeserializeRow(
+                  new VectorDeserializeRow<LazyBinaryDeserializeRead>(
                         new LazyBinaryDeserializeRead(
                                   VectorizedBatchUtil.primitiveTypeInfosFromStructObjectInspector(
                                        valueStructInspectors)));
@@ -288,7 +288,7 @@ public class ReduceRecordSource implements RecordSource {
         // Don't create a new object if we are already out of memory
         throw (OutOfMemoryError) e;
       } else {
-        l4j.fatal(StringUtils.stringifyException(e));
+        l4j.error(StringUtils.stringifyException(e));
         throw new RuntimeException(e);
       }
     }
@@ -394,7 +394,7 @@ public class ReduceRecordSource implements RecordSource {
         // Don't create a new object if we are already out of memory
         throw (OutOfMemoryError) e;
       } else {
-        l4j.fatal(StringUtils.stringifyException(e));
+        l4j.error(StringUtils.stringifyException(e));
         throw new RuntimeException(e);
       }
     }
@@ -412,6 +412,10 @@ public class ReduceRecordSource implements RecordSource {
     // a data buffer.
     byte[] keyBytes = keyWritable.getBytes();
     int keyLength = keyWritable.getLength();
+
+    // l4j.info("ReduceRecordSource processVectorGroup keyBytes " + keyLength + " " +
+    //     VectorizedBatchUtil.displayBytes(keyBytes, 0, keyLength));
+
     keyBinarySortableDeserializeToRow.setBytes(keyBytes, 0, keyLength);
     keyBinarySortableDeserializeToRow.deserializeByValue(batch, 0);
     for(int i = 0; i < firstValueColumnOffset; i++) {
@@ -426,6 +430,10 @@ public class ReduceRecordSource implements RecordSource {
           BytesWritable valueWritable = (BytesWritable) value;
           byte[] valueBytes = valueWritable.getBytes();
           int valueLength = valueWritable.getLength();
+
+          // l4j.info("ReduceRecordSource processVectorGroup valueBytes " + valueLength + " " +
+          //     VectorizedBatchUtil.displayBytes(valueBytes, 0, valueLength));
+
           valueLazyBinaryDeserializeToRow.setBytes(valueBytes, 0, valueLength);
           valueLazyBinaryDeserializeToRow.deserializeByValue(batch, rowIdx);
         }

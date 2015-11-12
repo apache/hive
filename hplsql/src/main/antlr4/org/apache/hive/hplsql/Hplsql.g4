@@ -50,6 +50,8 @@ stmt :
      | create_function_stmt
      | create_index_stmt
      | create_local_temp_table_stmt
+     | create_package_stmt
+     | create_package_body_stmt
      | create_procedure_stmt
      | create_table_stmt
      | declare_stmt
@@ -82,6 +84,7 @@ stmt :
      | label    
      | hive     
      | host
+     | null_stmt
      | expr_stmt     
      | semicolon_stmt      // Placed here to allow null statements ;;...          
      ;
@@ -99,6 +102,10 @@ exception_block_item :
        T_WHEN L_ID T_THEN block ~(T_WHEN | T_END)       
      ;
      
+null_stmt :             // NULL statement (no operation)
+       T_NULL
+     ;
+
 expr_stmt :             // Standalone expression
        {!_input.LT(1).getText().equalsIgnoreCase("GO")}? expr
      ;
@@ -161,6 +168,7 @@ declare_stmt_item :
 
 declare_var_item :
        ident (T_COMMA ident)* T_AS? dtype dtype_len? dtype_attr* dtype_default? 
+     | ident T_CONSTANT T_AS? dtype dtype_len? dtype_default 
      ;
 
 declare_condition_item :    // Condition declaration 
@@ -280,6 +288,9 @@ create_table_options_mssql_item :
 dtype :                  // Data types
        T_CHAR
      | T_BIGINT
+     | T_BINARY_DOUBLE
+     | T_BINARY_FLOAT
+     | T_BINARY_INTEGER
      | T_BIT
      | T_DATE
      | T_DATETIME
@@ -293,7 +304,12 @@ dtype :                  // Data types
      | T_NVARCHAR
      | T_NUMBER
      | T_NUMERIC
+     | T_PLS_INTEGER
+     | T_REAL
      | T_RESULT_SET_LOCATOR T_VARYING
+     | T_SIMPLE_FLOAT
+     | T_SIMPLE_DOUBLE
+     | T_SIMPLE_INTEGER
      | T_SMALLINT
      | T_SMALLDATETIME
      | T_STRING
@@ -302,6 +318,7 @@ dtype :                  // Data types
      | T_TINYINT
      | T_VARCHAR
      | T_VARCHAR2
+     | T_XML
      | L_ID ('%' (T_TYPE | T_ROWTYPE))?             // User-defined or derived data type
      ;
      
@@ -310,7 +327,8 @@ dtype_len :             // Data type length or size specification
      ;
      
 dtype_attr :
-       T_CHARACTER T_SET ident
+       T_NOT? T_NULL
+     | T_CHARACTER T_SET ident
      | T_NOT? (T_CASESPECIFIC | T_CS)
      ;
 
@@ -326,7 +344,35 @@ create_function_stmt :
 create_function_return :
        (T_RETURN | T_RETURNS) dtype dtype_len?
      ;
+     
+create_package_stmt :
+      (T_ALTER | T_CREATE (T_OR T_REPLACE)? | T_REPLACE)? T_PACKAGE ident (T_AS | T_IS) package_spec T_END (ident T_SEMICOLON)? 
+    ;
+    
+package_spec :
+      package_spec_item T_SEMICOLON (package_spec_item T_SEMICOLON)*
+    ;
 
+package_spec_item :
+      declare_stmt_item
+    | T_FUNCTION ident create_routine_params? create_function_return 
+    | (T_PROCEDURE | T_PROC) ident create_routine_params? 
+    ;
+
+create_package_body_stmt :
+      (T_ALTER | T_CREATE (T_OR T_REPLACE)? | T_REPLACE)? T_PACKAGE T_BODY ident (T_AS | T_IS) package_body T_END (ident T_SEMICOLON)? 
+    ;
+    
+package_body :
+      package_body_item T_SEMICOLON (package_body_item T_SEMICOLON)*
+    ;
+
+package_body_item :
+      declare_stmt_item
+    | create_function_stmt
+    | create_procedure_stmt 
+    ;
+    
 create_procedure_stmt : 
       (T_ALTER | T_CREATE (T_OR T_REPLACE)? | T_REPLACE)? (T_PROCEDURE | T_PROC) ident create_routine_params? create_routine_options? (T_AS | T_IS)? label? proc_block (ident T_SEMICOLON)? 
     ;
@@ -817,6 +863,7 @@ expr :
 expr_atom : 
        date_literal
      | timestamp_literal
+     | bool_literal
      | ident 
      | string
      | dec_number
@@ -988,6 +1035,11 @@ dec_number :                               // Decimal number (positive or negati
      ('-' | '+')? L_DEC
      ;
      
+bool_literal :                            // Boolean literal
+       T_TRUE
+     | T_FALSE
+     ;
+     
 null_const :                              // NULL constant
        T_NULL
      ;
@@ -1010,7 +1062,10 @@ non_reserved_words :                      // Tokens that are not reserved words 
      | T_BEGIN   
      | T_BETWEEN
      | T_BIGINT  
+     | T_BINARY_DOUBLE
+     | T_BINARY_FLOAT
      | T_BIT
+     | T_BODY
      | T_BREAK   
      | T_BY    
      | T_BYTE
@@ -1026,7 +1081,8 @@ non_reserved_words :                      // Tokens that are not reserved words 
      | T_CLOSE 
      | T_CLUSTERED
      | T_CMP
-     | T_COLLECTION     
+     | T_COLLECTION   
+     | T_CONSTANT     
      | T_COPY
      | T_COMMIT
      | T_CONCAT 
@@ -1081,7 +1137,8 @@ non_reserved_words :                      // Tokens that are not reserved words 
      | T_EXCEPTION  
      | T_EXCLUSIVE     
      | T_EXISTS
-     | T_EXIT         
+     | T_EXIT       
+     | T_FALSE     
      | T_FETCH  
      | T_FIELDS
      | T_FILE     
@@ -1177,6 +1234,7 @@ non_reserved_words :                      // Tokens that are not reserved words 
      | T_OVER
      | T_OVERWRITE
      | T_OWNER
+     | T_PACKAGE
      | T_PART_COUNT
      | T_PART_LOC 
      | T_PARTITION  
@@ -1190,6 +1248,7 @@ non_reserved_words :                      // Tokens that are not reserved words 
      | T_PROCEDURE   
      | T_QUOTED_IDENTIFIER
      | T_RANK  
+     | T_REAL
      | T_REFERENCES     
      | T_REGEXP
      | T_RR     
@@ -1219,6 +1278,8 @@ non_reserved_words :                      // Tokens that are not reserved words 
      | T_SETS     
      | T_SHARE
      | T_SIGNAL
+     | T_SIMPLE_DOUBLE
+     | T_SIMPLE_FLOAT
      | T_SMALLDATETIME
      | T_SMALLINT     
      | T_SQL
@@ -1245,6 +1306,7 @@ non_reserved_words :                      // Tokens that are not reserved words 
      | T_TO     
      | T_TOP
      | T_TRIM
+     | T_TRUE
      // T_UNION reserved word   
      | T_UNIQUE     
      | T_UPDATE  
@@ -1267,6 +1329,7 @@ non_reserved_words :                      // Tokens that are not reserved words 
      | T_WITHOUT      
      | T_WORK
      | T_XACT_ABORT
+     | T_XML
      ;
 
 // Lexer rules
@@ -1286,7 +1349,11 @@ T_BATCHSIZE       : B A T C H S I Z E ;
 T_BEGIN           : B E G I N ;
 T_BETWEEN         : B E T W E E N ; 
 T_BIGINT          : B I G I N T ;
+T_BINARY_DOUBLE   : B I N A R Y '_' D O U B L E ;
+T_BINARY_FLOAT    : B I N A R Y '_' F L O A T ;
+T_BINARY_INTEGER  : B I N A R Y '_' I N T E G E R ;
 T_BIT             : B I T ;
+T_BODY            : B O D Y ; 
 T_BREAK           : B R E A K ;
 T_BY              : B Y ;
 T_BYTE            : B Y T E ; 
@@ -1303,6 +1370,7 @@ T_CLOSE           : C L O S E ;
 T_CLUSTERED       : C L U S T E R E D;
 T_CMP             : C M P ; 
 T_COLLECTION      : C O L L E C T I O N ; 
+T_CONSTANT        : C O N S T A N T ;
 T_COPY            : C O P Y ;
 T_COMMIT          : C O M M I T ; 
 T_CONCAT          : C O N C A T;
@@ -1353,6 +1421,7 @@ T_EXCEPTION       : E X C E P T I O N ;
 T_EXCLUSIVE       : E X C L U S I V E ; 
 T_EXISTS          : E X I S T S ; 
 T_EXIT            : E X I T ;
+T_FALSE           : F A L S E ;
 T_FETCH           : F E T C H ;
 T_FIELDS          : F I E L D S ; 
 T_FILE            : F I L E ;
@@ -1444,9 +1513,11 @@ T_OUTER           : O U T E R ;
 T_OVER            : O V E R ;
 T_OVERWRITE       : O V E R W R I T E ; 
 T_OWNER           : O W N E R ; 
+T_PACKAGE         : P A C K A G E ; 
 T_PARTITION       : P A R T I T I O N ; 
 T_PCTFREE         : P C T F R E E ; 
 T_PCTUSED         : P C T U S E D ;
+T_PLS_INTEGER     : P L S '_' I N T E G E R ;
 T_PRECISION       : P R E C I S I O N ; 
 T_PRESERVE        : P R E S E R V E ; 
 T_PRIMARY         : P R I M A R Y ;
@@ -1454,6 +1525,7 @@ T_PRINT           : P R I N T ;
 T_PROC            : P R O C ;
 T_PROCEDURE       : P R O C E D U R E;
 T_QUOTED_IDENTIFIER : Q U O T E D '_' I D E N T I F I E R ;
+T_REAL            : R E A L ; 
 T_REFERENCES      : R E F E R E N C E S ; 
 T_REGEXP          : R E G E X P ;
 T_REPLACE         : R E P L A C E ; 
@@ -1484,6 +1556,9 @@ T_SET             : S E T ;
 T_SETS            : S E T S;
 T_SHARE           : S H A R E ; 
 T_SIGNAL          : S I G N A L ;
+T_SIMPLE_DOUBLE   : S I M P L E '_' D O U B L E ;
+T_SIMPLE_FLOAT    : S I M P L E '_' F L O A T ;
+T_SIMPLE_INTEGER  : S I M P L E '_' I N T E G E R ;
 T_SMALLDATETIME   : S M A L L D A T E T I M E ;
 T_SMALLINT        : S M A L L I N T ;
 T_SQL             : S Q L ; 
@@ -1508,6 +1583,7 @@ T_TINYINT         : T I N Y I N T ;
 T_TITLE           : T I T L E ;
 T_TO              : T O ; 
 T_TOP             : T O P ;
+T_TRUE            : T R U E ;
 T_TYPE            : T Y P E ; 
 T_UNION           : U N I O N ;
 T_UNIQUE          : U N I Q U E ;
@@ -1529,6 +1605,7 @@ T_WITH            : W I T H ;
 T_WITHOUT         : W I T H O U T ;
 T_WORK            : W O R K ;
 T_XACT_ABORT      : X A C T '_' A B O R T ;
+T_XML             : X M L ;
 
 // Functions with specific syntax
 T_ACTIVITY_COUNT       : A C T I V I T Y '_' C O U N T ;

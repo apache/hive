@@ -24,8 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -64,7 +64,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
  */
 
 public final class RewriteQueryUsingAggregateIndexCtx  implements NodeProcessorCtx {
-  private static final Log LOG = LogFactory.getLog(RewriteQueryUsingAggregateIndexCtx.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(RewriteQueryUsingAggregateIndexCtx.class.getName());
   private RewriteQueryUsingAggregateIndexCtx(ParseContext parseContext, Hive hiveDb,
       RewriteCanApplyCtx canApplyCtx) {
     this.parseContext = parseContext;

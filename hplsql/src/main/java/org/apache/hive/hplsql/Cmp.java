@@ -41,6 +41,7 @@ public class Cmp implements Runnable {
   int tests = 0;
   int failedTests = 0;
   int failedTestsHighDiff = 0;
+  int failedTestsHighDiff10 = 0;
   
   Cmp(Exec e) {
     exec = e;  
@@ -102,7 +103,8 @@ public class Cmp implements Runnable {
           }
           else {
             message += "Not Equal, " + failedTests + " of " + tests + " tests failed";
-            message += ", " + failedTestsHighDiff + " failed tests with more than 0.01% difference";
+            message += ", " + failedTestsHighDiff + " tests with more than 0.01% difference";
+            message += ", " + failedTestsHighDiff10 + " tests with more than 10% difference";
           }
         }
         else {
@@ -173,6 +175,9 @@ public class Cmp implements Runnable {
                 if (diff.compareTo(BigDecimal.ZERO) != 0) {
                   m += ", " + diff + "% difference";
                   failedTestsHighDiff++;
+                  if (diff.compareTo(BigDecimal.TEN) > 0) {
+                    failedTestsHighDiff10++;
+                  }
                 }
                 else {
                   m += ", less then 0.01% difference";
@@ -180,6 +185,7 @@ public class Cmp implements Runnable {
               }
               else {
                 failedTestsHighDiff++;
+                failedTestsHighDiff10++;
               }
             }
             if (trace) {

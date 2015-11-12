@@ -23,8 +23,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
@@ -46,8 +46,8 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 //try to replace a bucket map join with a sorted merge map join
 public class SortedMergeBucketMapJoinOptimizer implements Transform {
 
-  private static final Log LOG = LogFactory
-      .getLog(SortedMergeBucketMapJoinOptimizer.class.getName());
+  private static final Logger LOG = LoggerFactory
+      .getLogger(SortedMergeBucketMapJoinOptimizer.class.getName());
 
   public SortedMergeBucketMapJoinOptimizer() {
   }

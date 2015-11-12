@@ -28,8 +28,8 @@ import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -51,7 +51,7 @@ public class HiveHistoryImpl implements HiveHistory{
 
   String histFileName; // History file name
 
-  private static final Log LOG = LogFactory.getLog("hive.ql.exec.HiveHistoryImpl");
+  private static final Logger LOG = LoggerFactory.getLogger("hive.ql.exec.HiveHistoryImpl");
 
   private static final Random randGen = new Random();
 
@@ -355,7 +355,7 @@ public class HiveHistoryImpl implements HiveHistory{
 
   @Override
   public void closeStream() {
-    IOUtils.cleanup(LOG, histStream);
+    IOUtils.closeStream(histStream);
   }
 
   @Override

@@ -6,11 +6,9 @@ import org.apache.hadoop.service.AbstractService;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.webapp.WebApp;
 import org.apache.hadoop.yarn.webapp.WebApps;
-import org.apache.log4j.Logger;
 
 public class LlapWebServices extends AbstractService {
 
-  private static final Logger LOG = Logger.getLogger(LlapWebServices.class);
 
   private int port;
   private boolean ssl;

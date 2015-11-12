@@ -17,14 +17,14 @@
  */
 package org.apache.hadoop.hive.common.io;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** Java linked list iterator interface is convoluted, and moreover concurrent modifications
  * of the same list by multiple iterators are impossible. Hence, this.
  * Java also doesn't support multiple inheritance, so this cannot be done as "aspect"... */
 public class DiskRangeList extends DiskRange {
-  private static final Log LOG = LogFactory.getLog(DiskRangeList.class);
+  private static final Logger LOG = LoggerFactory.getLogger(DiskRangeList.class);
   public DiskRangeList prev, next;
 
   public DiskRangeList(long offset, long end) {

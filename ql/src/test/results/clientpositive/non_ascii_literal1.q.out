@@ -1,0 +1,9 @@
+PREHOOK: query: select concat("Абвгде", "谢谢") from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select concat("Абвгде", "谢谢") from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+Абвгде谢谢

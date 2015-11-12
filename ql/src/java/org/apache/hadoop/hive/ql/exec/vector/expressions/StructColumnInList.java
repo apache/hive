@@ -111,8 +111,9 @@ public class StructColumnInList extends StringColumnInList implements IStructInE
             break;
 
           case DECIMAL:
+            DecimalColumnVector decColVector = ((DecimalColumnVector) colVec);
             binarySortableSerializeWrite.writeHiveDecimal(
-                ((DecimalColumnVector) colVec).vector[adjustedIndex].getHiveDecimal());
+                decColVector.vector[adjustedIndex].getHiveDecimal(), decColVector.scale);
             break;
 
           default:

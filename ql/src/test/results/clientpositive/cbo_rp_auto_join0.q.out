@@ -38,7 +38,7 @@ STAGE PLANS:
         a:cbo_t1:cbo_t3 
           TableScan
             alias: cbo_t3
-            Statistics: Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 20 Data size: 3060 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (key < 10) (type: boolean)
               Statistics: Num rows: 6 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
@@ -56,7 +56,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: cbo_t3
-            Statistics: Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 20 Data size: 3060 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (key < 10) (type: boolean)
               Statistics: Num rows: 6 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
@@ -171,7 +171,7 @@ STAGE PLANS:
         a:cbo_t1:cbo_t3 
           TableScan
             alias: cbo_t3
-            Statistics: Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 20 Data size: 3060 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (key < 10) (type: boolean)
               Statistics: Num rows: 6 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
@@ -189,7 +189,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: cbo_t3
-            Statistics: Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 20 Data size: 3060 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (key < 10) (type: boolean)
               Statistics: Num rows: 6 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE

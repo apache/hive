@@ -52,8 +52,8 @@
 package org.apache.hive.beeline;
 
 import jline.console.completer.StringsCompleter;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -81,7 +81,7 @@ import java.util.zip.ZipEntry;
  */
 public class ClassNameCompleter extends StringsCompleter {
 
-  private static final Log LOG = LogFactory.getLog(ClassNameCompleter.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(ClassNameCompleter.class.getName());
   public final static String clazzFileNameExtension = ".class";
   public final static String jarFileNameExtension = ".jar";
 

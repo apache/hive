@@ -34,7 +34,8 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.util.ReflectionUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 
@@ -42,7 +43,7 @@ import com.google.common.base.Preconditions;
  *
  */
 public class AccumuloSerDeParameters extends AccumuloConnectionParameters {
-  private static final Logger log = Logger.getLogger(AccumuloSerDeParameters.class);
+  private static final Logger log = LoggerFactory.getLogger(AccumuloSerDeParameters.class);
 
   public static final String COLUMN_MAPPINGS = "accumulo.columns.mapping";
   public static final String ITERATOR_PUSHDOWN_KEY = "accumulo.iterator.pushdown";

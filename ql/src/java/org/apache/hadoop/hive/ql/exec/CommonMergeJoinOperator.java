@@ -29,8 +29,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.Future;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.persistence.RowContainer;
@@ -69,7 +69,7 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
 
   private static final long serialVersionUID = 1L;
   private boolean isBigTableWork;
-  private static final Log LOG = LogFactory.getLog(CommonMergeJoinOperator.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(CommonMergeJoinOperator.class.getName());
   transient List<Object>[] keyWritables;
   transient List<Object>[] nextKeyWritables;
   transient RowContainer<List<Object>>[] nextGroupStorage;
@@ -143,7 +143,13 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
 
     for (byte pos = 0; pos < order.length; pos++) {
       if (pos != posBigTable) {
-        fetchDone[pos] = false;
+        if ((parentOperators != null) && (parentOperators.isEmpty() == false)
+            && (parentOperators.get(pos) instanceof TezDummyStoreOperator)) {
+          TezDummyStoreOperator dummyStoreOp = (TezDummyStoreOperator) parentOperators.get(pos);
+          fetchDone[pos] = dummyStoreOp.getFetchDone();
+        } else {
+          fetchDone[pos] = false;
+        }
       }
       foundNextKeyGroup[pos] = false;
     }

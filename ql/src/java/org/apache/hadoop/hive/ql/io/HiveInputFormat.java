@@ -30,8 +30,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map.Entry;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -77,7 +77,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     implements InputFormat<K, V>, JobConfigurable {
 
   private static final String CLASS_NAME = HiveInputFormat.class.getName();
-  private static final Log LOG = LogFactory.getLog(CLASS_NAME);
+  private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
   /**
    * A cache of InputFormat instances.
@@ -210,7 +210,9 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       LOG.info("Not using llap for " + inputFormat + ": " + isSupported + ", " + isVector);
       return inputFormat;
     }
-    LOG.info("Wrapping " + inputFormat);
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Wrapping " + inputFormat);
+    }
     @SuppressWarnings("unchecked")
     LlapIo<VectorizedRowBatch> llapIo = LlapIoProxy.getIo();
     if (llapIo == null) {

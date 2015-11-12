@@ -24,8 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -253,7 +252,7 @@ public class PartialScanTask extends Task<PartialScanWork> implements
           jobID = rj.getID().toString();
         }
       } catch (Exception e) {
-	LOG.warn(e);
+	LOG.warn("Failed in cleaning up ", e);
       } finally {
 	HadoopJobExecHelper.runningJobs.remove(rj);
       }
@@ -333,7 +332,7 @@ public class PartialScanTask extends Task<PartialScanWork> implements
     }
     HiveConf hiveConf = new HiveConf(conf, PartialScanTask.class);
 
-    Log LOG = LogFactory.getLog(PartialScanTask.class.getName());
+    org.slf4j.Logger LOG = LoggerFactory.getLogger(PartialScanTask.class.getName());
     boolean isSilent = HiveConf.getBoolVar(conf,
         HiveConf.ConfVars.HIVESESSIONSILENT);
     LogHelper console = new LogHelper(LOG, isSilent);

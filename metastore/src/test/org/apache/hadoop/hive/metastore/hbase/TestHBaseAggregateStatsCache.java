@@ -19,8 +19,8 @@
 package org.apache.hadoop.hive.metastore.hbase;
 
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.client.HTableInterface;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -51,7 +51,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 public class TestHBaseAggregateStatsCache {
-  private static final Log LOG = LogFactory.getLog(TestHBaseAggregateStatsCache.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(TestHBaseAggregateStatsCache.class.getName());
 
   @Mock HTableInterface htable;
   private HBaseStore store;

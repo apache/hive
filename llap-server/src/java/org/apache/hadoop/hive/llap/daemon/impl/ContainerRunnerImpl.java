@@ -191,7 +191,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
 
       Token<JobTokenIdentifier> jobToken = TokenCache.getSessionToken(credentials);
 
-      LOG.info("DEBUG: Registering request with the ShuffleHandler");
+      LOG.debug("Registering request with the ShuffleHandler");
       ShuffleHandler.get()
           .registerDag(request.getApplicationIdString(), dagIdentifier, jobToken,
               request.getUser(), localDirs);

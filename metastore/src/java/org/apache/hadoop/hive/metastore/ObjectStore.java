@@ -55,10 +55,8 @@ import javax.jdo.datastore.DataStoreCache;
 import javax.jdo.identity.IntIdentity;
 
 import com.google.common.annotations.VisibleForTesting;
-import org.antlr.runtime.CommonTokenStream;
-import org.antlr.runtime.RecognitionException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -109,6 +107,7 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
@@ -143,12 +142,7 @@ import org.apache.hadoop.hive.metastore.model.MTablePrivilege;
 import org.apache.hadoop.hive.metastore.model.MType;
 import org.apache.hadoop.hive.metastore.model.MVersionTable;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
-import org.apache.hadoop.hive.metastore.parser.ExpressionTree.ANTLRNoCaseStringStream;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.FilterBuilder;
-import org.apache.hadoop.hive.metastore.parser.ExpressionTree.LeafNode;
-import org.apache.hadoop.hive.metastore.parser.ExpressionTree.Operator;
-import org.apache.hadoop.hive.metastore.parser.FilterLexer;
-import org.apache.hadoop.hive.metastore.parser.FilterParser;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -179,7 +173,7 @@ public class ObjectStore implements RawStore, Configurable {
   * Verify the schema only once per JVM since the db connection info is static
   */
   private final static AtomicBoolean isSchemaVerified = new AtomicBoolean(false);
-  private static final Log LOG = LogFactory.getLog(ObjectStore.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(ObjectStore.class.getName());
 
   private static enum TXN_STATUS {
     NO_STATE, OPEN, COMMITED, ROLLBACK
@@ -499,14 +493,14 @@ public class ObjectStore implements RawStore, Configurable {
       RuntimeException e = new RuntimeException("commitTransaction was called but openTransactionCalls = "
           + openTrasactionCalls + ". This probably indicates that there are unbalanced " +
           "calls to openTransaction/commitTransaction");
-      LOG.error(e);
+      LOG.error("Unbalanced calls to open/commit Transaction", e);
       throw e;
     }
     if (!currentTransaction.isActive()) {
       RuntimeException e = new RuntimeException("commitTransaction was called but openTransactionCalls = "
           + openTrasactionCalls + ". This probably indicates that there are unbalanced " +
           "calls to openTransaction/commitTransaction");
-      LOG.error(e);
+      LOG.error("Unbalanced calls to open/commit Transaction", e);
       throw e;
     }
     openTrasactionCalls--;
@@ -729,6 +723,9 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public List<String> getDatabases(String pattern) throws MetaException {
+    if (pattern == null || pattern.equals("*")) {
+      return getAllDatabases();
+    }
     boolean commited = false;
     List<String> databases = null;
     Query query = null;
@@ -770,7 +767,28 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public List<String> getAllDatabases() throws MetaException {
-    return getDatabases(".*");
+    boolean commited = false;
+    List<String> databases = null;
+
+    String queryStr = "select name from org.apache.hadoop.hive.metastore.model.MDatabase";
+    Query query = null;
+    
+    openTransaction();
+    try {
+      query = pm.newQuery(queryStr);
+      query.setResult("name");
+      databases = new ArrayList<String>((Collection<String>) query.execute());
+      commited = commitTransaction();
+    } finally {
+      if (!commited) {
+        rollbackTransaction();
+      }
+      if (query != null) {
+        query.closeAll();
+      }
+    }
+    Collections.sort(databases);
+    return databases;
   }
 
   private MType getMType(Type type) {
@@ -1047,6 +1065,84 @@ public class ObjectStore implements RawStore, Configurable {
       }
     }
     return tbls;
+  }
+
+  @Override
+  public List<TableMeta> getTableMeta(String dbNames, String tableNames, List<String> tableTypes)
+      throws MetaException {
+
+    boolean commited = false;
+    Query query = null;
+    List<TableMeta> metas = new ArrayList<TableMeta>();
+    try {
+      openTransaction();
+      // Take the pattern and split it on the | to get all the composing
+      // patterns
+      StringBuilder builder = new StringBuilder();
+      if (dbNames != null && !dbNames.equals("*")) {
+        appendPatternCondition(builder, "database.name", dbNames);
+      }
+      if (tableNames != null && !tableNames.equals("*")) {
+        appendPatternCondition(builder, "tableName", tableNames);
+      }
+      if (tableTypes != null && !tableTypes.isEmpty()) {
+        appendSimpleCondition(builder, "tableType", tableTypes.toArray(new String[0]));
+      }
+
+      query = pm.newQuery(MTable.class, builder.toString());
+      Collection<MTable> tables = (Collection<MTable>) query.execute();
+      for (MTable table : tables) {
+        TableMeta metaData = new TableMeta(
+            table.getDatabase().getName(), table.getTableName(), table.getTableType());
+        metaData.setComments(table.getParameters().get("comment"));
+        metas.add(metaData);
+      }
+      commited = commitTransaction();
+    } finally {
+      if (!commited) {
+        rollbackTransaction();
+      }
+      if (query != null) {
+        query.closeAll();
+      }
+    }
+    return metas;
+  }
+
+  private StringBuilder appendPatternCondition(StringBuilder builder,
+      String fieldName, String elements) {
+      elements = HiveStringUtils.normalizeIdentifier(elements);
+    return appendCondition(builder, fieldName, elements.split("\\|"), true);
+  }
+
+  private StringBuilder appendSimpleCondition(StringBuilder builder,
+      String fieldName, String[] elements) {
+    return appendCondition(builder, fieldName, elements, false);
+  }
+
+  private StringBuilder appendCondition(StringBuilder builder,
+      String fieldName, String[] elements, boolean pattern) {
+    if (builder.length() > 0) {
+      builder.append(" && ");
+    }
+    builder.append(" (");
+    int length = builder.length();
+    for (String element : elements) {
+      if (pattern) {
+        element = "(?i)" + element.replaceAll("\\*", ".*");
+      }
+      if (builder.length() > length) {
+        builder.append(" || ");
+      }
+      builder.append(fieldName);
+      if (pattern) {
+        builder.append(".matches(\"").append(element).append("\")");
+      } else {
+        builder.append(" == \"").append(element).append("\"");
+      }
+    }
+    builder.append(" )");
+    return builder;
   }
 
   @Override
@@ -7695,7 +7791,7 @@ public class ObjectStore implements RawStore, Configurable {
         classLoaderResolverMap.set(nc, new HashMap<String, ClassLoaderResolver>());
         LOG.debug("Removed cached classloaders from DataNucleus NucleusContext");
       } catch (Exception e) {
-        LOG.warn(e);
+        LOG.warn("Failed to remove cached classloaders from DataNucleus NucleusContext ", e);
       }
     }
   }
