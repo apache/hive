@@ -29,7 +29,7 @@ public class LazyBinary extends LazyPrimitive<LazyBinaryObjectInspector, BytesWr
   private static final Log LOG = LogFactory.getLog(LazyBinary.class);
   private static final boolean DEBUG_LOG_ENABLED = LOG.isDebugEnabled();
 
-  LazyBinary(LazyBinaryObjectInspector oi) {
+  public LazyBinary(LazyBinaryObjectInspector oi) {
     super(oi);
     data = new BytesWritable();
   }

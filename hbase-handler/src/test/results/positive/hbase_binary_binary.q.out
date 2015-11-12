@@ -1,0 +1,54 @@
+PREHOOK: query: drop table if exists testhbaseb
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists testhbaseb
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE testhbaseb (key int, val binary)
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES (
+"hbase.columns.mapping" = ":key,cf:val#b"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testhbaseb
+POSTHOOK: query: CREATE TABLE testhbaseb (key int, val binary)
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES (
+"hbase.columns.mapping" = ":key,cf:val#b"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testhbaseb
+PREHOOK: query: insert into table testhbaseb values(1, 'hello')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__1
+PREHOOK: Output: default@testhbaseb
+POSTHOOK: query: insert into table testhbaseb values(1, 'hello')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__1
+POSTHOOK: Output: default@testhbaseb
+PREHOOK: query: insert into table testhbaseb values(2, 'hi')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__2
+PREHOOK: Output: default@testhbaseb
+POSTHOOK: query: insert into table testhbaseb values(2, 'hi')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__2
+POSTHOOK: Output: default@testhbaseb
+PREHOOK: query: select * from testhbaseb
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testhbaseb
+#### A masked pattern was here ####
+POSTHOOK: query: select * from testhbaseb
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testhbaseb
+#### A masked pattern was here ####
+1	hello
+2	hi
+PREHOOK: query: drop table testhbaseb
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@testhbaseb
+PREHOOK: Output: default@testhbaseb
+POSTHOOK: query: drop table testhbaseb
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@testhbaseb
+POSTHOOK: Output: default@testhbaseb
