@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.util.StringUtils;
@@ -52,7 +53,7 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
 
   public static final String HIVE_TABLE_AS_PARQUET_SCHEMA = "HIVE_TABLE_SCHEMA";
   public static final String PARQUET_COLUMN_INDEX_ACCESS = "parquet.column.index.access";
-
+  private TypeInfo hiveTypeInfo;
   /**
    * From a string which columns names (including hive column), return a list
    * of string columns
@@ -204,6 +205,8 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
 
     if (columnNames != null) {
       List<String> columnNamesList = getColumnNames(columnNames);
+      String columnTypes = configuration.get(IOConstants.COLUMNS_TYPES);
+      List<TypeInfo> columnTypesList = getColumnTypes(columnTypes);
 
       MessageType tableSchema;
       if (indexAccess) {
@@ -216,13 +219,13 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
 
         tableSchema = getSchemaByIndex(fileSchema, columnNamesList, indexSequence);
       } else {
-        String columnTypes = configuration.get(IOConstants.COLUMNS_TYPES);
-        List<TypeInfo> columnTypesList = getColumnTypes(columnTypes);
 
         tableSchema = getSchemaByName(fileSchema, columnNamesList, columnTypesList);
       }
 
       contextMetadata.put(HIVE_TABLE_AS_PARQUET_SCHEMA, tableSchema.toString());
+      contextMetadata.put(PARQUET_COLUMN_INDEX_ACCESS, String.valueOf(indexAccess));
+      this.hiveTypeInfo = TypeInfoFactory.getStructTypeInfo(columnNamesList, columnTypesList);
 
       List<Integer> indexColumnsWanted = ColumnProjectionUtils.getReadColumnIDs(configuration);
       if (!ColumnProjectionUtils.isReadAllColumns(configuration) && !indexColumnsWanted.isEmpty()) {
@@ -262,6 +265,6 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
       metadata.put(key, String.valueOf(HiveConf.getBoolVar(
         configuration, HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION)));
     }
-    return new DataWritableRecordConverter(readContext.getRequestedSchema(), metadata);
+    return new DataWritableRecordConverter(readContext.getRequestedSchema(), metadata, hiveTypeInfo);
   }
 }

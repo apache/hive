@@ -17,6 +17,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.ql.io.parquet.read.DataWritableReadSupport;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.*;
 import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.parquet.io.api.Converter;
@@ -31,44 +34,61 @@ import org.apache.parquet.schema.Type;
 public class HiveStructConverter extends HiveGroupConverter {
 
   private final int totalFieldCount;
-  private final Converter[] converters;
+  private Converter[] converters;
   private final ConverterParent parent;
   private final int index;
   private Writable[] writables;
-  private final List<Repeated> repeatedConverters;
+  private List<Repeated> repeatedConverters;
   private boolean reuseWritableArray = false;
+  private List<String> hiveFieldNames;
+  private List<TypeInfo> hiveFieldTypeInfos;
 
-  public HiveStructConverter(final GroupType requestedSchema, final GroupType tableSchema, Map<String, String> metadata) {
-    this(requestedSchema, null, 0, tableSchema);
+  public HiveStructConverter(final GroupType requestedSchema, final GroupType tableSchema,
+                             Map<String, String> metadata, TypeInfo hiveTypeInfo) {
     setMetadata(metadata);
     this.reuseWritableArray = true;
     this.writables = new Writable[tableSchema.getFieldCount()];
+    this.parent = null;
+    this.index = 0;
+    this.totalFieldCount = tableSchema.getFieldCount();
+    init(requestedSchema, null, 0, tableSchema, hiveTypeInfo);
   }
 
   public HiveStructConverter(final GroupType groupType, final ConverterParent parent,
-                             final int index) {
-    this(groupType, parent, index, groupType);
+                             final int index, TypeInfo hiveTypeInfo) {
+    this(groupType, parent, index, groupType, hiveTypeInfo);
   }
 
   public HiveStructConverter(final GroupType selectedGroupType,
-                             final ConverterParent parent, final int index, final GroupType containingGroupType) {
-    if (parent != null) {
-      setMetadata(parent.getMetadata());
-    }
+                             final ConverterParent parent, final int index, final GroupType containingGroupType, TypeInfo hiveTypeInfo) {
     this.parent = parent;
     this.index = index;
     this.totalFieldCount = containingGroupType.getFieldCount();
+    init(selectedGroupType, parent, index, containingGroupType, hiveTypeInfo);
+  }
+
+  private void init(final GroupType selectedGroupType,
+                    final ConverterParent parent, final int index, final GroupType containingGroupType, TypeInfo hiveTypeInfo) {
+    if (parent != null) {
+      setMetadata(parent.getMetadata());
+    }
     final int selectedFieldCount = selectedGroupType.getFieldCount();
 
     converters = new Converter[selectedFieldCount];
     this.repeatedConverters = new ArrayList<Repeated>();
+
+    if (hiveTypeInfo != null && hiveTypeInfo.getCategory().equals(ObjectInspector.Category.STRUCT)) {
+      this.hiveFieldNames = ((StructTypeInfo) hiveTypeInfo).getAllStructFieldNames();
+      this.hiveFieldTypeInfos = ((StructTypeInfo) hiveTypeInfo).getAllStructFieldTypeInfos();
+    }
 
     List<Type> selectedFields = selectedGroupType.getFields();
     for (int i = 0; i < selectedFieldCount; i++) {
       Type subtype = selectedFields.get(i);
       if (containingGroupType.getFields().contains(subtype)) {
         int fieldIndex = containingGroupType.getFieldIndex(subtype.getName());
-        converters[i] = getFieldConverter(subtype, fieldIndex);
+        TypeInfo _hiveTypeInfo = getFieldTypeIgnoreCase(hiveTypeInfo, subtype.getName(), fieldIndex);
+        converters[i] = getFieldConverter(subtype, fieldIndex, _hiveTypeInfo);
       } else {
         throw new IllegalStateException("Group type [" + containingGroupType +
             "] does not contain requested field: " + subtype);
@@ -76,20 +96,56 @@ public class HiveStructConverter extends HiveGroupConverter {
     }
   }
 
-  private Converter getFieldConverter(Type type, int fieldIndex) {
+  private TypeInfo getFieldTypeIgnoreCase(TypeInfo hiveTypeInfo, String fieldName, int fieldIndex) {
+    if (hiveTypeInfo == null) {
+      return null;
+    } else if (hiveTypeInfo.getCategory().equals(ObjectInspector.Category.STRUCT)) {
+      return getStructFieldTypeInfo(fieldName, fieldIndex);
+    } else if (hiveTypeInfo.getCategory().equals(ObjectInspector.Category.MAP)) {
+      //This cover the case where hive table may have map<key, value> but the data file is
+      // of type array<struct<value1, value2>>
+      //Using index in place of type name.
+      if (fieldIndex == 0) {
+        return ((MapTypeInfo) hiveTypeInfo).getMapKeyTypeInfo();
+      } else if (fieldIndex == 1) {
+        return ((MapTypeInfo) hiveTypeInfo).getMapValueTypeInfo();
+      } else {//Other fields are skipped for this case
+        return null;
+      }
+    }
+    throw new RuntimeException("Unknown hive type info " + hiveTypeInfo + " when searching for field " + fieldName);
+  }
+
+  private TypeInfo getStructFieldTypeInfo(String field, int fieldIndex) {
+    String fieldLowerCase = field.toLowerCase();
+    if (Boolean.valueOf(getMetadata().get(DataWritableReadSupport.PARQUET_COLUMN_INDEX_ACCESS))
+        && fieldIndex < hiveFieldNames.size()) {
+      return hiveFieldTypeInfos.get(fieldIndex);
+    }
+    for (int i = 0; i < hiveFieldNames.size(); i++) {
+      if (fieldLowerCase.equalsIgnoreCase(hiveFieldNames.get(i))) {
+        return hiveFieldTypeInfos.get(i);
+      }
+    }
+    throw new RuntimeException("cannot find field " + field
+        + " in " + hiveFieldNames);
+  }
+
+  private Converter getFieldConverter(Type type, int fieldIndex, TypeInfo hiveTypeInfo) {
     Converter converter;
     if (type.isRepetition(Type.Repetition.REPEATED)) {
       if (type.isPrimitive()) {
         converter = new Repeated.RepeatedPrimitiveConverter(
-            type.asPrimitiveType(), this, fieldIndex);
+            type.asPrimitiveType(), this, fieldIndex, hiveTypeInfo);
       } else {
         converter = new Repeated.RepeatedGroupConverter(
-            type.asGroupType(), this, fieldIndex);
+            type.asGroupType(), this, fieldIndex, hiveTypeInfo == null ? null : ((ListTypeInfo) hiveTypeInfo)
+            .getListElementTypeInfo());
       }
 
       repeatedConverters.add((Repeated) converter);
     } else {
-      converter = getConverterFromDescription(type, fieldIndex, this);
+      converter = getConverterFromDescription(type, fieldIndex, this, hiveTypeInfo);
     }
 
     return converter;
