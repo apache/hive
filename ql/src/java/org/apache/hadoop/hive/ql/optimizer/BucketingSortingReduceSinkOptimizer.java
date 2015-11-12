@@ -602,6 +602,9 @@ public class BucketingSortingReduceSinkOptimizer implements Transform {
             }
 
             for (int pos : sortPositions) {
+              if (pos >= selectDesc.getColList().size()) {
+                return null;
+              }
               ExprNodeDesc selectColList = selectDesc.getColList().get(pos);
               if (!(selectColList instanceof ExprNodeColumnDesc)) {
                 return null;
