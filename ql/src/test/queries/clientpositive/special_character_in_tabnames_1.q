@@ -1,4 +1,4 @@
-set hive.cbo.enable=true;
+set hive.cbo.enable=false;
 set hive.exec.check.crossproducts=false;
 set hive.stats.fetch.column.stats=true;
 set hive.auto.convert.join=false;
