@@ -544,9 +544,9 @@ public class HiveConf extends Configuration {
     METASTORE_VALIDATE_CONSTRAINTS("datanucleus.validateConstraints", false,
         "validates existing schema against code. turn this on if you want to verify existing schema"),
     METASTORE_STORE_MANAGER_TYPE("datanucleus.storeManagerType", "rdbms", "metadata store type"),
-    METASTORE_AUTO_CREATE_SCHEMA("datanucleus.autoCreateSchema", true,
+    METASTORE_AUTO_CREATE_SCHEMA("datanucleus.autoCreateSchema", false,
         "creates necessary schema on a startup if one doesn't exist. set this to false, after creating it once"),
-    METASTORE_FIXED_DATASTORE("datanucleus.fixedDatastore", false, ""),
+    METASTORE_FIXED_DATASTORE("datanucleus.fixedDatastore", true, "Dictates whether to allow updates to schema or not."),
     METASTORE_SCHEMA_VERIFICATION("hive.metastore.schema.verification", false,
         "Enforce metastore schema version consistency.\n" +
         "True: Verify that version information stored in metastore matches with one from Hive jars.  Also disable automatic\n" +

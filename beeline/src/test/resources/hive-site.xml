@@ -23,6 +23,17 @@
     <value>true</value>
     <description>Internal marker for test. Used for masking env-dependent values</description>
   </property>
+
+<property>
+  <name>datanucleus.autoCreateSchema</name>
+  <value>true</value>
+</property>
+
+<property>
+  <name>datanucleus.fixedDatastore</name>
+  <value>false</value>
+</property>
+
   <property>
     <name>javax.jdo.option.ConnectionURL</name>
     <value>jdbc:derby:;databaseName=${test.tmp.dir}/metastore_db;create=true</value>
