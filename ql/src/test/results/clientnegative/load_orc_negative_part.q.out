@@ -49,4 +49,4 @@ POSTHOOK: query: alter table orc_test add partition(ds='11')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Output: default@orc_test
 POSTHOOK: Output: default@orc_test@ds=11
-FAILED: SemanticException [Error 30019]: The file that you are trying to load does not match the file format of the destination table. Destination table is stored as ORC but the file being loaded is not a valid ORC file.
+FAILED: SemanticException Unable to load data to destination table. Error: The file that you are trying to load does not match the file format of the destination table.

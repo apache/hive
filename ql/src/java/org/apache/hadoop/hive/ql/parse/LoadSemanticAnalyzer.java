@@ -41,9 +41,7 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
-import org.apache.hadoop.hive.ql.io.FileFormatException;
-import org.apache.hadoop.hive.ql.io.orc.OrcFile;
-import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
+import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -51,6 +49,8 @@ import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.mapred.InputFormat;
+
+import com.google.common.collect.Lists;
 
 /**
  * LoadSemanticAnalyzer.
@@ -128,7 +128,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     return new URI(fromScheme, fromAuthority, path, null, null);
   }
 
-  private FileStatus[] applyConstraintsAndGetFiles(URI fromURI, URI toURI, Tree ast,
+  private List<FileStatus> applyConstraintsAndGetFiles(URI fromURI, Tree ast,
       boolean isLocal) throws SemanticException {
 
     FileStatus[] srcs = null;
@@ -159,7 +159,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(ast), e);
     }
 
-    return srcs;
+    return Lists.newArrayList(srcs);
   }
 
   @Override
@@ -214,9 +214,6 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException(ErrorMsg.LOAD_INTO_STORED_AS_DIR.getMsg());
     }
 
-    URI toURI = ((ts.partHandle != null) ? ts.partHandle.getDataLocation()
-        : ts.tableHandle.getDataLocation()).toUri();
-
     List<FieldSchema> parts = ts.tableHandle.getPartitionKeys();
     if ((parts != null && parts.size() > 0)
         && (ts.partSpec == null || ts.partSpec.size() == 0)) {
@@ -224,11 +221,12 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     // make sure the arguments make sense
-    FileStatus[] files = applyConstraintsAndGetFiles(fromURI, toURI, fromTree, isLocal);
+    List<FileStatus> files = applyConstraintsAndGetFiles(fromURI, fromTree, isLocal);
 
     // for managed tables, make sure the file formats match
-    if (TableType.MANAGED_TABLE.equals(ts.tableHandle.getTableType())) {
-      ensureFileFormatsMatch(ts, files);
+    if (TableType.MANAGED_TABLE.equals(ts.tableHandle.getTableType())
+        && conf.getBoolVar(HiveConf.ConfVars.HIVECHECKFILEFORMAT)) {
+      ensureFileFormatsMatch(ts, files, fromURI);
     }
     inputs.add(toReadEntity(new Path(fromURI)));
     Task<? extends Serializable> rTask = null;
@@ -326,7 +324,9 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private void ensureFileFormatsMatch(TableSpec ts, FileStatus[] fileStatuses) throws SemanticException {
+  private void ensureFileFormatsMatch(TableSpec ts, List<FileStatus> fileStatuses,
+      final URI fromURI)
+      throws SemanticException {
     final Class<? extends InputFormat> destInputFormat;
     try {
       if (ts.getPartSpec() == null || ts.getPartSpec().isEmpty()) {
@@ -338,23 +338,16 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException(e);
     }
 
-    // Other file formats should do similar check to make sure file formats match
-    // when doing LOAD DATA .. INTO TABLE
-    if (OrcInputFormat.class.equals(destInputFormat)) {
-      for (FileStatus fileStatus : fileStatuses) {
-        try {
-          Path filePath = fileStatus.getPath();
-          FileSystem fs = FileSystem.get(filePath.toUri(), conf);
-          // just creating orc reader is going to do sanity checks to make sure its valid ORC file
-          OrcFile.createReader(fs, filePath);
-        } catch (FileFormatException e) {
-          throw new SemanticException(ErrorMsg.INVALID_FILE_FORMAT_IN_LOAD.getMsg("Destination" +
-              " table is stored as ORC but the file being loaded is not a valid ORC file."));
-        } catch (IOException e) {
-          throw new SemanticException("Unable to load data to destination table." +
-              " Error: " + e.getMessage());
-        }
+    try {
+      FileSystem fs = FileSystem.get(fromURI, conf);
+      boolean validFormat = HiveFileFormatUtils.checkInputFormat(fs, conf, destInputFormat,
+          fileStatuses);
+      if (!validFormat) {
+        throw new SemanticException(ErrorMsg.INVALID_FILE_FORMAT_IN_LOAD.getMsg());
       }
+    } catch (Exception e) {
+      throw new SemanticException("Unable to load data to destination table." +
+          " Error: " + e.getMessage());
     }
   }
 }

@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.io;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.fs.FileStatus;
@@ -49,7 +48,7 @@ public class SequenceFileInputFormatChecker implements InputFormatChecker {
         reader = null;
       } catch (IOException e) {
         return false;
-      }finally{
+      } finally{
         IOUtils.closeStream(reader);
       }
     }
