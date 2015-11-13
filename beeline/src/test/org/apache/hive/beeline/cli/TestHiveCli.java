@@ -17,11 +17,11 @@
  */
 package org.apache.hive.beeline.cli;
 
-import junit.framework.Assert;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -38,7 +38,6 @@ public class TestHiveCli {
   private static final Logger LOG = LoggerFactory.getLogger(TestHiveCli.class.getName());
   private static final int ERRNO_OK = 0;
   private static final int ERRNO_ARGS = 1;
-  private static final int ERRNO_OTHER = 2;
 
   private final static String SOURCE_CONTEXT =
       "create table if not exists test.testSrcTbl(sc1 string);";
@@ -277,9 +276,11 @@ public class TestHiveCli {
 
   @Before
   public void setup() {
+    System.setProperty("datanucleus.fixedDatastore", "false");
+    System.setProperty("datanucleus.autoCreateSchema", "true");
     cli = new HiveCli();
-    initFromFile();
     redirectOutputStream();
+    initFromFile();
   }
 
   @After
