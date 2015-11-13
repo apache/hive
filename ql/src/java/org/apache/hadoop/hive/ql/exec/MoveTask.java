@@ -18,8 +18,16 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.io.IOException;
+import java.io.Serializable;
+import java.security.AccessControlException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
@@ -62,17 +70,8 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.util.StringUtils;
-
-import java.io.IOException;
-import java.io.Serializable;
-import java.security.AccessControlException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * MoveTask implementation.
@@ -295,13 +294,39 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
             throw new HiveException(
                 "addFiles: filesystem error in check phase", e);
           }
+
+          // handle file format check for table level
           if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVECHECKFILEFORMAT)) {
-            // Check if the file format of the file matches that of the table.
-            boolean flag = HiveFileFormatUtils.checkInputFormat(
-                srcFs, conf, tbd.getTable().getInputFileFormatClass(), files);
-            if (!flag) {
-              throw new HiveException(
-                  "Wrong file format. Please check the file's format.");
+            boolean flag = true;
+            // work.checkFileFormat is set to true only for Load Task, so assumption here is
+            // dynamic partition context is null
+            if (tbd.getDPCtx() == null) {
+              if (tbd.getPartitionSpec() == null || tbd.getPartitionSpec().isEmpty()) {
+                // Check if the file format of the file matches that of the table.
+                flag = HiveFileFormatUtils.checkInputFormat(
+                    srcFs, conf, tbd.getTable().getInputFileFormatClass(), files);
+              } else {
+                // Check if the file format of the file matches that of the partition
+                Partition oldPart = db.getPartition(table, tbd.getPartitionSpec(), false);
+                if (oldPart == null) {
+                  // this means we have just created a table and are specifying partition in the
+                  // load statement (without pre-creating the partition), in which case lets use
+                  // table input format class. inheritTableSpecs defaults to true so when a new
+                  // partition is created later it will automatically inherit input format
+                  // from table object
+                  flag = HiveFileFormatUtils.checkInputFormat(
+                      srcFs, conf, tbd.getTable().getInputFileFormatClass(), files);
+                } else {
+                  flag = HiveFileFormatUtils.checkInputFormat(
+                      srcFs, conf, oldPart.getInputFormatClass(), files);
+                }
+              }
+              if (!flag) {
+                throw new HiveException(
+                    "Wrong file format. Please check the file's format.");
+              }
+            } else {
+              LOG.warn("Skipping file format check as dpCtx is not null");
             }
           }
         }

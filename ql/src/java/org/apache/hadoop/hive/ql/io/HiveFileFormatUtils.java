@@ -31,10 +31,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -44,7 +41,7 @@ import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -68,6 +65,12 @@ import org.apache.hadoop.mapred.TaskAttemptContext;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.util.Shell;
 import org.apache.hive.common.util.ReflectionUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * An util class for various Hive file format tasks.
@@ -79,30 +82,68 @@ import org.apache.hive.common.util.ReflectionUtil;
 public final class HiveFileFormatUtils {
   private static final Logger LOG = LoggerFactory.getLogger(HiveFileFormatUtils.class);
 
-  static {
-    outputFormatSubstituteMap =
-        new ConcurrentHashMap<Class<?>, Class<? extends OutputFormat>>();
-    HiveFileFormatUtils.registerOutputFormatSubstitute(
-        IgnoreKeyTextOutputFormat.class, HiveIgnoreKeyTextOutputFormat.class);
-    HiveFileFormatUtils.registerOutputFormatSubstitute(
-        SequenceFileOutputFormat.class, HiveSequenceFileOutputFormat.class);
-  }
+  public static class FileChecker {
+    // we don't have many file formats that implement InputFormatChecker. We won't be holding
+    // multiple instances of such classes
+    private static int MAX_CACHE_SIZE = 16;
 
-  @SuppressWarnings("unchecked")
-  private static Map<Class<?>, Class<? extends OutputFormat>>
-    outputFormatSubstituteMap;
+    // immutable maps
+    Map<Class<? extends InputFormat>, Class<? extends InputFormatChecker>> inputFormatCheckerMap;
+    Map<Class<?>, Class<? extends OutputFormat>> outputFormatSubstituteMap;
 
-  /**
-   * register a substitute.
-   *
-   * @param origin
-   *          the class that need to be substituted
-   * @param substitute
-   */
-  @SuppressWarnings("unchecked")
-  public static void registerOutputFormatSubstitute(Class<?> origin,
-      Class<? extends HiveOutputFormat> substitute) {
-    outputFormatSubstituteMap.put(origin, substitute);
+    // mutable thread-safe map to store instances
+    Cache<Class<? extends InputFormatChecker>, InputFormatChecker> inputFormatCheckerInstanceCache;
+
+    // classloader invokes this static block when its first loaded (lazy initialization).
+    // Class loading is thread safe.
+    private static class Factory {
+      static final FileChecker INSTANCE = new FileChecker();
+    }
+
+    public static FileChecker getInstance() {
+      return Factory.INSTANCE;
+    }
+
+    private FileChecker() {
+      // read-only maps (initialized once)
+      inputFormatCheckerMap = ImmutableMap
+          .<Class<? extends InputFormat>, Class<? extends InputFormatChecker>>builder()
+          .put(SequenceFileInputFormat.class, SequenceFileInputFormatChecker.class)
+          .put(RCFileInputFormat.class, RCFileInputFormat.class)
+          .put(OrcInputFormat.class, OrcInputFormat.class)
+          .build();
+      outputFormatSubstituteMap = ImmutableMap
+          .<Class<?>, Class<? extends OutputFormat>>builder()
+          .put(IgnoreKeyTextOutputFormat.class, HiveIgnoreKeyTextOutputFormat.class)
+          .put(SequenceFileOutputFormat.class, HiveSequenceFileOutputFormat.class)
+          .build();
+
+      // updatable map that holds instances of the class
+      inputFormatCheckerInstanceCache = CacheBuilder.newBuilder().maximumSize(MAX_CACHE_SIZE)
+          .build();
+    }
+
+    public Set<Class<? extends InputFormat>> registeredClasses() {
+      return inputFormatCheckerMap.keySet();
+    }
+
+    public Class<? extends OutputFormat> getOutputFormatSubstiture(Class<?> origin) {
+      return outputFormatSubstituteMap.get(origin);
+    }
+
+    public Class<? extends InputFormatChecker> getInputFormatCheckerClass(Class<?> inputFormat) {
+      return inputFormatCheckerMap.get(inputFormat);
+    }
+
+    public void putInputFormatCheckerInstance(
+        Class<? extends InputFormatChecker> checkerCls, InputFormatChecker instanceCls) {
+      inputFormatCheckerInstanceCache.put(checkerCls, instanceCls);
+    }
+
+    public InputFormatChecker getInputFormatCheckerInstance(
+        Class<? extends InputFormatChecker> checkerCls) {
+      return inputFormatCheckerInstanceCache.getIfPresent(checkerCls);
+    }
   }
 
   /**
@@ -114,71 +155,12 @@ public final class HiveFileFormatUtils {
     if (origin == null || HiveOutputFormat.class.isAssignableFrom(origin)) {
       return (Class<? extends OutputFormat>) origin;  // hive native
     }
-    Class<? extends OutputFormat> substitute = outputFormatSubstituteMap.get(origin);
+    Class<? extends OutputFormat> substitute = FileChecker.getInstance()
+        .getOutputFormatSubstiture(origin);
     if (substitute != null) {
       return substitute;  // substituted
     }
     return (Class<? extends OutputFormat>) origin;
-  }
-
-  /**
-   * get the final output path of a given FileOutputFormat.
-   *
-   * @param parent
-   *          parent dir of the expected final output path
-   * @param jc
-   *          job configuration
-   * @deprecated
-   */
-  @Deprecated
-  public static Path getOutputFormatFinalPath(Path parent, String taskId, JobConf jc,
-      HiveOutputFormat<?, ?> hiveOutputFormat, boolean isCompressed,
-      Path defaultFinalPath) throws IOException {
-    if (hiveOutputFormat instanceof HiveIgnoreKeyTextOutputFormat) {
-      return new Path(parent, taskId
-          + Utilities.getFileExtension(jc, isCompressed));
-    }
-    return defaultFinalPath;
-  }
-
-  static {
-    inputFormatCheckerMap =
-        new HashMap<Class<? extends InputFormat>, Class<? extends InputFormatChecker>>();
-    HiveFileFormatUtils.registerInputFormatChecker(
-        SequenceFileInputFormat.class, SequenceFileInputFormatChecker.class);
-    HiveFileFormatUtils.registerInputFormatChecker(RCFileInputFormat.class,
-        RCFileInputFormat.class);
-    inputFormatCheckerInstanceCache =
-        new HashMap<Class<? extends InputFormatChecker>, InputFormatChecker>();
-  }
-
-  @SuppressWarnings("unchecked")
-  private static Map<Class<? extends InputFormat>, Class<? extends InputFormatChecker>> inputFormatCheckerMap;
-
-  private static Map<Class<? extends InputFormatChecker>, InputFormatChecker> inputFormatCheckerInstanceCache;
-
-  /**
-   * register an InputFormatChecker for a given InputFormat.
-   *
-   * @param format
-   *          the class that need to be substituted
-   * @param checker
-   */
-  @SuppressWarnings("unchecked")
-  public static synchronized void registerInputFormatChecker(
-      Class<? extends InputFormat> format,
-      Class<? extends InputFormatChecker> checker) {
-    inputFormatCheckerMap.put(format, checker);
-  }
-
-  /**
-   * get an InputFormatChecker for a file format.
-   */
-  public static synchronized Class<? extends InputFormatChecker> getInputFormatChecker(
-      Class<?> inputFormat) {
-    Class<? extends InputFormatChecker> result = inputFormatCheckerMap
-        .get(inputFormat);
-    return result;
   }
 
   /**
@@ -189,7 +171,8 @@ public final class HiveFileFormatUtils {
       Class<? extends InputFormat> inputFormatCls, List<FileStatus> files)
       throws HiveException {
     if (files.isEmpty()) return false;
-    Class<? extends InputFormatChecker> checkerCls = getInputFormatChecker(inputFormatCls);
+    Class<? extends InputFormatChecker> checkerCls = FileChecker.getInstance()
+        .getInputFormatCheckerClass(inputFormatCls);
     if (checkerCls == null
         && inputFormatCls.isAssignableFrom(TextInputFormat.class)) {
       // we get a text input format here, we can not determine a file is text
@@ -200,11 +183,12 @@ public final class HiveFileFormatUtils {
     }
 
     if (checkerCls != null) {
-      InputFormatChecker checkerInstance = inputFormatCheckerInstanceCache.get(checkerCls);
+      InputFormatChecker checkerInstance = FileChecker.getInstance()
+          .getInputFormatCheckerInstance(checkerCls);
       try {
         if (checkerInstance == null) {
           checkerInstance = checkerCls.newInstance();
-          inputFormatCheckerInstanceCache.put(checkerCls, checkerInstance);
+          FileChecker.getInstance().putInputFormatCheckerInstance(checkerCls, checkerInstance);
         }
         return checkerInstance.validateInput(fs, conf, files);
       } catch (Exception e) {
@@ -228,7 +212,7 @@ public final class HiveFileFormatUtils {
       }
     }
     if (files2.isEmpty()) return true;
-    Set<Class<? extends InputFormat>> inputFormatter = inputFormatCheckerMap.keySet();
+    Set<Class<? extends InputFormat>> inputFormatter = FileChecker.getInstance().registeredClasses();
     for (Class<? extends InputFormat> reg : inputFormatter) {
       boolean result = checkInputFormat(fs, conf, reg, files2);
       if (result) {
