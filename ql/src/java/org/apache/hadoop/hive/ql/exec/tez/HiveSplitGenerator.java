@@ -259,7 +259,7 @@ public class HiveSplitGenerator extends InputInitializer {
   }
 
   // Descending sort based on split size| Followed by file name. Followed by startPosition.
-  private static class InputSplitComparator implements Comparator<InputSplit> {
+  static class InputSplitComparator implements Comparator<InputSplit> {
     @Override
     public int compare(InputSplit o1, InputSplit o2) {
       try {
@@ -278,7 +278,7 @@ public class HiveSplitGenerator extends InputInitializer {
                 // Compare start Position
                 long startPos1 = fs1.getStart();
                 long startPos2 = fs2.getStart();
-                if (startPos1 > startPos1) {
+                if (startPos1 > startPos2) {
                   return 1;
                 } else if (startPos1 < startPos2) {
                   return -1;
