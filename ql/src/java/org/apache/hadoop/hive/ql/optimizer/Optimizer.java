@@ -166,6 +166,13 @@ public class Optimizer {
       transformations.add(new JoinReorder());
     }
 
+    if (HiveConf.getBoolVar(hiveConf,
+        HiveConf.ConfVars.TEZ_OPTIMIZE_BUCKET_PRUNING)
+        && HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTPPD)
+        && HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTINDEXFILTER)) {
+      transformations.add(new FixedBucketPruningOptimizer());
+    }
+
     if(HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.DYNAMICPARTITIONING) &&
         HiveConf.getVar(hiveConf, HiveConf.ConfVars.DYNAMICPARTITIONINGMODE).equals("nonstrict") &&
         HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTSORTDYNAMICPARTITION) &&
