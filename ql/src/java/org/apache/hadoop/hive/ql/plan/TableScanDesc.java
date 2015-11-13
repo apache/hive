@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.List;
 import java.util.Map;
 
@@ -106,6 +107,10 @@ public class TableScanDesc extends AbstractOperatorDesc {
   private transient TableSample tableSample;
 
   private transient Table tableMetadata;
+
+  private BitSet includedBuckets;
+
+  private int numBuckets = -1;
 
   public TableScanDesc() {
     this(null, null);
@@ -318,5 +323,39 @@ public class TableScanDesc extends AbstractOperatorDesc {
 
   public void setSerializedFilterObject(String serializedFilterObject) {
     this.serializedFilterObject = serializedFilterObject;
+  }
+
+  public void setIncludedBuckets(BitSet bitset) {
+    this.includedBuckets = bitset;
+  }
+
+  public BitSet getIncludedBuckets() {
+    return this.includedBuckets;
+  }
+
+  @Explain(displayName = "buckets included", explainLevels = { Level.EXTENDED })
+  public String getIncludedBucketExplain() {
+    if (this.includedBuckets == null) {
+      return null;
+    }
+
+    StringBuilder sb = new StringBuilder();
+    sb.append("[");
+    for (int i = 0; i < this.includedBuckets.size(); i++) {
+      if (this.includedBuckets.get(i)) {
+        sb.append(i);
+        sb.append(',');
+      }
+    }
+    sb.append(String.format("] of %d", numBuckets));
+    return sb.toString();
+  }
+
+  public int getNumBuckets() {
+    return numBuckets;
+  }
+
+  public void setNumBuckets(int numBuckets) {
+    this.numBuckets = numBuckets;
   }
 }

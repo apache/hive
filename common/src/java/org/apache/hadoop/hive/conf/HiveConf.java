@@ -2277,6 +2277,11 @@ public class HiveConf extends Configuration {
     TEZ_MIN_PARTITION_FACTOR("hive.tez.min.partition.factor", 0.25f,
         "When auto reducer parallelism is enabled this factor will be used to put a lower limit to the number\n" +
         "of reducers that tez specifies."),
+    TEZ_OPTIMIZE_BUCKET_PRUNING(
+        "hive.tez.bucket.pruning", false,
+         "When pruning is enabled, filters on bucket columns will be processed by \n" +
+         "filtering the splits against a bitset of included buckets. This needs predicates \n"+
+         "produced by hive.optimize.ppd and hive.optimize.index.filters."),
     TEZ_DYNAMIC_PARTITION_PRUNING(
         "hive.tez.dynamic.partition.pruning", true,
         "When dynamic pruning is enabled, joins on partition keys will be processed by sending\n" +

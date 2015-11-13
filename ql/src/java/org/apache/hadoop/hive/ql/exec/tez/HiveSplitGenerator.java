@@ -19,11 +19,14 @@
 package org.apache.hadoop.hive.ql.exec.tez;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Comparator;
 import java.util.List;
 
 import com.google.common.base.Preconditions;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -163,6 +166,10 @@ public class HiveSplitGenerator extends InputInitializer {
         LOG.info("Number of input splits: " + splits.length + ". " + availableSlots
             + " available slots, " + waves + " waves. Input format is: " + realInputFormatName);
 
+        if (work.getIncludedBuckets() != null) {
+          splits = pruneBuckets(work, splits);
+        }
+
         Multimap<Integer, InputSplit> groupedSplits =
             splitGrouper.generateGroupedSplits(jobConf, conf, splits, waves, availableSlots);
         // And finally return them in a flat array
@@ -190,8 +197,25 @@ public class HiveSplitGenerator extends InputInitializer {
     }
   }
 
-
-
+  private InputSplit[] pruneBuckets(MapWork work, InputSplit[] splits) {
+    final BitSet buckets = work.getIncludedBuckets();
+    final String bucketIn = buckets.toString();
+    List<InputSplit> filteredSplits = new ArrayList<InputSplit>(splits.length / 2);
+    for (InputSplit split : splits) {
+      final int bucket = Utilities.parseSplitBucket(split);
+      if (bucket < 0 || buckets.get(bucket)) {
+        // match or UNKNOWN
+        filteredSplits.add(split);
+      } else {
+        LOG.info("Pruning with IN ({}) - removing {}", bucketIn, split);
+      }
+    }
+    if (filteredSplits.size() < splits.length) {
+      // reallocate only if any filters pruned
+      splits = filteredSplits.toArray(new InputSplit[filteredSplits.size()]);
+    }
+    return splits;
+  }
 
   private List<Event> createEventList(boolean sendSerializedEvents, InputSplitInfoMem inputSplitInfo) {
 
