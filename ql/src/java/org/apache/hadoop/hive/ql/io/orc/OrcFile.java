@@ -24,6 +24,7 @@ import java.util.Properties;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.orc.FileMetadata;
@@ -88,6 +89,11 @@ public final class OrcFile extends org.apache.orc.OrcFile {
   public static class WriterOptions extends org.apache.orc.OrcFile.WriterOptions {
     private boolean explicitSchema = false;
     private ObjectInspector inspector = null;
+    // Setting the default batch size to 1000 makes the memory check at 5000
+    // rows work the same as the row by row writer. (If it was the default 1024,
+    // the smallest stripe size would be 5120 rows, which changes the output
+    // of some of the tests.)
+    private int batchSize = 1000;
 
     WriterOptions(Properties tableProperties, Configuration conf) {
       super(tableProperties, conf);
@@ -249,6 +255,11 @@ public final class OrcFile extends org.apache.orc.OrcFile {
       super.memory(value);
       return this;
     }
+
+    protected WriterOptions batchSize(int maxSize) {
+      batchSize = maxSize;
+      return this;
+    }
   }
 
   /**
@@ -295,7 +306,8 @@ public final class OrcFile extends org.apache.orc.OrcFile {
                           opts.getEncodingStrategy(),
                           opts.getCompressionStrategy(),
                           opts.getPaddingTolerance(), opts.getBlockSize(),
-                          opts.getBloomFilterColumns(), opts.getBloomFilterFpp());
+                          opts.getBloomFilterColumns(),
+                          opts.getBloomFilterFpp(), opts.batchSize);
   }
 
   /**

@@ -275,7 +275,7 @@ public class TypeDescription {
     return maxId;
   }
 
-  private ColumnVector createColumn() {
+  private ColumnVector createColumn(int maxSize) {
     switch (category) {
       case BOOLEAN:
       case BYTE:
@@ -298,7 +298,7 @@ public class TypeDescription {
       case STRUCT: {
         ColumnVector[] fieldVector = new ColumnVector[children.size()];
         for(int i=0; i < fieldVector.length; ++i) {
-          fieldVector[i] = children.get(i).createColumn();
+          fieldVector[i] = children.get(i).createColumn(maxSize);
         }
         return new StructColumnVector(VectorizedRowBatch.DEFAULT_SIZE,
                 fieldVector);
@@ -306,36 +306,40 @@ public class TypeDescription {
       case UNION: {
         ColumnVector[] fieldVector = new ColumnVector[children.size()];
         for(int i=0; i < fieldVector.length; ++i) {
-          fieldVector[i] = children.get(i).createColumn();
+          fieldVector[i] = children.get(i).createColumn(maxSize);
         }
         return new UnionColumnVector(VectorizedRowBatch.DEFAULT_SIZE,
             fieldVector);
       }
       case LIST:
         return new ListColumnVector(VectorizedRowBatch.DEFAULT_SIZE,
-            children.get(0).createColumn());
+            children.get(0).createColumn(maxSize));
       case MAP:
         return new MapColumnVector(VectorizedRowBatch.DEFAULT_SIZE,
-            children.get(0).createColumn(), children.get(1).createColumn());
+            children.get(0).createColumn(maxSize),
+            children.get(1).createColumn(maxSize));
       default:
         throw new IllegalArgumentException("Unknown type " + category);
     }
   }
 
-  public VectorizedRowBatch createRowBatch() {
+  public VectorizedRowBatch createRowBatch(int maxSize) {
     VectorizedRowBatch result;
     if (category == Category.STRUCT) {
-      result = new VectorizedRowBatch(children.size(),
-          VectorizedRowBatch.DEFAULT_SIZE);
+      result = new VectorizedRowBatch(children.size(), maxSize);
       for(int i=0; i < result.cols.length; ++i) {
-        result.cols[i] = children.get(i).createColumn();
+        result.cols[i] = children.get(i).createColumn(maxSize);
       }
     } else {
-      result = new VectorizedRowBatch(1, VectorizedRowBatch.DEFAULT_SIZE);
-      result.cols[0] = createColumn();
+      result = new VectorizedRowBatch(1, maxSize);
+      result.cols[0] = createColumn(maxSize);
     }
     result.reset();
     return result;
+  }
+
+  public VectorizedRowBatch createRowBatch() {
+    return createRowBatch(VectorizedRowBatch.DEFAULT_SIZE);
   }
 
   /**

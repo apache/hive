@@ -859,4 +859,9 @@ public class ReaderImpl implements Reader {
   public DataReader createDefaultDataReader(boolean useZeroCopy) {
     return RecordReaderUtils.createDefaultDataReader(fileSystem, path, useZeroCopy, codec);
   }
+
+  @Override
+  public String toString() {
+    return "ORC Reader(" + path + ")";
+  }
 }

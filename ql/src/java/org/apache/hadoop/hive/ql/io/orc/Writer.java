@@ -26,7 +26,7 @@ import java.io.IOException;
 public interface Writer extends org.apache.orc.Writer {
 
   /**
-   * Add a row to the ORC file.
+   * Add a row to the end of the ORC file.
    * @param row the row to add
    * @throws IOException
    */
