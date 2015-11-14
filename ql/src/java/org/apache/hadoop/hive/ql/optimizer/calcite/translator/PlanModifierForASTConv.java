@@ -301,9 +301,10 @@ public class PlanModifierForASTConv {
   private static boolean validSortParent(RelNode sortNode, RelNode parent) {
     boolean validParent = true;
 
-    if (parent != null && !(parent instanceof Project)
-        && !((parent instanceof Sort) || HiveCalciteUtil.orderRelNode(parent)))
+    if (parent != null && !(parent instanceof Project) &&
+        !(HiveCalciteUtil.pureLimitRelNode(parent) && HiveCalciteUtil.pureOrderRelNode(sortNode))) {
       validParent = false;
+    }
 
     return validParent;
   }
@@ -312,9 +313,8 @@ public class PlanModifierForASTConv {
     boolean validChild = true;
     RelNode child = sortNode.getInput();
 
-    if (!(HiveCalciteUtil.limitRelNode(sortNode) && HiveCalciteUtil.orderRelNode(child)
-            && HiveCalciteUtil.limitRelNode(child))
-        && !(child instanceof Project)) {
+    if (!(child instanceof Project) &&
+        !(HiveCalciteUtil.pureLimitRelNode(sortNode) && HiveCalciteUtil.pureOrderRelNode(child))) {
       validChild = false;
     }
 
