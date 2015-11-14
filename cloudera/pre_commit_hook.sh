@@ -66,6 +66,7 @@ function get_qtests_to_execute() {
 regex_tests=`get_regex_excluded_tests`
 mvn clean install -Phadoop-2 -Dmaven.repo.local="$MVN_REPO_LOCAL" -Dtest.excludes.additional="$regex_tests"
 cd itests/
+rm -f thirdparty/spark-latest.tar.gz
 mvn clean install -Phadoop-2 -Dmaven.repo.local="$MVN_REPO_LOCAL" -DskipTests
 
 # Execute .q tests that were modified in the patch
