@@ -210,41 +210,49 @@ STAGE PLANS:
                   alias: srcpart
                   filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: ds (type: string)
-                    sort order: +
-                    Map-reduce partition columns: ds (type: string)
+                  Select Operator
+                    expressions: ds (type: string)
+                    outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date
-                  filterExpr: (ds is not null and (date = '2008-04-08')) (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (ds is not null and (date = '2008-04-08')) (type: boolean)
+                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: ds (type: string)
-                      sort order: +
-                      Map-reduce partition columns: ds (type: string)
-                      Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: string)
-                        mode: hash
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: _col0 (type: string)
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                        Dynamic Partitioning Event Operator
-                          Target Input: srcpart
-                          Partition key expr: ds
+                        Group By Operator
+                          keys: _col0 (type: string)
+                          mode: hash
+                          outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                          Target column: ds
-                          Target Vertex: Map 1
+                          Dynamic Partitioning Event Operator
+                            Target Input: srcpart
+                            Partition key expr: ds
+                            Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                            Target column: ds
+                            Target Vertex: Map 1
             Execution mode: llap
         Reducer 2 
             Execution mode: llap
@@ -253,8 +261,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 ds (type: string)
-                  1 ds (type: string)
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -328,26 +336,34 @@ STAGE PLANS:
                   alias: srcpart
                   filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: ds (type: string)
-                    sort order: +
-                    Map-reduce partition columns: ds (type: string)
+                  Select Operator
+                    expressions: ds (type: string)
+                    outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date
-                  filterExpr: (ds is not null and (date = '2008-04-08')) (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (ds is not null and (date = '2008-04-08')) (type: boolean)
+                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: ds (type: string)
-                      sort order: +
-                      Map-reduce partition columns: ds (type: string)
+                    Select Operator
+                      expressions: ds (type: string)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
         Reducer 2 
             Execution mode: llap
@@ -356,8 +372,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 ds (type: string)
-                  1 ds (type: string)
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -448,72 +464,84 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: ds (type: string)
-                    sort order: +
-                    Map-reduce partition columns: ds (type: string)
+                  Select Operator
+                    expressions: ds (type: string), hr (type: string)
+                    outputColumnNames: _col0, _col1
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: hr (type: string)
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col1 (type: string)
             Execution mode: llap
         Map 5 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date
-                  filterExpr: (ds is not null and (date = '2008-04-08')) (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (ds is not null and (date = '2008-04-08')) (type: boolean)
+                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: ds (type: string)
-                      sort order: +
-                      Map-reduce partition columns: ds (type: string)
-                      Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: string)
-                        mode: hash
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: _col0 (type: string)
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                        Dynamic Partitioning Event Operator
-                          Target Input: srcpart
-                          Partition key expr: ds
+                        Group By Operator
+                          keys: _col0 (type: string)
+                          mode: hash
+                          outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                          Target column: ds
-                          Target Vertex: Map 1
+                          Dynamic Partitioning Event Operator
+                            Target Input: srcpart
+                            Partition key expr: ds
+                            Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                            Target column: ds
+                            Target Vertex: Map 1
             Execution mode: llap
         Map 6 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_hour
-                  filterExpr: (hr is not null and (hour = 11)) (type: boolean)
+                  filterExpr: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (hr is not null and (hour = 11)) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: hr (type: string)
-                      sort order: +
-                      Map-reduce partition columns: hr (type: string)
-                      Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: hr (type: string)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: string)
-                        mode: hash
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: _col0 (type: string)
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                        Dynamic Partitioning Event Operator
-                          Target Input: srcpart
-                          Partition key expr: hr
+                        Group By Operator
+                          keys: _col0 (type: string)
+                          mode: hash
+                          outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                          Target column: hr
-                          Target Vertex: Map 1
+                          Dynamic Partitioning Event Operator
+                            Target Input: srcpart
+                            Partition key expr: hr
+                            Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                            Target column: hr
+                            Target Vertex: Map 1
             Execution mode: llap
         Reducer 2 
             Execution mode: llap
@@ -522,14 +550,14 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 ds (type: string)
-                  1 ds (type: string)
-                outputColumnNames: _col3
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col1
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: _col3 (type: string)
+                  key expressions: _col1 (type: string)
                   sort order: +
-                  Map-reduce partition columns: _col3 (type: string)
+                  Map-reduce partition columns: _col1 (type: string)
                   Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
         Reducer 3 
             Execution mode: llap
@@ -538,8 +566,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 _col3 (type: string)
-                  1 hr (type: string)
+                  0 _col1 (type: string)
+                  1 _col0 (type: string)
                 Statistics: Num rows: 2420 Data size: 25709 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -620,42 +648,54 @@ STAGE PLANS:
                   alias: srcpart
                   filterExpr: (ds is not null and hr is not null) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: ds (type: string)
-                    sort order: +
-                    Map-reduce partition columns: ds (type: string)
+                  Select Operator
+                    expressions: ds (type: string), hr (type: string)
+                    outputColumnNames: _col0, _col1
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: hr (type: string)
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col1 (type: string)
             Execution mode: llap
         Map 5 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date
-                  filterExpr: (ds is not null and (date = '2008-04-08')) (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (ds is not null and (date = '2008-04-08')) (type: boolean)
+                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: ds (type: string)
-                      sort order: +
-                      Map-reduce partition columns: ds (type: string)
+                    Select Operator
+                      expressions: ds (type: string)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
         Map 6 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_hour
-                  filterExpr: (hr is not null and (hour = 11)) (type: boolean)
+                  filterExpr: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (hr is not null and (hour = 11)) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: hr (type: string)
-                      sort order: +
-                      Map-reduce partition columns: hr (type: string)
+                    Select Operator
+                      expressions: hr (type: string)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
         Reducer 2 
             Execution mode: llap
@@ -664,14 +704,14 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 ds (type: string)
-                  1 ds (type: string)
-                outputColumnNames: _col3
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col1
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: _col3 (type: string)
+                  key expressions: _col1 (type: string)
                   sort order: +
-                  Map-reduce partition columns: _col3 (type: string)
+                  Map-reduce partition columns: _col1 (type: string)
                   Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
         Reducer 3 
             Execution mode: llap
@@ -680,8 +720,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 _col3 (type: string)
-                  1 hr (type: string)
+                  0 _col1 (type: string)
+                  1 _col0 (type: string)
                 Statistics: Num rows: 2420 Data size: 25709 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -771,56 +811,64 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: ds (type: string), hr (type: string)
-                    sort order: ++
-                    Map-reduce partition columns: ds (type: string), hr (type: string)
+                  Select Operator
+                    expressions: ds (type: string), hr (type: string)
+                    outputColumnNames: _col0, _col1
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string), _col1 (type: string)
+                      sort order: ++
+                      Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_hour
-                  filterExpr: (((ds is not null and hr is not null) and (date = '2008-04-08')) and (hour = 11)) (type: boolean)
+                  filterExpr: ((((date = '2008-04-08') and (UDFToDouble(hour) = 11.0)) and ds is not null) and hr is not null) (type: boolean)
                   Statistics: Num rows: 4 Data size: 108 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((ds is not null and hr is not null) and (date = '2008-04-08')) and (hour = 11)) (type: boolean)
+                    predicate: ((((date = '2008-04-08') and (UDFToDouble(hour) = 11.0)) and ds is not null) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: ds (type: string), hr (type: string)
-                      sort order: ++
-                      Map-reduce partition columns: ds (type: string), hr (type: string)
-                      Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: ds (type: string)
-                      outputColumnNames: _col0
+                      expressions: ds (type: string), hr (type: string)
+                      outputColumnNames: _col0, _col2
                       Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: string)
-                        mode: hash
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col2 (type: string)
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string), _col2 (type: string)
+                        Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: _col0 (type: string)
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
-                        Dynamic Partitioning Event Operator
-                          Target Input: srcpart
-                          Partition key expr: ds
+                        Group By Operator
+                          keys: _col0 (type: string)
+                          mode: hash
+                          outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
-                          Target column: ds
-                          Target Vertex: Map 1
-                    Select Operator
-                      expressions: hr (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: string)
-                        mode: hash
+                          Dynamic Partitioning Event Operator
+                            Target Input: srcpart
+                            Partition key expr: ds
+                            Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+                            Target column: ds
+                            Target Vertex: Map 1
+                      Select Operator
+                        expressions: _col2 (type: string)
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
-                        Dynamic Partitioning Event Operator
-                          Target Input: srcpart
-                          Partition key expr: hr
+                        Group By Operator
+                          keys: _col0 (type: string)
+                          mode: hash
+                          outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
-                          Target column: hr
-                          Target Vertex: Map 1
+                          Dynamic Partitioning Event Operator
+                            Target Input: srcpart
+                            Partition key expr: hr
+                            Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+                            Target column: hr
+                            Target Vertex: Map 1
             Execution mode: llap
         Reducer 2 
             Execution mode: llap
@@ -829,8 +877,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 ds (type: string), hr (type: string)
-                  1 ds (type: string), hr (type: string)
+                  0 _col0 (type: string), _col1 (type: string)
+                  1 _col0 (type: string), _col2 (type: string)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -904,26 +952,34 @@ STAGE PLANS:
                   alias: srcpart
                   filterExpr: (ds is not null and hr is not null) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: ds (type: string), hr (type: string)
-                    sort order: ++
-                    Map-reduce partition columns: ds (type: string), hr (type: string)
+                  Select Operator
+                    expressions: ds (type: string), hr (type: string)
+                    outputColumnNames: _col0, _col1
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string), _col1 (type: string)
+                      sort order: ++
+                      Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_hour
-                  filterExpr: (((ds is not null and hr is not null) and (date = '2008-04-08')) and (hour = 11)) (type: boolean)
+                  filterExpr: ((((date = '2008-04-08') and (UDFToDouble(hour) = 11.0)) and ds is not null) and hr is not null) (type: boolean)
                   Statistics: Num rows: 4 Data size: 108 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((ds is not null and hr is not null) and (date = '2008-04-08')) and (hour = 11)) (type: boolean)
+                    predicate: ((((date = '2008-04-08') and (UDFToDouble(hour) = 11.0)) and ds is not null) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: ds (type: string), hr (type: string)
-                      sort order: ++
-                      Map-reduce partition columns: ds (type: string), hr (type: string)
+                    Select Operator
+                      expressions: ds (type: string), hr (type: string)
+                      outputColumnNames: _col0, _col2
                       Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col2 (type: string)
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string), _col2 (type: string)
+                        Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
         Reducer 2 
             Execution mode: llap
@@ -932,8 +988,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 ds (type: string), hr (type: string)
-                  1 ds (type: string), hr (type: string)
+                  0 _col0 (type: string), _col1 (type: string)
+                  1 _col0 (type: string), _col2 (type: string)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -1020,41 +1076,49 @@ STAGE PLANS:
                   alias: srcpart
                   filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: ds (type: string)
-                    sort order: +
-                    Map-reduce partition columns: ds (type: string)
+                  Select Operator
+                    expressions: ds (type: string)
+                    outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date
-                  filterExpr: (ds is not null and (date = 'I DONT EXIST')) (type: boolean)
+                  filterExpr: ((date = 'I DONT EXIST') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (ds is not null and (date = 'I DONT EXIST')) (type: boolean)
+                    predicate: ((date = 'I DONT EXIST') and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: ds (type: string)
-                      sort order: +
-                      Map-reduce partition columns: ds (type: string)
-                      Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: string)
-                        mode: hash
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: _col0 (type: string)
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                        Dynamic Partitioning Event Operator
-                          Target Input: srcpart
-                          Partition key expr: ds
+                        Group By Operator
+                          keys: _col0 (type: string)
+                          mode: hash
+                          outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                          Target column: ds
-                          Target Vertex: Map 1
+                          Dynamic Partitioning Event Operator
+                            Target Input: srcpart
+                            Partition key expr: ds
+                            Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                            Target column: ds
+                            Target Vertex: Map 1
             Execution mode: llap
         Reducer 2 
             Execution mode: llap
@@ -1063,8 +1127,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 ds (type: string)
-                  1 ds (type: string)
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -1138,26 +1202,34 @@ STAGE PLANS:
                   alias: srcpart
                   filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: ds (type: string)
-                    sort order: +
-                    Map-reduce partition columns: ds (type: string)
+                  Select Operator
+                    expressions: ds (type: string)
+                    outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date
-                  filterExpr: (ds is not null and (date = 'I DONT EXIST')) (type: boolean)
+                  filterExpr: ((date = 'I DONT EXIST') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (ds is not null and (date = 'I DONT EXIST')) (type: boolean)
+                    predicate: ((date = 'I DONT EXIST') and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: ds (type: string)
-                      sort order: +
-                      Map-reduce partition columns: ds (type: string)
+                    Select Operator
+                      expressions: ds (type: string)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
         Reducer 2 
             Execution mode: llap
@@ -1166,8 +1238,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 ds (type: string)
-                  1 ds (type: string)
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -1255,26 +1327,34 @@ STAGE PLANS:
                   Filter Operator
                     predicate: UDFToDouble(hr) is not null (type: boolean)
                     Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: UDFToDouble(hr) (type: double)
-                      sort order: +
-                      Map-reduce partition columns: UDFToDouble(hr) (type: double)
+                    Select Operator
+                      expressions: hr (type: string)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: UDFToDouble(_col0) (type: double)
+                        sort order: +
+                        Map-reduce partition columns: UDFToDouble(_col0) (type: double)
+                        Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_double_hour
-                  filterExpr: (UDFToDouble(UDFToInteger((hr / 2))) is not null and (hour = 11)) (type: boolean)
+                  filterExpr: ((UDFToDouble(hour) = 11.0) and UDFToDouble(UDFToInteger((hr / 2.0))) is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 14 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (UDFToDouble(UDFToInteger((hr / 2))) is not null and (hour = 11)) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0) and UDFToDouble(UDFToInteger((hr / 2.0))) is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: UDFToDouble(UDFToInteger((hr / 2))) (type: double)
-                      sort order: +
-                      Map-reduce partition columns: UDFToDouble(UDFToInteger((hr / 2))) (type: double)
+                    Select Operator
+                      expressions: hr (type: double)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: UDFToDouble(UDFToInteger((_col0 / 2.0))) (type: double)
+                        sort order: +
+                        Map-reduce partition columns: UDFToDouble(UDFToInteger((_col0 / 2.0))) (type: double)
+                        Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
         Reducer 2 
             Execution mode: llap
@@ -1283,8 +1363,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 UDFToDouble(hr) (type: double)
-                  1 UDFToDouble(UDFToInteger((hr / 2))) (type: double)
+                  0 UDFToDouble(_col0) (type: double)
+                  1 UDFToDouble(UDFToInteger((_col0 / 2.0))) (type: double)
                 Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -1356,46 +1436,54 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: (hr * 2) is not null (type: boolean)
+                  filterExpr: (UDFToDouble(hr) * 2.0) is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (hr * 2) is not null (type: boolean)
+                    predicate: (UDFToDouble(hr) * 2.0) is not null (type: boolean)
                     Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: (hr * 2) (type: double)
-                      sort order: +
-                      Map-reduce partition columns: (hr * 2) (type: double)
+                    Select Operator
+                      expressions: hr (type: string)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: (UDFToDouble(_col0) * 2.0) (type: double)
+                        sort order: +
+                        Map-reduce partition columns: (UDFToDouble(_col0) * 2.0) (type: double)
+                        Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_double_hour
-                  filterExpr: (hr is not null and (hour = 11)) (type: boolean)
+                  filterExpr: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 14 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (hr is not null and (hour = 11)) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: hr (type: double)
-                      sort order: +
-                      Map-reduce partition columns: hr (type: double)
-                      Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: hr (type: double)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: double)
-                        mode: hash
+                      Reduce Output Operator
+                        key expressions: _col0 (type: double)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: double)
+                        Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: _col0 (type: double)
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-                        Dynamic Partitioning Event Operator
-                          Target Input: srcpart
-                          Partition key expr: (hr * 2)
+                        Group By Operator
+                          keys: _col0 (type: double)
+                          mode: hash
+                          outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-                          Target column: hr
-                          Target Vertex: Map 1
+                          Dynamic Partitioning Event Operator
+                            Target Input: srcpart
+                            Partition key expr: (UDFToDouble(hr) * 2.0)
+                            Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                            Target column: hr
+                            Target Vertex: Map 1
             Execution mode: llap
         Reducer 2 
             Execution mode: llap
@@ -1404,8 +1492,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 (hr * 2) (type: double)
-                  1 hr (type: double)
+                  0 (UDFToDouble(_col0) * 2.0) (type: double)
+                  1 _col0 (type: double)
                 Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -1482,26 +1570,34 @@ STAGE PLANS:
                   Filter Operator
                     predicate: UDFToDouble(hr) is not null (type: boolean)
                     Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: UDFToDouble(hr) (type: double)
-                      sort order: +
-                      Map-reduce partition columns: UDFToDouble(hr) (type: double)
+                    Select Operator
+                      expressions: hr (type: string)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: UDFToDouble(_col0) (type: double)
+                        sort order: +
+                        Map-reduce partition columns: UDFToDouble(_col0) (type: double)
+                        Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_double_hour
-                  filterExpr: (UDFToDouble(UDFToInteger((hr / 2))) is not null and (hour = 11)) (type: boolean)
+                  filterExpr: ((UDFToDouble(hour) = 11.0) and UDFToDouble(UDFToInteger((hr / 2.0))) is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 14 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (UDFToDouble(UDFToInteger((hr / 2))) is not null and (hour = 11)) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0) and UDFToDouble(UDFToInteger((hr / 2.0))) is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: UDFToDouble(UDFToInteger((hr / 2))) (type: double)
-                      sort order: +
-                      Map-reduce partition columns: UDFToDouble(UDFToInteger((hr / 2))) (type: double)
+                    Select Operator
+                      expressions: hr (type: double)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: UDFToDouble(UDFToInteger((_col0 / 2.0))) (type: double)
+                        sort order: +
+                        Map-reduce partition columns: UDFToDouble(UDFToInteger((_col0 / 2.0))) (type: double)
+                        Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
         Reducer 2 
             Execution mode: llap
@@ -1510,8 +1606,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 UDFToDouble(hr) (type: double)
-                  1 UDFToDouble(UDFToInteger((hr / 2))) (type: double)
+                  0 UDFToDouble(_col0) (type: double)
+                  1 UDFToDouble(UDFToInteger((_col0 / 2.0))) (type: double)
                 Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -1583,31 +1679,39 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: (hr * 2) is not null (type: boolean)
+                  filterExpr: (UDFToDouble(hr) * 2.0) is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (hr * 2) is not null (type: boolean)
+                    predicate: (UDFToDouble(hr) * 2.0) is not null (type: boolean)
                     Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: (hr * 2) (type: double)
-                      sort order: +
-                      Map-reduce partition columns: (hr * 2) (type: double)
+                    Select Operator
+                      expressions: hr (type: string)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: (UDFToDouble(_col0) * 2.0) (type: double)
+                        sort order: +
+                        Map-reduce partition columns: (UDFToDouble(_col0) * 2.0) (type: double)
+                        Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_double_hour
-                  filterExpr: (hr is not null and (hour = 11)) (type: boolean)
+                  filterExpr: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 14 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (hr is not null and (hour = 11)) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: hr (type: double)
-                      sort order: +
-                      Map-reduce partition columns: hr (type: double)
+                    Select Operator
+                      expressions: hr (type: double)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: double)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: double)
+                        Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
         Reducer 2 
             Execution mode: llap
@@ -1616,8 +1720,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 (hr * 2) (type: double)
-                  1 hr (type: double)
+                  0 (UDFToDouble(_col0) * 2.0) (type: double)
+                  1 _col0 (type: double)
                 Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -1702,46 +1806,54 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: UDFToString((hr * 2)) is not null (type: boolean)
+                  filterExpr: UDFToString((UDFToDouble(hr) * 2.0)) is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: UDFToString((hr * 2)) is not null (type: boolean)
+                    predicate: UDFToString((UDFToDouble(hr) * 2.0)) is not null (type: boolean)
                     Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: UDFToString((hr * 2)) (type: string)
-                      sort order: +
-                      Map-reduce partition columns: UDFToString((hr * 2)) (type: string)
+                    Select Operator
+                      expressions: hr (type: string)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: UDFToString((UDFToDouble(_col0) * 2.0)) (type: string)
+                        sort order: +
+                        Map-reduce partition columns: UDFToString((UDFToDouble(_col0) * 2.0)) (type: string)
+                        Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_double_hour
-                  filterExpr: (UDFToString(hr) is not null and (hour = 11)) (type: boolean)
+                  filterExpr: ((UDFToDouble(hour) = 11.0) and UDFToString(hr) is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 14 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (UDFToString(hr) is not null and (hour = 11)) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0) and UDFToString(hr) is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: UDFToString(hr) (type: string)
-                      sort order: +
-                      Map-reduce partition columns: UDFToString(hr) (type: string)
-                      Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: UDFToString(hr) (type: string)
+                      expressions: hr (type: double)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: string)
-                        mode: hash
+                      Reduce Output Operator
+                        key expressions: UDFToString(_col0) (type: string)
+                        sort order: +
+                        Map-reduce partition columns: UDFToString(_col0) (type: string)
+                        Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: UDFToString(_col0) (type: string)
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-                        Dynamic Partitioning Event Operator
-                          Target Input: srcpart
-                          Partition key expr: UDFToString((hr * 2))
+                        Group By Operator
+                          keys: _col0 (type: string)
+                          mode: hash
+                          outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-                          Target column: hr
-                          Target Vertex: Map 1
+                          Dynamic Partitioning Event Operator
+                            Target Input: srcpart
+                            Partition key expr: UDFToString((UDFToDouble(hr) * 2.0))
+                            Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                            Target column: hr
+                            Target Vertex: Map 1
             Execution mode: llap
         Reducer 2 
             Execution mode: llap
@@ -1750,8 +1862,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 UDFToString((hr * 2)) (type: string)
-                  1 UDFToString(hr) (type: string)
+                  0 UDFToString((UDFToDouble(_col0) * 2.0)) (type: string)
+                  1 UDFToString(_col0) (type: string)
                 Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -1950,7 +2062,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 1000
-Warning: Shuffle Join MERGEJOIN[14][tables = [srcpart, srcpart_date_hour]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[19][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: -- non-equi join
 EXPLAIN select count(*) from srcpart, srcpart_date_hour where (srcpart_date_hour.`date` = '2008-04-08' and srcpart_date_hour.hour = 11) and (srcpart.ds = srcpart_date_hour.ds or srcpart.hr = srcpart_date_hour.hr)
 PREHOOK: type: QUERY
@@ -1974,24 +2086,32 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    sort order: 
+                  Select Operator
+                    expressions: ds (type: string), hr (type: string)
+                    outputColumnNames: _col0, _col1
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: ds (type: string), hr (type: string)
+                    Reduce Output Operator
+                      sort order: 
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: string), _col1 (type: string)
             Execution mode: llap
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_hour
-                  filterExpr: ((date = '2008-04-08') and (hour = 11)) (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and (UDFToDouble(hour) = 11.0)) (type: boolean)
                   Statistics: Num rows: 4 Data size: 108 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((date = '2008-04-08') and (hour = 11)) (type: boolean)
+                    predicate: ((date = '2008-04-08') and (UDFToDouble(hour) = 11.0)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      sort order: 
+                    Select Operator
+                      expressions: ds (type: string), hr (type: string)
+                      outputColumnNames: _col0, _col2
                       Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: ds (type: string), hr (type: string)
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: string), _col2 (type: string)
             Execution mode: llap
         Reducer 2 
             Execution mode: llap
@@ -2002,10 +2122,10 @@ STAGE PLANS:
                 keys:
                   0 
                   1 
-                outputColumnNames: _col2, _col3, _col7, _col9
+                outputColumnNames: _col0, _col1, _col2, _col4
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: ((_col2 = _col7) or (_col3 = _col9)) (type: boolean)
+                  predicate: ((_col0 = _col2) or (_col1 = _col4)) (type: boolean)
                   Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
@@ -2040,7 +2160,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[14][tables = [srcpart, srcpart_date_hour]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[19][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select count(*) from srcpart, srcpart_date_hour where (srcpart_date_hour.`date` = '2008-04-08' and srcpart_date_hour.hour = 11) and (srcpart.ds = srcpart_date_hour.ds or srcpart.hr = srcpart_date_hour.hr)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
@@ -2083,56 +2203,64 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: ds (type: string), hr (type: string)
-                    sort order: ++
-                    Map-reduce partition columns: ds (type: string), hr (type: string)
+                  Select Operator
+                    expressions: ds (type: string), hr (type: string)
+                    outputColumnNames: _col0, _col1
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string), _col1 (type: string)
+                      sort order: ++
+                      Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_hour
-                  filterExpr: (((ds is not null and hr is not null) and (date = '2008-04-08')) and (hour = 11)) (type: boolean)
+                  filterExpr: ((((date = '2008-04-08') and (UDFToDouble(hour) = 11.0)) and ds is not null) and hr is not null) (type: boolean)
                   Statistics: Num rows: 4 Data size: 108 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((ds is not null and hr is not null) and (date = '2008-04-08')) and (hour = 11)) (type: boolean)
+                    predicate: ((((date = '2008-04-08') and (UDFToDouble(hour) = 11.0)) and ds is not null) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: ds (type: string), hr (type: string)
-                      sort order: ++
-                      Map-reduce partition columns: ds (type: string), hr (type: string)
-                      Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: ds (type: string)
-                      outputColumnNames: _col0
+                      expressions: ds (type: string), hr (type: string)
+                      outputColumnNames: _col0, _col2
                       Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: string)
-                        mode: hash
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col2 (type: string)
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string), _col2 (type: string)
+                        Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: _col0 (type: string)
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
-                        Dynamic Partitioning Event Operator
-                          Target Input: srcpart
-                          Partition key expr: ds
+                        Group By Operator
+                          keys: _col0 (type: string)
+                          mode: hash
+                          outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
-                          Target column: ds
-                          Target Vertex: Map 1
-                    Select Operator
-                      expressions: hr (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: string)
-                        mode: hash
+                          Dynamic Partitioning Event Operator
+                            Target Input: srcpart
+                            Partition key expr: ds
+                            Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+                            Target column: ds
+                            Target Vertex: Map 1
+                      Select Operator
+                        expressions: _col2 (type: string)
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
-                        Dynamic Partitioning Event Operator
-                          Target Input: srcpart
-                          Partition key expr: hr
+                        Group By Operator
+                          keys: _col0 (type: string)
+                          mode: hash
+                          outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
-                          Target column: hr
-                          Target Vertex: Map 1
+                          Dynamic Partitioning Event Operator
+                            Target Input: srcpart
+                            Partition key expr: hr
+                            Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+                            Target column: hr
+                            Target Vertex: Map 1
             Execution mode: llap
         Reducer 2 
             Execution mode: llap
@@ -2141,24 +2269,18 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 ds (type: string), hr (type: string)
-                  1 ds (type: string), hr (type: string)
-                outputColumnNames: _col2, _col3, _col7, _col9
+                  0 _col0 (type: string), _col1 (type: string)
+                  1 _col0 (type: string), _col2 (type: string)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                Filter Operator
-                  predicate: ((_col2 = _col7) and (_col3 = _col9)) (type: boolean)
-                  Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                    Group By Operator
-                      aggregations: count()
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col0 (type: bigint)
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: bigint)
         Reducer 3 
             Execution mode: uber
             Reduce Operator Tree:
@@ -2222,50 +2344,71 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
+                  filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: ds (type: string)
-                    sort order: +
-                    Map-reduce partition columns: ds (type: string)
+                  Select Operator
+                    expressions: ds (type: string)
+                    outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date
+                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: ds (type: string)
-                    sort order: +
-                    Map-reduce partition columns: ds (type: string)
-                    Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: date (type: string)
+                  Filter Operator
+                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ds (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: _col0 (type: string)
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          keys: _col0 (type: string)
+                          mode: hash
+                          outputColumnNames: _col0
+                          Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                          Dynamic Partitioning Event Operator
+                            Target Input: srcpart
+                            Partition key expr: ds
+                            Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                            Target column: ds
+                            Target Vertex: Map 1
             Execution mode: llap
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
               Merge Join Operator
                 condition map:
-                     Left Outer Join0 to 1
+                     Inner Join 0 to 1
                 keys:
-                  0 ds (type: string)
-                  1 ds (type: string)
-                outputColumnNames: _col8
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                Filter Operator
-                  predicate: (_col8 = '2008-04-08') (type: boolean)
-                  Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
-                    Group By Operator
-                      aggregations: count()
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col0 (type: bigint)
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: bigint)
         Reducer 3 
             Execution mode: uber
             Reduce Operator Tree:
@@ -2313,37 +2456,45 @@ STAGE PLANS:
                   Filter Operator
                     predicate: (date = '2008-04-08') (type: boolean)
                     Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: ds (type: string)
-                      sort order: +
-                      Map-reduce partition columns: ds (type: string)
-                      Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: string)
-                        mode: hash
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: _col0 (type: string)
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                        Dynamic Partitioning Event Operator
-                          Target Input: srcpart
-                          Partition key expr: ds
+                        Group By Operator
+                          keys: _col0 (type: string)
+                          mode: hash
+                          outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                          Target column: ds
-                          Target Vertex: Map 4
+                          Dynamic Partitioning Event Operator
+                            Target Input: srcpart
+                            Partition key expr: ds
+                            Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                            Target column: ds
+                            Target Vertex: Map 4
             Execution mode: llap
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: srcpart
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: ds (type: string)
-                    sort order: +
-                    Map-reduce partition columns: ds (type: string)
+                  Select Operator
+                    expressions: ds (type: string)
+                    outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
         Reducer 2 
             Execution mode: llap
@@ -2352,8 +2503,8 @@ STAGE PLANS:
                 condition map:
                      Left Outer Join0 to 1
                 keys:
-                  0 ds (type: string)
-                  1 ds (type: string)
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -2409,49 +2560,69 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: ds (type: string)
-                    sort order: +
-                    Map-reduce partition columns: ds (type: string)
+                  Select Operator
+                    expressions: ds (type: string)
+                    outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date
+                  filterExpr: (date = '2008-04-08') (type: boolean)
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: ds (type: string)
-                    sort order: +
-                    Map-reduce partition columns: ds (type: string)
-                    Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: date (type: string)
+                  Filter Operator
+                    predicate: (date = '2008-04-08') (type: boolean)
+                    Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ds (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: _col0 (type: string)
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          keys: _col0 (type: string)
+                          mode: hash
+                          outputColumnNames: _col0
+                          Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                          Dynamic Partitioning Event Operator
+                            Target Input: srcpart
+                            Partition key expr: ds
+                            Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                            Target column: ds
+                            Target Vertex: Map 1
             Execution mode: llap
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
               Merge Join Operator
                 condition map:
-                     Outer Join 0 to 1
+                     Right Outer Join0 to 1
                 keys:
-                  0 ds (type: string)
-                  1 ds (type: string)
-                outputColumnNames: _col8
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                Filter Operator
-                  predicate: (_col8 = '2008-04-08') (type: boolean)
-                  Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
-                    Group By Operator
-                      aggregations: count()
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col0 (type: bigint)
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: bigint)
         Reducer 3 
             Execution mode: uber
             Reduce Operator Tree:
@@ -2499,73 +2670,67 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: (hr = 11) (type: boolean)
                   Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: ds (type: string)
-                    sort order: +
-                    Map-reduce partition columns: ds (type: string)
+                  Select Operator
+                    expressions: ds (type: string)
+                    outputColumnNames: _col0
                     Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
         Map 5 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date
-                  filterExpr: (ds is not null and (date = '2008-04-08')) (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (ds is not null and (date = '2008-04-08')) (type: boolean)
+                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: ds (type: string)
-                      sort order: +
-                      Map-reduce partition columns: ds (type: string)
-                      Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: string)
-                        mode: hash
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: _col0 (type: string)
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                        Dynamic Partitioning Event Operator
-                          Target Input: srcpart
-                          Partition key expr: ds
+                        Group By Operator
+                          keys: _col0 (type: string)
+                          mode: hash
+                          outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                          Target column: ds
-                          Target Vertex: Map 1
+                          Dynamic Partitioning Event Operator
+                            Target Input: srcpart
+                            Partition key expr: ds
+                            Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                            Target column: ds
+                            Target Vertex: Map 1
             Execution mode: llap
         Map 6 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_hour
-                  filterExpr: ((hr is not null and (hour = 11)) and (hr = 11)) (type: boolean)
+                  filterExpr: ((UDFToDouble(hour) = 11.0) and (UDFToDouble(hr) = 11.0)) (type: boolean)
                   Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((hr is not null and (hour = 11)) and (hr = 11)) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0) and (UDFToDouble(hr) = 11.0)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: '11' (type: string)
-                      sort order: +
-                      Map-reduce partition columns: '11' (type: string)
-                      Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: '11' (type: string)
-                      outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: string)
-                        mode: hash
-                        outputColumnNames: _col0
+                      Reduce Output Operator
+                        key expressions: '11' (type: string)
+                        sort order: +
+                        Map-reduce partition columns: '11' (type: string)
                         Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                        Dynamic Partitioning Event Operator
-                          Target Input: srcpart
-                          Partition key expr: hr
-                          Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                          Target column: hr
-                          Target Vertex: Map 1
             Execution mode: llap
         Reducer 2 
             Execution mode: llap
@@ -2574,8 +2739,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 ds (type: string)
-                  1 ds (type: string)
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
                 Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: '11' (type: string)
@@ -2665,46 +2830,56 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: ((ds is not null and hr is not null) and (hr = 13)) (type: boolean)
+                  filterExpr: ((UDFToDouble(hr) = 13.0) and ds is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
-                    predicate: ((ds is not null and hr is not null) and (hr = 13)) (type: boolean)
+                    predicate: ((UDFToDouble(hr) = 13.0) and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: ds (type: string)
-                      sort order: +
-                      Map-reduce partition columns: ds (type: string)
+                    Select Operator
+                      expressions: ds (type: string)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Execution mode: llap
         Map 5 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date
-                  filterExpr: (ds is not null and (date = '2008-04-08')) (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (ds is not null and (date = '2008-04-08')) (type: boolean)
+                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: ds (type: string)
-                      sort order: +
-                      Map-reduce partition columns: ds (type: string)
+                    Select Operator
+                      expressions: ds (type: string)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
         Map 6 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_hour
-                  filterExpr: (hr = 13) (type: boolean)
+                  filterExpr: (UDFToDouble(hr) = 13.0) (type: boolean)
                   Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (hr = 13) (type: boolean)
+                    predicate: (UDFToDouble(hr) = 13.0) (type: boolean)
                     Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: '13' (type: string)
-                      sort order: +
-                      Map-reduce partition columns: '13' (type: string)
+                    Select Operator
                       Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: '13' (type: string)
+                        sort order: +
+                        Map-reduce partition columns: '13' (type: string)
+                        Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
         Reducer 2 
             Execution mode: llap
@@ -2713,8 +2888,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 ds (type: string)
-                  1 ds (type: string)
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                 Reduce Output Operator
                   key expressions: '13' (type: string)
@@ -3482,55 +3657,63 @@ STAGE PLANS:
                   alias: srcpart
                   filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                  Map Join Operator
-                    condition map:
-                         Inner Join 0 to 1
-                    keys:
-                      0 ds (type: string)
-                      1 ds (type: string)
-                    input vertices:
-                      1 Map 3
-                    Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                    HybridGraceHashJoin: true
-                    Group By Operator
-                      aggregations: count()
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        sort order: 
+                  Select Operator
+                    expressions: ds (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
+                      condition map:
+                           Inner Join 0 to 1
+                      keys:
+                        0 _col0 (type: string)
+                        1 _col0 (type: string)
+                      input vertices:
+                        1 Map 3
+                      Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
+                      HybridGraceHashJoin: true
+                      Group By Operator
+                        aggregations: count()
+                        mode: hash
+                        outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col0 (type: bigint)
+                        Reduce Output Operator
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col0 (type: bigint)
             Execution mode: llap
         Map 3 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date
-                  filterExpr: (ds is not null and (date = '2008-04-08')) (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (ds is not null and (date = '2008-04-08')) (type: boolean)
+                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: ds (type: string)
-                      sort order: +
-                      Map-reduce partition columns: ds (type: string)
-                      Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: string)
-                        mode: hash
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: _col0 (type: string)
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                        Dynamic Partitioning Event Operator
-                          Target Input: srcpart
-                          Partition key expr: ds
+                        Group By Operator
+                          keys: _col0 (type: string)
+                          mode: hash
+                          outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                          Target column: ds
-                          Target Vertex: Map 1
+                          Dynamic Partitioning Event Operator
+                            Target Input: srcpart
+                            Partition key expr: ds
+                            Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                            Target column: ds
+                            Target Vertex: Map 1
             Execution mode: llap
         Reducer 2 
             Execution mode: uber
@@ -3611,96 +3794,108 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                  Map Join Operator
-                    condition map:
-                         Inner Join 0 to 1
-                    keys:
-                      0 ds (type: string)
-                      1 ds (type: string)
-                    outputColumnNames: _col3
-                    input vertices:
-                      1 Map 3
-                    Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                    HybridGraceHashJoin: true
+                  Select Operator
+                    expressions: ds (type: string), hr (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
                       keys:
-                        0 _col3 (type: string)
-                        1 hr (type: string)
+                        0 _col0 (type: string)
+                        1 _col0 (type: string)
+                      outputColumnNames: _col1
                       input vertices:
-                        1 Map 4
-                      Statistics: Num rows: 2420 Data size: 25709 Basic stats: COMPLETE Column stats: NONE
+                        1 Map 3
+                      Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                       HybridGraceHashJoin: true
-                      Group By Operator
-                        aggregations: count()
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          sort order: 
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col1 (type: string)
+                          1 _col0 (type: string)
+                        input vertices:
+                          1 Map 4
+                        Statistics: Num rows: 2420 Data size: 25709 Basic stats: COMPLETE Column stats: NONE
+                        HybridGraceHashJoin: true
+                        Group By Operator
+                          aggregations: count()
+                          mode: hash
+                          outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col0 (type: bigint)
+                          Reduce Output Operator
+                            sort order: 
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                            value expressions: _col0 (type: bigint)
             Execution mode: llap
         Map 3 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date
-                  filterExpr: (ds is not null and (date = '2008-04-08')) (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (ds is not null and (date = '2008-04-08')) (type: boolean)
+                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: ds (type: string)
-                      sort order: +
-                      Map-reduce partition columns: ds (type: string)
-                      Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: string)
-                        mode: hash
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: _col0 (type: string)
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                        Dynamic Partitioning Event Operator
-                          Target Input: srcpart
-                          Partition key expr: ds
+                        Group By Operator
+                          keys: _col0 (type: string)
+                          mode: hash
+                          outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                          Target column: ds
-                          Target Vertex: Map 1
+                          Dynamic Partitioning Event Operator
+                            Target Input: srcpart
+                            Partition key expr: ds
+                            Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                            Target column: ds
+                            Target Vertex: Map 1
             Execution mode: llap
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_hour
-                  filterExpr: (hr is not null and (hour = 11)) (type: boolean)
+                  filterExpr: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (hr is not null and (hour = 11)) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: hr (type: string)
-                      sort order: +
-                      Map-reduce partition columns: hr (type: string)
-                      Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: hr (type: string)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: string)
-                        mode: hash
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: _col0 (type: string)
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                        Dynamic Partitioning Event Operator
-                          Target Input: srcpart
-                          Partition key expr: hr
+                        Group By Operator
+                          keys: _col0 (type: string)
+                          mode: hash
+                          outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                          Target column: hr
-                          Target Vertex: Map 1
+                          Dynamic Partitioning Event Operator
+                            Target Input: srcpart
+                            Partition key expr: hr
+                            Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                            Target column: hr
+                            Target Vertex: Map 1
             Execution mode: llap
         Reducer 2 
             Execution mode: uber
@@ -3781,70 +3976,78 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                  Map Join Operator
-                    condition map:
-                         Inner Join 0 to 1
-                    keys:
-                      0 ds (type: string), hr (type: string)
-                      1 ds (type: string), hr (type: string)
-                    input vertices:
-                      1 Map 3
-                    Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                    HybridGraceHashJoin: true
-                    Group By Operator
-                      aggregations: count()
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        sort order: 
+                  Select Operator
+                    expressions: ds (type: string), hr (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
+                      condition map:
+                           Inner Join 0 to 1
+                      keys:
+                        0 _col0 (type: string), _col1 (type: string)
+                        1 _col0 (type: string), _col2 (type: string)
+                      input vertices:
+                        1 Map 3
+                      Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
+                      HybridGraceHashJoin: true
+                      Group By Operator
+                        aggregations: count()
+                        mode: hash
+                        outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col0 (type: bigint)
+                        Reduce Output Operator
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col0 (type: bigint)
             Execution mode: llap
         Map 3 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_hour
-                  filterExpr: (((ds is not null and hr is not null) and (date = '2008-04-08')) and (hour = 11)) (type: boolean)
+                  filterExpr: ((((date = '2008-04-08') and (UDFToDouble(hour) = 11.0)) and ds is not null) and hr is not null) (type: boolean)
                   Statistics: Num rows: 4 Data size: 108 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((ds is not null and hr is not null) and (date = '2008-04-08')) and (hour = 11)) (type: boolean)
+                    predicate: ((((date = '2008-04-08') and (UDFToDouble(hour) = 11.0)) and ds is not null) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: ds (type: string), hr (type: string)
-                      sort order: ++
-                      Map-reduce partition columns: ds (type: string), hr (type: string)
-                      Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: ds (type: string)
-                      outputColumnNames: _col0
+                      expressions: ds (type: string), hr (type: string)
+                      outputColumnNames: _col0, _col2
                       Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: string)
-                        mode: hash
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col2 (type: string)
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string), _col2 (type: string)
+                        Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: _col0 (type: string)
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
-                        Dynamic Partitioning Event Operator
-                          Target Input: srcpart
-                          Partition key expr: ds
+                        Group By Operator
+                          keys: _col0 (type: string)
+                          mode: hash
+                          outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
-                          Target column: ds
-                          Target Vertex: Map 1
-                    Select Operator
-                      expressions: hr (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: string)
-                        mode: hash
+                          Dynamic Partitioning Event Operator
+                            Target Input: srcpart
+                            Partition key expr: ds
+                            Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+                            Target column: ds
+                            Target Vertex: Map 1
+                      Select Operator
+                        expressions: _col2 (type: string)
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
-                        Dynamic Partitioning Event Operator
-                          Target Input: srcpart
-                          Partition key expr: hr
+                        Group By Operator
+                          keys: _col0 (type: string)
+                          mode: hash
+                          outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
-                          Target column: hr
-                          Target Vertex: Map 1
+                          Dynamic Partitioning Event Operator
+                            Target Input: srcpart
+                            Partition key expr: hr
+                            Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+                            Target column: hr
+                            Target Vertex: Map 1
             Execution mode: llap
         Reducer 2 
             Execution mode: uber
@@ -3922,55 +4125,63 @@ STAGE PLANS:
                   alias: srcpart
                   filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                  Map Join Operator
-                    condition map:
-                         Inner Join 0 to 1
-                    keys:
-                      0 ds (type: string)
-                      1 ds (type: string)
-                    input vertices:
-                      1 Map 3
-                    Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                    HybridGraceHashJoin: true
-                    Group By Operator
-                      aggregations: count()
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        sort order: 
+                  Select Operator
+                    expressions: ds (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
+                      condition map:
+                           Inner Join 0 to 1
+                      keys:
+                        0 _col0 (type: string)
+                        1 _col0 (type: string)
+                      input vertices:
+                        1 Map 3
+                      Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
+                      HybridGraceHashJoin: true
+                      Group By Operator
+                        aggregations: count()
+                        mode: hash
+                        outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col0 (type: bigint)
+                        Reduce Output Operator
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col0 (type: bigint)
             Execution mode: llap
         Map 3 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date
-                  filterExpr: (ds is not null and (date = 'I DONT EXIST')) (type: boolean)
+                  filterExpr: ((date = 'I DONT EXIST') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (ds is not null and (date = 'I DONT EXIST')) (type: boolean)
+                    predicate: ((date = 'I DONT EXIST') and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: ds (type: string)
-                      sort order: +
-                      Map-reduce partition columns: ds (type: string)
-                      Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: string)
-                        mode: hash
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: _col0 (type: string)
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                        Dynamic Partitioning Event Operator
-                          Target Input: srcpart
-                          Partition key expr: ds
+                        Group By Operator
+                          keys: _col0 (type: string)
+                          mode: hash
+                          outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                          Target column: ds
-                          Target Vertex: Map 1
+                          Dynamic Partitioning Event Operator
+                            Target Input: srcpart
+                            Partition key expr: ds
+                            Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                            Target column: ds
+                            Target Vertex: Map 1
             Execution mode: llap
         Reducer 2 
             Execution mode: uber
@@ -4027,40 +4238,48 @@ STAGE PLANS:
                   Filter Operator
                     predicate: UDFToDouble(hr) is not null (type: boolean)
                     Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      keys:
-                        0 UDFToDouble(hr) (type: double)
-                        1 UDFToDouble(UDFToInteger((hr / 2))) (type: double)
-                      input vertices:
-                        1 Map 3
-                      Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
-                      HybridGraceHashJoin: true
-                      Group By Operator
-                        aggregations: count()
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          sort order: 
+                    Select Operator
+                      expressions: hr (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 UDFToDouble(_col0) (type: double)
+                          1 UDFToDouble(UDFToInteger((_col0 / 2.0))) (type: double)
+                        input vertices:
+                          1 Map 3
+                        Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
+                        HybridGraceHashJoin: true
+                        Group By Operator
+                          aggregations: count()
+                          mode: hash
+                          outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col0 (type: bigint)
+                          Reduce Output Operator
+                            sort order: 
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                            value expressions: _col0 (type: bigint)
             Execution mode: llap
         Map 3 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_double_hour
-                  filterExpr: (UDFToDouble(UDFToInteger((hr / 2))) is not null and (hour = 11)) (type: boolean)
+                  filterExpr: ((UDFToDouble(hour) = 11.0) and UDFToDouble(UDFToInteger((hr / 2.0))) is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 14 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (UDFToDouble(UDFToInteger((hr / 2))) is not null and (hour = 11)) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0) and UDFToDouble(UDFToInteger((hr / 2.0))) is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: UDFToDouble(UDFToInteger((hr / 2))) (type: double)
-                      sort order: +
-                      Map-reduce partition columns: UDFToDouble(UDFToInteger((hr / 2))) (type: double)
+                    Select Operator
+                      expressions: hr (type: double)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: UDFToDouble(UDFToInteger((_col0 / 2.0))) (type: double)
+                        sort order: +
+                        Map-reduce partition columns: UDFToDouble(UDFToInteger((_col0 / 2.0))) (type: double)
+                        Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
         Reducer 2 
             Execution mode: uber
@@ -4123,60 +4342,68 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: (hr * 2) is not null (type: boolean)
+                  filterExpr: (UDFToDouble(hr) * 2.0) is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (hr * 2) is not null (type: boolean)
+                    predicate: (UDFToDouble(hr) * 2.0) is not null (type: boolean)
                     Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      keys:
-                        0 (hr * 2) (type: double)
-                        1 hr (type: double)
-                      input vertices:
-                        1 Map 3
-                      Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
-                      HybridGraceHashJoin: true
-                      Group By Operator
-                        aggregations: count()
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          sort order: 
+                    Select Operator
+                      expressions: hr (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 (UDFToDouble(_col0) * 2.0) (type: double)
+                          1 _col0 (type: double)
+                        input vertices:
+                          1 Map 3
+                        Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
+                        HybridGraceHashJoin: true
+                        Group By Operator
+                          aggregations: count()
+                          mode: hash
+                          outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col0 (type: bigint)
+                          Reduce Output Operator
+                            sort order: 
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                            value expressions: _col0 (type: bigint)
             Execution mode: llap
         Map 3 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_double_hour
-                  filterExpr: (hr is not null and (hour = 11)) (type: boolean)
+                  filterExpr: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 14 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (hr is not null and (hour = 11)) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: hr (type: double)
-                      sort order: +
-                      Map-reduce partition columns: hr (type: double)
-                      Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: hr (type: double)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: double)
-                        mode: hash
+                      Reduce Output Operator
+                        key expressions: _col0 (type: double)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: double)
+                        Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: _col0 (type: double)
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-                        Dynamic Partitioning Event Operator
-                          Target Input: srcpart
-                          Partition key expr: (hr * 2)
+                        Group By Operator
+                          keys: _col0 (type: double)
+                          mode: hash
+                          outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-                          Target column: hr
-                          Target Vertex: Map 1
+                          Dynamic Partitioning Event Operator
+                            Target Input: srcpart
+                            Partition key expr: (UDFToDouble(hr) * 2.0)
+                            Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                            Target column: hr
+                            Target Vertex: Map 1
             Execution mode: llap
         Reducer 2 
             Execution mode: uber
@@ -4383,44 +4610,65 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
+                  filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                  Map Join Operator
-                    condition map:
-                         Left Outer Join0 to 1
-                    keys:
-                      0 ds (type: string)
-                      1 ds (type: string)
-                    outputColumnNames: _col8
-                    input vertices:
-                      1 Map 3
-                    Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                    HybridGraceHashJoin: true
-                    Filter Operator
-                      predicate: (_col8 = '2008-04-08') (type: boolean)
-                      Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          aggregations: count()
-                          mode: hash
-                          outputColumnNames: _col0
+                  Select Operator
+                    expressions: ds (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
+                      condition map:
+                           Inner Join 0 to 1
+                      keys:
+                        0 _col0 (type: string)
+                        1 _col0 (type: string)
+                      input vertices:
+                        1 Map 3
+                      Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
+                      HybridGraceHashJoin: true
+                      Group By Operator
+                        aggregations: count()
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          Reduce Output Operator
-                            sort order: 
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                            value expressions: _col0 (type: bigint)
+                          value expressions: _col0 (type: bigint)
             Execution mode: llap
         Map 3 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date
+                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: ds (type: string)
-                    sort order: +
-                    Map-reduce partition columns: ds (type: string)
-                    Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: date (type: string)
+                  Filter Operator
+                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ds (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: _col0 (type: string)
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          keys: _col0 (type: string)
+                          mode: hash
+                          outputColumnNames: _col0
+                          Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                          Dynamic Partitioning Event Operator
+                            Target Input: srcpart
+                            Partition key expr: ds
+                            Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                            Target column: ds
+                            Target Vertex: Map 1
             Execution mode: llap
         Reducer 2 
             Execution mode: uber
@@ -4469,36 +4717,44 @@ STAGE PLANS:
                   Filter Operator
                     predicate: (date = '2008-04-08') (type: boolean)
                     Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Left Outer Join0 to 1
-                      keys:
-                        0 ds (type: string)
-                        1 ds (type: string)
-                      input vertices:
-                        1 Map 3
-                      Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                      HybridGraceHashJoin: true
-                      Group By Operator
-                        aggregations: count()
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          sort order: 
+                    Select Operator
+                      expressions: ds (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                      Map Join Operator
+                        condition map:
+                             Left Outer Join0 to 1
+                        keys:
+                          0 _col0 (type: string)
+                          1 _col0 (type: string)
+                        input vertices:
+                          1 Map 3
+                        Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
+                        HybridGraceHashJoin: true
+                        Group By Operator
+                          aggregations: count()
+                          mode: hash
+                          outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col0 (type: bigint)
+                          Reduce Output Operator
+                            sort order: 
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                            value expressions: _col0 (type: bigint)
             Execution mode: llap
         Map 3 
             Map Operator Tree:
                 TableScan
                   alias: srcpart
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: ds (type: string)
-                    sort order: +
-                    Map-reduce partition columns: ds (type: string)
+                  Select Operator
+                    expressions: ds (type: string)
+                    outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
         Reducer 2 
             Execution mode: uber
@@ -4536,8 +4792,8 @@ STAGE PLANS:
   Stage: Stage-1
     Tez
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Map 2 <- Map 1 (BROADCAST_EDGE)
+        Reducer 3 <- Map 2 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -4545,49 +4801,49 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: ds (type: string)
-                    sort order: +
-                    Map-reduce partition columns: ds (type: string)
+                  Select Operator
+                    expressions: ds (type: string)
+                    outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
-        Map 4 
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date
+                  filterExpr: (date = '2008-04-08') (type: boolean)
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: ds (type: string)
-                    sort order: +
-                    Map-reduce partition columns: ds (type: string)
-                    Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: date (type: string)
-            Execution mode: llap
-        Reducer 2 
-            Execution mode: llap
-            Reduce Operator Tree:
-              Merge Join Operator
-                condition map:
-                     Outer Join 0 to 1
-                keys:
-                  0 ds (type: string)
-                  1 ds (type: string)
-                outputColumnNames: _col8
-                Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                Filter Operator
-                  predicate: (_col8 = '2008-04-08') (type: boolean)
-                  Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
-                    Group By Operator
-                      aggregations: count()
-                      mode: hash
+                  Filter Operator
+                    predicate: (date = '2008-04-08') (type: boolean)
+                    Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ds (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col0 (type: bigint)
+                      Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                      Map Join Operator
+                        condition map:
+                             Right Outer Join0 to 1
+                        keys:
+                          0 _col0 (type: string)
+                          1 _col0 (type: string)
+                        input vertices:
+                          0 Map 1
+                        Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
+                        HybridGraceHashJoin: true
+                        Group By Operator
+                          aggregations: count()
+                          mode: hash
+                          outputColumnNames: _col0
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          Reduce Output Operator
+                            sort order: 
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                            value expressions: _col0 (type: bigint)
+            Execution mode: llap
         Reducer 3 
             Execution mode: uber
             Reduce Operator Tree:
@@ -4634,97 +4890,91 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: (hr = 11) (type: boolean)
                   Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
-                  Map Join Operator
-                    condition map:
-                         Inner Join 0 to 1
-                    keys:
-                      0 ds (type: string)
-                      1 ds (type: string)
-                    input vertices:
-                      1 Map 3
-                    Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
-                    HybridGraceHashJoin: true
+                  Select Operator
+                    expressions: ds (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
                       keys:
-                        0 '11' (type: string)
-                        1 '11' (type: string)
+                        0 _col0 (type: string)
+                        1 _col0 (type: string)
                       input vertices:
-                        1 Map 4
-                      Statistics: Num rows: 1210 Data size: 12854 Basic stats: COMPLETE Column stats: NONE
+                        1 Map 3
+                      Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
                       HybridGraceHashJoin: true
-                      Group By Operator
-                        aggregations: count()
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          sort order: 
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 '11' (type: string)
+                          1 '11' (type: string)
+                        input vertices:
+                          1 Map 4
+                        Statistics: Num rows: 1210 Data size: 12854 Basic stats: COMPLETE Column stats: NONE
+                        HybridGraceHashJoin: true
+                        Group By Operator
+                          aggregations: count()
+                          mode: hash
+                          outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col0 (type: bigint)
+                          Reduce Output Operator
+                            sort order: 
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                            value expressions: _col0 (type: bigint)
             Execution mode: llap
         Map 3 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date
-                  filterExpr: (ds is not null and (date = '2008-04-08')) (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (ds is not null and (date = '2008-04-08')) (type: boolean)
+                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: ds (type: string)
-                      sort order: +
-                      Map-reduce partition columns: ds (type: string)
-                      Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: string)
-                        mode: hash
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: _col0 (type: string)
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                        Dynamic Partitioning Event Operator
-                          Target Input: srcpart
-                          Partition key expr: ds
+                        Group By Operator
+                          keys: _col0 (type: string)
+                          mode: hash
+                          outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                          Target column: ds
-                          Target Vertex: Map 1
+                          Dynamic Partitioning Event Operator
+                            Target Input: srcpart
+                            Partition key expr: ds
+                            Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                            Target column: ds
+                            Target Vertex: Map 1
             Execution mode: llap
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_hour
-                  filterExpr: ((hr is not null and (hour = 11)) and (hr = 11)) (type: boolean)
+                  filterExpr: ((UDFToDouble(hour) = 11.0) and (UDFToDouble(hr) = 11.0)) (type: boolean)
                   Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((hr is not null and (hour = 11)) and (hr = 11)) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0) and (UDFToDouble(hr) = 11.0)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: '11' (type: string)
-                      sort order: +
-                      Map-reduce partition columns: '11' (type: string)
-                      Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: '11' (type: string)
-                      outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: string)
-                        mode: hash
-                        outputColumnNames: _col0
+                      Reduce Output Operator
+                        key expressions: '11' (type: string)
+                        sort order: +
+                        Map-reduce partition columns: '11' (type: string)
                         Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                        Dynamic Partitioning Event Operator
-                          Target Input: srcpart
-                          Partition key expr: hr
-                          Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                          Target column: hr
-                          Target Vertex: Map 1
             Execution mode: llap
         Reducer 2 
             Execution mode: uber
@@ -4789,70 +5039,80 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: ((ds is not null and hr is not null) and (hr = 13)) (type: boolean)
+                  filterExpr: ((UDFToDouble(hr) = 13.0) and ds is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
-                    predicate: ((ds is not null and hr is not null) and (hr = 13)) (type: boolean)
+                    predicate: ((UDFToDouble(hr) = 13.0) and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: ds (type: string)
-                      sort order: +
-                      Map-reduce partition columns: ds (type: string)
+                    Select Operator
+                      expressions: ds (type: string)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Execution mode: llap
         Map 2 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date
-                  filterExpr: (ds is not null and (date = '2008-04-08')) (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (ds is not null and (date = '2008-04-08')) (type: boolean)
+                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      keys:
-                        0 ds (type: string)
-                        1 ds (type: string)
-                      input vertices:
-                        0 Map 1
-                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                      HybridGraceHashJoin: true
+                    Select Operator
+                      expressions: ds (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
                         keys:
-                          0 '13' (type: string)
-                          1 '13' (type: string)
+                          0 _col0 (type: string)
+                          1 _col0 (type: string)
                         input vertices:
-                          1 Map 4
+                          0 Map 1
                         Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                         HybridGraceHashJoin: true
-                        Group By Operator
-                          aggregations: count()
-                          mode: hash
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          Reduce Output Operator
-                            sort order: 
+                        Map Join Operator
+                          condition map:
+                               Inner Join 0 to 1
+                          keys:
+                            0 '13' (type: string)
+                            1 '13' (type: string)
+                          input vertices:
+                            1 Map 4
+                          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                          HybridGraceHashJoin: true
+                          Group By Operator
+                            aggregations: count()
+                            mode: hash
+                            outputColumnNames: _col0
                             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                            value expressions: _col0 (type: bigint)
+                            Reduce Output Operator
+                              sort order: 
+                              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                              value expressions: _col0 (type: bigint)
             Execution mode: llap
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_hour
-                  filterExpr: (hr = 13) (type: boolean)
+                  filterExpr: (UDFToDouble(hr) = 13.0) (type: boolean)
                   Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (hr = 13) (type: boolean)
+                    predicate: (UDFToDouble(hr) = 13.0) (type: boolean)
                     Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: '13' (type: string)
-                      sort order: +
-                      Map-reduce partition columns: '13' (type: string)
+                    Select Operator
                       Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: '13' (type: string)
+                        sort order: +
+                        Map-reduce partition columns: '13' (type: string)
+                        Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
         Reducer 3 
             Execution mode: uber
@@ -5150,55 +5410,63 @@ STAGE PLANS:
                   Filter Operator
                     predicate: UDFToDouble(hr) is not null (type: boolean)
                     Statistics: Num rows: 1000 Data size: 94000 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      keys:
-                        0 ds (type: string), UDFToDouble(hr) (type: double)
-                        1 ds (type: string), UDFToDouble(hr) (type: double)
-                      input vertices:
-                        1 Map 3
-                      Statistics: Num rows: 1100 Data size: 103400 Basic stats: COMPLETE Column stats: NONE
-                      HybridGraceHashJoin: true
-                      Group By Operator
-                        aggregations: count()
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          sort order: 
+                    Select Operator
+                      expressions: ds (type: string), hr (type: int)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1000 Data size: 94000 Basic stats: COMPLETE Column stats: NONE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: string), UDFToDouble(_col1) (type: double)
+                          1 _col0 (type: string), UDFToDouble(_col2) (type: double)
+                        input vertices:
+                          1 Map 3
+                        Statistics: Num rows: 1100 Data size: 103400 Basic stats: COMPLETE Column stats: NONE
+                        HybridGraceHashJoin: true
+                        Group By Operator
+                          aggregations: count()
+                          mode: hash
+                          outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col0 (type: bigint)
+                          Reduce Output Operator
+                            sort order: 
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                            value expressions: _col0 (type: bigint)
             Execution mode: llap
         Map 3 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_hour
-                  filterExpr: (((ds is not null and UDFToDouble(hr) is not null) and (hour = 11)) and ((date = '2008-04-08') or (date = '2008-04-09'))) (type: boolean)
+                  filterExpr: (((((date = '2008-04-08') or (date = '2008-04-09')) and (UDFToDouble(hour) = 11.0)) and ds is not null) and UDFToDouble(hr) is not null) (type: boolean)
                   Statistics: Num rows: 4 Data size: 108 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((ds is not null and UDFToDouble(hr) is not null) and (hour = 11)) and ((date = '2008-04-08') or (date = '2008-04-09'))) (type: boolean)
+                    predicate: (((((date = '2008-04-08') or (date = '2008-04-09')) and (UDFToDouble(hour) = 11.0)) and ds is not null) and UDFToDouble(hr) is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: ds (type: string), UDFToDouble(hr) (type: double)
-                      sort order: ++
-                      Map-reduce partition columns: ds (type: string), UDFToDouble(hr) (type: double)
-                      Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: ds (type: string)
-                      outputColumnNames: _col0
+                      expressions: ds (type: string), hr (type: string)
+                      outputColumnNames: _col0, _col2
                       Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: string)
-                        mode: hash
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), UDFToDouble(_col2) (type: double)
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string), UDFToDouble(_col2) (type: double)
+                        Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: _col0 (type: string)
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
-                        Dynamic Partitioning Event Operator
-                          Target Input: srcpart_orc
-                          Partition key expr: ds
+                        Group By Operator
+                          keys: _col0 (type: string)
+                          mode: hash
+                          outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
-                          Target column: ds
-                          Target Vertex: Map 1
+                          Dynamic Partitioning Event Operator
+                            Target Input: srcpart_orc
+                            Partition key expr: ds
+                            Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+                            Target column: ds
+                            Target Vertex: Map 1
             Execution mode: llap
         Reducer 2 
             Execution mode: uber

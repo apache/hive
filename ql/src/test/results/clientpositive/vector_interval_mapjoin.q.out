@@ -163,11 +163,11 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        v2:vectortab_b_1korc 
+        $hdt$_1:vectortab_b_1korc 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        v2:vectortab_b_1korc 
+        $hdt$_1:vectortab_b_1korc 
           TableScan
             alias: vectortab_b_1korc
             Statistics: Num rows: 1000 Data size: 458448 Basic stats: COMPLETE Column stats: NONE

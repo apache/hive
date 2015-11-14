@@ -302,6 +302,7 @@ public class SqlFunctionConverter {
       registerFunction("and", SqlStdOperatorTable.AND, hToken(HiveParser.KW_AND, "and"));
       registerFunction("or", SqlStdOperatorTable.OR, hToken(HiveParser.KW_OR, "or"));
       registerFunction("=", SqlStdOperatorTable.EQUALS, hToken(HiveParser.EQUAL, "="));
+      registerDuplicateFunction("==", SqlStdOperatorTable.EQUALS, hToken(HiveParser.EQUAL, "="));
       registerFunction("<", SqlStdOperatorTable.LESS_THAN, hToken(HiveParser.LESSTHAN, "<"));
       registerFunction("<=", SqlStdOperatorTable.LESS_THAN_OR_EQUAL,
           hToken(HiveParser.LESSTHANOREQUALTO, "<="));
@@ -332,6 +333,13 @@ public class SqlFunctionConverter {
         if (hiveToken != null) {
           calciteToHiveToken.put(calciteFn, hiveToken);
         }
+      }
+    }
+
+    private void registerDuplicateFunction(String name, SqlOperator calciteFn, HiveToken hiveToken) {
+      hiveToCalcite.put(name, calciteFn);
+      if (hiveToken != null) {
+        calciteToHiveToken.put(calciteFn, hiveToken);
       }
     }
   }

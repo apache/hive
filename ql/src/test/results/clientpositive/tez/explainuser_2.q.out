@@ -2605,35 +2605,41 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain 
 select s1.key as key, s1.value as value from tab s1 join tab s3 on s1.key=s3.key
 POSTHOOK: type: QUERY
-Plan not optimized by CBO due to missing statistics. Please check log for more details.
+Plan optimized by CBO.
 
 Stage-0
    Fetch Operator
       limit:-1
       Stage-1
          Map 1
-         File Output Operator [FS_8]
+         File Output Operator [FS_10]
             compressed:false
             Statistics:Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
             table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
-            Merge Join Operator [MERGEJOIN_13]
+            Merge Join Operator [MERGEJOIN_15]
             |  condition map:[{"":"Inner Join 0 to 1"}]
-            |  keys:{"0":"key (type: int)","1":"key (type: int)"}
+            |  keys:{"0":"_col0 (type: int)","1":"_col0 (type: int)"}
             |  outputColumnNames:["_col0","_col1"]
             |  Statistics:Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
             |  
-            |<-Filter Operator [FIL_12]
-            |     predicate:key is not null (type: boolean)
+            |<-Select Operator [SEL_3]
+            |     outputColumnNames:["_col0"]
             |     Statistics:Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
-            |     TableScan [TS_1]
-            |        alias:s3
-            |        Statistics:Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
-            |<-Filter Operator [FIL_11]
-                  predicate:key is not null (type: boolean)
+            |     Filter Operator [FIL_14]
+            |        predicate:key is not null (type: boolean)
+            |        Statistics:Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
+            |        TableScan [TS_2]
+            |           alias:s1
+            |           Statistics:Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
+            |<-Select Operator [SEL_1]
+                  outputColumnNames:["_col0","_col1"]
                   Statistics:Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
-                  TableScan [TS_0]
-                     alias:s1
-                     Statistics:Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator [FIL_13]
+                     predicate:key is not null (type: boolean)
+                     Statistics:Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
+                     TableScan [TS_0]
+                        alias:s1
+                        Statistics:Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
 
 PREHOOK: query: explain 
 select s1.key as key, s1.value as value from tab s1 join tab s3 on s1.key=s3.key join tab s2 on s1.value=s2.value
@@ -2641,7 +2647,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain 
 select s1.key as key, s1.value as value from tab s1 join tab s3 on s1.key=s3.key join tab s2 on s1.value=s2.value
 POSTHOOK: type: QUERY
-Plan not optimized by CBO due to missing statistics. Please check log for more details.
+Plan optimized by CBO.
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
@@ -2651,52 +2657,61 @@ Stage-0
       limit:-1
       Stage-1
          Reducer 2
-         File Output Operator [FS_14]
+         File Output Operator [FS_17]
             compressed:false
             Statistics:Num rows: 146 Data size: 1552 Basic stats: COMPLETE Column stats: NONE
             table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
-            Merge Join Operator [MERGEJOIN_25]
+            Merge Join Operator [MERGEJOIN_28]
             |  condition map:[{"":"Inner Join 0 to 1"}]
-            |  keys:{"0":"_col1 (type: string)","1":"value (type: string)"}
+            |  keys:{"0":"_col1 (type: string)","1":"_col1 (type: string)"}
             |  outputColumnNames:["_col0","_col1"]
             |  Statistics:Num rows: 146 Data size: 1552 Basic stats: COMPLETE Column stats: NONE
             |<-Map 1 [SIMPLE_EDGE]
-            |  Reduce Output Operator [RS_9]
+            |  Reduce Output Operator [RS_12]
             |     key expressions:_col1 (type: string)
             |     Map-reduce partition columns:_col1 (type: string)
             |     sort order:+
             |     Statistics:Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
             |     value expressions:_col0 (type: int)
-            |     Merge Join Operator [MERGEJOIN_23]
+            |     Merge Join Operator [MERGEJOIN_26]
             |     |  condition map:[{"":"Inner Join 0 to 1"}]
-            |     |  keys:{"0":"key (type: int)","1":"key (type: int)"}
+            |     |  keys:{"0":"_col0 (type: int)","1":"_col0 (type: int)"}
             |     |  outputColumnNames:["_col0","_col1"]
             |     |  Statistics:Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
             |     |  
-            |     |<-Filter Operator [FIL_21]
-            |     |     predicate:key is not null (type: boolean)
+            |     |<-Select Operator [SEL_3]
+            |     |     outputColumnNames:["_col0"]
             |     |     Statistics:Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
-            |     |     TableScan [TS_1]
-            |     |        alias:s3
-            |     |        Statistics:Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
-            |     |<-Filter Operator [FIL_20]
-            |           predicate:(key is not null and value is not null) (type: boolean)
+            |     |     Filter Operator [FIL_24]
+            |     |        predicate:key is not null (type: boolean)
+            |     |        Statistics:Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
+            |     |        TableScan [TS_2]
+            |     |           alias:s1
+            |     |           Statistics:Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
+            |     |<-Select Operator [SEL_1]
+            |           outputColumnNames:["_col0","_col1"]
             |           Statistics:Num rows: 61 Data size: 646 Basic stats: COMPLETE Column stats: NONE
-            |           TableScan [TS_0]
-            |              alias:s1
-            |              Statistics:Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
+            |           Filter Operator [FIL_23]
+            |              predicate:(key is not null and value is not null) (type: boolean)
+            |              Statistics:Num rows: 61 Data size: 646 Basic stats: COMPLETE Column stats: NONE
+            |              TableScan [TS_0]
+            |                 alias:s1
+            |                 Statistics:Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
             |<-Map 4 [SIMPLE_EDGE]
-               Reduce Output Operator [RS_11]
-                  key expressions:value (type: string)
-                  Map-reduce partition columns:value (type: string)
+               Reduce Output Operator [RS_14]
+                  key expressions:_col1 (type: string)
+                  Map-reduce partition columns:_col1 (type: string)
                   sort order:+
                   Statistics:Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator [FIL_22]
-                     predicate:value is not null (type: boolean)
+                  Select Operator [SEL_5]
+                     outputColumnNames:["_col1"]
                      Statistics:Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
-                     TableScan [TS_2]
-                        alias:s2
-                        Statistics:Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
+                     Filter Operator [FIL_25]
+                        predicate:value is not null (type: boolean)
+                        Statistics:Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
+                        TableScan [TS_4]
+                           alias:s1
+                           Statistics:Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
 
 PREHOOK: query: explain 
 select s1.key as key, s1.value as value from tab s1 join tab2 s3 on s1.key=s3.key
@@ -2704,35 +2719,41 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain 
 select s1.key as key, s1.value as value from tab s1 join tab2 s3 on s1.key=s3.key
 POSTHOOK: type: QUERY
-Plan not optimized by CBO due to missing statistics. Please check log for more details.
+Plan optimized by CBO.
 
 Stage-0
    Fetch Operator
       limit:-1
       Stage-1
          Map 1
-         File Output Operator [FS_8]
+         File Output Operator [FS_10]
             compressed:false
             Statistics:Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
             table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
-            Merge Join Operator [MERGEJOIN_13]
+            Merge Join Operator [MERGEJOIN_15]
             |  condition map:[{"":"Inner Join 0 to 1"}]
-            |  keys:{"0":"key (type: int)","1":"key (type: int)"}
+            |  keys:{"0":"_col0 (type: int)","1":"_col0 (type: int)"}
             |  outputColumnNames:["_col0","_col1"]
             |  Statistics:Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
             |  
-            |<-Filter Operator [FIL_12]
-            |     predicate:key is not null (type: boolean)
+            |<-Select Operator [SEL_3]
+            |     outputColumnNames:["_col0"]
             |     Statistics:Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
-            |     TableScan [TS_1]
-            |        alias:s3
-            |        Statistics:Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
-            |<-Filter Operator [FIL_11]
-                  predicate:key is not null (type: boolean)
+            |     Filter Operator [FIL_14]
+            |        predicate:key is not null (type: boolean)
+            |        Statistics:Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
+            |        TableScan [TS_2]
+            |           alias:s3
+            |           Statistics:Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
+            |<-Select Operator [SEL_1]
+                  outputColumnNames:["_col0","_col1"]
                   Statistics:Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
-                  TableScan [TS_0]
-                     alias:s1
-                     Statistics:Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator [FIL_13]
+                     predicate:key is not null (type: boolean)
+                     Statistics:Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
+                     TableScan [TS_0]
+                        alias:s1
+                        Statistics:Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
 
 PREHOOK: query: explain 
 select s1.key as key, s1.value as value from tab s1 join tab2 s3 on s1.key=s3.key join tab2 s2 on s1.value=s2.value
@@ -2740,7 +2761,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain 
 select s1.key as key, s1.value as value from tab s1 join tab2 s3 on s1.key=s3.key join tab2 s2 on s1.value=s2.value
 POSTHOOK: type: QUERY
-Plan not optimized by CBO due to missing statistics. Please check log for more details.
+Plan optimized by CBO.
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
@@ -2750,52 +2771,61 @@ Stage-0
       limit:-1
       Stage-1
          Reducer 2
-         File Output Operator [FS_14]
+         File Output Operator [FS_17]
             compressed:false
             Statistics:Num rows: 146 Data size: 1552 Basic stats: COMPLETE Column stats: NONE
             table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
-            Merge Join Operator [MERGEJOIN_25]
+            Merge Join Operator [MERGEJOIN_28]
             |  condition map:[{"":"Inner Join 0 to 1"}]
-            |  keys:{"0":"_col1 (type: string)","1":"value (type: string)"}
+            |  keys:{"0":"_col1 (type: string)","1":"_col1 (type: string)"}
             |  outputColumnNames:["_col0","_col1"]
             |  Statistics:Num rows: 146 Data size: 1552 Basic stats: COMPLETE Column stats: NONE
             |<-Map 1 [SIMPLE_EDGE]
-            |  Reduce Output Operator [RS_9]
+            |  Reduce Output Operator [RS_12]
             |     key expressions:_col1 (type: string)
             |     Map-reduce partition columns:_col1 (type: string)
             |     sort order:+
             |     Statistics:Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
             |     value expressions:_col0 (type: int)
-            |     Merge Join Operator [MERGEJOIN_23]
+            |     Merge Join Operator [MERGEJOIN_26]
             |     |  condition map:[{"":"Inner Join 0 to 1"}]
-            |     |  keys:{"0":"key (type: int)","1":"key (type: int)"}
+            |     |  keys:{"0":"_col0 (type: int)","1":"_col0 (type: int)"}
             |     |  outputColumnNames:["_col0","_col1"]
             |     |  Statistics:Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
             |     |  
-            |     |<-Filter Operator [FIL_21]
-            |     |     predicate:key is not null (type: boolean)
+            |     |<-Select Operator [SEL_3]
+            |     |     outputColumnNames:["_col0"]
             |     |     Statistics:Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
-            |     |     TableScan [TS_1]
-            |     |        alias:s3
-            |     |        Statistics:Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
-            |     |<-Filter Operator [FIL_20]
-            |           predicate:(key is not null and value is not null) (type: boolean)
+            |     |     Filter Operator [FIL_24]
+            |     |        predicate:key is not null (type: boolean)
+            |     |        Statistics:Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
+            |     |        TableScan [TS_2]
+            |     |           alias:s3
+            |     |           Statistics:Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
+            |     |<-Select Operator [SEL_1]
+            |           outputColumnNames:["_col0","_col1"]
             |           Statistics:Num rows: 61 Data size: 646 Basic stats: COMPLETE Column stats: NONE
-            |           TableScan [TS_0]
-            |              alias:s1
-            |              Statistics:Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
+            |           Filter Operator [FIL_23]
+            |              predicate:(key is not null and value is not null) (type: boolean)
+            |              Statistics:Num rows: 61 Data size: 646 Basic stats: COMPLETE Column stats: NONE
+            |              TableScan [TS_0]
+            |                 alias:s1
+            |                 Statistics:Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
             |<-Map 4 [SIMPLE_EDGE]
-               Reduce Output Operator [RS_11]
-                  key expressions:value (type: string)
-                  Map-reduce partition columns:value (type: string)
+               Reduce Output Operator [RS_14]
+                  key expressions:_col1 (type: string)
+                  Map-reduce partition columns:_col1 (type: string)
                   sort order:+
                   Statistics:Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator [FIL_22]
-                     predicate:value is not null (type: boolean)
+                  Select Operator [SEL_5]
+                     outputColumnNames:["_col1"]
                      Statistics:Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
-                     TableScan [TS_2]
-                        alias:s2
-                        Statistics:Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
+                     Filter Operator [FIL_25]
+                        predicate:value is not null (type: boolean)
+                        Statistics:Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
+                        TableScan [TS_4]
+                           alias:s3
+                           Statistics:Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
 
 PREHOOK: query: explain
 select count(*) from (select s1.key as key, s1.value as value from tab s1 join tab s3 on s1.key=s3.key
@@ -2809,7 +2839,7 @@ UNION  ALL
 select s2.key as key, s2.value as value from tab s2
 ) a join tab_part b on (a.key = b.key)
 POSTHOOK: type: QUERY
-Plan not optimized by CBO due to missing statistics. Please check log for more details.
+Plan optimized by CBO.
 
 Vertex dependency in root stage
 Map 1 <- Union 2 (CONTAINS)
@@ -2822,78 +2852,87 @@ Stage-0
       limit:-1
       Stage-1
          Reducer 4
-         File Output Operator [FS_22]
+         File Output Operator [FS_26]
             compressed:false
             Statistics:Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
-            Group By Operator [GBY_20]
+            Group By Operator [GBY_24]
             |  aggregations:["count(VALUE._col0)"]
             |  outputColumnNames:["_col0"]
             |  Statistics:Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             |<-Reducer 3 [SIMPLE_EDGE]
-               Reduce Output Operator [RS_19]
+               Reduce Output Operator [RS_23]
                   sort order:
                   Statistics:Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   value expressions:_col0 (type: bigint)
-                  Group By Operator [GBY_18]
+                  Group By Operator [GBY_22]
                      aggregations:["count()"]
                      outputColumnNames:["_col0"]
                      Statistics:Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                     Merge Join Operator [MERGEJOIN_35]
+                     Merge Join Operator [MERGEJOIN_39]
                      |  condition map:[{"":"Inner Join 0 to 1"}]
-                     |  keys:{"0":"_col0 (type: int)","1":"key (type: int)"}
+                     |  keys:{"0":"_col0 (type: int)","1":"_col0 (type: int)"}
                      |  Statistics:Num rows: 279 Data size: 2963 Basic stats: COMPLETE Column stats: NONE
                      |<-Map 7 [SIMPLE_EDGE]
-                     |  Reduce Output Operator [RS_15]
-                     |     key expressions:key (type: int)
-                     |     Map-reduce partition columns:key (type: int)
+                     |  Reduce Output Operator [RS_19]
+                     |     key expressions:_col0 (type: int)
+                     |     Map-reduce partition columns:_col0 (type: int)
                      |     sort order:+
                      |     Statistics:Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                     |     Filter Operator [FIL_32]
-                     |        predicate:key is not null (type: boolean)
+                     |     Select Operator [SEL_15]
+                     |        outputColumnNames:["_col0"]
                      |        Statistics:Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                     |        TableScan [TS_11]
-                     |           alias:b
-                     |           Statistics:Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                     |        Filter Operator [FIL_36]
+                     |           predicate:key is not null (type: boolean)
+                     |           Statistics:Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                     |           TableScan [TS_14]
+                     |              alias:b
+                     |              Statistics:Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                      |<-Union 2 [SIMPLE_EDGE]
                         |<-Map 1 [CONTAINS]
-                        |  Reduce Output Operator [RS_13]
+                        |  Reduce Output Operator [RS_17]
                         |     key expressions:_col0 (type: int)
                         |     Map-reduce partition columns:_col0 (type: int)
                         |     sort order:+
                         |     Statistics:Num rows: 254 Data size: 2694 Basic stats: COMPLETE Column stats: NONE
-                        |     Merge Join Operator [MERGEJOIN_33]
+                        |     Merge Join Operator [MERGEJOIN_37]
                         |     |  condition map:[{"":"Inner Join 0 to 1"}]
-                        |     |  keys:{"0":"key (type: int)","1":"key (type: int)"}
+                        |     |  keys:{"0":"_col0 (type: int)","1":"_col0 (type: int)"}
                         |     |  outputColumnNames:["_col0"]
                         |     |  Statistics:Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
                         |     |  
-                        |     |<-Filter Operator [FIL_30]
-                        |     |     predicate:key is not null (type: boolean)
+                        |     |<-Select Operator [SEL_3]
+                        |     |     outputColumnNames:["_col0"]
                         |     |     Statistics:Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
-                        |     |     TableScan [TS_1]
-                        |     |        alias:s3
-                        |     |        Statistics:Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
-                        |     |<-Filter Operator [FIL_29]
-                        |           predicate:key is not null (type: boolean)
+                        |     |     Filter Operator [FIL_34]
+                        |     |        predicate:key is not null (type: boolean)
+                        |     |        Statistics:Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
+                        |     |        TableScan [TS_2]
+                        |     |           alias:s1
+                        |     |           Statistics:Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
+                        |     |<-Select Operator [SEL_1]
+                        |           outputColumnNames:["_col0"]
                         |           Statistics:Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
-                        |           TableScan [TS_0]
-                        |              alias:s1
-                        |              Statistics:Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
+                        |           Filter Operator [FIL_33]
+                        |              predicate:key is not null (type: boolean)
+                        |              Statistics:Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
+                        |              TableScan [TS_0]
+                        |                 alias:s1
+                        |                 Statistics:Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
                         |<-Map 6 [CONTAINS]
-                           Reduce Output Operator [RS_13]
+                           Reduce Output Operator [RS_17]
                               key expressions:_col0 (type: int)
                               Map-reduce partition columns:_col0 (type: int)
                               sort order:+
                               Statistics:Num rows: 254 Data size: 2694 Basic stats: COMPLETE Column stats: NONE
-                              Select Operator [SEL_9]
+                              Select Operator [SEL_11]
                                  outputColumnNames:["_col0"]
                                  Statistics:Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
-                                 Filter Operator [FIL_31]
+                                 Filter Operator [FIL_35]
                                     predicate:key is not null (type: boolean)
                                     Statistics:Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
-                                    TableScan [TS_8]
-                                       alias:s2
+                                    TableScan [TS_10]
+                                       alias:s1
                                        Statistics:Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
 
 PREHOOK: query: explain
@@ -2908,7 +2947,7 @@ UNION  ALL
 select s2.key as key, s2.value as value from tab s2
 ) a join tab_part b on (a.key = b.key)
 POSTHOOK: type: QUERY
-Plan not optimized by CBO due to missing statistics. Please check log for more details.
+Plan optimized by CBO.
 
 Vertex dependency in root stage
 Map 8 <- Union 3 (CONTAINS)
@@ -2921,103 +2960,115 @@ Stage-0
       limit:-1
       Stage-1
          Reducer 5
-         File Output Operator [FS_28]
+         File Output Operator [FS_33]
             compressed:false
             Statistics:Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
-            Group By Operator [GBY_26]
+            Group By Operator [GBY_31]
             |  aggregations:["count(VALUE._col0)"]
             |  outputColumnNames:["_col0"]
             |  Statistics:Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             |<-Reducer 4 [SIMPLE_EDGE]
-               Reduce Output Operator [RS_25]
+               Reduce Output Operator [RS_30]
                   sort order:
                   Statistics:Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   value expressions:_col0 (type: bigint)
-                  Group By Operator [GBY_24]
+                  Group By Operator [GBY_29]
                      aggregations:["count()"]
                      outputColumnNames:["_col0"]
                      Statistics:Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                     Merge Join Operator [MERGEJOIN_47]
+                     Merge Join Operator [MERGEJOIN_52]
                      |  condition map:[{"":"Inner Join 0 to 1"}]
-                     |  keys:{"0":"_col0 (type: int)","1":"key (type: int)"}
+                     |  keys:{"0":"_col0 (type: int)","1":"_col0 (type: int)"}
                      |  Statistics:Num rows: 293 Data size: 3118 Basic stats: COMPLETE Column stats: NONE
                      |<-Map 9 [SIMPLE_EDGE]
-                     |  Reduce Output Operator [RS_21]
-                     |     key expressions:key (type: int)
-                     |     Map-reduce partition columns:key (type: int)
+                     |  Reduce Output Operator [RS_26]
+                     |     key expressions:_col0 (type: int)
+                     |     Map-reduce partition columns:_col0 (type: int)
                      |     sort order:+
                      |     Statistics:Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                     |     Filter Operator [FIL_43]
-                     |        predicate:key is not null (type: boolean)
+                     |     Select Operator [SEL_22]
+                     |        outputColumnNames:["_col0"]
                      |        Statistics:Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                     |        TableScan [TS_17]
-                     |           alias:b
-                     |           Statistics:Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                     |        Filter Operator [FIL_48]
+                     |           predicate:key is not null (type: boolean)
+                     |           Statistics:Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                     |           TableScan [TS_21]
+                     |              alias:b
+                     |              Statistics:Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                      |<-Union 3 [SIMPLE_EDGE]
                         |<-Map 8 [CONTAINS]
-                        |  Reduce Output Operator [RS_19]
+                        |  Reduce Output Operator [RS_24]
                         |     key expressions:_col0 (type: int)
                         |     Map-reduce partition columns:_col0 (type: int)
                         |     sort order:+
                         |     Statistics:Num rows: 267 Data size: 2835 Basic stats: COMPLETE Column stats: NONE
-                        |     Select Operator [SEL_15]
+                        |     Select Operator [SEL_18]
                         |        outputColumnNames:["_col0"]
                         |        Statistics:Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
-                        |        Filter Operator [FIL_42]
+                        |        Filter Operator [FIL_47]
                         |           predicate:key is not null (type: boolean)
                         |           Statistics:Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
-                        |           TableScan [TS_14]
-                        |              alias:s2
+                        |           TableScan [TS_17]
+                        |              alias:s1
                         |              Statistics:Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
                         |<-Reducer 2 [CONTAINS]
-                           Reduce Output Operator [RS_19]
+                           Reduce Output Operator [RS_24]
                               key expressions:_col0 (type: int)
                               Map-reduce partition columns:_col0 (type: int)
                               sort order:+
                               Statistics:Num rows: 267 Data size: 2835 Basic stats: COMPLETE Column stats: NONE
-                              Merge Join Operator [MERGEJOIN_46]
+                              Merge Join Operator [MERGEJOIN_51]
                               |  condition map:[{"":"Inner Join 0 to 1"}]
-                              |  keys:{"0":"_col1 (type: string)","1":"value (type: string)"}
+                              |  keys:{"0":"_col1 (type: string)","1":"_col1 (type: string)"}
                               |  outputColumnNames:["_col0"]
                               |  Statistics:Num rows: 146 Data size: 1552 Basic stats: COMPLETE Column stats: NONE
                               |<-Map 1 [SIMPLE_EDGE]
-                              |  Reduce Output Operator [RS_9]
+                              |  Reduce Output Operator [RS_12]
                               |     key expressions:_col1 (type: string)
                               |     Map-reduce partition columns:_col1 (type: string)
                               |     sort order:+
                               |     Statistics:Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
                               |     value expressions:_col0 (type: int)
-                              |     Merge Join Operator [MERGEJOIN_44]
+                              |     Merge Join Operator [MERGEJOIN_49]
                               |     |  condition map:[{"":"Inner Join 0 to 1"}]
-                              |     |  keys:{"0":"key (type: int)","1":"key (type: int)"}
+                              |     |  keys:{"0":"_col0 (type: int)","1":"_col0 (type: int)"}
                               |     |  outputColumnNames:["_col0","_col1"]
                               |     |  Statistics:Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
                               |     |  
-                              |     |<-Filter Operator [FIL_40]
-                              |     |     predicate:key is not null (type: boolean)
+                              |     |<-Select Operator [SEL_3]
+                              |     |     outputColumnNames:["_col0"]
                               |     |     Statistics:Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
-                              |     |     TableScan [TS_1]
-                              |     |        alias:s3
-                              |     |        Statistics:Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
-                              |     |<-Filter Operator [FIL_39]
-                              |           predicate:(key is not null and value is not null) (type: boolean)
+                              |     |     Filter Operator [FIL_45]
+                              |     |        predicate:key is not null (type: boolean)
+                              |     |        Statistics:Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
+                              |     |        TableScan [TS_2]
+                              |     |           alias:s1
+                              |     |           Statistics:Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
+                              |     |<-Select Operator [SEL_1]
+                              |           outputColumnNames:["_col0","_col1"]
                               |           Statistics:Num rows: 61 Data size: 646 Basic stats: COMPLETE Column stats: NONE
-                              |           TableScan [TS_0]
-                              |              alias:s1
-                              |              Statistics:Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
+                              |           Filter Operator [FIL_44]
+                              |              predicate:(key is not null and value is not null) (type: boolean)
+                              |              Statistics:Num rows: 61 Data size: 646 Basic stats: COMPLETE Column stats: NONE
+                              |              TableScan [TS_0]
+                              |                 alias:s1
+                              |                 Statistics:Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
                               |<-Map 7 [SIMPLE_EDGE]
-                                 Reduce Output Operator [RS_11]
-                                    key expressions:value (type: string)
-                                    Map-reduce partition columns:value (type: string)
+                                 Reduce Output Operator [RS_14]
+                                    key expressions:_col1 (type: string)
+                                    Map-reduce partition columns:_col1 (type: string)
                                     sort order:+
                                     Statistics:Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
-                                    Filter Operator [FIL_41]
-                                       predicate:value is not null (type: boolean)
+                                    Select Operator [SEL_5]
+                                       outputColumnNames:["_col1"]
                                        Statistics:Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
-                                       TableScan [TS_2]
-                                          alias:s2
-                                          Statistics:Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
+                                       Filter Operator [FIL_46]
+                                          predicate:value is not null (type: boolean)
+                                          Statistics:Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
+                                          TableScan [TS_4]
+                                             alias:s1
+                                             Statistics:Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
 
 PREHOOK: query: explain
 SELECT x.key, y.value

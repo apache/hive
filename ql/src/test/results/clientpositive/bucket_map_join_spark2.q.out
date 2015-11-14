@@ -162,7 +162,7 @@ STAGE PLANS:
   Stage: Stage-5
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        b 
+        $hdt$_1:b 
           Fetch Operator
             limit: -1
             Partition Description:
@@ -213,7 +213,7 @@ STAGE PLANS:
                     name: default.srcbucket_mapjoin_part_2
                   name: default.srcbucket_mapjoin_part_2
       Alias -> Map Local Operator Tree:
-        b 
+        $hdt$_1:b 
           TableScan
             alias: b
             Statistics: Num rows: 29 Data size: 3062 Basic stats: COMPLETE Column stats: NONE
@@ -222,11 +222,15 @@ STAGE PLANS:
               isSamplingPred: false
               predicate: key is not null (type: boolean)
               Statistics: Num rows: 15 Data size: 1583 Basic stats: COMPLETE Column stats: NONE
-              HashTable Sink Operator
-                keys:
-                  0 key (type: int)
-                  1 key (type: int)
-                Position of Big Table: 0
+              Select Operator
+                expressions: key (type: int), value (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 15 Data size: 1583 Basic stats: COMPLETE Column stats: NONE
+                HashTable Sink Operator
+                  keys:
+                    0 _col0 (type: int)
+                    1 _col0 (type: int)
+                  Position of Big Table: 0
 
   Stage: Stage-4
     Map Reduce
@@ -239,45 +243,49 @@ STAGE PLANS:
               isSamplingPred: false
               predicate: key is not null (type: boolean)
               Statistics: Num rows: 28 Data size: 2958 Basic stats: COMPLETE Column stats: NONE
-              Map Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                keys:
-                  0 key (type: int)
-                  1 key (type: int)
-                outputColumnNames: _col0, _col1, _col7
-                Position of Big Table: 0
-                Statistics: Num rows: 30 Data size: 3253 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col0 (type: int), _col1 (type: string), _col7 (type: string)
-                  outputColumnNames: _col0, _col1, _col2
+              Select Operator
+                expressions: key (type: int), value (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 28 Data size: 2958 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col0 (type: int)
+                    1 _col0 (type: int)
+                  outputColumnNames: _col0, _col1, _col3
+                  Position of Big Table: 0
                   Statistics: Num rows: 30 Data size: 3253 Basic stats: COMPLETE Column stats: NONE
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 1
-#### A masked pattern was here ####
-                    NumFilesPerFileSink: 1
+                  Select Operator
+                    expressions: _col0 (type: int), _col1 (type: string), _col3 (type: string)
+                    outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 30 Data size: 3253 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      GlobalTableId: 1
 #### A masked pattern was here ####
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        properties:
-                          bucket_count -1
-                          columns key,value1,value2
-                          columns.comments 
-                          columns.types string:string:string
+                      NumFilesPerFileSink: 1
+                      Statistics: Num rows: 30 Data size: 3253 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
-                          name default.bucketmapjoin_tmp_result
-                          serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
-                          serialization.format 1
-                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          properties:
+                            bucket_count -1
+                            columns key,value1,value2
+                            columns.comments 
+                            columns.types string:string:string
 #### A masked pattern was here ####
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.bucketmapjoin_tmp_result
-                    TotalFiles: 1
-                    GatherStats: true
-                    MultiFileSpray: false
+                            name default.bucketmapjoin_tmp_result
+                            serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
+                            serialization.format 1
+                            serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+#### A masked pattern was here ####
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.bucketmapjoin_tmp_result
+                      TotalFiles: 1
+                      GatherStats: true
+                      MultiFileSpray: false
       Local Work:
         Map Reduce Local Work
       Path -> Alias:
@@ -378,7 +386,7 @@ STAGE PLANS:
               name: default.srcbucket_mapjoin_part_2
             name: default.srcbucket_mapjoin_part_2
       Truncated Path -> Alias:
-        /srcbucket_mapjoin_part/ds=2008-04-08 [a]
+        /srcbucket_mapjoin_part/ds=2008-04-08 [$hdt$_0:a]
 
   Stage: Stage-0
     Move Operator
@@ -525,7 +533,7 @@ STAGE PLANS:
   Stage: Stage-5
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        b 
+        $hdt$_1:b 
           Fetch Operator
             limit: -1
             Partition Description:
@@ -576,7 +584,7 @@ STAGE PLANS:
                     name: default.srcbucket_mapjoin_part_2
                   name: default.srcbucket_mapjoin_part_2
       Alias -> Map Local Operator Tree:
-        b 
+        $hdt$_1:b 
           TableScan
             alias: b
             Statistics: Num rows: 29 Data size: 3062 Basic stats: COMPLETE Column stats: NONE
@@ -585,11 +593,15 @@ STAGE PLANS:
               isSamplingPred: false
               predicate: key is not null (type: boolean)
               Statistics: Num rows: 15 Data size: 1583 Basic stats: COMPLETE Column stats: NONE
-              HashTable Sink Operator
-                keys:
-                  0 key (type: int)
-                  1 key (type: int)
-                Position of Big Table: 0
+              Select Operator
+                expressions: key (type: int), value (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 15 Data size: 1583 Basic stats: COMPLETE Column stats: NONE
+                HashTable Sink Operator
+                  keys:
+                    0 _col0 (type: int)
+                    1 _col0 (type: int)
+                  Position of Big Table: 0
 
   Stage: Stage-4
     Map Reduce
@@ -602,50 +614,54 @@ STAGE PLANS:
               isSamplingPred: false
               predicate: key is not null (type: boolean)
               Statistics: Num rows: 28 Data size: 2958 Basic stats: COMPLETE Column stats: NONE
-              Map Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                keys:
-                  0 key (type: int)
-                  1 key (type: int)
-                outputColumnNames: _col0, _col1, _col7
-                Position of Big Table: 0
-                Statistics: Num rows: 30 Data size: 3253 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col0 (type: int), _col1 (type: string), _col7 (type: string)
-                  outputColumnNames: _col0, _col1, _col2
+              Select Operator
+                expressions: key (type: int), value (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 28 Data size: 2958 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col0 (type: int)
+                    1 _col0 (type: int)
+                  outputColumnNames: _col0, _col1, _col3
+                  Position of Big Table: 0
                   Statistics: Num rows: 30 Data size: 3253 Basic stats: COMPLETE Column stats: NONE
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 1
-#### A masked pattern was here ####
-                    NumFilesPerFileSink: 1
+                  Select Operator
+                    expressions: _col0 (type: int), _col1 (type: string), _col3 (type: string)
+                    outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 30 Data size: 3253 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      GlobalTableId: 1
 #### A masked pattern was here ####
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        properties:
-                          COLUMN_STATS_ACCURATE true
-                          bucket_count -1
-                          columns key,value1,value2
-                          columns.comments 
-                          columns.types string:string:string
+                      NumFilesPerFileSink: 1
+                      Statistics: Num rows: 30 Data size: 3253 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
-                          name default.bucketmapjoin_tmp_result
-                          numFiles 1
-                          numRows 564
-                          rawDataSize 10503
-                          serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
-                          serialization.format 1
-                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          totalSize 11067
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          properties:
+                            COLUMN_STATS_ACCURATE true
+                            bucket_count -1
+                            columns key,value1,value2
+                            columns.comments 
+                            columns.types string:string:string
 #### A masked pattern was here ####
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.bucketmapjoin_tmp_result
-                    TotalFiles: 1
-                    GatherStats: true
-                    MultiFileSpray: false
+                            name default.bucketmapjoin_tmp_result
+                            numFiles 1
+                            numRows 564
+                            rawDataSize 10503
+                            serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
+                            serialization.format 1
+                            serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            totalSize 11067
+#### A masked pattern was here ####
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.bucketmapjoin_tmp_result
+                      TotalFiles: 1
+                      GatherStats: true
+                      MultiFileSpray: false
       Local Work:
         Map Reduce Local Work
       Path -> Alias:
@@ -746,7 +762,7 @@ STAGE PLANS:
               name: default.srcbucket_mapjoin_part_2
             name: default.srcbucket_mapjoin_part_2
       Truncated Path -> Alias:
-        /srcbucket_mapjoin_part/ds=2008-04-08 [a]
+        /srcbucket_mapjoin_part/ds=2008-04-08 [$hdt$_0:a]
 
   Stage: Stage-0
     Move Operator

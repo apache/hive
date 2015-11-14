@@ -42,6 +42,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@values__tmp__table__2
 POSTHOOK: Output: default@tez_self_join2
 POSTHOOK: Lineage: tez_self_join2.id1 EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+Warning: Shuffle Join MERGEJOIN[27][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain
 select s.id2, s.id3
 from  
@@ -82,28 +83,30 @@ STAGE PLANS:
                   alias: self1
                   Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((id2 is not null and id1 is not null) and (id2 = 'ab')) (type: boolean)
+                    predicate: ((id2 = 'ab') and id1 is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: 'ab' (type: string)
-                      sort order: +
-                      Map-reduce partition columns: 'ab' (type: string)
+                    Select Operator
+                      expressions: id1 (type: int), id3 (type: string)
+                      outputColumnNames: _col0, _col2
                       Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: id1 (type: int), id3 (type: string)
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: int), _col2 (type: string)
             Execution mode: llap
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: self2
+                  alias: self1
                   Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (id3 = 'ab') (type: boolean)
+                    predicate: ('ab' = id3) (type: boolean)
                     Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: 'ab' (type: string)
-                      sort order: +
-                      Map-reduce partition columns: 'ab' (type: string)
+                    Select Operator
                       Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
         Map 5 
             Map Operator Tree:
@@ -113,11 +116,15 @@ STAGE PLANS:
                   Filter Operator
                     predicate: id1 is not null (type: boolean)
                     Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: id1 (type: int)
-                      sort order: +
-                      Map-reduce partition columns: id1 (type: int)
+                    Select Operator
+                      expressions: id1 (type: int)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
         Reducer 2 
             Execution mode: llap
@@ -126,8 +133,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 'ab' (type: string)
-                  1 'ab' (type: string)
+                  0 
+                  1 
                 outputColumnNames: _col0, _col2
                 Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
@@ -144,7 +151,7 @@ STAGE PLANS:
                      Inner Join 0 to 1
                 keys:
                   0 _col0 (type: int)
-                  1 id1 (type: int)
+                  1 _col0 (type: int)
                 outputColumnNames: _col2
                 Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
@@ -165,6 +172,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
+Warning: Shuffle Join MERGEJOIN[27][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select s.id2, s.id3
 from  
 (

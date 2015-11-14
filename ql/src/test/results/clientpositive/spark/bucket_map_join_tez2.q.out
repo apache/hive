@@ -130,24 +130,32 @@ STAGE PLANS:
                   Filter Operator
                     predicate: (key is not null and value is not null) (type: boolean)
                     Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      keys:
-                        0 key (type: int)
-                        1 key (type: int)
+                    Select Operator
+                      expressions: key (type: int), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
+                      Spark HashTable Sink Operator
+                        keys:
+                          0 _col0 (type: int)
+                          1 _col0 (type: int)
             Local Work:
               Map Reduce Local Work
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: b
+                  alias: a
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: value is not null (type: boolean)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      keys:
-                        0 _col1 (type: string)
-                        1 value (type: string)
+                    Select Operator
+                      expressions: key (type: int), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                      Spark HashTable Sink Operator
+                        keys:
+                          0 _col1 (type: string)
+                          1 _col1 (type: string)
             Local Work:
               Map Reduce Local Work
 
@@ -158,42 +166,46 @@ STAGE PLANS:
         Map 2 
             Map Operator Tree:
                 TableScan
-                  alias: c
+                  alias: a
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      keys:
-                        0 key (type: int)
-                        1 key (type: int)
-                      outputColumnNames: _col0, _col1
-                      input vertices:
-                        0 Map 1
-                      Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
                         keys:
-                          0 _col1 (type: string)
-                          1 value (type: string)
-                        outputColumnNames: _col0, _col12
+                          0 _col0 (type: int)
+                          1 _col0 (type: int)
+                        outputColumnNames: _col0, _col1
                         input vertices:
-                          1 Map 3
-                        Statistics: Num rows: 302 Data size: 3213 Basic stats: COMPLETE Column stats: NONE
-                        Select Operator
-                          expressions: _col0 (type: int), _col12 (type: int)
-                          outputColumnNames: _col0, _col1
+                          0 Map 1
+                        Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+                        Map Join Operator
+                          condition map:
+                               Inner Join 0 to 1
+                          keys:
+                            0 _col1 (type: string)
+                            1 _col1 (type: string)
+                          outputColumnNames: _col0, _col3
+                          input vertices:
+                            1 Map 3
                           Statistics: Num rows: 302 Data size: 3213 Basic stats: COMPLETE Column stats: NONE
-                          File Output Operator
-                            compressed: false
+                          Select Operator
+                            expressions: _col0 (type: int), _col3 (type: int)
+                            outputColumnNames: _col0, _col1
                             Statistics: Num rows: 302 Data size: 3213 Basic stats: COMPLETE Column stats: NONE
-                            table:
-                                input format: org.apache.hadoop.mapred.TextInputFormat
-                                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            File Output Operator
+                              compressed: false
+                              Statistics: Num rows: 302 Data size: 3213 Basic stats: COMPLETE Column stats: NONE
+                              table:
+                                  input format: org.apache.hadoop.mapred.TextInputFormat
+                                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Local Work:
               Map Reduce Local Work
 
@@ -251,10 +263,14 @@ STAGE PLANS:
                   Filter Operator
                     predicate: UDFToDouble(key) is not null (type: boolean)
                     Statistics: Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      keys:
-                        0 UDFToDouble(key) (type: double)
-                        1 UDFToDouble(key) (type: double)
+                    Select Operator
+                      expressions: key (type: int), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
+                      Spark HashTable Sink Operator
+                        keys:
+                          0 UDFToDouble(_col0) (type: double)
+                          1 UDFToDouble(_col0) (type: double)
             Local Work:
               Map Reduce Local Work
 
@@ -270,27 +286,31 @@ STAGE PLANS:
                   Filter Operator
                     predicate: UDFToDouble(key) is not null (type: boolean)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      keys:
-                        0 UDFToDouble(key) (type: double)
-                        1 UDFToDouble(key) (type: double)
-                      outputColumnNames: _col0, _col1, _col6
-                      input vertices:
-                        0 Map 1
-                      Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        expressions: _col0 (type: int), _col1 (type: string), _col6 (type: string)
-                        outputColumnNames: _col0, _col1, _col2
+                    Select Operator
+                      expressions: key (type: string), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 UDFToDouble(_col0) (type: double)
+                          1 UDFToDouble(_col0) (type: double)
+                        outputColumnNames: _col0, _col1, _col3
+                        input vertices:
+                          0 Map 1
                         Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
-                        File Output Operator
-                          compressed: false
+                        Select Operator
+                          expressions: _col0 (type: int), _col1 (type: string), _col3 (type: string)
+                          outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
-                          table:
-                              input format: org.apache.hadoop.mapred.TextInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          File Output Operator
+                            compressed: false
+                            Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+                            table:
+                                input format: org.apache.hadoop.mapred.TextInputFormat
+                                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Local Work:
               Map Reduce Local Work
 
@@ -322,12 +342,12 @@ STAGE PLANS:
                   alias: tab_part
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (key > 2) (type: boolean)
-                    Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                    predicate: (((key > 2) and (key > 1)) and key is not null) (type: boolean)
+                    Statistics: Num rows: 28 Data size: 297 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 28 Data size: 297 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
                           0 _col0 (type: int)
@@ -345,12 +365,12 @@ STAGE PLANS:
                   alias: tab_part
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (key > 1) (type: boolean)
-                    Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                    predicate: (((key > 1) and (key > 2)) and key is not null) (type: boolean)
+                    Statistics: Num rows: 28 Data size: 297 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 28 Data size: 297 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -360,10 +380,10 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1
                         input vertices:
                           1 Map 2
-                        Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 30 Data size: 326 Basic stats: COMPLETE Column stats: NONE
                         File Output Operator
                           compressed: false
-                          Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 30 Data size: 326 Basic stats: COMPLETE Column stats: NONE
                           table:
                               input format: org.apache.hadoop.mapred.TextInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -399,12 +419,12 @@ STAGE PLANS:
                   alias: tab_part
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (key > 2) (type: boolean)
-                    Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                    predicate: ((key > 2) and (key > 1)) (type: boolean)
+                    Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
                           0 _col0 (type: int)
@@ -476,12 +496,12 @@ STAGE PLANS:
                   alias: tab_part
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (key > 1) (type: boolean)
-                    Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                    predicate: ((key > 1) and (key > 2)) (type: boolean)
+                    Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
                           0 _col0 (type: int)
@@ -577,7 +597,7 @@ STAGE PLANS:
                 Spark HashTable Sink Operator
                   keys:
                     0 _col0 (type: int)
-                    1 key (type: int)
+                    1 _col0 (type: int)
 
   Stage: Stage-1
     Spark
@@ -586,28 +606,32 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: b
+                  alias: tab
                   Statistics: Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      keys:
-                        0 _col0 (type: int)
-                        1 key (type: int)
-                      outputColumnNames: _col0, _col1
-                      input vertices:
-                        0 Reducer 2
-                      Statistics: Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
-                      File Output Operator
-                        compressed: false
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: int)
+                          1 _col0 (type: int)
+                        outputColumnNames: _col0, _col1
+                        input vertices:
+                          0 Reducer 2
                         Statistics: Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
-                        table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
+                          table:
+                              input format: org.apache.hadoop.mapred.TextInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Local Work:
               Map Reduce Local Work
 
@@ -663,7 +687,7 @@ STAGE PLANS:
                 Spark HashTable Sink Operator
                   keys:
                     0 UDFToDouble(_col0) (type: double)
-                    1 UDFToDouble(key) (type: double)
+                    1 UDFToDouble(_col0) (type: double)
 
   Stage: Stage-1
     Spark
@@ -672,32 +696,36 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: b
+                  alias: tab
                   Statistics: Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: UDFToDouble(key) is not null (type: boolean)
                     Statistics: Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      keys:
-                        0 UDFToDouble(_col0) (type: double)
-                        1 UDFToDouble(key) (type: double)
-                      outputColumnNames: _col0, _col2
-                      input vertices:
-                        0 Reducer 2
-                      Statistics: Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        expressions: _col0 (type: string), _col2 (type: string)
-                        outputColumnNames: _col0, _col1
+                    Select Operator
+                      expressions: key (type: int), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 UDFToDouble(_col0) (type: double)
+                          1 UDFToDouble(_col0) (type: double)
+                        outputColumnNames: _col0, _col2
+                        input vertices:
+                          0 Reducer 2
                         Statistics: Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
-                        File Output Operator
-                          compressed: false
+                        Select Operator
+                          expressions: _col0 (type: string), _col2 (type: string)
+                          outputColumnNames: _col0, _col1
                           Statistics: Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
-                          table:
-                              input format: org.apache.hadoop.mapred.TextInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          File Output Operator
+                            compressed: false
+                            Statistics: Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
+                            table:
+                                input format: org.apache.hadoop.mapred.TextInputFormat
+                                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Local Work:
               Map Reduce Local Work
 

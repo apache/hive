@@ -76,18 +76,22 @@ STAGE PLANS:
             Filter Operator
               predicate: month is not null (type: boolean)
               Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: month (type: int)
-                sort order: +
-                Map-reduce partition columns: month (type: int)
+              Select Operator
+                expressions: month (type: int)
+                outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           keys:
             0 _col1 (type: int)
-            1 month (type: int)
+            1 _col0 (type: int)
           Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: 978336000 (type: bigint)

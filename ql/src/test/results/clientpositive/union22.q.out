@@ -234,7 +234,7 @@ STAGE PLANS:
   Stage: Stage-8
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        null-subquery2:subq-subquery2:b:dst_union22_delta 
+        null-subquery2:$hdt$_0-subquery2:$hdt$_1:$hdt$_1:dst_union22_delta 
           Fetch Operator
             limit: -1
             Partition Description:
@@ -283,28 +283,28 @@ STAGE PLANS:
                     name: default.dst_union22_delta
                   name: default.dst_union22_delta
       Alias -> Map Local Operator Tree:
-        null-subquery2:subq-subquery2:b:dst_union22_delta 
+        null-subquery2:$hdt$_0-subquery2:$hdt$_1:$hdt$_1:dst_union22_delta 
           TableScan
             alias: dst_union22_delta
             Statistics: Num rows: 500 Data size: 16936 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: ((k0 > 50) and (k1 > 20)) (type: boolean)
+              predicate: ((UDFToDouble(k0) > 50.0) and (UDFToDouble(k1) > 20.0)) (type: boolean)
               Statistics: Num rows: 55 Data size: 1862 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: k1 (type: string), k3 (type: string), k4 (type: string)
-                outputColumnNames: _col1, _col3, _col4
+                outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 55 Data size: 1862 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   filter mappings:
                     0 [1, 1]
                   filter predicates:
-                    0 {(ds = '1')}
+                    0 {(_col2 = '1')}
                     1 
                   keys:
-                    0 k1 (type: string)
-                    1 _col1 (type: string)
+                    0 _col0 (type: string)
+                    1 _col0 (type: string)
                   Position of Big Table: 0
 
   Stage: Stage-6
@@ -316,43 +316,47 @@ STAGE PLANS:
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: (k1 > 20) (type: boolean)
+              predicate: (UDFToDouble(k1) > 20.0) (type: boolean)
               Statistics: Num rows: 166 Data size: 3693 Basic stats: COMPLETE Column stats: NONE
-              Map Join Operator
-                condition map:
-                     Left Outer Join0 to 1
-                filter mappings:
-                  0 [1, 1]
-                filter predicates:
-                  0 {(ds = '1')}
-                  1 
-                keys:
-                  0 k1 (type: string)
-                  1 _col1 (type: string)
-                outputColumnNames: _col0, _col1, _col11, _col12
-                Position of Big Table: 0
-                Statistics: Num rows: 182 Data size: 4062 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col0 (type: string), _col1 (type: string), _col11 (type: string), _col12 (type: string)
-                  outputColumnNames: _col0, _col1, _col2, _col3
+              Select Operator
+                expressions: k1 (type: string), k2 (type: string), ds (type: string)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 166 Data size: 3693 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Left Outer Join0 to 1
+                  filter mappings:
+                    0 [1, 1]
+                  filter predicates:
+                    0 {(_col2 = '1')}
+                    1 
+                  keys:
+                    0 _col0 (type: string)
+                    1 _col0 (type: string)
+                  outputColumnNames: _col0, _col1, _col4, _col5
+                  Position of Big Table: 0
                   Statistics: Num rows: 182 Data size: 4062 Basic stats: COMPLETE Column stats: NONE
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
+                  Select Operator
+                    expressions: _col0 (type: string), _col1 (type: string), _col4 (type: string), _col5 (type: string)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Statistics: Num rows: 182 Data size: 4062 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      GlobalTableId: 0
 #### A masked pattern was here ####
-                    NumFilesPerFileSink: 1
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                        properties:
-                          columns _col0,_col1,_col2,_col3
-                          columns.types string,string,string,string
-                          escape.delim \
-                          serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-                    TotalFiles: 1
-                    GatherStats: false
-                    MultiFileSpray: false
+                      NumFilesPerFileSink: 1
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          properties:
+                            columns _col0,_col1,_col2,_col3
+                            columns.types string,string,string,string
+                            escape.delim \
+                            serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                          serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                      TotalFiles: 1
+                      GatherStats: false
+                      MultiFileSpray: false
       Local Work:
         Map Reduce Local Work
       Path -> Alias:
@@ -449,7 +453,7 @@ STAGE PLANS:
               name: default.dst_union22_delta
             name: default.dst_union22_delta
       Truncated Path -> Alias:
-        /dst_union22/ds=1 [null-subquery2:subq-subquery2:a]
+        /dst_union22/ds=1 [null-subquery2:$hdt$_0-subquery2:$hdt$_0:a]
 
   Stage: Stage-2
     Map Reduce
@@ -460,7 +464,7 @@ STAGE PLANS:
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: (k0 <= 50) (type: boolean)
+              predicate: (UDFToDouble(k0) <= 50.0) (type: boolean)
               Statistics: Num rows: 166 Data size: 5622 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: k1 (type: string), k2 (type: string), k3 (type: string), k4 (type: string)
@@ -599,7 +603,7 @@ STAGE PLANS:
               name: default.dst_union22_delta
             name: default.dst_union22_delta
       Truncated Path -> Alias:
-        /dst_union22_delta/ds=1 [null-subquery1:subq-subquery1:dst_union22_delta]
+        /dst_union22_delta/ds=1 [null-subquery1:$hdt$_0-subquery1:dst_union22_delta]
 #### A masked pattern was here ####
 
   Stage: Stage-0
@@ -636,41 +640,45 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: dst_union22_delta
-            Statistics: Num rows: 500 Data size: 16936 Basic stats: COMPLETE Column stats: NONE
-            GatherStats: false
-            Filter Operator
-              isSamplingPred: false
-              predicate: ((k0 > 50) and (k1 > 20)) (type: boolean)
-              Statistics: Num rows: 55 Data size: 1862 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: k1 (type: string), k3 (type: string), k4 (type: string)
-                outputColumnNames: _col1, _col3, _col4
-                Statistics: Num rows: 55 Data size: 1862 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col1 (type: string)
-                  sort order: +
-                  Map-reduce partition columns: _col1 (type: string)
-                  Statistics: Num rows: 55 Data size: 1862 Basic stats: COMPLETE Column stats: NONE
-                  tag: 1
-                  value expressions: _col3 (type: string), _col4 (type: string)
-                  auto parallelism: false
-          TableScan
             alias: a
             Statistics: Num rows: 500 Data size: 11124 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: (k1 > 20) (type: boolean)
+              predicate: (UDFToDouble(k1) > 20.0) (type: boolean)
               Statistics: Num rows: 166 Data size: 3693 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: k1 (type: string)
-                sort order: +
-                Map-reduce partition columns: k1 (type: string)
+              Select Operator
+                expressions: k1 (type: string), k2 (type: string), ds (type: string)
+                outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 166 Data size: 3693 Basic stats: COMPLETE Column stats: NONE
-                tag: 0
-                value expressions: k2 (type: string), ds (type: string)
-                auto parallelism: false
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 166 Data size: 3693 Basic stats: COMPLETE Column stats: NONE
+                  tag: 0
+                  value expressions: _col1 (type: string), _col2 (type: string)
+                  auto parallelism: false
+          TableScan
+            alias: dst_union22_delta
+            Statistics: Num rows: 500 Data size: 16936 Basic stats: COMPLETE Column stats: NONE
+            GatherStats: false
+            Filter Operator
+              isSamplingPred: false
+              predicate: ((UDFToDouble(k0) > 50.0) and (UDFToDouble(k1) > 20.0)) (type: boolean)
+              Statistics: Num rows: 55 Data size: 1862 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: k1 (type: string), k3 (type: string), k4 (type: string)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 55 Data size: 1862 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 55 Data size: 1862 Basic stats: COMPLETE Column stats: NONE
+                  tag: 1
+                  value expressions: _col1 (type: string), _col2 (type: string)
+                  auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -765,8 +773,8 @@ STAGE PLANS:
               name: default.dst_union22_delta
             name: default.dst_union22_delta
       Truncated Path -> Alias:
-        /dst_union22/ds=1 [null-subquery2:subq-subquery2:a]
-        /dst_union22_delta/ds=1 [null-subquery2:subq-subquery2:b:dst_union22_delta]
+        /dst_union22/ds=1 [null-subquery2:$hdt$_0-subquery2:$hdt$_0:a]
+        /dst_union22_delta/ds=1 [null-subquery2:$hdt$_0-subquery2:$hdt$_1:$hdt$_1:dst_union22_delta]
       Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
@@ -775,15 +783,15 @@ STAGE PLANS:
           filter mappings:
             0 [1, 1]
           filter predicates:
-            0 {(VALUE._col3 = '1')}
+            0 {(VALUE._col1 = '1')}
             1 
           keys:
-            0 k1 (type: string)
-            1 _col1 (type: string)
-          outputColumnNames: _col0, _col1, _col11, _col12
+            0 _col0 (type: string)
+            1 _col0 (type: string)
+          outputColumnNames: _col0, _col1, _col4, _col5
           Statistics: Num rows: 182 Data size: 4062 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: string), _col1 (type: string), _col11 (type: string), _col12 (type: string)
+            expressions: _col0 (type: string), _col1 (type: string), _col4 (type: string), _col5 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
             Statistics: Num rows: 182 Data size: 4062 Basic stats: COMPLETE Column stats: NONE
             File Output Operator

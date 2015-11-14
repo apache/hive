@@ -151,29 +151,37 @@ STAGE PLANS:
               isSamplingPred: false
               predicate: key is not null (type: boolean)
               Statistics: Num rows: 13 Data size: 109 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: key (type: int)
-                sort order: +
-                Map-reduce partition columns: key (type: int)
+              Select Operator
+                expressions: key (type: int)
+                outputColumnNames: _col0
                 Statistics: Num rows: 13 Data size: 109 Basic stats: COMPLETE Column stats: NONE
-                tag: 0
-                auto parallelism: false
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 13 Data size: 109 Basic stats: COMPLETE Column stats: NONE
+                  tag: 0
+                  auto parallelism: false
           TableScan
-            alias: m
+            alias: f
             Statistics: Num rows: 25 Data size: 211 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: ((key is not null and value is not null) and (value <> '')) (type: boolean)
+              predicate: ((value is not null and (value <> '')) and key is not null) (type: boolean)
               Statistics: Num rows: 7 Data size: 59 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: key (type: int)
-                sort order: +
-                Map-reduce partition columns: key (type: int)
+              Select Operator
+                expressions: key (type: int), value (type: string)
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 7 Data size: 59 Basic stats: COMPLETE Column stats: NONE
-                tag: 1
-                value expressions: value (type: string)
-                auto parallelism: false
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 7 Data size: 59 Basic stats: COMPLETE Column stats: NONE
+                  tag: 1
+                  value expressions: _col1 (type: string)
+                  auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -223,16 +231,16 @@ STAGE PLANS:
               name: default.filter_join_breaktask
             name: default.filter_join_breaktask
       Truncated Path -> Alias:
-        /filter_join_breaktask/ds=2008-04-08 [f, m]
+        /filter_join_breaktask/ds=2008-04-08 [$hdt$_0:$hdt$_0:f, $hdt$_1:$hdt$_1:f]
       Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           keys:
-            0 key (type: int)
-            1 key (type: int)
-          outputColumnNames: _col0, _col7
+            0 _col0 (type: int)
+            1 _col0 (type: int)
+          outputColumnNames: _col0, _col3
           Statistics: Num rows: 14 Data size: 119 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
@@ -243,7 +251,7 @@ STAGE PLANS:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 properties:
-                  columns _col0,_col7
+                  columns _col0,_col3
                   columns.types int,string
                   escape.delim \
                   serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
@@ -258,28 +266,32 @@ STAGE PLANS:
           TableScan
             GatherStats: false
             Reduce Output Operator
-              key expressions: _col7 (type: string)
+              key expressions: _col3 (type: string)
               sort order: +
-              Map-reduce partition columns: _col7 (type: string)
+              Map-reduce partition columns: _col3 (type: string)
               Statistics: Num rows: 14 Data size: 119 Basic stats: COMPLETE Column stats: NONE
               tag: 0
               value expressions: _col0 (type: int)
               auto parallelism: false
           TableScan
-            alias: g
+            alias: f
             Statistics: Num rows: 25 Data size: 211 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: ((value <> '') and value is not null) (type: boolean)
+              predicate: (value is not null and (value <> '')) (type: boolean)
               Statistics: Num rows: 13 Data size: 109 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: value (type: string)
-                sort order: +
-                Map-reduce partition columns: value (type: string)
+              Select Operator
+                expressions: value (type: string)
+                outputColumnNames: _col0
                 Statistics: Num rows: 13 Data size: 109 Basic stats: COMPLETE Column stats: NONE
-                tag: 1
-                auto parallelism: false
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 13 Data size: 109 Basic stats: COMPLETE Column stats: NONE
+                  tag: 1
+                  auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -289,7 +301,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
-              columns _col0,_col7
+              columns _col0,_col3
               columns.types int,string
               escape.delim \
               serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
@@ -298,7 +310,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
               properties:
-                columns _col0,_col7
+                columns _col0,_col3
                 columns.types int,string
                 escape.delim \
                 serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
@@ -349,7 +361,7 @@ STAGE PLANS:
               name: default.filter_join_breaktask
             name: default.filter_join_breaktask
       Truncated Path -> Alias:
-        /filter_join_breaktask/ds=2008-04-08 [g]
+        /filter_join_breaktask/ds=2008-04-08 [$hdt$_2:$hdt$_2:f]
 #### A masked pattern was here ####
       Needs Tagging: true
       Reduce Operator Tree:
@@ -357,12 +369,12 @@ STAGE PLANS:
           condition map:
                Inner Join 0 to 1
           keys:
-            0 _col7 (type: string)
-            1 value (type: string)
-          outputColumnNames: _col0, _col13
+            0 _col3 (type: string)
+            1 _col0 (type: string)
+          outputColumnNames: _col0, _col5
           Statistics: Num rows: 15 Data size: 130 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: int), _col13 (type: string)
+            expressions: _col0 (type: int), _col5 (type: string)
             outputColumnNames: _col0, _col1
             Statistics: Num rows: 15 Data size: 130 Basic stats: COMPLETE Column stats: NONE
             File Output Operator

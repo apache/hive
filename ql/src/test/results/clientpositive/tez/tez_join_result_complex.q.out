@@ -157,22 +157,144 @@ TOK_CREATETABLE
    TOK_QUERY
       TOK_FROM
          TOK_JOIN
-            TOK_TABREF
-               TOK_TABNAME
-                  ct_events_clean
-               a
-            TOK_TABREF
-               TOK_TABNAME
-                  service_request_clean
-               b
+            TOK_SUBQUERY
+               TOK_QUERY
+                  TOK_FROM
+                     TOK_TABREF
+                        TOK_TABNAME
+                           default
+                           ct_events_clean
+                        a
+                  TOK_INSERT
+                     TOK_DESTINATION
+                        TOK_DIR
+                           TOK_TMP_FILE
+                     TOK_SELECT
+                        TOK_SELEXPR
+                           .
+                              TOK_TABLE_OR_COL
+                                 a
+                              contact_event_id
+                           contact_event_id
+                        TOK_SELEXPR
+                           .
+                              TOK_TABLE_OR_COL
+                                 a
+                              ce_create_dt
+                           ce_create_dt
+                        TOK_SELEXPR
+                           .
+                              TOK_TABLE_OR_COL
+                                 a
+                              ce_end_dt
+                           ce_end_dt
+                        TOK_SELEXPR
+                           .
+                              TOK_TABLE_OR_COL
+                                 a
+                              contact_type
+                           contact_type
+                        TOK_SELEXPR
+                           .
+                              TOK_TABLE_OR_COL
+                                 a
+                              cnctevs_cd
+                           cnctevs_cd
+                        TOK_SELEXPR
+                           .
+                              TOK_TABLE_OR_COL
+                                 a
+                              contact_mode
+                           contact_mode
+                        TOK_SELEXPR
+                           .
+                              TOK_TABLE_OR_COL
+                                 a
+                              cntvnst_stts_cd
+                           cntvnst_stts_cd
+                        TOK_SELEXPR
+                           .
+                              TOK_TABLE_OR_COL
+                                 a
+                              total_transfers
+                           total_transfers
+                        TOK_SELEXPR
+                           .
+                              TOK_TABLE_OR_COL
+                                 a
+                              ce_notes
+                           ce_notes
+               $hdt$_0
+            TOK_SUBQUERY
+               TOK_QUERY
+                  TOK_FROM
+                     TOK_TABREF
+                        TOK_TABNAME
+                           default
+                           service_request_clean
+                        b
+                  TOK_INSERT
+                     TOK_DESTINATION
+                        TOK_DIR
+                           TOK_TMP_FILE
+                     TOK_SELECT
+                        TOK_SELEXPR
+                           .
+                              TOK_TABLE_OR_COL
+                                 b
+                              cnctevn_id
+                           cnctevn_id
+                        TOK_SELEXPR
+                           .
+                              TOK_TABLE_OR_COL
+                                 b
+                              svcrqst_id
+                           svcrqst_id
+                        TOK_SELEXPR
+                           .
+                              TOK_TABLE_OR_COL
+                                 b
+                              cnctmd_cd
+                           cnctmd_cd
+                        TOK_SELEXPR
+                           .
+                              TOK_TABLE_OR_COL
+                                 b
+                              svcrtyp_cd
+                           svcrtyp_cd
+                        TOK_SELEXPR
+                           .
+                              TOK_TABLE_OR_COL
+                                 b
+                              cmpltyp_cd
+                           cmpltyp_cd
+                        TOK_SELEXPR
+                           .
+                              TOK_TABLE_OR_COL
+                                 b
+                              sum_reason_cd
+                           sum_reason_cd
+                        TOK_SELEXPR
+                           .
+                              TOK_TABLE_OR_COL
+                                 b
+                              svcrqct_cds
+                           svcrqct_cds
+                        TOK_SELEXPR
+                           .
+                              TOK_TABLE_OR_COL
+                                 b
+                              notes
+                           notes
+               $hdt$_1
             =
                .
                   TOK_TABLE_OR_COL
-                     a
+                     $hdt$_0
                   contact_event_id
                .
                   TOK_TABLE_OR_COL
-                     b
+                     $hdt$_1
                   cnctevn_id
       TOK_INSERT
          TOK_DESTINATION
@@ -180,45 +302,101 @@ TOK_CREATETABLE
                TOK_TMP_FILE
          TOK_SELECT
             TOK_SELEXPR
-               TOK_ALLCOLREF
-                  TOK_TABNAME
-                     a
+               .
+                  TOK_TABLE_OR_COL
+                     $hdt$_0
+                  contact_event_id
+               a.contact_event_id
             TOK_SELEXPR
                .
                   TOK_TABLE_OR_COL
-                     b
+                     $hdt$_0
+                  ce_create_dt
+               a.ce_create_dt
+            TOK_SELEXPR
+               .
+                  TOK_TABLE_OR_COL
+                     $hdt$_0
+                  ce_end_dt
+               a.ce_end_dt
+            TOK_SELEXPR
+               .
+                  TOK_TABLE_OR_COL
+                     $hdt$_0
+                  contact_type
+               a.contact_type
+            TOK_SELEXPR
+               .
+                  TOK_TABLE_OR_COL
+                     $hdt$_0
+                  cnctevs_cd
+               a.cnctevs_cd
+            TOK_SELEXPR
+               .
+                  TOK_TABLE_OR_COL
+                     $hdt$_0
+                  contact_mode
+               a.contact_mode
+            TOK_SELEXPR
+               .
+                  TOK_TABLE_OR_COL
+                     $hdt$_0
+                  cntvnst_stts_cd
+               a.cntvnst_stts_cd
+            TOK_SELEXPR
+               .
+                  TOK_TABLE_OR_COL
+                     $hdt$_0
+                  total_transfers
+               a.total_transfers
+            TOK_SELEXPR
+               .
+                  TOK_TABLE_OR_COL
+                     $hdt$_0
+                  ce_notes
+               a.ce_notes
+            TOK_SELEXPR
+               .
+                  TOK_TABLE_OR_COL
+                     $hdt$_1
                   svcrqst_id
+               b.svcrqst_id
             TOK_SELEXPR
                .
                   TOK_TABLE_OR_COL
-                     b
+                     $hdt$_1
                   svcrqct_cds
+               b.svcrqct_cds
             TOK_SELEXPR
                .
                   TOK_TABLE_OR_COL
-                     b
+                     $hdt$_1
                   svcrtyp_cd
+               b.svcrtyp_cd
             TOK_SELEXPR
                .
                   TOK_TABLE_OR_COL
-                     b
+                     $hdt$_1
                   cmpltyp_cd
+               b.cmpltyp_cd
             TOK_SELEXPR
                .
                   TOK_TABLE_OR_COL
-                     b
+                     $hdt$_1
                   sum_reason_cd
                src
             TOK_SELEXPR
                .
                   TOK_TABLE_OR_COL
-                     b
+                     $hdt$_1
                   cnctmd_cd
+               b.cnctmd_cd
             TOK_SELEXPR
                .
                   TOK_TABLE_OR_COL
-                     b
+                     $hdt$_1
                   notes
+               b.notes
 
 
 STAGE DEPENDENCIES:
@@ -245,14 +423,18 @@ STAGE PLANS:
                     isSamplingPred: false
                     predicate: contact_event_id is not null (type: boolean)
                     Statistics: Num rows: 1 Data size: 3750 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: contact_event_id (type: string)
-                      sort order: +
-                      Map-reduce partition columns: contact_event_id (type: string)
+                    Select Operator
+                      expressions: contact_event_id (type: string), ce_create_dt (type: string), ce_end_dt (type: string), contact_type (type: string), cnctevs_cd (type: string), contact_mode (type: string), cntvnst_stts_cd (type: string), total_transfers (type: int), ce_notes (type: array<string>)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                       Statistics: Num rows: 1 Data size: 3750 Basic stats: COMPLETE Column stats: NONE
-                      tag: 0
-                      value expressions: ce_create_dt (type: string), ce_end_dt (type: string), contact_type (type: string), cnctevs_cd (type: string), contact_mode (type: string), cntvnst_stts_cd (type: string), total_transfers (type: int), ce_notes (type: array<string>)
-                      auto parallelism: true
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 3750 Basic stats: COMPLETE Column stats: NONE
+                        tag: 0
+                        value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string), _col6 (type: string), _col7 (type: int), _col8 (type: array<string>)
+                        auto parallelism: true
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -316,43 +498,47 @@ STAGE PLANS:
                     isSamplingPred: false
                     predicate: cnctevn_id is not null (type: boolean)
                     Statistics: Num rows: 2 Data size: 9081 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      Estimated key counts: Map 1 => 1
-                      keys:
-                        0 contact_event_id (type: string)
-                        1 cnctevn_id (type: string)
-                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col13, _col19, _col21, _col23, _col30, _col33, _col38
-                      input vertices:
-                        0 Map 1
-                      Position of Big Table: 1
-                      Statistics: Num rows: 2 Data size: 9989 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string), _col6 (type: string), _col7 (type: int), _col8 (type: array<string>), _col13 (type: string), _col33 (type: array<string>), _col21 (type: string), _col23 (type: string), _col30 (type: string), _col19 (type: string), _col38 (type: array<string>)
-                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15
+                    Select Operator
+                      expressions: cnctevn_id (type: string), svcrqst_id (type: string), cnctmd_cd (type: string), svcrtyp_cd (type: string), cmpltyp_cd (type: string), sum_reason_cd (type: string), svcrqct_cds (type: array<string>), notes (type: array<string>)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
+                      Statistics: Num rows: 2 Data size: 9081 Basic stats: COMPLETE Column stats: NONE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        Estimated key counts: Map 1 => 1
+                        keys:
+                          0 _col0 (type: string)
+                          1 _col0 (type: string)
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col10, _col11, _col12, _col13, _col14, _col15, _col16
+                        input vertices:
+                          0 Map 1
+                        Position of Big Table: 1
                         Statistics: Num rows: 2 Data size: 9989 Basic stats: COMPLETE Column stats: NONE
-                        File Output Operator
-                          compressed: false
-                          GlobalTableId: 1
-#### A masked pattern was here ####
-                          NumFilesPerFileSink: 1
+                        Select Operator
+                          expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string), _col6 (type: string), _col7 (type: int), _col8 (type: array<string>), _col10 (type: string), _col15 (type: array<string>), _col12 (type: string), _col13 (type: string), _col14 (type: string), _col11 (type: string), _col16 (type: array<string>)
+                          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15
                           Statistics: Num rows: 2 Data size: 9989 Basic stats: COMPLETE Column stats: NONE
+                          File Output Operator
+                            compressed: false
+                            GlobalTableId: 1
 #### A masked pattern was here ####
-                          table:
-                              input format: org.apache.hadoop.mapred.TextInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                              properties:
-                                columns contact_event_id,ce_create_dt,ce_end_dt,contact_type,cnctevs_cd,contact_mode,cntvnst_stts_cd,total_transfers,ce_notes,svcrqst_id,svcrqct_cds,svcrtyp_cd,cmpltyp_cd,src,cnctmd_cd,notes
-                                columns.types string:string:string:string:string:string:string:int:array<string>:string:array<string>:string:string:string:string:array<string>
-                                name default.ct_events1_test
-                                serialization.format 1
-                                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                              name: default.ct_events1_test
-                          TotalFiles: 1
-                          GatherStats: true
-                          MultiFileSpray: false
+                            NumFilesPerFileSink: 1
+                            Statistics: Num rows: 2 Data size: 9989 Basic stats: COMPLETE Column stats: NONE
+#### A masked pattern was here ####
+                            table:
+                                input format: org.apache.hadoop.mapred.TextInputFormat
+                                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                                properties:
+                                  columns contact_event_id,ce_create_dt,ce_end_dt,contact_type,cnctevs_cd,contact_mode,cntvnst_stts_cd,total_transfers,ce_notes,svcrqst_id,svcrqct_cds,svcrtyp_cd,cmpltyp_cd,src,cnctmd_cd,notes
+                                  columns.types string:string:string:string:string:string:string:int:array<string>:string:array<string>:string:string:string:string:array<string>
+                                  name default.ct_events1_test
+                                  serialization.format 1
+                                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                                name: default.ct_events1_test
+                            TotalFiles: 1
+                            GatherStats: true
+                            MultiFileSpray: false
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -1180,22 +1366,144 @@ TOK_CREATETABLE
    TOK_QUERY
       TOK_FROM
          TOK_JOIN
-            TOK_TABREF
-               TOK_TABNAME
-                  ct_events_clean
-               a
-            TOK_TABREF
-               TOK_TABNAME
-                  service_request_clean
-               b
+            TOK_SUBQUERY
+               TOK_QUERY
+                  TOK_FROM
+                     TOK_TABREF
+                        TOK_TABNAME
+                           default
+                           ct_events_clean
+                        a
+                  TOK_INSERT
+                     TOK_DESTINATION
+                        TOK_DIR
+                           TOK_TMP_FILE
+                     TOK_SELECT
+                        TOK_SELEXPR
+                           .
+                              TOK_TABLE_OR_COL
+                                 a
+                              contact_event_id
+                           contact_event_id
+                        TOK_SELEXPR
+                           .
+                              TOK_TABLE_OR_COL
+                                 a
+                              ce_create_dt
+                           ce_create_dt
+                        TOK_SELEXPR
+                           .
+                              TOK_TABLE_OR_COL
+                                 a
+                              ce_end_dt
+                           ce_end_dt
+                        TOK_SELEXPR
+                           .
+                              TOK_TABLE_OR_COL
+                                 a
+                              contact_type
+                           contact_type
+                        TOK_SELEXPR
+                           .
+                              TOK_TABLE_OR_COL
+                                 a
+                              cnctevs_cd
+                           cnctevs_cd
+                        TOK_SELEXPR
+                           .
+                              TOK_TABLE_OR_COL
+                                 a
+                              contact_mode
+                           contact_mode
+                        TOK_SELEXPR
+                           .
+                              TOK_TABLE_OR_COL
+                                 a
+                              cntvnst_stts_cd
+                           cntvnst_stts_cd
+                        TOK_SELEXPR
+                           .
+                              TOK_TABLE_OR_COL
+                                 a
+                              total_transfers
+                           total_transfers
+                        TOK_SELEXPR
+                           .
+                              TOK_TABLE_OR_COL
+                                 a
+                              ce_notes
+                           ce_notes
+               $hdt$_0
+            TOK_SUBQUERY
+               TOK_QUERY
+                  TOK_FROM
+                     TOK_TABREF
+                        TOK_TABNAME
+                           default
+                           service_request_clean
+                        b
+                  TOK_INSERT
+                     TOK_DESTINATION
+                        TOK_DIR
+                           TOK_TMP_FILE
+                     TOK_SELECT
+                        TOK_SELEXPR
+                           .
+                              TOK_TABLE_OR_COL
+                                 b
+                              cnctevn_id
+                           cnctevn_id
+                        TOK_SELEXPR
+                           .
+                              TOK_TABLE_OR_COL
+                                 b
+                              svcrqst_id
+                           svcrqst_id
+                        TOK_SELEXPR
+                           .
+                              TOK_TABLE_OR_COL
+                                 b
+                              cnctmd_cd
+                           cnctmd_cd
+                        TOK_SELEXPR
+                           .
+                              TOK_TABLE_OR_COL
+                                 b
+                              svcrtyp_cd
+                           svcrtyp_cd
+                        TOK_SELEXPR
+                           .
+                              TOK_TABLE_OR_COL
+                                 b
+                              cmpltyp_cd
+                           cmpltyp_cd
+                        TOK_SELEXPR
+                           .
+                              TOK_TABLE_OR_COL
+                                 b
+                              sum_reason_cd
+                           sum_reason_cd
+                        TOK_SELEXPR
+                           .
+                              TOK_TABLE_OR_COL
+                                 b
+                              svcrqct_cds
+                           svcrqct_cds
+                        TOK_SELEXPR
+                           .
+                              TOK_TABLE_OR_COL
+                                 b
+                              notes
+                           notes
+               $hdt$_1
             =
                .
                   TOK_TABLE_OR_COL
-                     a
+                     $hdt$_0
                   contact_event_id
                .
                   TOK_TABLE_OR_COL
-                     b
+                     $hdt$_1
                   cnctevn_id
       TOK_INSERT
          TOK_DESTINATION
@@ -1203,45 +1511,101 @@ TOK_CREATETABLE
                TOK_TMP_FILE
          TOK_SELECT
             TOK_SELEXPR
-               TOK_ALLCOLREF
-                  TOK_TABNAME
-                     a
+               .
+                  TOK_TABLE_OR_COL
+                     $hdt$_0
+                  contact_event_id
+               a.contact_event_id
             TOK_SELEXPR
                .
                   TOK_TABLE_OR_COL
-                     b
+                     $hdt$_0
+                  ce_create_dt
+               a.ce_create_dt
+            TOK_SELEXPR
+               .
+                  TOK_TABLE_OR_COL
+                     $hdt$_0
+                  ce_end_dt
+               a.ce_end_dt
+            TOK_SELEXPR
+               .
+                  TOK_TABLE_OR_COL
+                     $hdt$_0
+                  contact_type
+               a.contact_type
+            TOK_SELEXPR
+               .
+                  TOK_TABLE_OR_COL
+                     $hdt$_0
+                  cnctevs_cd
+               a.cnctevs_cd
+            TOK_SELEXPR
+               .
+                  TOK_TABLE_OR_COL
+                     $hdt$_0
+                  contact_mode
+               a.contact_mode
+            TOK_SELEXPR
+               .
+                  TOK_TABLE_OR_COL
+                     $hdt$_0
+                  cntvnst_stts_cd
+               a.cntvnst_stts_cd
+            TOK_SELEXPR
+               .
+                  TOK_TABLE_OR_COL
+                     $hdt$_0
+                  total_transfers
+               a.total_transfers
+            TOK_SELEXPR
+               .
+                  TOK_TABLE_OR_COL
+                     $hdt$_0
+                  ce_notes
+               a.ce_notes
+            TOK_SELEXPR
+               .
+                  TOK_TABLE_OR_COL
+                     $hdt$_1
                   svcrqst_id
+               b.svcrqst_id
             TOK_SELEXPR
                .
                   TOK_TABLE_OR_COL
-                     b
+                     $hdt$_1
                   svcrqct_cds
+               b.svcrqct_cds
             TOK_SELEXPR
                .
                   TOK_TABLE_OR_COL
-                     b
+                     $hdt$_1
                   svcrtyp_cd
+               b.svcrtyp_cd
             TOK_SELEXPR
                .
                   TOK_TABLE_OR_COL
-                     b
+                     $hdt$_1
                   cmpltyp_cd
+               b.cmpltyp_cd
             TOK_SELEXPR
                .
                   TOK_TABLE_OR_COL
-                     b
+                     $hdt$_1
                   sum_reason_cd
                src
             TOK_SELEXPR
                .
                   TOK_TABLE_OR_COL
-                     b
+                     $hdt$_1
                   cnctmd_cd
+               b.cnctmd_cd
             TOK_SELEXPR
                .
                   TOK_TABLE_OR_COL
-                     b
+                     $hdt$_1
                   notes
+               b.notes
 
 
 STAGE DEPENDENCIES:
@@ -1268,14 +1632,18 @@ STAGE PLANS:
                     isSamplingPred: false
                     predicate: contact_event_id is not null (type: boolean)
                     Statistics: Num rows: 1 Data size: 3750 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: contact_event_id (type: string)
-                      sort order: +
-                      Map-reduce partition columns: contact_event_id (type: string)
+                    Select Operator
+                      expressions: contact_event_id (type: string), ce_create_dt (type: string), ce_end_dt (type: string), contact_type (type: string), cnctevs_cd (type: string), contact_mode (type: string), cntvnst_stts_cd (type: string), total_transfers (type: int), ce_notes (type: array<string>)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                       Statistics: Num rows: 1 Data size: 3750 Basic stats: COMPLETE Column stats: NONE
-                      tag: 0
-                      value expressions: ce_create_dt (type: string), ce_end_dt (type: string), contact_type (type: string), cnctevs_cd (type: string), contact_mode (type: string), cntvnst_stts_cd (type: string), total_transfers (type: int), ce_notes (type: array<string>)
-                      auto parallelism: true
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 3750 Basic stats: COMPLETE Column stats: NONE
+                        tag: 0
+                        value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string), _col6 (type: string), _col7 (type: int), _col8 (type: array<string>)
+                        auto parallelism: true
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -1339,44 +1707,48 @@ STAGE PLANS:
                     isSamplingPred: false
                     predicate: cnctevn_id is not null (type: boolean)
                     Statistics: Num rows: 2 Data size: 9081 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      Estimated key counts: Map 1 => 1
-                      keys:
-                        0 contact_event_id (type: string)
-                        1 cnctevn_id (type: string)
-                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col13, _col19, _col21, _col23, _col30, _col33, _col38
-                      input vertices:
-                        0 Map 1
-                      Position of Big Table: 1
-                      Statistics: Num rows: 2 Data size: 9989 Basic stats: COMPLETE Column stats: NONE
-                      HybridGraceHashJoin: true
-                      Select Operator
-                        expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string), _col6 (type: string), _col7 (type: int), _col8 (type: array<string>), _col13 (type: string), _col33 (type: array<string>), _col21 (type: string), _col23 (type: string), _col30 (type: string), _col19 (type: string), _col38 (type: array<string>)
-                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15
+                    Select Operator
+                      expressions: cnctevn_id (type: string), svcrqst_id (type: string), cnctmd_cd (type: string), svcrtyp_cd (type: string), cmpltyp_cd (type: string), sum_reason_cd (type: string), svcrqct_cds (type: array<string>), notes (type: array<string>)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
+                      Statistics: Num rows: 2 Data size: 9081 Basic stats: COMPLETE Column stats: NONE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        Estimated key counts: Map 1 => 1
+                        keys:
+                          0 _col0 (type: string)
+                          1 _col0 (type: string)
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col10, _col11, _col12, _col13, _col14, _col15, _col16
+                        input vertices:
+                          0 Map 1
+                        Position of Big Table: 1
                         Statistics: Num rows: 2 Data size: 9989 Basic stats: COMPLETE Column stats: NONE
-                        File Output Operator
-                          compressed: false
-                          GlobalTableId: 1
-#### A masked pattern was here ####
-                          NumFilesPerFileSink: 1
+                        HybridGraceHashJoin: true
+                        Select Operator
+                          expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string), _col6 (type: string), _col7 (type: int), _col8 (type: array<string>), _col10 (type: string), _col15 (type: array<string>), _col12 (type: string), _col13 (type: string), _col14 (type: string), _col11 (type: string), _col16 (type: array<string>)
+                          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15
                           Statistics: Num rows: 2 Data size: 9989 Basic stats: COMPLETE Column stats: NONE
+                          File Output Operator
+                            compressed: false
+                            GlobalTableId: 1
 #### A masked pattern was here ####
-                          table:
-                              input format: org.apache.hadoop.mapred.TextInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                              properties:
-                                columns contact_event_id,ce_create_dt,ce_end_dt,contact_type,cnctevs_cd,contact_mode,cntvnst_stts_cd,total_transfers,ce_notes,svcrqst_id,svcrqct_cds,svcrtyp_cd,cmpltyp_cd,src,cnctmd_cd,notes
-                                columns.types string:string:string:string:string:string:string:int:array<string>:string:array<string>:string:string:string:string:array<string>
-                                name default.ct_events1_test
-                                serialization.format 1
-                                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                              name: default.ct_events1_test
-                          TotalFiles: 1
-                          GatherStats: true
-                          MultiFileSpray: false
+                            NumFilesPerFileSink: 1
+                            Statistics: Num rows: 2 Data size: 9989 Basic stats: COMPLETE Column stats: NONE
+#### A masked pattern was here ####
+                            table:
+                                input format: org.apache.hadoop.mapred.TextInputFormat
+                                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                                properties:
+                                  columns contact_event_id,ce_create_dt,ce_end_dt,contact_type,cnctevs_cd,contact_mode,cntvnst_stts_cd,total_transfers,ce_notes,svcrqst_id,svcrqct_cds,svcrtyp_cd,cmpltyp_cd,src,cnctmd_cd,notes
+                                  columns.types string:string:string:string:string:string:string:int:array<string>:string:array<string>:string:string:string:string:array<string>
+                                  name default.ct_events1_test
+                                  serialization.format 1
+                                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                                name: default.ct_events1_test
+                            TotalFiles: 1
+                            GatherStats: true
+                            MultiFileSpray: false
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:

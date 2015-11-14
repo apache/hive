@@ -120,6 +120,15 @@ full outer join
 
 select * from
 (select * from tab where tab.key = 0)a
+full outer join
+(select * from tab_part where tab_part.key = 98)b on a.key = b.key join tab_part c on b.key = c.key;
+
+select * from
+(select * from tab where tab.key = 0)a
 join
 (select * from tab_part where tab_part.key = 98)b full outer join tab_part c on a.key = b.key and b.key = c.key;
 
+select * from
+(select * from tab where tab.key = 0)a
+join
+(select * from tab_part where tab_part.key = 98)b on a.key = b.key full outer join tab_part c on b.key = c.key;

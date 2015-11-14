@@ -59,46 +59,62 @@ STAGE PLANS:
             alias: foo
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: ((id is not null and line_id is not null) and (orders <> 'blah')) (type: boolean)
+              predicate: (((orders <> 'blah') and id is not null) and line_id is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-              Reduce Output Operator
-                key expressions: id (type: int), line_id (type: int)
-                sort order: ++
-                Map-reduce partition columns: id (type: int), line_id (type: int)
+              Select Operator
+                expressions: id (type: int), line_id (type: int)
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int), _col1 (type: int)
+                  sort order: ++
+                  Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           TableScan
             alias: bar
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (id is not null and line_id is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-              Reduce Output Operator
-                key expressions: id (type: int), line_id (type: int)
-                sort order: ++
-                Map-reduce partition columns: id (type: int), line_id (type: int)
+              Select Operator
+                expressions: id (type: int), line_id (type: int)
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int), _col1 (type: int)
+                  sort order: ++
+                  Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           TableScan
             alias: split
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (id is not null and line_id is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-              Reduce Output Operator
-                key expressions: id (type: int), line_id (type: int)
-                sort order: ++
-                Map-reduce partition columns: id (type: int), line_id (type: int)
+              Select Operator
+                expressions: id (type: int), line_id (type: int)
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int), _col1 (type: int)
+                  sort order: ++
+                  Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           TableScan
             alias: forecast
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (id is not null and line_id is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-              Reduce Output Operator
-                key expressions: id (type: int), line_id (type: int)
-                sort order: ++
-                Map-reduce partition columns: id (type: int), line_id (type: int)
+              Select Operator
+                expressions: id (type: int), line_id (type: int)
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int), _col1 (type: int)
+                  sort order: ++
+                  Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -106,10 +122,10 @@ STAGE PLANS:
                Inner Join 0 to 2
                Inner Join 0 to 3
           keys:
-            0 id (type: int), line_id (type: int)
-            1 id (type: int), line_id (type: int)
-            2 id (type: int), line_id (type: int)
-            3 id (type: int), line_id (type: int)
+            0 _col0 (type: int), _col1 (type: int)
+            1 _col0 (type: int), _col1 (type: int)
+            2 _col0 (type: int), _col1 (type: int)
+            3 _col0 (type: int), _col1 (type: int)
           outputColumnNames: _col0
           Statistics: Num rows: 3 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Group By Operator

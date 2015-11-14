@@ -8708,22 +8708,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return distinctExprs;
   }
 
-  // see if there are any distinct expressions
-  protected static boolean distinctExprsExists(QB qb) {
-    QBParseInfo qbp = qb.getParseInfo();
-
-    TreeSet<String> ks = new TreeSet<String>();
-    ks.addAll(qbp.getClauseNames());
-
-    for (String dest : ks) {
-      List<ASTNode> list = qbp.getDistinctFuncExprsForClause(dest);
-      if (!list.isEmpty()) {
-        return true;
-      }
-    }
-    return false;
-  }
-
   @SuppressWarnings("nls")
   private Operator genBodyPlan(QB qb, Operator input, Map<String, Operator> aliasToOpInfo)
       throws SemanticException {
