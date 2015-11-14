@@ -29,6 +29,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.logging.log4j.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -117,7 +118,26 @@ public class OptionsProcessor {
       commandLine = new GnuParser().parse(options, argv);
       Properties confProps = commandLine.getOptionProperties("hiveconf");
       for (String propKey : confProps.stringPropertyNames()) {
-        System.setProperty(propKey, confProps.getProperty(propKey));
+        // with HIVE-11304, hive.root.logger cannot have both logger name and log level.
+        // if we still see it, split logger and level separately for hive.root.logger
+        // and hive.log.level respectively
+        if (propKey.equalsIgnoreCase("hive.root.logger")) {
+          String propVal = confProps.getProperty(propKey);
+          if (propVal.contains(",")) {
+            String[] tokens = propVal.split(",");
+            for (String token : tokens) {
+              if (Level.getLevel(token) == null) {
+                System.setProperty("hive.root.logger", token);
+              } else {
+                System.setProperty("hive.log.level", token);
+              }
+            }
+          } else {
+            System.setProperty(propKey, confProps.getProperty(propKey));
+          }
+        } else {
+          System.setProperty(propKey, confProps.getProperty(propKey));
+        }
       }
 
       Properties hiveVars = commandLine.getOptionProperties("define");
