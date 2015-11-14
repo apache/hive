@@ -99,24 +99,28 @@ STAGE PLANS:
   Stage: Stage-8
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        a 
+        $hdt$_0:a 
           Fetch Operator
             limit: -1
         subquery1:a 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        a 
+        $hdt$_0:a 
           TableScan
             alias: a
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key is not null and ((key = 2) or (key = 3))) (type: boolean)
               Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-              HashTable Sink Operator
-                keys:
-                  0 key (type: int)
-                  1 key (type: int)
+              Select Operator
+                expressions: key (type: int), val (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                HashTable Sink Operator
+                  keys:
+                    0 _col0 (type: int)
+                    1 _col0 (type: int)
         subquery1:a 
           TableScan
             alias: a
@@ -124,10 +128,14 @@ STAGE PLANS:
             Filter Operator
               predicate: (key is not null and (not ((key = 2) or (key = 3)))) (type: boolean)
               Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
-              HashTable Sink Operator
-                keys:
-                  0 key (type: int)
-                  1 key (type: int)
+              Select Operator
+                expressions: key (type: int), val (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                HashTable Sink Operator
+                  keys:
+                    0 _col0 (type: int)
+                    1 _col0 (type: int)
 
   Stage: Stage-2
     Map Reduce
@@ -138,16 +146,16 @@ STAGE PLANS:
             Filter Operator
               predicate: (key is not null and ((key = 2) or (key = 3))) (type: boolean)
               Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-              Map Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                keys:
-                  0 key (type: int)
-                  1 key (type: int)
-                outputColumnNames: _col0, _col1, _col5, _col6
+              Select Operator
+                expressions: key (type: int), val (type: string)
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: string)
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col0 (type: int)
+                    1 _col0 (type: int)
                   outputColumnNames: _col0, _col1, _col2, _col3
                   Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Union
@@ -165,16 +173,16 @@ STAGE PLANS:
             Filter Operator
               predicate: (key is not null and (not ((key = 2) or (key = 3)))) (type: boolean)
               Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
-              Map Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                keys:
-                  0 key (type: int)
-                  1 key (type: int)
-                outputColumnNames: _col0, _col1, _col5, _col6
+              Select Operator
+                expressions: key (type: int), val (type: string)
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: string)
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col0 (type: int)
+                    1 _col0 (type: int)
                   outputColumnNames: _col0, _col1, _col2, _col3
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Union
@@ -232,24 +240,28 @@ STAGE PLANS:
   Stage: Stage-8
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        a 
+        $hdt$_0:a 
           Fetch Operator
             limit: -1
         subquery1:a 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        a 
+        $hdt$_0:a 
           TableScan
             alias: a
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key = 2) or (key = 3)) (type: boolean)
               Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-              HashTable Sink Operator
-                keys:
-                  0 key (type: int)
-                  1 key (type: int)
+              Select Operator
+                expressions: key (type: int), val (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                HashTable Sink Operator
+                  keys:
+                    0 _col0 (type: int)
+                    1 _col0 (type: int)
         subquery1:a 
           TableScan
             alias: a
@@ -257,10 +269,14 @@ STAGE PLANS:
             Filter Operator
               predicate: (not ((key = 2) or (key = 3))) (type: boolean)
               Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
-              HashTable Sink Operator
-                keys:
-                  0 key (type: int)
-                  1 key (type: int)
+              Select Operator
+                expressions: key (type: int), val (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                HashTable Sink Operator
+                  keys:
+                    0 _col0 (type: int)
+                    1 _col0 (type: int)
 
   Stage: Stage-2
     Map Reduce
@@ -271,16 +287,16 @@ STAGE PLANS:
             Filter Operator
               predicate: ((key = 2) or (key = 3)) (type: boolean)
               Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-              Map Join Operator
-                condition map:
-                     Right Outer Join0 to 1
-                keys:
-                  0 key (type: int)
-                  1 key (type: int)
-                outputColumnNames: _col0, _col1, _col5, _col6
-                Statistics: Num rows: 6 Data size: 26 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: string)
+              Select Operator
+                expressions: key (type: int), val (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Right Outer Join0 to 1
+                  keys:
+                    0 _col0 (type: int)
+                    1 _col0 (type: int)
                   outputColumnNames: _col0, _col1, _col2, _col3
                   Statistics: Num rows: 6 Data size: 26 Basic stats: COMPLETE Column stats: NONE
                   Union
@@ -298,16 +314,16 @@ STAGE PLANS:
             Filter Operator
               predicate: (not ((key = 2) or (key = 3))) (type: boolean)
               Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
-              Map Join Operator
-                condition map:
-                     Right Outer Join0 to 1
-                keys:
-                  0 key (type: int)
-                  1 key (type: int)
-                outputColumnNames: _col0, _col1, _col5, _col6
+              Select Operator
+                expressions: key (type: int), val (type: string)
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: string)
+                Map Join Operator
+                  condition map:
+                       Right Outer Join0 to 1
+                  keys:
+                    0 _col0 (type: int)
+                    1 _col0 (type: int)
                   outputColumnNames: _col0, _col1, _col2, _col3
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Union
@@ -367,24 +383,28 @@ STAGE PLANS:
   Stage: Stage-8
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        a 
+        $hdt$_0:$hdt$_0:a 
           Fetch Operator
             limit: -1
         subquery1:a 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        a 
+        $hdt$_0:$hdt$_0:a 
           TableScan
             alias: a
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key is not null and ((key = 2) or (key = 3))) (type: boolean)
               Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-              HashTable Sink Operator
-                keys:
-                  0 key (type: int)
-                  1 key (type: int)
+              Select Operator
+                expressions: key (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                HashTable Sink Operator
+                  keys:
+                    0 _col0 (type: int)
+                    1 _col0 (type: int)
         subquery1:a 
           TableScan
             alias: a
@@ -392,10 +412,14 @@ STAGE PLANS:
             Filter Operator
               predicate: (key is not null and (not ((key = 2) or (key = 3)))) (type: boolean)
               Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
-              HashTable Sink Operator
-                keys:
-                  0 key (type: int)
-                  1 key (type: int)
+              Select Operator
+                expressions: key (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                HashTable Sink Operator
+                  keys:
+                    0 _col0 (type: int)
+                    1 _col0 (type: int)
 
   Stage: Stage-2
     Map Reduce
@@ -406,48 +430,56 @@ STAGE PLANS:
             Filter Operator
               predicate: (key is not null and ((key = 2) or (key = 3))) (type: boolean)
               Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-              Map Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                keys:
-                  0 key (type: int)
-                  1 key (type: int)
+              Select Operator
+                expressions: key (type: int)
+                outputColumnNames: _col0
                 Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                Union
-                  Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-                  Group By Operator
-                    aggregations: count(1)
-                    mode: hash
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      sort order: 
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col0 (type: int)
+                    1 _col0 (type: int)
+                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Union
+                    Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: count(1)
+                      mode: hash
+                      outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col0 (type: bigint)
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: bigint)
           TableScan
             alias: b
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key is not null and (not ((key = 2) or (key = 3)))) (type: boolean)
               Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
-              Map Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                keys:
-                  0 key (type: int)
-                  1 key (type: int)
+              Select Operator
+                expressions: key (type: int)
+                outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
-                Union
-                  Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-                  Group By Operator
-                    aggregations: count(1)
-                    mode: hash
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      sort order: 
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col0 (type: int)
+                    1 _col0 (type: int)
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                  Union
+                    Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: count(1)
+                      mode: hash
+                      outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col0 (type: bigint)
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: bigint)
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:
@@ -496,24 +528,28 @@ STAGE PLANS:
   Stage: Stage-8
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        a 
+        $hdt$_0:$hdt$_0:a 
           Fetch Operator
             limit: -1
         subquery1:a 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        a 
+        $hdt$_0:$hdt$_0:a 
           TableScan
             alias: a
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key = 2) or (key = 3)) (type: boolean)
               Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-              HashTable Sink Operator
-                keys:
-                  0 key (type: int)
-                  1 key (type: int)
+              Select Operator
+                expressions: key (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                HashTable Sink Operator
+                  keys:
+                    0 _col0 (type: int)
+                    1 _col0 (type: int)
         subquery1:a 
           TableScan
             alias: a
@@ -521,10 +557,14 @@ STAGE PLANS:
             Filter Operator
               predicate: (not ((key = 2) or (key = 3))) (type: boolean)
               Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
-              HashTable Sink Operator
-                keys:
-                  0 key (type: int)
-                  1 key (type: int)
+              Select Operator
+                expressions: key (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                HashTable Sink Operator
+                  keys:
+                    0 _col0 (type: int)
+                    1 _col0 (type: int)
 
   Stage: Stage-2
     Map Reduce
@@ -535,48 +575,56 @@ STAGE PLANS:
             Filter Operator
               predicate: ((key = 2) or (key = 3)) (type: boolean)
               Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-              Map Join Operator
-                condition map:
-                     Right Outer Join0 to 1
-                keys:
-                  0 key (type: int)
-                  1 key (type: int)
-                Statistics: Num rows: 6 Data size: 26 Basic stats: COMPLETE Column stats: NONE
-                Union
-                  Statistics: Num rows: 7 Data size: 30 Basic stats: COMPLETE Column stats: NONE
-                  Group By Operator
-                    aggregations: count(1)
-                    mode: hash
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      sort order: 
+              Select Operator
+                expressions: key (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Right Outer Join0 to 1
+                  keys:
+                    0 _col0 (type: int)
+                    1 _col0 (type: int)
+                  Statistics: Num rows: 6 Data size: 26 Basic stats: COMPLETE Column stats: NONE
+                  Union
+                    Statistics: Num rows: 7 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: count(1)
+                      mode: hash
+                      outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col0 (type: bigint)
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: bigint)
           TableScan
             alias: b
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (not ((key = 2) or (key = 3))) (type: boolean)
               Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
-              Map Join Operator
-                condition map:
-                     Right Outer Join0 to 1
-                keys:
-                  0 key (type: int)
-                  1 key (type: int)
+              Select Operator
+                expressions: key (type: int)
+                outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
-                Union
-                  Statistics: Num rows: 7 Data size: 30 Basic stats: COMPLETE Column stats: NONE
-                  Group By Operator
-                    aggregations: count(1)
-                    mode: hash
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      sort order: 
+                Map Join Operator
+                  condition map:
+                       Right Outer Join0 to 1
+                  keys:
+                    0 _col0 (type: int)
+                    1 _col0 (type: int)
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                  Union
+                    Statistics: Num rows: 7 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: count(1)
+                      mode: hash
+                      outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col0 (type: bigint)
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: bigint)
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:

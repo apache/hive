@@ -83,10 +83,14 @@ STAGE PLANS:
                 TableScan
                   alias: t2
                   Statistics: Num rows: 6 Data size: 550 Basic stats: COMPLETE Column stats: NONE
-                  Spark HashTable Sink Operator
-                    keys:
-                      0 a (type: int)
-                      1 c (type: int)
+                  Select Operator
+                    expressions: c (type: int), v2 (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 6 Data size: 550 Basic stats: COMPLETE Column stats: NONE
+                    Spark HashTable Sink Operator
+                      keys:
+                        0 _col1 (type: int)
+                        1 _col0 (type: int)
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
@@ -100,19 +104,19 @@ STAGE PLANS:
                 TableScan
                   alias: t1
                   Statistics: Num rows: 6 Data size: 544 Basic stats: COMPLETE Column stats: NONE
-                  Map Join Operator
-                    condition map:
-                         Left Outer Join0 to 1
-                    keys:
-                      0 a (type: int)
-                      1 c (type: int)
-                    outputColumnNames: _col0, _col1, _col5, _col6
-                    input vertices:
-                      1 Map 2
-                    Statistics: Num rows: 6 Data size: 598 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: _col0 (type: string), _col1 (type: int), _col5 (type: int), _col6 (type: string)
+                  Select Operator
+                    expressions: v1 (type: string), a (type: int)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 6 Data size: 544 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
+                      condition map:
+                           Left Outer Join0 to 1
+                      keys:
+                        0 _col1 (type: int)
+                        1 _col0 (type: int)
                       outputColumnNames: _col0, _col1, _col2, _col3
+                      input vertices:
+                        1 Map 2
                       Statistics: Num rows: 6 Data size: 598 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
@@ -172,10 +176,14 @@ STAGE PLANS:
                 TableScan
                   alias: t1
                   Statistics: Num rows: 6 Data size: 544 Basic stats: COMPLETE Column stats: NONE
-                  Spark HashTable Sink Operator
-                    keys:
-                      0 a (type: int)
-                      1 c (type: int)
+                  Select Operator
+                    expressions: v1 (type: string), a (type: int)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 6 Data size: 544 Basic stats: COMPLETE Column stats: NONE
+                    Spark HashTable Sink Operator
+                      keys:
+                        0 _col1 (type: int)
+                        1 _col0 (type: int)
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
@@ -189,19 +197,19 @@ STAGE PLANS:
                 TableScan
                   alias: t2
                   Statistics: Num rows: 6 Data size: 550 Basic stats: COMPLETE Column stats: NONE
-                  Map Join Operator
-                    condition map:
-                         Right Outer Join0 to 1
-                    keys:
-                      0 a (type: int)
-                      1 c (type: int)
-                    outputColumnNames: _col0, _col1, _col5, _col6
-                    input vertices:
-                      0 Map 1
-                    Statistics: Num rows: 6 Data size: 598 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: _col0 (type: string), _col1 (type: int), _col5 (type: int), _col6 (type: string)
+                  Select Operator
+                    expressions: c (type: int), v2 (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 6 Data size: 550 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
+                      condition map:
+                           Right Outer Join0 to 1
+                      keys:
+                        0 _col1 (type: int)
+                        1 _col0 (type: int)
                       outputColumnNames: _col0, _col1, _col2, _col3
+                      input vertices:
+                        0 Map 1
                       Statistics: Num rows: 6 Data size: 598 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false

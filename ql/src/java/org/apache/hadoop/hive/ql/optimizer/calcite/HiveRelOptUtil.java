@@ -1,11 +1,13 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite;
 
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.core.RelFactories;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
@@ -289,5 +291,43 @@ public class HiveRelOptUtil extends RelOptUtil {
     }
   }
 
+  /**
+   * Creates a relational expression that projects the given fields of the
+   * input.
+   *
+   * <p>Optimizes if the fields are the identity projection.
+   *
+   * @param factory ProjectFactory
+   * @param child Input relational expression
+   * @param posList Source of each projected field
+   * @return Relational expression that projects given fields
+   */
+  public static RelNode createProject(final RelFactories.ProjectFactory factory,
+      final RelNode child, final List<Integer> posList) {
+    RelDataType rowType = child.getRowType();
+    final List<String> fieldNames = rowType.getFieldNames();
+    final RexBuilder rexBuilder = child.getCluster().getRexBuilder();
+    return createProject(child,
+        new AbstractList<RexNode>() {
+          public int size() {
+            return posList.size();
+          }
+
+          public RexNode get(int index) {
+            final int pos = posList.get(index);
+            return rexBuilder.makeInputRef(child, pos);
+          }
+        },
+        new AbstractList<String>() {
+          public int size() {
+            return posList.size();
+          }
+
+          public String get(int index) {
+            final int pos = posList.get(index);
+            return fieldNames.get(pos);
+          }
+        }, true, factory);
+  }
 
 }

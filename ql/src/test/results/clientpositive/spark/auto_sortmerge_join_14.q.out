@@ -57,10 +57,14 @@ STAGE PLANS:
                 TableScan
                   alias: b
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-                  Spark HashTable Sink Operator
-                    keys:
-                      0 key (type: int)
-                      1 key (type: int)
+                  Select Operator
+                    expressions: key (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                    Spark HashTable Sink Operator
+                      keys:
+                        0 _col0 (type: int)
+                        1 _col0 (type: int)
             Local Work:
               Map Reduce Local Work
 
@@ -75,24 +79,28 @@ STAGE PLANS:
                 TableScan
                   alias: a
                   Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
-                  Map Join Operator
-                    condition map:
-                         Left Outer Join0 to 1
-                    keys:
-                      0 key (type: int)
-                      1 key (type: int)
-                    input vertices:
-                      1 Map 3
-                    Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: NONE
-                    Group By Operator
-                      aggregations: count()
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        sort order: 
+                  Select Operator
+                    expressions: key (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
+                      condition map:
+                           Left Outer Join0 to 1
+                      keys:
+                        0 _col0 (type: int)
+                        1 _col0 (type: int)
+                      input vertices:
+                        1 Map 3
+                      Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: count()
+                        mode: hash
+                        outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col0 (type: bigint)
+                        Reduce Output Operator
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col0 (type: bigint)
             Local Work:
               Map Reduce Local Work
         Reducer 2 
@@ -160,10 +168,14 @@ STAGE PLANS:
                 TableScan
                   alias: a
                   Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
-                  Spark HashTable Sink Operator
-                    keys:
-                      0 key (type: int)
-                      1 key (type: int)
+                  Select Operator
+                    expressions: key (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+                    Spark HashTable Sink Operator
+                      keys:
+                        0 _col0 (type: int)
+                        1 _col0 (type: int)
             Local Work:
               Map Reduce Local Work
 
@@ -178,24 +190,28 @@ STAGE PLANS:
                 TableScan
                   alias: b
                   Statistics: Num rows: 189 Data size: 1891 Basic stats: COMPLETE Column stats: NONE
-                  Map Join Operator
-                    condition map:
-                         Right Outer Join0 to 1
-                    keys:
-                      0 key (type: int)
-                      1 key (type: int)
-                    input vertices:
-                      0 Map 1
-                    Statistics: Num rows: 207 Data size: 2080 Basic stats: COMPLETE Column stats: NONE
-                    Group By Operator
-                      aggregations: count()
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        sort order: 
+                  Select Operator
+                    expressions: key (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 189 Data size: 1891 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
+                      condition map:
+                           Right Outer Join0 to 1
+                      keys:
+                        0 _col0 (type: int)
+                        1 _col0 (type: int)
+                      input vertices:
+                        0 Map 1
+                      Statistics: Num rows: 207 Data size: 2080 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: count()
+                        mode: hash
+                        outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col0 (type: bigint)
+                        Reduce Output Operator
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col0 (type: bigint)
             Local Work:
               Map Reduce Local Work
         Reducer 3 

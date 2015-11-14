@@ -16,24 +16,24 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
-import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.util.ImmutableBitSet;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Planner rule that recognizes a {@link HiveAggregate}
@@ -140,8 +140,9 @@ public class HiveAggregateProjectMergeRule extends RelOptRule {
            i < newAggregate.getRowType().getFieldCount(); i++) {
         posList.add(i);
       }
-      rel = RelOptUtil.createProject(HiveProject.DEFAULT_PROJECT_FACTORY,
+      rel = HiveRelOptUtil.createProject(HiveProject.DEFAULT_PROJECT_FACTORY,
           rel, posList);
+
     }
 
     return rel;

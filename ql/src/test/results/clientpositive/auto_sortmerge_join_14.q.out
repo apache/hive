@@ -56,18 +56,22 @@ STAGE PLANS:
   Stage: Stage-5
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        b 
+        $hdt$_1:b 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        b 
+        $hdt$_1:b 
           TableScan
             alias: b
             Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-            HashTable Sink Operator
-              keys:
-                0 key (type: int)
-                1 key (type: int)
+            Select Operator
+              expressions: key (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
 
   Stage: Stage-3
     Map Reduce
@@ -75,19 +79,23 @@ STAGE PLANS:
           TableScan
             alias: a
             Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
-            Map Join Operator
-              condition map:
-                   Left Outer Join0 to 1
-              keys:
-                0 key (type: int)
-                1 key (type: int)
-              Group By Operator
-                aggregations: count()
-                mode: hash
-                outputColumnNames: _col0
-                Reduce Output Operator
-                  sort order: 
-                  value expressions: _col0 (type: bigint)
+            Select Operator
+              expressions: key (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+              Map Join Operator
+                condition map:
+                     Left Outer Join0 to 1
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Reduce Output Operator
+                    sort order: 
+                    value expressions: _col0 (type: bigint)
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:
@@ -108,19 +116,23 @@ STAGE PLANS:
           TableScan
             alias: a
             Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
-            Sorted Merge Bucket Map Join Operator
-              condition map:
-                   Left Outer Join0 to 1
-              keys:
-                0 key (type: int)
-                1 key (type: int)
-              Group By Operator
-                aggregations: count()
-                mode: hash
-                outputColumnNames: _col0
-                Reduce Output Operator
-                  sort order: 
-                  value expressions: _col0 (type: bigint)
+            Select Operator
+              expressions: key (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+              Sorted Merge Bucket Map Join Operator
+                condition map:
+                     Left Outer Join0 to 1
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Reduce Output Operator
+                    sort order: 
+                    value expressions: _col0 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -182,18 +194,22 @@ STAGE PLANS:
   Stage: Stage-5
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        a 
+        $hdt$_0:a 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        a 
+        $hdt$_0:a 
           TableScan
             alias: a
             Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
-            HashTable Sink Operator
-              keys:
-                0 key (type: int)
-                1 key (type: int)
+            Select Operator
+              expressions: key (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
 
   Stage: Stage-3
     Map Reduce
@@ -201,19 +217,23 @@ STAGE PLANS:
           TableScan
             alias: b
             Statistics: Num rows: 189 Data size: 1891 Basic stats: COMPLETE Column stats: NONE
-            Map Join Operator
-              condition map:
-                   Right Outer Join0 to 1
-              keys:
-                0 key (type: int)
-                1 key (type: int)
-              Group By Operator
-                aggregations: count()
-                mode: hash
-                outputColumnNames: _col0
-                Reduce Output Operator
-                  sort order: 
-                  value expressions: _col0 (type: bigint)
+            Select Operator
+              expressions: key (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 189 Data size: 1891 Basic stats: COMPLETE Column stats: NONE
+              Map Join Operator
+                condition map:
+                     Right Outer Join0 to 1
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Reduce Output Operator
+                    sort order: 
+                    value expressions: _col0 (type: bigint)
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:
@@ -234,19 +254,23 @@ STAGE PLANS:
           TableScan
             alias: b
             Statistics: Num rows: 189 Data size: 1891 Basic stats: COMPLETE Column stats: NONE
-            Sorted Merge Bucket Map Join Operator
-              condition map:
-                   Right Outer Join0 to 1
-              keys:
-                0 key (type: int)
-                1 key (type: int)
-              Group By Operator
-                aggregations: count()
-                mode: hash
-                outputColumnNames: _col0
-                Reduce Output Operator
-                  sort order: 
-                  value expressions: _col0 (type: bigint)
+            Select Operator
+              expressions: key (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 189 Data size: 1891 Basic stats: COMPLETE Column stats: NONE
+              Sorted Merge Bucket Map Join Operator
+                condition map:
+                     Right Outer Join0 to 1
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Reduce Output Operator
+                    sort order: 
+                    value expressions: _col0 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)

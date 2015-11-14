@@ -52,7 +52,7 @@ STAGE PLANS:
             alias: t1
             Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (a < 3) (type: boolean)
+              predicate: (UDFToDouble(a) < 3.0) (type: boolean)
               Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count()
@@ -126,7 +126,7 @@ STAGE PLANS:
             alias: t1
             Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (a < 3) (type: boolean)
+              predicate: (UDFToDouble(a) < 3.0) (type: boolean)
               Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count()
@@ -228,7 +228,7 @@ STAGE PLANS:
             alias: t1
             Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (a < 3) (type: boolean)
+              predicate: (UDFToDouble(a) < 3.0) (type: boolean)
               Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count()
@@ -326,7 +326,7 @@ STAGE PLANS:
             alias: t1
             Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (a < 3) (type: boolean)
+              predicate: (UDFToDouble(a) < 3.0) (type: boolean)
               Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count()

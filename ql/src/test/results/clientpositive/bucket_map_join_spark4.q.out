@@ -146,14 +146,14 @@ STAGE PLANS:
   Stage: Stage-7
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        a 
+        $hdt$_0:a 
           Fetch Operator
             limit: -1
-        c 
+        $hdt$_2:c 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        a 
+        $hdt$_0:a 
           TableScan
             alias: a
             Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
@@ -162,12 +162,16 @@ STAGE PLANS:
               isSamplingPred: false
               predicate: (key is not null and value is not null) (type: boolean)
               Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-              HashTable Sink Operator
-                keys:
-                  0 key (type: int)
-                  1 key (type: int)
-                Position of Big Table: 1
-        c 
+              Select Operator
+                expressions: key (type: int), value (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                HashTable Sink Operator
+                  keys:
+                    0 _col0 (type: int)
+                    1 _col0 (type: int)
+                  Position of Big Table: 1
+        $hdt$_2:c 
           TableScan
             alias: c
             Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
@@ -176,11 +180,15 @@ STAGE PLANS:
               isSamplingPred: false
               predicate: value is not null (type: boolean)
               Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
-              HashTable Sink Operator
-                keys:
-                  0 _col1 (type: string)
-                  1 value (type: string)
-                Position of Big Table: 0
+              Select Operator
+                expressions: value (type: string)
+                outputColumnNames: _col1
+                Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
+                HashTable Sink Operator
+                  keys:
+                    0 _col1 (type: string)
+                    1 _col1 (type: string)
+                  Position of Big Table: 0
 
   Stage: Stage-5
     Map Reduce
@@ -193,50 +201,54 @@ STAGE PLANS:
               isSamplingPred: false
               predicate: key is not null (type: boolean)
               Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
-              Map Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                keys:
-                  0 key (type: int)
-                  1 key (type: int)
-                outputColumnNames: _col0, _col1, _col6
-                Position of Big Table: 1
-                Statistics: Num rows: 5 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: key (type: int), value (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
                   keys:
-                    0 _col1 (type: string)
-                    1 value (type: string)
-                  outputColumnNames: _col0, _col1, _col6, _col11
-                  Position of Big Table: 0
-                  Statistics: Num rows: 5 Data size: 41 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: _col0 (type: int), _col1 (type: string), _col6 (type: string), _col11 (type: string)
-                    outputColumnNames: _col0, _col1, _col2, _col3
+                    0 _col0 (type: int)
+                    1 _col0 (type: int)
+                  outputColumnNames: _col0, _col1, _col3
+                  Position of Big Table: 1
+                  Statistics: Num rows: 5 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                  Map Join Operator
+                    condition map:
+                         Inner Join 0 to 1
+                    keys:
+                      0 _col1 (type: string)
+                      1 _col1 (type: string)
+                    outputColumnNames: _col0, _col1, _col3, _col5
+                    Position of Big Table: 0
                     Statistics: Num rows: 5 Data size: 41 Basic stats: COMPLETE Column stats: NONE
-                    File Output Operator
-                      compressed: false
-                      GlobalTableId: 0
-#### A masked pattern was here ####
-                      NumFilesPerFileSink: 1
+                    Select Operator
+                      expressions: _col0 (type: int), _col1 (type: string), _col3 (type: string), _col5 (type: string)
+                      outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 5 Data size: 41 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        GlobalTableId: 0
 #### A masked pattern was here ####
-                      table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                          properties:
-                            columns _col0,_col1,_col2,_col3
-                            columns.types int:string:string:string
-                            escape.delim \
-                            hive.serialization.extend.additional.nesting.levels true
-                            serialization.escape.crlf true
-                            serialization.format 1
-                            serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      TotalFiles: 1
-                      GatherStats: false
-                      MultiFileSpray: false
+                        NumFilesPerFileSink: 1
+                        Statistics: Num rows: 5 Data size: 41 Basic stats: COMPLETE Column stats: NONE
+#### A masked pattern was here ####
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            properties:
+                              columns _col0,_col1,_col2,_col3
+                              columns.types int:string:string:string
+                              escape.delim \
+                              hive.serialization.extend.additional.nesting.levels true
+                              serialization.escape.crlf true
+                              serialization.format 1
+                              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        TotalFiles: 1
+                        GatherStats: false
+                        MultiFileSpray: false
       Local Work:
         Map Reduce Local Work
       Path -> Alias:
@@ -387,7 +399,7 @@ STAGE PLANS:
               name: default.tbl3
             name: default.tbl3
       Truncated Path -> Alias:
-        /tbl2 [b]
+        /tbl2 [$hdt$_1:b]
 
   Stage: Stage-0
     Fetch Operator
@@ -551,14 +563,14 @@ STAGE PLANS:
   Stage: Stage-7
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        a 
+        $hdt$_0:a 
           Fetch Operator
             limit: -1
-        c 
+        $hdt$_2:c 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        a 
+        $hdt$_0:a 
           TableScan
             alias: a
             Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
@@ -567,12 +579,16 @@ STAGE PLANS:
               isSamplingPred: false
               predicate: (key is not null and value is not null) (type: boolean)
               Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-              HashTable Sink Operator
-                keys:
-                  0 key (type: int)
-                  1 key (type: int)
-                Position of Big Table: 1
-        c 
+              Select Operator
+                expressions: key (type: int), value (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                HashTable Sink Operator
+                  keys:
+                    0 _col0 (type: int)
+                    1 _col0 (type: int)
+                  Position of Big Table: 1
+        $hdt$_2:c 
           TableScan
             alias: c
             Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
@@ -581,11 +597,15 @@ STAGE PLANS:
               isSamplingPred: false
               predicate: value is not null (type: boolean)
               Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
-              HashTable Sink Operator
-                keys:
-                  0 _col1 (type: string)
-                  1 value (type: string)
-                Position of Big Table: 0
+              Select Operator
+                expressions: value (type: string)
+                outputColumnNames: _col1
+                Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
+                HashTable Sink Operator
+                  keys:
+                    0 _col1 (type: string)
+                    1 _col1 (type: string)
+                  Position of Big Table: 0
 
   Stage: Stage-5
     Map Reduce
@@ -598,50 +618,54 @@ STAGE PLANS:
               isSamplingPred: false
               predicate: key is not null (type: boolean)
               Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
-              Map Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                keys:
-                  0 key (type: int)
-                  1 key (type: int)
-                outputColumnNames: _col0, _col1, _col6
-                Position of Big Table: 1
-                Statistics: Num rows: 5 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: key (type: int), value (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
                   keys:
-                    0 _col1 (type: string)
-                    1 value (type: string)
-                  outputColumnNames: _col0, _col1, _col6, _col11
-                  Position of Big Table: 0
-                  Statistics: Num rows: 5 Data size: 41 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: _col0 (type: int), _col1 (type: string), _col6 (type: string), _col11 (type: string)
-                    outputColumnNames: _col0, _col1, _col2, _col3
+                    0 _col0 (type: int)
+                    1 _col0 (type: int)
+                  outputColumnNames: _col0, _col1, _col3
+                  Position of Big Table: 1
+                  Statistics: Num rows: 5 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                  Map Join Operator
+                    condition map:
+                         Inner Join 0 to 1
+                    keys:
+                      0 _col1 (type: string)
+                      1 _col1 (type: string)
+                    outputColumnNames: _col0, _col1, _col3, _col5
+                    Position of Big Table: 0
                     Statistics: Num rows: 5 Data size: 41 Basic stats: COMPLETE Column stats: NONE
-                    File Output Operator
-                      compressed: false
-                      GlobalTableId: 0
-#### A masked pattern was here ####
-                      NumFilesPerFileSink: 1
+                    Select Operator
+                      expressions: _col0 (type: int), _col1 (type: string), _col3 (type: string), _col5 (type: string)
+                      outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 5 Data size: 41 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        GlobalTableId: 0
 #### A masked pattern was here ####
-                      table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                          properties:
-                            columns _col0,_col1,_col2,_col3
-                            columns.types int:string:string:string
-                            escape.delim \
-                            hive.serialization.extend.additional.nesting.levels true
-                            serialization.escape.crlf true
-                            serialization.format 1
-                            serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      TotalFiles: 1
-                      GatherStats: false
-                      MultiFileSpray: false
+                        NumFilesPerFileSink: 1
+                        Statistics: Num rows: 5 Data size: 41 Basic stats: COMPLETE Column stats: NONE
+#### A masked pattern was here ####
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            properties:
+                              columns _col0,_col1,_col2,_col3
+                              columns.types int:string:string:string
+                              escape.delim \
+                              hive.serialization.extend.additional.nesting.levels true
+                              serialization.escape.crlf true
+                              serialization.format 1
+                              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        TotalFiles: 1
+                        GatherStats: false
+                        MultiFileSpray: false
       Local Work:
         Map Reduce Local Work
       Path -> Alias:
@@ -792,7 +816,7 @@ STAGE PLANS:
               name: default.tbl3
             name: default.tbl3
       Truncated Path -> Alias:
-        /tbl2 [b]
+        /tbl2 [$hdt$_1:b]
 
   Stage: Stage-0
     Fetch Operator
