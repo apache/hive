@@ -56,6 +56,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -299,7 +300,7 @@ public class QTestUtil {
 
       // set fs.default.name to the uri of mini-dfs
       String dfsUriString = WindowsPathUtil.getHdfsUriString(dfs.getFileSystem().getUri().toString());
-      conf.setVar(HiveConf.ConfVars.HADOOPFS, dfsUriString);
+      conf.set(CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY, dfsUriString);
       // hive.metastore.warehouse.dir needs to be set relative to the mini-dfs
       conf.setVar(HiveConf.ConfVars.METASTOREWAREHOUSE,
                   (new Path(dfsUriString,

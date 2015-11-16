@@ -20,12 +20,12 @@ package org.apache.hadoop.hive.ql.io.rcfile.truncate;
 
 import java.io.IOException;
 
+import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.RCFile;
 import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
@@ -95,7 +95,7 @@ public class ColumnTruncateMapper extends MapReduceBase implements
     String taskId = Utilities.getTaskId(jc);
     this.tmpPath = tmpPath;
     this.taskTmpPath = taskTmpPath;
-    String inputFile = HiveConf.getVar(jc, HiveConf.ConfVars.HADOOPMAPFILENAME);
+    String inputFile = jc.get(MRJobConfig.MAP_INPUT_FILE);
     int lastSeparator = inputFile.lastIndexOf(Path.SEPARATOR) + 1;
     finalPath = new Path(tmpPath, inputFile.substring(lastSeparator));
     outPath = new Path(taskTmpPath, Utilities.toTempPath(taskId));

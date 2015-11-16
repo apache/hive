@@ -129,10 +129,6 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
   private static final Logger LOG = LoggerFactory.getLogger(OrcInputFormat.class);
   private static boolean isDebugEnabled = LOG.isDebugEnabled();
   static final HadoopShims SHIMS = ShimLoader.getHadoopShims();
-  static final String MIN_SPLIT_SIZE =
-      SHIMS.getHadoopConfNames().get("MAPREDMINSPLITSIZE");
-  static final String MAX_SPLIT_SIZE =
-      SHIMS.getHadoopConfNames().get("MAPREDMAXSPLITSIZE");
 
   private static final long DEFAULT_MIN_SPLIT_SIZE = 16 * 1024 * 1024;
   private static final long DEFAULT_MAX_SPLIT_SIZE = 256 * 1024 * 1024;
@@ -497,8 +493,8 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     Context(Configuration conf, final int minSplits) {
       this.conf = conf;
       this.sarg = ConvertAstToSearchArg.createFromConf(conf);
-      minSize = conf.getLong(MIN_SPLIT_SIZE, DEFAULT_MIN_SPLIT_SIZE);
-      maxSize = conf.getLong(MAX_SPLIT_SIZE, DEFAULT_MAX_SPLIT_SIZE);
+      minSize = HiveConf.getLongVar(conf, ConfVars.MAPREDMINSPLITSIZE, DEFAULT_MIN_SPLIT_SIZE);
+      maxSize = HiveConf.getLongVar(conf, ConfVars.MAPREDMAXSPLITSIZE, DEFAULT_MAX_SPLIT_SIZE);
       String ss = conf.get(ConfVars.HIVE_ORC_SPLIT_STRATEGY.varname);
       if (ss == null || ss.equals(SplitStrategyKind.HYBRID.name())) {
         splitStrategyKind = SplitStrategyKind.HYBRID;

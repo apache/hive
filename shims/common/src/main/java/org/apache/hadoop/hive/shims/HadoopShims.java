@@ -27,7 +27,6 @@ import java.security.AccessControlException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -410,8 +409,6 @@ public interface HadoopShims {
    * other file system.
    */
   public FileSystem createProxyFileSystem(FileSystem fs, URI uri);
-
-  public Map<String, String> getHadoopConfNames();
 
   /**
    * Create a shim for DFS storage policy.

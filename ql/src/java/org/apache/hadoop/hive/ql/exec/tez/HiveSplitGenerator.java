@@ -38,7 +38,6 @@ import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.FileSplit;
-import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
@@ -80,16 +79,6 @@ public class HiveSplitGenerator extends InputInitializer {
   private final MRInputUserPayloadProto userPayloadProto;
   private final MapWork work;
   private final SplitGrouper splitGrouper = new SplitGrouper();
-
-  private static final String MIN_SPLIT_SIZE;
-  @SuppressWarnings("unused")
-  private static final String MAX_SPLIT_SIZE;
-
-  static {
-    final HadoopShims SHIMS = ShimLoader.getHadoopShims();
-    MIN_SPLIT_SIZE = SHIMS.getHadoopConfNames().get("MAPREDMINSPLITSIZE");
-    MAX_SPLIT_SIZE = SHIMS.getHadoopConfNames().get("MAPREDMAXSPLITSIZE");
-  }
 
   public HiveSplitGenerator(InputInitializerContext initializerContext) throws IOException,
       SerDeException {
@@ -143,7 +132,7 @@ public class HiveSplitGenerator extends InputInitializer {
         int taskResource = getContext().getVertexTaskResource().getMemory();
         int availableSlots = totalResource / taskResource;
 
-        if (conf.getLong(MIN_SPLIT_SIZE, 1) <= 1) {
+        if (HiveConf.getLongVar(conf, HiveConf.ConfVars.MAPREDMINSPLITSIZE, 1) <= 1) {
           // broken configuration from mapred-default.xml
           final long blockSize = conf.getLong(DFSConfigKeys.DFS_BLOCK_SIZE_KEY,
               DFSConfigKeys.DFS_BLOCK_SIZE_DEFAULT);
@@ -151,7 +140,7 @@ public class HiveSplitGenerator extends InputInitializer {
               TezMapReduceSplitsGrouper.TEZ_GROUPING_SPLIT_MIN_SIZE,
               TezMapReduceSplitsGrouper.TEZ_GROUPING_SPLIT_MIN_SIZE_DEFAULT);
           final long preferredSplitSize = Math.min(blockSize / 2, minGrouping);
-          jobConf.setLong(MIN_SPLIT_SIZE, preferredSplitSize);
+          HiveConf.setLongVar(conf, HiveConf.ConfVars.MAPREDMINSPLITSIZE, preferredSplitSize);
           LOG.info("The preferred split size is " + preferredSplitSize);
         }
 

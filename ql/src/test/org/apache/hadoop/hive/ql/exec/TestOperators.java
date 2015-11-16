@@ -32,7 +32,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Driver;
-import org.apache.hadoop.hive.ql.io.IOContext;
 import org.apache.hadoop.hive.ql.io.IOContextMap;
 import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.plan.CollectDesc;
@@ -58,6 +57,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.TextInputFormat;
+import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -287,8 +287,7 @@ public class TestOperators extends TestCase {
       System.out.println("Testing Map Operator");
       // initialize configuration
       JobConf hconf = new JobConf(TestOperators.class);
-      HiveConf.setVar(hconf, HiveConf.ConfVars.HADOOPMAPFILENAME,
-          "hdfs:///testDir/testFile");
+      hconf.set(MRJobConfig.MAP_INPUT_FILE, "hdfs:///testDir/testFile");
       IOContextMap.get(hconf).setInputPath(
           new Path("hdfs:///testDir/testFile"));
 

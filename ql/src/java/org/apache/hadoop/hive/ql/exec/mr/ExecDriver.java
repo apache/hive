@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -275,8 +276,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     // Turn on speculative execution for reducers
     boolean useSpeculativeExecReducers = HiveConf.getBoolVar(job,
         HiveConf.ConfVars.HIVESPECULATIVEEXECREDUCERS);
-    HiveConf.setBoolVar(job, HiveConf.ConfVars.HADOOPSPECULATIVEEXECREDUCERS,
-        useSpeculativeExecReducers);
+    job.setBoolean(MRJobConfig.REDUCE_SPECULATIVE, useSpeculativeExecReducers);
 
     String inpFormat = HiveConf.getVar(job, HiveConf.ConfVars.HIVEINPUTFORMAT);
 
@@ -316,11 +316,11 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       initializeFiles("tmpfiles", addedFiles);
     }
     int returnVal = 0;
-    boolean noName = StringUtils.isEmpty(HiveConf.getVar(job, HiveConf.ConfVars.HADOOPJOBNAME));
+    boolean noName = StringUtils.isEmpty(job.get(MRJobConfig.JOB_NAME));
 
     if (noName) {
       // This is for a special case to ensure unit tests pass
-      HiveConf.setVar(job, HiveConf.ConfVars.HADOOPJOBNAME, "JOB" + Utilities.randGen.nextInt());
+      job.set(MRJobConfig.JOB_NAME, "JOB" + Utilities.randGen.nextInt());
     }
     String addedArchives = HiveConf.getVar(job, HiveConf.ConfVars.HIVEADDEDARCHIVES);
     // Transfer HIVEADDEDARCHIVES to "tmparchives" so hadoop understands it

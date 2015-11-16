@@ -294,18 +294,25 @@ public abstract class HadoopShimsSecure implements HadoopShims {
 
     @Override
     public CombineFileSplit[] getSplits(JobConf job, int numSplits) throws IOException {
-      long minSize = job.getLong(ShimLoader.getHadoopShims().getHadoopConfNames().get("MAPREDMINSPLITSIZE"), 0);
+
+      long minSize =
+          job.getLong(org.apache.hadoop.mapreduce.lib.input.FileInputFormat.SPLIT_MINSIZE, 0);
 
       // For backward compatibility, let the above parameter be used
-      if (job.getLong(ShimLoader.getHadoopShims().getHadoopConfNames().get("MAPREDMINSPLITSIZEPERNODE"), 0) == 0) {
+      if (job.getLong(
+          org.apache.hadoop.mapreduce.lib.input.CombineFileInputFormat.SPLIT_MINSIZE_PERNODE,
+          0) == 0) {
         super.setMinSplitSizeNode(minSize);
       }
 
-      if (job.getLong(ShimLoader.getHadoopShims().getHadoopConfNames().get("MAPREDMINSPLITSIZEPERRACK"), 0) == 0) {
+      if (job.getLong(
+          org.apache.hadoop.mapreduce.lib.input.CombineFileInputFormat.SPLIT_MINSIZE_PERRACK,
+          0) == 0) {
         super.setMinSplitSizeRack(minSize);
       }
 
-      if (job.getLong(ShimLoader.getHadoopShims().getHadoopConfNames().get("MAPREDMAXSPLITSIZE"), 0) == 0) {
+      if (job.getLong(org.apache.hadoop.mapreduce.lib.input.FileInputFormat.SPLIT_MAXSIZE,
+          0) == 0) {
         super.setMaxSplitSize(minSize);
       }
 

@@ -39,7 +39,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
@@ -507,11 +506,11 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     }
 
     // Store the previous value for the path specification
-    String oldPaths = job.get(HiveConf.ConfVars.HADOOPMAPREDINPUTDIR.varname);
+    String oldPaths = job.get(org.apache.hadoop.mapreduce.lib.input.FileInputFormat.INPUT_DIR);
     if (LOG.isDebugEnabled()) {
       LOG.debug("The received input paths are: [" + oldPaths +
           "] against the property "
-          + HiveConf.ConfVars.HADOOPMAPREDINPUTDIR.varname);
+          + org.apache.hadoop.mapreduce.lib.input.FileInputFormat.INPUT_DIR);
     }
 
     // Process the normal splits
@@ -540,7 +539,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     // This is just to prevent incompatibilities with previous versions Hive
     // if some application depends on the original value being set.
     if (oldPaths != null) {
-      job.set(HiveConf.ConfVars.HADOOPMAPREDINPUTDIR.varname, oldPaths);
+      job.set(org.apache.hadoop.mapreduce.lib.input.FileInputFormat.INPUT_DIR, oldPaths);
     }
 
     // clear work from ThreadLocal after splits generated in case of thread is reused in pool.

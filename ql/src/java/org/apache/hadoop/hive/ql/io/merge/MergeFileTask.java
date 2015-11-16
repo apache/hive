@@ -43,6 +43,7 @@ import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RunningJob;
+import org.apache.hadoop.mapreduce.MRJobConfig;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -106,8 +107,7 @@ public class MergeFileTask extends Task<MergeFileWork> implements Serializable,
       }
 
       // set job name
-      boolean noName = StringUtils.isEmpty(HiveConf.getVar(job,
-          HiveConf.ConfVars.HADOOPJOBNAME));
+      boolean noName = StringUtils.isEmpty(job.get(MRJobConfig.JOB_NAME));
 
       String jobName = null;
       if (noName && this.getQueryPlan() != null) {
@@ -118,7 +118,7 @@ public class MergeFileTask extends Task<MergeFileWork> implements Serializable,
 
       if (noName) {
         // This is for a special case to ensure unit tests pass
-        HiveConf.setVar(job, HiveConf.ConfVars.HADOOPJOBNAME,
+        job.set(MRJobConfig.JOB_NAME,
             jobName != null ? jobName : "JOB" + Utilities.randGen.nextInt());
       }
 

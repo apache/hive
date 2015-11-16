@@ -23,13 +23,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
@@ -147,7 +148,8 @@ public class RowContainer<ROW extends List<Object>>
   private JobConf getLocalFSJobConfClone(Configuration jc) {
     if (this.jobCloneUsingLocalFs == null) {
       this.jobCloneUsingLocalFs = new JobConf(jc);
-      HiveConf.setVar(jobCloneUsingLocalFs, HiveConf.ConfVars.HADOOPFS, Utilities.HADOOP_LOCAL_FS);
+      jobCloneUsingLocalFs.set(CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY,
+          Utilities.HADOOP_LOCAL_FS);
     }
     return this.jobCloneUsingLocalFs;
   }
@@ -217,7 +219,7 @@ public class RowContainer<ROW extends List<Object>>
                 tblDesc.getInputFileFormatClass(), localJc);
           }
 
-          HiveConf.setVar(localJc, HiveConf.ConfVars.HADOOPMAPREDINPUTDIR,
+          localJc.set(FileInputFormat.INPUT_DIR,
               org.apache.hadoop.util.StringUtils.escapeString(parentFile.getAbsolutePath()));
           inputSplits = inputFormat.getSplits(localJc, 1);
           actualSplitNum = inputSplits.length;

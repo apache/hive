@@ -59,7 +59,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -642,9 +641,7 @@ public class TestRCFile {
     RCFileInputFormat inputFormat = new RCFileInputFormat();
     JobConf jobconf = new JobConf(cloneConf);
     jobconf.set("mapred.input.dir", testDir.toString());
-    jobconf.setLong(
-        ShimLoader.getHadoopShims().getHadoopConfNames().get("MAPREDMINSPLITSIZE"),
-        fileLen);
+    HiveConf.setLongVar(jobconf, HiveConf.ConfVars.MAPREDMINSPLITSIZE, fileLen);
     InputSplit[] splits = inputFormat.getSplits(jobconf, 1);
     RCFileRecordReader rr = new RCFileRecordReader(jobconf, (FileSplit)splits[0]);
     long lastSync = 0;
@@ -711,9 +708,7 @@ public class TestRCFile {
     RCFileInputFormat inputFormat = new RCFileInputFormat();
     JobConf jonconf = new JobConf(cloneConf);
     jonconf.set("mapred.input.dir", testDir.toString());
-    jonconf.setLong(
-        ShimLoader.getHadoopShims().getHadoopConfNames().get("MAPREDMINSPLITSIZE"),
-        minSplitSize);
+    HiveConf.setLongVar(jonconf, HiveConf.ConfVars.MAPREDMINSPLITSIZE, minSplitSize);
     InputSplit[] splits = inputFormat.getSplits(jonconf, splitNumber);
     assertEquals("splits length should be " + splitNumber, splits.length, splitNumber);
     int readCount = 0;
