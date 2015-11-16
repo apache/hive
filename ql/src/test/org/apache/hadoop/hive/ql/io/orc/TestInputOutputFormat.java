@@ -1080,8 +1080,8 @@ public class TestInputOutputFormat {
           new MockBlock("host0", "host3-2", "host3-3"),
           new MockBlock("host4-1", "host4-2", "host4-3"),
           new MockBlock("host5-1", "host5-2", "host5-3")));
-    conf.setInt(OrcInputFormat.MAX_SPLIT_SIZE, 300);
-    conf.setInt(OrcInputFormat.MIN_SPLIT_SIZE, 200);
+    HiveConf.setLongVar(conf, HiveConf.ConfVars.MAPREDMAXSPLITSIZE, 300);
+    HiveConf.setLongVar(conf, HiveConf.ConfVars.MAPREDMINSPLITSIZE, 200);
     OrcInputFormat.Context context = new OrcInputFormat.Context(conf);
     OrcInputFormat.SplitGenerator splitter =
         new OrcInputFormat.SplitGenerator(new OrcInputFormat.SplitInfo(context, fs,
@@ -1104,8 +1104,8 @@ public class TestInputOutputFormat {
     assertEquals(1800, result.getStart());
     assertEquals(200, result.getLength());
     // test min = 0, max = 0 generates each stripe
-    conf.setInt(OrcInputFormat.MIN_SPLIT_SIZE, 0);
-    conf.setInt(OrcInputFormat.MAX_SPLIT_SIZE, 0);
+    HiveConf.setLongVar(conf, HiveConf.ConfVars.MAPREDMAXSPLITSIZE, 0);
+    HiveConf.setLongVar(conf, HiveConf.ConfVars.MAPREDMINSPLITSIZE, 0);
     context = new OrcInputFormat.Context(conf);
     splitter = new OrcInputFormat.SplitGenerator(new OrcInputFormat.SplitInfo(context, fs,
       AcidUtils.createOriginalObj(null, fs.getFileStatus(new Path("/a/file"))), null, true,
@@ -1129,8 +1129,8 @@ public class TestInputOutputFormat {
             new MockBlock("host0", "host3-2", "host3-3"),
             new MockBlock("host4-1", "host4-2", "host4-3"),
             new MockBlock("host5-1", "host5-2", "host5-3")));
-    conf.setInt(OrcInputFormat.MAX_SPLIT_SIZE, 300);
-    conf.setInt(OrcInputFormat.MIN_SPLIT_SIZE, 200);
+    HiveConf.setLongVar(conf, HiveConf.ConfVars.MAPREDMAXSPLITSIZE, 300);
+    HiveConf.setLongVar(conf, HiveConf.ConfVars.MAPREDMINSPLITSIZE, 200);
     conf.setBoolean(ColumnProjectionUtils.READ_ALL_COLUMNS, false);
     conf.set(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, "0");
     OrcInputFormat.Context context = new OrcInputFormat.Context(conf);
@@ -1154,8 +1154,8 @@ public class TestInputOutputFormat {
     assertEquals(41867, result.getProjectedColumnsUncompressedSize());
 
     // test min = 0, max = 0 generates each stripe
-    conf.setInt(OrcInputFormat.MIN_SPLIT_SIZE, 0);
-    conf.setInt(OrcInputFormat.MAX_SPLIT_SIZE, 0);
+    HiveConf.setLongVar(conf, HiveConf.ConfVars.MAPREDMAXSPLITSIZE, 0);
+    HiveConf.setLongVar(conf, HiveConf.ConfVars.MAPREDMINSPLITSIZE, 0);
     context = new OrcInputFormat.Context(conf);
     splitter = new OrcInputFormat.SplitGenerator(new OrcInputFormat.SplitInfo(context, fs,
         fs.getFileStatus(new Path("/a/file")), null, true,
@@ -1174,8 +1174,8 @@ public class TestInputOutputFormat {
     }
 
     // single split
-    conf.setInt(OrcInputFormat.MIN_SPLIT_SIZE, 100000);
-    conf.setInt(OrcInputFormat.MAX_SPLIT_SIZE, 1000);
+    HiveConf.setLongVar(conf, HiveConf.ConfVars.MAPREDMAXSPLITSIZE, 1000);
+    HiveConf.setLongVar(conf, HiveConf.ConfVars.MAPREDMINSPLITSIZE, 100000);
     context = new OrcInputFormat.Context(conf);
     splitter = new OrcInputFormat.SplitGenerator(new OrcInputFormat.SplitInfo(context, fs,
         fs.getFileStatus(new Path("/a/file")), null, true,

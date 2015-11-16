@@ -28,6 +28,7 @@ import java.util.List;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
@@ -40,7 +41,6 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrLessThan;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.InputFormat;
@@ -109,8 +109,8 @@ public class TestOrcSplitElimination {
         100000, CompressionKind.NONE, 10000, 10000);
     writeData(writer);
     writer.close();
-    conf.set(ShimLoader.getHadoopShims().getHadoopConfNames().get("MAPREDMINSPLITSIZE"), "1000");
-    conf.set(ShimLoader.getHadoopShims().getHadoopConfNames().get("MAPREDMAXSPLITSIZE"), "5000");
+    HiveConf.setLongVar(conf, HiveConf.ConfVars.MAPREDMINSPLITSIZE, 1000);
+    HiveConf.setLongVar(conf, HiveConf.ConfVars.MAPREDMAXSPLITSIZE, 5000);
     InputFormat<?, ?> in = new OrcInputFormat();
     FileInputFormat.setInputPaths(conf, testFilePath.toString());
 
@@ -187,8 +187,8 @@ public class TestOrcSplitElimination {
         100000, CompressionKind.NONE, 10000, 10000);
     writeData(writer);
     writer.close();
-    conf.set(ShimLoader.getHadoopShims().getHadoopConfNames().get("MAPREDMINSPLITSIZE"), "1000");
-    conf.set(ShimLoader.getHadoopShims().getHadoopConfNames().get("MAPREDMAXSPLITSIZE"), "150000");
+    HiveConf.setLongVar(conf, HiveConf.ConfVars.MAPREDMINSPLITSIZE, 1000);
+    HiveConf.setLongVar(conf, HiveConf.ConfVars.MAPREDMAXSPLITSIZE, 150000);
     InputFormat<?, ?> in = new OrcInputFormat();
     FileInputFormat.setInputPaths(conf, testFilePath.toString());
 
@@ -276,8 +276,8 @@ public class TestOrcSplitElimination {
         100000, CompressionKind.NONE, 10000, 10000);
     writeData(writer);
     writer.close();
-    conf.set(ShimLoader.getHadoopShims().getHadoopConfNames().get("MAPREDMINSPLITSIZE"), "1000");
-    conf.set(ShimLoader.getHadoopShims().getHadoopConfNames().get("MAPREDMAXSPLITSIZE"), "150000");
+    HiveConf.setLongVar(conf, HiveConf.ConfVars.MAPREDMINSPLITSIZE, 1000);
+    HiveConf.setLongVar(conf, HiveConf.ConfVars.MAPREDMAXSPLITSIZE, 150000);
     InputFormat<?, ?> in = new OrcInputFormat();
     FileInputFormat.setInputPaths(conf, testFilePath.toString());
 

@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec;
 import com.google.common.collect.Iterables;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -1368,7 +1369,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         String jobname = String.format("Archiving %s@%s",
             tbl.getTableName(), partSpecInfo.getName());
         jobname = Utilities.abbreviate(jobname, maxJobNameLen - 6);
-        conf.setVar(HiveConf.ConfVars.HADOOPJOBNAME, jobname);
+        conf.set(MRJobConfig.JOB_NAME, jobname);
         HadoopArchives har = new HadoopArchives(conf);
         List<String> args = new ArrayList<String>();
 
@@ -1378,7 +1379,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         args.add(originalDir.toString());
         args.add(tmpPath.toString());
 
-        ret = ToolRunner.run(har, args.toArray(new String[0]));;
+        ret = ToolRunner.run(har, args.toArray(new String[0]));
       } catch (Exception e) {
         throw new HiveException(e);
       }

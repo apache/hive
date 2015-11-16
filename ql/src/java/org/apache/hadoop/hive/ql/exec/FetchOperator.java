@@ -66,6 +66,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobConfigurable;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.AnnotationUtils;
 import org.apache.hive.common.util.ReflectionUtil;
@@ -648,7 +649,7 @@ public class FetchOperator implements Serializable {
    * @return list of file status entries
    */
   private FileStatus[] listStatusUnderPath(FileSystem fs, Path p) throws IOException {
-    boolean recursive = HiveConf.getBoolVar(job, HiveConf.ConfVars.HADOOPMAPREDINPUTDIRRECURSIVE);
+    boolean recursive = job.getBoolean(FileInputFormat.INPUT_DIR_RECURSIVE, false);
     // If this is in acid format always read it recursively regardless of what the jobconf says.
     if (!recursive && !AcidUtils.isAcid(p, job)) {
       return fs.listStatus(p, FileUtils.HIDDEN_FILES_PATH_FILTER);

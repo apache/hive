@@ -36,6 +36,7 @@ import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -1459,7 +1460,7 @@ public class Driver implements CommandProcessor {
   public int execute() throws CommandNeedRetryException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.DRIVER_EXECUTE);
-    boolean noName = StringUtils.isEmpty(conf.getVar(HiveConf.ConfVars.HADOOPJOBNAME));
+    boolean noName = StringUtils.isEmpty(conf.get(MRJobConfig.JOB_NAME));
     int maxlen = conf.getIntVar(HiveConf.ConfVars.HIVEJOBNAMELENGTH);
 
     String queryId = plan.getQueryId();
@@ -1703,7 +1704,7 @@ public class Driver implements CommandProcessor {
         SessionState.get().getHiveHistory().endQuery(queryId);
       }
       if (noName) {
-        conf.setVar(HiveConf.ConfVars.HADOOPJOBNAME, "");
+        conf.set(MRJobConfig.JOB_NAME, "");
       }
       dumpMetaCallTimingWithoutEx("execution");
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.DRIVER_EXECUTE);
@@ -1786,7 +1787,7 @@ public class Driver implements CommandProcessor {
     }
     if (tsk.isMapRedTask() && !(tsk instanceof ConditionalTask)) {
       if (noName) {
-        conf.setVar(HiveConf.ConfVars.HADOOPJOBNAME, jobname + "(" + tsk.getId() + ")");
+        conf.set(MRJobConfig.JOB_NAME, jobname + "(" + tsk.getId() + ")");
       }
       conf.set("mapreduce.workflow.node.name", tsk.getId());
       Utilities.setWorkflowAdjacencies(conf, plan);

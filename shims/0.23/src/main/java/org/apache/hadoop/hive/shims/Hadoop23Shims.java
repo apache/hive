@@ -21,21 +21,16 @@ import java.io.DataInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URL;
 import java.nio.ByteBuffer;
 import java.security.AccessControlException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -1039,25 +1034,6 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   public FileSystem createProxyFileSystem(FileSystem fs, URI uri) {
     return new ProxyFileSystem23(fs, uri);
   }
-
-  @Override
-  public Map<String, String> getHadoopConfNames() {
-    Map<String, String> ret = new HashMap<String, String>();
-    ret.put("HADOOPFS", "fs.defaultFS");
-    ret.put("HADOOPMAPFILENAME", "mapreduce.map.input.file");
-    ret.put("HADOOPMAPREDINPUTDIR", "mapreduce.input.fileinputformat.inputdir");
-    ret.put("HADOOPMAPREDINPUTDIRRECURSIVE", "mapreduce.input.fileinputformat.input.dir.recursive");
-    ret.put("MAPREDMAXSPLITSIZE", "mapreduce.input.fileinputformat.split.maxsize");
-    ret.put("MAPREDMINSPLITSIZE", "mapreduce.input.fileinputformat.split.minsize");
-    ret.put("MAPREDMINSPLITSIZEPERNODE", "mapreduce.input.fileinputformat.split.minsize.per.node");
-    ret.put("MAPREDMINSPLITSIZEPERRACK", "mapreduce.input.fileinputformat.split.minsize.per.rack");
-    ret.put("HADOOPNUMREDUCERS", "mapreduce.job.reduces");
-    ret.put("HADOOPJOBNAME", "mapreduce.job.name");
-    ret.put("HADOOPSPECULATIVEEXECREDUCERS", "mapreduce.reduce.speculative");
-    ret.put("MAPREDSETUPCLEANUPNEEDED", "mapreduce.job.committer.setup.cleanup.needed");
-    ret.put("MAPREDTASKCLEANUPNEEDED", "mapreduce.job.committer.task.cleanup.needed");
-    return ret;
- }
 
   @Override
   public ZeroCopyReaderShim getZeroCopyReader(FSDataInputStream in, ByteBufferPoolShim pool) throws IOException {

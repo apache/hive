@@ -23,6 +23,7 @@ import java.util.HashMap;
 import junit.framework.JUnit4TestAdapter;
 import junit.framework.TestCase;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
@@ -97,7 +98,7 @@ public class TestDDLWithRemoteMetastoreSecondNamenode extends TestCase {
       }
       fs2.mkdirs(tmppathFs2);
       fs2Uri = fs2.getUri().toString();
-      jobConf.setVar(HiveConf.ConfVars.HADOOPFS, fs2Uri);
+      jobConf.set(CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY, fs2Uri);
 
       driver = new Driver(jobConf);
 

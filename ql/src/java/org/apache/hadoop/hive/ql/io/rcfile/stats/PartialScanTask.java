@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -157,8 +158,7 @@ public class PartialScanTask extends Task<PartialScanWork> implements
 
     int returnVal = 0;
     RunningJob rj = null;
-    boolean noName = StringUtils.isEmpty(HiveConf.getVar(job,
-        HiveConf.ConfVars.HADOOPJOBNAME));
+    boolean noName = StringUtils.isEmpty(job.get(MRJobConfig.JOB_NAME));
 
     String jobName = null;
     if (noName && this.getQueryPlan() != null) {
@@ -169,7 +169,7 @@ public class PartialScanTask extends Task<PartialScanWork> implements
 
     if (noName) {
       // This is for a special case to ensure unit tests pass
-      HiveConf.setVar(job, HiveConf.ConfVars.HADOOPJOBNAME,
+      job.set(MRJobConfig.JOB_NAME,
           jobName != null ? jobName : "JOB" + Utilities.randGen.nextInt());
     }
 
