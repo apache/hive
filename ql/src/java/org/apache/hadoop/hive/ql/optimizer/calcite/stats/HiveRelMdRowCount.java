@@ -30,6 +30,7 @@ import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.SemiJoin;
+import org.apache.calcite.rel.core.Sort;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.metadata.ReflectiveRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMdRowCount;
@@ -38,6 +39,7 @@ import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexInputRef;
+import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
@@ -85,6 +87,22 @@ public class HiveRelMdRowCount extends RelMdRowCount {
       return pkfk.fkInfo.rowCount * selectivity;
     }
     return super.getRowCount(rel);
+  }
+
+  @Override
+  public Double getRowCount(Sort rel) {
+    final Double rowCount = RelMetadataQuery.getRowCount(rel.getInput());
+    if (rowCount != null && rel.fetch != null) {
+      final int offset = rel.offset == null ? 0 : RexLiteral.intValue(rel.offset);
+      final int limit = RexLiteral.intValue(rel.fetch);
+      final Double offsetLimit = new Double(offset + limit);
+      // offsetLimit is smaller than rowCount of the input operator
+      // thus, we return the offsetLimit
+      if (offsetLimit < rowCount) {
+        return offsetLimit;
+      }
+    }
+    return rowCount;
   }
 
   static class PKFKRelationInfo {
