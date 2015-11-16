@@ -44,6 +44,8 @@ public class HiveSortLimit extends Sort implements HiveRelNode {
   // 4. This is used by ASTConverter after we are done with Calcite Planning
   private ImmutableMap<Integer, RexNode> mapOfInputRefToRexCall;
 
+  private boolean ruleCreated;
+
   public HiveSortLimit(RelOptCluster cluster, RelTraitSet traitSet, RelNode child,
       RelCollation collation, RexNode offset, RexNode fetch) {
     super(cluster, TraitsUtil.getSortTraitSet(cluster, traitSet, collation), child, collation,
@@ -74,7 +76,10 @@ public class HiveSortLimit extends Sort implements HiveRelNode {
     // TODO: can we blindly copy sort trait? What if inputs changed and we
     // are now sorting by different cols
     RelCollation canonizedCollation = traitSet.canonize(newCollation);
-    return new HiveSortLimit(getCluster(), traitSet, newInput, canonizedCollation, offset, fetch);
+    HiveSortLimit sortLimit =
+            new HiveSortLimit(getCluster(), traitSet, newInput, canonizedCollation, offset, fetch);
+    sortLimit.setRuleCreated(ruleCreated);
+    return sortLimit;
   }
 
   public RexNode getFetchExpr() {
@@ -91,6 +96,14 @@ public class HiveSortLimit extends Sort implements HiveRelNode {
 
   @Override
   public void implement(Implementor implementor) {
+  }
+
+  public boolean isRuleCreated() {
+    return ruleCreated;
+  }
+
+  public void setRuleCreated(boolean ruleCreated) {
+    this.ruleCreated = ruleCreated;
   }
 
   private static class HiveSortRelFactory implements RelFactories.SortFactory {

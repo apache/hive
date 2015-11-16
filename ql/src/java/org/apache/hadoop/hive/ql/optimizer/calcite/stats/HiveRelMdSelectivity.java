@@ -61,6 +61,16 @@ public class HiveRelMdSelectivity extends RelMdSelectivity {
   public Double getSelectivity(HiveJoin j, RexNode predicate) throws CalciteSemanticException {
     if (j.getJoinType().equals(JoinRelType.INNER)) {
       return computeInnerJoinSelectivity(j, predicate);
+    } else if (j.getJoinType().equals(JoinRelType.LEFT) ||
+            j.getJoinType().equals(JoinRelType.RIGHT)) {
+      double left = RelMetadataQuery.getRowCount(j.getLeft());
+      double right = RelMetadataQuery.getRowCount(j.getRight());
+      double product = left * right;
+      double innerJoinSelectivity = computeInnerJoinSelectivity(j, predicate);
+      if (j.getJoinType().equals(JoinRelType.LEFT)) {
+        return Math.max(innerJoinSelectivity, left/product);
+      }
+      return Math.max(innerJoinSelectivity, right/product);
     }
     return 1.0;
   }
