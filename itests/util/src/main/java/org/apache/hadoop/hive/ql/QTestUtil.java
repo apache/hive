@@ -107,10 +107,10 @@ import org.apache.tools.ant.BuildException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
+import org.junit.Assert;
 
 import com.google.common.collect.ImmutableList;
 
-import junit.framework.Assert;
 import junit.framework.TestSuite;
 
 /**
@@ -156,7 +156,6 @@ public class QTestUtil {
   private HadoopShims.MiniMrShim mr = null;
   private HadoopShims.MiniDFSShim dfs = null;
   private HadoopShims.HdfsEncryptionShim hes = null;
-  private final boolean miniMr = false;
   private String hadoopVer = null;
   private QTestSetup setup = null;
   private TezSessionState tezSessionState = null;
@@ -907,11 +906,8 @@ public class QTestUtil {
   }
 
   public void init() throws Exception {
-    // System.out.println(conf.toString());
-    testWarehouse = conf.getVar(HiveConf.ConfVars.METASTOREWAREHOUSE);
-    // conf.logVars(System.out);
-    // System.out.flush();
 
+    testWarehouse = conf.getVar(HiveConf.ConfVars.METASTOREWAREHOUSE);
     String execEngine = conf.get("hive.execution.engine");
     conf.set("hive.execution.engine", "mr");
     SessionState.start(conf);

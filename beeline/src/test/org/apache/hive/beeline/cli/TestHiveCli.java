@@ -278,6 +278,7 @@ public class TestHiveCli {
   public void setup() {
     System.setProperty("datanucleus.fixedDatastore", "false");
     System.setProperty("datanucleus.autoCreateSchema", "true");
+    System.setProperty("hive.metastore.schema.verification", "false");
     cli = new HiveCli();
     redirectOutputStream();
     initFromFile();
