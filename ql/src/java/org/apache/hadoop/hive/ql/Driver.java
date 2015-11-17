@@ -1046,7 +1046,7 @@ public class Driver implements CommandProcessor {
         // don't update it after that until txn completes.  Thus the check for {@code initiatingTransaction}
         //For autoCommit=true, Read-only statements, txn is implicit, i.e. lock in the snapshot
         //for each statement.
-        recordValidTxns();
+        recordValidTxns();//todo: we should only need to do this for RO query if it has ACID resources in it.
       }
 
       return 0;
