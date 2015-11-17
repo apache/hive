@@ -17,9 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.io.orc;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -109,6 +107,7 @@ import org.junit.rules.TestName;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Output;
 
+@SuppressWarnings({ "deprecation", "unchecked", "rawtypes" })
 public class TestInputOutputFormat {
 
   public static String toKryo(SearchArgument sarg) {
@@ -524,14 +523,90 @@ public class TestInputOutputFormat {
             new MockPath(fs, "mock:/a/b"), false);
     splitStrategy = createSplitStrategy(context, gen);
     assertEquals(true, splitStrategy instanceof OrcInputFormat.ETLSplitStrategy);
+  }
 
+  @Test
+  public void testEtlCombinedStrategy() throws Exception {
+    conf.set(HiveConf.ConfVars.HIVE_ORC_SPLIT_STRATEGY.varname, "ETL");
+    conf.set(HiveConf.ConfVars.HIVE_ORC_SPLIT_DIRECTORY_BATCH_MS.varname, "1000000");
+    OrcInputFormat.Context context = new OrcInputFormat.Context(conf);
+    MockFileSystem fs = new MockFileSystem(conf,
+        new MockFile("mock:/a/1/part-00", 1000, new byte[0]),
+        new MockFile("mock:/a/1/part-01", 1000, new byte[0]),
+        new MockFile("mock:/a/2/part-00", 1000, new byte[0]),
+        new MockFile("mock:/a/2/part-01", 1000, new byte[0]),
+        new MockFile("mock:/a/3/base_0/1", 1000, new byte[0]),
+        new MockFile("mock:/a/4/base_0/1", 1000, new byte[0]),
+        new MockFile("mock:/a/5/base_0/1", 1000, new byte[0]),
+        new MockFile("mock:/a/5/delta_0_25/1", 1000, new byte[0])
+    );
+
+    OrcInputFormat.CombinedCtx combineCtx = new OrcInputFormat.CombinedCtx();
+    // The first directory becomes the base for combining.
+    SplitStrategy<?> ss = createOrCombineStrategy(context, fs, "mock:/a/1", combineCtx);
+    assertNull(ss);
+    assertTrue(combineCtx.combined instanceof OrcInputFormat.ETLSplitStrategy);
+    OrcInputFormat.ETLSplitStrategy etlSs = (OrcInputFormat.ETLSplitStrategy)combineCtx.combined;
+    assertEquals(2, etlSs.files.size());
+    assertTrue(etlSs.isOriginal);
+    assertEquals(1, etlSs.dirs.size());
+    // The second one should be combined into the first.
+    ss = createOrCombineStrategy(context, fs, "mock:/a/2", combineCtx);
+    assertNull(ss);
+    assertTrue(combineCtx.combined instanceof OrcInputFormat.ETLSplitStrategy);
+    assertEquals(4, etlSs.files.size());
+    assertEquals(2, etlSs.dirs.size());
+    // The third one has the base file, so it shouldn't be combined but could be a base.
+    ss = createOrCombineStrategy(context, fs, "mock:/a/3", combineCtx);
+    assertSame(etlSs, ss);
+    assertEquals(4, etlSs.files.size());
+    assertEquals(2, etlSs.dirs.size());
+    assertTrue(combineCtx.combined instanceof OrcInputFormat.ETLSplitStrategy);
+    etlSs = (OrcInputFormat.ETLSplitStrategy)combineCtx.combined;
+    assertEquals(1, etlSs.files.size());
+    assertFalse(etlSs.isOriginal);
+    assertEquals(1, etlSs.dirs.size());
+    // Try the first again, it would not be combined and we'd retain the old base (less files).
+    ss = createOrCombineStrategy(context, fs, "mock:/a/1", combineCtx);
+    assertTrue(ss instanceof OrcInputFormat.ETLSplitStrategy);
+    assertNotSame(etlSs, ss);
+    OrcInputFormat.ETLSplitStrategy rejectedEtlSs = (OrcInputFormat.ETLSplitStrategy)ss;
+    assertEquals(2, rejectedEtlSs.files.size());
+    assertEquals(1, rejectedEtlSs.dirs.size());
+    assertTrue(rejectedEtlSs.isOriginal);
+    assertEquals(1, etlSs.files.size());
+    assertEquals(1, etlSs.dirs.size());
+    // The fourth could be combined again.
+    ss = createOrCombineStrategy(context, fs, "mock:/a/4", combineCtx);
+    assertNull(ss);
+    assertTrue(combineCtx.combined instanceof OrcInputFormat.ETLSplitStrategy);
+    assertEquals(2, etlSs.files.size());
+    assertEquals(2, etlSs.dirs.size());
+    // The fifth will not be combined because of delta files.
+    ss = createOrCombineStrategy(context, fs, "mock:/a/5", combineCtx);
+    assertTrue(ss instanceof OrcInputFormat.ETLSplitStrategy);
+    assertNotSame(etlSs, ss);
+    assertEquals(2, etlSs.files.size());
+    assertEquals(2, etlSs.dirs.size());
+  }
+
+  public SplitStrategy<?> createOrCombineStrategy(OrcInputFormat.Context context,
+      MockFileSystem fs, String path, OrcInputFormat.CombinedCtx combineCtx) throws IOException {
+    OrcInputFormat.AcidDirInfo adi = createAdi(context, fs, path);
+    return OrcInputFormat.determineSplitStrategy(
+        combineCtx, context, adi.fs, adi.splitPath, adi.acidInfo, adi.baseOrOriginalFiles);
+  }
+
+  public OrcInputFormat.AcidDirInfo createAdi(
+      OrcInputFormat.Context context, MockFileSystem fs, String path) throws IOException {
+    return new OrcInputFormat.FileGenerator(context, fs, new MockPath(fs, path), false).call();
   }
 
   private OrcInputFormat.SplitStrategy createSplitStrategy(
       OrcInputFormat.Context context, OrcInputFormat.FileGenerator gen) throws IOException {
     OrcInputFormat.AcidDirInfo adi = gen.call();
     return OrcInputFormat.determineSplitStrategy(
-        context, adi.fs, adi.splitPath, adi.acidInfo, adi.baseOrOriginalFiles);
+        null, context, adi.fs, adi.splitPath, adi.acidInfo, adi.baseOrOriginalFiles);
   }
 
   public static class MockBlock {
@@ -694,7 +769,6 @@ public class TestInputOutputFormat {
     final List<MockFile> files = new ArrayList<MockFile>();
     Path workingDir = new Path("/");
 
-    @SuppressWarnings("unused")
     public MockFileSystem() {
       // empty
     }
@@ -1104,7 +1178,6 @@ public class TestInputOutputFormat {
   }
 
   @Test
-  @SuppressWarnings("unchecked,deprecation")
   public void testInOutFormat() throws Exception {
     Properties properties = new Properties();
     properties.setProperty("columns", "x,y");
@@ -1236,7 +1309,6 @@ public class TestInputOutputFormat {
   }
 
   @Test
-  @SuppressWarnings("unchecked,deprecation")
   public void testMROutput() throws Exception {
     Properties properties = new Properties();
     StructObjectInspector inspector;
@@ -1293,7 +1365,6 @@ public class TestInputOutputFormat {
   }
 
   @Test
-  @SuppressWarnings("deprecation")
   public void testEmptyFile() throws Exception {
     Properties properties = new Properties();
     properties.setProperty("columns", "x,y");
@@ -1350,7 +1421,6 @@ public class TestInputOutputFormat {
   }
 
   @Test
-  @SuppressWarnings("unchecked,deprecation")
   public void testDefaultTypes() throws Exception {
     Properties properties = new Properties();
     properties.setProperty("columns", "str,str2");
@@ -1517,7 +1587,6 @@ public class TestInputOutputFormat {
    * @throws Exception
    */
   @Test
-  @SuppressWarnings("unchecked")
   public void testVectorization() throws Exception {
     // get the object inspector for MyRow
     StructObjectInspector inspector;
@@ -1565,7 +1634,6 @@ public class TestInputOutputFormat {
    * @throws Exception
    */
   @Test
-  @SuppressWarnings("unchecked")
   public void testVectorizationWithBuckets() throws Exception {
     // get the object inspector for MyRow
     StructObjectInspector inspector;
@@ -1611,7 +1679,6 @@ public class TestInputOutputFormat {
 
   // test acid with vectorization, no combine
   @Test
-  @SuppressWarnings("unchecked")
   public void testVectorizationWithAcid() throws Exception {
     StructObjectInspector inspector = new BigRowInspector();
     JobConf conf = createMockExecutionEnvironment(workDir, new Path("mock:///"),
@@ -1682,7 +1749,6 @@ public class TestInputOutputFormat {
 
   // test non-vectorized, non-acid, combine
   @Test
-  @SuppressWarnings("unchecked")
   public void testCombinationInputFormat() throws Exception {
     // get the object inspector for MyRow
     StructObjectInspector inspector;
@@ -1891,7 +1957,6 @@ public class TestInputOutputFormat {
   }
 
   @Test
-  @SuppressWarnings("unchecked,deprecation")
   public void testSplitElimination() throws Exception {
     Properties properties = new Properties();
     properties.setProperty("columns", "z,r");
@@ -1933,7 +1998,6 @@ public class TestInputOutputFormat {
   }
 
   @Test
-  @SuppressWarnings("unchecked,deprecation")
   public void testSplitEliminationNullStats() throws Exception {
     Properties properties = new Properties();
     StructObjectInspector inspector;
