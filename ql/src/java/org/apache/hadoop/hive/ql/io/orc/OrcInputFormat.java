@@ -35,6 +35,7 @@ import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.codec.binary.Hex;
@@ -468,6 +469,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     private static MetastoreCache metaCache;
     private static ExecutorService threadPool = null;
     private final int numBuckets;
+    private final int splitStrategyBatchMs;
     private final long maxSize;
     private final long minSize;
     private final int minSplits;
@@ -499,6 +501,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
           ConfVars.HIVE_ORC_INCLUDE_FILE_FOOTER_IN_SPLITS);
       numBuckets =
           Math.max(conf.getInt(hive_metastoreConstants.BUCKET_COUNT, 0), 0);
+      splitStrategyBatchMs = HiveConf.getIntVar(conf, ConfVars.HIVE_ORC_SPLIT_DIRECTORY_BATCH_MS);
       LOG.debug("Number of buckets specified by conf file is " + numBuckets);
       int cacheStripeDetailsSize = HiveConf.getIntVar(conf,
           ConfVars.HIVE_ORC_CACHE_STRIPE_DETAILS_SIZE);
@@ -610,21 +613,34 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
    * (split generation reads and caches file footers).
    */
   static final class ETLSplitStrategy implements SplitStrategy<SplitInfo>, Callable<Void> {
+    private static final int ETL_COMBINE_FILE_LIMIT = 500;
+
+    private static class ETLDir {
+      public ETLDir(Path dir, FileSystem fs, int fileCount) {
+        this.dir = dir;
+        this.fs = fs;
+        this.fileCount = fileCount;
+      }
+      private final int fileCount;
+      private final Path dir;
+      private final FileSystem fs;
+    }
+
+
     Context context;
-    FileSystem fs;
+    List<ETLDir> dirs;
     List<HdfsFileStatusWithId> files;
     boolean isOriginal;
     List<DeltaMetaData> deltas;
-    Path dir;
     boolean[] covered;
     private List<Future<List<OrcSplit>>> splitFuturesRef;
 
     public ETLSplitStrategy(Context context, FileSystem fs, Path dir,
         List<HdfsFileStatusWithId> children, boolean isOriginal, List<DeltaMetaData> deltas,
         boolean[] covered) {
+      assert !children.isEmpty();
       this.context = context;
-      this.dir = dir;
-      this.fs = fs;
+      this.dirs = Lists.newArrayList(new ETLDir(dir, fs, children.size()));
       this.files = children;
       this.isOriginal = isOriginal;
       this.deltas = deltas;
@@ -634,19 +650,18 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     @Override
     public List<SplitInfo> getSplits() throws IOException {
       List<SplitInfo> result = new ArrayList<>(files.size());
-      // TODO: Right now, we do the metastore call here, so there will be a metastore call per
-      //       partition. If we had a sync point after getting file lists, we could make just one
-      //       call; this might be too much sync for many partitions and also cause issues with the
-      //       huge metastore call result that cannot be handled with in-API batching. To have an
-      //       optimal number of metastore calls, we should wait for batch-size number of files (a
-      //       few hundreds) to become available, then call metastore.
-
       // Force local cache if we have deltas.
       FooterCache cache = context.cacheStripeDetails ?
           (deltas == null ? context.footerCache : Context.localCache) : null;
       if (cache != null) {
         FileInfo[] infos = cache.getAndValidate(files);
+        int dirIx = -1, fileInDirIx = -1, filesInDirCount = 0;
+        ETLDir dir = null;
         for (int i = 0; i < files.size(); ++i) {
+          if ((++fileInDirIx) == filesInDirCount) {
+            dir = dirs.get(++dirIx);
+            filesInDirCount = dir.fileCount;
+          }
           FileInfo info = infos[i];
           if (info != null) {
             // Cached copy is valid
@@ -656,15 +671,21 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
           // ignore files of 0 length
           if (file.getFileStatus().getLen() > 0) {
             result.add(new SplitInfo(
-                context, fs, file, info, isOriginal, deltas, true, dir, covered));
+                context, dir.fs, file, info, isOriginal, deltas, true, dir.dir, covered));
           }
         }
       } else {
+        int dirIx = -1, fileInDirIx = -1, filesInDirCount = 0;
+        ETLDir dir = null;
         for (HdfsFileStatusWithId file : files) {
+          if ((++fileInDirIx) == filesInDirCount) {
+            dir = dirs.get(++dirIx);
+            filesInDirCount = dir.fileCount;
+          }
           // ignore files of 0 length
           if (file.getFileStatus().getLen() > 0) {
             result.add(new SplitInfo(
-                context, fs, file, null, isOriginal, deltas, true, dir, covered));
+                context, dir.fs, file, null, isOriginal, deltas, true, dir.dir, covered));
           }
         }
       }
@@ -673,7 +694,39 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
 
     @Override
     public String toString() {
-      return ETLSplitStrategy.class.getSimpleName() + " strategy for " + dir;
+      if (dirs.size() == 1) {
+        return ETLSplitStrategy.class.getSimpleName() + " strategy for " + dirs.get(0).dir;
+      } else {
+        StringBuilder sb = new StringBuilder(ETLSplitStrategy.class.getSimpleName()
+            + " strategy for ");
+        boolean isFirst = true;
+        for (ETLDir dir : dirs) {
+          if (!isFirst) sb.append(", ");
+          isFirst = false;
+          sb.append(dir.dir);
+        }
+        return sb.toString();
+      }
+    }
+
+    enum CombineResult {
+      YES, // Combined, all good.
+      NO_AND_CONTINUE, // Don't combine with that, but may combine with others.
+      NO_AND_SWAP // Don't combine with with that, and make that a base for new combines.
+      // We may add NO_AND_STOP in future where combine is impossible and other should not be base.
+    }
+
+    public CombineResult combineWith(FileSystem fs, Path dir,
+        List<HdfsFileStatusWithId> otherFiles, boolean isOriginal) {
+      if ((files.size() + otherFiles.size()) > ETL_COMBINE_FILE_LIMIT
+        || this.isOriginal != isOriginal) {
+        return (files.size() > otherFiles.size())
+            ? CombineResult.NO_AND_SWAP : CombineResult.NO_AND_CONTINUE;
+      }
+      // All good, combine the base/original only ETL strategies.
+      files.addAll(otherFiles);
+      dirs.add(new ETLDir(dir, fs, otherFiles.size()));
+      return CombineResult.YES;
     }
 
     public Future<Void> generateSplitWork(
@@ -926,7 +979,6 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
         hosts = start.getHosts();
       } else {
         Map.Entry<Long, BlockLocation> endEntry = locations.floorEntry(offset + length);
-        BlockLocation end = endEntry.getValue();
         //get the submap
         NavigableMap<Long, BlockLocation> navigableMap = locations.subMap(startEntry.getKey(),
                   true, endEntry.getKey(), true);
@@ -1115,6 +1167,13 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     return generateSplitsInfo(conf, -1);
   }
 
+  /** Class intended to update two values from methods... Java-related cruft. */
+  @VisibleForTesting
+  static final class CombinedCtx {
+    ETLSplitStrategy combined;
+    long combineStartUs;
+  }
+
   static List<OrcSplit> generateSplitsInfo(Configuration conf, int numSplits)
       throws IOException {
     // Use threads to resolve directories into splits.
@@ -1143,28 +1202,54 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
 
     // complete path futures and schedule split generation
     try {
-      for (int notIndex = 0; notIndex < paths.length; ++notIndex) {
-        AcidDirInfo adi = ecs.take().get();
-        SplitStrategy<?> splitStrategy = determineSplitStrategy(
-            context, adi.fs, adi.splitPath, adi.acidInfo, adi.baseOrOriginalFiles);
+      CombinedCtx combinedCtx = (context.splitStrategyBatchMs > 0) ? new CombinedCtx() : null;
+      long maxWaitUs = context.splitStrategyBatchMs * 1000000;
+      int resultsLeft = paths.length;
+      while (resultsLeft > 0) {
+        AcidDirInfo adi = null;
+        if (combinedCtx != null && combinedCtx.combined != null) {
+          long waitTimeUs = combinedCtx.combineStartUs + maxWaitUs - System.nanoTime();
+          if (waitTimeUs >= 0) {
+            Future<AcidDirInfo> f = ecs.poll(waitTimeUs, TimeUnit.NANOSECONDS);
+            adi = (f == null) ? null : f.get();
+          }
+        } else {
+          adi = ecs.take().get();
+        }
+
+        if (adi == null) {
+          // We were combining SS-es and the time has expired.
+          assert combinedCtx.combined != null;
+          scheduleSplits(combinedCtx.combined, context, splitFutures, strategyFutures);
+          combinedCtx.combined = null;
+          continue;
+        }
+
+        // We have received a new directory information, make a split strategy.
+        --resultsLeft;
+        SplitStrategy<?> splitStrategy = determineSplitStrategy(combinedCtx, context,
+            adi.fs, adi.splitPath, adi.acidInfo, adi.baseOrOriginalFiles);
+        if (splitStrategy == null) continue; // Combined.
 
         if (isDebugEnabled) {
-          LOG.debug("Split strategy: ", splitStrategy);
+          LOG.debug("Split strategy: {}", splitStrategy);
         }
 
         // Hack note - different split strategies return differently typed lists, yay Java.
         // This works purely by magic, because we know which strategy produces which type.
         if (splitStrategy instanceof ETLSplitStrategy) {
-          Future<Void> ssFuture = ((ETLSplitStrategy)splitStrategy).generateSplitWork(
-              context, splitFutures);
-          if (ssFuture != null) {
-            strategyFutures.add(ssFuture);
-          }
+          scheduleSplits((ETLSplitStrategy)splitStrategy, context, splitFutures, strategyFutures);
         } else {
           @SuppressWarnings("unchecked")
           List<OrcSplit> readySplits = (List<OrcSplit>)splitStrategy.getSplits();
           splits.addAll(readySplits);
         }
+      }
+
+      // Run the last combined strategy, if any.
+      if (combinedCtx != null && combinedCtx.combined != null) {
+        scheduleSplits(combinedCtx.combined, context, splitFutures, strategyFutures);
+        combinedCtx.combined = null;
       }
 
       // complete split futures
@@ -1196,9 +1281,46 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     return splits;
   }
 
+  private static void scheduleSplits(ETLSplitStrategy splitStrategy, Context context,
+      List<Future<List<OrcSplit>>> splitFutures, List<Future<Void>> strategyFutures)
+          throws IOException {
+    Future<Void> ssFuture = splitStrategy.generateSplitWork(context, splitFutures);
+    if (ssFuture == null) return;
+    strategyFutures.add(ssFuture);
+  }
+
   private static <T> void cancelFutures(List<Future<T>> futures) {
     for (Future<T> future : futures) {
       future.cancel(true);
+    }
+  }
+
+  private static SplitStrategy<?> combineOrCreateETLStrategy(CombinedCtx combinedCtx,
+      Context context, FileSystem fs, Path dir, List<HdfsFileStatusWithId> files,
+      List<DeltaMetaData> deltas, boolean[] covered, boolean isOriginal) {
+    if (!deltas.isEmpty() || combinedCtx == null) {
+      return new ETLSplitStrategy(context, fs, dir, files, isOriginal, deltas, covered);
+    } else if (combinedCtx.combined == null) {
+      combinedCtx.combined = new ETLSplitStrategy(
+          context, fs, dir, files, isOriginal, deltas, covered);
+      combinedCtx.combineStartUs = System.nanoTime();
+      return null;
+    } else {
+      ETLSplitStrategy.CombineResult r =
+          combinedCtx.combined.combineWith(fs, dir, files, isOriginal);
+      switch (r) {
+      case YES: return null;
+      case NO_AND_CONTINUE:
+        return new ETLSplitStrategy(context, fs, dir, files, isOriginal, deltas, covered);
+      case NO_AND_SWAP: {
+        ETLSplitStrategy oldBase = combinedCtx.combined;
+        combinedCtx.combined = new ETLSplitStrategy(
+            context, fs, dir, files, isOriginal, deltas, covered);
+        combinedCtx.combineStartUs = System.nanoTime();
+        return oldBase;
+      }
+      default: throw new AssertionError("Unknown result " + r);
+      }
     }
   }
 
@@ -1532,8 +1654,9 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
   }
 
   @VisibleForTesting
-  static SplitStrategy determineSplitStrategy(Context context, FileSystem fs, Path dir,
-      AcidUtils.Directory dirInfo, List<HdfsFileStatusWithId> baseOrOriginalFiles) {
+  static SplitStrategy<?> determineSplitStrategy(CombinedCtx combinedCtx, Context context,
+      FileSystem fs, Path dir, AcidUtils.Directory dirInfo,
+      List<HdfsFileStatusWithId> baseOrOriginalFiles) {
     Path base = dirInfo.getBaseDirectory();
     List<HdfsFileStatusWithId> original = dirInfo.getOriginalFiles();
     List<DeltaMetaData> deltas = AcidUtils.serializeDeltas(dirInfo.getCurrentDirectories());
@@ -1561,16 +1684,20 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       switch(context.splitStrategyKind) {
         case BI:
           // BI strategy requested through config
-          return new BISplitStrategy(context, fs, dir, baseOrOriginalFiles, isOriginal, deltas, covered);
+          return new BISplitStrategy(
+              context, fs, dir, baseOrOriginalFiles, isOriginal, deltas, covered);
         case ETL:
           // ETL strategy requested through config
-          return new ETLSplitStrategy(context, fs, dir, baseOrOriginalFiles, isOriginal, deltas, covered);
+          return combineOrCreateETLStrategy(combinedCtx, context, fs,
+            dir, baseOrOriginalFiles, deltas, covered, isOriginal);
         default:
           // HYBRID strategy
           if (avgFileSize > context.maxSize || totalFiles <= context.minSplits) {
-            return new ETLSplitStrategy(context, fs, dir, baseOrOriginalFiles, isOriginal, deltas, covered);
+            return combineOrCreateETLStrategy(combinedCtx, context, fs,
+                dir, baseOrOriginalFiles, deltas, covered, isOriginal);
           } else {
-            return new BISplitStrategy(context, fs, dir, baseOrOriginalFiles, isOriginal, deltas, covered);
+            return new BISplitStrategy(
+                context, fs, dir, baseOrOriginalFiles, isOriginal, deltas, covered);
           }
       }
     } else {
