@@ -77,8 +77,8 @@ public class TestCodahaleMetrics {
   public void testScope() throws Exception {
     int runs = 5;
     for (int i = 0; i < runs; i++) {
-      MetricsFactory.getInstance().startScope("method1");
-      MetricsFactory.getInstance().endScope("method1");
+      MetricsFactory.getInstance().startStoredScope("method1");
+      MetricsFactory.getInstance().endStoredScope("method1");
     }
 
     Timer timer = metricRegistry.getTimers().get("api_method1");
@@ -106,8 +106,8 @@ public class TestCodahaleMetrics {
       executorService.submit(new Callable<Void>() {
         @Override
         public Void call() throws Exception {
-          MetricsFactory.getInstance().startScope("method2");
-          MetricsFactory.getInstance().endScope("method2");
+          MetricsFactory.getInstance().startStoredScope("method2");
+          MetricsFactory.getInstance().endStoredScope("method2");
           return null;
         }
       });

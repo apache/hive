@@ -44,6 +44,7 @@ import com.google.common.collect.Lists;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.hive.common.metrics.common.MetricsScope;
 import org.apache.hadoop.hive.common.metrics.common.MetricsVariable;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.slf4j.Logger;
@@ -72,6 +73,7 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.common.Metrics {
   public static final String API_PREFIX = "api_";
+  public static final String ACTIVE_CALLS = "active_calls_";
   public static final Logger LOGGER = LoggerFactory.getLogger(CodahaleMetrics.class);
 
   public final MetricRegistry metricRegistry = new MetricRegistry();
@@ -86,15 +88,15 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
   private HiveConf conf;
   private final Set<Closeable> reporters = new HashSet<Closeable>();
 
-  private final ThreadLocal<HashMap<String, MetricsScope>> threadLocalScopes
-    = new ThreadLocal<HashMap<String,MetricsScope>>() {
+  private final ThreadLocal<HashMap<String, CodahaleMetricsScope>> threadLocalScopes
+    = new ThreadLocal<HashMap<String, CodahaleMetricsScope>>() {
     @Override
-    protected HashMap<String,MetricsScope> initialValue() {
-      return new HashMap<String,MetricsScope>();
+    protected HashMap<String, CodahaleMetricsScope> initialValue() {
+      return new HashMap<String, CodahaleMetricsScope>();
     }
   };
 
-  public static class MetricsScope {
+  public static class CodahaleMetricsScope implements MetricsScope {
 
     final String name;
     final Timer timer;
@@ -108,7 +110,7 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
      * @param name - name of the variable
      * @throws IOException
      */
-    private MetricsScope(String name, CodahaleMetrics metrics) throws IOException {
+    private CodahaleMetricsScope(String name, CodahaleMetrics metrics) throws IOException {
       this.name = name;
       this.metrics = metrics;
       this.timer = metrics.getTimer(name);
@@ -124,6 +126,7 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
       if (!isOpen) {
         isOpen = true;
         this.timerContext = timer.time();
+        metrics.incrementCounter(ACTIVE_CALLS + name);
       } else {
         throw new IOException("Scope named " + name + " is not closed, cannot be opened.");
       }
@@ -136,7 +139,7 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
     public void close() throws IOException {
       if (isOpen) {
         timerContext.close();
-
+        metrics.decrementCounter(ACTIVE_CALLS + name);
       } else {
         throw new IOException("Scope named " + name + " is not open, cannot be closed.");
       }
@@ -210,21 +213,39 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
   }
 
   @Override
-  public void startScope(String name) throws IOException {
+  public void startStoredScope(String name) throws IOException {
     name = API_PREFIX + name;
     if (threadLocalScopes.get().containsKey(name)) {
       threadLocalScopes.get().get(name).open();
     } else {
-      threadLocalScopes.get().put(name, new MetricsScope(name, this));
+      threadLocalScopes.get().put(name, new CodahaleMetricsScope(name, this));
     }
   }
 
   @Override
-  public void endScope(String name) throws IOException {
+  public void endStoredScope(String name) throws IOException {
     name = API_PREFIX + name;
     if (threadLocalScopes.get().containsKey(name)) {
       threadLocalScopes.get().get(name).close();
+      threadLocalScopes.get().remove(name);
     }
+  }
+
+  public MetricsScope getStoredScope(String name) throws IOException {
+    if (threadLocalScopes.get().containsKey(name)) {
+      return threadLocalScopes.get().get(name);
+    } else {
+      throw new IOException("No metrics scope named " + name);
+    }
+  }
+
+  public MetricsScope createScope(String name) throws IOException {
+    name = API_PREFIX + name;
+    return new CodahaleMetricsScope(name, this);
+  }
+
+  public void endScope(MetricsScope scope) throws IOException {
+    ((CodahaleMetricsScope) scope).close();
   }
 
   @Override

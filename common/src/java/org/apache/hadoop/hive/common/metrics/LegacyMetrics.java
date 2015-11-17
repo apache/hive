@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.common.metrics;
 
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
+import org.apache.hadoop.hive.common.metrics.common.MetricsScope;
 import org.apache.hadoop.hive.common.metrics.common.MetricsVariable;
 import org.apache.hadoop.hive.conf.HiveConf;
 
@@ -56,7 +57,7 @@ public class LegacyMetrics implements Metrics {
    *   (i) a "number of calls" counter ( &lt;name&gt;.n ), and
    *  (ii) a "number of msecs spent between scope open and close" counter. ( &lt;name&gt;.t)
    */
-  public static class MetricsScope {
+  public static class LegacyMetricsScope implements MetricsScope {
 
     final LegacyMetrics metrics;
 
@@ -73,7 +74,7 @@ public class LegacyMetrics implements Metrics {
      * @param name - name of the variable
      * @throws IOException
      */
-    private MetricsScope(String name, LegacyMetrics metrics) throws IOException {
+    private LegacyMetricsScope(String name, LegacyMetrics metrics) throws IOException {
       this.metrics = metrics;
       this.name = name;
       this.numCounter = name + ".n";
@@ -150,11 +151,11 @@ public class LegacyMetrics implements Metrics {
     }
   }
 
-  private static final ThreadLocal<HashMap<String, MetricsScope>> threadLocalScopes
-    = new ThreadLocal<HashMap<String,MetricsScope>>() {
+  private static final ThreadLocal<HashMap<String, LegacyMetricsScope>> threadLocalScopes
+    = new ThreadLocal<HashMap<String, LegacyMetricsScope>>() {
     @Override
-    protected HashMap<String,MetricsScope> initialValue() {
-      return new HashMap<String,MetricsScope>();
+    protected HashMap<String, LegacyMetricsScope> initialValue() {
+      return new HashMap<String, LegacyMetricsScope>();
     }
   };
 
@@ -212,15 +213,15 @@ public class LegacyMetrics implements Metrics {
     return metrics.get(name);
   }
 
-  public void startScope(String name) throws IOException{
+  public void startStoredScope(String name) throws IOException{
     if (threadLocalScopes.get().containsKey(name)) {
       threadLocalScopes.get().get(name).open();
     } else {
-      threadLocalScopes.get().put(name, new MetricsScope(name, this));
+      threadLocalScopes.get().put(name, new LegacyMetricsScope(name, this));
     }
   }
 
-  public MetricsScope getScope(String name) throws IOException {
+  public MetricsScope getStoredScope(String name) throws IOException {
     if (threadLocalScopes.get().containsKey(name)) {
       return threadLocalScopes.get().get(name);
     } else {
@@ -228,13 +229,19 @@ public class LegacyMetrics implements Metrics {
     }
   }
 
-  public void endScope(String name) throws IOException{
+  public void endStoredScope(String name) throws IOException{
     if (threadLocalScopes.get().containsKey(name)) {
       threadLocalScopes.get().get(name).close();
     }
   }
 
+  public MetricsScope createScope(String name) throws IOException {
+    return new LegacyMetricsScope(name, this);
+  }
 
+  public void endScope(MetricsScope scope) throws IOException {
+    ((LegacyMetricsScope) scope).close();
+  }
 
   /**
    * Resets the static context state to initial.
