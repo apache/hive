@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -33,6 +34,11 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import org.apache.hadoop.hive.common.metrics.common.Metrics;
+import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
+import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
+import org.apache.hadoop.hive.common.metrics.common.MetricsVariable;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.hooks.HookUtils;
@@ -99,8 +105,9 @@ public class SessionManager extends CompositeService {
     // Threads terminate when they are idle for more than the keepAliveTime
     // A bounded blocking queue is used to queue incoming operations, if #operations > poolSize
     String threadPoolName = "HiveServer2-Background-Pool";
+    final BlockingQueue queue = new LinkedBlockingQueue<Runnable>(poolQueueSize);
     backgroundOperationPool = new ThreadPoolExecutor(poolSize, poolSize,
-        keepAliveTime, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(poolQueueSize),
+        keepAliveTime, TimeUnit.SECONDS, queue,
         new ThreadFactoryWithGarbageCleanup(threadPoolName));
     backgroundOperationPool.allowCoreThreadTimeOut(true);
 
@@ -110,6 +117,22 @@ public class SessionManager extends CompositeService {
         hiveConf, ConfVars.HIVE_SERVER2_IDLE_SESSION_TIMEOUT, TimeUnit.MILLISECONDS);
     checkOperation = HiveConf.getBoolVar(hiveConf,
         ConfVars.HIVE_SERVER2_IDLE_SESSION_CHECK_OPERATION);
+
+    Metrics m = MetricsFactory.getInstance();
+    if (m != null) {
+      m.addGauge(MetricsConstant.EXEC_ASYNC_QUEUE_SIZE, new MetricsVariable() {
+        @Override
+        public Object getValue() {
+          return queue.size();
+        }
+      });
+      m.addGauge(MetricsConstant.EXEC_ASYNC_POOL_SIZE, new MetricsVariable() {
+        @Override
+        public Object getValue() {
+          return backgroundOperationPool.getPoolSize();
+        }
+      });
+    }
   }
 
   private void initOperationLogRootDir() {

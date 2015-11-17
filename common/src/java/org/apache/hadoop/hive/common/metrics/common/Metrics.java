@@ -28,20 +28,40 @@ import java.io.IOException;
  */
 public interface Metrics {
 
-  //Must declare CTOR taking in HiveConf.
-
   /**
    * Deinitializes the Metrics system.
    */
   public void close() throws Exception;
 
   /**
+   *
+   * @param name starts a scope of a given name.  Scopes is stored as thread-local variable.
+   * @throws IOException
+   */
+  public void startStoredScope(String name) throws IOException;
+
+  /**
+   * Closes the stored scope of a given name.
+   * Note that this must be called on the same thread as where the scope was started.
    * @param name
    * @throws IOException
    */
-  public void startScope(String name) throws IOException;
+  public void endStoredScope(String name) throws IOException;
 
-  public void endScope(String name) throws IOException;
+  /**
+   * Create scope with given name and returns it.
+   * @param name
+   * @return
+   * @throws IOException
+   */
+  public MetricsScope createScope(String name) throws IOException;
+
+  /**
+   * Close the given scope.
+   * @param scope
+   * @throws IOException
+   */
+  public void endScope(MetricsScope scope) throws IOException;
 
   //Counter-related methods
 

@@ -19,7 +19,9 @@ package org.apache.hive.service.cli.operation;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.EnumSet;
+import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -28,6 +30,8 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
+import com.google.common.collect.Sets;
+import org.apache.hadoop.hive.common.metrics.common.MetricsScope;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.OperationLog;
@@ -45,6 +49,7 @@ import org.apache.hive.service.cli.thrift.TProtocolVersion;
 public abstract class Operation {
   protected final HiveSession parentSession;
   private OperationState state = OperationState.INITIALIZED;
+  private MetricsScope currentStateScope;
   private final OperationHandle opHandle;
   private HiveConf configuration;
   public static final Log LOG = LogFactory.getLog(Operation.class.getName());
@@ -70,6 +75,7 @@ public abstract class Operation {
     lastAccessTime = System.currentTimeMillis();
     operationTimeout = HiveConf.getTimeVar(parentSession.getHiveConf(),
         HiveConf.ConfVars.HIVE_SERVER2_IDLE_OPERATION_TIMEOUT, TimeUnit.MILLISECONDS);
+    setMetrics(state);
   }
 
   public Future<?> getBackgroundHandle() {
@@ -128,6 +134,7 @@ public abstract class Operation {
   protected final OperationState setState(OperationState newState) throws HiveSQLException {
     state.validateTransition(newState);
     this.state = newState;
+    setMetrics(state);
     this.lastAccessTime = System.currentTimeMillis();
     return this.state;
   }
@@ -329,5 +336,41 @@ public abstract class Operation {
       ex.initCause(response.getException());
     }
     return ex;
+  }
+
+  //list of operation states to measure duration of.
+  protected static Set<OperationState> scopeStates = Sets.immutableEnumSet(
+    OperationState.INITIALIZED,
+    OperationState.PENDING,
+    OperationState.RUNNING
+  );
+
+  //list of terminal operation states.  We measure only completed counts for operations in these states.
+  protected static Set<OperationState> terminalStates = Sets.immutableEnumSet(
+    OperationState.CLOSED,
+    OperationState.CANCELED,
+    OperationState.FINISHED,
+    OperationState.ERROR,
+    OperationState.UNKNOWN
+  );
+
+  protected void setMetrics(OperationState state) {
+     Metrics metrics = MetricsFactory.getInstance();
+     if (metrics != null) {
+       try {
+         if (currentStateScope != null) {
+           metrics.endScope(currentStateScope);
+           currentStateScope = null;
+         }
+         if (scopeStates.contains(state)) {
+           currentStateScope = metrics.createScope(MetricsConstant.OPERATION_PREFIX + state.toString());
+         }
+         if (terminalStates.contains(state)) {
+           metrics.incrementCounter(MetricsConstant.COMPLETED_OPERATION_PREFIX + state.toString());
+         }
+       } catch (IOException e) {
+         LOG.warn("Error metrics", e);
+       }
+    }
   }
 }

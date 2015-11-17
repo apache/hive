@@ -29,8 +29,19 @@ public class MetricsConstant {
   public static String OPEN_CONNECTIONS = "open_connections";
   public static String OPEN_OPERATIONS = "open_operations";
 
-  public static String JDO_ACTIVE_TRANSACTIONS = "active_jdo_transactions";
-  public static String JDO_ROLLBACK_TRANSACTIONS = "rollbacked_jdo_transactions";
-  public static String JDO_COMMIT_TRANSACTIONS = "committed_jdo_transactions";
-  public static String JDO_OPEN_TRANSACTIONS = "opened_jdo_transactions";
+  public static final String JDO_ACTIVE_TRANSACTIONS = "active_jdo_transactions";
+  public static final String JDO_ROLLBACK_TRANSACTIONS = "rollbacked_jdo_transactions";
+  public static final String JDO_COMMIT_TRANSACTIONS = "committed_jdo_transactions";
+  public static final String JDO_OPEN_TRANSACTIONS = "opened_jdo_transactions";
+
+  public static final String METASTORE_HIVE_LOCKS = "metastore_hive_locks";
+  public static final String ZOOKEEPER_HIVE_SHAREDLOCKS = "zookeeper_hive_sharedlocks";
+  public static final String ZOOKEEPER_HIVE_EXCLUSIVELOCKS = "zookeeper_hive_exclusivelocks";
+  public static final String ZOOKEEPER_HIVE_SEMISHAREDLOCKS = "zookeeper_hive_semisharedlocks";
+
+  public static final String EXEC_ASYNC_QUEUE_SIZE = "exec_async_queue_size";
+  public static final String EXEC_ASYNC_POOL_SIZE = "exec_async_pool_size";
+
+  public static final String OPERATION_PREFIX = "hs2_operation_";
+  public static final String COMPLETED_OPERATION_PREFIX = "hs2_completed_operation_";
 }
