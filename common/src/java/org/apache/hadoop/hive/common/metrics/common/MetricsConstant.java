@@ -38,4 +38,10 @@ public class MetricsConstant {
   public static final String ZOOKEEPER_HIVE_SHAREDLOCKS = "zookeeper_hive_sharedlocks";
   public static final String ZOOKEEPER_HIVE_EXCLUSIVELOCKS = "zookeeper_hive_exclusivelocks";
   public static final String ZOOKEEPER_HIVE_SEMISHAREDLOCKS = "zookeeper_hive_semisharedlocks";
+
+  public static final String EXEC_ASYNC_QUEUE_SIZE = "exec_async_queue_size";
+  public static final String EXEC_ASYNC_POOL_SIZE = "exec_async_pool_size";
+
+  public static final String OPERATION_PREFIX = "hs2_operation_";
+  public static final String COMPLETED_OPERATION_PREFIX = "hs2_completed_operation_";
 }
