@@ -384,9 +384,13 @@ public class Driver implements CommandProcessor {
     }
     saveSession(queryState);
 
-    // generate new query id
-    String queryId = QueryPlan.makeQueryId();
-    conf.setVar(HiveConf.ConfVars.HIVEQUERYID, queryId);
+    // Generate new query id if it's not set for CLI case. If it's session based,
+    // query id is passed in from the client or initialized when the session starts.
+    String queryId = conf.getVar(HiveConf.ConfVars.HIVEQUERYID);
+    if (queryId == null || queryId.isEmpty()) {
+      queryId = QueryPlan.makeQueryId();
+      conf.setVar(HiveConf.ConfVars.HIVEQUERYID, queryId);
+    }
 
     SessionState.get().setupQueryCurrentTimestamp();
 

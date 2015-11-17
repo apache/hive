@@ -421,6 +421,10 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       return false;
     }
     for (FileStatus file : files) {
+      // 0 length files cannot be ORC files
+      if (file.getLen() == 0) {
+        return false;
+      }
       try {
         OrcFile.createReader(file.getPath(),
             OrcFile.readerOptions(conf).filesystem(fs));

@@ -19,8 +19,6 @@
 package org.apache.hadoop.hive.metastore.hbase;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
@@ -56,8 +54,8 @@ import java.util.Collections;
 import java.util.List;
 
 public class TestHBaseSchemaTool extends HBaseIntegrationTests {
-  private static final Log LOG = LogFactory.getLog(TestHBaseSchemaTool.class.getName());
-  private String lsep = System.getProperty("line.separator");
+
+  private final String lsep = System.getProperty("line.separator");
 
   @BeforeClass
   public static void startup() throws Exception {

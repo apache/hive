@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.OperationLog;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.service.cli.FetchOrientation;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.OperationHandle;
@@ -41,8 +42,13 @@ import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.TableSchema;
 import org.apache.hive.service.cli.session.HiveSession;
 import org.apache.hive.service.cli.thrift.TProtocolVersion;
+import org.apache.logging.log4j.ThreadContext;
 
 public abstract class Operation {
+  // Constants of the key strings for the log4j ThreadContext.
+  private static final String QUERYID = "QueryId";
+  private static final String SESSIONID = "SessionId";
+
   protected final HiveSession parentSession;
   private OperationState state = OperationState.INITIALIZED;
   private final OperationHandle opHandle;
@@ -238,6 +244,22 @@ public abstract class Operation {
    */
   protected void beforeRun() {
     createOperationLog();
+    registerLoggingContext();
+  }
+
+  /**
+   * Register logging context so that Log4J can print QueryId and/or SessionId for each message
+   */
+  protected void registerLoggingContext() {
+    ThreadContext.put(QUERYID, SessionState.get().getQueryId());
+    ThreadContext.put(SESSIONID, SessionState.get().getSessionId());
+  }
+
+  /**
+   * Unregister logging context
+   */
+  protected void unregisterLoggingContext() {
+    ThreadContext.clearAll();
   }
 
   /**
@@ -245,6 +267,7 @@ public abstract class Operation {
    * Clean up resources, which was set up in beforeRun().
    */
   protected void afterRun() {
+    unregisterLoggingContext();
     unregisterOperationLog();
   }
 

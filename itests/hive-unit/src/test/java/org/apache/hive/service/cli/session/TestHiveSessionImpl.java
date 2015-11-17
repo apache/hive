@@ -74,6 +74,7 @@ public class TestHiveSessionImpl {
     try {
 
       //Running a normal async query with no exceptions,then no need to close opHandle
+      session.open(new HashMap<String, String>());
       session.executeStatementAsync(hql, confOverlay);
       Mockito.verify(operationManager, Mockito.times(0)).closeOperation(opHandle);
 
