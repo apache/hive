@@ -8991,21 +8991,21 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       unionoutRR.put(unionalias, field, unionColInfo);
     }
 
-    // For Spark, we rely on the generated SelectOperator to do the type casting.
+    // For Spark,TEZ we rely on the generated SelectOperator to do the type casting.
     // Consider:
     //    SEL_1 (int)   SEL_2 (int)    SEL_3 (double)
     // If we first merge SEL_1 and SEL_2 into a UNION_1, and then merge UNION_1
     // with SEL_3 to get UNION_2, then no SelectOperator will be inserted. Hence error
     // will happen afterwards. The solution here is to insert one after UNION_1, which
     // cast int to double.
-    boolean isSpark = HiveConf.getVar(conf,
-        HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("spark");
+    boolean isMR = HiveConf.getVar(conf,
+        HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("mr");
 
-    if (isSpark || !(leftOp instanceof UnionOperator)) {
+    if (!isMR || !(leftOp instanceof UnionOperator)) {
       leftOp = genInputSelectForUnion(leftOp, leftmap, leftalias, unionoutRR, unionalias);
     }
 
-    if (isSpark || !(rightOp instanceof UnionOperator)) {
+    if (!isMR || !(rightOp instanceof UnionOperator)) {
       rightOp = genInputSelectForUnion(rightOp, rightmap, rightalias, unionoutRR, unionalias);
     }
 
