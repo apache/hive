@@ -10,6 +10,7 @@ SET hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 set hive.merge.orcfile.stripe.level=false;
 set hive.merge.mapfiles=false;
 set hive.merge.mapredfiles=false;
+set hive.merge.sparkfiles=false;
 
 -- 3 mappers
 explain insert overwrite table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13;

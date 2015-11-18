@@ -617,7 +617,7 @@ class SparkClientImpl implements SparkClient {
       jc.sc().addJar(path);
       // Following remote job may refer to classes in this jar, and the remote job would be executed
       // in a different thread, so we add this jar path to JobContext for further usage.
-      jc.getAddedJars().add(path);
+      jc.getAddedJars().put(path, System.currentTimeMillis());
       return null;
     }
 

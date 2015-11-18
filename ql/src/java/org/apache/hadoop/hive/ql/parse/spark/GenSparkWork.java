@@ -94,12 +94,6 @@ public class GenSparkWork implements NodeProcessor {
     LOG.debug("Root operator: " + root);
     LOG.debug("Leaf operator: " + operator);
 
-    if (context.clonedReduceSinks.contains(operator)) {
-      // if we're visiting a terminal we've created ourselves,
-      // just skip and keep going
-      return null;
-    }
-
     SparkWork sparkWork = context.currentTask.getWork();
     SMBMapJoinOperator smbOp = GenSparkUtils.getChildOperator(root, SMBMapJoinOperator.class);
 
@@ -192,7 +186,6 @@ public class GenSparkWork implements NodeProcessor {
                   // we've already set this one up. Need to clone for the next work.
                   r = (ReduceSinkOperator) OperatorFactory.getAndMakeChild(
                       (ReduceSinkDesc)r.getConf().clone(), r.getParentOperators());
-                  context.clonedReduceSinks.add(r);
                 }
                 r.getConf().setOutputName(work.getName());
               }

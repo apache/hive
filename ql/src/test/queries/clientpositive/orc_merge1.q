@@ -10,6 +10,7 @@ set tez.grouping.max-size=2000;
 set hive.merge.tezfiles=false;
 set hive.merge.mapfiles=false;
 set hive.merge.mapredfiles=false;
+set hive.merge.sparkfiles=false;
 
 -- SORT_QUERY_RESULTS
 
@@ -39,6 +40,7 @@ dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/orcfile_merge1/ds=1/part=0/;
 set hive.merge.tezfiles=true;
 set hive.merge.mapfiles=true;
 set hive.merge.mapredfiles=true;
+set hive.merge.sparkfiles=true;
 -- auto-merge slow way
 EXPLAIN
     INSERT OVERWRITE TABLE orcfile_merge1b PARTITION (ds='1', part)
