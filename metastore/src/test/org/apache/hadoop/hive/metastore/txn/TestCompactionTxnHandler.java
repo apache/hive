@@ -264,43 +264,6 @@ public class TestCompactionTxnHandler {
   }
 
   @Test
-  public void testLockNoWait() throws Exception {
-    // Test that we can acquire the lock alone
-     LockComponent comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB,
-        "mydb");
-    comp.setTablename("mytable");
-    comp.setPartitionname("mypartition");
-    List<LockComponent> components = new ArrayList<LockComponent>(1);
-    components.add(comp);
-    LockRequest req = new LockRequest(components, "me", "localhost");
-    LockResponse res = txnHandler.lockNoWait(req);
-    assertTrue(res.getState() == LockState.ACQUIRED);
-    txnHandler.unlock(new UnlockRequest(res.getLockid()));
-
-    // test that another lock blocks it
-    comp = new LockComponent(LockType.SHARED_READ, LockLevel.DB,
-        "mydb");
-    comp.setTablename("mytable");
-    comp.setPartitionname("mypartition");
-    components.clear();
-    components.add(comp);
-    req = new LockRequest(components, "me", "localhost");
-    res = txnHandler.lock(req);
-    assertEquals(LockState.ACQUIRED, res.getState());
-
-    comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB,
-        "mydb");
-    comp.setTablename("mytable");
-    comp.setPartitionname("mypartition");
-    components.clear();
-    components.add(comp);
-    req = new LockRequest(components, "me", "localhost");
-    res = txnHandler.lockNoWait(req);
-    assertEquals(LockState.NOT_ACQUIRED, res.getState());
-    assertEquals(1, TxnDbUtil.findNumCurrentLocks());
-  }
-
-  @Test
   public void testFindPotentialCompactions() throws Exception {
     // Test that committing unlocks
     long txnid = openTxn();

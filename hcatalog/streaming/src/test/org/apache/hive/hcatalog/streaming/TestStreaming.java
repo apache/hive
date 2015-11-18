@@ -618,7 +618,7 @@ public class TestStreaming {
   }
 
   @Test
-  public void testHearbeat() throws Exception {
+  public void testHeartbeat() throws Exception {
     HiveEndPoint endPt = new HiveEndPoint(metaStoreURI, dbName2, tblName2, null);
     DelimitedInputWriter writer = new DelimitedInputWriter(fieldNames2,",", endPt);
     StreamingConnection connection = endPt.newConnection(false, null);
@@ -632,14 +632,14 @@ public class TestStreaming {
     Assert.assertEquals("Wrong nubmer of locks: " + response, 1, response.getLocks().size());
     ShowLocksResponseElement lock = response.getLocks().get(0);
     long acquiredAt = lock.getAcquiredat();
-    long heartbeatAt = lock.getAcquiredat();
+    long heartbeatAt = lock.getLastheartbeat();
     txnBatch.heartbeat();
     response = msClient.showLocks();
     Assert.assertEquals("Wrong number of locks2: " + response, 1, response.getLocks().size());
     lock = response.getLocks().get(0);
     Assert.assertEquals("Acquired timestamp didn't match", acquiredAt, lock.getAcquiredat());
     Assert.assertTrue("Expected new heartbeat (" + lock.getLastheartbeat() +
-      ") > old heartbeat(" + heartbeatAt +")", lock.getLastheartbeat() > heartbeatAt);
+      ") == old heartbeat(" + heartbeatAt +")", lock.getLastheartbeat() == heartbeatAt);
   }
   @Test
   public void testTransactionBatchEmptyAbort() throws Exception {

@@ -1067,8 +1067,8 @@ public class TestTxnHandler {
         assertNull(lock.getPartname());
         assertEquals(LockState.ACQUIRED, lock.getState());
         assertEquals(LockType.EXCLUSIVE, lock.getType());
-        assertTrue(begining <= lock.getLastheartbeat() &&
-            System.currentTimeMillis() >= lock.getLastheartbeat());
+        assertTrue(lock.toString(), 0 == lock.getLastheartbeat() &&
+            lock.getTxnid() != 0);
         assertTrue("Expected acquired at " + lock.getAcquiredat() + " to be between " + begining
             + " and " + System.currentTimeMillis(),
             begining <= lock.getAcquiredat() && System.currentTimeMillis() >= lock.getAcquiredat());
@@ -1082,8 +1082,8 @@ public class TestTxnHandler {
         assertNull(lock.getPartname());
         assertEquals(LockState.WAITING, lock.getState());
         assertEquals(LockType.SHARED_READ, lock.getType());
-        assertTrue(begining <= lock.getLastheartbeat() &&
-            System.currentTimeMillis() >= lock.getLastheartbeat());
+        assertTrue(lock.toString(), 0 == lock.getLastheartbeat() &&
+          lock.getTxnid() != 0);
         assertEquals(0, lock.getAcquiredat());
         assertEquals("me", lock.getUser());
         assertEquals("localhost", lock.getHostname());
@@ -1095,7 +1095,7 @@ public class TestTxnHandler {
         assertEquals("yourpartition", lock.getPartname());
         assertEquals(LockState.ACQUIRED, lock.getState());
         assertEquals(LockType.SHARED_WRITE, lock.getType());
-        assertTrue(begining <= lock.getLastheartbeat() &&
+        assertTrue(lock.toString(), begining <= lock.getLastheartbeat() &&
             System.currentTimeMillis() >= lock.getLastheartbeat());
         assertTrue(begining <= lock.getAcquiredat() &&
             System.currentTimeMillis() >= lock.getAcquiredat());
