@@ -19,6 +19,7 @@
 package org.apache.hive.service.cli.operation;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -78,7 +79,7 @@ public class GetTablesOperation extends MetadataOperation {
     if (tableTypes != null) {
       tableTypeList = new ArrayList<String>();
       for (String tableType : tableTypes) {
-        tableTypeList.add(tableTypeMapping.mapToHiveType(tableType.trim()));
+        tableTypeList.addAll(Arrays.asList(tableTypeMapping.mapToHiveType(tableType.trim())));
       }
     } else {
       tableTypeList = null;
