@@ -129,7 +129,6 @@ public class GenSparkProcContext implements NodeProcessorCtx {
   public final Map<Operator<?>, BaseWork> unionWorkMap;
   public final List<UnionOperator> currentUnionOperators;
   public final Set<BaseWork> workWithUnionOperators;
-  public final Set<ReduceSinkOperator> clonedReduceSinks;
 
   public final Set<FileSinkOperator> fileSinkSet;
   public final Map<FileSinkOperator, List<FileSinkOperator>> fileSinkMap;
@@ -180,7 +179,6 @@ public class GenSparkProcContext implements NodeProcessorCtx {
     this.unionWorkMap = new LinkedHashMap<Operator<?>, BaseWork>();
     this.currentUnionOperators = new LinkedList<UnionOperator>();
     this.workWithUnionOperators = new LinkedHashSet<BaseWork>();
-    this.clonedReduceSinks = new LinkedHashSet<ReduceSinkOperator>();
     this.fileSinkSet = new LinkedHashSet<FileSinkOperator>();
     this.fileSinkMap = new LinkedHashMap<FileSinkOperator, List<FileSinkOperator>>();
     this.pruningSinkSet = new LinkedHashSet<Operator<?>>();

@@ -55,9 +55,9 @@ public interface JobContext {
   Map<String, List<JavaFutureAction<?>>> getMonitoredJobs();
 
   /**
-   * Return all added jar path which added through AddJarJob.
+   * Return all added jar path and timestamp which added through AddJarJob.
    */
-  Set<String> getAddedJars();
+  Map<String, Long> getAddedJars();
 
   /**
    * Returns a local tmp dir specific to the context

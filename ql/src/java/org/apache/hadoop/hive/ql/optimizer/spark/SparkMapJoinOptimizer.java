@@ -46,6 +46,8 @@ import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.OpTraits;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
+import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe;
 
 /**
  * SparkMapJoinOptimizer cloned from ConvertJoinMapJoin is an optimization that replaces a common join
@@ -89,6 +91,14 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
 
     LOG.info("Convert to non-bucketed map join");
     MapJoinOperator mapJoinOp = convertJoinMapJoin(joinOp, context, mapJoinConversionPos);
+    // For native vectorized map join, we require the key SerDe to be BinarySortableSerDe
+    // Note: the MJ may not really get natively-vectorized later,
+    // but changing SerDe won't hurt correctness
+    if (conf.getBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_MAPJOIN_NATIVE_ENABLED) &&
+        conf.getBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED)) {
+      mapJoinOp.getConf().getKeyTblDesc().getProperties().setProperty(
+          serdeConstants.SERIALIZATION_LIB, BinarySortableSerDe.class.getName());
+    }
     if (conf.getBoolVar(HiveConf.ConfVars.HIVEOPTBUCKETMAPJOIN)) {
       LOG.info("Check if it can be converted to bucketed map join");
       numBuckets = convertJoinBucketMapJoin(joinOp, mapJoinOp,
