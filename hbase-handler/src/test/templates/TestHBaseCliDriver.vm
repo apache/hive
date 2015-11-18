@@ -17,25 +17,38 @@
  */
 package org.apache.hadoop.hive.cli;
 
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import java.io.*;
+import java.util.*;
+
+import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
 import org.apache.hadoop.hive.hbase.HBaseQTestUtil;
 import org.apache.hadoop.hive.hbase.HBaseTestSetup;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-public class $className {
+public class $className extends TestCase {
 
   private static final String HIVE_ROOT = HBaseQTestUtil.ensurePathEndsInSlash(System.getProperty("hive.root"));
   private HBaseQTestUtil qt;
-  private static HBaseTestSetup setup = new HBaseTestSetup();
+  private HBaseTestSetup setup;
 
-  @Before
-  public void setUp() {
+  public static class TestHBaseCliDriverAddTestFromQFiles implements QTestUtil.SuiteAddTestFunctor {
+    public void addTestToSuite(TestSuite suite, Object setup, String tName) {
+      suite.addTest(new $className("testCliDriver_"+tName, (HBaseTestSetup)setup));
+    }
+  }
+
+  public $className(String name, HBaseTestSetup setup) {
+    super(name);
+    qt = null;
+    this.setup = setup;
+  }
+
+  @Override
+  protected void setUp() {
 
     MiniClusterType miniMR = MiniClusterType.valueForString("$clusterMode");
     String initScript = "$initScript";
@@ -52,11 +65,12 @@ public class $className {
     }
   }
 
-  @After
-  public void tearDown() {
+  @Override
+  protected void tearDown() {
     try {
       qt.shutdown();
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
       System.err.flush();
@@ -64,9 +78,23 @@ public class $className {
     }
   }
 
-  @AfterClass
-  public static void closeHBaseConnections() throws Exception {
-    setup.tearDown();
+  public static Test suite() {
+    Set<String> qFilesToExecute = new HashSet<String>();
+    String qFiles = System.getProperty("qfile", "").trim();
+    if(!qFiles.isEmpty()) {
+      for(String qFile : qFiles.split(",")) {
+        qFile = qFile.trim();
+        if(!qFile.isEmpty()) {
+          qFilesToExecute.add(qFile);
+        }
+      }
+    }
+    TestSuite suite = new TestSuite();
+    HBaseTestSetup setup = new HBaseTestSetup(suite);
+
+    QTestUtil.addTestsToSuiteFromQfileNames("$qFileNamesFile", qFilesToExecute,
+      suite, setup, new TestHBaseCliDriverAddTestFromQFiles());
+    return setup;
   }
 
 #foreach ($qf in $qfiles)
@@ -74,7 +102,6 @@ public class $className {
   #set ($eidx = $fname.indexOf('.'))
   #set ($tname = $fname.substring(0, $eidx))
   #set ($fpath = $qfilesMap.get($fname))
-  @Test
   public void testCliDriver_$tname() throws Exception {
     runTest("$tname", "$fname", (HIVE_ROOT + "$fpath"));
   }
