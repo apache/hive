@@ -56,9 +56,13 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.DataOutputBuffer;
@@ -114,16 +118,24 @@ public class VectorizedBatchUtil {
     batch.size = size;
   }
 
-  /**
-   * Convert an ObjectInspector into a ColumnVector of the appropriate
-   * type.
-   */
-  public static ColumnVector createColumnVector(ObjectInspector inspector
-                                                ) throws HiveException {
-    switch(inspector.getCategory()) {
-      case PRIMITIVE:
-        PrimitiveObjectInspector poi = (PrimitiveObjectInspector) inspector;
-        switch(poi.getPrimitiveCategory()) {
+  public static ColumnVector createColumnVector(String typeName) {
+    typeName = typeName.toLowerCase();
+
+    // Allow undecorated CHAR and VARCHAR to support scratch column type names.
+    if (typeName.equals("char") || typeName.equals("varchar")) {
+      return new BytesColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
+    }
+
+    TypeInfo typeInfo = (TypeInfo) TypeInfoUtils.getTypeInfoFromTypeString(typeName);
+    return createColumnVector(typeInfo);
+  }
+
+  public static ColumnVector createColumnVector(TypeInfo typeInfo) {
+    switch(typeInfo.getCategory()) {
+    case PRIMITIVE:
+      {
+        PrimitiveTypeInfo primitiveTypeInfo = (PrimitiveTypeInfo) typeInfo;
+        switch(primitiveTypeInfo.getPrimitiveCategory()) {
           case BOOLEAN:
           case BYTE:
           case SHORT:
@@ -143,142 +155,53 @@ public class VectorizedBatchUtil {
           case VARCHAR:
             return new BytesColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
           case DECIMAL:
-            DecimalTypeInfo tInfo = (DecimalTypeInfo) poi.getTypeInfo();
+            DecimalTypeInfo tInfo = (DecimalTypeInfo) primitiveTypeInfo;
             return new DecimalColumnVector(VectorizedRowBatch.DEFAULT_SIZE,
                 tInfo.precision(), tInfo.scale());
           default:
-            throw new HiveException("Vectorizaton is not supported for datatype:"
-                + poi.getPrimitiveCategory());
+            throw new RuntimeException("Vectorizaton is not supported for datatype:"
+                + primitiveTypeInfo.getPrimitiveCategory());
         }
-      case STRUCT: {
-        StructObjectInspector soi = (StructObjectInspector) inspector;
-        List<? extends StructField> fieldList = soi.getAllStructFieldRefs();
-        ColumnVector[] children = new ColumnVector[fieldList.size()];
+      }
+    case STRUCT:
+      {
+        StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
+        List<TypeInfo> typeInfoList = structTypeInfo.getAllStructFieldTypeInfos();
+        ColumnVector[] children = new ColumnVector[typeInfoList.size()];
         for(int i=0; i < children.length; ++i) {
           children[i] =
-              createColumnVector(fieldList.get(i).getFieldObjectInspector());
+              createColumnVector(typeInfoList.get(i));
         }
         return new StructColumnVector(VectorizedRowBatch.DEFAULT_SIZE,
             children);
       }
-      case UNION: {
-        UnionObjectInspector uoi = (UnionObjectInspector) inspector;
-        List<ObjectInspector> fieldList = uoi.getObjectInspectors();
-        ColumnVector[] children = new ColumnVector[fieldList.size()];
+    case UNION:
+      {
+        UnionTypeInfo unionTypeInfo = (UnionTypeInfo) typeInfo;
+        List<TypeInfo> typeInfoList = unionTypeInfo.getAllUnionObjectTypeInfos();
+        ColumnVector[] children = new ColumnVector[typeInfoList.size()];
         for(int i=0; i < children.length; ++i) {
-          children[i] = createColumnVector(fieldList.get(i));
+          children[i] = createColumnVector(typeInfoList.get(i));
         }
         return new UnionColumnVector(VectorizedRowBatch.DEFAULT_SIZE, children);
       }
-      case LIST: {
-        ListObjectInspector loi = (ListObjectInspector) inspector;
+    case LIST:
+      {
+        ListTypeInfo listTypeInfo = (ListTypeInfo) typeInfo;
         return new ListColumnVector(VectorizedRowBatch.DEFAULT_SIZE,
-            createColumnVector(loi.getListElementObjectInspector()));
+            createColumnVector(listTypeInfo.getListElementTypeInfo()));
       }
-      case MAP: {
-        MapObjectInspector moi = (MapObjectInspector) inspector;
+    case MAP:
+      {
+        MapTypeInfo mapTypeInfo = (MapTypeInfo) typeInfo;
         return new MapColumnVector(VectorizedRowBatch.DEFAULT_SIZE,
-            createColumnVector(moi.getMapKeyObjectInspector()),
-            createColumnVector(moi.getMapValueObjectInspector()));
+            createColumnVector(mapTypeInfo.getMapKeyTypeInfo()),
+            createColumnVector(mapTypeInfo.getMapValueTypeInfo()));
       }
-      default:
-        throw new HiveException("Vectorization is not supported for datatype:"
-            + inspector.getCategory());
+    default:
+      throw new RuntimeException("Vectorization is not supported for datatype:"
+          + typeInfo.getCategory());
     }
-
-  }
-
-  /**
-   * Walk through the object inspector and add column vectors
-   *
-   * @param oi
-   * @param cvList
-   *          ColumnVectors are populated in this list
-   */
-  private static void allocateColumnVector(StructObjectInspector oi,
-      List<ColumnVector> cvList) throws HiveException {
-    if (cvList == null) {
-      throw new HiveException("Null columnvector list");
-    }
-    if (oi == null) {
-      return;
-    }
-    final List<? extends StructField> fields = oi.getAllStructFieldRefs();
-    for(StructField field : fields) {
-      ObjectInspector fieldObjectInspector = field.getFieldObjectInspector();
-      cvList.add(createColumnVector(fieldObjectInspector));
-    }
-  }
-
-
-  /**
-   * Create VectorizedRowBatch from ObjectInspector
-   *
-   * @param oi
-   * @return
-   * @throws HiveException
-   */
-  public static VectorizedRowBatch constructVectorizedRowBatch(
-      StructObjectInspector oi) throws HiveException {
-    final List<ColumnVector> cvList = new LinkedList<ColumnVector>();
-    allocateColumnVector(oi, cvList);
-    final VectorizedRowBatch result = new VectorizedRowBatch(cvList.size());
-    int i = 0;
-    for(ColumnVector cv : cvList) {
-      result.cols[i++] = cv;
-    }
-    return result;
-  }
-
-  /**
-   * Create VectorizedRowBatch from key and value object inspectors
-   * The row object inspector used by ReduceWork needs to be a **standard**
-   * struct object inspector, not just any struct object inspector.
-   * @param keyInspector
-   * @param valueInspector
-   * @param vectorScratchColumnTypeMap
-   * @return VectorizedRowBatch, OI
-   * @throws HiveException
-   */
-  public static ObjectPair<VectorizedRowBatch, StandardStructObjectInspector> constructVectorizedRowBatch(
-      StructObjectInspector keyInspector, StructObjectInspector valueInspector, Map<Integer, String> vectorScratchColumnTypeMap)
-          throws HiveException {
-
-    ArrayList<String> colNames = new ArrayList<String>();
-    ArrayList<ObjectInspector> ois = new ArrayList<ObjectInspector>();
-    List<? extends StructField> fields = keyInspector.getAllStructFieldRefs();
-    for (StructField field: fields) {
-      colNames.add(Utilities.ReduceField.KEY.toString() + "." + field.getFieldName());
-      ois.add(field.getFieldObjectInspector());
-    }
-    fields = valueInspector.getAllStructFieldRefs();
-    for (StructField field: fields) {
-      colNames.add(Utilities.ReduceField.VALUE.toString() + "." + field.getFieldName());
-      ois.add(field.getFieldObjectInspector());
-    }
-    StandardStructObjectInspector rowObjectInspector = ObjectInspectorFactory.getStandardStructObjectInspector(colNames, ois);
-
-    VectorizedRowBatchCtx batchContext = new VectorizedRowBatchCtx();
-    batchContext.init(vectorScratchColumnTypeMap, rowObjectInspector);
-    return new ObjectPair<>(batchContext.createVectorizedRowBatch(), rowObjectInspector);
-  }
-
-  /**
-   * Iterates through all columns in a given row and populates the batch
-   *
-   * @param row
-   * @param oi
-   * @param rowIndex
-   * @param batch
-   * @param buffer
-   * @throws HiveException
-   */
-  public static void addRowToBatch(Object row, StructObjectInspector oi,
-          int rowIndex,
-          VectorizedRowBatch batch,
-          DataOutputBuffer buffer
-          ) throws HiveException {
-    addRowToBatchFrom(row, oi, rowIndex, 0, batch, buffer);
   }
 
   /**
@@ -621,31 +544,30 @@ public class VectorizedBatchUtil {
     return ObjectInspectorFactory.getStandardStructObjectInspector(columnNames,oids);
   }
 
-  public static PrimitiveTypeInfo[] primitiveTypeInfosFromStructObjectInspector(
+  public static String[] columnNamesFromStructObjectInspector(
       StructObjectInspector structObjectInspector) throws HiveException {
 
     List<? extends StructField> fields = structObjectInspector.getAllStructFieldRefs();
-    PrimitiveTypeInfo[] result = new PrimitiveTypeInfo[fields.size()];
+    String[] result = new String[fields.size()];
 
     int i = 0;
     for(StructField field : fields) {
-      TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(
-          field.getFieldObjectInspector().getTypeName());
-      result[i++] =  (PrimitiveTypeInfo) typeInfo;
+      result[i++] =  field.getFieldName();
     }
     return result;
   }
 
-  public static PrimitiveTypeInfo[] primitiveTypeInfosFromTypeNames(
-      String[] typeNames) throws HiveException {
+  public static TypeInfo[] typeInfosFromTypeNames(String[] typeNames) throws HiveException {
+    ArrayList<TypeInfo> typeInfoList =
+        TypeInfoUtils.typeInfosFromTypeNames(Arrays.asList(typeNames));
+    return typeInfoList.toArray(new TypeInfo[0]);
+  }
 
-    PrimitiveTypeInfo[] result = new PrimitiveTypeInfo[typeNames.length];
-
-    for(int i = 0; i < typeNames.length; i++) {
-      TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(typeNames[i]);
-      result[i] =  (PrimitiveTypeInfo) typeInfo;
-    }
-    return result;
+  public static TypeInfo[] typeInfosFromStructObjectInspector(
+      StructObjectInspector structObjectInspector) {
+    ArrayList<TypeInfo> typeInfoList =
+        TypeInfoUtils.typeInfosFromStructObjectInspector(structObjectInspector);
+    return typeInfoList.toArray(new TypeInfo[0]);
   }
 
   static ColumnVector cloneColumnVector(ColumnVector source

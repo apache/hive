@@ -451,6 +451,8 @@ public class TestStreaming {
     JobConf job = new JobConf();
     job.set("mapred.input.dir", partitionPath.toString());
     job.set("bucket_count", Integer.toString(buckets));
+    job.set("columns", "id,msg");
+    job.set("columns.types", "bigint:string");
     job.set(ValidTxnList.VALID_TXNS_KEY, txns.toString());
     InputSplit[] splits = inf.getSplits(job, buckets);
     Assert.assertEquals(buckets, splits.length);

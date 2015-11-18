@@ -68,88 +68,6 @@ public class OrcOutputFormat extends FileOutputFormat<NullWritable, OrcSerdeRow>
 
   private static final Logger LOG = LoggerFactory.getLogger(OrcOutputFormat.class);
 
-  static TypeDescription convertTypeInfo(TypeInfo info) {
-    switch (info.getCategory()) {
-      case PRIMITIVE: {
-        PrimitiveTypeInfo pinfo = (PrimitiveTypeInfo) info;
-        switch (pinfo.getPrimitiveCategory()) {
-          case BOOLEAN:
-            return TypeDescription.createBoolean();
-          case BYTE:
-            return TypeDescription.createByte();
-          case SHORT:
-            return TypeDescription.createShort();
-          case INT:
-            return TypeDescription.createInt();
-          case LONG:
-            return TypeDescription.createLong();
-          case FLOAT:
-            return TypeDescription.createFloat();
-          case DOUBLE:
-            return TypeDescription.createDouble();
-          case STRING:
-            return TypeDescription.createString();
-          case DATE:
-            return TypeDescription.createDate();
-          case TIMESTAMP:
-            return TypeDescription.createTimestamp();
-          case BINARY:
-            return TypeDescription.createBinary();
-          case DECIMAL: {
-            DecimalTypeInfo dinfo = (DecimalTypeInfo) pinfo;
-            return TypeDescription.createDecimal()
-                .withScale(dinfo.getScale())
-                .withPrecision(dinfo.getPrecision());
-          }
-          case VARCHAR: {
-            BaseCharTypeInfo cinfo = (BaseCharTypeInfo) pinfo;
-            return TypeDescription.createVarchar()
-                .withMaxLength(cinfo.getLength());
-          }
-          case CHAR: {
-            BaseCharTypeInfo cinfo = (BaseCharTypeInfo) pinfo;
-            return TypeDescription.createChar()
-                .withMaxLength(cinfo.getLength());
-          }
-          default:
-            throw new IllegalArgumentException("ORC doesn't handle primitive" +
-                " category " + pinfo.getPrimitiveCategory());
-        }
-      }
-      case LIST: {
-        ListTypeInfo linfo = (ListTypeInfo) info;
-        return TypeDescription.createList
-            (convertTypeInfo(linfo.getListElementTypeInfo()));
-      }
-      case MAP: {
-        MapTypeInfo minfo = (MapTypeInfo) info;
-        return TypeDescription.createMap
-            (convertTypeInfo(minfo.getMapKeyTypeInfo()),
-                convertTypeInfo(minfo.getMapValueTypeInfo()));
-      }
-      case UNION: {
-        UnionTypeInfo minfo = (UnionTypeInfo) info;
-        TypeDescription result = TypeDescription.createUnion();
-        for (TypeInfo child: minfo.getAllUnionObjectTypeInfos()) {
-          result.addUnionChild(convertTypeInfo(child));
-        }
-        return result;
-      }
-      case STRUCT: {
-        StructTypeInfo sinfo = (StructTypeInfo) info;
-        TypeDescription result = TypeDescription.createStruct();
-        for(String fieldName: sinfo.getAllStructFieldNames()) {
-          result.addField(fieldName,
-              convertTypeInfo(sinfo.getStructFieldTypeInfo(fieldName)));
-        }
-        return result;
-      }
-      default:
-        throw new IllegalArgumentException("ORC doesn't handle " +
-            info.getCategory());
-    }
-  }
-
   private static class OrcRecordWriter
       implements RecordWriter<NullWritable, OrcSerdeRow>,
                  StatsProvidingRecordWriter {
@@ -242,7 +160,7 @@ public class OrcOutputFormat extends FileOutputFormat<NullWritable, OrcSerdeRow>
         TypeDescription schema = TypeDescription.createStruct();
         for (int i = 0; i < columnNames.size(); ++i) {
           schema.addField(columnNames.get(i),
-              convertTypeInfo(columnTypes.get(i)));
+              OrcUtils.convertTypeInfo(columnTypes.get(i)));
         }
         if (LOG.isDebugEnabled()) {
           LOG.debug("ORC schema = " + schema);

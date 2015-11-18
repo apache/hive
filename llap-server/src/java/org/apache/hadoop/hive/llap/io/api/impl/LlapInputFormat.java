@@ -33,11 +33,13 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
+import org.apache.hadoop.hive.ql.io.SelfDescribingInputFormatInterface;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Consumer;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.FileSplit;
@@ -54,7 +56,8 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 
 public class LlapInputFormat
-  implements InputFormat<NullWritable, VectorizedRowBatch>, VectorizedInputFormatInterface {
+  implements InputFormat<NullWritable, VectorizedRowBatch>, VectorizedInputFormatInterface,
+  SelfDescribingInputFormatInterface {
   @SuppressWarnings("rawtypes")
   private final InputFormat sourceInputFormat;
   private final ColumnVectorProducer cvp;
@@ -104,6 +107,8 @@ public class LlapInputFormat
     private final SearchArgument sarg;
     private final String[] columnNames;
     private final VectorizedRowBatchCtx rbCtx;
+    private final boolean[] columnsToIncludeTruncated;
+    private final Object[] partitionValues;
 
     private final LinkedList<ColumnVectorBatch> pendingData = new LinkedList<ColumnVectorBatch>();
     private ColumnVectorBatch lastCvb = null;
@@ -118,19 +123,28 @@ public class LlapInputFormat
     private long firstReturnTime;
 
     public LlapRecordReader(
-        JobConf job, FileSplit split, List<Integer> includedCols, String hostName) {
+        JobConf job, FileSplit split, List<Integer> includedCols, String hostName)
+            throws IOException {
       this.split = split;
       this.columnIds = includedCols;
       this.sarg = ConvertAstToSearchArg.createFromConf(job);
       this.columnNames = ColumnProjectionUtils.getReadColumnNames(job);
       this.counters = new QueryFragmentCounters(job);
       this.counters.setDesc(QueryFragmentCounters.Desc.MACHINE, hostName);
-      try {
-        rbCtx = new VectorizedRowBatchCtx();
-        rbCtx.init(job, split);
-      } catch (Exception e) {
-        throw new RuntimeException(e);
+
+      MapWork mapWork = Utilities.getMapWork(job);
+      rbCtx = mapWork.getVectorizedRowBatchCtx();
+
+      columnsToIncludeTruncated = rbCtx.getColumnsToIncludeTruncated(job);
+
+      int partitionColumnCount = rbCtx.getPartitionColumnCount();
+      if (partitionColumnCount > 0) {
+        partitionValues = new Object[partitionColumnCount];
+        rbCtx.getPartitionValues(rbCtx, job, split, partitionValues);
+      } else {
+        partitionValues = null;
       }
+
       startRead();
     }
 
@@ -143,10 +157,8 @@ public class LlapInputFormat
       // Add partition cols if necessary (see VectorizedOrcInputFormat for details).
       boolean wasFirst = isFirst;
       if (isFirst) {
-        try {
-          rbCtx.addPartitionColsToBatch(value);
-        } catch (HiveException e) {
-          throw new IOException(e);
+        if (partitionValues != null) {
+          rbCtx.addPartitionColsToBatch(value, partitionValues);
         }
         isFirst = false;
       }
@@ -244,11 +256,7 @@ public class LlapInputFormat
 
     @Override
     public VectorizedRowBatch createValue() {
-      try {
-        return rbCtx.createVectorizedRowBatch();
-      } catch (HiveException e) {
-        throw new RuntimeException("Error creating a batch", e);
-      }
+      return rbCtx.createVectorizedRowBatch(columnsToIncludeTruncated);
     }
 
     @Override

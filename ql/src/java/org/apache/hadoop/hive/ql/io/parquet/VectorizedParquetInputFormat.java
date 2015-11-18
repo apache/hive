@@ -14,8 +14,10 @@
 package org.apache.hadoop.hive.ql.io.parquet;
 
 import java.io.IOException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.VectorColumnAssign;
 import org.apache.hadoop.hive.ql.exec.vector.VectorColumnAssignFactory;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
@@ -23,6 +25,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.parquet.read.ParquetRecordReaderWrapper;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Writable;
@@ -32,7 +35,6 @@ import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
-
 import org.apache.parquet.hadoop.ParquetInputFormat;
 
 /**
@@ -52,6 +54,7 @@ public class VectorizedParquetInputFormat extends FileInputFormat<NullWritable, 
 
     private final ParquetRecordReaderWrapper internalReader;
       private VectorizedRowBatchCtx rbCtx;
+      private Object[] partitionValues;
       private ArrayWritable internalValues;
       private NullWritable internalKey;
       private VectorColumnAssign[] assigners;
@@ -65,11 +68,11 @@ public class VectorizedParquetInputFormat extends FileInputFormat<NullWritable, 
         split,
         conf,
         reporter);
-      try {
-        rbCtx = new VectorizedRowBatchCtx();
-        rbCtx.init(conf, split);
-      } catch (Exception e) {
-        throw new RuntimeException(e);
+      rbCtx = Utilities.getVectorizedRowBatchCtx(conf);
+      int partitionColumnCount = rbCtx.getPartitionColumnCount();
+      if (partitionColumnCount > 0) {
+        partitionValues = new Object[partitionColumnCount];
+        rbCtx.getPartitionValues(rbCtx, conf, split, partitionValues);
       }
     }
 
@@ -81,13 +84,9 @@ public class VectorizedParquetInputFormat extends FileInputFormat<NullWritable, 
 
       @Override
       public VectorizedRowBatch createValue() {
-        VectorizedRowBatch outputBatch = null;
-        try {
-          outputBatch = rbCtx.createVectorizedRowBatch();
-          internalValues = internalReader.createValue();
-        } catch (HiveException e) {
-          throw new RuntimeException("Error creating a batch", e);
-        }
+        VectorizedRowBatch outputBatch;
+        outputBatch = rbCtx.createVectorizedRowBatch();
+        internalValues = internalReader.createValue();
         return outputBatch;
       }
 

@@ -510,10 +510,15 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     // ensure filters are not set from previous pushFilters
     jobConf.unset(TableScanDesc.FILTER_TEXT_CONF_STR);
     jobConf.unset(TableScanDesc.FILTER_EXPR_CONF_STR);
+
+    Utilities.unsetSchemaEvolution(jobConf);
+
     TableScanDesc scanDesc = tableScan.getConf();
     if (scanDesc == null) {
       return;
     }
+
+    Utilities.addTableSchemaToConf(jobConf, tableScan);
 
     // construct column name list and types for reference by filter push down
     Utilities.setColumnNameList(jobConf, tableScan);

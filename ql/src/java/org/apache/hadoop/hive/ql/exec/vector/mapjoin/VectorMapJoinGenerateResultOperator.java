@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.serde2.lazybinary.fast.LazyBinarySerializeWrite;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 
 /**
@@ -413,8 +414,8 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
 
   private void setupSpillSerDe(VectorizedRowBatch batch) throws HiveException {
 
-    PrimitiveTypeInfo[] inputObjInspectorsTypeInfos =
-        VectorizedBatchUtil.primitiveTypeInfosFromStructObjectInspector(
+    TypeInfo[] inputObjInspectorsTypeInfos =
+        VectorizedBatchUtil.typeInfosFromStructObjectInspector(
                (StructObjectInspector) inputObjInspectors[posBigTable]);
 
     List<Integer> projectedColumns = vContext.getProjectedColumns();

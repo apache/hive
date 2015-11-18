@@ -27,13 +27,16 @@ import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.io.RecordUpdater;
 import org.apache.hadoop.hive.ql.io.orc.OrcRawRecordMerger.OriginalReaderPair;
 import org.apache.hadoop.hive.ql.io.orc.OrcRawRecordMerger.ReaderKey;
 import org.apache.hadoop.hive.ql.io.orc.OrcRawRecordMerger.ReaderPair;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.IntWritable;
@@ -47,6 +50,8 @@ import org.apache.hadoop.mapred.Reporter;
 import org.junit.Test;
 import org.mockito.MockSettings;
 import org.mockito.Mockito;
+
+import com.google.common.collect.Lists;
 
 import java.io.File;
 import java.io.IOException;
@@ -354,6 +359,8 @@ public class TestOrcRawRecordMerger {
     Configuration conf = new Configuration();
     conf.set("columns", "col1");
     conf.set("columns.types", "string");
+    conf.set(serdeConstants.LIST_COLUMNS, "col1");
+    conf.set(serdeConstants.LIST_COLUMN_TYPES, "string");
     Reader reader = Mockito.mock(Reader.class, settings);
     RecordReader recordReader = Mockito.mock(RecordReader.class, settings);
 
@@ -362,6 +369,8 @@ public class TestOrcRawRecordMerger {
     typeBuilder.setKind(OrcProto.Type.Kind.STRUCT).addSubtypes(1)
         .addSubtypes(2).addSubtypes(3).addSubtypes(4).addSubtypes(5)
         .addSubtypes(6);
+    typeBuilder.addAllFieldNames(Lists.newArrayList("operation", "originalTransaction", "bucket",
+        "rowId", "currentTransaction", "row"));
     types.add(typeBuilder.build());
     types.add(null);
     types.add(null);
@@ -370,6 +379,10 @@ public class TestOrcRawRecordMerger {
     types.add(null);
     typeBuilder.clearSubtypes();
     typeBuilder.addSubtypes(7);
+    typeBuilder.addAllFieldNames(Lists.newArrayList("col1"));
+    types.add(typeBuilder.build());
+    typeBuilder.clear();
+    typeBuilder.setKind(OrcProto.Type.Kind.STRING);
     types.add(typeBuilder.build());
 
     Mockito.when(reader.getTypes()).thenReturn(types);
@@ -466,6 +479,14 @@ public class TestOrcRawRecordMerger {
       col1 = new Text(val);
       ROW__ID = new RecordIdentifier(origTxn, bucket, rowId);
     }
+
+    static String getColumnNamesProperty() {
+      return "col1,ROW__ID";
+    }
+    static String getColumnTypesProperty() {
+      return "string:struct<transactionId:bigint,bucketId:int,rowId:bigint>";
+    }
+
   }
 
   static String getValue(OrcStruct event) {
@@ -499,6 +520,8 @@ public class TestOrcRawRecordMerger {
         BUCKET);
     Reader baseReader = OrcFile.createReader(basePath,
         OrcFile.readerOptions(conf));
+    conf.set("columns", MyRow.getColumnNamesProperty());
+    conf.set("columns.types", MyRow.getColumnTypesProperty());
     OrcRawRecordMerger merger =
         new OrcRawRecordMerger(conf, true, baseReader, false, BUCKET,
             createMaximalTxnList(), new Reader.Options(),
@@ -567,6 +590,10 @@ public class TestOrcRawRecordMerger {
 
     Path basePath = AcidUtils.createBucketFile(directory.getBaseDirectory(),
         BUCKET);
+
+    conf.set("columns", MyRow.getColumnNamesProperty());
+    conf.set("columns.types", MyRow.getColumnTypesProperty());
+
     Reader baseReader = OrcFile.createReader(basePath,
         OrcFile.readerOptions(conf));
     OrcRawRecordMerger merger =
@@ -790,6 +817,13 @@ public class TestOrcRawRecordMerger {
     BigRow(long rowId, long origTxn, int bucket) {
       ROW__ID = new RecordIdentifier(origTxn, bucket, rowId);
     }
+
+    static String getColumnNamesProperty() {
+      return "myint,mylong,mytext,myfloat,mydouble,ROW__ID";
+    }
+    static String getColumnTypesProperty() {
+      return "int:bigint:string:float:double:struct<transactionId:bigint,bucketId:int,rowId:bigint>";
+    }
   }
 
   /**
@@ -865,6 +899,8 @@ public class TestOrcRawRecordMerger {
 
     InputFormat inf = new OrcInputFormat();
     JobConf job = new JobConf();
+    job.set("columns", BigRow.getColumnNamesProperty());
+    job.set("columns.types", BigRow.getColumnTypesProperty());
     job.set("mapred.min.split.size", "1");
     job.set("mapred.max.split.size", "2");
     job.set("mapred.input.dir", root.toString());
@@ -971,6 +1007,8 @@ public class TestOrcRawRecordMerger {
     job.set("mapred.min.split.size", "1");
     job.set("mapred.max.split.size", "2");
     job.set("mapred.input.dir", root.toString());
+    job.set("columns", BigRow.getColumnNamesProperty());
+    job.set("columns.types", BigRow.getColumnTypesProperty());
     InputSplit[] splits = inf.getSplits(job, 5);
     assertEquals(5, splits.length);
     org.apache.hadoop.mapred.RecordReader<NullWritable, OrcStruct> rr;
@@ -1041,6 +1079,8 @@ public class TestOrcRawRecordMerger {
     job.set("mapred.max.split.size", "2");
     job.set("mapred.input.dir", root.toString());
     job.set("bucket_count", "1");
+    job.set("columns", MyRow.getColumnNamesProperty());
+    job.set("columns.types", MyRow.getColumnTypesProperty());
     InputSplit[] splits = inf.getSplits(job, 5);
     assertEquals(1, splits.length);
     org.apache.hadoop.mapred.RecordReader<NullWritable, OrcStruct> rr;
@@ -1108,6 +1148,8 @@ public class TestOrcRawRecordMerger {
     JobConf job = new JobConf();
     job.set("mapred.input.dir", root.toString());
     job.set("bucket_count", "2");
+    job.set("columns", MyRow.getColumnNamesProperty());
+    job.set("columns.types", MyRow.getColumnTypesProperty());
 
     // read the keys before the delta is flushed
     InputSplit[] splits = inf.getSplits(job, 1);

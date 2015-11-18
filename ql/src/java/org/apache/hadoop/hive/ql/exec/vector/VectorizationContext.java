@@ -144,6 +144,8 @@ public class VectorizationContext {
 
   VectorExpressionDescriptor vMap;
 
+  private List<String> initialColumnNames;
+
   private List<Integer> projectedColumns;
   private List<String> projectionColumnNames;
   private Map<String, Integer> projectionColumnMap;
@@ -161,6 +163,7 @@ public class VectorizationContext {
       LOG.debug("VectorizationContext consructor contextName " + contextName + " level "
           + level + " initialColumnNames " + initialColumnNames);
     }
+    this.initialColumnNames = initialColumnNames;
     this.projectionColumnNames = initialColumnNames;
 
     projectedColumns = new ArrayList<Integer>();
@@ -183,6 +186,7 @@ public class VectorizationContext {
     if (LOG.isDebugEnabled()) {
       LOG.debug("VectorizationContext consructor contextName " + contextName + " level " + level);
     }
+    initialColumnNames = new ArrayList<String>();
     projectedColumns = new ArrayList<Integer>();
     projectionColumnNames = new ArrayList<String>();
     projectionColumnMap = new HashMap<String, Integer>();
@@ -198,6 +202,7 @@ public class VectorizationContext {
     this.contextName = contextName;
     level = vContext.level + 1;
     LOG.info("VectorizationContext consructor reference contextName " + contextName + " level " + level);
+    this.initialColumnNames = vContext.initialColumnNames;
     this.projectedColumns = new ArrayList<Integer>();
     this.projectionColumnNames = new ArrayList<String>();
     this.projectionColumnMap = new HashMap<String, Integer>();
@@ -210,6 +215,7 @@ public class VectorizationContext {
   // Add an initial column to a vectorization context when
   // a vectorized row batch is being created.
   public void addInitialColumn(String columnName) {
+    initialColumnNames.add(columnName);
     int index = projectedColumns.size();
     projectedColumns.add(index);
     projectionColumnNames.add(columnName);
@@ -236,6 +242,10 @@ public class VectorizationContext {
     projectedColumns.add(vectorBatchColIndex);
     projectionColumnNames.add(columnName);
     projectionColumnMap.put(columnName, vectorBatchColIndex);
+  }
+
+  public List<String> getInitialColumnNames() {
+    return initialColumnNames;
   }
 
   public List<Integer> getProjectedColumns() {
@@ -1038,7 +1048,9 @@ public class VectorizationContext {
     VectorExpressionDescriptor.Descriptor descriptor = builder.build();
     Class<?> vclass = this.vMap.getVectorExpressionClass(udfClass, descriptor);
     if (vclass == null) {
-      LOG.info("No vector udf found for " + udfClass.getSimpleName() + ", descriptor: " + descriptor);
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("No vector udf found for "+udfClass.getSimpleName() + ", descriptor: "+descriptor);
+      }
       return null;
     }
     Mode childrenMode = getChildrenMode(mode, udfClass);
@@ -2337,11 +2349,11 @@ public class VectorizationContext {
             return ColumnVector.Type.DECIMAL;
 
           default:
-            throw new HiveException("Unexpected primitive type category " + primitiveCategory);
+            throw new RuntimeException("Unexpected primitive type category " + primitiveCategory);
         }
       }
       default:
-        throw new HiveException("Unexpected type category " +
+        throw new RuntimeException("Unexpected type category " +
             typeInfo.getCategory());
     }
   }
@@ -2452,13 +2464,16 @@ public class VectorizationContext {
     return firstOutputColumnIndex;
   }
 
-  public Map<Integer, String> getScratchColumnTypeMap() {
-    Map<Integer, String> map = new HashMap<Integer, String>();
+  public String[] getScratchColumnTypeNames() {
+    String[] result = new String[ocm.outputColCount];
     for (int i = 0; i < ocm.outputColCount; i++) {
-      String type = ocm.outputColumnsTypes[i];
-      map.put(i+this.firstOutputColumnIndex, type);
+      String typeName = ocm.outputColumnsTypes[i];
+      if (typeName.equalsIgnoreCase("long")) {
+        typeName = "bigint";   // Convert our synonym to a real Hive type name.
+      }
+      result[i] =  typeName;
     }
-    return map;
+    return result;
   }
 
   @Override
@@ -2478,9 +2493,7 @@ public class VectorizationContext {
     }
     sb.append("sorted projectionColumnMap ").append(sortedColumnMap).append(", ");
 
-    Map<Integer, String> sortedScratchColumnTypeMap = new TreeMap<Integer, String>(comparerInteger);
-    sortedScratchColumnTypeMap.putAll(getScratchColumnTypeMap());
-    sb.append("sorted scratchColumnTypeMap ").append(sortedScratchColumnTypeMap);
+    sb.append("scratchColumnTypeNames ").append(getScratchColumnTypeNames().toString());
 
     return sb.toString();
   }

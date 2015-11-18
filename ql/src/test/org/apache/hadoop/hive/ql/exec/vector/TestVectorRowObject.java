@@ -24,6 +24,7 @@ import java.util.Random;
 
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 import junit.framework.TestCase;
 
@@ -50,13 +51,13 @@ public class TestVectorRowObject extends TestCase {
 
   void testVectorRowObject(int caseNum, Random r) throws HiveException {
 
-    Map<Integer, String> emptyScratchMap = new HashMap<Integer, String>();
+    String[] emptyScratchTypeNames = new String[0];
 
     RandomRowObjectSource source = new RandomRowObjectSource();
     source.init(r);
 
     VectorizedRowBatchCtx batchContext = new VectorizedRowBatchCtx();
-    batchContext.init(emptyScratchMap, source.rowStructObjectInspector());
+    batchContext.init(source.rowStructObjectInspector(), emptyScratchTypeNames);
     VectorizedRowBatch batch = batchContext.createVectorizedRowBatch();
 
     VectorAssignRowSameBatch vectorAssignRow = new VectorAssignRowSameBatch();

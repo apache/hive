@@ -484,8 +484,13 @@ public enum ErrorMsg {
 
 
   INVALID_FILE_FORMAT_IN_LOAD(30019, "The file that you are trying to load does not match the" +
-      " file format of the destination table.")
+      " file format of the destination table."),
 
+  SCHEMA_REQUIRED_TO_READ_ACID_TABLES(30020, "Neither the configuration variables " +
+          "schema.evolution.columns / schema.evolution.columns.types " +
+          "nor the " +
+          "columns / columns.types " +
+          "are set.  Table schema information is required to read ACID tables")
   ;
 
   private int errorCode;
