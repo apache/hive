@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
 
+import org.apache.hadoop.hive.ql.io.orc.OrcProto.Type;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
@@ -145,6 +146,7 @@ public interface Reader {
     private boolean[] include;
     private long offset = 0;
     private long length = Long.MAX_VALUE;
+    private TypeDescription schema;
     private SearchArgument sarg = null;
     private String[] columnNames = null;
     private Boolean useZeroCopy = null;
@@ -169,6 +171,14 @@ public interface Reader {
     public Options range(long offset, long length) {
       this.offset = offset;
       this.length = length;
+      return this;
+    }
+
+    /**
+     * Set the schema on read type description.
+     */
+    public Options schema(TypeDescription schema) {
+      this.schema = schema;
       return this;
     }
 
@@ -216,6 +226,10 @@ public interface Reader {
       return length;
     }
 
+    public TypeDescription getSchema() {
+      return schema;
+    }
+
     public SearchArgument getSearchArgument() {
       return sarg;
     }
@@ -245,6 +259,7 @@ public interface Reader {
       result.include = include;
       result.offset = offset;
       result.length = length;
+      result.schema = schema;
       result.sarg = sarg;
       result.columnNames = columnNames;
       result.useZeroCopy = useZeroCopy;

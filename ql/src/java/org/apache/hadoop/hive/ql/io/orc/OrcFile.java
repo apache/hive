@@ -402,7 +402,7 @@ public final class OrcFile {
     public WriterOptions inspector(ObjectInspector value) {
       this.inspector = value;
       if (!explicitSchema) {
-        schema = OrcOutputFormat.convertTypeInfo(
+        schema = OrcUtils.convertTypeInfo(
             TypeInfoUtils.getTypeInfoFromObjectInspector(value));
       }
       return this;

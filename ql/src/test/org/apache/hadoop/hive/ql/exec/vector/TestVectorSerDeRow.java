@@ -61,6 +61,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.hive.serde2.fast.SerializeWrite;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.BytesWritable;
@@ -320,13 +322,13 @@ public class TestVectorSerDeRow extends TestCase {
 
   void testVectorSerializeRow(int caseNum, Random r, SerializationType serializationType) throws HiveException, IOException, SerDeException {
 
-    Map<Integer, String> emptyScratchMap = new HashMap<Integer, String>();
+    String[] emptyScratchTypeNames = new String[0];
 
     RandomRowObjectSource source = new RandomRowObjectSource();
     source.init(r);
 
     VectorizedRowBatchCtx batchContext = new VectorizedRowBatchCtx();
-    batchContext.init(emptyScratchMap, source.rowStructObjectInspector());
+    batchContext.init(source.rowStructObjectInspector(), emptyScratchTypeNames);
     VectorizedRowBatch batch = batchContext.createVectorizedRowBatch();
 
     VectorAssignRowSameBatch vectorAssignRow = new VectorAssignRowSameBatch();
@@ -552,13 +554,13 @@ public class TestVectorSerDeRow extends TestCase {
 
   void testVectorDeserializeRow(int caseNum, Random r, SerializationType serializationType) throws HiveException, IOException, SerDeException {
 
-    Map<Integer, String> emptyScratchMap = new HashMap<Integer, String>();
+    String[] emptyScratchTypeNames = new String[0];
 
     RandomRowObjectSource source = new RandomRowObjectSource();
     source.init(r);
 
     VectorizedRowBatchCtx batchContext = new VectorizedRowBatchCtx();
-    batchContext.init(emptyScratchMap, source.rowStructObjectInspector());
+    batchContext.init(source.rowStructObjectInspector(), emptyScratchTypeNames);
     VectorizedRowBatch batch = batchContext.createVectorizedRowBatch();
 
     int fieldCount = source.typeNames().size();

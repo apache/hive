@@ -244,7 +244,7 @@ public class ReduceRecordProcessor  extends RecordProcessor{
     boolean vectorizedRecordSource = (tag == bigTablePosition) && redWork.getVectorMode();
     sources[tag].init(jconf, redWork.getReducer(), vectorizedRecordSource, keyTableDesc,
         valueTableDesc, reader, tag == bigTablePosition, (byte) tag,
-        redWork.getVectorScratchColumnTypeMap());
+        redWork.getVectorizedRowBatchCtx());
     ois[tag] = sources[tag].getObjectInspector();
   }
 

@@ -1,0 +1,298 @@
+PREHOOK: query: -- SORT_QUERY_RESULTS
+--
+-- FILE VARIATION: ORC, Vectorized, MapWork, Table
+--
+--
+-- SECTION VARIATION: ALTER TABLE ADD COLUMNS ... STATIC INSERT
+---
+CREATE TABLE table1(a INT, b STRING) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table1
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+--
+-- FILE VARIATION: ORC, Vectorized, MapWork, Table
+--
+--
+-- SECTION VARIATION: ALTER TABLE ADD COLUMNS ... STATIC INSERT
+---
+CREATE TABLE table1(a INT, b STRING) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table1
+PREHOOK: query: insert into table table1 values(1, 'original'),(2, 'original'), (3, 'original'),(4, 'original')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__1
+PREHOOK: Output: default@table1
+POSTHOOK: query: insert into table table1 values(1, 'original'),(2, 'original'), (3, 'original'),(4, 'original')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__1
+POSTHOOK: Output: default@table1
+POSTHOOK: Lineage: table1.a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: table1.b SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+_col0	_col1
+PREHOOK: query: -- Table-Non-Cascade ADD COLUMNS ...
+alter table table1 add columns(c int, d string)
+PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: default@table1
+PREHOOK: Output: default@table1
+POSTHOOK: query: -- Table-Non-Cascade ADD COLUMNS ...
+alter table table1 add columns(c int, d string)
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: default@table1
+POSTHOOK: Output: default@table1
+PREHOOK: query: insert into table table1 values(1, 'new', 10, 'ten'),(2, 'new', 20, 'twenty'), (3, 'new', 30, 'thirty'),(4, 'new', 40, 'forty')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__2
+PREHOOK: Output: default@table1
+POSTHOOK: query: insert into table table1 values(1, 'new', 10, 'ten'),(2, 'new', 20, 'twenty'), (3, 'new', 30, 'thirty'),(4, 'new', 40, 'forty')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__2
+POSTHOOK: Output: default@table1
+POSTHOOK: Lineage: table1.a EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: table1.b SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: table1.c EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: table1.d SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+_col0	_col1	_col2	_col3
+PREHOOK: query: insert into table table1 values(5, 'new', 100, 'hundred'),(6, 'new', 200, 'two hundred')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__3
+PREHOOK: Output: default@table1
+POSTHOOK: query: insert into table table1 values(5, 'new', 100, 'hundred'),(6, 'new', 200, 'two hundred')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__3
+POSTHOOK: Output: default@table1
+POSTHOOK: Lineage: table1.a EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: table1.b SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: table1.c EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: table1.d SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+_col0	_col1	_col2	_col3
+PREHOOK: query: -- SELECT permutation columns to make sure NULL defaulting works right
+select a,b from table1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table1
+#### A masked pattern was here ####
+POSTHOOK: query: -- SELECT permutation columns to make sure NULL defaulting works right
+select a,b from table1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table1
+#### A masked pattern was here ####
+a	b
+1	new
+1	original
+2	new
+2	original
+3	new
+3	original
+4	new
+4	original
+5	new
+6	new
+PREHOOK: query: select a,b,c from table1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table1
+#### A masked pattern was here ####
+POSTHOOK: query: select a,b,c from table1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table1
+#### A masked pattern was here ####
+a	b	c
+1	new	10
+1	original	NULL
+2	new	20
+2	original	NULL
+3	new	30
+3	original	NULL
+4	new	40
+4	original	NULL
+5	new	100
+6	new	200
+PREHOOK: query: select a,b,c,d from table1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table1
+#### A masked pattern was here ####
+POSTHOOK: query: select a,b,c,d from table1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table1
+#### A masked pattern was here ####
+a	b	c	d
+1	new	10	ten
+1	original	NULL	NULL
+2	new	20	twenty
+2	original	NULL	NULL
+3	new	30	thirty
+3	original	NULL	NULL
+4	new	40	forty
+4	original	NULL	NULL
+5	new	100	hundred
+6	new	200	two hundred
+PREHOOK: query: select a,c,d from table1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table1
+#### A masked pattern was here ####
+POSTHOOK: query: select a,c,d from table1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table1
+#### A masked pattern was here ####
+a	c	d
+1	10	ten
+1	NULL	NULL
+2	20	twenty
+2	NULL	NULL
+3	30	thirty
+3	NULL	NULL
+4	40	forty
+4	NULL	NULL
+5	100	hundred
+6	200	two hundred
+PREHOOK: query: select a,d from table1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table1
+#### A masked pattern was here ####
+POSTHOOK: query: select a,d from table1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table1
+#### A masked pattern was here ####
+a	d
+1	NULL
+1	ten
+2	NULL
+2	twenty
+3	NULL
+3	thirty
+4	NULL
+4	forty
+5	hundred
+6	two hundred
+PREHOOK: query: select c from table1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table1
+#### A masked pattern was here ####
+POSTHOOK: query: select c from table1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table1
+#### A masked pattern was here ####
+c
+10
+100
+20
+200
+30
+40
+NULL
+NULL
+NULL
+NULL
+PREHOOK: query: select d from table1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table1
+#### A masked pattern was here ####
+POSTHOOK: query: select d from table1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table1
+#### A masked pattern was here ####
+d
+NULL
+NULL
+NULL
+NULL
+forty
+hundred
+ten
+thirty
+twenty
+two hundred
+PREHOOK: query: --
+-- SECTION VARIATION: ALTER TABLE CHANGE COLUMN ... STATIC INSERT
+-- smallint = (2-byte signed integer, from -32,768 to 32,767)
+--
+CREATE TABLE table2(a smallint, b STRING) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table2
+POSTHOOK: query: --
+-- SECTION VARIATION: ALTER TABLE CHANGE COLUMN ... STATIC INSERT
+-- smallint = (2-byte signed integer, from -32,768 to 32,767)
+--
+CREATE TABLE table2(a smallint, b STRING) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table2
+PREHOOK: query: insert into table table2 values(1000, 'original'),(6737, 'original'), ('3', 'original'),('4', 'original')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__4
+PREHOOK: Output: default@table2
+POSTHOOK: query: insert into table table2 values(1000, 'original'),(6737, 'original'), ('3', 'original'),('4', 'original')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__4
+POSTHOOK: Output: default@table2
+POSTHOOK: Lineage: table2.a EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: table2.b SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+_col0	_col1
+PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
+alter table table2 change column a a int
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@table2
+PREHOOK: Output: default@table2
+POSTHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
+alter table table2 change column a a int
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@table2
+POSTHOOK: Output: default@table2
+PREHOOK: query: insert into table table2 values(72909, 'new'),(200, 'new'), (32768, 'new'),(40000, 'new')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__5
+PREHOOK: Output: default@table2
+POSTHOOK: query: insert into table table2 values(72909, 'new'),(200, 'new'), (32768, 'new'),(40000, 'new')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__5
+POSTHOOK: Output: default@table2
+POSTHOOK: Lineage: table2.a EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: table2.b SIMPLE [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+_col0	_col1
+PREHOOK: query: insert into table table2 values(5000, 'new'),(90000, 'new')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__6
+PREHOOK: Output: default@table2
+POSTHOOK: query: insert into table table2 values(5000, 'new'),(90000, 'new')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__6
+POSTHOOK: Output: default@table2
+POSTHOOK: Lineage: table2.a EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: table2.b SIMPLE [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+_col0	_col1
+PREHOOK: query: select a,b from table2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table2
+#### A masked pattern was here ####
+POSTHOOK: query: select a,b from table2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table2
+#### A masked pattern was here ####
+a	b
+1000	original
+200	new
+3	original
+32768	new
+4	original
+40000	new
+5000	new
+6737	original
+72909	new
+90000	new
+PREHOOK: query: DROP TABLE table1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@table1
+PREHOOK: Output: default@table1
+POSTHOOK: query: DROP TABLE table1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@table1
+POSTHOOK: Output: default@table1
+PREHOOK: query: DROP TABLE table2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@table2
+PREHOOK: Output: default@table2
+POSTHOOK: query: DROP TABLE table2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@table2
+POSTHOOK: Output: default@table2

@@ -111,6 +111,8 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
+import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.InputFormat;
 
@@ -693,6 +695,11 @@ public final class GenMapRedUtils {
       parseCtx.getGlobalLimitCtx().disableOpt();
     }
 
+    if (topOp instanceof TableScanOperator) {
+      Utilities.addSchemaEvolutionToTableScanOperator(partsList.getSourceTable(),
+          (TableScanOperator) topOp);
+    }
+
     Iterator<Path> iterPath = partDir.iterator();
     Iterator<PartitionDesc> iterPartnDesc = partDesc.iterator();
 
@@ -754,6 +761,7 @@ public final class GenMapRedUtils {
    *          whether you need to add to map-reduce or local work
    * @param tt_desc
    *          table descriptor
+   * @throws SerDeException
    */
   public static void setTaskPlan(String path, String alias,
       Operator<? extends OperatorDesc> topOp, MapWork plan, boolean local,
@@ -761,6 +769,16 @@ public final class GenMapRedUtils {
 
     if (path == null || alias == null) {
       return;
+    }
+
+    if (topOp instanceof TableScanOperator) {
+      try {
+      Utilities.addSchemaEvolutionToTableScanOperator(
+          (StructObjectInspector) tt_desc.getDeserializer().getObjectInspector(),
+          (TableScanOperator) topOp);
+      } catch (Exception e) {
+        throw new SemanticException(e);
+      }
     }
 
     if (!local) {

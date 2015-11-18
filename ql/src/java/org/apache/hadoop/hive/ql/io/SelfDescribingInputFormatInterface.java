@@ -15,24 +15,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.io.orc;
 
-import java.io.IOException;
-import java.util.List;
+package org.apache.hadoop.hive.ql.io;
 
 /**
- * Factory for creating ORC tree readers. These tree readers can handle type promotions and type
- * conversions.
+ * Marker interface to indicate a given input format is self-describing and
+ * can perform schema evolution itself.
  */
-public class ConversionTreeReaderFactory extends TreeReaderFactory {
+public interface SelfDescribingInputFormatInterface {
 
-  // TODO: This is currently only a place holder for type conversions.
-
-  public static TreeReader createTreeReader(int columnId,
-      List<OrcProto.Type> types,
-      boolean[] included,
-      boolean skipCorrupt
-  ) throws IOException {
-    return TreeReaderFactory.createTreeReader(columnId, types, included, skipCorrupt);
-  }
 }

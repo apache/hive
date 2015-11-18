@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.DataOutputBuffer;
@@ -153,10 +154,6 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
           /* vectorization only works with struct object inspectors */
           valueStructInspectors[tag] = (StructObjectInspector) valueObjectInspector[tag];
 
-          ObjectPair<VectorizedRowBatch, StandardStructObjectInspector> pair = VectorizedBatchUtil.
-              constructVectorizedRowBatch(keyStructInspector,
-              valueStructInspectors[tag], gWork.getVectorScratchColumnTypeMap());
-          batches[tag] = pair.getFirst();
           final int totalColumns = keysColumnOffset
               + valueStructInspectors[tag].getAllStructFieldRefs().size();
           valueStringWriters[tag] = new ArrayList<VectorExpressionWriter>(totalColumns);
@@ -165,7 +162,11 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
           valueStringWriters[tag].addAll(Arrays.asList(VectorExpressionWriterFactory
               .genVectorStructExpressionWritables(valueStructInspectors[tag])));
 
-          rowObjectInspector[tag] = pair.getSecond();
+          rowObjectInspector[tag] = Utilities.constructVectorizedReduceRowOI(keyStructInspector,
+              valueStructInspectors[tag]);
+          batches[tag] = gWork.getVectorizedRowBatchCtx().createVectorizedRowBatch();
+
+
         } else {
           ois.add(keyObjectInspector);
           ois.add(valueObjectInspector[tag]);

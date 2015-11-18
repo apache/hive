@@ -30,8 +30,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 
 /**
@@ -64,9 +66,7 @@ public abstract class BaseWork extends AbstractOperatorDesc {
 
   // Vectorization.
 
-  protected Map<String, Integer> vectorColumnNameMap;
-  protected Map<Integer, String> vectorColumnTypeMap;
-  protected Map<Integer, String> vectorScratchColumnTypeMap;
+  protected VectorizedRowBatchCtx vectorizedRowBatchCtx;
 
   protected boolean llapMode = false;
   protected boolean uberMode = false;
@@ -155,29 +155,17 @@ public abstract class BaseWork extends AbstractOperatorDesc {
     return returnSet;
   }
 
-  public Map<String, Integer> getVectorColumnNameMap() {
-    return vectorColumnNameMap;
+  // -----------------------------------------------------------------------------------------------
+
+  public VectorizedRowBatchCtx getVectorizedRowBatchCtx() {
+    return vectorizedRowBatchCtx;
   }
 
-  public void setVectorColumnNameMap(Map<String, Integer> vectorColumnNameMap) {
-    this.vectorColumnNameMap = vectorColumnNameMap;
+  public void setVectorizedRowBatchCtx(VectorizedRowBatchCtx vectorizedRowBatchCtx) {
+    this.vectorizedRowBatchCtx = vectorizedRowBatchCtx;
   }
 
-  public Map<Integer, String> getVectorColumnTypeMap() {
-    return vectorColumnTypeMap;
-  }
-
-  public void setVectorColumnTypeMap(Map<Integer, String> vectorColumnTypeMap) {
-    this.vectorColumnTypeMap = vectorColumnTypeMap;
-  }
-
-  public Map<Integer, String> getVectorScratchColumnTypeMap() {
-    return vectorScratchColumnTypeMap;
-  }
-
-  public void setVectorScratchColumnTypeMap(Map<Integer, String> vectorScratchColumnTypeMap) {
-    this.vectorScratchColumnTypeMap = vectorScratchColumnTypeMap;
-  }
+  // -----------------------------------------------------------------------------------------------
 
   /**
    * @return the mapredLocalWork

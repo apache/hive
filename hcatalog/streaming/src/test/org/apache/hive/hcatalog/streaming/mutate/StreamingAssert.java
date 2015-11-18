@@ -128,6 +128,8 @@ public class StreamingAssert {
     JobConf job = new JobConf();
     job.set("mapred.input.dir", partitionLocation.toString());
     job.set("bucket_count", Integer.toString(table.getSd().getNumBuckets()));
+    job.set("columns", "id,msg");
+    job.set("columns.types", "bigint:string");
     job.set(ValidTxnList.VALID_TXNS_KEY, txns.toString());
     InputSplit[] splits = inputFormat.getSplits(job, 1);
     assertEquals(1, splits.length);

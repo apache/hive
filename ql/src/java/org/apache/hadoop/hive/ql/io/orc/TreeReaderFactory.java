@@ -47,24 +47,80 @@ import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.HadoopShims.TextReaderShim;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Factory for creating ORC tree readers.
  */
 public class TreeReaderFactory {
 
+  public static final Logger LOG = LoggerFactory.getLogger(TreeReaderFactory.class);
+
+  public static class TreeReaderSchema {
+
+    /**
+     * The types in the ORC file.
+     */
+    List<OrcProto.Type> fileTypes;
+
+    /**
+     * The treeReaderSchema that the reader should read as.
+     */
+    List<OrcProto.Type> schemaTypes;
+
+    /**
+     * The subtype of the row STRUCT.  Different than 0 for ACID.
+     */
+    int innerStructSubtype;
+
+    public TreeReaderSchema() {
+      fileTypes = null;
+      schemaTypes = null;
+      innerStructSubtype = -1;
+    }
+
+    public TreeReaderSchema fileTypes(List<OrcProto.Type> fileTypes) {
+      this.fileTypes = fileTypes;
+      return this;
+    }
+
+    public TreeReaderSchema schemaTypes(List<OrcProto.Type> schemaTypes) {
+      this.schemaTypes = schemaTypes;
+      return this;
+    }
+
+    public TreeReaderSchema innerStructSubtype(int innerStructSubtype) {
+      this.innerStructSubtype = innerStructSubtype;
+      return this;
+    }
+
+    public List<OrcProto.Type> getFileTypes() {
+      return fileTypes;
+    }
+
+    public List<OrcProto.Type> getSchemaTypes() {
+      return schemaTypes;
+    }
+
+    public int getInnerStructSubtype() {
+      return innerStructSubtype;
+    }
+  }
+
   public abstract static class TreeReader {
     protected final int columnId;
     protected BitFieldReader present = null;
     protected boolean valuePresent = false;
+    protected int vectorColumnCount;
 
     TreeReader(int columnId) throws IOException {
       this(columnId, null);
@@ -78,6 +134,11 @@ public class TreeReaderFactory {
       } else {
         present = new BitFieldReader(in, 1);
       }
+      vectorColumnCount = -1;
+    }
+
+    void setVectorColumnCount(int vectorColumnCount) {
+      this.vectorColumnCount = vectorColumnCount;
     }
 
     void checkEncoding(OrcProto.ColumnEncoding encoding) throws IOException {
@@ -1962,25 +2023,57 @@ public class TreeReaderFactory {
     }
   }
 
-  public static class StructTreeReader extends TreeReader {
+  protected static class StructTreeReader extends TreeReader {
+    private final int fileColumnCount;
+    private final int resultColumnCount;
     protected final TreeReader[] fields;
     private final String[] fieldNames;
 
-    protected StructTreeReader(int columnId,
-        List<OrcProto.Type> types,
+    protected StructTreeReader(
+        int columnId,
+        TreeReaderSchema treeReaderSchema,
         boolean[] included,
         boolean skipCorrupt) throws IOException {
       super(columnId);
-      OrcProto.Type type = types.get(columnId);
-      int fieldCount = type.getFieldNamesCount();
-      this.fields = new TreeReader[fieldCount];
-      this.fieldNames = new String[fieldCount];
-      for (int i = 0; i < fieldCount; ++i) {
-        int subtype = type.getSubtypes(i);
-        if (included == null || included[subtype]) {
-          this.fields[i] = createTreeReader(subtype, types, included, skipCorrupt);
+
+      OrcProto.Type fileStructType = treeReaderSchema.getFileTypes().get(columnId);
+      fileColumnCount = fileStructType.getFieldNamesCount();
+
+      OrcProto.Type schemaStructType = treeReaderSchema.getSchemaTypes().get(columnId);
+
+      if (columnId == treeReaderSchema.getInnerStructSubtype()) {
+        // If there are more result columns than reader columns, we will default those additional
+        // columns to NULL.
+        resultColumnCount = schemaStructType.getFieldNamesCount();
+      } else {
+        resultColumnCount = fileColumnCount;
+      }
+
+      this.fields = new TreeReader[fileColumnCount];
+      this.fieldNames = new String[fileColumnCount];
+
+      if (included == null) {
+        for (int i = 0; i < fileColumnCount; ++i) {
+          int subtype = schemaStructType.getSubtypes(i);
+          this.fields[i] = createTreeReader(subtype, treeReaderSchema, included, skipCorrupt);
+          // Use the treeReaderSchema evolution name since file/reader types may not have the real column name.
+          this.fieldNames[i] = schemaStructType.getFieldNames(i);
         }
-        this.fieldNames[i] = type.getFieldNames(i);
+      } else {
+        for (int i = 0; i < fileColumnCount; ++i) {
+          int subtype = schemaStructType.getSubtypes(i);
+          if (subtype >= included.length) {
+            throw new IOException("subtype " + subtype + " exceeds the included array size " +
+                included.length + " fileTypes " + treeReaderSchema.getFileTypes().toString() +
+                " schemaTypes " + treeReaderSchema.getSchemaTypes().toString() +
+                " innerStructSubtype " + treeReaderSchema.getInnerStructSubtype());
+          }
+          if (included[subtype]) {
+            this.fields[i] = createTreeReader(subtype, treeReaderSchema, included, skipCorrupt);
+          }
+          // Use the treeReaderSchema evolution name since file/reader types may not have the real column name.
+          this.fieldNames[i] = schemaStructType.getFieldNames(i);
+        }
       }
     }
 
@@ -2000,20 +2093,26 @@ public class TreeReaderFactory {
       OrcStruct result = null;
       if (valuePresent) {
         if (previous == null) {
-          result = new OrcStruct(fields.length);
+          result = new OrcStruct(resultColumnCount);
         } else {
           result = (OrcStruct) previous;
 
           // If the input format was initialized with a file with a
           // different number of fields, the number of fields needs to
           // be updated to the correct number
-          if (result.getNumFields() != fields.length) {
-            result.setNumFields(fields.length);
+          if (result.getNumFields() != resultColumnCount) {
+            result.setNumFields(resultColumnCount);
           }
         }
-        for (int i = 0; i < fields.length; ++i) {
+        for (int i = 0; i < fileColumnCount; ++i) {
           if (fields[i] != null) {
             result.setFieldValue(i, fields[i].next(result.getFieldValue(i)));
+          }
+        }
+        if (resultColumnCount > fileColumnCount) {
+          for (int i = fileColumnCount; i < resultColumnCount; ++i) {
+            // Default new treeReaderSchema evolution fields to NULL.
+            result.setFieldValue(i, null);
           }
         }
       }
@@ -2024,13 +2123,13 @@ public class TreeReaderFactory {
     public Object nextVector(Object previousVector, long batchSize) throws IOException {
       final ColumnVector[] result;
       if (previousVector == null) {
-        result = new ColumnVector[fields.length];
+        result = new ColumnVector[fileColumnCount];
       } else {
         result = (ColumnVector[]) previousVector;
       }
 
       // Read all the members of struct as column vectors
-      for (int i = 0; i < fields.length; i++) {
+      for (int i = 0; i < fileColumnCount; i++) {
         if (fields[i] != null) {
           if (result[i] == null) {
             result[i] = (ColumnVector) fields[i].nextVector(null, batchSize);
@@ -2039,6 +2138,19 @@ public class TreeReaderFactory {
           }
         }
       }
+
+      // Default additional treeReaderSchema evolution fields to NULL.
+      if (vectorColumnCount != -1 && vectorColumnCount > fileColumnCount) {
+        for (int i = fileColumnCount; i < vectorColumnCount; ++i) {
+          ColumnVector colVector = result[i];
+          if (colVector != null) {
+            colVector.isRepeating = true;
+            colVector.noNulls = false;
+            colVector.isNull[0] = true;
+          }
+        }
+      }
+
       return result;
     }
 
@@ -2070,17 +2182,17 @@ public class TreeReaderFactory {
     protected RunLengthByteReader tags;
 
     protected UnionTreeReader(int columnId,
-        List<OrcProto.Type> types,
+        TreeReaderSchema treeReaderSchema,
         boolean[] included,
         boolean skipCorrupt) throws IOException {
       super(columnId);
-      OrcProto.Type type = types.get(columnId);
+      OrcProto.Type type = treeReaderSchema.getSchemaTypes().get(columnId);
       int fieldCount = type.getSubtypesCount();
       this.fields = new TreeReader[fieldCount];
       for (int i = 0; i < fieldCount; ++i) {
         int subtype = type.getSubtypes(i);
         if (included == null || included[subtype]) {
-          this.fields[i] = createTreeReader(subtype, types, included, skipCorrupt);
+          this.fields[i] = createTreeReader(subtype, treeReaderSchema, included, skipCorrupt);
         }
       }
     }
@@ -2150,12 +2262,12 @@ public class TreeReaderFactory {
     protected IntegerReader lengths = null;
 
     protected ListTreeReader(int columnId,
-        List<OrcProto.Type> types,
+        TreeReaderSchema treeReaderSchema,
         boolean[] included,
         boolean skipCorrupt) throws IOException {
       super(columnId);
-      OrcProto.Type type = types.get(columnId);
-      elementReader = createTreeReader(type.getSubtypes(0), types, included, skipCorrupt);
+      OrcProto.Type type = treeReaderSchema.getSchemaTypes().get(columnId);
+      elementReader = createTreeReader(type.getSubtypes(0), treeReaderSchema, included, skipCorrupt);
     }
 
     @Override
@@ -2240,20 +2352,20 @@ public class TreeReaderFactory {
     protected IntegerReader lengths = null;
 
     protected MapTreeReader(int columnId,
-        List<OrcProto.Type> types,
+        TreeReaderSchema treeReaderSchema,
         boolean[] included,
         boolean skipCorrupt) throws IOException {
       super(columnId);
-      OrcProto.Type type = types.get(columnId);
+      OrcProto.Type type = treeReaderSchema.getSchemaTypes().get(columnId);
       int keyColumn = type.getSubtypes(0);
       int valueColumn = type.getSubtypes(1);
       if (included == null || included[keyColumn]) {
-        keyReader = createTreeReader(keyColumn, types, included, skipCorrupt);
+        keyReader = createTreeReader(keyColumn, treeReaderSchema, included, skipCorrupt);
       } else {
         keyReader = null;
       }
       if (included == null || included[valueColumn]) {
-        valueReader = createTreeReader(valueColumn, types, included, skipCorrupt);
+        valueReader = createTreeReader(valueColumn, treeReaderSchema, included, skipCorrupt);
       } else {
         valueReader = null;
       }
@@ -2333,11 +2445,11 @@ public class TreeReaderFactory {
   }
 
   public static TreeReader createTreeReader(int columnId,
-      List<OrcProto.Type> types,
+      TreeReaderSchema treeReaderSchema,
       boolean[] included,
       boolean skipCorrupt
   ) throws IOException {
-    OrcProto.Type type = types.get(columnId);
+    OrcProto.Type type = treeReaderSchema.getSchemaTypes().get(columnId);
     switch (type.getKind()) {
       case BOOLEAN:
         return new BooleanTreeReader(columnId);
@@ -2377,13 +2489,13 @@ public class TreeReaderFactory {
         int scale = type.hasScale() ? type.getScale() : HiveDecimal.SYSTEM_DEFAULT_SCALE;
         return new DecimalTreeReader(columnId, precision, scale);
       case STRUCT:
-        return new StructTreeReader(columnId, types, included, skipCorrupt);
+        return new StructTreeReader(columnId, treeReaderSchema, included, skipCorrupt);
       case LIST:
-        return new ListTreeReader(columnId, types, included, skipCorrupt);
+        return new ListTreeReader(columnId, treeReaderSchema, included, skipCorrupt);
       case MAP:
-        return new MapTreeReader(columnId, types, included, skipCorrupt);
+        return new MapTreeReader(columnId, treeReaderSchema, included, skipCorrupt);
       case UNION:
-        return new UnionTreeReader(columnId, types, included, skipCorrupt);
+        return new UnionTreeReader(columnId, treeReaderSchema, included, skipCorrupt);
       default:
         throw new IllegalArgumentException("Unsupported type " +
             type.getKind());
