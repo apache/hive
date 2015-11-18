@@ -189,6 +189,58 @@
                   <exclude>org.antlr:*</exclude>
                   <exclude>org.slf4j:slf4j-log4j12</exclude>
                   <exclude>log4j:*</exclude>
+                  <exclude>antlr:*</exclude>
+                  <exclude>aopalliance:*</exclude>
+                  <exclude>asm:*</exclude>
+                  <exclude>com.google.code.gson:*</exclude>
+                  <exclude>com.google.inject:*</exclude>
+                  <exclude>com.google.inject.extensions:*</exclude>
+                  <exclude>com.jamesmurty.utils:*</exclude>
+                  <exclude>com.jcraft:*</exclude>
+                  <exclude>com.jolbox:*</exclude>
+                  <exclude>commons-beanutils:*</exclude>
+                  <exclude>commons-cli:*</exclude>
+                  <exclude>commons-dbcp:*</exclude>
+                  <exclude>commons-digester:*</exclude>
+                  <exclude>commons-el:*</exclude>
+                  <exclude>commons-httpclient:*</exclude>
+                  <exclude>commons-io:*</exclude>
+                  <exclude>commons-net:*</exclude>
+                  <exclude>commons-pool:*</exclude>
+                  <exclude>com.google.code.findbugs:*</exclude>
+                  <exclude>com.google.protobuf:*</exclude>
+                  <exclude>com.sun.xml.bind:*</exclude>
+                  <exclude>com.thoughtworks.paranamer:*</exclude>
+                  <exclude>com.twitter:*</exclude>
+                  <exclude>io.netty:*</exclude>
+                  <exclude>javax.activation:*</exclude>
+                  <exclude>javax.inject:*</exclude>
+                  <exclude>javax.jdo:*</exclude>
+                  <exclude>javax.mail:*</exclude>
+                  <exclude>javax.servlet:*</exclude>
+                  <exclude>javax.servlet.jsp:*</exclude>
+                  <exclude>javax.transaction:*</exclude>
+                  <exclude>javax.xml.bind:*</exclude>
+                  <exclude>javax.xml.stream:*</exclude>
+                  <exclude>jline:*</exclude>
+                  <exclude>joda-time:*</exclude>
+                  <exclude>net.java.dev.jets3t:*</exclude>
+                  <exclude>org.apache.commons:commons-math3</exclude>
+                  <exclude>org.apache.curator:*</exclude>
+                  <exclude>org.apache.derby:*</exclude>
+                  <exclude>org.apache.directory.api:*</exclude>
+                  <exclude>org.apache.directory.server:*</exclude>
+                  <exclude>org.apache.geronimo.specs:*</exclude>
+                  <exclude>org.apache.zookeeper:*</exclude>
+                  <exclude>org.codehaus.jackson:*</exclude>
+                  <exclude>org.codehaus.jettison:*</exclude>
+                  <exclude>org.datanucleus:*</exclude>
+                  <exclude>org.fusesource.leveldbjni:*</exclude>
+                  <exclude>org.htrace:*</exclude>
+                  <exclude>org.mortbay.jetty:*</exclude>
+                  <exclude>org.xerial.snappy:*</exclude>
+                  <exclude>tomcat:*</exclude>
+                  <exclude>xmlenc:*</exclude>
                 </excludes>
               </artifactSet>
             </configuration>
