@@ -17,22 +17,28 @@
  */
 package org.apache.hadoop.hive.cli;
 
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
 import java.io.*;
 import java.util.*;
+import java.util.Arrays;
 
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
+import org.apache.hadoop.hive.ql.session.SessionState;
 
-import static org.junit.Assert.fail;
-
-public class $className {
+public class $className extends TestCase {
 
   private static final String HIVE_ROOT = QTestUtil.ensurePathEndsInSlash(System.getProperty("hive.root"));
   private static QTestUtil qt;
+
+  public static class TestCompareCliDriverAddTestFromQFiles implements QTestUtil.SuiteAddTestFunctor {
+    public void addTestToSuite(TestSuite suite, Object setup, String tName) {
+      suite.addTest(new $className("testCompareCliDriver_"+tName));
+    }
+  }
 
   static {
 
@@ -60,8 +66,12 @@ public class $className {
     }
   }
 
-  @Before
-  public void setUp() {
+  public $className(String name) {
+    super(name);
+  }
+
+  @Override
+  protected void setUp() {
     try {
       qt.clearTestSideEffects();
     } catch (Exception e) {
@@ -72,11 +82,21 @@ public class $className {
     }
   }
 
-  @After
-  public void tearDown() {
+  /**
+   * Dummy last test. This is only meant to shutdown qt
+   */
+  public void testCompareCliDriver_shutdown() {
+    System.err.println ("Cleaning up " + "$className");
+  }
+
+  @Override
+  protected void tearDown() {
     try {
       qt.clearPostTestEffects();
-    } catch (Exception e) {
+      if (getName().equals("testCompareCliDriver_shutdown"))
+        qt.shutdown();
+    }
+    catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
       System.err.flush();
@@ -84,16 +104,24 @@ public class $className {
     }
   }
 
-  @AfterClass
-  public static void shutdown() throws Exception {
-    try {
-      qt.shutdown();
-    } catch (Exception e) {
-      System.err.println("Exception: " + e.getMessage());
-      e.printStackTrace();
-      System.err.flush();
-      fail("Unexpected exception in shutdown");
+  public static Test suite() {
+    Set<String> qFilesToExecute = new HashSet<String>();
+    String qFiles = System.getProperty("qfile", "").trim();
+    if(!qFiles.isEmpty()) {
+      for(String qFile : qFiles.split(",")) {
+        qFile = qFile.trim();
+        if(!qFile.isEmpty()) {
+          qFilesToExecute.add(qFile);
+        }
+      }
     }
+
+    TestSuite suite = new TestSuite();
+
+    QTestUtil.addTestsToSuiteFromQfileNames("$qFileNamesFile", qFilesToExecute,
+      suite, null, new TestCompareCliDriverAddTestFromQFiles());
+    suite.addTest(new $className("testCompareCliDriver_shutdown"));
+    return suite;
   }
 
   private Map<String, List<String>> versionFiles = new HashMap<String, List<String>>();
@@ -106,7 +134,6 @@ public class $className {
   #set ($eidx = $fname.indexOf('.'))
   #set ($tname = $fname.substring(0, $eidx))
   #set ($fpath = $qfilesMap.get($fname))
-  @Test
   public void testCompareCliDriver_$tname() throws Exception {
     runTest("$tname", "$fname", (HIVE_ROOT + "$fpath"));
   }
