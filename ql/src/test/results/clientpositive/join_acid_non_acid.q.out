@@ -1,0 +1,58 @@
+PREHOOK: query: CREATE TABLE orc_update_table (k1 INT, f1 STRING, op_code STRING)
+CLUSTERED BY (k1) INTO 2 BUCKETS
+STORED AS ORC TBLPROPERTIES("transactional"="true")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_update_table
+POSTHOOK: query: CREATE TABLE orc_update_table (k1 INT, f1 STRING, op_code STRING)
+CLUSTERED BY (k1) INTO 2 BUCKETS
+STORED AS ORC TBLPROPERTIES("transactional"="true")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_update_table
+PREHOOK: query: INSERT INTO TABLE orc_update_table VALUES (1, 'a', 'I')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__1
+PREHOOK: Output: default@orc_update_table
+POSTHOOK: query: INSERT INTO TABLE orc_update_table VALUES (1, 'a', 'I')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__1
+POSTHOOK: Output: default@orc_update_table
+POSTHOOK: Lineage: orc_update_table.f1 SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: orc_update_table.k1 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: orc_update_table.op_code SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+PREHOOK: query: CREATE TABLE orc_table (k1 INT, f1 STRING)
+CLUSTERED BY (k1) SORTED BY (k1) INTO 2 BUCKETS
+STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_table
+POSTHOOK: query: CREATE TABLE orc_table (k1 INT, f1 STRING)
+CLUSTERED BY (k1) SORTED BY (k1) INTO 2 BUCKETS
+STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_table
+PREHOOK: query: INSERT OVERWRITE TABLE orc_table VALUES (1, 'x')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__2
+PREHOOK: Output: default@orc_table
+POSTHOOK: query: INSERT OVERWRITE TABLE orc_table VALUES (1, 'x')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__2
+POSTHOOK: Output: default@orc_table
+POSTHOOK: Lineage: orc_table.f1 SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: orc_table.k1 EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: SELECT t1.*, t2.* FROM orc_table t1
+JOIN orc_update_table t2 ON t1.k1=t2.k1 ORDER BY t1.k1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_table
+PREHOOK: Input: default@orc_update_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT t1.*, t2.* FROM orc_table t1
+JOIN orc_update_table t2 ON t1.k1=t2.k1 ORDER BY t1.k1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_table
+POSTHOOK: Input: default@orc_update_table
+#### A masked pattern was here ####
+1	x	1	a	I
