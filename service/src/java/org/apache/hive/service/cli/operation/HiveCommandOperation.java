@@ -34,7 +34,9 @@ import org.apache.commons.lang3.CharEncoding;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.session.OperationLog;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.session.OperationLog.LoggingLevel;
 import org.apache.hive.service.ServiceUtils;
 import org.apache.hive.service.cli.FetchOrientation;
 import org.apache.hive.service.cli.HiveSQLException;
@@ -122,6 +124,15 @@ public class HiveCommandOperation extends ExecuteStatementOperation {
       } else {
         setHasResultSet(false);
         resultSchema = new TableSchema();
+      }
+      if (response.getConsoleMessages() != null) {
+        // Propagate processor messages (if any) to beeline or other client.
+        OperationLog ol = OperationLog.getCurrentOperationLog();
+        if (ol != null) {
+          for (String consoleMsg : response.getConsoleMessages()) {
+            ol.writeOperationLog(LoggingLevel.EXECUTION, consoleMsg + "\n");
+          }
+        }
       }
     } catch (HiveSQLException e) {
       setState(OperationState.ERROR);

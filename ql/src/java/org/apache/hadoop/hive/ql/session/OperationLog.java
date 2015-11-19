@@ -103,6 +103,16 @@ public class OperationLog {
   }
 
   /**
+   * Write operation execution logs into log file
+   * @param operationLogMessage one line of log emitted from log4j
+   */
+  public void writeOperationLog(LoggingLevel level, String operationLogMessage) {
+    if (opLoggingLevel.compareTo(level) < 0) return;
+    logFile.write(operationLogMessage);
+  }
+
+
+  /**
    * Read operation execution logs from log file
    * @param isFetchFirst true if the Enum FetchOrientation value is Fetch_First
    * @param maxRows the max number of fetched lines from log

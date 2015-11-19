@@ -109,6 +109,7 @@ import org.apache.hive.beeline.cli.CliOptionsProcessor;
  * </ul>
  *
  */
+@SuppressWarnings("static-access")
 public class BeeLine implements Closeable {
   private static final ResourceBundle resourceBundle =
       ResourceBundle.getBundle(BeeLine.class.getSimpleName());
@@ -657,7 +658,7 @@ public class BeeLine implements Closeable {
 
     Properties confProps = commandLine.getOptionProperties("hiveconf");
     for (String propKey : confProps.stringPropertyNames()) {
-      getOpts().getHiveConfVariables().put(propKey, confProps.getProperty(propKey));
+      setHiveConfVar(propKey, confProps.getProperty(propKey));
     }
 
     Properties hiveVars = commandLine.getOptionProperties("define");
@@ -739,7 +740,7 @@ public class BeeLine implements Closeable {
 
     Properties hiveConfs = cl.getOptionProperties("hiveconf");
     for (String key : hiveConfs.stringPropertyNames()) {
-      getOpts().getHiveConfVariables().put(key, hiveConfs.getProperty(key));
+      setHiveConfVar(key, hiveConfs.getProperty(key));
     }
 
     driver = cl.getOptionValue("d");
@@ -792,6 +793,14 @@ public class BeeLine implements Closeable {
       exit = true; // execute and exit
     }
     return code;
+  }
+
+
+  private void setHiveConfVar(String key, String val) {
+    getOpts().getHiveConfVariables().put(key, val);
+    if (HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.varname.equals(key) && "mr".equals(val)) {
+      info(HiveConf.generateMrDeprecationWarning());
+    }
   }
 
   private String constructCmd(String url, String user, String pass, String driver, boolean stripPasswd) {
