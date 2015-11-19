@@ -82,6 +82,16 @@
         <version>${jetty.version}</version>
     </dependency>
     <dependency>
+      <groupId>tomcat</groupId>
+      <artifactId>jasper-compiler</artifactId>
+      <version>${jasper.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>tomcat</groupId>
+      <artifactId>jasper-runtime</artifactId>
+      <version>${jasper.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.apache.thrift</groupId>
       <artifactId>libfb303</artifactId>
       <version>${libfb303.version}</version>
@@ -140,6 +150,14 @@
   <build>
     <sourceDirectory>${basedir}/src/java</sourceDirectory>
     <testSourceDirectory>${basedir}/src/test</testSourceDirectory>
+    <resources>
+      <resource>
+        <directory>${project.build.directory}</directory>
+        <includes>
+          <include>hive-webapps/**</include>
+        </includes>
+      </resource>
+    </resources>
     <plugins>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -155,8 +173,46 @@
               <sources>
                 <source>src/model</source>
                 <source>src/gen/thrift/gen-javabean</source>
+                <source>${project.build.directory}/generated-sources/java</source>
               </sources>
             </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <!-- Generate web app sources -->
+          <execution>
+            <id>generate</id>
+            <phase>generate-sources</phase>
+            <configuration>
+              <target>
+                <property name="build.webapps"
+                  location="${project.build.directory}/hive-webapps"/>
+                <property name="src.webapps"
+                  location="${basedir}/src/resources/hive-webapps"/>
+                <property name="generated.sources"
+                  location="${project.build.directory}/generated-sources"/>
+                <mkdir dir="${build.webapps}"/>
+                <copy todir="${build.webapps}">
+                  <fileset dir="${src.webapps}">
+                    <exclude name="**/*.jsp"/>
+                    <exclude name="**/.*"/>
+                  </fileset>
+                </copy>
+                <taskdef classname="org.apache.jasper.JspC"
+                  name="jspcompiler" classpathref="maven.compile.classpath"/>
+                <mkdir dir="${build.webapps}/hiveserver2/WEB-INF"/>
+                <jspcompiler uriroot="${src.webapps}/hiveserver2"
+                  outputdir="${generated.sources}/java"
+                  package="org.apache.hive.generated.hiveserver2"
+                  webxml="${build.webapps}/hiveserver2/WEB-INF/web.xml"/>
+              </target>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
           </execution>
         </executions>
       </plugin>

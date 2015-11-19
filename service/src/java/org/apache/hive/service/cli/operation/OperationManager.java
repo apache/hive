@@ -20,12 +20,12 @@ package org.apache.hive.service.cli.operation;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
@@ -49,6 +49,7 @@ import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -57,8 +58,8 @@ import org.slf4j.LoggerFactory;
  */
 public class OperationManager extends AbstractService {
   private final Logger LOG = LoggerFactory.getLogger(OperationManager.class.getName());
-  private final Map<OperationHandle, Operation> handleToOperation =
-      new HashMap<OperationHandle, Operation>();
+  private final ConcurrentHashMap<OperationHandle, Operation> handleToOperation =
+      new ConcurrentHashMap<OperationHandle, Operation>();
 
   public OperationManager() {
     super(OperationManager.class.getSimpleName());
@@ -165,24 +166,24 @@ public class OperationManager extends AbstractService {
     return operation;
   }
 
-  private synchronized Operation getOperationInternal(OperationHandle operationHandle) {
+  private Operation getOperationInternal(OperationHandle operationHandle) {
     return handleToOperation.get(operationHandle);
   }
 
-  private synchronized Operation removeTimedOutOperation(OperationHandle operationHandle) {
+  private Operation removeTimedOutOperation(OperationHandle operationHandle) {
     Operation operation = handleToOperation.get(operationHandle);
     if (operation != null && operation.isTimedOut(System.currentTimeMillis())) {
-      handleToOperation.remove(operationHandle);
+      handleToOperation.remove(operationHandle, operation);
       return operation;
     }
     return null;
   }
 
-  private synchronized void addOperation(Operation operation) {
+  private void addOperation(Operation operation) {
     handleToOperation.put(operation.getHandle(), operation);
   }
 
-  private synchronized Operation removeOperation(OperationHandle opHandle) {
+  private Operation removeOperation(OperationHandle opHandle) {
     return handleToOperation.remove(opHandle);
   }
 
@@ -291,6 +292,11 @@ public class OperationManager extends AbstractService {
     schema.addToFieldSchemas(fieldSchema);
     return schema;
   }
+
+  public Collection<Operation> getOperations() {
+    return Collections.unmodifiableCollection(handleToOperation.values());
+  }
+
 
   public OperationLog getOperationLogByThread() {
     return OperationLog.getCurrentOperationLog();

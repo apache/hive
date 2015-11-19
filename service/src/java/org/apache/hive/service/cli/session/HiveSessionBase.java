@@ -85,4 +85,8 @@ public interface HiveSessionBase {
   void setIpAddress(String ipAddress);
 
   long getLastAccessTime();
+
+  long getCreationTime();
+
+  int getOpenOperationCount();
 }
