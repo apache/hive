@@ -56,9 +56,12 @@ import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
 import org.apache.hadoop.hive.ql.util.ZooKeeperHiveHelper;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.authorize.AccessControlList;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.HiveVersionInfo;
+import org.apache.hive.http.HttpServer;
 import org.apache.hive.service.CompositeService;
+import org.apache.hive.service.ServiceException;
 import org.apache.hive.service.cli.CLIService;
 import org.apache.hive.service.cli.thrift.ThriftBinaryCLIService;
 import org.apache.hive.service.cli.thrift.ThriftCLIService;
@@ -86,6 +89,7 @@ public class HiveServer2 extends CompositeService {
   private String znodePath;
   private CuratorFramework zooKeeperClient;
   private boolean registeredWithZooKeeper = false;
+  private HttpServer webServer; // Web UI
 
   public HiveServer2() {
     super(HiveServer2.class.getSimpleName());
@@ -115,6 +119,32 @@ public class HiveServer2 extends CompositeService {
       hiveConf.set(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_BIND_HOST.varname, getServerHost());
     } catch (Throwable t) {
       throw new Error("Unable to intitialize HiveServer2", t);
+    }
+    // Setup web UI
+    try {
+      if (hiveConf.getBoolVar(ConfVars.HIVE_IN_TEST)) {
+        LOG.info("Web UI is disabled since in test mode");
+      } else {
+        int webUIPort =
+          hiveConf.getIntVar(ConfVars.HIVE_SERVER2_WEBUI_PORT);
+        if (webUIPort <= 0) {
+          LOG.info("Web UI is disabled since port is set to " + webUIPort);
+        } else {
+          AccessControlList adminsAcl =
+            new AccessControlList(hiveConf.getVar(ConfVars.USERS_IN_ADMIN_ROLE));
+          hiveConf.set("startcode", String.valueOf(System.currentTimeMillis()));
+          webServer = new HttpServer("hiveserver2",
+            hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_BIND_HOST),
+            webUIPort,
+            hiveConf.getIntVar(ConfVars.HIVE_SERVER2_WEBUI_MAX_THREADS),
+            hiveConf, adminsAcl);
+          // SessionManager is initialized
+          webServer.setContextAttribute("hive.sm",
+            cliService.getSessionManager());
+        }
+      }
+    } catch (IOException ie) {
+      throw new ServiceException(ie);
     }
     // Add a shutdown hook for catching SIGTERM & SIGINT
     Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -371,6 +401,15 @@ public class HiveServer2 extends CompositeService {
   @Override
   public synchronized void start() {
     super.start();
+    if (webServer != null) {
+      try {
+        webServer.start();
+        LOG.info("Web UI has started on port " + webServer.getPort());
+      } catch (Exception e) {
+        LOG.error("Error starting Web UI: ", e);
+        throw new ServiceException(e);
+      }
+    }
   }
 
   @Override
@@ -378,6 +417,14 @@ public class HiveServer2 extends CompositeService {
     LOG.info("Shutting down HiveServer2");
     HiveConf hiveConf = this.getHiveConf();
     super.stop();
+    if (webServer != null) {
+      try {
+        webServer.stop();
+        LOG.info("Web UI has stopped");
+      } catch (Exception e) {
+        LOG.error("Error stopping Web UI: ", e);
+      }
+    }
     // Shutdown Metrics
     if (MetricsFactory.getInstance() != null) {
       try {

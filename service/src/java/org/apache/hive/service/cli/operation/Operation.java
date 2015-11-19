@@ -73,7 +73,7 @@ public abstract class Operation {
   protected Map<String, String> confOverlay = new HashMap<String, String>();
 
   private long operationTimeout;
-  private long lastAccessTime;
+  private volatile long lastAccessTime;
 
   protected static final EnumSet<FetchOrientation> DEFAULT_FETCH_ORIENTATION_SET =
       EnumSet.of(FetchOrientation.FETCH_NEXT,FetchOrientation.FETCH_FIRST);
