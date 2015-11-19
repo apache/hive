@@ -146,10 +146,14 @@ public class SQLOperation extends ExecuteStatementOperation {
     } catch (HiveSQLException e) {
       setState(OperationState.ERROR);
       throw e;
-    } catch (Exception e) {
+    } catch (Throwable e) {
       setState(OperationState.ERROR);
       throw new HiveSQLException("Error running query: " + e.toString(), e);
     }
+  }
+
+  public String getQueryStr() {
+    return driver == null || driver.getPlan() == null ? "Unknown" : driver.getPlan().getQueryStr();
   }
 
   private void runQuery(HiveConf sqlOperationConf) throws HiveSQLException {
@@ -174,7 +178,7 @@ public class SQLOperation extends ExecuteStatementOperation {
         setState(OperationState.ERROR);
         throw e;
       }
-    } catch (Exception e) {
+    } catch (Throwable e) {
       setState(OperationState.ERROR);
       throw new HiveSQLException("Error running query: " + e.toString(), e);
     }

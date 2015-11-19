@@ -20,9 +20,11 @@ package org.apache.hive.service.cli.operation;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -44,6 +46,7 @@ import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.RowSetFactory;
 import org.apache.hive.service.cli.TableSchema;
 import org.apache.hive.service.cli.session.HiveSession;
+
 import org.apache.log4j.Appender;
 import org.apache.log4j.Logger;
 
@@ -52,10 +55,11 @@ import org.apache.log4j.Logger;
  *
  */
 public class OperationManager extends AbstractService {
+
   private final Log LOG = LogFactory.getLog(OperationManager.class.getName());
 
-  private final Map<OperationHandle, Operation> handleToOperation =
-      new HashMap<OperationHandle, Operation>();
+  private final ConcurrentHashMap<OperationHandle, Operation> handleToOperation =
+      new ConcurrentHashMap<OperationHandle, Operation>();
 
   public OperationManager() {
     super(OperationManager.class.getSimpleName());
@@ -157,24 +161,24 @@ public class OperationManager extends AbstractService {
     return operation;
   }
 
-  private synchronized Operation getOperationInternal(OperationHandle operationHandle) {
+  private Operation getOperationInternal(OperationHandle operationHandle) {
     return handleToOperation.get(operationHandle);
   }
 
-  private synchronized Operation removeTimedOutOperation(OperationHandle operationHandle) {
+  private Operation removeTimedOutOperation(OperationHandle operationHandle) {
     Operation operation = handleToOperation.get(operationHandle);
     if (operation != null && operation.isTimedOut(System.currentTimeMillis())) {
-      handleToOperation.remove(operationHandle);
+      handleToOperation.remove(operationHandle, operation);
       return operation;
     }
     return null;
   }
 
-  private synchronized void addOperation(Operation operation) {
+  private void addOperation(Operation operation) {
     handleToOperation.put(operation.getHandle(), operation);
   }
 
-  private synchronized Operation removeOperation(OperationHandle opHandle) {
+  private Operation removeOperation(OperationHandle opHandle) {
     return handleToOperation.remove(opHandle);
   }
 
@@ -283,6 +287,11 @@ public class OperationManager extends AbstractService {
     schema.addToFieldSchemas(fieldSchema);
     return schema;
   }
+
+  public Collection<Operation> getOperations() {
+    return Collections.unmodifiableCollection(handleToOperation.values());
+  }
+
 
   public OperationLog getOperationLogByThread() {
     return OperationLog.getCurrentOperationLog();

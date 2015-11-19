@@ -88,6 +88,7 @@ public class HiveSessionImpl implements HiveSession {
   private String username;
   private final String password;
   private final HiveConf hiveConf;
+  private final long creationTime;
   // TODO: some SessionState internals are not thread safe. The compile-time internals are synced
   //       via session-scope or global compile lock. The run-time internals work by magic!
   //       They probably work because races are relatively unlikely and few tools run parallel
@@ -112,6 +113,7 @@ public class HiveSessionImpl implements HiveSession {
       HiveConf serverhiveConf, String ipAddress) {
     this.username = username;
     this.password = password;
+    creationTime = System.currentTimeMillis();
     this.sessionHandle = new SessionHandle(protocol);
     this.hiveConf = new HiveConf(serverhiveConf);
     this.ipAddress = ipAddress;
@@ -667,6 +669,11 @@ public class HiveSessionImpl implements HiveSession {
   }
 
   @Override
+  public long getCreationTime() {
+    return creationTime;
+  }
+
+  @Override
   public void closeExpiredOperations() {
     OperationHandle[] handles;
     synchronized (opHandleSet) {
@@ -752,6 +759,11 @@ public class HiveSessionImpl implements HiveSession {
 
   protected HiveSession getSession() {
     return this;
+  }
+
+  @Override
+  public int getOpenOperationCount() {
+    return opHandleSet.size();
   }
 
   @Override

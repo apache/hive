@@ -1,0 +1,305 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.hive.http;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.CommonConfigurationKeys;
+import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.authorize.AccessControlList;
+import org.apache.hadoop.util.Shell;
+import org.apache.log4j.Appender;
+import org.apache.log4j.FileAppender;
+import org.apache.log4j.Logger;
+import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.handler.ContextHandler.Context;
+import org.eclipse.jetty.server.handler.ContextHandlerCollection;
+import org.eclipse.jetty.server.nio.SelectChannelConnector;
+import org.eclipse.jetty.servlet.DefaultServlet;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.thread.QueuedThreadPool;
+import org.eclipse.jetty.webapp.WebAppContext;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URL;
+import java.util.Enumeration;
+
+
+/**
+ * A simple embedded Jetty server to serve as HS2/HMS web UI.
+ */
+public class HttpServer {
+  public static final String CONF_CONTEXT_ATTRIBUTE = "hive.conf";
+  public static final String ADMINS_ACL = "admins.acl";
+
+  private final AccessControlList adminsAcl;
+  private final String appDir;
+  private final String name;
+  private final String host;
+  private final int port;
+  private final int maxThreads;
+  private final Configuration conf;
+  private final WebAppContext webAppContext;
+  private final Server webServer;
+
+  /**
+   * Create a status server on the given port.
+   */
+  public HttpServer(String name, String host, int port, int maxThreads,
+      Configuration conf, AccessControlList adminsAcl) throws IOException {
+    this.name = name;
+    this.host = host;
+    this.port = port;
+    this.maxThreads = maxThreads;
+    this.conf = conf;
+    this.adminsAcl = adminsAcl;
+
+    webServer = new Server();
+    appDir = getWebAppsPath(name);
+    webAppContext = createWebAppContext();
+    initializeWebServer();
+  }
+
+  public void start() throws Exception {
+    webServer.start();
+  }
+
+  public void stop() throws Exception {
+    webServer.stop();
+  }
+
+  public int getPort() {
+    return port;
+  }
+
+  /**
+   * Set servlet context attribute that can be used in jsp.
+   */
+  public void setContextAttribute(String name, Object value) {
+    webAppContext.getServletContext().setAttribute(name, value);
+  }
+
+  /**
+   * Checks the user has privileges to access to instrumentation servlets.
+   * <p/>
+   * If <code>hadoop.security.instrumentation.requires.admin</code> is set to FALSE
+   * (default value) it always returns TRUE.
+   * <p/>
+   * If <code>hadoop.security.instrumentation.requires.admin</code> is set to TRUE
+   * it will check if the current user is in the admin ACLS. If the user is
+   * in the admin ACLs it returns TRUE, otherwise it returns FALSE.
+   *
+   * @param servletContext the servlet context.
+   * @param request the servlet request.
+   * @param response the servlet response.
+   * @return TRUE/FALSE based on the logic described above.
+   */
+  static boolean isInstrumentationAccessAllowed(
+    ServletContext servletContext, HttpServletRequest request,
+    HttpServletResponse response) throws IOException {
+    Configuration conf =
+      (Configuration) servletContext.getAttribute(CONF_CONTEXT_ATTRIBUTE);
+
+    boolean access = true;
+    boolean adminAccess = conf.getBoolean(
+      CommonConfigurationKeys.HADOOP_SECURITY_INSTRUMENTATION_REQUIRES_ADMIN,
+      false);
+    if (adminAccess) {
+      access = hasAdministratorAccess(servletContext, request, response);
+    }
+    return access;
+  }
+
+  /**
+   * Does the user sending the HttpServletRequest have the administrator ACLs? If
+   * it isn't the case, response will be modified to send an error to the user.
+   *
+   * @param servletContext
+   * @param request
+   * @param response used to send the error response if user does not have admin access.
+   * @return true if admin-authorized, false otherwise
+   * @throws IOException
+   */
+  static boolean hasAdministratorAccess(
+      ServletContext servletContext, HttpServletRequest request,
+      HttpServletResponse response) throws IOException {
+    Configuration conf =
+        (Configuration) servletContext.getAttribute(CONF_CONTEXT_ATTRIBUTE);
+    // If there is no authorization, anybody has administrator access.
+    if (!conf.getBoolean(
+        CommonConfigurationKeys.HADOOP_SECURITY_AUTHORIZATION, false)) {
+      return true;
+    }
+
+    String remoteUser = request.getRemoteUser();
+    if (remoteUser == null) {
+      response.sendError(HttpServletResponse.SC_UNAUTHORIZED,
+                         "Unauthenticated users are not " +
+                         "authorized to access this page.");
+      return false;
+    }
+
+    if (servletContext.getAttribute(ADMINS_ACL) != null &&
+        !userHasAdministratorAccess(servletContext, remoteUser)) {
+      response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "User "
+          + remoteUser + " is unauthorized to access this page.");
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * Get the admin ACLs from the given ServletContext and check if the given
+   * user is in the ACL.
+   *
+   * @param servletContext the context containing the admin ACL.
+   * @param remoteUser the remote user to check for.
+   * @return true if the user is present in the ACL, false if no ACL is set or
+   *         the user is not present
+   */
+  static boolean userHasAdministratorAccess(ServletContext servletContext,
+      String remoteUser) {
+    AccessControlList adminsAcl = (AccessControlList) servletContext
+        .getAttribute(ADMINS_ACL);
+    UserGroupInformation remoteUserUGI =
+        UserGroupInformation.createRemoteUser(remoteUser);
+    return adminsAcl != null && adminsAcl.isUserAllowed(remoteUserUGI);
+  }
+
+  /**
+   * Create the web context for the application of specified name
+   */
+  WebAppContext createWebAppContext() {
+    WebAppContext ctx = new WebAppContext();
+    setContextAttributes(ctx.getServletContext());
+    ctx.setDisplayName(name);
+    ctx.setContextPath("/");
+    ctx.setWar(appDir + "/" + name);
+    return ctx;
+  }
+
+  /**
+   * Create a default regular channel connector for "http" requests
+   */
+  Connector createDefaultChannelConnector() {
+    SelectChannelConnector connector = new SelectChannelConnector();
+    connector.setLowResourcesMaxIdleTime(10000);
+    connector.setAcceptQueueSize(maxThreads);
+    connector.setResolveNames(false);
+    connector.setUseDirectBuffers(false);
+    connector.setReuseAddress(!Shell.WINDOWS);
+    return connector;
+  }
+
+  void setContextAttributes(Context ctx) {
+    ctx.setAttribute(CONF_CONTEXT_ATTRIBUTE, conf);
+    ctx.setAttribute(ADMINS_ACL, adminsAcl);
+  }
+
+  void initializeWebServer() {
+    // Create the thread pool for the web server to handle HTTP requests
+    QueuedThreadPool threadPool = maxThreads <= 0 ? new QueuedThreadPool()
+      : new QueuedThreadPool(maxThreads);
+    threadPool.setDaemon(true);
+    threadPool.setName(name + "-web");
+    webServer.setThreadPool(threadPool);
+
+    // Create the channel connector for the web server
+    Connector connector = createDefaultChannelConnector();
+    connector.setHost(host);
+    connector.setPort(port);
+    webServer.addConnector(connector);
+
+    // Configure web application contexts for the web server
+    ContextHandlerCollection contexts = new ContextHandlerCollection();
+    contexts.addHandler(webAppContext);
+    webServer.setHandler(contexts);
+
+    addServlet("jmx", "/jmx", JMXJsonServlet.class);
+    addServlet("conf", "/conf", ConfServlet.class);
+
+    ServletContextHandler staticCtx =
+      new ServletContextHandler(contexts, "/static");
+    staticCtx.setResourceBase(appDir + "/static");
+    staticCtx.addServlet(DefaultServlet.class, "/*");
+    staticCtx.setDisplayName("static");
+
+    String logDir = getLogDir();
+    if (logDir != null) {
+      ServletContextHandler logCtx =
+        new ServletContextHandler(contexts, "/logs");
+      setContextAttributes(logCtx.getServletContext());
+      logCtx.addServlet(AdminAuthorizedServlet.class, "/*");
+      logCtx.setResourceBase(logDir);
+      logCtx.setDisplayName("logs");
+    }
+  }
+
+  String getLogDir() {
+    String logDir = conf.get("hive.log.dir");
+    if (logDir == null) {
+      logDir = System.getProperty("hive.log.dir");
+    }
+    if (logDir != null) {
+      return logDir;
+    }
+
+    Enumeration e = Logger.getRootLogger().getAllAppenders();
+    while (e.hasMoreElements() ){
+      Appender app = (Appender) e.nextElement();
+      if (app instanceof FileAppender){
+        return ((FileAppender) app).getFile();
+      }
+    }
+    return null;
+  }
+
+  String getWebAppsPath(String appName) throws FileNotFoundException {
+    String relativePath = "hive-webapps/" + appName;
+    URL url = getClass().getClassLoader().getResource(relativePath);
+    if (url == null) {
+      throw new FileNotFoundException(relativePath
+          + " not found in CLASSPATH");
+    }
+    String urlString = url.toString();
+    return urlString.substring(0, urlString.lastIndexOf('/'));
+  }
+
+  /**
+   * Add a servlet in the server.
+   * @param name The name of the servlet (can be passed as null)
+   * @param pathSpec The path spec for the servlet
+   * @param clazz The servlet class
+   */
+  void addServlet(String name, String pathSpec,
+      Class<? extends HttpServlet> clazz) {
+    ServletHolder holder = new ServletHolder(clazz);
+    if (name != null) {
+      holder.setName(name);
+    }
+    webAppContext.addServlet(holder, pathSpec);
+  }
+}
