@@ -53,6 +53,12 @@
       <groupId>org.apache.velocity</groupId>
       <artifactId>velocity</artifactId>
       <version>${velocity.version}</version>
+           <exclusions>
+             <exclusion>
+            <groupId>commons-collections</groupId>
+            <artifactId>commons-collections</artifactId>
+          </exclusion>
+           </exclusions>
     </dependency>
   </dependencies>
 
