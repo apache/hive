@@ -48,7 +48,7 @@ import java.util.HashSet;
 import java.util.List;
 
 
-abstract class AbstractRecordWriter implements RecordWriter {
+public abstract class AbstractRecordWriter implements RecordWriter {
   static final private Logger LOG = LoggerFactory.getLogger(AbstractRecordWriter.class.getName());
 
   final HiveConf conf;
@@ -110,7 +110,22 @@ abstract class AbstractRecordWriter implements RecordWriter {
     return result;
   }
 
-  abstract SerDe getSerde() throws SerializationError;
+  /**
+   * Get the SerDe for the Objects created by {@link #encode}.  This is public so that test
+   * frameworks can use it.
+   * @return serde
+   * @throws SerializationError
+   */
+  public abstract SerDe getSerde() throws SerializationError;
+
+  /**
+   * Encode a record as an Object that Hive can read with the ObjectInspector associated with the
+   * serde returned by {@link #getSerde}.  This is public so that test frameworks can use it.
+   * @param record record to be deserialized
+   * @return deserialized record as an Object
+   * @throws SerializationError
+   */
+  public abstract Object encode(byte[] record) throws SerializationError;
 
   protected abstract ObjectInspector[] getBucketObjectInspectors();
   protected abstract StructObjectInspector getRecordObjectInspector();

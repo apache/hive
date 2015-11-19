@@ -243,7 +243,7 @@ public class DelimitedInputWriter extends AbstractRecordWriter {
   }
 
   @Override
-  SerDe getSerde() throws SerializationError {
+  public SerDe getSerde() throws SerializationError {
     return serde;
   }
 
@@ -260,7 +260,8 @@ public class DelimitedInputWriter extends AbstractRecordWriter {
     return bucketObjInspectors;
   }
 
-  private Object encode(byte[] record) throws SerializationError {
+  @Override
+  public Object encode(byte[] record) throws SerializationError {
     try {
       BytesWritable blob = new BytesWritable();
       blob.set(record, 0, record.length);

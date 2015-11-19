@@ -86,7 +86,7 @@ public class StrictJsonWriter extends AbstractRecordWriter {
   }
 
   @Override
-  SerDe getSerde() throws SerializationError {
+  public SerDe getSerde() throws SerializationError {
     return serde;
   }
 
@@ -137,13 +137,8 @@ public class StrictJsonWriter extends AbstractRecordWriter {
     }
   }
 
-  /**
-   * Encode Utf8 encoded string bytes using JsonSerde
-   * @param utf8StrRecord
-   * @return  The encoded object
-   * @throws SerializationError
-   */
-  private Object encode(byte[] utf8StrRecord) throws SerializationError {
+  @Override
+  public Object encode(byte[] utf8StrRecord) throws SerializationError {
     try {
       Text blob = new Text(utf8StrRecord);
       return serde.deserialize(blob);
