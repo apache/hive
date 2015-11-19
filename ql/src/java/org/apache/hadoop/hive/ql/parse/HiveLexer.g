@@ -377,7 +377,7 @@ RegexComponent
     : 'a'..'z' | 'A'..'Z' | '0'..'9' | '_'
     | PLUS | STAR | QUESTION | MINUS | DOT
     | LPAREN | RPAREN | LSQUARE | RSQUARE | LCURLY | RCURLY
-    | BITWISEXOR | BITWISEOR | DOLLAR
+    | BITWISEXOR | BITWISEOR | DOLLAR | '!'
     ;
 
 StringLiteral
