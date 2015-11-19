@@ -290,6 +290,11 @@ public class CliDriver {
               ss.out.println("Query returned non-zero code: " + res.getResponseCode() +
                   ", cause: " + res.getErrorMessage());
             }
+            if (res.getConsoleMessages() != null) {
+              for (String consoleMsg : res.getConsoleMessages()) {
+                console.printInfo(consoleMsg);
+              }
+            }
             ret = res.getResponseCode();
           }
         }
@@ -747,6 +752,9 @@ public class CliDriver {
     } catch (FileNotFoundException e) {
       System.err.println("Could not open input file for reading. (" + e.getMessage() + ")");
       return 3;
+    }
+    if ("mr".equals(HiveConf.getVar(conf, ConfVars.HIVE_EXECUTION_ENGINE))) {
+      console.printInfo(HiveConf.generateMrDeprecationWarning());
     }
 
     setupConsoleReader();

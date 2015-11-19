@@ -2164,7 +2164,9 @@ public class HiveConf extends Configuration {
         "Whether to show the unquoted partition names in query results."),
 
     HIVE_EXECUTION_ENGINE("hive.execution.engine", "mr", new StringSet("mr", "tez", "spark"),
-        "Chooses execution engine. Options are: mr (Map reduce, default), tez (hadoop 2 only), spark"),
+        "Chooses execution engine. Options are: mr (Map reduce, default), tez, spark. While MR\n" +
+        "remains the default engine for historical reasons, it is itself a historical engine\n" +
+        "and is deprecated in Hive 2 line. It may be removed without further warning."),
 
     HIVE_EXECUTION_MODE("hive.execution.mode", "container", new StringSet("container", "llap"),
         "Chooses whether query fragments will run in container or in llap"),
@@ -2569,6 +2571,13 @@ public class HiveConf extends Configuration {
 
     public String getDefaultExpr() {
       return defaultExpr;
+    }
+
+    private Set<String> getValidStringValues() {
+      if (validator == null || !(validator instanceof StringSet)) {
+        throw new RuntimeException(varname + " does not specify a list of valid values");
+      }
+      return ((StringSet)validator).getExpected();
     }
 
     enum VarType {
@@ -3393,5 +3402,23 @@ public class HiveConf extends Configuration {
 
   public static void setLoadHiveServer2Config(boolean loadHiveServer2Config) {
     HiveConf.loadHiveServer2Config = loadHiveServer2Config;
+  }
+
+  public static String getNonMrEngines() {
+    String result = "";
+    for (String s : ConfVars.HIVE_EXECUTION_ENGINE.getValidStringValues()) {
+      if ("mr".equals(s)) continue;
+      if (!result.isEmpty()) {
+        result += ", ";
+      }
+      result += s;
+    }
+    return result;
+  }
+
+  public static String generateMrDeprecationWarning() {
+    return "Hive-on-MR is deprecated in Hive 2 and may not be available in the future versions. "
+        + "Consider using a different execution engine (i.e. " + HiveConf.getNonMrEngines()
+        + ") or using Hive 1.X releases.";
   }
 }

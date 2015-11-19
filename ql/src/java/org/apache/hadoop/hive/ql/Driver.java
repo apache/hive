@@ -114,6 +114,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObje
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivObjectActionType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 import org.apache.hadoop.hive.ql.session.OperationLog;
+import org.apache.hadoop.hive.ql.session.OperationLog.LoggingLevel;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.serde2.ByteStream;
@@ -1505,10 +1506,12 @@ public class Driver implements CommandProcessor {
         }
       }
 
-      int jobs = Utilities.getMRTasks(plan.getRootTasks()).size()
+      int mrJobs = Utilities.getMRTasks(plan.getRootTasks()).size();
+      int jobs = mrJobs
         + Utilities.getTezTasks(plan.getRootTasks()).size()
         + Utilities.getSparkTasks(plan.getRootTasks()).size();
       if (jobs > 0) {
+        logMrWarning(mrJobs);
         console.printInfo("Query ID = " + plan.getQueryId());
         console.printInfo("Total jobs = " + jobs);
       }
@@ -1728,6 +1731,21 @@ public class Driver implements CommandProcessor {
     console.printInfo("OK");
 
     return (0);
+  }
+
+  private void logMrWarning(int mrJobs) {
+    if (mrJobs <= 0 || !("mr".equals(HiveConf.getVar(conf, ConfVars.HIVE_EXECUTION_ENGINE)))) {
+      return;
+    }
+    String warning = HiveConf.generateMrDeprecationWarning();
+    LOG.warn(warning);
+    warning = "WARNING: " + warning;
+    console.printInfo(warning);
+    // Propagate warning to beeline via operation log.
+    OperationLog ol = OperationLog.getCurrentOperationLog();
+    if (ol != null) {
+      ol.writeOperationLog(LoggingLevel.EXECUTION, warning + "\n");
+    }
   }
 
   private void setErrorMsgAndDetail(int exitVal, Throwable downstreamError, Task tsk) {

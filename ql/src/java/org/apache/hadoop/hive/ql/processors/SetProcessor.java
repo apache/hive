@@ -37,12 +37,17 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Lists;
 
 /**
  * SetProcessor.
  *
  */
 public class SetProcessor implements CommandProcessor {
+  private static final Logger LOG = LoggerFactory.getLogger(SetProcessor.class);
 
   private static final String prefix = "set: ";
 
@@ -110,22 +115,24 @@ public class SetProcessor implements CommandProcessor {
 
   public CommandProcessorResponse executeSetVariable(String varname, String varvalue) {
     try {
-      return new CommandProcessorResponse(setVariable(varname, varvalue));
+      return setVariable(varname, varvalue);
     } catch (Exception e) {
       return new CommandProcessorResponse(1, e.getMessage(), "42000",
           e instanceof IllegalArgumentException ? null : e);
     }
   }
 
-  public static int setVariable(String varname, String varvalue) throws Exception {
+  public static CommandProcessorResponse setVariable(
+      String varname, String varvalue) throws Exception {
     SessionState ss = SessionState.get();
     if (varvalue.contains("\n")){
       ss.err.println("Warning: Value had a \\n character in it.");
     }
     varname = varname.trim();
+    String nonErrorMessage = null;
     if (varname.startsWith(ENV_PREFIX)){
       ss.err.println("env:* variables can not be set.");
-      return 1;
+      return new CommandProcessorResponse(1); // Should we propagate the error message properly?
     } else if (varname.startsWith(SYSTEM_PREFIX)){
       String propName = varname.substring(SYSTEM_PREFIX.length());
       System.getProperties()
@@ -137,7 +144,7 @@ public class SetProcessor implements CommandProcessor {
           }).substitute(ss.getConf(), varvalue));
     } else if (varname.startsWith(HIVECONF_PREFIX)){
       String propName = varname.substring(HIVECONF_PREFIX.length());
-      setConf(varname, propName, varvalue, false);
+      nonErrorMessage = setConf(varname, propName, varvalue, false);
     } else if (varname.startsWith(HIVEVAR_PREFIX)) {
       String propName = varname.substring(HIVEVAR_PREFIX.length());
       ss.getHiveVariables().put(propName, new VariableSubstitution(new HiveVariableSource() {
@@ -156,17 +163,21 @@ public class SetProcessor implements CommandProcessor {
         }
       }).substitute(ss.getConf(), varvalue));
     } else {
-      setConf(varname, varname, varvalue, true);
+      nonErrorMessage = setConf(varname, varname, varvalue, true);
       if (varname.equals(HiveConf.ConfVars.HIVE_SESSION_HISTORY_ENABLED.toString())) {
         SessionState.get().updateHistory(Boolean.parseBoolean(varvalue), ss);
       }
     }
-    return 0;
+    return nonErrorMessage == null ? new CommandProcessorResponse(0)
+      : new CommandProcessorResponse(0, Lists.newArrayList(nonErrorMessage));
   }
 
-  // returns non-null string for validation fail
-  private static void setConf(String varname, String key, String varvalue, boolean register)
+  /**
+   * @return A console message that is not strong enough to fail the command (e.g. deprecation).
+   */
+  private static String setConf(String varname, String key, String varvalue, boolean register)
         throws IllegalArgumentException {
+    String result = null;
     HiveConf conf = SessionState.get().getConf();
     String value = new VariableSubstitution(new HiveVariableSource() {
       @Override
@@ -196,13 +207,19 @@ public class SetProcessor implements CommandProcessor {
       }
     }
     conf.verifyAndSet(key, value);
-    if (HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.varname.equals(key)
-        && !"spark".equals(value)) {
-      SessionState.get().closeSparkSession();
+    if (HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.varname.equals(key)) {
+      if (!"spark".equals(value)) {
+        SessionState.get().closeSparkSession();
+      }
+      if ("mr".equals(value)) {
+        result = HiveConf.generateMrDeprecationWarning();
+        LOG.warn(result);
+      }
     }
     if (register) {
       SessionState.get().getOverriddenConfigurations().put(key, value);
     }
+    return result;
   }
 
   private SortedMap<String,String> propertiesToSortedMap(Properties p){

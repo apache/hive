@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.processors;
 
+import java.util.List;
+
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 
@@ -36,6 +38,7 @@ public class CommandProcessorResponse {
   private final Schema resSchema;
 
   private final Throwable exception;
+  private final List<String> consoleMessages;
 
   public CommandProcessorResponse(int responseCode) {
     this(responseCode, null, null, null, null);
@@ -43,6 +46,10 @@ public class CommandProcessorResponse {
 
   public CommandProcessorResponse(int responseCode, String errorMessage, String SQLState) {
     this(responseCode, errorMessage, SQLState, null, null);
+  }
+
+  public CommandProcessorResponse(int responseCode, List<String> consoleMessages) {
+    this(responseCode, null, null, null, null, -1, consoleMessages);
   }
 
   public CommandProcessorResponse(int responseCode, String errorMessage, String SQLState, Throwable exception) {
@@ -54,7 +61,7 @@ public class CommandProcessorResponse {
   }
   public CommandProcessorResponse(int responseCode, ErrorMsg canonicalErrMsg, Throwable t, String ... msgArgs) {
     this(responseCode, canonicalErrMsg.format(msgArgs),
-      canonicalErrMsg.getSQLState(), null, t, canonicalErrMsg.getErrorCode());
+      canonicalErrMsg.getSQLState(), null, t, canonicalErrMsg.getErrorCode(), null);
   }
 
   /**
@@ -71,16 +78,17 @@ public class CommandProcessorResponse {
 
   public CommandProcessorResponse(int responseCode, String errorMessage, String SQLState,
                                   Schema schema, Throwable exception) {
-    this(responseCode, errorMessage, SQLState, schema, exception, -1);
+    this(responseCode, errorMessage, SQLState, schema, exception, -1, null);
   }
   public CommandProcessorResponse(int responseCode, String errorMessage, String SQLState,
-      Schema schema, Throwable exception, int hiveErrorCode) {
+      Schema schema, Throwable exception, int hiveErrorCode, List<String> consoleMessages) {
     this.responseCode = responseCode;
     this.errorMessage = errorMessage;
     this.SQLState = SQLState;
     this.resSchema = schema;
     this.exception = exception;
     this.hiveErrorCode = hiveErrorCode;
+    this.consoleMessages = consoleMessages;
   }
 
   public int getResponseCode() { return responseCode; }
@@ -89,6 +97,7 @@ public class CommandProcessorResponse {
   public Schema getSchema() { return resSchema; }
   public Throwable getException() { return exception; }
   public int getErrorCode() { return hiveErrorCode; }
+  public List<String> getConsoleMessages() { return consoleMessages; }
   public String toString() {
     return "(" + responseCode + "," + errorMessage + "," +
       (hiveErrorCode > 0 ? hiveErrorCode + "," : "" ) +
