@@ -111,10 +111,6 @@ public class SparkUtilities {
       SparkSessionManager sparkSessionManager) throws HiveException {
     SparkSession sparkSession = SessionState.get().getSparkSession();
 
-    if (!conf.getBoolVar(HiveConf.ConfVars.SPARK_ENABLED)) {
-      throw new HiveException("Unsupported execution engine: Spark.  Please set hive.execution.engine=mr");
-    }
-
     // Spark configurations are updated close the existing session
     if (conf.getSparkConfigUpdated()) {
       sparkSessionManager.closeSession(sparkSession);

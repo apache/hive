@@ -230,9 +230,4 @@
   <value>hive_admin_user</value>
 </property>
 
-<property>
-  <name>hive.enable.spark.execution.engine</name>
-  <value>true</value>
-</property>
-
 </configuration>
