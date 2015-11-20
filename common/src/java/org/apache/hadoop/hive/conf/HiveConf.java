@@ -1848,6 +1848,12 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_WEBUI_BIND_HOST("hive.server2.webui.host", "0.0.0.0", "The host address the HiveServer2 WebUI will listen on"),
     HIVE_SERVER2_WEBUI_PORT("hive.server2.webui.port", 10002, "The port the HiveServer2 WebUI will listen on"),
     HIVE_SERVER2_WEBUI_MAX_THREADS("hive.server2.webui.max.threads", 50, "The max HiveServer2 WebUI threads"),
+    HIVE_SERVER2_WEBUI_USE_SSL("hive.server2.webui.use.SSL", false,
+        "Set this to true for using SSL encryption for HiveServer2 WebUI."),
+    HIVE_SERVER2_WEBUI_SSL_KEYSTORE_PATH("hive.server2.webui.keystore.path", "",
+        "SSL certificate keystore location for HiveServer2 WebUI."),
+    HIVE_SERVER2_WEBUI_SSL_KEYSTORE_PASSWORD("hive.server2.webui.keystore.password", "",
+        "SSL certificate keystore password for HiveServer2 WebUI."),
 
     // Tez session settings
     HIVE_SERVER2_TEZ_DEFAULT_QUEUES("hive.server2.tez.default.queues", "",
