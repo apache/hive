@@ -1,0 +1,56 @@
+PREHOOK: query: create table newtypesorc(c char(10), v varchar(10), d date, ts timestamp) stored as orc tblproperties("orc.stripe.size"="16777216")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@newtypesorc
+POSTHOOK: query: create table newtypesorc(c char(10), v varchar(10), d date, ts timestamp) stored as orc tblproperties("orc.stripe.size"="16777216")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@newtypesorc
+PREHOOK: query: insert overwrite table newtypesorc select * from (select cast("apple" as char(10)), cast("bee" as varchar(10)), null, null from src src1 union all select cast("hello" as char(10)), cast("world" as varchar(10)), null, null from src src2) uniontbl
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@newtypesorc
+POSTHOOK: query: insert overwrite table newtypesorc select * from (select cast("apple" as char(10)), cast("bee" as varchar(10)), null, null from src src1 union all select cast("hello" as char(10)), cast("world" as varchar(10)), null, null from src src2) uniontbl
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@newtypesorc
+POSTHOOK: Lineage: newtypesorc.c EXPRESSION []
+POSTHOOK: Lineage: newtypesorc.d EXPRESSION []
+POSTHOOK: Lineage: newtypesorc.ts EXPRESSION []
+POSTHOOK: Lineage: newtypesorc.v EXPRESSION []
+PREHOOK: query: select sum(hash(*)) from newtypesorc where ts is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@newtypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(hash(*)) from newtypesorc where ts is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@newtypesorc
+#### A masked pattern was here ####
+80926068000
+PREHOOK: query: select sum(hash(*)) from newtypesorc where ts is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@newtypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(hash(*)) from newtypesorc where ts is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@newtypesorc
+#### A masked pattern was here ####
+80926068000
+PREHOOK: query: select sum(hash(*)) from newtypesorc where d is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@newtypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(hash(*)) from newtypesorc where d is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@newtypesorc
+#### A masked pattern was here ####
+80926068000
+PREHOOK: query: select sum(hash(*)) from newtypesorc where d is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@newtypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(hash(*)) from newtypesorc where d is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@newtypesorc
+#### A masked pattern was here ####
+80926068000
