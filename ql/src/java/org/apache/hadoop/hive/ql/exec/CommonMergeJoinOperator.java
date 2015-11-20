@@ -143,7 +143,13 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
 
     for (byte pos = 0; pos < order.length; pos++) {
       if (pos != posBigTable) {
-        fetchDone[pos] = false;
+        if ((parentOperators != null) && (parentOperators.isEmpty() == false)
+            && (parentOperators.get(pos) instanceof TezDummyStoreOperator)) {
+          TezDummyStoreOperator dummyStoreOp = (TezDummyStoreOperator) parentOperators.get(pos);
+          fetchDone[pos] = dummyStoreOp.getFetchDone();
+        } else {
+          fetchDone[pos] = false;
+        }
       }
       foundNextKeyGroup[pos] = false;
     }
