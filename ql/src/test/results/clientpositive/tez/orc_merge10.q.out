@@ -1,0 +1,709 @@
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+DROP TABLE orcfile_merge1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+DROP TABLE orcfile_merge1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE orcfile_merge1b
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE orcfile_merge1b
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE orcfile_merge1c
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE orcfile_merge1c
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE orcfile_merge1 (key INT, value STRING) 
+    PARTITIONED BY (ds STRING, part STRING) STORED AS ORC tblproperties("orc.compress"="SNAPPY","orc.compress.size"="4096")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orcfile_merge1
+POSTHOOK: query: CREATE TABLE orcfile_merge1 (key INT, value STRING) 
+    PARTITIONED BY (ds STRING, part STRING) STORED AS ORC tblproperties("orc.compress"="SNAPPY","orc.compress.size"="4096")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orcfile_merge1
+PREHOOK: query: CREATE TABLE orcfile_merge1b (key INT, value STRING) 
+    PARTITIONED BY (ds STRING, part STRING) STORED AS ORC tblproperties("orc.compress"="SNAPPY","orc.compress.size"="4096")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orcfile_merge1b
+POSTHOOK: query: CREATE TABLE orcfile_merge1b (key INT, value STRING) 
+    PARTITIONED BY (ds STRING, part STRING) STORED AS ORC tblproperties("orc.compress"="SNAPPY","orc.compress.size"="4096")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orcfile_merge1b
+PREHOOK: query: CREATE TABLE orcfile_merge1c (key INT, value STRING) 
+    PARTITIONED BY (ds STRING, part STRING) STORED AS ORC tblproperties("orc.compress"="SNAPPY","orc.compress.size"="4096")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orcfile_merge1c
+POSTHOOK: query: CREATE TABLE orcfile_merge1c (key INT, value STRING) 
+    PARTITIONED BY (ds STRING, part STRING) STORED AS ORC tblproperties("orc.compress"="SNAPPY","orc.compress.size"="4096")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orcfile_merge1c
+PREHOOK: query: -- merge disabled
+EXPLAIN
+    INSERT OVERWRITE TABLE orcfile_merge1 PARTITION (ds='1', part)
+        SELECT key, value, PMOD(HASH(key), 2) as part
+        FROM src
+PREHOOK: type: QUERY
+POSTHOOK: query: -- merge disabled
+EXPLAIN
+    INSERT OVERWRITE TABLE orcfile_merge1 PARTITION (ds='1', part)
+        SELECT key, value, PMOD(HASH(key), 2) as part
+        FROM src
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: UDFToInteger(key) (type: int), value (type: string), (hash(key) pmod 2) (type: int)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                          serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                          name: default.orcfile_merge1
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            ds 1
+            part 
+          replace: true
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.orcfile_merge1
+
+  Stage: Stage-3
+    Stats-Aggr Operator
+
+PREHOOK: query: INSERT OVERWRITE TABLE orcfile_merge1 PARTITION (ds='1', part)
+    SELECT key, value, PMOD(HASH(key), 2) as part
+    FROM src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@orcfile_merge1@ds=1
+POSTHOOK: query: INSERT OVERWRITE TABLE orcfile_merge1 PARTITION (ds='1', part)
+    SELECT key, value, PMOD(HASH(key), 2) as part
+    FROM src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@orcfile_merge1@ds=1/part=0
+POSTHOOK: Output: default@orcfile_merge1@ds=1/part=1
+POSTHOOK: Lineage: orcfile_merge1 PARTITION(ds=1,part=0).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: orcfile_merge1 PARTITION(ds=1,part=0).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: orcfile_merge1 PARTITION(ds=1,part=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: orcfile_merge1 PARTITION(ds=1,part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+Found 3 items
+#### A masked pattern was here ####
+PREHOOK: query: -- auto-merge slow way
+EXPLAIN
+    INSERT OVERWRITE TABLE orcfile_merge1b PARTITION (ds='1', part)
+        SELECT key, value, PMOD(HASH(key), 2) as part
+        FROM src
+PREHOOK: type: QUERY
+POSTHOOK: query: -- auto-merge slow way
+EXPLAIN
+    INSERT OVERWRITE TABLE orcfile_merge1b PARTITION (ds='1', part)
+        SELECT key, value, PMOD(HASH(key), 2) as part
+        FROM src
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-8 depends on stages: Stage-1 , consists of Stage-5, Stage-4, Stage-6
+  Stage-5
+  Stage-2 depends on stages: Stage-5, Stage-4, Stage-7
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+  Stage-4
+  Stage-6
+  Stage-7 depends on stages: Stage-6
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: UDFToInteger(key) (type: int), value (type: string), (hash(key) pmod 2) (type: int)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                          serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                          name: default.orcfile_merge1b
+
+  Stage: Stage-8
+    Conditional Operator
+
+  Stage: Stage-5
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            ds 1
+            part 
+          replace: true
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.orcfile_merge1b
+
+  Stage: Stage-3
+    Stats-Aggr Operator
+
+  Stage: Stage-4
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        File Merge 
+            Map Operator Tree:
+                TableScan
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                        serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                        name: default.orcfile_merge1b
+
+  Stage: Stage-6
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        File Merge 
+            Map Operator Tree:
+                TableScan
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                        serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                        name: default.orcfile_merge1b
+
+  Stage: Stage-7
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+PREHOOK: query: INSERT OVERWRITE TABLE orcfile_merge1b PARTITION (ds='1', part)
+    SELECT key, value, PMOD(HASH(key), 2) as part
+    FROM src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@orcfile_merge1b@ds=1
+POSTHOOK: query: INSERT OVERWRITE TABLE orcfile_merge1b PARTITION (ds='1', part)
+    SELECT key, value, PMOD(HASH(key), 2) as part
+    FROM src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@orcfile_merge1b@ds=1/part=0
+POSTHOOK: Output: default@orcfile_merge1b@ds=1/part=1
+POSTHOOK: Lineage: orcfile_merge1b PARTITION(ds=1,part=0).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: orcfile_merge1b PARTITION(ds=1,part=0).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: orcfile_merge1b PARTITION(ds=1,part=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: orcfile_merge1b PARTITION(ds=1,part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+Found 1 items
+#### A masked pattern was here ####
+PREHOOK: query: -- auto-merge fast way
+EXPLAIN
+    INSERT OVERWRITE TABLE orcfile_merge1c PARTITION (ds='1', part)
+        SELECT key, value, PMOD(HASH(key), 2) as part
+        FROM src
+PREHOOK: type: QUERY
+POSTHOOK: query: -- auto-merge fast way
+EXPLAIN
+    INSERT OVERWRITE TABLE orcfile_merge1c PARTITION (ds='1', part)
+        SELECT key, value, PMOD(HASH(key), 2) as part
+        FROM src
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-8 depends on stages: Stage-1 , consists of Stage-5, Stage-4, Stage-6
+  Stage-5
+  Stage-2 depends on stages: Stage-5, Stage-4, Stage-7
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+  Stage-4
+  Stage-6
+  Stage-7 depends on stages: Stage-6
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: UDFToInteger(key) (type: int), value (type: string), (hash(key) pmod 2) (type: int)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                          serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                          name: default.orcfile_merge1c
+
+  Stage: Stage-8
+    Conditional Operator
+
+  Stage: Stage-5
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            ds 1
+            part 
+          replace: true
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.orcfile_merge1c
+
+  Stage: Stage-3
+    Stats-Aggr Operator
+
+  Stage: Stage-4
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        File Merge 
+          Merge File Operator
+            Map Operator Tree:
+                ORC File Merge Operator
+            merge level: stripe
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+
+  Stage: Stage-6
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        File Merge 
+          Merge File Operator
+            Map Operator Tree:
+                ORC File Merge Operator
+            merge level: stripe
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+
+  Stage: Stage-7
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+PREHOOK: query: INSERT OVERWRITE TABLE orcfile_merge1c PARTITION (ds='1', part)
+    SELECT key, value, PMOD(HASH(key), 2) as part
+    FROM src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@orcfile_merge1c@ds=1
+POSTHOOK: query: INSERT OVERWRITE TABLE orcfile_merge1c PARTITION (ds='1', part)
+    SELECT key, value, PMOD(HASH(key), 2) as part
+    FROM src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@orcfile_merge1c@ds=1/part=0
+POSTHOOK: Output: default@orcfile_merge1c@ds=1/part=1
+POSTHOOK: Lineage: orcfile_merge1c PARTITION(ds=1,part=0).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: orcfile_merge1c PARTITION(ds=1,part=0).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: orcfile_merge1c PARTITION(ds=1,part=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: orcfile_merge1c PARTITION(ds=1,part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+Found 1 items
+#### A masked pattern was here ####
+PREHOOK: query: -- Verify
+SELECT SUM(HASH(c)) FROM (
+    SELECT TRANSFORM(*) USING 'tr \t _' AS (c)
+    FROM orcfile_merge1 WHERE ds='1'
+) t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orcfile_merge1
+PREHOOK: Input: default@orcfile_merge1@ds=1/part=0
+PREHOOK: Input: default@orcfile_merge1@ds=1/part=1
+#### A masked pattern was here ####
+POSTHOOK: query: -- Verify
+SELECT SUM(HASH(c)) FROM (
+    SELECT TRANSFORM(*) USING 'tr \t _' AS (c)
+    FROM orcfile_merge1 WHERE ds='1'
+) t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orcfile_merge1
+POSTHOOK: Input: default@orcfile_merge1@ds=1/part=0
+POSTHOOK: Input: default@orcfile_merge1@ds=1/part=1
+#### A masked pattern was here ####
+-21975308766
+PREHOOK: query: SELECT SUM(HASH(c)) FROM (
+    SELECT TRANSFORM(*) USING 'tr \t _' AS (c)
+    FROM orcfile_merge1b WHERE ds='1'
+) t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orcfile_merge1b
+PREHOOK: Input: default@orcfile_merge1b@ds=1/part=0
+PREHOOK: Input: default@orcfile_merge1b@ds=1/part=1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT SUM(HASH(c)) FROM (
+    SELECT TRANSFORM(*) USING 'tr \t _' AS (c)
+    FROM orcfile_merge1b WHERE ds='1'
+) t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orcfile_merge1b
+POSTHOOK: Input: default@orcfile_merge1b@ds=1/part=0
+POSTHOOK: Input: default@orcfile_merge1b@ds=1/part=1
+#### A masked pattern was here ####
+-21975308766
+PREHOOK: query: select count(*) from orcfile_merge1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orcfile_merge1
+PREHOOK: Input: default@orcfile_merge1@ds=1/part=0
+PREHOOK: Input: default@orcfile_merge1@ds=1/part=1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from orcfile_merge1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orcfile_merge1
+POSTHOOK: Input: default@orcfile_merge1@ds=1/part=0
+POSTHOOK: Input: default@orcfile_merge1@ds=1/part=1
+#### A masked pattern was here ####
+500
+PREHOOK: query: select count(*) from orcfile_merge1b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orcfile_merge1b
+PREHOOK: Input: default@orcfile_merge1b@ds=1/part=0
+PREHOOK: Input: default@orcfile_merge1b@ds=1/part=1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from orcfile_merge1b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orcfile_merge1b
+POSTHOOK: Input: default@orcfile_merge1b@ds=1/part=0
+POSTHOOK: Input: default@orcfile_merge1b@ds=1/part=1
+#### A masked pattern was here ####
+500
+PREHOOK: query: -- concatenate
+explain ALTER TABLE  orcfile_merge1 PARTITION (ds='1', part='0') CONCATENATE
+PREHOOK: type: ALTER_PARTITION_MERGE
+POSTHOOK: query: -- concatenate
+explain ALTER TABLE  orcfile_merge1 PARTITION (ds='1', part='0') CONCATENATE
+POSTHOOK: type: ALTER_PARTITION_MERGE
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+  Stage-2 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-0
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          partition:
+            ds 1
+            part 0
+          replace: true
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.orcfile_merge1
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+
+PREHOOK: query: ALTER TABLE  orcfile_merge1 PARTITION (ds='1', part='0') CONCATENATE
+PREHOOK: type: ALTER_PARTITION_MERGE
+PREHOOK: Input: default@orcfile_merge1
+PREHOOK: Output: default@orcfile_merge1@ds=1/part=0
+POSTHOOK: query: ALTER TABLE  orcfile_merge1 PARTITION (ds='1', part='0') CONCATENATE
+POSTHOOK: type: ALTER_PARTITION_MERGE
+POSTHOOK: Input: default@orcfile_merge1
+POSTHOOK: Output: default@orcfile_merge1@ds=1/part=0
+Found 1 items
+#### A masked pattern was here ####
+PREHOOK: query: -- Verify
+SELECT SUM(HASH(c)) FROM (
+    SELECT TRANSFORM(*) USING 'tr \t _' AS (c)
+    FROM orcfile_merge1c WHERE ds='1'
+) t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orcfile_merge1c
+PREHOOK: Input: default@orcfile_merge1c@ds=1/part=0
+PREHOOK: Input: default@orcfile_merge1c@ds=1/part=1
+#### A masked pattern was here ####
+POSTHOOK: query: -- Verify
+SELECT SUM(HASH(c)) FROM (
+    SELECT TRANSFORM(*) USING 'tr \t _' AS (c)
+    FROM orcfile_merge1c WHERE ds='1'
+) t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orcfile_merge1c
+POSTHOOK: Input: default@orcfile_merge1c@ds=1/part=0
+POSTHOOK: Input: default@orcfile_merge1c@ds=1/part=1
+#### A masked pattern was here ####
+-21975308766
+PREHOOK: query: SELECT SUM(HASH(c)) FROM (
+    SELECT TRANSFORM(*) USING 'tr \t _' AS (c)
+    FROM orcfile_merge1 WHERE ds='1'
+) t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orcfile_merge1
+PREHOOK: Input: default@orcfile_merge1@ds=1/part=0
+PREHOOK: Input: default@orcfile_merge1@ds=1/part=1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT SUM(HASH(c)) FROM (
+    SELECT TRANSFORM(*) USING 'tr \t _' AS (c)
+    FROM orcfile_merge1 WHERE ds='1'
+) t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orcfile_merge1
+POSTHOOK: Input: default@orcfile_merge1@ds=1/part=0
+POSTHOOK: Input: default@orcfile_merge1@ds=1/part=1
+#### A masked pattern was here ####
+-21975308766
+PREHOOK: query: select count(*) from orcfile_merge1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orcfile_merge1
+PREHOOK: Input: default@orcfile_merge1@ds=1/part=0
+PREHOOK: Input: default@orcfile_merge1@ds=1/part=1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from orcfile_merge1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orcfile_merge1
+POSTHOOK: Input: default@orcfile_merge1@ds=1/part=0
+POSTHOOK: Input: default@orcfile_merge1@ds=1/part=1
+#### A masked pattern was here ####
+500
+PREHOOK: query: select count(*) from orcfile_merge1c
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orcfile_merge1c
+PREHOOK: Input: default@orcfile_merge1c@ds=1/part=0
+PREHOOK: Input: default@orcfile_merge1c@ds=1/part=1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from orcfile_merge1c
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orcfile_merge1c
+POSTHOOK: Input: default@orcfile_merge1c@ds=1/part=0
+POSTHOOK: Input: default@orcfile_merge1c@ds=1/part=1
+#### A masked pattern was here ####
+500
+PREHOOK: query: select * from orcfile_merge1 where ds='1' and part='0' limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orcfile_merge1
+PREHOOK: Input: default@orcfile_merge1@ds=1/part=0
+#### A masked pattern was here ####
+-- BEGIN ORC FILE DUMP --
+#### A masked pattern was here ####
+File Version: 0.12 with HIVE_4243
+Rows: 242
+Compression: SNAPPY
+Compression size: 4096
+Type: struct<key:int,value:string>
+
+Stripe Statistics:
+  Stripe 1:
+    Column 0: count: 90 hasNull: false
+    Column 1: count: 90 hasNull: false min: 0 max: 495 sum: 22736
+    Column 2: count: 90 hasNull: false min: val_0 max: val_86 sum: 612
+  Stripe 2:
+    Column 0: count: 78 hasNull: false
+    Column 1: count: 78 hasNull: false min: 0 max: 497 sum: 18371
+    Column 2: count: 78 hasNull: false min: val_0 max: val_95 sum: 529
+  Stripe 3:
+    Column 0: count: 74 hasNull: false
+    Column 1: count: 74 hasNull: false min: 2 max: 493 sum: 19663
+    Column 2: count: 74 hasNull: false min: val_105 max: val_97 sum: 505
+
+File Statistics:
+  Column 0: count: 242 hasNull: false
+  Column 1: count: 242 hasNull: false min: 0 max: 497 sum: 60770
+  Column 2: count: 242 hasNull: false min: val_0 max: val_97 sum: 1646
+
+Stripes:
+  Stripe: offset: 3 data: 616 rows: 90 tail: 61 index: 76
+    Stream: column 0 section ROW_INDEX start: 3 length 11
+    Stream: column 1 section ROW_INDEX start: 14 length 27
+    Stream: column 2 section ROW_INDEX start: 41 length 38
+    Stream: column 1 section DATA start: 79 length 185
+    Stream: column 2 section DATA start: 264 length 377
+    Stream: column 2 section LENGTH start: 641 length 54
+    Encoding column 0: DIRECT
+    Encoding column 1: DIRECT_V2
+    Encoding column 2: DIRECT_V2
+    Row group indices for column 1:
+      Entry 0: count: 90 hasNull: false min: 0 max: 495 sum: 22736 positions: 0,0,0
+  Stripe: offset: 756 data: 544 rows: 78 tail: 61 index: 76
+    Stream: column 0 section ROW_INDEX start: 756 length 11
+    Stream: column 1 section ROW_INDEX start: 767 length 27
+    Stream: column 2 section ROW_INDEX start: 794 length 38
+    Stream: column 1 section DATA start: 832 length 161
+    Stream: column 2 section DATA start: 993 length 332
+    Stream: column 2 section LENGTH start: 1325 length 51
+    Encoding column 0: DIRECT
+    Encoding column 1: DIRECT_V2
+    Encoding column 2: DIRECT_V2
+    Row group indices for column 1:
+      Entry 0: count: 78 hasNull: false min: 0 max: 497 sum: 18371 positions: 0,0,0
+  Stripe: offset: 1437 data: 519 rows: 74 tail: 61 index: 78
+    Stream: column 0 section ROW_INDEX start: 1437 length 11
+    Stream: column 1 section ROW_INDEX start: 1448 length 27
+    Stream: column 2 section ROW_INDEX start: 1475 length 40
+    Stream: column 1 section DATA start: 1515 length 153
+    Stream: column 2 section DATA start: 1668 length 331
+    Stream: column 2 section LENGTH start: 1999 length 35
+    Encoding column 0: DIRECT
+    Encoding column 1: DIRECT_V2
+    Encoding column 2: DIRECT_V2
+    Row group indices for column 1:
+      Entry 0: count: 74 hasNull: false min: 2 max: 493 sum: 19663 positions: 0,0,0
+
+File length: 2393 bytes
+Padding length: 0 bytes
+Padding ratio: 0%
+-- END ORC FILE DUMP --
+86	val_86	1	0
+PREHOOK: query: select * from orcfile_merge1c where ds='1' and part='0' limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orcfile_merge1c
+PREHOOK: Input: default@orcfile_merge1c@ds=1/part=0
+#### A masked pattern was here ####
+-- BEGIN ORC FILE DUMP --
+#### A masked pattern was here ####
+File Version: 0.12 with HIVE_4243
+Rows: 242
+Compression: SNAPPY
+Compression size: 4096
+Type: struct<key:int,value:string>
+
+Stripe Statistics:
+  Stripe 1:
+    Column 0: count: 90 hasNull: false
+    Column 1: count: 90 hasNull: false min: 0 max: 495 sum: 22736
+    Column 2: count: 90 hasNull: false min: val_0 max: val_86 sum: 612
+  Stripe 2:
+    Column 0: count: 78 hasNull: false
+    Column 1: count: 78 hasNull: false min: 0 max: 497 sum: 18371
+    Column 2: count: 78 hasNull: false min: val_0 max: val_95 sum: 529
+  Stripe 3:
+    Column 0: count: 74 hasNull: false
+    Column 1: count: 74 hasNull: false min: 2 max: 493 sum: 19663
+    Column 2: count: 74 hasNull: false min: val_105 max: val_97 sum: 505
+
+File Statistics:
+  Column 0: count: 242 hasNull: false
+  Column 1: count: 242 hasNull: false min: 0 max: 497 sum: 60770
+  Column 2: count: 242 hasNull: false min: val_0 max: val_97 sum: 1646
+
+Stripes:
+  Stripe: offset: 3 data: 616 rows: 90 tail: 61 index: 76
+    Stream: column 0 section ROW_INDEX start: 3 length 11
+    Stream: column 1 section ROW_INDEX start: 14 length 27
+    Stream: column 2 section ROW_INDEX start: 41 length 38
+    Stream: column 1 section DATA start: 79 length 185
+    Stream: column 2 section DATA start: 264 length 377
+    Stream: column 2 section LENGTH start: 641 length 54
+    Encoding column 0: DIRECT
+    Encoding column 1: DIRECT_V2
+    Encoding column 2: DIRECT_V2
+    Row group indices for column 1:
+      Entry 0: count: 90 hasNull: false min: 0 max: 495 sum: 22736 positions: 0,0,0
+  Stripe: offset: 756 data: 544 rows: 78 tail: 61 index: 76
+    Stream: column 0 section ROW_INDEX start: 756 length 11
+    Stream: column 1 section ROW_INDEX start: 767 length 27
+    Stream: column 2 section ROW_INDEX start: 794 length 38
+    Stream: column 1 section DATA start: 832 length 161
+    Stream: column 2 section DATA start: 993 length 332
+    Stream: column 2 section LENGTH start: 1325 length 51
+    Encoding column 0: DIRECT
+    Encoding column 1: DIRECT_V2
+    Encoding column 2: DIRECT_V2
+    Row group indices for column 1:
+      Entry 0: count: 78 hasNull: false min: 0 max: 497 sum: 18371 positions: 0,0,0
+  Stripe: offset: 1437 data: 519 rows: 74 tail: 61 index: 78
+    Stream: column 0 section ROW_INDEX start: 1437 length 11
+    Stream: column 1 section ROW_INDEX start: 1448 length 27
+    Stream: column 2 section ROW_INDEX start: 1475 length 40
+    Stream: column 1 section DATA start: 1515 length 153
+    Stream: column 2 section DATA start: 1668 length 331
+    Stream: column 2 section LENGTH start: 1999 length 35
+    Encoding column 0: DIRECT
+    Encoding column 1: DIRECT_V2
+    Encoding column 2: DIRECT_V2
+    Row group indices for column 1:
+      Entry 0: count: 74 hasNull: false min: 2 max: 493 sum: 19663 positions: 0,0,0
+
+File length: 2393 bytes
+Padding length: 0 bytes
+Padding ratio: 0%
+-- END ORC FILE DUMP --
+86	val_86	1	0
+PREHOOK: query: DROP TABLE orcfile_merge1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@orcfile_merge1
+PREHOOK: Output: default@orcfile_merge1
+PREHOOK: query: DROP TABLE orcfile_merge1b
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@orcfile_merge1b
+PREHOOK: Output: default@orcfile_merge1b
+PREHOOK: query: DROP TABLE orcfile_merge1c
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@orcfile_merge1c
+PREHOOK: Output: default@orcfile_merge1c

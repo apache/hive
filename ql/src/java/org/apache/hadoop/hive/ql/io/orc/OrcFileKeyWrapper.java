@@ -34,7 +34,7 @@ public class OrcFileKeyWrapper implements WritableComparable<OrcFileKeyWrapper> 
 
   private Path inputPath;
   private CompressionKind compression;
-  private long compressBufferSize;
+  private int compressBufferSize;
   private List<OrcProto.Type> types;
   private int rowIndexStride;
   private OrcFile.Version version;
@@ -64,11 +64,11 @@ public class OrcFileKeyWrapper implements WritableComparable<OrcFileKeyWrapper> 
     this.rowIndexStride = rowIndexStride;
   }
 
-  public long getCompressBufferSize() {
+  public int getCompressBufferSize() {
     return compressBufferSize;
   }
 
-  public void setCompressBufferSize(long compressBufferSize) {
+  public void setCompressBufferSize(int compressBufferSize) {
     this.compressBufferSize = compressBufferSize;
   }
 
