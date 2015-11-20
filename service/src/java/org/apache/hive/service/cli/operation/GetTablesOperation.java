@@ -54,14 +54,7 @@ public class GetTablesOperation extends MetadataOperation {
   .addStringColumn("TABLE_SCHEM", "Schema name.")
   .addStringColumn("TABLE_NAME", "Table name.")
   .addStringColumn("TABLE_TYPE", "The table type, e.g. \"TABLE\", \"VIEW\", etc.")
-  .addStringColumn("REMARKS", "Comments about the table.")
-  .addStringColumn("TYPE_CAT", "The types catalog.")
-  .addStringColumn("TYPE_SCHEM", "The types schema.")
-  .addStringColumn("TYPE_NAME", "Type name.")
-  .addStringColumn("SELF_REFERENCING_COL_NAME", 
-      "Name of the designated \"identifier\" column of a typed table.")
-  .addStringColumn("REF_GENERATION", 
-      "Specifies how values in SELF_REFERENCING_COL_NAME are created.");
+  .addStringColumn("REMARKS", "Comments about the table.");
 
   protected GetTablesOperation(HiveSession parentSession,
       String catalogName, String schemaName, String tableName,
@@ -100,8 +93,7 @@ public class GetTablesOperation extends MetadataOperation {
               tableMeta.getDbName(),
               tableMeta.getTableName(),
               tableTypeMapping.mapToClientType(tableMeta.getTableType()),
-              tableMeta.getComments(),
-              null, null, null, null, null
+              tableMeta.getComments()
               });
       }
       setState(OperationState.FINISHED);

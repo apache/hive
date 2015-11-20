@@ -1107,7 +1107,7 @@ public class TestJdbcDriver2 {
     ResultSet rs = con.getMetaData().getTables(null,
       null, null, new String[] { TableType.EXTERNAL_TABLE.toString() });
     ResultSetMetaData resMeta = rs.getMetaData();
-    assertEquals(10, resMeta.getColumnCount());
+    assertEquals(5, resMeta.getColumnCount());
     assertEquals("TABLE_CAT", resMeta.getColumnName(1));
     assertEquals("TABLE_SCHEM", resMeta.getColumnName(2));
     assertEquals("TABLE_NAME", resMeta.getColumnName(3));
@@ -1225,7 +1225,7 @@ public class TestJdbcDriver2 {
       ResultSet rs = con.getMetaData().getTables(null,
           (String)checkPattern[0], (String)checkPattern[1], (String[])checkPattern[2]);
       ResultSetMetaData resMeta = rs.getMetaData();
-      assertEquals(10, resMeta.getColumnCount());
+      assertEquals(5, resMeta.getColumnCount());
       assertEquals("TABLE_CAT", resMeta.getColumnName(1));
       assertEquals("TABLE_SCHEM", resMeta.getColumnName(2));
       assertEquals("TABLE_NAME", resMeta.getColumnName(3));
