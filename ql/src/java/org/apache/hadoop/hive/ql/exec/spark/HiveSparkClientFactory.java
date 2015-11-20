@@ -134,6 +134,11 @@ public class HiveSparkClientFactory {
         LOG.info(String.format(
           "load yarn property from hive configuration in %s mode (%s -> %s).",
           sparkMaster, propertyName, value));
+      } else if (propertyName.equals(HiveConf.ConfVars.HADOOPFS.varname)) {
+        String value = hiveConf.get(propertyName);
+        if (value != null && !value.isEmpty()) {
+          sparkConf.put("spark.hadoop." + propertyName, value);
+        }
       } else if (propertyName.startsWith("hbase")) {
         // Add HBase related configuration to Spark because in security mode, Spark needs it
         // to generate hbase delegation token for Spark. This is a temp solution to deal with
