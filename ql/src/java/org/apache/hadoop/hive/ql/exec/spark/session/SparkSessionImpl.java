@@ -20,6 +20,10 @@ package org.apache.hadoop.hive.ql.exec.spark.session;
 import java.io.IOException;
 import java.util.UUID;
 
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.ObjectPair;
@@ -37,11 +41,14 @@ import com.google.common.base.Preconditions;
 
 public class SparkSessionImpl implements SparkSession {
   private static final Logger LOG = LoggerFactory.getLogger(SparkSession.class);
+  private static final String SPARK_DIR = "_spark_session_dir";
 
   private HiveConf conf;
   private boolean isOpen;
   private final String sessionId;
   private HiveSparkClient hiveSparkClient;
+  private Path scratchDir;
+  private final Object dirLock = new Object();
 
   public SparkSessionImpl() {
     sessionId = makeSessionId();
@@ -118,11 +125,43 @@ public class SparkSessionImpl implements SparkSession {
     if (hiveSparkClient != null) {
       try {
         hiveSparkClient.close();
+        cleanScratchDir();
       } catch (IOException e) {
         LOG.error("Failed to close spark session (" + sessionId + ").", e);
       }
     }
     hiveSparkClient = null;
+  }
+
+  private Path createScratchDir() throws IOException {
+    Path parent = new Path(SessionState.get().getHdfsScratchDirURIString(), SPARK_DIR);
+    Path sparkDir = new Path(parent, sessionId);
+    FileSystem fs = sparkDir.getFileSystem(conf);
+    FsPermission fsPermission = new FsPermission(HiveConf.getVar(
+        conf, HiveConf.ConfVars.SCRATCHDIRPERMISSION));
+    fs.mkdirs(sparkDir, fsPermission);
+    fs.deleteOnExit(sparkDir);
+    return sparkDir;
+  }
+
+  private void cleanScratchDir() throws IOException {
+    if (scratchDir != null) {
+      FileSystem fs = scratchDir.getFileSystem(conf);
+      fs.delete(scratchDir, true);
+      scratchDir = null;
+    }
+  }
+
+  @Override
+  public Path getHDFSSessionDir() throws IOException {
+    if (scratchDir == null) {
+      synchronized (dirLock) {
+        if (scratchDir == null) {
+          scratchDir = createScratchDir();
+        }
+      }
+    }
+    return scratchDir;
   }
 
   public static String makeSessionId() {

@@ -196,7 +196,7 @@
 
 <property>
   <name>spark.master</name>
-  <value>yarn-client</value>
+  <value>yarn-cluster</value>
 </property>
 
 <property>
@@ -253,6 +253,11 @@
   <name>hive.in.test</name>
   <value>true</value>
   <description>Internal marker for test. Used for masking env-dependent values</description>
+</property>
+
+<property>
+  <name>hive.spark.client.connect.timeout</name>
+  <value>30000ms</value>
 </property>
 
 </configuration>

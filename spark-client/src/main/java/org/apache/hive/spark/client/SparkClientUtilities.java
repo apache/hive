@@ -23,6 +23,7 @@ import com.google.common.collect.Lists;
 import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -43,15 +44,18 @@ public class SparkClientUtilities {
    * Add new elements to the classpath.
    *
    * @param newPaths Map of classpath elements and corresponding timestamp
+   * @return locally accessible files corresponding to the newPaths
    */
-  public static void addToClassPath(Map<String, Long> newPaths, Configuration conf, File localTmpDir)
-      throws Exception {
+  public static List<String> addToClassPath(Map<String, Long> newPaths, Configuration conf,
+      File localTmpDir) throws Exception {
     URLClassLoader loader = (URLClassLoader) Thread.currentThread().getContextClassLoader();
     List<URL> curPath = Lists.newArrayList(loader.getURLs());
+    List<String> localNewPaths = new ArrayList<>();
 
     boolean newPathAdded = false;
     for (Map.Entry<String, Long> entry : newPaths.entrySet()) {
       URL newUrl = urlFromPathString(entry.getKey(), entry.getValue(), conf, localTmpDir);
+      localNewPaths.add(newUrl.toString());
       if (newUrl != null && !curPath.contains(newUrl)) {
         curPath.add(newUrl);
         LOG.info("Added jar[" + newUrl + "] to classpath.");
@@ -64,6 +68,7 @@ public class SparkClientUtilities {
           new URLClassLoader(curPath.toArray(new URL[curPath.size()]), loader);
       Thread.currentThread().setContextClassLoader(newLoader);
     }
+    return localNewPaths;
   }
 
   /**

@@ -89,7 +89,8 @@ public class SparkUtilities {
    */
   public static URI uploadToHDFS(URI source, HiveConf conf) throws IOException {
     Path localFile = new Path(source.getPath());
-    Path remoteFile = new Path(SessionState.getHDFSSessionPath(conf), getFileName(source));
+    Path remoteFile = new Path(SessionState.get().getSparkSession().getHDFSSessionDir(),
+        getFileName(source));
     FileSystem fileSystem = FileSystem.get(conf);
     // Overwrite if the remote file already exists. Whether the file can be added
     // on executor is up to spark, i.e. spark.files.overwrite

@@ -133,6 +133,11 @@ public class HiveSparkClientFactory {
         LOG.info(String.format(
           "load yarn property from hive configuration in %s mode (%s -> %s).",
           sparkMaster, propertyName, value));
+      } else if (propertyName.equals(HiveConf.ConfVars.HADOOPFS.varname)) {
+        String value = hiveConf.get(propertyName);
+        if (value != null && !value.isEmpty()) {
+          sparkConf.put("spark.hadoop." + propertyName, value);
+        }
       }
       if (RpcConfiguration.HIVE_SPARK_RSC_CONFIGS.contains(propertyName)) {
         String value = RpcConfiguration.getValue(hiveConf, propertyName);

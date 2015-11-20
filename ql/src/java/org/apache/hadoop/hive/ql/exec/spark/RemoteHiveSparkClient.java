@@ -297,8 +297,9 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
       // may need to load classes from this jar in other threads.
       Map<String, Long> addedJars = jc.getAddedJars();
       if (addedJars != null && !addedJars.isEmpty()) {
-        SparkClientUtilities.addToClassPath(addedJars, localJobConf, jc.getLocalTmpDir());
-        localJobConf.set(Utilities.HIVE_ADDED_JARS, StringUtils.join(addedJars.keySet(), ";"));
+        List<String> localAddedJars = SparkClientUtilities.addToClassPath(addedJars,
+            localJobConf, jc.getLocalTmpDir());
+        localJobConf.set(Utilities.HIVE_ADDED_JARS, StringUtils.join(localAddedJars, ";"));
       }
 
       Path localScratchDir = KryoSerializer.deserialize(scratchDirBytes, Path.class);

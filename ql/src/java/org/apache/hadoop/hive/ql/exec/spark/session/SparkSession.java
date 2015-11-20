@@ -17,12 +17,15 @@
  */
 package org.apache.hadoop.hive.ql.exec.spark.session;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobRef;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
+
+import java.io.IOException;
 
 public interface SparkSession {
   /**
@@ -67,4 +70,9 @@ public interface SparkSession {
    * Close session and release resources.
    */
   void close();
+
+  /**
+   * Get an HDFS dir specific to the SparkSession
+   * */
+  Path getHDFSSessionDir() throws IOException;
 }
