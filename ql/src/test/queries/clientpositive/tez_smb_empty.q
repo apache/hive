@@ -53,3 +53,16 @@ explain
 select count(*) from tab s1 left outer join empty s2 on s1.key=s2.key join tab s3 on s1.key = s3.key;
 
 select count(*) from tab s1 left outer join empty s2 on s1.key=s2.key join tab s3 on s1.key = s3.key;
+
+explain
+select count(*) from empty s1 join empty s3 on s1.key=s3.key;
+
+select count(*) from empty s1 join empty s3 on s1.key=s3.key;
+
+set hive.auto.convert.sortmerge.join.bigtable.selection.policy = org.apache.hadoop.hive.ql.optimizer.LeftmostBigTableSelectorForAutoSMJ;
+
+explain
+select count(*) from empty s1 join tab s3 on s1.key=s3.key;
+
+select count(*) from empty s1 join tab s3 on s1.key=s3.key;
+

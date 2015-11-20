@@ -172,7 +172,19 @@ public class MapRecordProcessor extends RecordProcessor {
             jconf.set(Utilities.INPUT_NAME, mergeMapWork.getName());
             mergeMapOp.initialize(jconf, null);
             // if there are no files/partitions to read, we need to skip trying to read
-            boolean skipRead = mergeMapOp.getConf().getPathToAliases().isEmpty();
+            MultiMRInput multiMRInput = multiMRInputMap.get(mergeMapWork.getName());
+            boolean skipRead = false;
+            if (multiMRInput == null) {
+              l4j.info("Multi MR Input for work " + mergeMapWork.getName() + " is null. Skipping read.");
+              skipRead = true;
+            } else {
+              Collection<KeyValueReader> keyValueReaders = multiMRInput.getKeyValueReaders();
+              if ((keyValueReaders == null) || (keyValueReaders.isEmpty())) {
+                l4j.info("Key value readers are null or empty and hence skipping read. "
+                    + "KeyValueReaders = " + keyValueReaders);
+                skipRead = true;
+              }
+            }
             if (skipRead) {
               List<Operator<?>> children = new ArrayList<Operator<?>>();
               children.addAll(mergeMapOp.getConf().getAliasToWork().values());
