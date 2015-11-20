@@ -319,9 +319,9 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
       Multimap<Integer, InputSplit> bucketToGroupedSplitMap) throws IOException {
     // the bucket to task map should have been setup by the big table.
     LOG.info("Processing events for input " + inputName);
-    if (bucketToTaskMap.isEmpty()) {
-      LOG.info("We don't have a routing table yet. Will need to wait for the main input"
-          + " initialization");
+    if (inputNameInputSpecMap.get(mainWorkName) == null) {
+      LOG.info("We don't have a routing table yet. Will need to wait for the main input "
+          + mainWorkName + " initialization");
       inputToGroupedSplitMap.put(inputName, bucketToGroupedSplitMap);
       return;
     }
@@ -351,6 +351,9 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
 
     for (Entry<Integer, Collection<ByteBuffer>> entry : bucketToSerializedSplitMap.asMap().entrySet()) {
       Collection<Integer> destTasks = bucketToTaskMap.get(entry.getKey());
+      if ((destTasks == null) || (destTasks.isEmpty())) {
+        continue;
+      }
       for (Integer task : destTasks) {
         int count = 0;
         for (ByteBuffer buf : entry.getValue()) {
