@@ -28,6 +28,7 @@ import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.base.Strings;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
@@ -47,15 +48,16 @@ import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.hadoop.hive.common.JvmPauseMonitor;
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManagerImpl;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
 import org.apache.hadoop.hive.ql.util.ZooKeeperHiveHelper;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hadoop.security.authorize.AccessControlList;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.hive.http.HttpServer;
@@ -72,6 +74,8 @@ import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.ZooDefs.Perms;
 import org.apache.zookeeper.data.ACL;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Joiner;
 
@@ -123,17 +127,31 @@ public class HiveServer2 extends CompositeService {
         if (webUIPort <= 0) {
           LOG.info("Web UI is disabled since port is set to " + webUIPort);
         } else {
-          AccessControlList adminsAcl =
-            new AccessControlList(hiveConf.getVar(ConfVars.USERS_IN_ADMIN_ROLE));
-          hiveConf.set("startcode", String.valueOf(System.currentTimeMillis()));
-          webServer = new HttpServer("hiveserver2",
-            hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_BIND_HOST),
-            webUIPort,
-            hiveConf.getIntVar(ConfVars.HIVE_SERVER2_WEBUI_MAX_THREADS),
-            hiveConf, adminsAcl);
+          HttpServer.Builder builder = new HttpServer.Builder();
+          builder.setName("hiveserver2").setPort(webUIPort).setConf(hiveConf);
+          builder.setHost(hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_BIND_HOST));
+          builder.setMaxThreads(
+            hiveConf.getIntVar(ConfVars.HIVE_SERVER2_WEBUI_MAX_THREADS));
+          builder.setAdmins(hiveConf.getVar(ConfVars.USERS_IN_ADMIN_ROLE));
           // SessionManager is initialized
-          webServer.setContextAttribute("hive.sm",
+          builder.setContextAttribute("hive.sm",
             cliService.getSessionManager());
+          hiveConf.set("startcode",
+            String.valueOf(System.currentTimeMillis()));
+          if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_USE_SSL)) {
+            String keyStorePath = hiveConf.getVar(
+              ConfVars.HIVE_SERVER2_WEBUI_SSL_KEYSTORE_PATH);
+            if (Strings.isNullOrEmpty(keyStorePath)) {
+              throw new IllegalArgumentException(
+                ConfVars.HIVE_SERVER2_WEBUI_SSL_KEYSTORE_PATH.varname
+                  + " Not configured for SSL connection");
+            }
+            builder.setKeyStorePassword(ShimLoader.getHadoopShims().getPassword(
+              hiveConf, ConfVars.HIVE_SERVER2_WEBUI_SSL_KEYSTORE_PASSWORD.varname));
+            builder.setKeyStorePath(keyStorePath);
+            builder.setUseSSL(true);
+          }
+          webServer = builder.build();
         }
       }
     } catch (IOException ie) {

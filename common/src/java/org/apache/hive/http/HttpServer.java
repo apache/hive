@@ -18,8 +18,12 @@
 
 package org.apache.hive.http;
 
+
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeys;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authorize.AccessControlList;
 import org.apache.hadoop.util.Shell;
@@ -31,9 +35,11 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.ContextHandler.Context;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;
+import org.eclipse.jetty.server.ssl.SslSelectChannelConnector;
 import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.jetty.webapp.WebAppContext;
 
@@ -45,7 +51,13 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
+import com.google.common.collect.Sets;
 
 /**
  * A simple embedded Jetty server to serve as HS2/HMS web UI.
@@ -54,32 +66,90 @@ public class HttpServer {
   public static final String CONF_CONTEXT_ATTRIBUTE = "hive.conf";
   public static final String ADMINS_ACL = "admins.acl";
 
-  private final AccessControlList adminsAcl;
   private final String appDir;
-  private final String name;
-  private final String host;
   private final int port;
-  private final int maxThreads;
-  private final Configuration conf;
   private final WebAppContext webAppContext;
   private final Server webServer;
 
   /**
    * Create a status server on the given port.
    */
-  public HttpServer(String name, String host, int port, int maxThreads,
-      Configuration conf, AccessControlList adminsAcl) throws IOException {
-    this.name = name;
-    this.host = host;
-    this.port = port;
-    this.maxThreads = maxThreads;
-    this.conf = conf;
-    this.adminsAcl = adminsAcl;
+  private HttpServer(final Builder b) throws IOException {
+    this.port = b.port;
 
     webServer = new Server();
-    appDir = getWebAppsPath(name);
-    webAppContext = createWebAppContext();
-    initializeWebServer();
+    appDir = getWebAppsPath(b.name);
+    webAppContext = createWebAppContext(b);
+    initializeWebServer(b);
+  }
+
+  public static class Builder {
+    private String name;
+    private String host;
+    private int port;
+    private int maxThreads;
+    private HiveConf conf;
+    private Map<String, Object> contextAttrs = new HashMap<String, Object>();
+    private String keyStorePassword;
+    private String keyStorePath;
+    private boolean useSSL;
+
+    public HttpServer build() throws IOException {
+      return new HttpServer(this);
+    }
+
+    public Builder setConf(HiveConf conf) {
+      setContextAttribute(CONF_CONTEXT_ATTRIBUTE, conf);
+      this.conf = conf;
+      return this;
+    }
+
+    public Builder setName(String name) {
+      this.name = name;
+      return this;
+    }
+
+    public Builder setHost(String host) {
+      this.host = host;
+      return this;
+    }
+
+    public Builder setPort(int port) {
+      this.port = port;
+      return this;
+    }
+
+    public Builder setMaxThreads(int maxThreads) {
+      this.maxThreads = maxThreads;
+      return this;
+    }
+
+    public Builder setAdmins(String admins) {
+      if (admins != null) {
+        setContextAttribute(ADMINS_ACL, new AccessControlList(admins));
+      }
+      return this;
+    }
+
+    public Builder setKeyStorePassword(String keyStorePassword) {
+      this.keyStorePassword = keyStorePassword;
+      return this;
+    }
+
+    public Builder setKeyStorePath(String keyStorePath) {
+      this.keyStorePath = keyStorePath;
+      return this;
+    }
+
+    public Builder setUseSSL(boolean useSSL) {
+      this.useSSL = useSSL;
+      return this;
+    }
+
+    public Builder setContextAttribute(String name, Object value) {
+      contextAttrs.put(name, value);
+      return this;
+    }
   }
 
   public void start() throws Exception {
@@ -92,13 +162,6 @@ public class HttpServer {
 
   public int getPort() {
     return port;
-  }
-
-  /**
-   * Set servlet context attribute that can be used in jsp.
-   */
-  public void setContextAttribute(String name, Object value) {
-    webAppContext.getServletContext().setAttribute(name, value);
   }
 
   /**
@@ -192,44 +255,64 @@ public class HttpServer {
   /**
    * Create the web context for the application of specified name
    */
-  WebAppContext createWebAppContext() {
+  WebAppContext createWebAppContext(Builder b) {
     WebAppContext ctx = new WebAppContext();
-    setContextAttributes(ctx.getServletContext());
-    ctx.setDisplayName(name);
+    setContextAttributes(ctx.getServletContext(), b.contextAttrs);
+    ctx.setDisplayName(b.name);
     ctx.setContextPath("/");
-    ctx.setWar(appDir + "/" + name);
+    ctx.setWar(appDir + "/" + b.name);
     return ctx;
   }
 
   /**
-   * Create a default regular channel connector for "http" requests
+   * Create a channel connector for "http/https" requests
    */
-  Connector createDefaultChannelConnector() {
-    SelectChannelConnector connector = new SelectChannelConnector();
+  Connector createChannelConnector(int queueSize, Builder b) {
+    SelectChannelConnector connector;
+    if (!b.useSSL) {
+      connector = new SelectChannelConnector();
+    } else {
+      SslContextFactory sslContextFactory = new SslContextFactory();
+      sslContextFactory.setKeyStorePath(b.keyStorePath);
+      Set<String> excludedSSLProtocols = Sets.newHashSet(
+        Splitter.on(",").trimResults().omitEmptyStrings().split(
+          Strings.nullToEmpty(b.conf.getVar(ConfVars.HIVE_SSL_PROTOCOL_BLACKLIST))));
+      sslContextFactory.addExcludeProtocols(excludedSSLProtocols.toArray(
+          new String[excludedSSLProtocols.size()]));
+      sslContextFactory.setKeyStorePassword(b.keyStorePassword);
+      connector = new SslSelectChannelConnector(sslContextFactory);
+    }
+
     connector.setLowResourcesMaxIdleTime(10000);
-    connector.setAcceptQueueSize(maxThreads);
+    connector.setAcceptQueueSize(queueSize);
     connector.setResolveNames(false);
     connector.setUseDirectBuffers(false);
     connector.setReuseAddress(!Shell.WINDOWS);
     return connector;
   }
 
-  void setContextAttributes(Context ctx) {
-    ctx.setAttribute(CONF_CONTEXT_ATTRIBUTE, conf);
-    ctx.setAttribute(ADMINS_ACL, adminsAcl);
+  /**
+   * Set servlet context attributes that can be used in jsp.
+   */
+  void setContextAttributes(Context ctx, Map<String, Object> contextAttrs) {
+    for (Map.Entry<String, Object> e: contextAttrs.entrySet()) {
+      ctx.setAttribute(e.getKey(), e.getValue());
+    }
   }
 
-  void initializeWebServer() {
+  void initializeWebServer(Builder b) {
     // Create the thread pool for the web server to handle HTTP requests
-    QueuedThreadPool threadPool = maxThreads <= 0 ? new QueuedThreadPool()
-      : new QueuedThreadPool(maxThreads);
+    QueuedThreadPool threadPool = new QueuedThreadPool();
+    if (b.maxThreads > 0) {
+      threadPool.setMaxThreads(b.maxThreads);
+    }
     threadPool.setDaemon(true);
-    threadPool.setName(name + "-web");
+    threadPool.setName(b.name + "-web");
     webServer.setThreadPool(threadPool);
 
     // Create the channel connector for the web server
-    Connector connector = createDefaultChannelConnector();
-    connector.setHost(host);
+    Connector connector = createChannelConnector(threadPool.getMaxThreads(), b);
+    connector.setHost(b.host);
     connector.setPort(port);
     webServer.addConnector(connector);
 
@@ -247,18 +330,18 @@ public class HttpServer {
     staticCtx.addServlet(DefaultServlet.class, "/*");
     staticCtx.setDisplayName("static");
 
-    String logDir = getLogDir();
+    String logDir = getLogDir(b.conf);
     if (logDir != null) {
       ServletContextHandler logCtx =
         new ServletContextHandler(contexts, "/logs");
-      setContextAttributes(logCtx.getServletContext());
+      setContextAttributes(logCtx.getServletContext(), b.contextAttrs);
       logCtx.addServlet(AdminAuthorizedServlet.class, "/*");
       logCtx.setResourceBase(logDir);
       logCtx.setDisplayName("logs");
     }
   }
 
-  String getLogDir() {
+  String getLogDir(Configuration conf) {
     String logDir = conf.get("hive.log.dir");
     if (logDir == null) {
       logDir = System.getProperty("hive.log.dir");
