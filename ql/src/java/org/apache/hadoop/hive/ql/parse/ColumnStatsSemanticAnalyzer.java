@@ -199,7 +199,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     if (partColType.equals(serdeConstants.STRING_TYPE_NAME) ||
         partColType.contains(serdeConstants.VARCHAR_TYPE_NAME) ||
         partColType.contains(serdeConstants.CHAR_TYPE_NAME)) {
-      returnVal = "'" + partVal + "'";
+      returnVal = "'" + escapeSQLString(partVal) + "'";
     } else if (partColType.equals(serdeConstants.TINYINT_TYPE_NAME)) {
       returnVal = partVal+"Y";
     } else if (partColType.equals(serdeConstants.SMALLINT_TYPE_NAME)) {
@@ -212,10 +212,10 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       returnVal = partVal + "BD";
     } else if (partColType.equals(serdeConstants.DATE_TYPE_NAME) ||
         partColType.equals(serdeConstants.TIMESTAMP_TYPE_NAME)) {
-      returnVal = partColType + " '" + partVal + "'";
+      returnVal = partColType + " '" + escapeSQLString(partVal) + "'";
     } else {
       //for other usually not used types, just quote the value
-      returnVal = "'" + partVal + "'";
+      returnVal = "'" + escapeSQLString(partVal) + "'";
     }
 
     return returnVal;
