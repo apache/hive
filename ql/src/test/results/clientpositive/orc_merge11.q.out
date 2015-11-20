@@ -1,0 +1,316 @@
+PREHOOK: query: DROP TABLE orcfile_merge1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE orcfile_merge1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE orc_split_elim
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE orc_split_elim
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table orc_split_elim (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_split_elim
+POSTHOOK: query: create table orc_split_elim (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_split_elim
+PREHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' into table orc_split_elim
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@orc_split_elim
+POSTHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' into table orc_split_elim
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@orc_split_elim
+PREHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' into table orc_split_elim
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@orc_split_elim
+POSTHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' into table orc_split_elim
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@orc_split_elim
+PREHOOK: query: create table orcfile_merge1 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc tblproperties("orc.compress.size"="4096")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orcfile_merge1
+POSTHOOK: query: create table orcfile_merge1 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc tblproperties("orc.compress.size"="4096")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orcfile_merge1
+PREHOOK: query: insert overwrite table orcfile_merge1 select * from orc_split_elim
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_split_elim
+PREHOOK: Output: default@orcfile_merge1
+POSTHOOK: query: insert overwrite table orcfile_merge1 select * from orc_split_elim
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_split_elim
+POSTHOOK: Output: default@orcfile_merge1
+POSTHOOK: Lineage: orcfile_merge1.decimal1 SIMPLE [(orc_split_elim)orc_split_elim.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orcfile_merge1.string1 SIMPLE [(orc_split_elim)orc_split_elim.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: orcfile_merge1.subtype SIMPLE [(orc_split_elim)orc_split_elim.FieldSchema(name:subtype, type:double, comment:null), ]
+POSTHOOK: Lineage: orcfile_merge1.ts SIMPLE [(orc_split_elim)orc_split_elim.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orcfile_merge1.userid SIMPLE [(orc_split_elim)orc_split_elim.FieldSchema(name:userid, type:bigint, comment:null), ]
+PREHOOK: query: insert into table orcfile_merge1 select * from orc_split_elim
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_split_elim
+PREHOOK: Output: default@orcfile_merge1
+POSTHOOK: query: insert into table orcfile_merge1 select * from orc_split_elim
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_split_elim
+POSTHOOK: Output: default@orcfile_merge1
+POSTHOOK: Lineage: orcfile_merge1.decimal1 SIMPLE [(orc_split_elim)orc_split_elim.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orcfile_merge1.string1 SIMPLE [(orc_split_elim)orc_split_elim.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: orcfile_merge1.subtype SIMPLE [(orc_split_elim)orc_split_elim.FieldSchema(name:subtype, type:double, comment:null), ]
+POSTHOOK: Lineage: orcfile_merge1.ts SIMPLE [(orc_split_elim)orc_split_elim.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orcfile_merge1.userid SIMPLE [(orc_split_elim)orc_split_elim.FieldSchema(name:userid, type:bigint, comment:null), ]
+Found 2 items
+#### A masked pattern was here ####
+PREHOOK: query: select * from orcfile_merge1 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orcfile_merge1
+#### A masked pattern was here ####
+-- BEGIN ORC FILE DUMP --
+#### A masked pattern was here ####
+File Version: 0.12 with HIVE_4243
+Rows: 50000
+Compression: ZLIB
+Compression size: 4096
+Type: struct<userid:bigint,string1:string,subtype:double,decimal1:decimal(10,0),ts:timestamp>
+
+Stripe Statistics:
+  Stripe 1:
+    Column 0: count: 50000 hasNull: false
+    Column 1: count: 50000 hasNull: false min: 2 max: 100 sum: 4999238
+    Column 2: count: 50000 hasNull: false min: bar max: zebra sum: 249980
+    Column 3: count: 50000 hasNull: false min: 0.8 max: 80.0 sum: 400102.80000000005
+    Column 4: count: 50000 hasNull: false min: 0 max: 6 sum: 32
+    Column 5: count: 50000 hasNull: false min: 1969-12-31 16:00:00.0 max: 1969-12-31 16:04:10.0
+
+File Statistics:
+  Column 0: count: 50000 hasNull: false
+  Column 1: count: 50000 hasNull: false min: 2 max: 100 sum: 4999238
+  Column 2: count: 50000 hasNull: false min: bar max: zebra sum: 249980
+  Column 3: count: 50000 hasNull: false min: 0.8 max: 80.0 sum: 400102.80000000005
+  Column 4: count: 50000 hasNull: false min: 0 max: 6 sum: 32
+  Column 5: count: 50000 hasNull: false min: 1969-12-31 16:00:00.0 max: 1969-12-31 16:04:10.0
+
+Stripes:
+  Stripe: offset: 3 data: 10104 rows: 50000 tail: 117 index: 509
+    Stream: column 0 section ROW_INDEX start: 3 length 17
+    Stream: column 1 section ROW_INDEX start: 20 length 85
+    Stream: column 2 section ROW_INDEX start: 105 length 87
+    Stream: column 3 section ROW_INDEX start: 192 length 111
+    Stream: column 4 section ROW_INDEX start: 303 length 108
+    Stream: column 5 section ROW_INDEX start: 411 length 101
+    Stream: column 1 section DATA start: 512 length 871
+    Stream: column 2 section DATA start: 1383 length 362
+    Stream: column 2 section LENGTH start: 1745 length 8
+    Stream: column 2 section DICTIONARY_DATA start: 1753 length 23
+    Stream: column 3 section DATA start: 1776 length 5167
+    Stream: column 4 section DATA start: 6943 length 524
+    Stream: column 4 section SECONDARY start: 7467 length 118
+    Stream: column 5 section DATA start: 7585 length 2913
+    Stream: column 5 section SECONDARY start: 10498 length 118
+    Encoding column 0: DIRECT
+    Encoding column 1: DIRECT_V2
+    Encoding column 2: DICTIONARY_V2[6]
+    Encoding column 3: DIRECT
+    Encoding column 4: DIRECT_V2
+    Encoding column 5: DIRECT_V2
+    Row group indices for column 1:
+      Entry 0: count: 10000 hasNull: false min: 2 max: 100 sum: 999815 positions: 0,0,0
+      Entry 1: count: 10000 hasNull: false min: 29 max: 100 sum: 999899 positions: 133,1071,391
+      Entry 2: count: 10000 hasNull: false min: 2 max: 100 sum: 999807 positions: 292,2147,391
+      Entry 3: count: 10000 hasNull: false min: 13 max: 100 sum: 999842 positions: 453,3223,391
+      Entry 4: count: 10000 hasNull: false min: 5 max: 100 sum: 999875 positions: 683,203,391
+
+File length: 11071 bytes
+Padding length: 0 bytes
+Padding ratio: 0%
+-- END ORC FILE DUMP --
+-- BEGIN ORC FILE DUMP --
+#### A masked pattern was here ####
+File Version: 0.12 with HIVE_4243
+Rows: 50000
+Compression: ZLIB
+Compression size: 4096
+Type: struct<userid:bigint,string1:string,subtype:double,decimal1:decimal(10,0),ts:timestamp>
+
+Stripe Statistics:
+  Stripe 1:
+    Column 0: count: 50000 hasNull: false
+    Column 1: count: 50000 hasNull: false min: 2 max: 100 sum: 4999238
+    Column 2: count: 50000 hasNull: false min: bar max: zebra sum: 249980
+    Column 3: count: 50000 hasNull: false min: 0.8 max: 80.0 sum: 400102.80000000005
+    Column 4: count: 50000 hasNull: false min: 0 max: 6 sum: 32
+    Column 5: count: 50000 hasNull: false min: 1969-12-31 16:00:00.0 max: 1969-12-31 16:04:10.0
+
+File Statistics:
+  Column 0: count: 50000 hasNull: false
+  Column 1: count: 50000 hasNull: false min: 2 max: 100 sum: 4999238
+  Column 2: count: 50000 hasNull: false min: bar max: zebra sum: 249980
+  Column 3: count: 50000 hasNull: false min: 0.8 max: 80.0 sum: 400102.80000000005
+  Column 4: count: 50000 hasNull: false min: 0 max: 6 sum: 32
+  Column 5: count: 50000 hasNull: false min: 1969-12-31 16:00:00.0 max: 1969-12-31 16:04:10.0
+
+Stripes:
+  Stripe: offset: 3 data: 10104 rows: 50000 tail: 117 index: 509
+    Stream: column 0 section ROW_INDEX start: 3 length 17
+    Stream: column 1 section ROW_INDEX start: 20 length 85
+    Stream: column 2 section ROW_INDEX start: 105 length 87
+    Stream: column 3 section ROW_INDEX start: 192 length 111
+    Stream: column 4 section ROW_INDEX start: 303 length 108
+    Stream: column 5 section ROW_INDEX start: 411 length 101
+    Stream: column 1 section DATA start: 512 length 871
+    Stream: column 2 section DATA start: 1383 length 362
+    Stream: column 2 section LENGTH start: 1745 length 8
+    Stream: column 2 section DICTIONARY_DATA start: 1753 length 23
+    Stream: column 3 section DATA start: 1776 length 5167
+    Stream: column 4 section DATA start: 6943 length 524
+    Stream: column 4 section SECONDARY start: 7467 length 118
+    Stream: column 5 section DATA start: 7585 length 2913
+    Stream: column 5 section SECONDARY start: 10498 length 118
+    Encoding column 0: DIRECT
+    Encoding column 1: DIRECT_V2
+    Encoding column 2: DICTIONARY_V2[6]
+    Encoding column 3: DIRECT
+    Encoding column 4: DIRECT_V2
+    Encoding column 5: DIRECT_V2
+    Row group indices for column 1:
+      Entry 0: count: 10000 hasNull: false min: 2 max: 100 sum: 999815 positions: 0,0,0
+      Entry 1: count: 10000 hasNull: false min: 29 max: 100 sum: 999899 positions: 133,1071,391
+      Entry 2: count: 10000 hasNull: false min: 2 max: 100 sum: 999807 positions: 292,2147,391
+      Entry 3: count: 10000 hasNull: false min: 13 max: 100 sum: 999842 positions: 453,3223,391
+      Entry 4: count: 10000 hasNull: false min: 5 max: 100 sum: 999875 positions: 683,203,391
+
+File length: 11071 bytes
+Padding length: 0 bytes
+Padding ratio: 0%
+-- END ORC FILE DUMP --
+2	foo	0.8	1	1969-12-31 16:00:00
+PREHOOK: query: -- concatenate
+ALTER TABLE  orcfile_merge1 CONCATENATE
+PREHOOK: type: ALTER_TABLE_MERGE
+PREHOOK: Input: default@orcfile_merge1
+PREHOOK: Output: default@orcfile_merge1
+Found 1 items
+#### A masked pattern was here ####
+PREHOOK: query: select count(*) from orc_split_elim
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_split_elim
+#### A masked pattern was here ####
+50000
+PREHOOK: query: -- will have double the number of rows
+select count(*) from orcfile_merge1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orcfile_merge1
+#### A masked pattern was here ####
+100000
+PREHOOK: query: select * from orcfile_merge1 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orcfile_merge1
+#### A masked pattern was here ####
+-- BEGIN ORC FILE DUMP --
+#### A masked pattern was here ####
+File Version: 0.12 with HIVE_4243
+Rows: 100000
+Compression: ZLIB
+Compression size: 4096
+Type: struct<userid:bigint,string1:string,subtype:double,decimal1:decimal(10,0),ts:timestamp>
+
+Stripe Statistics:
+  Stripe 1:
+    Column 0: count: 50000 hasNull: false
+    Column 1: count: 50000 hasNull: false min: 2 max: 100 sum: 4999238
+    Column 2: count: 50000 hasNull: false min: bar max: zebra sum: 249980
+    Column 3: count: 50000 hasNull: false min: 0.8 max: 80.0 sum: 400102.80000000005
+    Column 4: count: 50000 hasNull: false min: 0 max: 6 sum: 32
+    Column 5: count: 50000 hasNull: false min: 1969-12-31 16:00:00.0 max: 1969-12-31 16:04:10.0
+  Stripe 2:
+    Column 0: count: 50000 hasNull: false
+    Column 1: count: 50000 hasNull: false min: 2 max: 100 sum: 4999238
+    Column 2: count: 50000 hasNull: false min: bar max: zebra sum: 249980
+    Column 3: count: 50000 hasNull: false min: 0.8 max: 80.0 sum: 400102.80000000005
+    Column 4: count: 50000 hasNull: false min: 0 max: 6 sum: 32
+    Column 5: count: 50000 hasNull: false min: 1969-12-31 16:00:00.0 max: 1969-12-31 16:04:10.0
+
+File Statistics:
+  Column 0: count: 100000 hasNull: false
+  Column 1: count: 100000 hasNull: false min: 2 max: 100 sum: 9998476
+  Column 2: count: 100000 hasNull: false min: bar max: zebra sum: 499960
+  Column 3: count: 100000 hasNull: false min: 0.8 max: 80.0 sum: 800205.6000000001
+  Column 4: count: 100000 hasNull: false min: 0 max: 6 sum: 64
+  Column 5: count: 100000 hasNull: false min: 1969-12-31 16:00:00.0 max: 1969-12-31 16:04:10.0
+
+Stripes:
+  Stripe: offset: 3 data: 10104 rows: 50000 tail: 117 index: 509
+    Stream: column 0 section ROW_INDEX start: 3 length 17
+    Stream: column 1 section ROW_INDEX start: 20 length 85
+    Stream: column 2 section ROW_INDEX start: 105 length 87
+    Stream: column 3 section ROW_INDEX start: 192 length 111
+    Stream: column 4 section ROW_INDEX start: 303 length 108
+    Stream: column 5 section ROW_INDEX start: 411 length 101
+    Stream: column 1 section DATA start: 512 length 871
+    Stream: column 2 section DATA start: 1383 length 362
+    Stream: column 2 section LENGTH start: 1745 length 8
+    Stream: column 2 section DICTIONARY_DATA start: 1753 length 23
+    Stream: column 3 section DATA start: 1776 length 5167
+    Stream: column 4 section DATA start: 6943 length 524
+    Stream: column 4 section SECONDARY start: 7467 length 118
+    Stream: column 5 section DATA start: 7585 length 2913
+    Stream: column 5 section SECONDARY start: 10498 length 118
+    Encoding column 0: DIRECT
+    Encoding column 1: DIRECT_V2
+    Encoding column 2: DICTIONARY_V2[6]
+    Encoding column 3: DIRECT
+    Encoding column 4: DIRECT_V2
+    Encoding column 5: DIRECT_V2
+    Row group indices for column 1:
+      Entry 0: count: 10000 hasNull: false min: 2 max: 100 sum: 999815 positions: 0,0,0
+      Entry 1: count: 10000 hasNull: false min: 29 max: 100 sum: 999899 positions: 133,1071,391
+      Entry 2: count: 10000 hasNull: false min: 2 max: 100 sum: 999807 positions: 292,2147,391
+      Entry 3: count: 10000 hasNull: false min: 13 max: 100 sum: 999842 positions: 453,3223,391
+      Entry 4: count: 10000 hasNull: false min: 5 max: 100 sum: 999875 positions: 683,203,391
+  Stripe: offset: 10733 data: 10104 rows: 50000 tail: 117 index: 509
+    Stream: column 0 section ROW_INDEX start: 10733 length 17
+    Stream: column 1 section ROW_INDEX start: 10750 length 85
+    Stream: column 2 section ROW_INDEX start: 10835 length 87
+    Stream: column 3 section ROW_INDEX start: 10922 length 111
+    Stream: column 4 section ROW_INDEX start: 11033 length 108
+    Stream: column 5 section ROW_INDEX start: 11141 length 101
+    Stream: column 1 section DATA start: 11242 length 871
+    Stream: column 2 section DATA start: 12113 length 362
+    Stream: column 2 section LENGTH start: 12475 length 8
+    Stream: column 2 section DICTIONARY_DATA start: 12483 length 23
+    Stream: column 3 section DATA start: 12506 length 5167
+    Stream: column 4 section DATA start: 17673 length 524
+    Stream: column 4 section SECONDARY start: 18197 length 118
+    Stream: column 5 section DATA start: 18315 length 2913
+    Stream: column 5 section SECONDARY start: 21228 length 118
+    Encoding column 0: DIRECT
+    Encoding column 1: DIRECT_V2
+    Encoding column 2: DICTIONARY_V2[6]
+    Encoding column 3: DIRECT
+    Encoding column 4: DIRECT_V2
+    Encoding column 5: DIRECT_V2
+    Row group indices for column 1:
+      Entry 0: count: 10000 hasNull: false min: 2 max: 100 sum: 999815 positions: 0,0,0
+      Entry 1: count: 10000 hasNull: false min: 29 max: 100 sum: 999899 positions: 133,1071,391
+      Entry 2: count: 10000 hasNull: false min: 2 max: 100 sum: 999807 positions: 292,2147,391
+      Entry 3: count: 10000 hasNull: false min: 13 max: 100 sum: 999842 positions: 453,3223,391
+      Entry 4: count: 10000 hasNull: false min: 5 max: 100 sum: 999875 positions: 683,203,391
+
+File length: 21814 bytes
+Padding length: 0 bytes
+Padding ratio: 0%
+-- END ORC FILE DUMP --
+2	foo	0.8	1	1969-12-31 16:00:00
+PREHOOK: query: DROP TABLE orc_split_elim
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@orc_split_elim
+PREHOOK: Output: default@orc_split_elim
+PREHOOK: query: DROP TABLE orcfile_merge1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@orcfile_merge1
+PREHOOK: Output: default@orcfile_merge1

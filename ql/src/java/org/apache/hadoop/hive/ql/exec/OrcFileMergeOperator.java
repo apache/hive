@@ -46,7 +46,7 @@ public class OrcFileMergeOperator extends
   // does not merge, the file will be put into incompatible file set and will
   // not be merged.
   CompressionKind compression = null;
-  long compressBuffSize = 0;
+  int compressBuffSize = 0;
   OrcFile.Version version;
   int columnCount = 0;
   int rowIndexStride = 0;
@@ -104,13 +104,17 @@ public class OrcFileMergeOperator extends
         columnCount = k.getTypes().get(0).getSubtypesCount();
         rowIndexStride = k.getRowIndexStride();
 
-        // block size and stripe size will be from config
-        outWriter = OrcFile.createWriter(outPath,
-            OrcFile.writerOptions(jc)
-                .compress(compression)
-                .version(version)
-                .rowIndexStride(rowIndexStride)
-                .inspector(reader.getObjectInspector()));
+        OrcFile.WriterOptions options = OrcFile.writerOptions(jc)
+            .compress(compression)
+            .version(version)
+            .rowIndexStride(rowIndexStride)
+            .inspector(reader.getObjectInspector());
+        // compression buffer size should only be set if compression is enabled
+        if (compression != CompressionKind.NONE) {
+          options.bufferSize(compressBuffSize);
+        }
+
+        outWriter = OrcFile.createWriter(outPath, options);
         if (isLogDebugEnabled) {
           LOG.info("ORC merge file output path: " + outPath);
         }
