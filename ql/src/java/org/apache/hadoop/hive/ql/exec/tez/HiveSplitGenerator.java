@@ -140,7 +140,7 @@ public class HiveSplitGenerator extends InputInitializer {
               TezMapReduceSplitsGrouper.TEZ_GROUPING_SPLIT_MIN_SIZE,
               TezMapReduceSplitsGrouper.TEZ_GROUPING_SPLIT_MIN_SIZE_DEFAULT);
           final long preferredSplitSize = Math.min(blockSize / 2, minGrouping);
-          HiveConf.setLongVar(conf, HiveConf.ConfVars.MAPREDMINSPLITSIZE, preferredSplitSize);
+          HiveConf.setLongVar(jobConf, HiveConf.ConfVars.MAPREDMINSPLITSIZE, preferredSplitSize);
           LOG.info("The preferred split size is " + preferredSplitSize);
         }
 
