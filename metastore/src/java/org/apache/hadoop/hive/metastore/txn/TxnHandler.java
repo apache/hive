@@ -22,6 +22,8 @@ import com.jolbox.bonecp.BoneCPDataSource;
 import org.apache.commons.dbcp.ConnectionFactory;
 import org.apache.commons.dbcp.DriverManagerConnectionFactory;
 import org.apache.commons.dbcp.PoolableConnectionFactory;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.dbcp.PoolingDataSource;
@@ -58,6 +60,8 @@ import java.util.concurrent.TimeUnit;
  * Currently the DB schema has this NOT NULL) and only update/read heartbeat from corresponding
  * transaction in TXNS.
  */
+@InterfaceAudience.Private
+@InterfaceStability.Evolving
 public class TxnHandler {
   // Compactor states
   static final public String INITIATED_RESPONSE = "initiated";
@@ -86,7 +90,7 @@ public class TxnHandler {
   static final protected char LOCK_SEMI_SHARED = 'w';
 
   static final private int ALLOWED_REPEATED_DEADLOCKS = 10;
-  static final private int TIMED_OUT_TXN_ABORT_BATCH_SIZE = 100;
+  public static final int TIMED_OUT_TXN_ABORT_BATCH_SIZE = 1000;
   static final private Log LOG = LogFactory.getLog(TxnHandler.class.getName());
 
   static private DataSource connPool;
@@ -1171,7 +1175,7 @@ public class TxnHandler {
    */
   protected DatabaseProduct determineDatabaseProduct(Connection conn) throws MetaException {
     if (dbProduct == null) {
-      try {
+      try {//todo: make this work when conn == null
         String s = conn.getMetaData().getDatabaseProductName();
         if (s == null) {
           String msg = "getDatabaseProductName returns null, can't determine database product";
@@ -2045,7 +2049,7 @@ public class TxnHandler {
         stmt = dbConn.createStatement();
         String s = " txn_id from TXNS where txn_state = '" + TXN_OPEN +
           "' and txn_last_heartbeat <  " + (now - timeout);
-        s = addLimitClause(dbConn, 2500, s);
+        s = addLimitClause(dbConn, 250 * TIMED_OUT_TXN_ABORT_BATCH_SIZE, s);
         LOG.debug("Going to execute query <" + s + ">");
         rs = stmt.executeQuery(s);
         if(!rs.next()) {

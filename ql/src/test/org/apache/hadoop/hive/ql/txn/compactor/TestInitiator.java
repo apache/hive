@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import org.apache.hadoop.hive.metastore.txn.TxnHandler;
 import org.junit.Assert;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -204,12 +205,12 @@ public class TestInitiator extends CompactorTest {
     LockResponse res = txnHandler.lock(req);
     txnHandler.abortTxn(new AbortTxnRequest(txnid));
 
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < TxnHandler.TIMED_OUT_TXN_ABORT_BATCH_SIZE  + 50; i++) {
       txnid = openTxn();
       txnHandler.abortTxn(new AbortTxnRequest(txnid));
     }
     GetOpenTxnsResponse openTxns = txnHandler.getOpenTxns();
-    Assert.assertEquals(101, openTxns.getOpen_txnsSize());
+    Assert.assertEquals(TxnHandler.TIMED_OUT_TXN_ABORT_BATCH_SIZE + 50 + 1, openTxns.getOpen_txnsSize());
 
     startInitiator();
 

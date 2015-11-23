@@ -361,14 +361,13 @@ public class CompactionTxnHandler extends TxnHandler {
             "marking compaction entry as clean!");
         }
 
-        //todo: add distinct in query
-        s = "select txn_id from TXNS, TXN_COMPONENTS where txn_id = tc_txnid and txn_state = '" +
+        s = "select distinct txn_id from TXNS, TXN_COMPONENTS where txn_id = tc_txnid and txn_state = '" +
           TXN_ABORTED + "' and tc_database = '" + info.dbname + "' and tc_table = '" +
           info.tableName + "'";
         if (info.partName != null) s += " and tc_partition = '" + info.partName + "'";
         LOG.debug("Going to execute update <" + s + ">");
         rs = stmt.executeQuery(s);
-        Set<Long> txnids = new HashSet<Long>();
+        List<Long> txnids = new ArrayList<>();
         while (rs.next()) txnids.add(rs.getLong(1));
         if (txnids.size() > 0) {
 
@@ -437,23 +436,21 @@ public class CompactionTxnHandler extends TxnHandler {
           "txn_state = '" + TXN_ABORTED + "'";
         LOG.debug("Going to execute query <" + s + ">");
         rs = stmt.executeQuery(s);
-        Set<Long> txnids = new HashSet<Long>();
+        List<Long> txnids = new ArrayList<>();
         while (rs.next()) txnids.add(rs.getLong(1));
-        if (txnids.size() > 0) {
-          StringBuilder buf = new StringBuilder("delete from TXNS where txn_id in (");
-          boolean first = true;
-          for (long tid : txnids) {
-            if (first) first = false;
-            else buf.append(", ");
-            buf.append(tid);
-          }
-          buf.append(")");
-          String bufStr = buf.toString();
-          LOG.debug("Going to execute update <" + bufStr + ">");
-          int rc = stmt.executeUpdate(bufStr);
-          LOG.info("Removed " + rc + "  empty Aborted transactions: " + txnids + " from TXNS");
-          LOG.debug("Going to commit");
-          dbConn.commit();
+        close(rs);
+        if(txnids.size() <= 0) {
+          return;
+        }
+        for(int i = 0; i < txnids.size() / TIMED_OUT_TXN_ABORT_BATCH_SIZE; i++) {
+          List<Long> txnIdBatch = txnids.subList(i * TIMED_OUT_TXN_ABORT_BATCH_SIZE,
+            (i + 1) * TIMED_OUT_TXN_ABORT_BATCH_SIZE);
+          deleteTxns(dbConn, stmt, txnIdBatch);
+        }
+        int partialBatchSize = txnids.size() % TIMED_OUT_TXN_ABORT_BATCH_SIZE;
+        if(partialBatchSize > 0) {
+          List<Long> txnIdBatch = txnids.subList(txnids.size() - partialBatchSize, txnids.size());
+          deleteTxns(dbConn, stmt, txnIdBatch);
         }
       } catch (SQLException e) {
         LOG.error("Unable to delete from txns table " + e.getMessage());
@@ -468,6 +465,18 @@ public class CompactionTxnHandler extends TxnHandler {
     } catch (RetryException e) {
       cleanEmptyAbortedTxns();
     }
+  }
+  private static void deleteTxns(Connection dbConn, Statement stmt, List<Long> txnIdBatch) throws SQLException {
+    StringBuilder buf = new StringBuilder("delete from TXNS where txn_id in (");
+    for(long txnid : txnIdBatch) {
+      buf.append(txnid).append(',');
+    }
+    buf.setCharAt(buf.length() - 1, ')');
+    LOG.debug("Going to execute update <" + buf + ">");
+    int rc = stmt.executeUpdate(buf.toString());
+    LOG.info("Removed " + rc + "  empty Aborted transactions: " + txnIdBatch + " from TXNS");
+    LOG.debug("Going to commit");
+    dbConn.commit();
   }
 
   /**
