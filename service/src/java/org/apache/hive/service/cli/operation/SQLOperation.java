@@ -466,12 +466,12 @@ public class SQLOperation extends ExecuteStatementOperation {
    */
   private HiveConf getConfigForOperation() throws HiveSQLException {
     HiveConf sqlOperationConf = getParentSession().getHiveConf();
-    if (!getConfOverlay().isEmpty() || shouldRunAsync()) {
+    if (!confOverlay.isEmpty() || shouldRunAsync()) {
       // clone the partent session config for this query
       sqlOperationConf = new HiveConf(sqlOperationConf);
 
       // apply overlay query specific settings, if any
-      for (Map.Entry<String, String> confEntry : getConfOverlay().entrySet()) {
+      for (Map.Entry<String, String> confEntry : confOverlay.entrySet()) {
         try {
           sqlOperationConf.verifyAndSet(confEntry.getKey(), confEntry.getValue());
         } catch (IllegalArgumentException e) {
