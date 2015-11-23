@@ -20,12 +20,12 @@ package org.apache.hadoop.hive.serde2.lazy;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience.Public;
+import org.apache.hadoop.hive.common.classification.InterfaceStability.Stable;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -40,6 +40,8 @@ import org.apache.hive.common.util.HiveStringUtils;
  * SerDeParameters.
  *
  */
+@Public
+@Stable
 public class LazySerDeParameters implements LazyObjectInspectorParameters {
   public static final byte[] DefaultSeparators = {(byte) 1, (byte) 2, (byte) 3};
   public static final String SERIALIZATION_EXTEND_NESTING_LEVELS
