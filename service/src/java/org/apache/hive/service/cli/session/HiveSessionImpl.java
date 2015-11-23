@@ -443,7 +443,6 @@ public class HiveSessionImpl implements HiveSession {
     if (queryId == null || queryId.isEmpty()) {
       queryId = QueryPlan.makeQueryId();
       confOverlay.put(HiveConf.ConfVars.HIVEQUERYID.varname, queryId);
-      sessionState.getConf().setVar(HiveConf.ConfVars.HIVEQUERYID, queryId);
     }
 
     OperationManager operationManager = getOperationManager();
