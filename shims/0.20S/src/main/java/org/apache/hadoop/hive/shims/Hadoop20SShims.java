@@ -722,4 +722,10 @@ public class Hadoop20SShims extends HadoopShimsSecure {
     Token<?> fsToken = fs.getDelegationToken(uname);
     cred.addToken(fsToken.getService(), fsToken);
   }
+
+  @Override
+  public void removeAndCancelDeleteOnExit(FileSystem fs, Path path) throws IOException {
+    fs.delete(path, true);
+    // fs.cancelDeleteOnExit() is not available until 0.23.3
+  }
 }

@@ -45,7 +45,6 @@ import org.apache.hadoop.hive.ql.exec.TaskRunner;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
-import org.apache.hadoop.hive.ql.lockmgr.HiveLockManager;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObj;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
@@ -348,8 +347,7 @@ public class Context {
       try {
         Path p = entry.getValue();
         FileSystem fs = p.getFileSystem(conf);
-        fs.delete(p, true);
-        fs.cancelDeleteOnExit(p);
+        ShimLoader.getHadoopShims().removeAndCancelDeleteOnExit(fs, p);
       } catch (Exception e) {
         LOG.warn("Error Removing Scratch: "
             + StringUtils.stringifyException(e));

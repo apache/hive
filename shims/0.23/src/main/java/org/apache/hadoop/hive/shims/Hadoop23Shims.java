@@ -1405,4 +1405,10 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     }
     return new FastTextReaderShim(in);
   }
+
+  @Override
+  public void removeAndCancelDeleteOnExit(FileSystem fs, Path path) throws IOException {
+    fs.delete(path, true);
+    fs.cancelDeleteOnExit(path);
+  }
 }

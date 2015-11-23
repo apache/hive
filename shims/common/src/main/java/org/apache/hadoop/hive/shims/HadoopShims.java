@@ -753,4 +753,9 @@ public interface HadoopShims {
    * which are required for TextReaderShim.read() input.
    */
   public TextReaderShim getTextReaderShim(InputStream input) throws IOException;
+
+  /**
+   * Delete a specified path and cancel its delete on exit when such method is available.
+   */
+  public void removeAndCancelDeleteOnExit(FileSystem fs, Path path) throws IOException;
 }
