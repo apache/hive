@@ -400,7 +400,7 @@ public class SessionState {
    * @return transaction manager
    * @throws LockException
    */
-  public HiveTxnManager initTxnMgr(HiveConf conf) throws LockException {
+  public synchronized HiveTxnManager initTxnMgr(HiveConf conf) throws LockException {
     if (txnMgr == null) {
       txnMgr = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
     }
