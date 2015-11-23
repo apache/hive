@@ -18,7 +18,7 @@
 package org.apache.hadoop.hive.serde2.lazy;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.sql.Date;
 import java.util.List;
 import java.util.Properties;
 
@@ -26,25 +26,27 @@ import junit.framework.TestCase;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
+import org.apache.hadoop.hive.serde2.binarysortable.MyTestClass;
+import org.apache.hadoop.hive.serde2.binarysortable.MyTestInnerStruct;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.SimpleMapEqualComparer;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.ObjectInspectorOptions;
-import org.apache.hadoop.hive.serde2.objectinspector.TestSimpleMapEqualComparer.TextStringMapHolder;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.junit.Test;
 
 /**
  * TestLazySimpleSerDe.
@@ -87,8 +89,6 @@ public class TestLazySimpleSerDe extends TestCase {
       throw e;
     }
   }
-
-
 
   /**
    * Test the LazySimpleSerDe class with LastColumnTakesRest option.
@@ -174,20 +174,90 @@ public class TestLazySimpleSerDe extends TestCase {
       throw e;
     }
   }
-  
-  Object serializeAndDeserialize(List<Integer> o1, StructObjectInspector oi1,
+
+  /**
+   * Tests the deprecated usage of SerDeParameters.
+   *
+   */
+  @Test
+  @SuppressWarnings("deprecation")
+  public void testSerDeParameters() throws SerDeException, IOException {
+    // Setup
+//    class MyTestClass {
+//      public boolean myBool = true;
+//      public int myInt = 1234;
+//    };
+
+    LazySimpleSerDe serDe = new LazySimpleSerDe();
+    Configuration conf = new Configuration();
+
+    byte expectedByte = 20;
+    int expectedInt = 50;
+    MyTestClass row = new MyTestClass(expectedByte, (short)1, expectedInt, 100l, (float)3.3, 4.4,
+        "string", HiveDecimal.create(200), new Date(100), null, null, null);
+
+    StructObjectInspector rowOI = (StructObjectInspector) ObjectInspectorFactory
+        .getReflectionObjectInspector(MyTestClass.class,
+            ObjectInspectorOptions.JAVA);
+
+    String fieldNames = ObjectInspectorUtils.getFieldNames(rowOI);
+    String fieldTypes = ObjectInspectorUtils.getFieldTypes(rowOI);
+
+    Properties schema = new Properties();
+    schema.setProperty(serdeConstants.LIST_COLUMNS, fieldNames);
+    schema.setProperty(serdeConstants.LIST_COLUMN_TYPES, fieldTypes);
+
+    SerDeUtils.initializeSerDe(serDe, conf, schema, null);
+    org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.SerDeParameters serdeParams
+      = LazySimpleSerDe.initSerdeParams(conf, schema, "testSerdeName");
+
+    // Test
+    LazyStruct data = (LazyStruct)serializeAndDeserialize(row, rowOI, serDe, serdeParams);
+    assertEquals(expectedByte, ((LazyByte)data.getField(0)).getWritableObject().get());
+    assertEquals(expectedInt, ((LazyInteger)data.getField(2)).getWritableObject().get());
+  }
+
+  /**
+   * Compare two structs that have different number of fields. We just compare
+   * the first few common fields, ignoring the fields existing in one struct but
+   * not the other.
+   *
+   * @see ObjectInspectorUtils#compare(Object, ObjectInspector, Object,
+   *      ObjectInspector)
+   */
+  int compareDiffSizedStructs(Object o1, ObjectInspector oi1, Object o2,
+      ObjectInspector oi2) {
+    StructObjectInspector soi1 = (StructObjectInspector) oi1;
+    StructObjectInspector soi2 = (StructObjectInspector) oi2;
+    List<? extends StructField> fields1 = soi1.getAllStructFieldRefs();
+    List<? extends StructField> fields2 = soi2.getAllStructFieldRefs();
+    int minimum = Math.min(fields1.size(), fields2.size());
+    for (int i = 0; i < minimum; i++) {
+      int result = ObjectInspectorUtils.compare(soi1.getStructFieldData(o1,
+          fields1.get(i)), fields1.get(i).getFieldObjectInspector(), soi2
+          .getStructFieldData(o2, fields2.get(i)), fields2.get(i)
+          .getFieldObjectInspector());
+      if (result != 0) {
+        return result;
+      }
+    }
+    return 0;
+  }
+
+  private Object serializeAndDeserialize(Object row,
+      StructObjectInspector rowOI,
       LazySimpleSerDe serde,
       LazySerDeParameters serdeParams) throws IOException, SerDeException {
     ByteStream.Output serializeStream = new ByteStream.Output();
-    LazySimpleSerDe.serialize(serializeStream, o1, oi1, serdeParams
+    LazySimpleSerDe.serialize(serializeStream, row, rowOI, serdeParams
         .getSeparators(), 0, serdeParams.getNullSequence(), serdeParams
         .isEscaped(), serdeParams.getEscapeChar(), serdeParams
         .getNeedsEscape());
+
     Text t = new Text(serializeStream.toByteArray());
     return serde.deserialize(t);
   }
-  
-  
+
   private void deserializeAndSerialize(LazySimpleSerDe serDe, Text t, String s,
       Object[] expectedFieldsData) throws SerDeException {
     // Get the row structure
