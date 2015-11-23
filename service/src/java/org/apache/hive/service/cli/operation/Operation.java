@@ -24,7 +24,8 @@ import java.util.EnumSet;
 import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-
+import java.util.HashMap;
+import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
@@ -35,6 +36,7 @@ import org.apache.hadoop.hive.common.metrics.common.MetricsScope;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.OperationLog;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.service.cli.FetchOrientation;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.OperationHandle;
@@ -45,8 +47,13 @@ import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.TableSchema;
 import org.apache.hive.service.cli.session.HiveSession;
 import org.apache.hive.service.cli.thrift.TProtocolVersion;
+import org.apache.log4j.MDC;
 
 public abstract class Operation {
+  // Constants of the key strings for the log4j ThreadContext.
+  public static final String SESSIONID_LOG_KEY = "sessionId";
+  public static final String QUERYID_LOG_KEY = "queryId";
+
   protected final HiveSession parentSession;
   private OperationState state = OperationState.INITIALIZED;
   private MetricsScope currentStateScope;
@@ -61,6 +68,7 @@ public abstract class Operation {
   protected volatile Future<?> backgroundHandle;
   protected OperationLog operationLog;
   protected boolean isOperationLogEnabled;
+  protected Map<String, String> confOverlay = new HashMap<String, String>();
 
   private long operationTimeout;
   private long lastAccessTime;
@@ -69,7 +77,14 @@ public abstract class Operation {
       EnumSet.of(FetchOrientation.FETCH_NEXT,FetchOrientation.FETCH_FIRST);
 
   protected Operation(HiveSession parentSession, OperationType opType, boolean runInBackground) {
+    this(parentSession, null, opType, runInBackground);
+ }
+
+  protected Operation(HiveSession parentSession, Map<String, String> confOverlay, OperationType opType, boolean runInBackground) {
     this.parentSession = parentSession;
+    if (confOverlay != null) {
+      this.confOverlay = confOverlay;
+    }
     this.runAsync = runInBackground;
     this.opHandle = new OperationHandle(opType, parentSession.getProtocolVersion());
     lastAccessTime = System.currentTimeMillis();
@@ -245,6 +260,22 @@ public abstract class Operation {
    */
   protected void beforeRun() {
     createOperationLog();
+    registerLoggingContext();
+  }
+
+  /**
+   * Register logging context so that Log4J can print QueryId and/or SessionId for each message
+   */
+  protected void registerLoggingContext() {
+    MDC.put(SESSIONID_LOG_KEY, SessionState.get().getSessionId());
+    MDC.put(QUERYID_LOG_KEY, confOverlay.get(HiveConf.ConfVars.HIVEQUERYID.varname));
+  }
+
+  /**
+   * Unregister logging context
+   */
+  protected void unregisterLoggingContext() {
+    MDC.clear();
   }
 
   /**
@@ -252,6 +283,7 @@ public abstract class Operation {
    * Clean up resources, which was set up in beforeRun().
    */
   protected void afterRun() {
+    unregisterLoggingContext();
     unregisterOperationLog();
   }
 
