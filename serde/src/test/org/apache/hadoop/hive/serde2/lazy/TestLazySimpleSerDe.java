@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.serde2.lazy;
 import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
+import java.util.Random;
 
 import junit.framework.TestCase;
 
@@ -29,15 +30,22 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
+import org.apache.hadoop.hive.serde2.binarysortable.MyTestClass;
+import org.apache.hadoop.hive.serde2.binarysortable.MyTestPrimitiveClass.ExtraTypeInfo;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.SerDeParameters;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.ObjectInspectorOptions;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.junit.Test;
 
 /**
  * TestLazySimpleSerDe.
@@ -80,8 +88,6 @@ public class TestLazySimpleSerDe extends TestCase {
       throw e;
     }
   }
-
-
 
   /**
    * Test the LazySimpleSerDe class with LastColumnTakesRest option.
@@ -167,20 +173,56 @@ public class TestLazySimpleSerDe extends TestCase {
       throw e;
     }
   }
-  
-  Object serializeAndDeserialize(List<Integer> o1, StructObjectInspector oi1,
+
+  /**
+   * Tests the deprecated usage of SerDeParameters.
+   *
+   */
+  @Test
+  @SuppressWarnings("deprecation")
+  public void testSerDeParameters() throws SerDeException, IOException {
+    // Setup
+    LazySimpleSerDe serDe = new LazySimpleSerDe();
+    Configuration conf = new Configuration();
+
+    MyTestClass row = new MyTestClass();
+    ExtraTypeInfo extraTypeInfo = new ExtraTypeInfo();
+    row.randomFill(new Random(1234), extraTypeInfo);
+
+    StructObjectInspector rowOI = (StructObjectInspector) ObjectInspectorFactory
+        .getReflectionObjectInspector(MyTestClass.class,
+            ObjectInspectorOptions.JAVA);
+
+    String fieldNames = ObjectInspectorUtils.getFieldNames(rowOI);
+    String fieldTypes = ObjectInspectorUtils.getFieldTypes(rowOI);
+
+    Properties schema = new Properties();
+    schema.setProperty(serdeConstants.LIST_COLUMNS, fieldNames);
+    schema.setProperty(serdeConstants.LIST_COLUMN_TYPES, fieldTypes);
+
+    SerDeUtils.initializeSerDe(serDe, conf, schema, null);
+    SerDeParameters serdeParams = LazySimpleSerDe.initSerdeParams(conf, schema, "testSerdeName");
+
+    // Test
+    LazyStruct data = (LazyStruct)serializeAndDeserialize(row, rowOI, serDe, serdeParams);
+    assertEquals((boolean)row.myBool, ((LazyBoolean)data.getField(0)).getWritableObject().get());
+    assertEquals((int)row.myInt, ((LazyInteger)data.getField(3)).getWritableObject().get());
+  }
+
+  private Object serializeAndDeserialize(Object row,
+      StructObjectInspector rowOI,
       LazySimpleSerDe serde,
       LazySerDeParameters serdeParams) throws IOException, SerDeException {
     ByteStream.Output serializeStream = new ByteStream.Output();
-    LazySimpleSerDe.serialize(serializeStream, o1, oi1, serdeParams
+    LazySimpleSerDe.serialize(serializeStream, row, rowOI, serdeParams
         .getSeparators(), 0, serdeParams.getNullSequence(), serdeParams
         .isEscaped(), serdeParams.getEscapeChar(), serdeParams
         .getNeedsEscape());
+
     Text t = new Text(serializeStream.toByteArray());
     return serde.deserialize(t);
   }
-  
-  
+
   private void deserializeAndSerialize(LazySimpleSerDe serDe, Text t, String s,
       Object[] expectedFieldsData) throws SerDeException {
     // Get the row structure
