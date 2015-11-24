@@ -2265,7 +2265,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           if (rightCondAl1.size() != 0) {
             QBJoinTree leftTree = joinTree.getJoinSrc();
             List<String> leftTreeLeftSrc = new ArrayList<String>();
-            if (leftTree != null) {
+            if (leftTree != null && leftTree.getNoOuterJoin()) {
               String leftTreeRightSource = leftTree.getRightAliases() != null &&
                   leftTree.getRightAliases().length > 0 ?
                   leftTree.getRightAliases()[0] : null;
