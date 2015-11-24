@@ -31,8 +31,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -63,8 +61,6 @@ import com.google.common.collect.Interner;
  */
 @SuppressWarnings({"serial", "deprecation"})
 public class MapWork extends BaseWork {
-
-  private static final Logger LOG = LoggerFactory.getLogger(MapWork.class);
 
   // use LinkedHashMap to make sure the iteration order is
   // deterministic, to ease testing
@@ -545,17 +541,6 @@ public class MapWork extends BaseWork {
     Collection<Operator<?>> mappers = aliasToWork.values();
     for (FileSinkOperator fs : OperatorUtils.findOperators(mappers, FileSinkOperator.class)) {
       PlanUtils.configureJobConf(fs.getConf().getTableInfo(), job);
-    }
-  }
-
-  public void logPathToAliases() {
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("LOGGING PATH TO ALIASES");
-      for (Map.Entry<String, ArrayList<String>> entry: pathToAliases.entrySet()) {
-        for (String a: entry.getValue()) {
-          LOG.debug("Path: " + entry.getKey() + ", Alias: " + a);
-        }
-      }
     }
   }
 
