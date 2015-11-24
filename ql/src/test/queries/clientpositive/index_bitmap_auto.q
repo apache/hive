@@ -1,4 +1,3 @@
-set hive.stats.dbclass=counter;
 set hive.stats.autogather=true;
 
 -- SORT_QUERY_RESULTS
