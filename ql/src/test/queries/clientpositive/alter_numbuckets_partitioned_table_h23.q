@@ -5,7 +5,7 @@ alter table tst1 clustered by (key) into 8 buckets;
 
 describe formatted tst1;
 
-set hive.enforce.bucketing=true;
+
 insert overwrite table tst1 partition (ds='1') select key, value from src;
 
 describe formatted tst1 partition (ds = '1');

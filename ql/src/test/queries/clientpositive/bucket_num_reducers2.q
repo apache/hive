@@ -1,4 +1,4 @@
-set hive.enforce.bucketing = true;
+;
 set hive.exec.mode.local.auto=false;
 set hive.exec.reducers.max = 2;
 

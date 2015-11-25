@@ -1,7 +1,7 @@
 CREATE TABLE src_bucket(key STRING, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS;
 
-set hive.enforce.sorting = true;
-set hive.enforce.bucketing = true;
+
+;
 
 explain
 insert into table src_bucket select key,value from srcpart;

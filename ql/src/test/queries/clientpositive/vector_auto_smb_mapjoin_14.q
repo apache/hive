@@ -1,6 +1,6 @@
 SET hive.vectorized.execution.enabled=true;
-set hive.enforce.bucketing = true;
-set hive.enforce.sorting = true;
+;
+
 set hive.exec.reducers.max = 1;
 
 -- SORT_QUERY_RESULTS

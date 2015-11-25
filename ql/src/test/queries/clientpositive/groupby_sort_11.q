@@ -1,5 +1,5 @@
-set hive.enforce.bucketing = true;
-set hive.enforce.sorting = true;
+;
+
 set hive.exec.reducers.max = 1;
 set hive.map.groupby.sorted=true;
 

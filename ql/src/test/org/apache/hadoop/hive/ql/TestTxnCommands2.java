@@ -62,7 +62,7 @@ public class TestTxnCommands2 {
     ACIDTBLPART("acidTblPart"),
     NONACIDORCTBL("nonAcidOrcTbl"),
     NONACIDPART("nonAcidPart");
-    
+
     private final String name;
     @Override
     public String toString() {
@@ -82,7 +82,6 @@ public class TestTxnCommands2 {
     hiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
     hiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname, TEST_WAREHOUSE_DIR);
     TxnDbUtil.setConfValues(hiveConf);
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVEENFORCEBUCKETING, true);
     TxnDbUtil.prepDb();
     File f = new File(TEST_WAREHOUSE_DIR);
     if (f.exists()) {
@@ -330,6 +329,7 @@ public class TestTxnCommands2 {
     return rs;
   }
   private static final class RowComp implements Comparator<int[]> {
+    @Override
     public int compare(int[] row1, int[] row2) {
       assert row1 != null && row2 != null && row1.length == row2.length;
       for(int i = 0; i < row1.length; i++) {
@@ -361,7 +361,7 @@ public class TestTxnCommands2 {
     sb.setLength(sb.length() - 1);//remove trailing comma
     return sb.toString();
   }
-  
+
   private List<String> runStatementOnDriver(String stmt) throws Exception {
     CommandProcessorResponse cpr = d.run(stmt);
     if(cpr.getResponseCode() != 0) {

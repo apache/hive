@@ -904,10 +904,10 @@ Table:              	orc_create_people
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
-	numFiles            	1                   
+	numFiles            	4                   
 	numRows             	50                  
-	rawDataSize         	21950               
-	totalSize           	2102                
+	rawDataSize         	21975               
+	totalSize           	5263                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -947,10 +947,10 @@ Table:              	orc_create_people
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
-	numFiles            	1                   
+	numFiles            	4                   
 	numRows             	50                  
-	rawDataSize         	22050               
-	totalSize           	2118                
+	rawDataSize         	22043               
+	totalSize           	5336                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1002,10 +1002,10 @@ Table:              	orc_create_people
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
-	numFiles            	1                   
+	numFiles            	4                   
 	numRows             	50                  
-	rawDataSize         	21950               
-	totalSize           	2102                
+	rawDataSize         	21975               
+	totalSize           	5263                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1045,10 +1045,10 @@ Table:              	orc_create_people
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
-	numFiles            	1                   
+	numFiles            	4                   
 	numRows             	50                  
-	rawDataSize         	22050               
-	totalSize           	2118                
+	rawDataSize         	22043               
+	totalSize           	5336                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1100,10 +1100,10 @@ Table:              	orc_create_people
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
-	numFiles            	1                   
+	numFiles            	4                   
 	numRows             	50                  
-	rawDataSize         	21950               
-	totalSize           	2102                
+	rawDataSize         	21975               
+	totalSize           	5263                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1143,10 +1143,10 @@ Table:              	orc_create_people
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
-	numFiles            	1                   
+	numFiles            	4                   
 	numRows             	50                  
-	rawDataSize         	22050               
-	totalSize           	2118                
+	rawDataSize         	22043               
+	totalSize           	5336                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1249,10 +1249,10 @@ Table:              	orc_create_people
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
-	numFiles            	1                   
+	numFiles            	4                   
 	numRows             	50                  
-	rawDataSize         	21950               
-	totalSize           	2102                
+	rawDataSize         	21975               
+	totalSize           	5263                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1292,10 +1292,10 @@ Table:              	orc_create_people
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
-	numFiles            	1                   
+	numFiles            	4                   
 	numRows             	50                  
-	rawDataSize         	22050               
-	totalSize           	2118                
+	rawDataSize         	22043               
+	totalSize           	5336                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

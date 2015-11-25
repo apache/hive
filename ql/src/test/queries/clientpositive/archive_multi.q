@@ -1,5 +1,5 @@
 set hive.archive.enabled = true;
-set hive.enforce.bucketing = true;
+;
 
 create database ac_test;
 

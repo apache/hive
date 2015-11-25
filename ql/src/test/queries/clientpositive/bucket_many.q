@@ -1,4 +1,4 @@
-set hive.enforce.bucketing = true;
+;
 set mapred.reduce.tasks = 16;
 
 create table bucket_many(key int, value string) clustered by (key) into 256 buckets;

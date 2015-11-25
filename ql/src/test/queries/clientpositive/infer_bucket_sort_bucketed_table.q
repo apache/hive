@@ -1,5 +1,5 @@
-set hive.enforce.bucketing=true;
-set hive.enforce.sorting=true;
+
+
 set hive.exec.infer.bucket.sort=true;
 
 -- Test writing to a bucketed table, the output should be bucketed by the bucketing key into the

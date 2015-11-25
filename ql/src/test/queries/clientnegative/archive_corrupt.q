@@ -1,7 +1,7 @@
 USE default;
 
 set hive.archive.enabled = true;
-set hive.enforce.bucketing = true;
+
 
 drop table tstsrcpart;
 

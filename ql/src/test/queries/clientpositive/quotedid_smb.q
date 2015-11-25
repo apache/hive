@@ -2,8 +2,8 @@
 set hive.support.quoted.identifiers=column;
 
 
-set hive.enforce.bucketing = true;  
-set hive.enforce.sorting = true;  
+;  
+  
 create table src_b(`x+1` string, `!@#$%^&*()_q` string)  
 clustered by (`!@#$%^&*()_q`) sorted by (`!@#$%^&*()_q`) into 2 buckets
 ;

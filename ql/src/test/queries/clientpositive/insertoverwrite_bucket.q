@@ -15,8 +15,8 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
 insert into table bucketinput values ("firstinsert1");
 insert into table bucketinput values ("firstinsert2");
 insert into table bucketinput values ("firstinsert3");
-set hive.enforce.bucketing = true; 
-set hive.enforce.sorting=true;
+; 
+
 insert overwrite table bucketoutput1 select * from bucketinput where data like 'first%'; 
 CREATE TABLE temp1
 (

@@ -2159,8 +2159,7 @@ public final class Utilities {
       FileStatus[] items = fs.listStatus(path);
       taskIDToFile = removeTempOrDuplicateFiles(items, fs);
       if(taskIDToFile != null && taskIDToFile.size() > 0 && conf != null && conf.getTable() != null
-          && (conf.getTable().getNumBuckets() > taskIDToFile.size())
-          && (HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVEENFORCEBUCKETING))) {
+          && (conf.getTable().getNumBuckets() > taskIDToFile.size())) {
           // get the missing buckets and generate empty buckets for non-dynamic partition
         String taskID1 = taskIDToFile.keySet().iterator().next();
         Path bucketPath = taskIDToFile.values().iterator().next().getPath();

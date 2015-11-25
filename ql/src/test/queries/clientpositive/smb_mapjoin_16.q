@@ -1,8 +1,8 @@
 set hive.optimize.bucketmapjoin = true;
 set hive.optimize.bucketmapjoin.sortedmerge = true;
 set hive.input.format = org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
-set hive.enforce.bucketing=true;
-set hive.enforce.sorting=true;
+
+
 set hive.exec.reducers.max = 1;
 set hive.merge.mapfiles=false;
 set hive.merge.mapredfiles=false; 

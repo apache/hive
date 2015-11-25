@@ -1198,12 +1198,8 @@ public class HiveConf extends Configuration {
         "The log level to use for tasks executing as part of the DAG.\n" +
         "Used only if hive.tez.java.opts is used to configure Java options."),
 
-    HIVEENFORCEBUCKETING("hive.enforce.bucketing", false,
-        "Whether bucketing is enforced. If true, while inserting into the table, bucketing is enforced."),
-    HIVEENFORCESORTING("hive.enforce.sorting", false,
-        "Whether sorting is enforced. If true, while inserting into the table, sorting is enforced."),
     HIVEOPTIMIZEBUCKETINGSORTING("hive.optimize.bucketingsorting", true,
-        "If hive.enforce.bucketing or hive.enforce.sorting is true, don't create a reducer for enforcing \n" +
+        "Don't create a reducer for enforcing \n" +
         "bucketing/sorting for queries of the form: \n" +
         "insert overwrite table T2 select * from T1;\n" +
         "where T1 and T2 are bucketed/sorted by the same keys into the same number of buckets."),
@@ -3082,9 +3078,7 @@ public class HiveConf extends Configuration {
     ConfVars.DROPIGNORESNONEXISTENT.varname,
     ConfVars.HIVECOUNTERGROUP.varname,
     ConfVars.HIVEDEFAULTMANAGEDFILEFORMAT.varname,
-    ConfVars.HIVEENFORCEBUCKETING.varname,
     ConfVars.HIVEENFORCEBUCKETMAPJOIN.varname,
-    ConfVars.HIVEENFORCESORTING.varname,
     ConfVars.HIVEENFORCESORTMERGEBUCKETMAPJOIN.varname,
     ConfVars.HIVEEXPREVALUATIONCACHE.varname,
     ConfVars.HIVEHASHTABLELOADFACTOR.varname,

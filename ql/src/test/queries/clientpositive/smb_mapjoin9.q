@@ -28,8 +28,8 @@ FROM hive_test_smb_bucket1 a JOIN
 hive_test_smb_bucket2 b
 ON a.key = b.key WHERE a.ds = '2010-10-15' and b.ds='2010-10-15' and  b.key IS NOT NULL;
 
-set hive.enforce.bucketing = true;
-set hive.enforce.sorting = true;
+;
+
 set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 set hive.exec.reducers.max = 1;
 
