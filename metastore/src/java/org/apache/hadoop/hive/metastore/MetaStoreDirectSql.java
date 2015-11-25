@@ -646,6 +646,10 @@ class MetaStoreDirectSql {
       public void apply(Partition t, Object[] fields) {
         t.putToParameters((String)fields[1], (String)fields[2]);
       }});
+    // Perform conversion of null map values
+    for (Partition t : partitions.values()) {
+      t.setParameters(MetaStoreUtils.trimMapNulls(t.getParameters(), convertMapNullsToEmptyStrings));
+    }
 
     queryText = "select \"PART_ID\", \"PART_KEY_VAL\" from \"PARTITION_KEY_VALS\""
         + " where \"PART_ID\" in (" + partIds + ") and \"INTEGER_IDX\" >= 0"
@@ -673,6 +677,10 @@ class MetaStoreDirectSql {
       public void apply(StorageDescriptor t, Object[] fields) {
         t.putToParameters((String)fields[1], (String)fields[2]);
       }});
+    // Perform conversion of null map values
+    for (StorageDescriptor t : sds.values()) {
+      t.setParameters(MetaStoreUtils.trimMapNulls(t.getParameters(), convertMapNullsToEmptyStrings));
+    }
 
     queryText = "select \"SD_ID\", \"COLUMN_NAME\", \"SORT_COLS\".\"ORDER\" from \"SORT_COLS\""
         + " where \"SD_ID\" in (" + sdIds + ") and \"INTEGER_IDX\" >= 0"
@@ -810,6 +818,10 @@ class MetaStoreDirectSql {
       public void apply(SerDeInfo t, Object[] fields) {
         t.putToParameters((String)fields[1], (String)fields[2]);
       }});
+    // Perform conversion of null map values
+    for (SerDeInfo t : serdes.values()) {
+      t.setParameters(MetaStoreUtils.trimMapNulls(t.getParameters(), convertMapNullsToEmptyStrings));
+    }
 
     return orderedResult;
   }
