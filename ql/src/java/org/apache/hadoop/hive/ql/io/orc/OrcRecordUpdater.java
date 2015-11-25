@@ -247,7 +247,8 @@ public class OrcRecordUpdater implements RecordUpdater {
       writerOptions = ((OrcOptions) options).getOrcOptions();
     }
     if (writerOptions == null) {
-      writerOptions = OrcFile.writerOptions(options.getConfiguration());
+      writerOptions = OrcFile.writerOptions(options.getTableProperties(),
+          options.getConfiguration());
     }
     writerOptions.fileSystem(fs).callback(indexBuilder);
     if (!options.isWritingBase()) {
