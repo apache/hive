@@ -27,6 +27,7 @@ import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ORC_DEFAULT_STR
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ORC_WRITE_FORMAT;
 
 import java.io.IOException;
+import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -268,31 +269,69 @@ public final class OrcFile {
     private String bloomFilterColumns;
     private double bloomFilterFpp;
 
-    WriterOptions(Configuration conf) {
+    WriterOptions(Properties tableProperties, Configuration conf) {
       configuration = conf;
       memoryManagerValue = getMemoryManager(conf);
-      stripeSizeValue = HiveConf.getLongVar(conf, HIVE_ORC_DEFAULT_STRIPE_SIZE);
-      blockSizeValue = HiveConf.getLongVar(conf, HIVE_ORC_DEFAULT_BLOCK_SIZE);
-      rowIndexStrideValue = HiveConf.getIntVar(conf, HIVE_ORC_DEFAULT_ROW_INDEX_STRIDE);
-      bufferSizeValue = HiveConf.getIntVar(conf, HIVE_ORC_DEFAULT_BUFFER_SIZE);
-      blockPaddingValue = HiveConf.getBoolVar(conf, HIVE_ORC_DEFAULT_BLOCK_PADDING);
-      compressValue = CompressionKind.valueOf(HiveConf.getVar(conf, HIVE_ORC_DEFAULT_COMPRESS));
+
+      String propValue = tableProperties == null ? null
+          : tableProperties.getProperty(OrcTableProperties.STRIPE_SIZE.propName);
+      stripeSizeValue = propValue == null ? HiveConf.getLongVar(conf, HIVE_ORC_DEFAULT_STRIPE_SIZE)
+          : Long.parseLong(propValue);
+
+      propValue = tableProperties == null ? null
+          : tableProperties.getProperty(OrcTableProperties.BLOCK_SIZE.propName);
+      blockSizeValue = propValue == null ? HiveConf.getLongVar(conf, HIVE_ORC_DEFAULT_BLOCK_SIZE)
+          : Long.parseLong(propValue);
+
+      propValue = tableProperties == null ? null
+          : tableProperties.getProperty(OrcTableProperties.ROW_INDEX_STRIDE.propName);
+      rowIndexStrideValue = propValue == null ? HiveConf.getIntVar(conf, HIVE_ORC_DEFAULT_ROW_INDEX_STRIDE)
+          : Integer.parseInt(propValue);
+
+      propValue = tableProperties == null ? null
+          : tableProperties.getProperty(OrcTableProperties.ENABLE_INDEXES.propName);
+      if (propValue != null && !Boolean.parseBoolean(propValue)) {
+        rowIndexStrideValue = 0;
+      }
+
+      propValue = tableProperties == null ? null
+          : tableProperties.getProperty(OrcTableProperties.COMPRESSION_BLOCK_SIZE.propName);
+      bufferSizeValue = propValue == null ? HiveConf.getIntVar(conf, HIVE_ORC_DEFAULT_BUFFER_SIZE)
+          : Integer.parseInt(propValue);
+
+      propValue = tableProperties == null ? null
+          : tableProperties.getProperty(OrcTableProperties.BLOCK_PADDING.propName);
+      blockPaddingValue = propValue == null ? HiveConf.getBoolVar(conf, HIVE_ORC_DEFAULT_BLOCK_PADDING)
+          : Boolean.parseBoolean(propValue);
+
+      propValue = tableProperties == null ? null
+          : tableProperties.getProperty(OrcTableProperties.COMPRESSION.propName);
+      compressValue = propValue == null ? CompressionKind.valueOf(HiveConf.getVar(conf, HIVE_ORC_DEFAULT_COMPRESS))
+          : CompressionKind.valueOf(propValue);
+
+      propValue = tableProperties == null ? null
+          : tableProperties.getProperty(OrcTableProperties.BLOOM_FILTER_COLUMNS.propName);
+      bloomFilterColumns = propValue;
+
+      propValue = tableProperties == null ? null
+          : tableProperties.getProperty(OrcTableProperties.BLOOM_FILTER_FPP.propName);
+      bloomFilterFpp = propValue == null ? BloomFilterIO.DEFAULT_FPP : Double.parseDouble(propValue);
+
       String versionName = HiveConf.getVar(conf, HIVE_ORC_WRITE_FORMAT);
       if (versionName == null) {
         versionValue = Version.CURRENT;
       } else {
         versionValue = Version.byName(versionName);
       }
-      String enString =
-          conf.get(HiveConf.ConfVars.HIVE_ORC_ENCODING_STRATEGY.varname);
-      if (enString == null) {
-        encodingStrategy = EncodingStrategy.SPEED;
-      } else {
-        encodingStrategy = EncodingStrategy.valueOf(enString);
-      }
 
-      String compString = conf
-          .get(HiveConf.ConfVars.HIVE_ORC_COMPRESSION_STRATEGY.varname);
+      propValue = tableProperties == null ? null
+          : tableProperties.getProperty(OrcTableProperties.ENCODING_STRATEGY.propName);
+      if (propValue == null) {
+        propValue = conf.get(HiveConf.ConfVars.HIVE_ORC_ENCODING_STRATEGY.varname);
+      }
+      encodingStrategy = propValue == null ? EncodingStrategy.SPEED : EncodingStrategy.valueOf(propValue);
+
+      String compString = conf.get(HiveConf.ConfVars.HIVE_ORC_COMPRESSION_STRATEGY.varname);
       if (compString == null) {
         compressionStrategy = CompressionStrategy.SPEED;
       } else {
@@ -301,7 +340,6 @@ public final class OrcFile {
 
       paddingTolerance = conf.getFloat(HiveConf.ConfVars.HIVE_ORC_BLOCK_PADDING_TOLERANCE.varname,
           HiveConf.ConfVars.HIVE_ORC_BLOCK_PADDING_TOLERANCE.defaultFloatVal);
-      bloomFilterFpp = BloomFilterIO.DEFAULT_FPP;
     }
 
     /**
@@ -444,7 +482,19 @@ public final class OrcFile {
    * Create a default set of write options that can be modified.
    */
   public static WriterOptions writerOptions(Configuration conf) {
-    return new WriterOptions(conf);
+    return new WriterOptions(null, conf);
+  }
+
+  /**
+   * Create a set of write options based on a set of table properties and
+   * configuration. Properties takes precedence over configuration.
+   * @param tableProperties the properties of the table
+   * @param conf the configuration of the query
+   * @return a WriterOptions object that can be modified
+   */
+  public static WriterOptions writerOptions(Properties tableProperties,
+      Configuration conf) {
+    return new WriterOptions(tableProperties, conf);
   }
 
   /**
