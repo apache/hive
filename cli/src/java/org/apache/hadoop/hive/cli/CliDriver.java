@@ -770,6 +770,9 @@ public class CliDriver {
       if (!prefix.equals("")) {
         prefix += '\n';
       }
+      if (line.trim().startsWith("--")) {
+        continue;
+      }
       if (line.trim().endsWith(";") && !line.trim().endsWith("\\;")) {
         line = prefix + line;
         ret = cli.processLine(line, true);
