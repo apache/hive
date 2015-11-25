@@ -177,13 +177,17 @@ public class VectorMapJoinInnerLongOperator extends VectorMapJoinInnerGenerateRe
          * Single-Column Long specific repeated lookup.
          */
 
-        long key = vector[0];
         JoinUtil.JoinResult joinResult;
-        if (useMinMax && (key < min || key > max)) {
-          // Out of range for whole batch.
+        if (!joinColVector.noNulls && joinColVector.isNull[0]) {
           joinResult = JoinUtil.JoinResult.NOMATCH;
         } else {
-          joinResult = hashMap.lookup(key, hashMapResults[0]);
+          long key = vector[0];
+          if (useMinMax && (key < min || key > max)) {
+            // Out of range for whole batch.
+            joinResult = JoinUtil.JoinResult.NOMATCH;
+          } else {
+            joinResult = hashMap.lookup(key, hashMapResults[0]);
+          }
         }
 
         /*
@@ -233,13 +237,21 @@ public class VectorMapJoinInnerLongOperator extends VectorMapJoinInnerGenerateRe
            * Single-Column Long get key.
            */
 
-          long currentKey = vector[batchIndex];
+          long currentKey;
+          boolean isNull;
+          if (!joinColVector.noNulls && joinColVector.isNull[batchIndex]) {
+            currentKey = 0;
+            isNull = true;
+          } else {
+            currentKey = vector[batchIndex];
+            isNull = false;
+          }
 
           /*
            * Equal key series checking.
            */
 
-          if (!haveSaveKey || currentKey != saveKey) {
+          if (isNull || !haveSaveKey || currentKey != saveKey) {
 
             // New key.
 
@@ -258,25 +270,30 @@ public class VectorMapJoinInnerLongOperator extends VectorMapJoinInnerGenerateRe
               }
             }
 
-            // Regardless of our matching result, we keep that information to make multiple use
-            // of it for a possible series of equal keys.
-            haveSaveKey = true;
-
-            /*
-             * Single-Column Long specific save key.
-             */
-
-            saveKey = currentKey;
-
-            /*
-             * Single-Column Long specific lookup key.
-             */
-
-            if (useMinMax && (currentKey < min || currentKey > max)) {
-              // Key out of range for whole hash table.
+            if (isNull) {
               saveJoinResult = JoinUtil.JoinResult.NOMATCH;
+              haveSaveKey = false;
             } else {
-              saveJoinResult = hashMap.lookup(currentKey, hashMapResults[hashMapResultCount]);
+              // Regardless of our matching result, we keep that information to make multiple use
+              // of it for a possible series of equal keys.
+              haveSaveKey = true;
+  
+              /*
+               * Single-Column Long specific save key.
+               */
+  
+              saveKey = currentKey;
+  
+              /*
+               * Single-Column Long specific lookup key.
+               */
+  
+              if (useMinMax && (currentKey < min || currentKey > max)) {
+                // Key out of range for whole hash table.
+                saveJoinResult = JoinUtil.JoinResult.NOMATCH;
+              } else {
+                saveJoinResult = hashMap.lookup(currentKey, hashMapResults[hashMapResultCount]);
+              }
             }
 
             /*

@@ -193,13 +193,14 @@ public class VectorMapJoinInnerMultiKeyOperator extends VectorMapJoinInnerGenera
 
         keyVectorSerializeWrite.setOutput(currentKeyOutput);
         keyVectorSerializeWrite.serializeWrite(batch, 0);
+        JoinUtil.JoinResult joinResult;
         if (keyVectorSerializeWrite.getHasAnyNulls()) {
-          // Not expecting NULLs in MapJoin -- they should have been filtered out.
-          throw new HiveException("Null key not expected in MapJoin");
+          joinResult = JoinUtil.JoinResult.NOMATCH;
+        } else {
+          byte[] keyBytes = currentKeyOutput.getData();
+          int keyLength = currentKeyOutput.getLength();
+          joinResult = hashMap.lookup(keyBytes, 0, keyLength, hashMapResults[0]);
         }
-        byte[] keyBytes = currentKeyOutput.getData();
-        int keyLength = currentKeyOutput.getLength();
-        JoinUtil.JoinResult joinResult = hashMap.lookup(keyBytes, 0, keyLength, hashMapResults[0]);
 
         /*
          * Common repeated join result processing.
@@ -251,16 +252,13 @@ public class VectorMapJoinInnerMultiKeyOperator extends VectorMapJoinInnerGenera
           // Generate binary sortable key for current row in vectorized row batch.
           keyVectorSerializeWrite.setOutput(currentKeyOutput);
           keyVectorSerializeWrite.serializeWrite(batch, batchIndex);
-          if (keyVectorSerializeWrite.getHasAnyNulls()) {
-            // Not expecting NULLs in MapJoin -- they should have been filtered out.
-            throw new HiveException("Null key not expected in MapJoin");
-          }
+          boolean isAnyNull = keyVectorSerializeWrite.getHasAnyNulls();
 
           /*
            * Equal key series checking.
            */
 
-          if (!haveSaveKey || !saveKeyOutput.arraysEquals(currentKeyOutput)) {
+          if (isAnyNull || !haveSaveKey || !saveKeyOutput.arraysEquals(currentKeyOutput)) {
 
             // New key.
 
@@ -279,25 +277,30 @@ public class VectorMapJoinInnerMultiKeyOperator extends VectorMapJoinInnerGenera
               }
             }
 
-            // Regardless of our matching result, we keep that information to make multiple use
-            // of it for a possible series of equal keys.
-            haveSaveKey = true;
-
-            /*
-             * Multi-Key specific save key.
-             */
-
-            temp = saveKeyOutput;
-            saveKeyOutput = currentKeyOutput;
-            currentKeyOutput = temp;
-
-            /*
-             * Multi-Key specific lookup key.
-             */
-
-            byte[] keyBytes = saveKeyOutput.getData();
-            int keyLength = saveKeyOutput.getLength();
-            saveJoinResult = hashMap.lookup(keyBytes, 0, keyLength, hashMapResults[hashMapResultCount]);
+            if (isAnyNull) {
+              saveJoinResult = JoinUtil.JoinResult.NOMATCH;
+              haveSaveKey = false;
+            } else {
+              // Regardless of our matching result, we keep that information to make multiple use
+              // of it for a possible series of equal keys.
+              haveSaveKey = true;
+  
+              /*
+               * Multi-Key specific save key.
+               */
+  
+              temp = saveKeyOutput;
+              saveKeyOutput = currentKeyOutput;
+              currentKeyOutput = temp;
+  
+              /*
+               * Multi-Key specific lookup key.
+               */
+  
+              byte[] keyBytes = saveKeyOutput.getData();
+              int keyLength = saveKeyOutput.getLength();
+              saveJoinResult = hashMap.lookup(keyBytes, 0, keyLength, hashMapResults[hashMapResultCount]);
+            }
 
             /*
              * Common inner join result processing.

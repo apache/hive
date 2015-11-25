@@ -196,13 +196,14 @@ public class VectorMapJoinInnerBigOnlyMultiKeyOperator extends VectorMapJoinInne
 
         keyVectorSerializeWrite.setOutput(currentKeyOutput);
         keyVectorSerializeWrite.serializeWrite(batch, 0);
+        JoinUtil.JoinResult joinResult;
         if (keyVectorSerializeWrite.getHasAnyNulls()) {
-          // Not expecting NULLs in MapJoin -- they should have been filtered out.
-          throw new HiveException("Null key not expected in MapJoin");
+          joinResult = JoinUtil.JoinResult.NOMATCH;
+        } else {
+          byte[] keyBytes = currentKeyOutput.getData();
+          int keyLength = currentKeyOutput.getLength();
+          joinResult = hashMultiSet.contains(keyBytes, 0, keyLength, hashMultiSetResults[0]);
         }
-        byte[] keyBytes = currentKeyOutput.getData();
-        int keyLength = currentKeyOutput.getLength();
-        JoinUtil.JoinResult joinResult = hashMultiSet.contains(keyBytes, 0, keyLength, hashMultiSetResults[0]);
 
         /*
          * Common repeated join result processing.
@@ -254,16 +255,13 @@ public class VectorMapJoinInnerBigOnlyMultiKeyOperator extends VectorMapJoinInne
           // Generate binary sortable key for current row in vectorized row batch.
           keyVectorSerializeWrite.setOutput(currentKeyOutput);
           keyVectorSerializeWrite.serializeWrite(batch, batchIndex);
-          if (keyVectorSerializeWrite.getHasAnyNulls()) {
-            // Not expecting NULLs in MapJoin -- they should have been filtered out.
-            throw new HiveException("Null key not expected in MapJoin");
-          }
+          boolean isAnyNulls = keyVectorSerializeWrite.getHasAnyNulls();
 
           /*
            * Equal key series checking.
            */
 
-          if (!haveSaveKey || !saveKeyOutput.arraysEquals(currentKeyOutput)) {
+          if (isAnyNulls || !haveSaveKey || !saveKeyOutput.arraysEquals(currentKeyOutput)) {
 
             // New key.
 
@@ -283,25 +281,30 @@ public class VectorMapJoinInnerBigOnlyMultiKeyOperator extends VectorMapJoinInne
               }
             }
 
-            // Regardless of our matching result, we keep that information to make multiple use
-            // of it for a possible series of equal keys.
-            haveSaveKey = true;
+            if (isAnyNulls) {
+              saveJoinResult = JoinUtil.JoinResult.NOMATCH;
+              haveSaveKey = false;
+            } else {
+              // Regardless of our matching result, we keep that information to make multiple use
+              // of it for a possible series of equal keys.
+              haveSaveKey = true;
 
-            /*
-             * Multi-Key specific save key.
-             */
+              /*
+               * Multi-Key specific save key.
+               */
 
-            temp = saveKeyOutput;
-            saveKeyOutput = currentKeyOutput;
-            currentKeyOutput = temp;
-
-            /*
-             * Single-Column Long specific lookup key.
-             */
-
-            byte[] keyBytes = saveKeyOutput.getData();
-            int keyLength = saveKeyOutput.getLength();
-            saveJoinResult = hashMultiSet.contains(keyBytes, 0, keyLength, hashMultiSetResults[hashMultiSetResultCount]);
+              temp = saveKeyOutput;
+              saveKeyOutput = currentKeyOutput;
+              currentKeyOutput = temp;
+  
+              /*
+               * Single-Column Long specific lookup key.
+               */
+  
+              byte[] keyBytes = saveKeyOutput.getData();
+              int keyLength = saveKeyOutput.getLength();
+              saveJoinResult = hashMultiSet.contains(keyBytes, 0, keyLength, hashMultiSetResults[hashMultiSetResultCount]);
+            }
 
             /*
              * Common inner big-only join result processing.

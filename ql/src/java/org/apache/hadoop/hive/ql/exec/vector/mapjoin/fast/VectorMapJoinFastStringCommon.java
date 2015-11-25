@@ -26,11 +26,15 @@ import org.apache.hadoop.hive.serde2.fast.DeserializeRead.ReadStringResults;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.BytesWritable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /*
  * An single byte array value hash map optimized for vector map join.
  */
 public class VectorMapJoinFastStringCommon {
+
+  public static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinFastStringCommon.class);
 
   private boolean isOuterJoin;
 
@@ -45,12 +49,7 @@ public class VectorMapJoinFastStringCommon {
     int keyLength = currentKey.getLength();
     keyBinarySortableDeserializeRead.set(keyBytes, 0, keyLength);
     if (keyBinarySortableDeserializeRead.readCheckNull()) {
-      if (isOuterJoin) {
-        return;
-      } else {
-        // For inner join, we expect all NULL values to have been filtered out before now.
-        throw new HiveException("Unexpected NULL in map join small table");
-      }
+      return;
     }
     keyBinarySortableDeserializeRead.readString(readStringResults);
 
