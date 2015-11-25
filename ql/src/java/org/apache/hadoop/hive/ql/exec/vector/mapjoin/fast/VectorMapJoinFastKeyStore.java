@@ -30,7 +30,6 @@ public class VectorMapJoinFastKeyStore {
 
   private WriteBuffers writeBuffers;
 
-  private WriteBuffers.ByteSegmentRef byteSegmentRef;
   private WriteBuffers.Position readPos;
 
   /**
@@ -141,17 +140,11 @@ public class VectorMapJoinFastKeyStore {
     }
 
     // Our reading is positioned to the key.
-    writeBuffers.getByteSegmentRefToCurrent(byteSegmentRef, keyLength, readPos);
-
-    byte[] currentBytes = byteSegmentRef.getBytes();
-    int currentStart = (int) byteSegmentRef.getOffset();
-
-    for (int i = 0; i < keyLength; i++) {
-      if (currentBytes[currentStart + i] != keyBytes[keyStart + i]) {
-        // LOG.debug("VectorMapJoinFastKeyStore equalKey no match on bytes");
-        return false;
-      }
+    if (!writeBuffers.isEqual(keyBytes, keyStart, readPos, keyLength)) {
+      // LOG.debug("VectorMapJoinFastKeyStore equalKey no match on bytes");
+      return false;
     }
+
     // LOG.debug("VectorMapJoinFastKeyStore equalKey match on bytes");
     return true;
   }
@@ -159,7 +152,6 @@ public class VectorMapJoinFastKeyStore {
   public VectorMapJoinFastKeyStore(int writeBuffersSize) {
     writeBuffers = new WriteBuffers(writeBuffersSize, AbsoluteKeyOffset.maxSize);
 
-    byteSegmentRef = new WriteBuffers.ByteSegmentRef();
     readPos = new WriteBuffers.Position();
   }
 
@@ -167,7 +159,6 @@ public class VectorMapJoinFastKeyStore {
     // TODO: Check if maximum size compatible with AbsoluteKeyOffset.maxSize.
     this.writeBuffers = writeBuffers;
 
-    byteSegmentRef = new WriteBuffers.ByteSegmentRef();
     readPos = new WriteBuffers.Position();
   }
 }

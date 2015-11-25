@@ -282,58 +282,27 @@ public final class WriteBuffers implements RandomAccessOutput {
     return true;
   }
 
-  /**
-   * Compares part of the buffer with a part of an external byte array.
-   * Does not modify readPoint.
-   */
-  public boolean isEqual(byte[] left, int leftLength, long rightOffset, int rightLength) {
-    if (rightLength != leftLength) {
-      return false;
-    }
-    int rightIndex = getBufferIndex(rightOffset), rightFrom = getOffset(rightOffset);
-    byte[] rightBuffer = writeBuffers.get(rightIndex);
-    if (rightFrom + rightLength <= wbSize) {
-      // TODO: allow using unsafe optionally.
-      for (int i = 0; i < leftLength; ++i) {
-        if (left[i] != rightBuffer[rightFrom + i]) {
-          return false;
-        }
-      }
+  private final boolean isEqual(byte[] left, int leftOffset, int rightIndex, int rightFrom, int length) {
+    if (length == 0) {
       return true;
     }
-    for (int i = 0; i < rightLength; ++i) {
-      if (rightFrom == wbSize) {
-        ++rightIndex;
-        rightBuffer = writeBuffers.get(rightIndex);
-        rightFrom = 0;
-      }
-      if (left[i] != rightBuffer[rightFrom++]) {
+    // invariant: rightLength = leftLength
+    // rightOffset is within the buffers
+    byte[] rightBuffer = writeBuffers.get(rightIndex);
+    if (rightFrom + length <= wbSize) {
+      // TODO: allow using unsafe optionally.
+      // bounds check first, to trigger bugs whether the first byte matches or not
+      if (left[leftOffset + length - 1] != rightBuffer[rightFrom + length - 1]) {
         return false;
       }
-    }
-    return true;
-  }
-
-  /**
-   * Compares part of the buffer with a part of an external byte array.
-   * Does not modify readPoint.
-   */
-  public boolean isEqual(byte[] left, int leftOffset, int leftLength, long rightOffset, int rightLength) {
-    if (rightLength != leftLength) {
-      return false;
-    }
-    int rightIndex = getBufferIndex(rightOffset), rightFrom = getOffset(rightOffset);
-    byte[] rightBuffer = writeBuffers.get(rightIndex);
-    if (rightFrom + rightLength <= wbSize) {
-      // TODO: allow using unsafe optionally.
-      for (int i = 0; i < leftLength; ++i) {
+      for (int i = 0; i < length; ++i) {
         if (left[leftOffset + i] != rightBuffer[rightFrom + i]) {
           return false;
         }
       }
       return true;
     }
-    for (int i = 0; i < rightLength; ++i) {
+    for (int i = 0; i < length; ++i) {
       if (rightFrom == wbSize) {
         ++rightIndex;
         rightBuffer = writeBuffers.get(rightIndex);
@@ -344,6 +313,36 @@ public final class WriteBuffers implements RandomAccessOutput {
       }
     }
     return true;
+  }
+
+  /**
+   * Compares part of the buffer with a part of an external byte array.
+   * Does not modify readPoint.
+   */
+  public boolean isEqual(byte[] left, int leftLength, long rightOffset, int rightLength) {
+    if (rightLength != leftLength) {
+      return false;
+    }
+    return isEqual(left, 0, getBufferIndex(rightOffset), getOffset(rightOffset), leftLength);
+  }
+
+  /**
+   * Compares part of the buffer with a part of an external byte array.
+   * Does not modify readPoint.
+   */
+  public boolean isEqual(byte[] left, int leftOffset, int leftLength, long rightOffset, int rightLength) {
+    if (rightLength != leftLength) {
+      return false;
+    }
+    return isEqual(left, leftOffset, getBufferIndex(rightOffset), getOffset(rightOffset), leftLength);
+  }
+
+  /**
+   * Compares the current readPosition of the buffer with the external byte array.
+   * Does not modify readPoint.
+   */
+  public boolean isEqual(byte[] left, int leftOffset, Position readPos, int length) {
+    return isEqual(left, leftOffset, readPos.bufferIndex, readPos.offset, length);
   }
 
   public void clear() {
