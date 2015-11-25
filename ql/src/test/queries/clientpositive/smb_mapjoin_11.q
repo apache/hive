@@ -1,8 +1,8 @@
 set hive.optimize.bucketmapjoin = true;
 set hive.optimize.bucketmapjoin.sortedmerge = true;
 set hive.input.format = org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
-set hive.enforce.bucketing=true;
-set hive.enforce.sorting=true;
+
+
 set hive.exec.reducers.max = 1;
 set hive.merge.mapfiles=false;
 set hive.merge.mapredfiles=false; 
@@ -17,8 +17,8 @@ FROM src
 INSERT OVERWRITE TABLE test_table1 PARTITION (ds = '1') SELECT *
 INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1') SELECT *;
 
-set hive.enforce.bucketing=false;
-set hive.enforce.sorting=false;
+
+
 
 -- Create a bucketed table
 CREATE TABLE test_table3 (key INT, value STRING) PARTITIONED BY (ds STRING) CLUSTERED BY (key) INTO 16 BUCKETS;

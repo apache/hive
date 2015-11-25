@@ -1,6 +1,6 @@
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
-set hive.enforce.bucketing=true;
+
 
 dfs ${system:test.dfs.mkdir} ${system:test.tmp.dir}/update_orig_table;
 dfs -copyFromLocal ../../data/files/alltypesorc ${system:test.tmp.dir}/update_orig_table/00000_0; 

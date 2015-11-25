@@ -3,8 +3,8 @@ INTO 1 BUCKETS STORED AS RCFILE;
 create table table_desc(key int, value string) CLUSTERED BY (key) SORTED BY (key desc) 
 INTO 1 BUCKETS STORED AS RCFILE;
 
-set hive.enforce.bucketing = true;
-set hive.enforce.sorting = true;
+
+
 
 insert overwrite table table_asc select key, value from src; 
 insert overwrite table table_desc select key, value from src;

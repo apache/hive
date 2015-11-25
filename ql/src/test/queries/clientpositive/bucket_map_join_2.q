@@ -1,8 +1,8 @@
 drop table table1;
 drop table table2;
 
-set hive.enforce.bucketing = true;
-set hive.enforce.sorting = true;
+;
+
 
 create table table1(key string, value string) clustered by (key, value)
 sorted by (key desc, value desc) into 1 BUCKETS stored as textfile;

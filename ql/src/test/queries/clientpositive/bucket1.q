@@ -1,4 +1,4 @@
-set hive.enforce.bucketing = true;
+;
 set hive.exec.reducers.max = 200;
 
 -- SORT_QUERY_RESULTS

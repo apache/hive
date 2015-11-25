@@ -51,7 +51,6 @@ public class TestDbTxnManager2 {
   public static void setUpClass() throws Exception {
     TxnDbUtil.setConfValues(conf);
     conf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
-    conf.setBoolVar(HiveConf.ConfVars.HIVEENFORCEBUCKETING, true);
   }
   @Before
   public void setUp() throws Exception {
@@ -211,8 +210,8 @@ public class TestDbTxnManager2 {
     Assert.assertEquals("Unexpected number of locks found", 0, locks.size());
     checkCmdOnDriver(cpr);
   }
-  
-  
+
+
   private void checkLock(LockType type, LockState state, String db, String table, String partition, ShowLocksResponseElement l) {
     Assert.assertEquals(l.toString(),l.getType(), type);
     Assert.assertEquals(l.toString(),l.getState(), state);

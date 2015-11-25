@@ -29,8 +29,6 @@ import java.util.Stack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.ObjectPair;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -76,8 +74,7 @@ import com.google.common.collect.Maps;
  * When dynamic partitioning (with or without bucketing and sorting) is enabled, this optimization
  * sorts the records on partition, bucket and sort columns respectively before inserting records
  * into the destination table. This enables reducers to keep only one record writer all the time
- * thereby reducing the the memory pressure on the reducers. This optimization will force a reducer
- * even when hive.enforce.bucketing and hive.enforce.sorting is set to false.
+ * thereby reducing the the memory pressure on the reducers.
  */
 public class SortedDynPartitionOptimizer implements Transform {
 
@@ -270,58 +267,53 @@ public class SortedDynPartitionOptimizer implements Transform {
     // Remove RS and SEL introduced by enforce bucketing/sorting config
     // Convert PARENT -> RS -> SEL -> FS to PARENT -> FS
     private boolean removeRSInsertedByEnforceBucketing(FileSinkOperator fsOp) {
-      HiveConf hconf = parseCtx.getConf();
-      boolean enforceBucketing = HiveConf.getBoolVar(hconf, ConfVars.HIVEENFORCEBUCKETING);
-      boolean enforceSorting = HiveConf.getBoolVar(hconf, ConfVars.HIVEENFORCESORTING);
-      if (enforceBucketing || enforceSorting) {
-        Set<ReduceSinkOperator> reduceSinks = OperatorUtils.findOperatorsUpstream(fsOp,
-            ReduceSinkOperator.class);
-        Operator<? extends OperatorDesc> rsToRemove = null;
-        List<ReduceSinkOperator> rsOps = parseCtx
-            .getReduceSinkOperatorsAddedByEnforceBucketingSorting();
-        boolean found = false;
 
-        // iterate through all RS and locate the one introduce by enforce bucketing
-        for (ReduceSinkOperator reduceSink : reduceSinks) {
-          for (ReduceSinkOperator rsOp : rsOps) {
-            if (reduceSink.equals(rsOp)) {
-              rsToRemove = reduceSink;
-              found = true;
-              break;
-            }
-          }
+      Set<ReduceSinkOperator> reduceSinks = OperatorUtils.findOperatorsUpstream(fsOp,
+          ReduceSinkOperator.class);
+      Operator<? extends OperatorDesc> rsToRemove = null;
+      List<ReduceSinkOperator> rsOps = parseCtx
+          .getReduceSinkOperatorsAddedByEnforceBucketingSorting();
+      boolean found = false;
 
-          if (found) {
+      // iterate through all RS and locate the one introduce by enforce bucketing
+      for (ReduceSinkOperator reduceSink : reduceSinks) {
+        for (ReduceSinkOperator rsOp : rsOps) {
+          if (reduceSink.equals(rsOp)) {
+            rsToRemove = reduceSink;
+            found = true;
             break;
           }
         }
 
-        // iF RS is found remove it and its child (EX) and connect its parent
-        // and grand child
         if (found) {
-          Operator<? extends OperatorDesc> rsParent = rsToRemove.getParentOperators().get(0);
-          Operator<? extends OperatorDesc> rsChild = rsToRemove.getChildOperators().get(0);
-          Operator<? extends OperatorDesc> rsGrandChild = rsChild.getChildOperators().get(0);
-
-          if (rsChild instanceof SelectOperator) {
-            // if schema size cannot be matched, then it could be because of constant folding
-            // converting partition column expression to constant expression. The constant
-            // expression will then get pruned by column pruner since it will not reference to
-            // any columns.
-            if (rsParent.getSchema().getSignature().size() !=
-                rsChild.getSchema().getSignature().size()) {
-              return false;
-            }
-            rsParent.getChildOperators().clear();
-            rsParent.getChildOperators().add(rsGrandChild);
-            rsGrandChild.getParentOperators().clear();
-            rsGrandChild.getParentOperators().add(rsParent);
-            LOG.info("Removed " + rsToRemove.getOperatorId() + " and " + rsChild.getOperatorId()
-                + " as it was introduced by enforce bucketing/sorting.");
-          }
+          break;
         }
       }
 
+      // iF RS is found remove it and its child (EX) and connect its parent
+      // and grand child
+      if (found) {
+        Operator<? extends OperatorDesc> rsParent = rsToRemove.getParentOperators().get(0);
+        Operator<? extends OperatorDesc> rsChild = rsToRemove.getChildOperators().get(0);
+        Operator<? extends OperatorDesc> rsGrandChild = rsChild.getChildOperators().get(0);
+
+        if (rsChild instanceof SelectOperator) {
+          // if schema size cannot be matched, then it could be because of constant folding
+          // converting partition column expression to constant expression. The constant
+          // expression will then get pruned by column pruner since it will not reference to
+          // any columns.
+          if (rsParent.getSchema().getSignature().size() !=
+              rsChild.getSchema().getSignature().size()) {
+            return false;
+          }
+          rsParent.getChildOperators().clear();
+          rsParent.getChildOperators().add(rsGrandChild);
+          rsGrandChild.getParentOperators().clear();
+          rsGrandChild.getParentOperators().add(rsParent);
+          LOG.info("Removed " + rsToRemove.getOperatorId() + " and " + rsChild.getOperatorId()
+              + " as it was introduced by enforce bucketing/sorting.");
+        }
+      }
       return true;
     }
 

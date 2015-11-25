@@ -1,4 +1,3 @@
--- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20S)
 -- Tests that when overwriting a partition in a table after altering the bucketing/sorting metadata
 -- the partition metadata is updated as well.
 
@@ -6,8 +5,8 @@ CREATE TABLE tst1(key STRING, value STRING) PARTITIONED BY (ds STRING);
 
 DESCRIBE FORMATTED tst1;
 
-SET hive.enforce.bucketing=true;
-SET hive.enforce.sorting=true;
+
+
 INSERT OVERWRITE TABLE tst1 PARTITION (ds = '1') SELECT key, value FROM src;
 
 DESCRIBE FORMATTED tst1 PARTITION (ds = '1');

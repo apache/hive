@@ -4,8 +4,8 @@ set hive.exec.dynamic.partition=true;
 set hive.exec.max.dynamic.partitions=1000;
 set hive.exec.max.dynamic.partitions.pernode=1000;
 set hive.exec.dynamic.partition.mode=nonstrict;
-set hive.enforce.bucketing=false;
-set hive.enforce.sorting=false;
+
+
 
 -- SORT_QUERY_RESULTS
 

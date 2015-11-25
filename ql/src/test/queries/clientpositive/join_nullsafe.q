@@ -35,8 +35,8 @@ CREATE TABLE smb_input(key int, value int);
 LOAD DATA LOCAL INPATH '../../data/files/in4.txt' into table smb_input;
 LOAD DATA LOCAL INPATH '../../data/files/in5.txt' into table smb_input;
 
-set hive.enforce.sorting = true;
-set hive.enforce.bucketing = true;
+
+;
 
 -- smbs
 CREATE TABLE smb_input1(key int, value int) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS;

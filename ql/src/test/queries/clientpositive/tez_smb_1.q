@@ -17,8 +17,8 @@ load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE srcbucket_m
 load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08');
 load data local inpath '../../data/files/srcbucket23.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08');
 
-set hive.enforce.bucketing=true;
-set hive.enforce.sorting = true;
+
+
 set hive.optimize.bucketingsorting=false;
 insert overwrite table tab_part partition (ds='2008-04-08')
 select key,value from srcbucket_mapjoin_part;

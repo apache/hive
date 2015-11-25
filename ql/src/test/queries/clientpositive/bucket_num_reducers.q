@@ -1,4 +1,4 @@
-set hive.enforce.bucketing = true;
+;
 set hive.exec.mode.local.auto=false;
 set mapred.reduce.tasks = 10;
 

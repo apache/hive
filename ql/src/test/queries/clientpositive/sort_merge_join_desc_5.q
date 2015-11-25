@@ -1,5 +1,5 @@
-set hive.enforce.bucketing=true;
-set hive.enforce.sorting=true;
+
+
 
 CREATE TABLE srcbucket_mapjoin_part_1 (key INT, value STRING) PARTITIONED BY (part STRING) 
 CLUSTERED BY (key) SORTED BY (key DESC) INTO 1 BUCKETS;

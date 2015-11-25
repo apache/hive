@@ -6054,7 +6054,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // spray the data into multiple buckets. That way, we can support a very large
     // number of buckets without needing a very large number of reducers.
     boolean enforceBucketing = false;
-    boolean enforceSorting = false;
     ArrayList<ExprNodeDesc> partnCols = new ArrayList<ExprNodeDesc>();
     ArrayList<ExprNodeDesc> sortCols = new ArrayList<ExprNodeDesc>();
     ArrayList<Integer> sortOrders = new ArrayList<Integer>();
@@ -6062,8 +6061,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     int numFiles = 1;
     int totalFiles = 1;
 
-    if ((dest_tab.getNumBuckets() > 0) &&
-        (conf.getBoolVar(HiveConf.ConfVars.HIVEENFORCEBUCKETING))) {
+    if (dest_tab.getNumBuckets() > 0) {
       enforceBucketing = true;
       if (updating() || deleting()) {
         partnCols = getPartitionColsFromBucketColsForUpdateDelete(input, true);
@@ -6073,24 +6071,27 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     if ((dest_tab.getSortCols() != null) &&
-        (dest_tab.getSortCols().size() > 0) &&
-        (conf.getBoolVar(HiveConf.ConfVars.HIVEENFORCESORTING))) {
-      enforceSorting = true;
+        (dest_tab.getSortCols().size() > 0)) {
       sortCols = getSortCols(dest, qb, dest_tab, table_desc, input, true);
       sortOrders = getSortOrders(dest, qb, dest_tab, input);
-      if (!enforceBucketing) {
-        partnCols = sortCols;
+      if (!enforceBucketing && !dest_tab.isIndexTable()) {
+        throw new SemanticException(ErrorMsg.TBL_SORTED_NOT_BUCKETED.getErrorCodedMsg(dest_tab.getCompleteName()));
+      } else {
+        if (!enforceBucketing) {
+          partnCols = sortCols;
+        }
       }
+      enforceBucketing = true;
     }
 
-    if (enforceBucketing || enforceSorting) {
+    if (enforceBucketing) {
       int maxReducers = conf.getIntVar(HiveConf.ConfVars.MAXREDUCERS);
       if (conf.getIntVar(HiveConf.ConfVars.HADOOPNUMREDUCERS) > 0) {
         maxReducers = conf.getIntVar(HiveConf.ConfVars.HADOOPNUMREDUCERS);
       }
       int numBuckets = dest_tab.getNumBuckets();
       if (numBuckets > maxReducers) {
-        LOG.debug("XXXXXX numBuckets is " + numBuckets + " and maxReducers is " + maxReducers);
+        LOG.debug("numBuckets is {}", numBuckets, " and maxReducers is {}", maxReducers);
         multiFileSpray = true;
         totalFiles = numBuckets;
         if (totalFiles % maxReducers == 0) {
@@ -6123,11 +6124,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private void genPartnCols(String dest, Operator input, QB qb,
       TableDesc table_desc, Table dest_tab, SortBucketRSCtx ctx) throws SemanticException {
     boolean enforceBucketing = false;
-    boolean enforceSorting = false;
     ArrayList<ExprNodeDesc> partnColsNoConvert = new ArrayList<ExprNodeDesc>();
 
-    if ((dest_tab.getNumBuckets() > 0) &&
-        (conf.getBoolVar(HiveConf.ConfVars.HIVEENFORCEBUCKETING))) {
+    if ((dest_tab.getNumBuckets() > 0)) {
       enforceBucketing = true;
       if (updating() || deleting()) {
         partnColsNoConvert = getPartitionColsFromBucketColsForUpdateDelete(input, false);
@@ -6138,15 +6137,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     if ((dest_tab.getSortCols() != null) &&
-        (dest_tab.getSortCols().size() > 0) &&
-        (conf.getBoolVar(HiveConf.ConfVars.HIVEENFORCESORTING))) {
-      enforceSorting = true;
-      if (!enforceBucketing) {
-        partnColsNoConvert = getSortCols(dest, qb, dest_tab, table_desc, input, false);
+        (dest_tab.getSortCols().size() > 0)) {
+      if (!enforceBucketing && !dest_tab.isIndexTable()) {
+        throw new SemanticException(ErrorMsg.TBL_SORTED_NOT_BUCKETED.getErrorCodedMsg(dest_tab.getCompleteName()));
       }
+      else {
+        if(!enforceBucketing) {
+          partnColsNoConvert = getSortCols(dest, qb, dest_tab, table_desc, input, false);
+        }
+      }
+      enforceBucketing = true;
     }
 
-    if (enforceBucketing || enforceSorting) {
+    if (enforceBucketing) {
       ctx.setPartnCols(partnColsNoConvert);
     }
   }
@@ -6234,8 +6237,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (dpCtx.getSPPath() != null) {
           dest_path = new Path(dest_tab.getPath(), dpCtx.getSPPath());
         }
-        if ((dest_tab.getNumBuckets() > 0) &&
-            (conf.getBoolVar(HiveConf.ConfVars.HIVEENFORCEBUCKETING))) {
+        if ((dest_tab.getNumBuckets() > 0)) {
           dpCtx.setNumBuckets(dest_tab.getNumBuckets());
         }
       }
@@ -6542,12 +6544,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     RowSchema fsRS = new RowSchema(vecCol);
 
     // The output files of a FileSink can be merged if they are either not being written to a table
-    // or are being written to a table which is either not bucketed or enforce bucketing is not set
-    // and table the table is either not sorted or enforce sorting is not set
-    boolean canBeMerged = (dest_tab == null || !((dest_tab.getNumBuckets() > 0 &&
-        conf.getBoolVar(HiveConf.ConfVars.HIVEENFORCEBUCKETING)) ||
-        (dest_tab.getSortCols() != null && dest_tab.getSortCols().size() > 0 &&
-        conf.getBoolVar(HiveConf.ConfVars.HIVEENFORCESORTING))));
+    // or are being written to a table which is not bucketed
+    // and table the table is not sorted
+    boolean canBeMerged = (dest_tab == null || !((dest_tab.getNumBuckets() > 0) ||
+        (dest_tab.getSortCols() != null && dest_tab.getSortCols().size() > 0)));
 
     // If this table is working with ACID semantics, turn off merging
     canBeMerged &= !destTableIsAcid;

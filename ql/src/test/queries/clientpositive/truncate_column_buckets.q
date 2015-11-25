@@ -2,7 +2,7 @@
 
 CREATE TABLE test_tab (key STRING, value STRING) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS RCFILE;
 
-set hive.enforce.bucketing=true;
+
 
 INSERT OVERWRITE TABLE test_tab SELECT * FROM src;
 
