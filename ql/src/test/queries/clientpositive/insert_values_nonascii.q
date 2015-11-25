@@ -1,6 +1,6 @@
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
-set hive.enforce.bucketing=true;
+
 
 create table insert_values_nonascii(t1 char(32), t2 string);
 
