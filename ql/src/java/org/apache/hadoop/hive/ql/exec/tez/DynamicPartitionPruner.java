@@ -18,6 +18,12 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -242,23 +248,35 @@ public class DynamicPartitionPruner {
       LOG.debug(sb.toString());
     }
 
-    ObjectInspector oi =
-        PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(TypeInfoFactory
-            .getPrimitiveTypeInfo(si.fieldInspector.getTypeName()));
+    ObjectInspector targetOi = findTargetOi(si.partKey, si.columnName);
+    Converter converter = ObjectInspectorConverters.getConverter(
+            PrimitiveObjectInspectorFactory.javaStringObjectInspector, targetOi);
 
-    Converter converter =
-        ObjectInspectorConverters.getConverter(
-            PrimitiveObjectInspectorFactory.javaStringObjectInspector, oi);
-
-    StructObjectInspector soi =
-        ObjectInspectorFactory.getStandardStructObjectInspector(
-            Collections.singletonList(columnName), Collections.singletonList(oi));
+    StructObjectInspector soi = ObjectInspectorFactory.getStandardStructObjectInspector(
+            Collections.singletonList(columnName), Collections.singletonList(targetOi));
 
     @SuppressWarnings("rawtypes")
     ExprNodeEvaluator eval = ExprNodeEvaluatorFactory.get(si.partKey);
-    eval.initialize(soi);
+    eval.initialize(soi); // We expect the row with just the relevant column.
 
     applyFilterToPartitions(converter, eval, columnName, values);
+  }
+
+  private ObjectInspector findTargetOi(ExprNodeDesc expr, String columnName) {
+    if (expr instanceof ExprNodeColumnDesc) {
+      ExprNodeColumnDesc colExpr = (ExprNodeColumnDesc)expr;
+      // TODO: this is not necessarily going to work for all cases. At least, table name is needed.
+      //       Also it's not clear if this is going to work with subquery columns and such.
+      if (columnName.equals(colExpr.getColumn())) {
+        return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
+            (PrimitiveTypeInfo)colExpr.getTypeInfo());
+      }
+    }
+    for (ExprNodeDesc child : expr.getChildren()) {
+      ObjectInspector oi = findTargetOi(child, columnName);
+      if (oi != null) return oi;
+    }
+    return null;
   }
 
   @SuppressWarnings("rawtypes")
