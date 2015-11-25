@@ -378,11 +378,11 @@ public class SparkTask extends Task<SparkWork> {
       for (Operator<? extends OperatorDesc> operator : work.getAllOperators()) {
         if (operator instanceof FileSinkOperator) {
           for (FileSinkOperator.Counter counter : FileSinkOperator.Counter.values()) {
-            hiveCounters.add(counter.toString());
+            hiveCounters.add(((FileSinkOperator) operator).getCounterName(counter));
           }
         } else if (operator instanceof ReduceSinkOperator) {
           for (ReduceSinkOperator.Counter counter : ReduceSinkOperator.Counter.values()) {
-            hiveCounters.add(counter.toString());
+            hiveCounters.add(((ReduceSinkOperator) operator).getCounterName(counter, conf));
           }
         } else if (operator instanceof ScriptOperator) {
           for (ScriptOperator.Counter counter : ScriptOperator.Counter.values()) {

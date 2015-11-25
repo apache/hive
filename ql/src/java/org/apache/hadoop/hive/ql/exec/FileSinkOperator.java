@@ -397,14 +397,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
 
       numRows = 0;
 
-      String suffix = Integer.toString(conf.getDestTableId());
-      String fullName = conf.getTableInfo().getTableName();
-      if (fullName != null) {
-        suffix = suffix + "_" + fullName.toLowerCase();
-      }
-
-      statsMap.put(Counter.RECORDS_OUT + "_" + suffix, row_count);
-
+      statsMap.put(getCounterName(Counter.RECORDS_OUT), row_count);
       initializeChildren(hconf);
     } catch (HiveException e) {
       throw e;
@@ -412,6 +405,15 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       e.printStackTrace();
       throw new HiveException(e);
     }
+  }
+
+  public String getCounterName(Counter counter) {
+    String suffix = Integer.toString(conf.getDestTableId());
+    String fullName = conf.getTableInfo().getTableName();
+    if (fullName != null) {
+      suffix = suffix + "_" + fullName.toLowerCase();
+    }
+    return counter + "_" + suffix;
   }
 
   /**
