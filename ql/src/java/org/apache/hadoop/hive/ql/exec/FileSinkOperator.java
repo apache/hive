@@ -441,19 +441,22 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       cntr = 1;
       logEveryNRows = HiveConf.getLongVar(hconf, HiveConf.ConfVars.HIVE_LOG_N_RECORDS);
 
-      String suffix = Integer.toString(conf.getDestTableId());
-      String fullName = conf.getTableInfo().getTableName();
-      if (fullName != null) {
-        suffix = suffix + "_" + fullName.toLowerCase();
-      }
-
-      statsMap.put(Counter.RECORDS_OUT + "_" + suffix, row_count);
+      statsMap.put(getCounterName(Counter.RECORDS_OUT), row_count);
     } catch (HiveException e) {
       throw e;
     } catch (Exception e) {
       e.printStackTrace();
       throw new HiveException(e);
     }
+  }
+
+  public String getCounterName(Counter counter) {
+    String suffix = Integer.toString(conf.getDestTableId());
+    String fullName = conf.getTableInfo().getTableName();
+    if (fullName != null) {
+      suffix = suffix + "_" + fullName.toLowerCase();
+    }
+    return counter + "_" + suffix;
   }
 
   private void logOutputFormatError(Configuration hconf, HiveException ex) {
