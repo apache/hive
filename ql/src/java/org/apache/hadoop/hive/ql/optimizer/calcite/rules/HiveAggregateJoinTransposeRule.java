@@ -17,6 +17,7 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
 import org.apache.calcite.linq4j.Ord;
+import org.apache.calcite.plan.RelOptCost;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelNode;
@@ -295,15 +296,13 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
           Mappings.apply(mapping, aggregate.getGroupSet()),
           Mappings.apply2(mapping, aggregate.getGroupSets()), newAggCalls);
     }
-    call.transformTo(r);
-    // Add original tree as well for potential alternative transformation.
-    // This is modeled after LoptOptimizeJoinRule::findBestOrderings() in
-    // which rule adds multiple transformations and Planner picks the cheapest one.
-    // Hep planner will automatically pick the one with lower cost among two.
-    // For details, see: HepPlanner:applyTransformationResults()
-    // In this case, if ndv is close to # of rows, i.e., group by is not resulting
-    // in any deduction, doing this transformation is not useful.
-    call.transformTo(aggregate);
+
+    // Make a cost based decision to pick cheaper plan
+    RelOptCost afterCost = RelMetadataQuery.getCumulativeCost(r);
+    RelOptCost beforeCost = RelMetadataQuery.getCumulativeCost(aggregate);
+    if (afterCost.isLt(beforeCost)) {
+      call.transformTo(r);
+    }
   }
 
   /** Computes the closure of a set of columns according to a given list of
