@@ -274,6 +274,9 @@ public class OrcRecordUpdater implements RecordUpdater {
     item.setFieldValue(ROW_ID, rowId);
   }
 
+  public String toString() {
+    return getClass().getName() + "[" + path +"]";
+  }
   /**
    * To handle multiple INSERT... statements in a single transaction, we want to make sure
    * to generate unique {@code rowId} for all inserted rows of the transaction.

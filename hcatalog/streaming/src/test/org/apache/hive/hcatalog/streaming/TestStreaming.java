@@ -29,11 +29,14 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
+import org.apache.hadoop.hive.metastore.api.TxnInfo;
+import org.apache.hadoop.hive.metastore.api.TxnState;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
@@ -1187,7 +1190,120 @@ public class TestStreaming {
 
 
   }
+  private void runCmdOnDriver(String cmd) throws QueryFailedException {
+    boolean t = runDDL(driver, cmd);
+    Assert.assertTrue(cmd + " failed", t);
+  }
+  
 
+  @Test
+  public void testErrorHandling() throws Exception {
+    runCmdOnDriver("create database testErrors");
+    runCmdOnDriver("use testErrors");
+    runCmdOnDriver("create table T(a int, b int) clustered by (b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')");
+
+    HiveEndPoint endPt = new HiveEndPoint(metaStoreURI, "testErrors", "T", null);
+    DelimitedInputWriter innerWriter = new DelimitedInputWriter("a,b".split(","),",", endPt);
+    FaultyWriter writer = new FaultyWriter(innerWriter);
+    StreamingConnection connection = endPt.newConnection(false);
+
+    TransactionBatch txnBatch =  connection.fetchTransactionBatch(2, writer);
+    txnBatch.close();
+    txnBatch.heartbeat();//this is no-op on closed batch
+    txnBatch.abort();//ditto
+    GetOpenTxnsInfoResponse r = msClient.showTxns();
+    Assert.assertEquals("HWM didn't match", 2, r.getTxn_high_water_mark());
+    List<TxnInfo> ti = r.getOpen_txns();
+    Assert.assertEquals("wrong status ti(0)", TxnState.ABORTED, ti.get(0).getState());
+    Assert.assertEquals("wrong status ti(1)", TxnState.ABORTED, ti.get(1).getState());
+
+    Exception expectedEx = null;
+    try {
+      txnBatch.beginNextTransaction();
+    }
+    catch(IllegalStateException ex) {
+      expectedEx = ex;
+    }
+    Assert.assertTrue("beginNextTransaction() should have failed",
+      expectedEx != null && expectedEx.getMessage().contains("has been closed()"));
+    expectedEx = null;
+    try {
+      txnBatch.write("name0,1,Hello streaming".getBytes());
+    }
+    catch(IllegalStateException ex) {
+      expectedEx = ex;
+    }
+    Assert.assertTrue("write()  should have failed",
+      expectedEx != null && expectedEx.getMessage().contains("has been closed()"));
+    expectedEx = null;
+    try {
+      txnBatch.commit();
+    }
+    catch(IllegalStateException ex) {
+      expectedEx = ex;
+    }
+    Assert.assertTrue("commit() should have failed",
+      expectedEx != null && expectedEx.getMessage().contains("has been closed()"));
+
+    txnBatch =  connection.fetchTransactionBatch(2, writer);
+    txnBatch.beginNextTransaction();
+    txnBatch.write("name2,2,Welcome to streaming".getBytes());
+    txnBatch.write("name4,2,more Streaming unlimited".getBytes());
+    txnBatch.write("name5,2,even more Streaming unlimited".getBytes());
+    txnBatch.commit();
+    
+    expectedEx = null;
+    txnBatch.beginNextTransaction();
+    writer.enableErrors();
+    try {
+      txnBatch.write("name6,2,Doh!".getBytes());
+    }
+    catch(StreamingIOFailure ex) {
+      expectedEx = ex;
+    }
+    Assert.assertTrue("Wrong exception: " + (expectedEx != null ? expectedEx.getMessage() : "?"),
+      expectedEx != null && expectedEx.getMessage().contains("Simulated fault occurred"));
+    expectedEx = null;
+    try {
+      txnBatch.commit();
+    }
+    catch(IllegalStateException ex) {
+      expectedEx = ex;
+    }
+    Assert.assertTrue("commit() should have failed",
+      expectedEx != null && expectedEx.getMessage().contains("has been closed()"));
+
+    r = msClient.showTxns();
+    Assert.assertEquals("HWM didn't match", 4, r.getTxn_high_water_mark());
+    ti = r.getOpen_txns();
+    Assert.assertEquals("wrong status ti(0)", TxnState.ABORTED, ti.get(0).getState());
+    Assert.assertEquals("wrong status ti(1)", TxnState.ABORTED, ti.get(1).getState());
+    //txnid 3 was committed and thus not open
+    Assert.assertEquals("wrong status ti(2)", TxnState.ABORTED, ti.get(2).getState());
+
+    writer.disableErrors();
+    txnBatch =  connection.fetchTransactionBatch(2, writer);
+    txnBatch.beginNextTransaction();
+    txnBatch.write("name2,2,Welcome to streaming".getBytes());
+    writer.enableErrors();
+    expectedEx = null;
+    try {
+      txnBatch.commit();
+    }
+    catch(StreamingIOFailure ex) {
+      expectedEx = ex;
+    }
+    Assert.assertTrue("Wrong exception: " + (expectedEx != null ? expectedEx.getMessage() : "?"),
+      expectedEx != null && expectedEx.getMessage().contains("Simulated fault occurred"));
+    
+    r = msClient.showTxns();
+    Assert.assertEquals("HWM didn't match", 6, r.getTxn_high_water_mark());
+    ti = r.getOpen_txns();
+    Assert.assertEquals("wrong status ti(3)", TxnState.ABORTED, ti.get(3).getState());
+    Assert.assertEquals("wrong status ti(4)", TxnState.ABORTED, ti.get(4).getState());
+
+    txnBatch.abort();
+  }
 
     // assumes un partitioned table
   // returns a map<bucketNum, list<record> >
@@ -1407,6 +1523,57 @@ public class TestStreaming {
               "," + field2 +
               ",'" + field3 + '\'' +
               " }";
+    }
+  }
+  /**
+   * This is test-only wrapper around the real RecordWriter.
+   * It can simulate faults from lower levels to test error handling logic.
+   */
+  private static final class FaultyWriter implements RecordWriter {
+    private final RecordWriter delegate;
+    private boolean shouldThrow = false;
+
+    private FaultyWriter(RecordWriter delegate) {
+      assert delegate != null;
+      this.delegate = delegate;
+    }
+    @Override
+    public void write(long transactionId, byte[] record) throws StreamingException {
+      delegate.write(transactionId, record);
+      produceFault();
+    }
+    @Override
+    public void flush() throws StreamingException {
+      delegate.flush();
+      produceFault();
+    }
+    @Override
+    public void clear() throws StreamingException {
+      delegate.clear();
+    }
+    @Override
+    public void newBatch(Long minTxnId, Long maxTxnID) throws StreamingException {
+      delegate.newBatch(minTxnId, maxTxnID);
+    }
+    @Override
+    public void closeBatch() throws StreamingException {
+      delegate.closeBatch();
+    }
+
+    /**
+     * allows testing of "unexpected" errors
+     * @throws StreamingIOFailure
+     */
+    private void produceFault() throws StreamingIOFailure {
+      if(shouldThrow) {
+        throw new StreamingIOFailure("Simulated fault occurred");
+      }
+    }
+    void enableErrors() {
+      shouldThrow = true;
+    }
+    void disableErrors() {
+      shouldThrow = false;
     }
   }
 }

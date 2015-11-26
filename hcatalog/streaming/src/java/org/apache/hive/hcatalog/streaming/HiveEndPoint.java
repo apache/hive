@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -503,7 +504,6 @@ public class HiveEndPoint {
 
 
   } // class ConnectionImpl
-
   private static class TransactionBatchImpl implements TransactionBatch {
     private final String username;
     private final UserGroupInformation ugi;
@@ -512,27 +512,28 @@ public class HiveEndPoint {
     private final RecordWriter recordWriter;
     private final List<Long> txnIds;
 
-    private int currentTxnIndex;
+    private int currentTxnIndex = -1;
     private final String partNameForLock;
 
     private TxnState state;
     private LockRequest lockRequest = null;
+    /**
+     * once any operation on this batch encounters a system exception
+     * (e.g. IOException on write) it's safest to assume that we can't write to the
+     * file backing this batch any more.  This guards important public methods
+     */
+    private volatile boolean isClosed = false;
 
     /**
      * Represents a batch of transactions acquired from MetaStore
      *
-     * @param user
-     * @param ugi
-     * @param endPt
-     * @param numTxns
-     * @param msClient
-     * @param recordWriter
      * @throws StreamingException if failed to create new RecordUpdater for batch
      * @throws TransactionBatchUnAvailable if failed to acquire a new Transaction batch
      */
     private TransactionBatchImpl(final String user, UserGroupInformation ugi, HiveEndPoint endPt
               , final int numTxns, final IMetaStoreClient msClient, RecordWriter recordWriter)
             throws StreamingException, TransactionBatchUnAvailable, InterruptedException {
+      boolean success = false;
       try {
         if ( endPt.partitionVals!=null   &&   !endPt.partitionVals.isEmpty() ) {
           Table tableObj = msClient.getTable(endPt.database, endPt.table);
@@ -549,14 +550,17 @@ public class HiveEndPoint {
 
         txnIds = openTxnImpl(msClient, user, numTxns, ugi);
 
-
-        this.currentTxnIndex = -1;
         this.state = TxnState.INACTIVE;
         recordWriter.newBatch(txnIds.get(0), txnIds.get(txnIds.size()-1));
+        success = true;
       } catch (TException e) {
         throw new TransactionBatchUnAvailable(endPt, e);
       } catch (IOException e) {
         throw new TransactionBatchUnAvailable(endPt, e);
+      }
+      finally {
+        //clean up if above throws
+        markDead(success);
       }
     }
 
@@ -589,6 +593,7 @@ public class HiveEndPoint {
     @Override
     public void beginNextTransaction() throws TransactionError, ImpersonationFailed,
             InterruptedException {
+      checkIsClosed();
       if (ugi==null) {
         beginNextTransactionImpl();
         return;
@@ -610,10 +615,12 @@ public class HiveEndPoint {
     }
 
     private void beginNextTransactionImpl() throws TransactionError {
+      state = TxnState.INACTIVE;//clear state from previous txn
       if ( currentTxnIndex >= txnIds.size() )
         throw new InvalidTrasactionState("No more transactions available in" +
                 " current batch for end point : " + endPt);
       ++currentTxnIndex;
+      state = TxnState.OPEN;
       lockRequest = createLockRequest(endPt, partNameForLock, username, getCurrentTxnId());
       try {
         LockResponse res = msClient.lock(lockRequest);
@@ -623,8 +630,6 @@ public class HiveEndPoint {
       } catch (TException e) {
         throw new TransactionError("Unable to acquire lock on " + endPt, e);
       }
-
-      state = TxnState.OPEN;
     }
 
     /**
@@ -640,7 +645,7 @@ public class HiveEndPoint {
     }
 
     /**
-     * get state of current tramsaction
+     * get state of current transaction
      * @return
      */
     @Override
@@ -672,26 +677,35 @@ public class HiveEndPoint {
      */
     @Override
     public void write(final byte[] record)
-            throws StreamingException, InterruptedException,
-            ImpersonationFailed {
-      if (ugi==null) {
-        recordWriter.write(getCurrentTxnId(), record);
+            throws StreamingException, InterruptedException {
+      write(Collections.singletonList(record));
+    }
+    private void checkIsClosed() throws IllegalStateException {
+      if(isClosed) {
+        throw new IllegalStateException("TransactionBatch " + toString() + " has been closed()");
+      }
+    }
+    /**
+     * A transaction batch opens a single HDFS file and writes multiple transaction to it.  If there is any issue
+     * with the write, we can't continue to write to the same file any as it may be corrupted now (at the tail).
+     * This ensures that a client can't ignore these failures and continue to write.
+     */
+    private void markDead(boolean success) {
+      if(success) {
         return;
       }
+      isClosed = true;//also ensures that heartbeat() is no-op since client is likely doing it async
       try {
-        ugi.doAs (
-            new PrivilegedExceptionAction<Void>() {
-              @Override
-              public Void run() throws StreamingException {
-                recordWriter.write(getCurrentTxnId(), record);
-                return null;
-              }
-            }
-        );
-      } catch (IOException e) {
-        throw new ImpersonationFailed("Failed wirting as user '" + username +
-                "' to endPoint :" + endPt + ". Transaction Id: "
-                + getCurrentTxnId(), e);
+        abort(true);//abort all remaining txns
+      }
+      catch(Exception ex) {
+        LOG.error("Fatal error on " + toString() + "; cause " + ex.getMessage(), ex);
+      }
+      try {
+        closeImpl();
+      }
+      catch (Exception ex) {
+        LOG.error("Fatal error on " + toString() + "; cause " + ex.getMessage(), ex);
       }
     }
 
@@ -707,24 +721,37 @@ public class HiveEndPoint {
     public void write(final Collection<byte[]> records)
             throws StreamingException, InterruptedException,
             ImpersonationFailed {
-      if (ugi==null) {
-        writeImpl(records);
-        return;
-      }
+      checkIsClosed();
+      boolean success = false;
       try {
-        ugi.doAs (
-                new PrivilegedExceptionAction<Void>() {
-                  @Override
-                  public Void run() throws StreamingException {
-                    writeImpl(records);
-                    return null;
-                  }
-                }
-        );
-      } catch (IOException e) {
+        if (ugi == null) {
+          writeImpl(records);
+        } else {
+          ugi.doAs(
+            new PrivilegedExceptionAction<Void>() {
+              @Override
+              public Void run() throws StreamingException {
+                writeImpl(records);
+                return null;
+              }
+            }
+          );
+        }
+        success = true;
+      } catch(SerializationError ex) {
+        //this exception indicates that a {@code record} could not be parsed and the
+        //caller can decide whether to drop it or send it to dead letter queue.
+        //rolling back the txn and retrying won't help since the tuple will be exactly the same
+        //when it's replayed.
+        success = true;
+        throw ex;
+      } catch(IOException e){
         throw new ImpersonationFailed("Failed writing as user '" + username +
-                "' to endPoint :" + endPt + ". Transaction Id: "
-                + getCurrentTxnId(), e);
+          "' to endPoint :" + endPt + ". Transaction Id: "
+          + getCurrentTxnId(), e);
+      }
+      finally {
+        markDead(success);
       }
     }
 
@@ -746,25 +773,31 @@ public class HiveEndPoint {
     @Override
     public void commit()  throws TransactionError, StreamingException,
            ImpersonationFailed, InterruptedException {
-      if (ugi==null) {
-        commitImpl();
-        return;
-      }
+      checkIsClosed();
+      boolean success = false;
       try {
-        ugi.doAs (
-              new PrivilegedExceptionAction<Void>() {
-                @Override
-                public Void run() throws StreamingException {
-                  commitImpl();
-                  return null;
-                }
+        if (ugi == null) {
+          commitImpl();
+        }
+        else {
+          ugi.doAs(
+            new PrivilegedExceptionAction<Void>() {
+              @Override
+              public Void run() throws StreamingException {
+                commitImpl();
+                return null;
               }
-        );
+            }
+          );
+        }
+        success = true;
       } catch (IOException e) {
         throw new ImpersonationFailed("Failed committing Txn ID " + getCurrentTxnId() + " as user '"
                 + username + "'on endPoint :" + endPt + ". Transaction Id: ", e);
       }
-
+      finally {
+        markDead(success);
+      }
     }
 
     private void commitImpl() throws TransactionError, StreamingException {
@@ -791,8 +824,20 @@ public class HiveEndPoint {
     @Override
     public void abort() throws TransactionError, StreamingException
                       , ImpersonationFailed, InterruptedException {
+      if(isClosed) {
+        /**
+         * isDead is only set internally by this class.  {@link #markDead(boolean)} will abort all
+         * remaining txns, so make this no-op to make sure that a well-behaved client that calls abort()
+         * error doesn't get misleading errors
+         */
+        return;
+      }
+      abort(false);
+    }
+    private void abort(final boolean abortAllRemaining) throws TransactionError, StreamingException
+        , ImpersonationFailed, InterruptedException {
       if (ugi==null) {
-        abortImpl();
+        abortImpl(abortAllRemaining);
         return;
       }
       try {
@@ -800,7 +845,7 @@ public class HiveEndPoint {
                 new PrivilegedExceptionAction<Void>() {
                   @Override
                   public Void run() throws StreamingException {
-                    abortImpl();
+                    abortImpl(abortAllRemaining);
                     return null;
                   }
                 }
@@ -811,11 +856,26 @@ public class HiveEndPoint {
       }
     }
 
-    private void abortImpl() throws TransactionError, StreamingException {
+    private void abortImpl(boolean abortAllRemaining) throws TransactionError, StreamingException {
       try {
-        recordWriter.clear();
-        msClient.rollbackTxn(getCurrentTxnId());
+        if(abortAllRemaining) {
+          //when last txn finished (abort/commit) the currentTxnIndex is pointing at that txn
+          //so we need to start from next one, if any.  Also if batch was created but
+          //fetchTransactionBatch() was never called, we want to start with first txn
+          int minOpenTxnIndex = Math.max(currentTxnIndex +
+            (state == TxnState.ABORTED || state == TxnState.COMMITTED ? 1 : 0), 0);
+          for(currentTxnIndex = minOpenTxnIndex;
+              currentTxnIndex < txnIds.size(); currentTxnIndex++) {
+            msClient.rollbackTxn(txnIds.get(currentTxnIndex));
+          }
+        }
+        else {
+          if (getCurrentTxnId() > 0) {
+            msClient.rollbackTxn(getCurrentTxnId());
+          }
+        }
         state = TxnState.ABORTED;
+        recordWriter.clear();
       } catch (NoSuchTxnException e) {
         throw new TransactionError("Unable to abort invalid transaction id : "
                 + getCurrentTxnId(), e);
@@ -827,6 +887,9 @@ public class HiveEndPoint {
 
     @Override
     public void heartbeat() throws StreamingException, HeartBeatFailure {
+      if(isClosed) {
+        return;
+      }
       Long first = txnIds.get(currentTxnIndex);
       Long last = txnIds.get(txnIds.size()-1);
       try {
@@ -840,14 +903,27 @@ public class HiveEndPoint {
       }
     }
 
+    @Override
+    public boolean isClosed() {
+      return isClosed;
+    }
     /**
-     * Close the TransactionBatch
+     * Close the TransactionBatch.  This will abort any still open txns in this batch.
      * @throws StreamingIOFailure I/O failure when closing transaction batch
      */
     @Override
     public void close() throws StreamingException, ImpersonationFailed, InterruptedException {
-      if (ugi==null) {
-        state = TxnState.INACTIVE;
+      if(isClosed) {
+        return;
+      }
+      isClosed = true;
+      abortImpl(true);//abort proactively so that we don't wait for timeout
+      closeImpl();//perhaps we should add a version of RecordWriter.closeBatch(boolean abort) which
+      //will call RecordUpdater.close(boolean abort)
+    }
+    private void closeImpl() throws StreamingException, InterruptedException{
+      state = TxnState.INACTIVE;
+      if(ugi == null) {
         recordWriter.closeBatch();
         return;
       }
@@ -856,7 +932,6 @@ public class HiveEndPoint {
                 new PrivilegedExceptionAction<Void>() {
                   @Override
                   public Void run() throws StreamingException {
-                    state = TxnState.INACTIVE;
                     recordWriter.closeBatch();
                     return null;
                   }

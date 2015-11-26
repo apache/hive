@@ -243,7 +243,7 @@ public class DelimitedInputWriter extends AbstractRecordWriter {
   }
 
   @Override
-  SerDe getSerde() throws SerializationError {
+  SerDe getSerde() {
     return serde;
   }
 

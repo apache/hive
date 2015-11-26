@@ -20,7 +20,7 @@ package org.apache.hive.hcatalog.streaming;
 
 public class TransactionError extends StreamingException {
   public TransactionError(String msg, Exception e) {
-    super(msg, e);
+    super(msg + (e == null ? "" : ": " + e.getMessage()), e);
   }
 
   public TransactionError(String msg) {

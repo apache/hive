@@ -86,7 +86,7 @@ public class StrictJsonWriter extends AbstractRecordWriter {
   }
 
   @Override
-  SerDe getSerde() throws SerializationError {
+  SerDe getSerde() {
     return serde;
   }
 
