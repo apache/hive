@@ -29,6 +29,7 @@ public class ConnectionError extends StreamingException {
   }
 
   public ConnectionError(HiveEndPoint endPoint, Exception innerEx) {
-    super("Error connecting to " + endPoint, innerEx);
+    super("Error connecting to " + endPoint +
+        (innerEx == null ? "" : ": " + innerEx.getMessage()), innerEx);
   }
 }
