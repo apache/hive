@@ -267,8 +267,14 @@ public abstract class Operation {
    * Register logging context so that Log4J can print QueryId and/or SessionId for each message
    */
   protected void registerLoggingContext() {
-    MDC.put(SESSIONID_LOG_KEY, SessionState.get().getSessionId());
-    MDC.put(QUERYID_LOG_KEY, confOverlay.get(HiveConf.ConfVars.HIVEQUERYID.varname));
+    String sessionId = SessionState.get().getSessionId();
+    String queryId = confOverlay.get(HiveConf.ConfVars.HIVEQUERYID.varname);
+    if (sessionId != null) {
+      MDC.put(SESSIONID_LOG_KEY, sessionId);
+    }
+    if (queryId != null) {
+      MDC.put(QUERYID_LOG_KEY, queryId);
+    }
   }
 
   /**
