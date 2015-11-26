@@ -100,4 +100,5 @@ public interface TransactionBatch  {
    * @throws InterruptedException if call in interrupted
    */
   public void close() throws StreamingException, InterruptedException;
+  public boolean isClosed();
 }
