@@ -327,45 +327,24 @@ public class RecordReaderUtils {
           len -= read;
           off += read;
         }
-      } else if (doForceDirect) {
-        file.seek(base + off);
-        ByteBuffer directBuf = ByteBuffer.allocateDirect(len);
-        readDirect(file, len, directBuf);
-        range = range.replaceSelfWith(new BufferChunk(directBuf, range.getOffset()));
       } else {
+        // Don't use HDFS ByteBuffer API because it has no readFully, and is buggy and pointless.
         byte[] buffer = new byte[len];
         file.readFully((base + off), buffer, 0, buffer.length);
-        range = range.replaceSelfWith(new BufferChunk(ByteBuffer.wrap(buffer), range.getOffset()));
+        ByteBuffer bb = null;
+        if (doForceDirect) {
+          bb = ByteBuffer.allocateDirect(len);
+          bb.put(buffer);
+          bb.position(0);
+          bb.limit(len);
+        } else {
+          bb = ByteBuffer.wrap(buffer);
+        }
+        range = range.replaceSelfWith(new BufferChunk(bb, range.getOffset()));
       }
       range = range.next;
     }
     return prev.next;
-  }
-
-  public static void readDirect(FSDataInputStream file,
-      int len, ByteBuffer directBuf) throws IOException {
-    // TODO: HDFS API is a mess, so handle all kinds of cases.
-    // Before 2.7, read() also doesn't adjust position correctly, so track it separately.
-    int pos = directBuf.position(), startPos = pos, endPos = pos + len;
-    try {
-      while (pos < endPos) {
-        int count = SHIMS.readByteBuffer(file, directBuf);
-        if (count < 0) throw new EOFException();
-        assert count != 0 : "0-length read: " + (endPos - pos) + "@" + (pos - startPos);
-        pos += count;
-        assert pos <= endPos : "Position " + pos + " > " + endPos + " after reading " + count;
-        directBuf.position(pos);
-      }
-    } catch (UnsupportedOperationException ex) {
-      assert pos == startPos;
-      // Happens in q files and such.
-      RecordReaderImpl.LOG.error("Stream does not support direct read; we will copy.");
-      byte[] buffer = new byte[len];
-      file.readFully(buffer, 0, buffer.length);
-      directBuf.put(buffer);
-    }
-    directBuf.position(startPos);
-    directBuf.limit(startPos + len);
   }
 
 
