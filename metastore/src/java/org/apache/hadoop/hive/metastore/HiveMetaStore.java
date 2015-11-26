@@ -5978,8 +5978,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       boolean useCompactProtocol = conf.getBoolVar(ConfVars.METASTORE_USE_THRIFT_COMPACT_PROTOCOL);
       useSasl = conf.getBoolVar(HiveConf.ConfVars.METASTORE_USE_THRIFT_SASL);
 
-      TServerTransport serverTransport = tcpKeepAlive ?
-          new TServerSocketKeepAlive(port) : new TServerSocket(port);
 
       TProcessor processor;
       TTransportFactory transFactory;
@@ -6027,6 +6025,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           LOG.info("Starting DB backed MetaStore Server");
         }
       }
+ 
+       TServerTransport serverTransport = tcpKeepAlive ?
+        new TServerSocketKeepAlive(port) : new TServerSocket(port);
 
       TThreadPoolServer.Args args = new TThreadPoolServer.Args(serverTransport)
           .processor(processor)
