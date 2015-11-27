@@ -2604,6 +2604,7 @@ POSTHOOK: Input: default@tab_part@ds=2008-04-08
 #### A masked pattern was here ####
 NULL	NULL	NULL	98	val_98	2008-04-08
 NULL	NULL	NULL	98	val_98	2008-04-08
+Warning: Shuffle Join JOIN[9][tables = [a, b]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: select * from
 (select * from tab where tab.key = 0)a
 full outer join
@@ -2624,10 +2625,6 @@ POSTHOOK: Input: default@tab@ds=2008-04-08
 POSTHOOK: Input: default@tab_part
 POSTHOOK: Input: default@tab_part@ds=2008-04-08
 #### A masked pattern was here ####
-NULL	NULL	NULL	98	val_98	2008-04-08	98	val_98	2008-04-08
-NULL	NULL	NULL	98	val_98	2008-04-08	98	val_98	2008-04-08
-NULL	NULL	NULL	98	val_98	2008-04-08	98	val_98	2008-04-08
-NULL	NULL	NULL	98	val_98	2008-04-08	98	val_98	2008-04-08
 Warning: Shuffle Join JOIN[9][tables = [a, b]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: select * from
 (select * from tab where tab.key = 0)a
