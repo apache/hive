@@ -27,7 +27,7 @@ version () {
 
   # hadoop 20 or newer - skip the aux_jars option and hiveconf
   CLASS=org.apache.hive.common.util.HiveVersionInfo
-  exec $HADOOP jar $JAR $CLASS
+  exec $HADOOP jar $JAR $CLASS 2>> ${STDERR}
 }
 
 version_help () {
