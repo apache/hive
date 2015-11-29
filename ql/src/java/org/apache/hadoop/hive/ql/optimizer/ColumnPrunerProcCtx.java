@@ -108,7 +108,7 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
         prunList = joinPrunedColLists.get(child).get((byte) tag);
       } else if (child instanceof UnionOperator) {
         List<Integer> positions = unionPrunedColLists.get(child);
-        if (positions != null && positions.size() > 0) {
+        if (positions != null) {
           prunList = new ArrayList<>();
           RowSchema oldRS = curOp.getSchema();
           for (Integer pos : positions) {
