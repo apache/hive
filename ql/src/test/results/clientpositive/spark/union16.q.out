@@ -80,8 +80,6 @@ STAGE PLANS:
                 TableScan
                   alias: src
                   Select Operator
-                    expressions: key (type: string), value (type: string)
-                    outputColumnNames: _col0, _col1
                     Select Operator
                       Group By Operator
                         aggregations: count(1)
@@ -95,8 +93,6 @@ STAGE PLANS:
                 TableScan
                   alias: src
                   Select Operator
-                    expressions: key (type: string), value (type: string)
-                    outputColumnNames: _col0, _col1
                     Select Operator
                       Group By Operator
                         aggregations: count(1)
@@ -110,8 +106,6 @@ STAGE PLANS:
                 TableScan
                   alias: src
                   Select Operator
-                    expressions: key (type: string), value (type: string)
-                    outputColumnNames: _col0, _col1
                     Select Operator
                       Group By Operator
                         aggregations: count(1)
@@ -125,8 +119,6 @@ STAGE PLANS:
                 TableScan
                   alias: src
                   Select Operator
-                    expressions: key (type: string), value (type: string)
-                    outputColumnNames: _col0, _col1
                     Select Operator
                       Group By Operator
                         aggregations: count(1)
@@ -140,8 +132,6 @@ STAGE PLANS:
                 TableScan
                   alias: src
                   Select Operator
-                    expressions: key (type: string), value (type: string)
-                    outputColumnNames: _col0, _col1
                     Select Operator
                       Group By Operator
                         aggregations: count(1)
@@ -155,8 +145,6 @@ STAGE PLANS:
                 TableScan
                   alias: src
                   Select Operator
-                    expressions: key (type: string), value (type: string)
-                    outputColumnNames: _col0, _col1
                     Select Operator
                       Group By Operator
                         aggregations: count(1)
@@ -170,8 +158,6 @@ STAGE PLANS:
                 TableScan
                   alias: src
                   Select Operator
-                    expressions: key (type: string), value (type: string)
-                    outputColumnNames: _col0, _col1
                     Select Operator
                       Group By Operator
                         aggregations: count(1)
@@ -185,8 +171,6 @@ STAGE PLANS:
                 TableScan
                   alias: src
                   Select Operator
-                    expressions: key (type: string), value (type: string)
-                    outputColumnNames: _col0, _col1
                     Select Operator
                       Group By Operator
                         aggregations: count(1)
@@ -200,8 +184,6 @@ STAGE PLANS:
                 TableScan
                   alias: src
                   Select Operator
-                    expressions: key (type: string), value (type: string)
-                    outputColumnNames: _col0, _col1
                     Select Operator
                       Group By Operator
                         aggregations: count(1)
@@ -215,8 +197,6 @@ STAGE PLANS:
                 TableScan
                   alias: src
                   Select Operator
-                    expressions: key (type: string), value (type: string)
-                    outputColumnNames: _col0, _col1
                     Select Operator
                       Group By Operator
                         aggregations: count(1)
@@ -230,8 +210,6 @@ STAGE PLANS:
                 TableScan
                   alias: src
                   Select Operator
-                    expressions: key (type: string), value (type: string)
-                    outputColumnNames: _col0, _col1
                     Select Operator
                       Group By Operator
                         aggregations: count(1)
@@ -245,8 +223,6 @@ STAGE PLANS:
                 TableScan
                   alias: src
                   Select Operator
-                    expressions: key (type: string), value (type: string)
-                    outputColumnNames: _col0, _col1
                     Select Operator
                       Group By Operator
                         aggregations: count(1)
@@ -260,8 +236,6 @@ STAGE PLANS:
                 TableScan
                   alias: src
                   Select Operator
-                    expressions: key (type: string), value (type: string)
-                    outputColumnNames: _col0, _col1
                     Select Operator
                       Group By Operator
                         aggregations: count(1)
@@ -275,8 +249,6 @@ STAGE PLANS:
                 TableScan
                   alias: src
                   Select Operator
-                    expressions: key (type: string), value (type: string)
-                    outputColumnNames: _col0, _col1
                     Select Operator
                       Group By Operator
                         aggregations: count(1)
@@ -290,8 +262,6 @@ STAGE PLANS:
                 TableScan
                   alias: src
                   Select Operator
-                    expressions: key (type: string), value (type: string)
-                    outputColumnNames: _col0, _col1
                     Select Operator
                       Group By Operator
                         aggregations: count(1)
@@ -305,8 +275,6 @@ STAGE PLANS:
                 TableScan
                   alias: src
                   Select Operator
-                    expressions: key (type: string), value (type: string)
-                    outputColumnNames: _col0, _col1
                     Select Operator
                       Group By Operator
                         aggregations: count(1)
@@ -320,8 +288,6 @@ STAGE PLANS:
                 TableScan
                   alias: src
                   Select Operator
-                    expressions: key (type: string), value (type: string)
-                    outputColumnNames: _col0, _col1
                     Select Operator
                       Group By Operator
                         aggregations: count(1)
@@ -335,8 +301,6 @@ STAGE PLANS:
                 TableScan
                   alias: src
                   Select Operator
-                    expressions: key (type: string), value (type: string)
-                    outputColumnNames: _col0, _col1
                     Select Operator
                       Group By Operator
                         aggregations: count(1)
@@ -350,8 +314,6 @@ STAGE PLANS:
                 TableScan
                   alias: src
                   Select Operator
-                    expressions: key (type: string), value (type: string)
-                    outputColumnNames: _col0, _col1
                     Select Operator
                       Group By Operator
                         aggregations: count(1)
@@ -365,8 +327,6 @@ STAGE PLANS:
                 TableScan
                   alias: src
                   Select Operator
-                    expressions: key (type: string), value (type: string)
-                    outputColumnNames: _col0, _col1
                     Select Operator
                       Group By Operator
                         aggregations: count(1)
@@ -380,8 +340,6 @@ STAGE PLANS:
                 TableScan
                   alias: src
                   Select Operator
-                    expressions: key (type: string), value (type: string)
-                    outputColumnNames: _col0, _col1
                     Select Operator
                       Group By Operator
                         aggregations: count(1)
@@ -395,8 +353,6 @@ STAGE PLANS:
                 TableScan
                   alias: src
                   Select Operator
-                    expressions: key (type: string), value (type: string)
-                    outputColumnNames: _col0, _col1
                     Select Operator
                       Group By Operator
                         aggregations: count(1)
@@ -410,8 +366,6 @@ STAGE PLANS:
                 TableScan
                   alias: src
                   Select Operator
-                    expressions: key (type: string), value (type: string)
-                    outputColumnNames: _col0, _col1
                     Select Operator
                       Group By Operator
                         aggregations: count(1)
@@ -425,8 +379,6 @@ STAGE PLANS:
                 TableScan
                   alias: src
                   Select Operator
-                    expressions: key (type: string), value (type: string)
-                    outputColumnNames: _col0, _col1
                     Select Operator
                       Group By Operator
                         aggregations: count(1)
@@ -440,8 +392,6 @@ STAGE PLANS:
                 TableScan
                   alias: src
                   Select Operator
-                    expressions: key (type: string), value (type: string)
-                    outputColumnNames: _col0, _col1
                     Select Operator
                       Group By Operator
                         aggregations: count(1)
@@ -456,10 +406,10 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
