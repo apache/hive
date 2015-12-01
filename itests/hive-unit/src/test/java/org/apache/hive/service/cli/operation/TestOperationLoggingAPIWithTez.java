@@ -20,11 +20,11 @@ public class TestOperationLoggingAPIWithTez extends OperationLoggingAPITestBase 
     expectedLogsVerbose = new String[]{
       "Parsing command",
       "Parse Completed",
-      "Starting Semantic Analysis",
-      "Semantic Analysis Completed",
-      "Starting command"
+      "Starting Semantic Analysis"
     };
     expectedLogsExecution = new String[]{
+      "Starting command",
+      "Semantic Analysis Completed",
       "Executing on YARN cluster with App id",
       "Setting Tez DAG access"
     };
