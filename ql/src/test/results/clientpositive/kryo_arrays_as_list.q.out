@@ -1,0 +1,79 @@
+PREHOOK: query: create table if not exists alltypes (
+ bo boolean,
+ ti tinyint,
+ si smallint,
+ i int,
+ bi bigint,
+ f float,
+ d double,
+ de decimal(10,3),
+ ts timestamp,
+ da date,
+ s string,
+ c char(5),
+ vc varchar(5),
+ m map<string, string>,
+ l array<int>,
+ st struct<c1:int, c2:string>
+) row format delimited fields terminated by '|'
+collection items terminated by ','
+map keys terminated by ':' stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alltypes
+POSTHOOK: query: create table if not exists alltypes (
+ bo boolean,
+ ti tinyint,
+ si smallint,
+ i int,
+ bi bigint,
+ f float,
+ d double,
+ de decimal(10,3),
+ ts timestamp,
+ da date,
+ s string,
+ c char(5),
+ vc varchar(5),
+ m map<string, string>,
+ l array<int>,
+ st struct<c1:int, c2:string>
+) row format delimited fields terminated by '|'
+collection items terminated by ','
+map keys terminated by ':' stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alltypes
+PREHOOK: query: create table alltypes_orc like alltypes
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alltypes_orc
+POSTHOOK: query: create table alltypes_orc like alltypes
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alltypes_orc
+PREHOOK: query: alter table alltypes_orc set fileformat orc
+PREHOOK: type: ALTERTABLE_FILEFORMAT
+PREHOOK: Input: default@alltypes_orc
+PREHOOK: Output: default@alltypes_orc
+POSTHOOK: query: alter table alltypes_orc set fileformat orc
+POSTHOOK: type: ALTERTABLE_FILEFORMAT
+POSTHOOK: Input: default@alltypes_orc
+POSTHOOK: Output: default@alltypes_orc
+PREHOOK: query: load data local inpath '../../data/files/alltypes2.txt' overwrite into table alltypes
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@alltypes
+POSTHOOK: query: load data local inpath '../../data/files/alltypes2.txt' overwrite into table alltypes
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@alltypes
+PREHOOK: query: select count(*) from alltypes_orc where ts between '1969-12-31' and '1970-12-31'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes_orc
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from alltypes_orc where ts between '1969-12-31' and '1970-12-31'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes_orc
+#### A masked pattern was here ####
+0
