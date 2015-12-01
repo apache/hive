@@ -2490,6 +2490,7 @@ public class ObjectStore implements RawStore, Configurable {
         start(initTable);
         if (doUseDirectSql) {
           try {
+            directSql.prepareTxn();
             setResult(getSqlResult(this));
           } catch (Exception ex) {
             handleDirectSqlError(ex);
