@@ -1335,6 +1335,21 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: UDFToDouble(UDFToInteger((_col0 / 2.0))) (type: double)
                         Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: UDFToDouble(UDFToInteger((_col0 / 2.0))) (type: double)
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          keys: _col0 (type: double)
+                          mode: hash
+                          outputColumnNames: _col0
+                          Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
+                          Dynamic Partitioning Event Operator
+                            Target Input: srcpart
+                            Partition key expr: UDFToDouble(hr)
+                            Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
+                            Target column: hr
+                            Target Vertex: Map 1
             Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
@@ -2447,6 +2462,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
+                  filterExpr: (ds) IN (RS[5]) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ds (type: string)
@@ -2519,6 +2535,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
+                  filterExpr: (ds) IN (RS[6]) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ds (type: string)
@@ -2628,6 +2645,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
+                  filterExpr: (ds) IN (RS[14]) (type: boolean)
                   Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ds (type: string)
@@ -4215,6 +4233,21 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: UDFToDouble(UDFToInteger((_col0 / 2.0))) (type: double)
                         Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: UDFToDouble(UDFToInteger((_col0 / 2.0))) (type: double)
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          keys: _col0 (type: double)
+                          mode: hash
+                          outputColumnNames: _col0
+                          Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
+                          Dynamic Partitioning Event Operator
+                            Target Input: srcpart
+                            Partition key expr: UDFToDouble(hr)
+                            Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
+                            Target column: hr
+                            Target Vertex: Map 1
             Execution mode: vectorized
         Reducer 2 
             Execution mode: vectorized
@@ -4676,6 +4709,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
+                  filterExpr: (ds) IN (RS[5]) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ds (type: string)
@@ -4730,6 +4764,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
+                  filterExpr: (ds) IN (RS[6]) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ds (type: string)
@@ -4819,6 +4854,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
+                  filterExpr: (ds) IN (RS[14]) (type: boolean)
                   Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ds (type: string)
@@ -5390,6 +5426,21 @@ STAGE PLANS:
                             Partition key expr: ds
                             Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                             Target column: ds
+                            Target Vertex: Map 1
+                      Select Operator
+                        expressions: UDFToDouble(_col2) (type: double)
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          keys: _col0 (type: double)
+                          mode: hash
+                          outputColumnNames: _col0
+                          Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
+                          Dynamic Partitioning Event Operator
+                            Target Input: srcpart_orc
+                            Partition key expr: UDFToDouble(hr)
+                            Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
+                            Target column: hr
                             Target Vertex: Map 1
         Reducer 2 
             Reduce Operator Tree:
