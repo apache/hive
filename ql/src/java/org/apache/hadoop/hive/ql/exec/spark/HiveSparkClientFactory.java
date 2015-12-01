@@ -27,6 +27,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.apache.commons.compress.utils.CharsetNames;
+import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -133,7 +134,7 @@ public class HiveSparkClientFactory {
         LOG.info(String.format(
           "load yarn property from hive configuration in %s mode (%s -> %s).",
           sparkMaster, propertyName, value));
-      } else if (propertyName.equals(HiveConf.ConfVars.HADOOPFS.varname)) {
+      } else if (propertyName.equals(CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY)) {
         String value = hiveConf.get(propertyName);
         if (value != null && !value.isEmpty()) {
           sparkConf.put("spark.hadoop." + propertyName, value);
