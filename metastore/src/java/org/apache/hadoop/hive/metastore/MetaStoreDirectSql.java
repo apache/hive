@@ -217,6 +217,7 @@ class MetaStoreDirectSql {
     // Run a self-test query. If it doesn't work, we will self-disable. What a PITA...
     String selfTestQuery = "select \"DB_ID\" from \"DBS\"";
     try {
+      prepareTxn();
       query = pm.newQuery("javax.jdo.query.SQL", selfTestQuery);
       query.execute();
       tx.commit();
@@ -237,21 +238,6 @@ class MetaStoreDirectSql {
     return isCompatibleDatastore;
   }
 
-  /**
-   * This function is intended to be called by functions before they put together a query
-   * Thus, any query-specific instantiation to be done from within the transaction is done
-   * here - for eg., for MySQL, we signal that we want to use ANSI SQL quoting behaviour
-   */
-  private void doDbSpecificInitializationsBeforeQuery() throws MetaException {
-    if (dbType != DB.MYSQL) return;
-    try {
-      assert pm.currentTransaction().isActive(); // must be inside tx together with queries
-      executeNoResult("SET @@session.sql_mode=ANSI_QUOTES");
-    } catch (SQLException sqlEx) {
-      throw new MetaException("Error setting ansi quotes: " + sqlEx.getMessage());
-    }
-  }
-
   private void executeNoResult(final String queryText) throws SQLException {
     JDOConnection jdoConn = pm.getDataStoreConnection();
     boolean doTrace = LOG.isDebugEnabled();
@@ -269,8 +255,6 @@ class MetaStoreDirectSql {
     Query queryDbParams = null;
     try {
       dbName = dbName.toLowerCase();
-
-      doDbSpecificInitializationsBeforeQuery();
 
       String queryTextDbSelector= "select "
           + "\"DB_ID\", \"NAME\", \"DB_LOCATION_URI\", \"DESC\", "
@@ -442,8 +426,6 @@ class MetaStoreDirectSql {
     tblName = tblName.toLowerCase();
     // We have to be mindful of order during filtering if we are not returning all partitions.
     String orderForFilter = (max != null) ? " order by \"PART_NAME\" asc" : "";
-
-    doDbSpecificInitializationsBeforeQuery();
 
     // Get all simple fields for partitions and related objects, which we can map one-on-one.
     // We will do this in 2 queries to use different existing indices for each one.
@@ -1639,6 +1621,23 @@ class MetaStoreDirectSql {
       LOG.warn(error + "]", ex);
       // We just logged an exception with (in case of JDO) a humongous callstack. Make a new one.
       throw new MetaException("See previous errors; " + ex.getMessage());
+    }
+  }
+
+  /**
+   * This run the necessary logic to prepare for queries. It should be called once, after the
+   * txn on DataNucleus connection is opened, and before any queries are issued. What it does
+   * currently is run db-specific logic, e.g. setting ansi quotes mode for MySQL. The reason it
+   * must be used inside of the txn is connection pooling; there's no way to guarantee that the
+   * effect will apply to the connection that is executing the queries otherwise.
+   */
+  public void prepareTxn() throws MetaException {
+    if (dbType != DB.MYSQL) return;
+    try {
+      assert pm.currentTransaction().isActive(); // must be inside tx together with queries
+      executeNoResult("SET @@session.sql_mode=ANSI_QUOTES");
+    } catch (SQLException sqlEx) {
+      throw new MetaException("Error setting ansi quotes: " + sqlEx.getMessage());
     }
   }
 }
