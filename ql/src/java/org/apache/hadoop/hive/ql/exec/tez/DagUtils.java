@@ -574,8 +574,9 @@ public class DagUtils {
       // exist before jobClose (before renaming after job completion)
       Path tempOutPath = Utilities.toTempPath(outputPath);
       try {
-        if (!fs.exists(tempOutPath)) {
-          fs.mkdirs(tempOutPath);
+        FileSystem tmpOutFS = tempOutPath.getFileSystem(conf);
+        if (!tmpOutFS.exists(tempOutPath)) {
+          tmpOutFS.mkdirs(tempOutPath);
         }
       } catch (IOException e) {
         throw new RuntimeException(
