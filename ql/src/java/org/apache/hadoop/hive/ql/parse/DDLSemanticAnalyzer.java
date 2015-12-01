@@ -2723,7 +2723,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     // Alter table ... partition column ( column newtype) only takes one column at a time.
     // It must have a column name followed with type.
     ASTNode colAst = (ASTNode) ast.getChild(0);
-    assert(colAst.getChildCount() == 2);
 
     FieldSchema newCol = new FieldSchema();
 
@@ -2734,6 +2733,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     // get column type
     ASTNode typeChild = (ASTNode) (colAst.getChild(1));
     newCol.setType(getTypeStringFromAST(typeChild));
+
+    if (colAst.getChildCount() == 3) {
+      newCol.setComment(unescapeSQLString(colAst.getChild(2).getText()));
+    }
 
     // check if column is defined or not
     boolean fFoundColumn = false;
