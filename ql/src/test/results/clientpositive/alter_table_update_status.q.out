@@ -38,10 +38,10 @@ POSTHOOK: query: ANALYZE TABLE src_stat COMPUTE STATISTICS for columns key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_stat
 #### A masked pattern was here ####
-PREHOOK: query: describe formatted src_stat.key
+PREHOOK: query: describe formatted src_stat key
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@src_stat
-POSTHOOK: query: describe formatted src_stat.key
+POSTHOOK: query: describe formatted src_stat key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_stat
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
@@ -51,10 +51,10 @@ PREHOOK: query: ALTER TABLE src_stat UPDATE STATISTICS for column key SET ('numD
 PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
 POSTHOOK: query: ALTER TABLE src_stat UPDATE STATISTICS for column key SET ('numDVs'='1111','avgColLen'='1.111')
 POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
-PREHOOK: query: describe formatted src_stat.key
+PREHOOK: query: describe formatted src_stat key
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@src_stat
-POSTHOOK: query: describe formatted src_stat.key
+POSTHOOK: query: describe formatted src_stat key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_stat
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
@@ -64,10 +64,10 @@ PREHOOK: query: ALTER TABLE src_stat UPDATE STATISTICS for column value SET ('nu
 PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
 POSTHOOK: query: ALTER TABLE src_stat UPDATE STATISTICS for column value SET ('numDVs'='121','numNulls'='122','avgColLen'='1.23','maxColLen'='124')
 POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
-PREHOOK: query: describe formatted src_stat.value
+PREHOOK: query: describe formatted src_stat value
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@src_stat
-POSTHOOK: query: describe formatted src_stat.value
+POSTHOOK: query: describe formatted src_stat value
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_stat
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
@@ -81,10 +81,10 @@ POSTHOOK: query: ANALYZE TABLE src_stat_int COMPUTE STATISTICS for columns key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_stat_int
 #### A masked pattern was here ####
-PREHOOK: query: describe formatted src_stat_int.key
+PREHOOK: query: describe formatted src_stat_int key
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@src_stat_int
-POSTHOOK: query: describe formatted src_stat_int.key
+POSTHOOK: query: describe formatted src_stat_int key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_stat_int
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
@@ -94,10 +94,10 @@ PREHOOK: query: ALTER TABLE src_stat_int UPDATE STATISTICS for column key SET ('
 PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
 POSTHOOK: query: ALTER TABLE src_stat_int UPDATE STATISTICS for column key SET ('numDVs'='2222','lowValue'='333.22','highValue'='22.22')
 POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
-PREHOOK: query: describe formatted src_stat_int.key
+PREHOOK: query: describe formatted src_stat_int key
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@src_stat_int
-POSTHOOK: query: describe formatted src_stat_int.key
+POSTHOOK: query: describe formatted src_stat_int key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_stat_int
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             

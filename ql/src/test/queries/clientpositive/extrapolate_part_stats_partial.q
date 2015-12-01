@@ -25,9 +25,9 @@ analyze table loc_orc_1d partition(year='2001') compute statistics for columns s
 
 analyze table loc_orc_1d partition(year='2002') compute statistics for columns state,locid;
 
-describe formatted loc_orc_1d.state PARTITION(year='2001');
+describe formatted loc_orc_1d PARTITION(year='2001') state;
 
-describe formatted loc_orc_1d.state PARTITION(year='2002');
+describe formatted loc_orc_1d PARTITION(year='2002') state;
 
 -- basicStatState: COMPLETE colStatState: PARTIAL
 explain extended select state from loc_orc_1d;

@@ -35,32 +35,32 @@ alter table statsdb1.testtable1 rename to statsdb2.testtable2;
 
 analyze table testpart1 compute statistics for columns;
 
-describe formatted statsdb1.testpart1 col1 partition (part = 'part1');
-describe formatted statsdb1.testpart1 col2 partition (part = 'part1');
-describe formatted statsdb1.testpart1 col3 partition (part = 'part1');
-describe formatted statsdb1.testpart1 col1 partition (part = 'part2');
-describe formatted statsdb1.testpart1 col2 partition (part = 'part2');
-describe formatted statsdb1.testpart1 col3 partition (part = 'part2');
+describe formatted statsdb1.testpart1 partition (part = 'part1') col1;
+describe formatted statsdb1.testpart1 partition (part = 'part1') col2;
+describe formatted statsdb1.testpart1 partition (part = 'part1') col3;
+describe formatted statsdb1.testpart1 partition (part = 'part2') col1;
+describe formatted statsdb1.testpart1 partition (part = 'part2') col2;
+describe formatted statsdb1.testpart1 partition (part = 'part2') col3;
 
 alter table statsdb1.testpart1 partition (part = 'part2') rename to partition (part = 'part3');
-describe formatted statsdb1.testpart1 col1 partition (part = 'part1');
-describe formatted statsdb1.testpart1 col2 partition (part = 'part1');
-describe formatted statsdb1.testpart1 col3 partition (part = 'part1');
-describe formatted statsdb1.testpart1 col1 partition (part = 'part3');
-describe formatted statsdb1.testpart1 col2 partition (part = 'part3');
-describe formatted statsdb1.testpart1 col3 partition (part = 'part3');
+describe formatted statsdb1.testpart1 partition (part = 'part1') col1;
+describe formatted statsdb1.testpart1 partition (part = 'part1') col2;
+describe formatted statsdb1.testpart1 partition (part = 'part1') col3;
+describe formatted statsdb1.testpart1 partition (part = 'part3') col1;
+describe formatted statsdb1.testpart1 partition (part = 'part3') col2;
+describe formatted statsdb1.testpart1 partition (part = 'part3') col3;
 
 alter table statsdb1.testpart1 replace columns (col1 int, col2 string, col4 string) cascade;
-describe formatted statsdb1.testpart1 col1 partition (part = 'part1');
-describe formatted statsdb1.testpart1 col2 partition (part = 'part1');
-describe formatted statsdb1.testpart1 col4 partition (part = 'part1');
+describe formatted statsdb1.testpart1 partition (part = 'part1') col1;
+describe formatted statsdb1.testpart1 partition (part = 'part1') col2;
+describe formatted statsdb1.testpart1 partition (part = 'part1') col4;
 
 alter table statsdb1.testpart1 change column col1 col1 string;
 set hive.exec.dynamic.partition = true;
 alter table statsdb1.testpart1 partition (part) change column col1 col1 string;
-describe formatted statsdb1.testpart1 col1 partition (part = 'part1');
-describe formatted statsdb1.testpart1 col2 partition (part = 'part1');
-describe formatted statsdb1.testpart1 col4 partition (part = 'part1');
+describe formatted statsdb1.testpart1 partition (part = 'part1') col1;
+describe formatted statsdb1.testpart1 partition (part = 'part1') col2;
+describe formatted statsdb1.testpart1 partition (part = 'part1') col4;
 
 alter table statsdb1.testpart1 rename to statsdb2.testpart2;
 use statsdb2;
@@ -112,32 +112,32 @@ alter table statsdb1.testtable1 rename to statsdb2.testtable2;
 
 analyze table testpart1 compute statistics for columns;
 
-describe formatted statsdb1.testpart1 col1 partition (part = 'part1');
-describe formatted statsdb1.testpart1 col2 partition (part = 'part1');
-describe formatted statsdb1.testpart1 col3 partition (part = 'part1');
-describe formatted statsdb1.testpart1 col1 partition (part = 'part2');
-describe formatted statsdb1.testpart1 col2 partition (part = 'part2');
-describe formatted statsdb1.testpart1 col3 partition (part = 'part2');
+describe formatted statsdb1.testpart1 partition (part = 'part1') col1;
+describe formatted statsdb1.testpart1 partition (part = 'part1') col2;
+describe formatted statsdb1.testpart1 partition (part = 'part1') col3;
+describe formatted statsdb1.testpart1 partition (part = 'part2') col1;
+describe formatted statsdb1.testpart1 partition (part = 'part2') col2;
+describe formatted statsdb1.testpart1 partition (part = 'part2') col3;
 
 alter table statsdb1.testpart1 partition (part = 'part2') rename to partition (part = 'part3');
-describe formatted statsdb1.testpart1 col1 partition (part = 'part1');
-describe formatted statsdb1.testpart1 col2 partition (part = 'part1');
-describe formatted statsdb1.testpart1 col3 partition (part = 'part1');
-describe formatted statsdb1.testpart1 col1 partition (part = 'part3');
-describe formatted statsdb1.testpart1 col2 partition (part = 'part3');
-describe formatted statsdb1.testpart1 col3 partition (part = 'part3');
+describe formatted statsdb1.testpart1 partition (part = 'part1') col1;
+describe formatted statsdb1.testpart1 partition (part = 'part1') col2;
+describe formatted statsdb1.testpart1 partition (part = 'part1') col3;
+describe formatted statsdb1.testpart1 partition (part = 'part3') col1;
+describe formatted statsdb1.testpart1 partition (part = 'part3') col2;
+describe formatted statsdb1.testpart1 partition (part = 'part3') col3;
 
 alter table statsdb1.testpart1 replace columns (col1 int, col2 string, col4 string) cascade;
-describe formatted statsdb1.testpart1 col1 partition (part = 'part1');
-describe formatted statsdb1.testpart1 col2 partition (part = 'part1');
-describe formatted statsdb1.testpart1 col4 partition (part = 'part1');
+describe formatted statsdb1.testpart1 partition (part = 'part1') col1;
+describe formatted statsdb1.testpart1 partition (part = 'part1') col2;
+describe formatted statsdb1.testpart1 partition (part = 'part1') col4;
 
 alter table statsdb1.testpart1 change column col1 col1 string;
 set hive.exec.dynamic.partition = true;
 alter table statsdb1.testpart1 partition (part) change column col1 col1 string;
-describe formatted statsdb1.testpart1 col1 partition (part = 'part1');
-describe formatted statsdb1.testpart1 col2 partition (part = 'part1');
-describe formatted statsdb1.testpart1 col4 partition (part = 'part1');
+describe formatted statsdb1.testpart1 partition (part = 'part1') col1;
+describe formatted statsdb1.testpart1 partition (part = 'part1') col2;
+describe formatted statsdb1.testpart1 partition (part = 'part1') col4;
 
 alter table statsdb1.testpart1 rename to statsdb2.testpart2;
 use statsdb2;

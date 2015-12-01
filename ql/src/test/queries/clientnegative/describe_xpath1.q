@@ -1,1 +1,1 @@
-describe src_thrift.$elem$;
+describe src_thrift $elem$;

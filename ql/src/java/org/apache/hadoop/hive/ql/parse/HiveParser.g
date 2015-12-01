@@ -1324,7 +1324,8 @@ fileFormat
 tabTypeExpr
 @init { pushMsg("specifying table types", state); }
 @after { popMsg(state); }
-   : identifier (DOT^ 
+   : identifier (DOT^ identifier)?
+   (identifier (DOT^
    (
    (KW_ELEM_TYPE) => KW_ELEM_TYPE
    | 
@@ -1332,13 +1333,20 @@ tabTypeExpr
    | 
    (KW_VALUE_TYPE) => KW_VALUE_TYPE 
    | identifier
-   ))* identifier?
+   ))*
+   )?
    ;
 
 partTypeExpr
 @init { pushMsg("specifying table partitions", state); }
 @after { popMsg(state); }
     :  tabTypeExpr partitionSpec? -> ^(TOK_TABTYPE tabTypeExpr partitionSpec?)
+    ;
+
+tabPartColTypeExpr
+@init { pushMsg("specifying table partitions columnName", state); }
+@after { popMsg(state); }
+    :  tableName partitionSpec? extColumnName? -> ^(TOK_TABTYPE tableName partitionSpec? extColumnName?)
     ;
 
 descStatement
@@ -1351,9 +1359,9 @@ descStatement
     |
     (KW_FUNCTION) => KW_FUNCTION KW_EXTENDED? (name=descFuncNames) -> ^(TOK_DESCFUNCTION $name KW_EXTENDED?)
     |
-    (KW_FORMATTED|KW_EXTENDED|KW_PRETTY) => ((descOptions=KW_FORMATTED|descOptions=KW_EXTENDED|descOptions=KW_PRETTY) parttype=partTypeExpr) -> ^(TOK_DESCTABLE $parttype $descOptions)
+    (KW_FORMATTED|KW_EXTENDED|KW_PRETTY) => ((descOptions=KW_FORMATTED|descOptions=KW_EXTENDED|descOptions=KW_PRETTY) parttype=tabPartColTypeExpr) -> ^(TOK_DESCTABLE $parttype $descOptions)
     |
-    parttype=partTypeExpr -> ^(TOK_DESCTABLE $parttype)
+    parttype=tabPartColTypeExpr -> ^(TOK_DESCTABLE $parttype)
     )
     ;
 
@@ -1932,6 +1940,13 @@ columnName
 @after { popMsg(state); }
     :
       identifier
+    ;
+
+extColumnName
+@init { pushMsg("column name for complex types", state); }
+@after { popMsg(state); }
+    :
+      identifier (DOT^ ((KW_ELEM_TYPE) => KW_ELEM_TYPE | (KW_KEY_TYPE) => KW_KEY_TYPE | (KW_VALUE_TYPE) => KW_VALUE_TYPE | identifier))*
     ;
 
 columnNameOrderList

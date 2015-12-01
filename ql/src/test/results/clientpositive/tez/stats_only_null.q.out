@@ -383,10 +383,10 @@ POSTHOOK: Input: default@stats_null_part
 POSTHOOK: Input: default@stats_null_part@dt=1
 POSTHOOK: Input: default@stats_null_part@dt=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
-PREHOOK: query: describe formatted stats_null_part.a partition(dt = 1)
+PREHOOK: query: describe formatted stats_null_part partition(dt = 1) a
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@stats_null_part
-POSTHOOK: query: describe formatted stats_null_part.a partition(dt = 1)
+POSTHOOK: query: describe formatted stats_null_part partition(dt = 1) a
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@stats_null_part
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             

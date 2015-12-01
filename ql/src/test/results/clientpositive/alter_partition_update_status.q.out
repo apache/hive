@@ -28,10 +28,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_stat_part_one
 POSTHOOK: Input: default@src_stat_part_one@partitionid=1
 #### A masked pattern was here ####
-PREHOOK: query: describe formatted src_stat_part_one.key PARTITION(partitionId=1)
+PREHOOK: query: describe formatted src_stat_part_one PARTITION(partitionId=1) key
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@src_stat_part_one
-POSTHOOK: query: describe formatted src_stat_part_one.key PARTITION(partitionId=1)
+POSTHOOK: query: describe formatted src_stat_part_one PARTITION(partitionId=1) key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_stat_part_one
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
@@ -41,10 +41,10 @@ PREHOOK: query: ALTER TABLE src_stat_part_one PARTITION(partitionId=1) UPDATE ST
 PREHOOK: type: ALTERTABLE_UPDATEPARTSTATS
 POSTHOOK: query: ALTER TABLE src_stat_part_one PARTITION(partitionId=1) UPDATE STATISTICS for column key SET ('numDVs'='11','avgColLen'='2.2')
 POSTHOOK: type: ALTERTABLE_UPDATEPARTSTATS
-PREHOOK: query: describe formatted src_stat_part_one.key PARTITION(partitionId=1)
+PREHOOK: query: describe formatted src_stat_part_one PARTITION(partitionId=1) key
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@src_stat_part_one
-POSTHOOK: query: describe formatted src_stat_part_one.key PARTITION(partitionId=1)
+POSTHOOK: query: describe formatted src_stat_part_one PARTITION(partitionId=1) key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_stat_part_one
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
@@ -80,10 +80,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_stat_part_two
 POSTHOOK: Input: default@src_stat_part_two@px=1/py=a
 #### A masked pattern was here ####
-PREHOOK: query: describe formatted src_stat_part_two.key PARTITION(px=1, py='a')
+PREHOOK: query: describe formatted src_stat_part_two PARTITION(px=1, py='a') key
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@src_stat_part_two
-POSTHOOK: query: describe formatted src_stat_part_two.key PARTITION(px=1, py='a')
+POSTHOOK: query: describe formatted src_stat_part_two PARTITION(px=1, py='a') key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_stat_part_two
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
@@ -93,10 +93,10 @@ PREHOOK: query: ALTER TABLE src_stat_part_two PARTITION(px=1, py='a') UPDATE STA
 PREHOOK: type: ALTERTABLE_UPDATEPARTSTATS
 POSTHOOK: query: ALTER TABLE src_stat_part_two PARTITION(px=1, py='a') UPDATE STATISTICS for column key SET ('numDVs'='30','maxColLen'='40')
 POSTHOOK: type: ALTERTABLE_UPDATEPARTSTATS
-PREHOOK: query: describe formatted src_stat_part_two.key PARTITION(px=1, py='a')
+PREHOOK: query: describe formatted src_stat_part_two PARTITION(px=1, py='a') key
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@src_stat_part_two
-POSTHOOK: query: describe formatted src_stat_part_two.key PARTITION(px=1, py='a')
+POSTHOOK: query: describe formatted src_stat_part_two PARTITION(px=1, py='a') key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_stat_part_two
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
@@ -118,10 +118,10 @@ PREHOOK: query: ALTER TABLE default.src_stat_part_two PARTITION(px=1, py='a') UP
 PREHOOK: type: ALTERTABLE_UPDATEPARTSTATS
 POSTHOOK: query: ALTER TABLE default.src_stat_part_two PARTITION(px=1, py='a') UPDATE STATISTICS for column key SET ('numDVs'='40','maxColLen'='50')
 POSTHOOK: type: ALTERTABLE_UPDATEPARTSTATS
-PREHOOK: query: describe formatted default.src_stat_part_two key PARTITION(px=1, py='a')
+PREHOOK: query: describe formatted default.src_stat_part_two PARTITION(px=1, py='a') key
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@src_stat_part_two
-POSTHOOK: query: describe formatted default.src_stat_part_two key PARTITION(px=1, py='a')
+POSTHOOK: query: describe formatted default.src_stat_part_two PARTITION(px=1, py='a') key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_stat_part_two
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             

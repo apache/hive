@@ -12,4 +12,4 @@ POSTHOOK: query: CREATE TABLE db1.t1(key1 INT, value1 STRING) PARTITIONED BY (ds
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:db1
 POSTHOOK: Output: db1@t1
-FAILED: SemanticException [Error 10004]: Invalid table alias or column reference db1.t1.key1
+FAILED: ParseException line 4:15 missing EOF at '.' near 't1'

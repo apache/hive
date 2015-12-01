@@ -1,1 +1,1 @@
-describe src_thrift.$key$;
+describe src_thrift $key$;

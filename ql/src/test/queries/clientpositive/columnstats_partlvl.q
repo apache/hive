@@ -23,22 +23,22 @@ explain
 analyze table Employee_Part partition (employeeSalary=2000.0) compute statistics for columns;
 analyze table Employee_Part partition (employeeSalary=2000.0) compute statistics for columns;
 
-describe formatted Employee_Part.employeeID   partition (employeeSalary=2000.0);
-describe formatted Employee_Part.employeeName partition (employeeSalary=2000.0);
+describe formatted Employee_Part partition (employeeSalary=2000.0) employeeID;
+describe formatted Employee_Part partition (employeeSalary=2000.0) employeeName;
 
 explain 
 analyze table Employee_Part  compute statistics for columns;
 analyze table Employee_Part  compute statistics for columns;
 
-describe formatted Employee_Part.employeeID partition(employeeSalary=2000.0);
-describe formatted Employee_Part.employeeID partition(employeeSalary=4000.0);
+describe formatted Employee_Part partition(employeeSalary=2000.0) employeeID;
+describe formatted Employee_Part partition(employeeSalary=4000.0) employeeID;
 
 set hive.analyze.stmt.collect.partlevel.stats=false;
 explain 
 analyze table Employee_Part  compute statistics for columns;
 analyze table Employee_Part  compute statistics for columns;
 
-describe formatted Employee_Part.employeeID;
+describe formatted Employee_Part employeeID;
 
 set hive.analyze.stmt.collect.partlevel.stats=true;
 
@@ -48,7 +48,7 @@ use dummydb;
 
 analyze table default.Employee_Part partition (employeeSalary=2000.0) compute statistics for columns;
 
-describe formatted default.Employee_Part employeeID   partition (employeeSalary=2000.0);
+describe formatted default.Employee_Part partition (employeeSalary=2000.0) employeeID;
 
 analyze table default.Employee_Part  compute statistics for columns;
 
