@@ -18,11 +18,11 @@ POSTHOOK: query: load data local inpath '../../data/files/dec.txt' overwrite int
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@alter_partition_change_col0
-PREHOOK: query: create table alter_partition_change_col1 (c1 string, c2 string) partitioned by (p1 string, p2 string)
+PREHOOK: query: create table alter_partition_change_col1 (c1 string, c2 string) partitioned by (p1 string comment 'Column p1', p2 string comment 'Column p2')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@alter_partition_change_col1
-POSTHOOK: query: create table alter_partition_change_col1 (c1 string, c2 string) partitioned by (p1 string, p2 string)
+POSTHOOK: query: create table alter_partition_change_col1 (c1 string, c2 string) partitioned by (p1 string comment 'Column p1', p2 string comment 'Column p2')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alter_partition_change_col1
@@ -179,14 +179,14 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@alter_partition_change_col1
 c1                  	string              	                    
 c2                  	decimal(14,4)       	                    
-p1                  	string              	                    
-p2                  	string              	                    
+p1                  	string              	Column p1           
+p2                  	string              	Column p2           
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-p1                  	string              	                    
-p2                  	string              	                    
+p1                  	string              	Column p1           
+p2                  	string              	Column p2           
 PREHOOK: query: describe alter_partition_change_col1 partition (p1='abc', p2='123')
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@alter_partition_change_col1
@@ -195,14 +195,14 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@alter_partition_change_col1
 c1                  	string              	                    
 c2                  	decimal(10,0)       	                    
-p1                  	string              	                    
-p2                  	string              	                    
+p1                  	string              	Column p1           
+p2                  	string              	Column p2           
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-p1                  	string              	                    
-p2                  	string              	                    
+p1                  	string              	Column p1           
+p2                  	string              	Column p2           
 PREHOOK: query: select * from alter_partition_change_col1 where p1='abc'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alter_partition_change_col1
@@ -243,6 +243,31 @@ Snow	56.0000	__HIVE_DEFAULT_PARTITION__	123
 Tom	-12.0000	__HIVE_DEFAULT_PARTITION__	123
 Tom	19.0000	__HIVE_DEFAULT_PARTITION__	123
 Tom	235.0000	__HIVE_DEFAULT_PARTITION__	123
+PREHOOK: query: -- change the comment on a partition column without changing type or renaming it
+alter table alter_partition_change_col1 partition column (p1 string comment 'Changed comment for p1')
+PREHOOK: type: ALTERTABLE_PARTCOLTYPE
+PREHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: query: -- change the comment on a partition column without changing type or renaming it
+alter table alter_partition_change_col1 partition column (p1 string comment 'Changed comment for p1')
+POSTHOOK: type: ALTERTABLE_PARTCOLTYPE
+POSTHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: Output: default@alter_partition_change_col1
+PREHOOK: query: describe alter_partition_change_col1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: query: describe alter_partition_change_col1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_partition_change_col1
+c1                  	string              	                    
+c2                  	decimal(14,4)       	                    
+p1                  	string              	Changed comment for p1
+p2                  	string              	Column p2           
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+p1                  	string              	Changed comment for p1
+p2                  	string              	Column p2           
 PREHOOK: query: -- now change the column type of the existing partition
 alter table alter_partition_change_col1 partition (p1='abc', p2='123') change c2 c2 decimal(14,4)
 PREHOOK: type: ALTERTABLE_RENAMECOL
@@ -262,14 +287,14 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@alter_partition_change_col1
 c1                  	string              	                    
 c2                  	decimal(14,4)       	                    
-p1                  	string              	                    
-p2                  	string              	                    
+p1                  	string              	Changed comment for p1
+p2                  	string              	Column p2           
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-p1                  	string              	                    
-p2                  	string              	                    
+p1                  	string              	Changed comment for p1
+p2                  	string              	Column p2           
 PREHOOK: query: select * from alter_partition_change_col1 where p1='abc'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alter_partition_change_col1
@@ -329,14 +354,14 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@alter_partition_change_col1
 c1                  	string              	                    
 c2                  	decimal(14,4)       	                    
-p1                  	string              	                    
-p2                  	string              	                    
+p1                  	string              	Changed comment for p1
+p2                  	string              	Column p2           
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-p1                  	string              	                    
-p2                  	string              	                    
+p1                  	string              	Changed comment for p1
+p2                  	string              	Column p2           
 PREHOOK: query: select * from alter_partition_change_col1 where p1='abc'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alter_partition_change_col1
@@ -396,14 +421,14 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@alter_partition_change_col1
 c1                  	string              	                    
 c2                  	decimal(14,4)       	                    
-p1                  	string              	                    
-p2                  	string              	                    
+p1                  	string              	Changed comment for p1
+p2                  	string              	Column p2           
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-p1                  	string              	                    
-p2                  	string              	                    
+p1                  	string              	Changed comment for p1
+p2                  	string              	Column p2           
 PREHOOK: query: describe alter_partition_change_col1 partition (p1='abc', p2='123')
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@alter_partition_change_col1
@@ -411,14 +436,14 @@ POSTHOOK: query: describe alter_partition_change_col1 partition (p1='abc', p2='1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@alter_partition_change_col1
 c1                  	string              	                    
-p1                  	string              	                    
-p2                  	string              	                    
+p1                  	string              	Changed comment for p1
+p2                  	string              	Column p2           
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-p1                  	string              	                    
-p2                  	string              	                    
+p1                  	string              	Changed comment for p1
+p2                  	string              	Column p2           
 PREHOOK: query: select * from alter_partition_change_col1 where p1='abc'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alter_partition_change_col1
@@ -474,14 +499,14 @@ POSTHOOK: query: describe alter_partition_change_col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@alter_partition_change_col1
 c1                  	string              	                    
-p1                  	string              	                    
-p2                  	string              	                    
+p1                  	string              	Changed comment for p1
+p2                  	string              	Column p2           
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-p1                  	string              	                    
-p2                  	string              	                    
+p1                  	string              	Changed comment for p1
+p2                  	string              	Column p2           
 PREHOOK: query: select * from alter_partition_change_col1 where p1='abc'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alter_partition_change_col1
@@ -540,14 +565,14 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@alter_partition_change_col1
 c1                  	string              	                    
 c2                  	decimal(14,4)       	                    
-p1                  	string              	                    
-p2                  	string              	                    
+p1                  	string              	Changed comment for p1
+p2                  	string              	Column p2           
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-p1                  	string              	                    
-p2                  	string              	                    
+p1                  	string              	Changed comment for p1
+p2                  	string              	Column p2           
 PREHOOK: query: describe alter_partition_change_col1 partition (p1='abc', p2='123')
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@alter_partition_change_col1
@@ -555,14 +580,14 @@ POSTHOOK: query: describe alter_partition_change_col1 partition (p1='abc', p2='1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@alter_partition_change_col1
 c1                  	string              	                    
-p1                  	string              	                    
-p2                  	string              	                    
+p1                  	string              	Changed comment for p1
+p2                  	string              	Column p2           
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-p1                  	string              	                    
-p2                  	string              	                    
+p1                  	string              	Changed comment for p1
+p2                  	string              	Column p2           
 PREHOOK: query: select * from alter_partition_change_col1 where p1='abc'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alter_partition_change_col1
@@ -620,14 +645,14 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@alter_partition_change_col1
 c1                  	string              	                    
 c2                  	decimal(14,4)       	                    
-p1                  	string              	                    
-p2                  	string              	                    
+p1                  	string              	Changed comment for p1
+p2                  	string              	Column p2           
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-p1                  	string              	                    
-p2                  	string              	                    
+p1                  	string              	Changed comment for p1
+p2                  	string              	Column p2           
 PREHOOK: query: select * from alter_partition_change_col1 where p1='abc'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alter_partition_change_col1
@@ -690,14 +715,14 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@alter_partition_change_col1
 c1                  	string              	                    
 c2                  	decimal(10,0)       	                    
-p1                  	string              	                    
-p2                  	string              	                    
+p1                  	string              	Changed comment for p1
+p2                  	string              	Column p2           
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-p1                  	string              	                    
-p2                  	string              	                    
+p1                  	string              	Changed comment for p1
+p2                  	string              	Column p2           
 PREHOOK: query: describe alter_partition_change_col1 partition (p1='__HIVE_DEFAULT_PARTITION__', p2='123')
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@alter_partition_change_col1
@@ -706,14 +731,14 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@alter_partition_change_col1
 c1                  	string              	                    
 c2                  	decimal(10,0)       	                    
-p1                  	string              	                    
-p2                  	string              	                    
+p1                  	string              	Changed comment for p1
+p2                  	string              	Column p2           
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-p1                  	string              	                    
-p2                  	string              	                    
+p1                  	string              	Changed comment for p1
+p2                  	string              	Column p2           
 PREHOOK: query: select * from alter_partition_change_col1 where p1='abc'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alter_partition_change_col1
