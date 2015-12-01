@@ -5342,12 +5342,12 @@ Stage-4
                            |     key expressions:_col0 (type: string), _col1 (type: string)
                            |     Map-reduce partition columns:_col0 (type: string)
                            |     sort order:++
-                           |     Statistics:Num rows: 500 Data size: 140000 Basic stats: COMPLETE Column stats: PARTIAL
+                           |     Statistics:Num rows: 1 Data size: 280 Basic stats: COMPLETE Column stats: PARTIAL
                            |     Group By Operator [GBY_14]
                            |        aggregations:["count(DISTINCT substr(_col1, 5))"]
                            |        keys:_col0 (type: string), substr(_col1, 5) (type: string)
                            |        outputColumnNames:["_col0","_col1","_col2"]
-                           |        Statistics:Num rows: 500 Data size: 140000 Basic stats: COMPLETE Column stats: PARTIAL
+                           |        Statistics:Num rows: 1 Data size: 280 Basic stats: COMPLETE Column stats: PARTIAL
                            |        Select Operator [SEL_9]
                            |           outputColumnNames:["_col0","_col1"]
                            |           Statistics:Num rows: 501 Data size: 136272 Basic stats: COMPLETE Column stats: PARTIAL
@@ -5361,24 +5361,24 @@ Stage-4
                            |     key expressions:_col0 (type: string), _col1 (type: string), _col2 (type: string)
                            |     Map-reduce partition columns:_col0 (type: string), _col1 (type: string)
                            |     sort order:+++
-                           |     Statistics:Num rows: 500 Data size: 232000 Basic stats: COMPLETE Column stats: PARTIAL
+                           |     Statistics:Num rows: 1 Data size: 464 Basic stats: COMPLETE Column stats: PARTIAL
                            |     Group By Operator [GBY_20]
                            |        aggregations:["count(DISTINCT substr(_col1, 5))"]
                            |        keys:_col0 (type: string), _col1 (type: string), substr(_col1, 5) (type: string)
                            |        outputColumnNames:["_col0","_col1","_col2","_col3"]
-                           |        Statistics:Num rows: 500 Data size: 232000 Basic stats: COMPLETE Column stats: PARTIAL
+                           |        Statistics:Num rows: 1 Data size: 464 Basic stats: COMPLETE Column stats: PARTIAL
                            |         Please refer to the previous Select Operator [SEL_9]
                            |<-Map 7 [CONTAINS]
                            |  Reduce Output Operator [RS_15]
                            |     key expressions:_col0 (type: string), _col1 (type: string)
                            |     Map-reduce partition columns:_col0 (type: string)
                            |     sort order:++
-                           |     Statistics:Num rows: 500 Data size: 140000 Basic stats: COMPLETE Column stats: PARTIAL
+                           |     Statistics:Num rows: 1 Data size: 280 Basic stats: COMPLETE Column stats: PARTIAL
                            |     Group By Operator [GBY_14]
                            |        aggregations:["count(DISTINCT substr(_col1, 5))"]
                            |        keys:_col0 (type: string), substr(_col1, 5) (type: string)
                            |        outputColumnNames:["_col0","_col1","_col2"]
-                           |        Statistics:Num rows: 500 Data size: 140000 Basic stats: COMPLETE Column stats: PARTIAL
+                           |        Statistics:Num rows: 1 Data size: 280 Basic stats: COMPLETE Column stats: PARTIAL
                            |        Select Operator [SEL_11]
                            |           outputColumnNames:["_col0","_col1"]
                            |           Statistics:Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -5389,24 +5389,24 @@ Stage-4
                            |     key expressions:_col0 (type: string), _col1 (type: string), _col2 (type: string)
                            |     Map-reduce partition columns:_col0 (type: string), _col1 (type: string)
                            |     sort order:+++
-                           |     Statistics:Num rows: 500 Data size: 232000 Basic stats: COMPLETE Column stats: PARTIAL
+                           |     Statistics:Num rows: 1 Data size: 464 Basic stats: COMPLETE Column stats: PARTIAL
                            |     Group By Operator [GBY_20]
                            |        aggregations:["count(DISTINCT substr(_col1, 5))"]
                            |        keys:_col0 (type: string), _col1 (type: string), substr(_col1, 5) (type: string)
                            |        outputColumnNames:["_col0","_col1","_col2","_col3"]
-                           |        Statistics:Num rows: 500 Data size: 232000 Basic stats: COMPLETE Column stats: PARTIAL
+                           |        Statistics:Num rows: 1 Data size: 464 Basic stats: COMPLETE Column stats: PARTIAL
                            |         Please refer to the previous Select Operator [SEL_11]
                            |<-Reducer 2 [CONTAINS]
                               Reduce Output Operator [RS_15]
                                  key expressions:_col0 (type: string), _col1 (type: string)
                                  Map-reduce partition columns:_col0 (type: string)
                                  sort order:++
-                                 Statistics:Num rows: 500 Data size: 140000 Basic stats: COMPLETE Column stats: PARTIAL
+                                 Statistics:Num rows: 1 Data size: 280 Basic stats: COMPLETE Column stats: PARTIAL
                                  Group By Operator [GBY_14]
                                     aggregations:["count(DISTINCT substr(_col1, 5))"]
                                     keys:_col0 (type: string), substr(_col1, 5) (type: string)
                                     outputColumnNames:["_col0","_col1","_col2"]
-                                    Statistics:Num rows: 500 Data size: 140000 Basic stats: COMPLETE Column stats: PARTIAL
+                                    Statistics:Num rows: 1 Data size: 280 Basic stats: COMPLETE Column stats: PARTIAL
                                     Select Operator [SEL_9]
                                        outputColumnNames:["_col0","_col1"]
                                        Statistics:Num rows: 501 Data size: 136272 Basic stats: COMPLETE Column stats: PARTIAL
@@ -5435,12 +5435,12 @@ Stage-4
                                  key expressions:_col0 (type: string), _col1 (type: string), _col2 (type: string)
                                  Map-reduce partition columns:_col0 (type: string), _col1 (type: string)
                                  sort order:+++
-                                 Statistics:Num rows: 500 Data size: 232000 Basic stats: COMPLETE Column stats: PARTIAL
+                                 Statistics:Num rows: 1 Data size: 464 Basic stats: COMPLETE Column stats: PARTIAL
                                  Group By Operator [GBY_20]
                                     aggregations:["count(DISTINCT substr(_col1, 5))"]
                                     keys:_col0 (type: string), _col1 (type: string), substr(_col1, 5) (type: string)
                                     outputColumnNames:["_col0","_col1","_col2","_col3"]
-                                    Statistics:Num rows: 500 Data size: 232000 Basic stats: COMPLETE Column stats: PARTIAL
+                                    Statistics:Num rows: 1 Data size: 464 Basic stats: COMPLETE Column stats: PARTIAL
                                      Please refer to the previous Select Operator [SEL_9]
                      Reducer 5
                      File Output Operator [FS_24]
@@ -5512,12 +5512,12 @@ Stage-4
                            |     key expressions:_col0 (type: string), _col1 (type: string)
                            |     Map-reduce partition columns:_col0 (type: string)
                            |     sort order:++
-                           |     Statistics:Num rows: 250 Data size: 70000 Basic stats: COMPLETE Column stats: PARTIAL
+                           |     Statistics:Num rows: 1 Data size: 280 Basic stats: COMPLETE Column stats: PARTIAL
                            |     Group By Operator [GBY_10]
                            |        aggregations:["count(DISTINCT substr(_col1, 5))"]
                            |        keys:_col0 (type: string), substr(_col1, 5) (type: string)
                            |        outputColumnNames:["_col0","_col1","_col2"]
-                           |        Statistics:Num rows: 250 Data size: 70000 Basic stats: COMPLETE Column stats: PARTIAL
+                           |        Statistics:Num rows: 1 Data size: 280 Basic stats: COMPLETE Column stats: PARTIAL
                            |        Select Operator [SEL_9]
                            |           outputColumnNames:["_col0","_col1"]
                            |           Statistics:Num rows: 501 Data size: 5672 Basic stats: COMPLETE Column stats: PARTIAL
@@ -5531,12 +5531,12 @@ Stage-4
                            |     key expressions:_col0 (type: string), _col1 (type: string), _col2 (type: string)
                            |     Map-reduce partition columns:_col0 (type: string), _col1 (type: string)
                            |     sort order:+++
-                           |     Statistics:Num rows: 250 Data size: 116000 Basic stats: COMPLETE Column stats: PARTIAL
+                           |     Statistics:Num rows: 1 Data size: 464 Basic stats: COMPLETE Column stats: PARTIAL
                            |     Group By Operator [GBY_16]
                            |        aggregations:["count(DISTINCT substr(_col1, 5))"]
                            |        keys:_col0 (type: string), _col1 (type: string), substr(_col1, 5) (type: string)
                            |        outputColumnNames:["_col0","_col1","_col2","_col3"]
-                           |        Statistics:Num rows: 250 Data size: 116000 Basic stats: COMPLETE Column stats: PARTIAL
+                           |        Statistics:Num rows: 1 Data size: 464 Basic stats: COMPLETE Column stats: PARTIAL
                            |        Select Operator [SEL_15]
                            |           outputColumnNames:["_col0","_col1"]
                            |           Statistics:Num rows: 501 Data size: 5672 Basic stats: COMPLETE Column stats: PARTIAL
@@ -5546,12 +5546,12 @@ Stage-4
                                  key expressions:_col0 (type: string), _col1 (type: string)
                                  Map-reduce partition columns:_col0 (type: string)
                                  sort order:++
-                                 Statistics:Num rows: 250 Data size: 70000 Basic stats: COMPLETE Column stats: PARTIAL
+                                 Statistics:Num rows: 1 Data size: 280 Basic stats: COMPLETE Column stats: PARTIAL
                                  Group By Operator [GBY_10]
                                     aggregations:["count(DISTINCT substr(_col1, 5))"]
                                     keys:_col0 (type: string), substr(_col1, 5) (type: string)
                                     outputColumnNames:["_col0","_col1","_col2"]
-                                    Statistics:Num rows: 250 Data size: 70000 Basic stats: COMPLETE Column stats: PARTIAL
+                                    Statistics:Num rows: 1 Data size: 280 Basic stats: COMPLETE Column stats: PARTIAL
                                     Select Operator [SEL_9]
                                        outputColumnNames:["_col0","_col1"]
                                        Statistics:Num rows: 501 Data size: 5672 Basic stats: COMPLETE Column stats: PARTIAL
@@ -5580,12 +5580,12 @@ Stage-4
                                  key expressions:_col0 (type: string), _col1 (type: string), _col2 (type: string)
                                  Map-reduce partition columns:_col0 (type: string), _col1 (type: string)
                                  sort order:+++
-                                 Statistics:Num rows: 250 Data size: 116000 Basic stats: COMPLETE Column stats: PARTIAL
+                                 Statistics:Num rows: 1 Data size: 464 Basic stats: COMPLETE Column stats: PARTIAL
                                  Group By Operator [GBY_16]
                                     aggregations:["count(DISTINCT substr(_col1, 5))"]
                                     keys:_col0 (type: string), _col1 (type: string), substr(_col1, 5) (type: string)
                                     outputColumnNames:["_col0","_col1","_col2","_col3"]
-                                    Statistics:Num rows: 250 Data size: 116000 Basic stats: COMPLETE Column stats: PARTIAL
+                                    Statistics:Num rows: 1 Data size: 464 Basic stats: COMPLETE Column stats: PARTIAL
                                     Select Operator [SEL_15]
                                        outputColumnNames:["_col0","_col1"]
                                        Statistics:Num rows: 501 Data size: 5672 Basic stats: COMPLETE Column stats: PARTIAL

@@ -41,7 +41,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
   StringGroupColNotEqualStringScalar.class,
   StringGroupColNotEqualVarCharScalar.class, StringGroupColNotEqualCharScalar.class,
   StringScalarNotEqualStringGroupColumn.class,
-  VarCharScalarNotEqualStringGroupColumn.class, CharScalarNotEqualStringGroupColumn.class, 
+  VarCharScalarNotEqualStringGroupColumn.class, CharScalarNotEqualStringGroupColumn.class,
   FilterStringGroupColNotEqualStringScalar.class, FilterStringScalarNotEqualStringGroupColumn.class,
   FilterStringGroupColNotEqualVarCharScalar.class, FilterVarCharScalarNotEqualStringGroupColumn.class,
   FilterStringGroupColNotEqualCharScalar.class, FilterCharScalarNotEqualStringGroupColumn.class,
@@ -66,6 +66,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
   DateColNotEqualDateScalar.class,FilterDateColNotEqualDateScalar.class,
   DateScalarNotEqualDateColumn.class,FilterDateScalarNotEqualDateColumn.class,
   })
+@NDV(maxNdv = 2)
 public class GenericUDFOPNotEqual extends GenericUDFBaseCompare {
   public GenericUDFOPNotEqual(){
     this.opName = "NOT EQUAL";

@@ -67,6 +67,7 @@ import org.apache.hadoop.io.Text;
   DateColGreaterDateScalar.class,FilterDateColGreaterDateScalar.class,
   DateScalarGreaterDateColumn.class,FilterDateScalarGreaterDateColumn.class,
   })
+@NDV(maxNdv = 2)
 public class GenericUDFOPGreaterThan extends GenericUDFBaseCompare {
   public GenericUDFOPGreaterThan(){
     this.opName = "GREATER THAN";

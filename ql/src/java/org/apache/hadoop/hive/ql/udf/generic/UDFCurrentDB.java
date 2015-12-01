@@ -31,6 +31,7 @@ import org.apache.hadoop.io.Text;
 // deterministic in the query range
 @Description(name = "current_database",
     value = "_FUNC_() - returns currently using database name")
+@NDV(maxNdv = 1)
 public class UDFCurrentDB extends GenericUDF {
 
   private MapredContext context;

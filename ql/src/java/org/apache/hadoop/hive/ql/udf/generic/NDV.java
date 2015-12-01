@@ -15,29 +15,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import org.apache.hadoop.hive.ql.exec.Description;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
-@Description(name = "<=>", value = "a _FUNC_ b - Returns same result with EQUAL(=) operator " +
-    "for non-null operands, but returns TRUE if both are NULL, FALSE if one of the them is NULL")
-@NDV(maxNdv = 2)
-public class GenericUDFOPEqualNS extends GenericUDFOPEqual {
+@Retention(RetentionPolicy.RUNTIME)
+public @interface NDV {
 
-  @Override
-  public Object evaluate(DeferredObject[] arguments) throws HiveException {
-    Object o0 = arguments[0].get();
-    Object o1 = arguments[1].get();
-    if (o0 == null && o1 == null) {
-      result.set(true);
-      return result;
-    }
-    if (o0 == null || o1 == null) {
-      result.set(false);
-      return result;
-    }
-    return super.evaluate(arguments);
-  }
+  long maxNdv();
 }

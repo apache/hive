@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 @Description(name = "current_timestamp",
     value = "_FUNC_() - Returns the current timestamp at the start of query evaluation."
     + " All calls of current_timestamp within the same query return the same value.")
+@NDV(maxNdv = 1)
 public class GenericUDFCurrentTimestamp extends GenericUDF {
 
   protected TimestampWritable currentTimestamp;

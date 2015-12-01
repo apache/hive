@@ -38,6 +38,7 @@ import org.apache.hadoop.io.BooleanWritable;
 @Description(name = "or", value = "a1 _FUNC_ a2 _FUNC_ ... _FUNC_ an - Logical or")
 @VectorizedExpressions({ColOrCol.class, FilterExprOrExpr.class, FilterColOrScalar.class,
     FilterScalarOrColumn.class})
+@NDV(maxNdv = 2)
 public class GenericUDFOPOr extends GenericUDF {
   private final BooleanWritable result = new BooleanWritable();
   private transient BooleanObjectInspector[] boi;

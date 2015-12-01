@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFWeekOfYearLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFWeekOfYearString;
+import org.apache.hadoop.hive.ql.udf.generic.NDV;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.io.IntWritable;
@@ -45,6 +46,7 @@ import org.apache.hadoop.io.Text;
     + "  8\n"
     + "  > SELECT _FUNC_('1980-12-31 12:59:59') FROM src LIMIT 1;\n" + "  1")
 @VectorizedExpressions({VectorUDFWeekOfYearLong.class, VectorUDFWeekOfYearString.class})
+@NDV(maxNdv = 52)
 public class UDFWeekOfYear extends UDF {
   private final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
   private final Calendar calendar = Calendar.getInstance();
