@@ -157,6 +157,13 @@ public class SimpleFetchOptimizer implements Transform {
     if (threshold < 0) {
       return true;
     }
+    Operator child = data.scanOp.getChildOperators().get(0);
+    if(child instanceof SelectOperator) {
+      // select *, constant and casts can be allowed without a threshold check
+      if (checkExpressions((SelectOperator)child)) {
+        return true;
+      }
+    }
     long remaining = threshold;
     remaining -= data.getInputLength(pctx, remaining);
     if (remaining < 0) {
