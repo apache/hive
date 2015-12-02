@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 set hive.auto.convert.join.noconditionaltask.size=60000000;
 set hive.log.trace.id=mrrTest;

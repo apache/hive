@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 SET hive.vectorized.execution.enabled=true;
 SELECT AVG(cbigint),
        (-(AVG(cbigint))),

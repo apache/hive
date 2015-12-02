@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.security.authorization.enabled=true;
 
 -- JAVA_VERSION_SPECIFIC_OUTPUT

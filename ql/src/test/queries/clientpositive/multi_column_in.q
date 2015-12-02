@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 drop table emps;
 
 create table emps (empno int, deptno int, empname string);

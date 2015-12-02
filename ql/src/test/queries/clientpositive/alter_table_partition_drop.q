@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.exec.dynamic.partition.mode=nonstrict;
 
 DROP TABLE IF EXISTS part_table PURGE;

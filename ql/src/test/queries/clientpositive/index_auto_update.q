@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 -- Test if index is actually being used.
 
 -- Create temp, and populate it with some values in src.

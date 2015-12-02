@@ -30,6 +30,7 @@ public class TestFolderPermissions extends FolderPermissionBase {
   @BeforeClass
   public static void setup() throws Exception {
     conf = new HiveConf(TestFolderPermissions.class);
+    conf.setVar(HiveConf.ConfVars.HIVEMAPREDMODE, "nonstrict");
     baseSetup();
   }
 

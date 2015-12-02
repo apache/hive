@@ -9,7 +9,7 @@ CREATE TABLE t3 (a int) PARTITIONED BY (d1 int, d2 int);
 CREATE TABLE t4 (a int) PARTITIONED BY (d1 int, d2 int);
 CREATE TABLE t5 (a int) PARTITIONED BY (d1 int, d2 int, d3 int);
 CREATE TABLE t6 (a int) PARTITIONED BY (d1 int, d2 int, d3 int);
-
+set hive.mapred.mode=nonstrict;
 INSERT OVERWRITE TABLE t1 PARTITION (d1 = 1) SELECT key FROM src where key = 100 limit 1;
 INSERT OVERWRITE TABLE t3 PARTITION (d1 = 1, d2 = 1) SELECT key FROM src where key = 100 limit 1;
 INSERT OVERWRITE TABLE t5 PARTITION (d1 = 1, d2 = 1, d3=1) SELECT key FROM src where key = 100 limit 1;

@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 USE default;
 
 set hive.input.format=org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;

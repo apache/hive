@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 -- Tests truncating column(s) from a table, also tests that stats are updated
 
 CREATE TABLE test_tab (key STRING, value STRING) 

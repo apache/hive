@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 -- This test is used for testing EXPLAIN LOGICAL command
 
 -- Create some views

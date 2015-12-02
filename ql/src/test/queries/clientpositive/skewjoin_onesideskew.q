@@ -1,7 +1,7 @@
 set hive.auto.convert.join=false;
 set hive.optimize.skewjoin=true;
 set hive.skewjoin.key=2;
-
+set hive.mapred.mode=nonstrict;
 
 DROP TABLE IF EXISTS skewtable;
 CREATE TABLE skewtable (key STRING, value STRING) STORED AS TEXTFILE;

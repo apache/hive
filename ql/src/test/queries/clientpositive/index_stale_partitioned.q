@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.stats.dbclass=fs;
 -- Test if index is actually being used.
 

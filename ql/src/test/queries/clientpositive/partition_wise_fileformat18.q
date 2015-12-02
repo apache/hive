@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 -- HIVE-5202 : Tests for SettableUnionObjectInspectors
 -- CustomSerDe(4,5) are used here. 
 -- The final results should be all NULL columns deserialized using 

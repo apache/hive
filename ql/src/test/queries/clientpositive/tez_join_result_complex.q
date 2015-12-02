@@ -2,7 +2,7 @@ SET hive.auto.convert.join=true;
 SET hive.auto.convert.join.noconditionaltask=true;
 SET hive.auto.convert.join.noconditionaltask.size=1000000000;
 set hive.mapjoin.optimized.hashtable=true;
-
+set hive.mapred.mode=nonstrict;
 create table service_request_clean(
 cnctevn_id          	string              ,
 svcrqst_id          	string              ,

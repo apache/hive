@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set mapreduce.framework.name=yarn;
 set mapreduce.jobtracker.address=localhost:58;
 set hive.exec.mode.local.auto=true;

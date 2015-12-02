@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set mapred.max.split.size = 32000000;
 
 CREATE TABLE T1(name STRING) STORED AS TEXTFILE;

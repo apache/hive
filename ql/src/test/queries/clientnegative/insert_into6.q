@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 DROP TABLE IF EXISTS insert_into6_neg;
 
 CREATE TABLE insert_into6_neg (key int, value string)

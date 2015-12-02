@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 CREATE TABLE staging(t tinyint,
            si smallint,
            i int,

@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 -- SORT_QUERY_RESULTS
 -- Verify that table scans work with partitioned Avro tables
 CREATE TABLE episodes
@@ -144,6 +145,6 @@ WITH SERDEPROPERTIES ('avro.schema.literal'='{
   ]
 }');
 
-reset hive.metastore.disallow.incompatible.col.type.changes;
 -- Try selecting from the evolved table
 SELECT * FROM episodes_partitioned_serdeproperties;
+reset hive.metastore.disallow.incompatible.col.type.changes;

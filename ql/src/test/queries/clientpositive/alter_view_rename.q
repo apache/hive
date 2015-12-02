@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 CREATE DATABASE tv1;
 CREATE DATABASE tv2;
 

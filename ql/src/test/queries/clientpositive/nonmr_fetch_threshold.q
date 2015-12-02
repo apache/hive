@@ -1,5 +1,5 @@
 set hive.fetch.task.conversion=more;
-
+set hive.mapred.mode=nonstrict;
 explain select * from srcpart where ds='2008-04-08' AND hr='11' limit 10;
 explain select cast(key as int) * 10, upper(value) from src limit 10;
 

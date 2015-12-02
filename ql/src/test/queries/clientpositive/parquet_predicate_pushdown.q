@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 SET hive.optimize.ppd=true;
 
 -- SORT_QUERY_RESULTS

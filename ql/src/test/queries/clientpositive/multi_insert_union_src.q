@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 drop table if exists src2;
 drop table if exists src_multi1;
 drop table if exists src_multi1;

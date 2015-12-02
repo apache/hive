@@ -6,7 +6,7 @@ add jar ${system:maven.local.repository}/org/apache/hive/hive-contrib/${system:h
 
 create temporary function row_sequence as 
 'org.apache.hadoop.hive.contrib.udf.UDFRowSequence';
-
+set hive.mapred.mode=nonstrict;
 select key
 from (select key from src order by key) x
 where row_sequence() < 5

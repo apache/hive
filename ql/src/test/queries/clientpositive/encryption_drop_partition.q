@@ -4,7 +4,7 @@
 
 set hive.cli.errors.ignore=true;
 set hive.exec.dynamic.partition.mode=nonstrict;
-
+set hive.mapred.mode=nonstrict;
 DROP TABLE IF EXISTS encrypted_table_dp PURGE;
 CREATE TABLE encrypted_table_dp (key INT, value STRING) partitioned by (p STRING) LOCATION '${hiveconf:hive.metastore.warehouse.dir}/default/encrypted_table_dp';
 CRYPTO CREATE_KEY --keyName key_128 --bitLength 128;

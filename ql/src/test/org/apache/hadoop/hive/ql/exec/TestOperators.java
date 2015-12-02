@@ -397,6 +397,7 @@ public class TestOperators extends TestCase {
   public void testFetchOperatorContext() throws Exception {
     HiveConf conf = new HiveConf();
     conf.set("hive.support.concurrency", "false");
+    conf.setVar(HiveConf.ConfVars.HIVEMAPREDMODE, "nonstrict");
     SessionState.start(conf);
     String cmd = "create table fetchOp (id int, name string) " +
         "partitioned by (state string) " +

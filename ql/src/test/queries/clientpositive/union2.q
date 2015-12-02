@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 -- SORT_BEFORE_DIFF
 -- union case: both subqueries are map-reduce jobs on same input, followed by reduce sink

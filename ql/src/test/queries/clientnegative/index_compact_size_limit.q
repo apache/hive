@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.stats.dbclass=fs;
 drop index src_index on src;
 

@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 
 CREATE TABLE tmp_select(a INT, b STRING);
 DESCRIBE tmp_select;

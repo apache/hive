@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 create table part2( 
     p2_partkey INT,
     p2_name STRING,

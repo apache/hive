@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 -- HIVE-5199, HIVE-5285 : CustomSerDe(1, 2, 3) are used here.
 -- The final results should be all NULL columns deserialized using 
 -- CustomSerDe(1, 2, 3) irrespective of the inserted values

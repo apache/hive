@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.optimize.reducededuplication=true;
 set hive.optimize.reducededuplication.min.reducer=1;
 set hive.map.aggr=true;

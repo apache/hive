@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 USE default;
 -- Mismatch between the number of matching groups and columns, throw run time exception. Ideally this should throw a compile time exception. See JIRA-3023 for more details.
  CREATE TABLE serde_regex(

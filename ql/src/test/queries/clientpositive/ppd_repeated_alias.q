@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 drop table pokes;
 drop table pokes2;
 create table pokes (foo int, bar int, blah int);

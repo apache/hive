@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 
 create table tst(a string, b string) partitioned by (d string);
 alter table tst add partition (d='2009-01-01');

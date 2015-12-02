@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set mapred.reduce.tasks=4;
 -- SORT_QUERY_RESULTS
 

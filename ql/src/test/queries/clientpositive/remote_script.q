@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 dfs -put ../../data/scripts/newline.py /newline.py;
 add file hdfs:///newline.py;
 set hive.transform.escape.input=true;

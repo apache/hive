@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 DESCRIBE FUNCTION lower;
 DESCRIBE FUNCTION EXTENDED lower;
 

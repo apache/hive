@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set mapred.max.split.size=100;
 set mapred.min.split.size=1;
 set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;

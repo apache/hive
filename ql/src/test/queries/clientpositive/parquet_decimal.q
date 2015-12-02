@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 DROP TABLE IF EXISTS dec;
 
 CREATE TABLE dec(name string, value decimal(8,4));

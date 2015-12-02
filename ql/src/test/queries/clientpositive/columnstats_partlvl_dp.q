@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 DROP TABLE Employee_Part;
 
 CREATE TABLE Employee_Part(employeeID int, employeeName String) partitioned by (employeeSalary double, country string)

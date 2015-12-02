@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 DROP TABLE IF EXISTS DECIMAL_3;
 
 CREATE TABLE DECIMAL_3(key decimal(38,18), value int)

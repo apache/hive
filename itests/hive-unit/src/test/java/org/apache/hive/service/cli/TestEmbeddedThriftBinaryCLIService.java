@@ -36,7 +36,9 @@ public class TestEmbeddedThriftBinaryCLIService extends CLIServiceTest {
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
     service = new EmbeddedThriftBinaryCLIService();
-    service.init(new HiveConf());
+    HiveConf conf = new HiveConf();
+    conf.setVar(HiveConf.ConfVars.HIVEMAPREDMODE, "nonstrict");
+    service.init(conf);
     client = new ThriftCLIServiceClient(service);
   }
 

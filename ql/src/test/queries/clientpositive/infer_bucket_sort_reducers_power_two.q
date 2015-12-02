@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.exec.infer.bucket.sort=true;
 set hive.exec.infer.bucket.sort.num.buckets.power.two=true;
 set hive.exec.reducers.bytes.per.reducer=2500;

@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 -- Tests truncating columns from a bucketed table, table should remain bucketed
 
 CREATE TABLE test_tab (key STRING, value STRING) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS RCFILE;

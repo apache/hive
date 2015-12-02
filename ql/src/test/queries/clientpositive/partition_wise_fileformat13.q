@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.input.format = org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 
 -- This tests that the schema can be changed for partitioned tables for binary serde data for joins
@@ -6,7 +7,7 @@ alter table T1 set serde 'org.apache.hadoop.hive.serde2.columnar.LazyBinaryColum
 insert overwrite table T1 partition (dt='1') select * from src where key = 238 or key = 97;
 set hive.metastore.disallow.incompatible.col.type.changes=false;
 alter table T1 change key key int;
-reset hive.metastore.disallow.incompatible.col.type.changes;
+
 insert overwrite table T1 partition (dt='2') select * from src where key = 238 or key = 97;
 
 alter table T1 change key key string;
@@ -16,3 +17,4 @@ insert overwrite table T2 partition (dt='1') select * from src where key = 238 o
 
 select /* + MAPJOIN(a) */ count(*) FROM T1 a JOIN T2 b ON a.key = b.key;
 select count(*) FROM T1 a JOIN T2 b ON a.key = b.key;
+reset hive.metastore.disallow.incompatible.col.type.changes;

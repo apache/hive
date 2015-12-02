@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.limit.query.max.table.partition=1;
 
 explain select * from srcpart limit 1;
