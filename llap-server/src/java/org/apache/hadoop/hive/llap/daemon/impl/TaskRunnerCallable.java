@@ -169,8 +169,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
     ExecutorService executorReal = Executors.newFixedThreadPool(1,
         new ThreadFactoryBuilder()
             .setDaemon(true)
-            .setNameFormat(
-                "TezTaskRunner_" + request.getFragmentSpec().getFragmentIdentifierString())
+            .setNameFormat("TezTaskRunner")
             .build());
     executor = MoreExecutors.listeningDecorator(executorReal);
 

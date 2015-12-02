@@ -17,9 +17,7 @@
  */
 package org.apache.hadoop.hive.conf;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStreamReader;
 
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -34,13 +32,8 @@ import junit.framework.TestCase;
  * Loads configuration files located in common/src/test/resources.
  */
 public class TestHiveLogging extends TestCase {
-  private final Runtime runTime;
-  private Process process;
-
   public TestHiveLogging() {
     super();
-    runTime = Runtime.getRuntime();
-    process = null;
   }
 
   private void configLog(String hiveLog4jTest, String hiveExecLog4jTest)
@@ -55,25 +48,6 @@ public class TestHiveLogging extends TestCase {
     HiveConf conf = new HiveConf();
     assertEquals(expectedLog4jTestPath, conf.getVar(ConfVars.HIVE_LOG4J_FILE));
     assertEquals(expectedLog4jExecPath, conf.getVar(ConfVars.HIVE_EXEC_LOG4J_FILE));
-  }
-
-  private void runCmd(String cmd) throws Exception {
-    process = runTime.exec(cmd);
-    process.waitFor();
-  }
-
-  private void getCmdOutput(String logFile) throws Exception {
-    boolean logCreated = false;
-    BufferedReader buf = new BufferedReader(
-      new InputStreamReader(process.getInputStream()));
-    String line = "";
-    while((line = buf.readLine()) != null) {
-      line = line.replace("//", "/");
-      if (line.equals(logFile)) {
-        logCreated = true;
-      }
-    }
-    assertEquals(true, logCreated);
   }
 
   public void cleanLog(File logFile) {
@@ -107,6 +81,6 @@ public class TestHiveLogging extends TestCase {
     String customLogName = "hiveLog4j2Test.log";
     File customLogFile = new File(customLogPath, customLogName);
     RunTest(customLogFile,
-      "hive-log4j2-test.xml", "hive-exec-log4j2-test.xml");
+      "hive-log4j2-test.properties", "hive-exec-log4j2-test.properties");
   }
 }

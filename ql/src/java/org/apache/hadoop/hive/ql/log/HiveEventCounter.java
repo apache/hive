@@ -40,7 +40,7 @@ import com.google.common.annotations.VisibleForTesting;
 
 /**
  * A log4J2 Appender that simply counts logging events in four levels:
- * fatal, error, warn and info. The class name is used in log4j2.xml
+ * fatal, error, warn and info. The class name can be used in log4j2.properties
  */
 @Plugin(name = "HiveEventCounter", category = "Core", elementType = "appender", printObject = true)
 public class HiveEventCounter extends AbstractAppender {

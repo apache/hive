@@ -36,7 +36,7 @@ public class TestLog4j2Appenders {
 
   @Before
   public void setup() {
-    // programmatically set root logger level to INFO. By default if log4j2-test.xml is not
+    // programmatically set root logger level to INFO. By default if log4j2-test.properties is not
     // available root logger will use ERROR log level
     LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
     Configuration config = ctx.getConfiguration();
@@ -47,7 +47,7 @@ public class TestLog4j2Appenders {
 
   @Test
   public void testStringAppender() throws Exception {
-    // Get the RootLogger which, if you don't have log4j2-test.xml defined, will only log ERRORs
+    // Get the RootLogger which, if you don't have log4j2-test.properties defined, will only log ERRORs
     Logger logger = LogManager.getRootLogger();
     // Create a String Appender to capture log output
     StringAppender appender = StringAppender.createStringAppender("%m");
@@ -83,10 +83,7 @@ public class TestLog4j2Appenders {
 
     logger.fatal("Test");
 
-    // HiveEventCounter will be loaded from hive-log4j2-test.xml before tests are run. The 2 log
-    // info msgs from previous test case will also be counted along with 4 log info msgs in this
-    // test and hence we assert for 6 here
-    assertEquals(6, appender.getInfo());
+    assertEquals(4, appender.getInfo());
     assertEquals(3, appender.getError());
     assertEquals(2, appender.getWarn());
     assertEquals(1, appender.getFatal());

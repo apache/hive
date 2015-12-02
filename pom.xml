@@ -149,7 +149,7 @@
     <kryo.version>3.0.3</kryo.version>
     <libfb303.version>0.9.3</libfb303.version>
     <libthrift.version>0.9.3</libthrift.version>
-    <log4j2.version>2.4</log4j2.version>
+    <log4j2.version>2.4.1</log4j2.version>
     <opencsv.version>2.3</opencsv.version>
     <mockito-all.version>1.9.5</mockito-all.version>
     <mina.version>2.0.0-M5</mina.version>
@@ -988,7 +988,7 @@
             <!-- required for hive-exec jar path and tests which reference a jar -->
             <maven.local.repository>${maven.repo.local}</maven.local.repository>
             <mapred.job.tracker>local</mapred.job.tracker>
-            <log4j.configurationFile>${test.log4j.scheme}${test.tmp.dir}/conf/hive-log4j2.xml</log4j.configurationFile>
+            <log4j.configurationFile>${test.log4j.scheme}${test.tmp.dir}/conf/hive-log4j2.properties</log4j.configurationFile>
             <log4j.debug>true</log4j.debug>
             <!-- don't diry up /tmp -->
             <java.io.tmpdir>${test.tmp.dir}</java.io.tmpdir>

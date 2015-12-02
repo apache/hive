@@ -295,7 +295,7 @@
       <fileMode>644</fileMode>
       <includes>
         <include>webhcat-default.xml</include>
-        <include>webhcat-log4j2.xml</include>
+        <include>webhcat-log4j2.properties</include>
       </includes>
       <filtered>true</filtered>
       <outputDirectory>hcatalog/etc/webhcat</outputDirectory>
@@ -343,24 +343,24 @@
 
   <files>
     <file>
-      <source>${project.parent.basedir}/common/src/main/resources/hive-log4j2.xml</source>
+      <source>${project.parent.basedir}/common/src/main/resources/hive-log4j2.properties</source>
       <outputDirectory>conf</outputDirectory>
-      <destName>hive-log4j2.xml.template</destName>
+      <destName>hive-log4j2.properties.template</destName>
     </file>
     <file>
-      <source>${project.parent.basedir}/ql/src/main/resources/hive-exec-log4j2.xml</source>
+      <source>${project.parent.basedir}/ql/src/main/resources/hive-exec-log4j2.properties</source>
       <outputDirectory>conf</outputDirectory>
-      <destName>hive-exec-log4j2.xml.template</destName>
+      <destName>hive-exec-log4j2.properties.template</destName>
     </file>
     <file>
-      <source>${project.parent.basedir}/beeline/src/main/resources/beeline-log4j2.xml</source>
+      <source>${project.parent.basedir}/beeline/src/main/resources/beeline-log4j2.properties</source>
       <outputDirectory>conf</outputDirectory>
-      <destName>beeline-log4j2.xml.template</destName>
+      <destName>beeline-log4j2.properties.template</destName>
     </file>
     <file>
-      <source>${project.parent.basedir}/llap-server/src/main/resources/llap-daemon-log4j.properties</source>
+      <source>${project.parent.basedir}/llap-server/src/main/resources/llap-daemon-log4j2.properties</source>
       <outputDirectory>conf</outputDirectory>
-      <destName>llap-daemon-log4j.properties.template</destName>
+      <destName>llap-daemon-log4j2.properties.template</destName>
     </file>
     <file>
       <source>${project.parent.basedir}/hcatalog/README.txt</source>

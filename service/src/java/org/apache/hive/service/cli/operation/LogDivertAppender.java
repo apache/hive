@@ -53,9 +53,9 @@ public class LogDivertAppender
   private static LoggerContext context = (LoggerContext) LogManager.getContext(false);
   private static Configuration configuration = context.getConfiguration();
   public static final Layout<? extends Serializable> verboseLayout = PatternLayout.createLayout(
-      "%d{yy/MM/dd HH:mm:ss} %p %c{2}: %m%n", configuration, null, null, true, false, null, null);
+      "%d{yy/MM/dd HH:mm:ss} %p %c{2}: %m%n", null, configuration, null, null, true, false, null, null);
   public static final Layout<? extends Serializable> nonVerboseLayout = PatternLayout.createLayout(
-      "%-5p : %m%n", configuration, null, null, true, false, null, null);
+      "%-5p : %m%n", null, configuration, null, null, true, false, null, null);
 
   private final OperationManager operationManager;
   private final StringOutputStreamManager manager;

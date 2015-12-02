@@ -215,7 +215,7 @@ else
 fi
 
 if [[ -z "$WEBHCAT_LOG4J" ]]; then
-  WEBHCAT_LOG4J="file://$base_dir/etc/webhcat/webhcat-log4j2.xml";
+  WEBHCAT_LOG4J="file://$base_dir/etc/webhcat/webhcat-log4j2.properties";
 fi
 
 export HADOOP_USER_CLASSPATH_FIRST=true
