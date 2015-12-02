@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 explain
 select srcpart.key, src1.value from
 ((srcpart inner join src on srcpart.key = src.key))

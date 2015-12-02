@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 drop table x;
 drop table y;
 drop table z;

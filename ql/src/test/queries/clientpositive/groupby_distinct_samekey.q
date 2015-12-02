@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 -- This test covers HIVE-2332
 
 create table t1 (int1 int, int2 int, str1 string, str2 string);

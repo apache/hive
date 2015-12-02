@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.limit.pushdown.memory.usage=0.3f;
 
 -- negative, RS + join

@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 
 set hive.cli.print.header=true;
 

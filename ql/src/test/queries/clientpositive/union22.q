@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 -- SORT_QUERY_RESULTS
 
 create table dst_union22(k1 string, k2 string, k3 string, k4 string) partitioned by (ds string);

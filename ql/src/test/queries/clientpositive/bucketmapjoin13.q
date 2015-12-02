@@ -1,5 +1,4 @@
-;
-
+set hive.mapred.mode=nonstrict;
 set hive.exec.reducers.max=1;
 
 CREATE TABLE srcbucket_mapjoin_part_1 (key INT, value STRING) PARTITIONED BY (part STRING) 

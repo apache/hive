@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 drop table if exists tez_self_join1;
 drop table if exists tez_self_join2;

@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 DROP TABLE IF EXISTS DECIMAL_PRECISION;
 
 CREATE TABLE DECIMAL_PRECISION(dec decimal(20,10))

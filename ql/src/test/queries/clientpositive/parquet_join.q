@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 
 drop table if exists staging;
 drop table if exists parquet_jointable1;

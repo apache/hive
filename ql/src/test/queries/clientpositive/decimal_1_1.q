@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 drop table if exists decimal_1_1;
 
 create table decimal_1_1 (d decimal(1,1));

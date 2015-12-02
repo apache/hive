@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.auto.convert.join=false;
 -- Tests in this file are used to make sure Correlation Optimizer
 -- can correctly handle tables with partitions

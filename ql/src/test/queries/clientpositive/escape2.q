@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.exec.dynamic.partition=true;
 set hive.exec.max.dynamic.partitions.pernode=200;
 set hive.input.format=org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;

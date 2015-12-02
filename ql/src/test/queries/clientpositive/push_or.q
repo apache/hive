@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 drop table push_or;
 
 create table push_or (key int, value string) partitioned by (ds string);

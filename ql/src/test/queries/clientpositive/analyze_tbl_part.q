@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 create table src_stat_part(key string, value string) partitioned by (partitionId int);
 
 insert overwrite table src_stat_part partition (partitionId=1)

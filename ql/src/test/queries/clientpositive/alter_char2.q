@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 
 -- alter column type, with partitioned table
 drop table if exists alter_char2;

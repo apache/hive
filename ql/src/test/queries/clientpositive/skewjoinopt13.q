@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.optimize.skewjoin.compiletime = true;
 
 CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE;

@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 select * from (
   select transform(key) using 'cat' as cola from src)s order by cola;
 

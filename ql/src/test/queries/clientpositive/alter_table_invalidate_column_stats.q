@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.metastore.try.direct.sql=true;
 
 drop database if exists statsdb1;

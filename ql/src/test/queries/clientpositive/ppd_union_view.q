@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 -- test predicate pushdown on a view with a union
 
 drop view v;

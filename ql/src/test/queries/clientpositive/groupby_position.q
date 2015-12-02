@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.groupby.orderby.position.alias=true;
 
 CREATE TABLE testTable1(key INT, value STRING) STORED AS TEXTFILE;

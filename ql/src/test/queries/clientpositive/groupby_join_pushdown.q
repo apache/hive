@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.transpose.aggr.join=true;
 EXPLAIN
 SELECT f.key, g.key, count(g.key)

@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 SET hive.fetch.task.conversion=none;
 SET hive.optimize.index.filter=true;
 SET hive.cbo.enable=false;

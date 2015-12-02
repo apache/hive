@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 SET hive.execution.engine=mr; 
 SET hive.enforce.sortmergebucketmapjoin=false; 
 SET hive.auto.convert.sortmerge.join=true; 

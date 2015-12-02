@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.metastore.disallow.incompatible.col.type.changes=false;
 create table if not exists alltypes (
  bo boolean,

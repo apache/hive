@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 -- non agg, non corr
 explain
 select * 

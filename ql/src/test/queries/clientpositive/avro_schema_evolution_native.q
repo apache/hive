@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 -- SORT_QUERY_RESULTS
 -- Verify that table scans work with partitioned Avro tables
 CREATE TABLE episodes (

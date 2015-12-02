@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.exec.infer.bucket.sort=true;
 
 -- This tests inferring how data is bucketed/sorted from the operators in the reducer

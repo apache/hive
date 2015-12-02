@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 SET hive.auto.convert.join=true;
 SET hive.auto.convert.join.noconditionaltask=true;

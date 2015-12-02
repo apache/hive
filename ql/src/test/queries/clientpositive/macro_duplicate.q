@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 drop table macro_testing;
 CREATE TABLE macro_testing(a int, b int, c int);
 

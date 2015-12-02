@@ -110,6 +110,7 @@ public class TestCompactor {
     hiveConf.setVar(HiveConf.ConfVars.METASTOREWAREHOUSE, TEST_WAREHOUSE_DIR);
     hiveConf.setVar(HiveConf.ConfVars.HIVEINPUTFORMAT, HiveInputFormat.class.getName());
     hiveConf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
+    hiveConf.setVar(HiveConf.ConfVars.HIVEMAPREDMODE, "nonstrict");
     //"org.apache.hadoop.hive.ql.io.HiveInputFormat"
 
     TxnDbUtil.setConfValues(hiveConf);
@@ -343,7 +344,7 @@ public class TestCompactor {
    * 5. Trigger major compaction (which should update stats)
    * 6. check that stats have been updated
    * @throws Exception
-   * todo: 
+   * todo:
    * 2. add non-partitioned test
    * 4. add a test with sorted table?
    */
@@ -391,7 +392,7 @@ public class TestCompactor {
     su = Worker.StatsUpdater.init(ciPart2, colNames, conf, System.getProperty("user.name"));
     su.gatherStats();//compute stats before compaction
     LOG.debug("List of stats columns after analyze Part2: " + txnHandler.findColumnsWithStats(ci));
-    
+
     //now make sure we get the stats we expect for partition we are going to add data to later
     Map<String, List<ColumnStatisticsObj>> stats = msClient.getPartitionColumnStatistics(ci.dbname,
       ci.tableName, Arrays.asList(ci.partName), colNames);

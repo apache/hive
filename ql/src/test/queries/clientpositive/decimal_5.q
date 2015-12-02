@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 DROP TABLE IF EXISTS DECIMAL_5;
 
 CREATE TABLE DECIMAL_5(key decimal(10,5), value int)

@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 set hive.compute.query.using.stats=true;
 DROP TABLE insert_into2;

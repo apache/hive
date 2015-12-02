@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.explain.user=true;
 
 set hive.support.concurrency=true;

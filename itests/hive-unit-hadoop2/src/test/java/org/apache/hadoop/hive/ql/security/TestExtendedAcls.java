@@ -31,6 +31,7 @@ import org.apache.hadoop.fs.permission.AclEntryType;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 
@@ -44,6 +45,7 @@ public class TestExtendedAcls extends FolderPermissionBase {
     conf = new HiveConf(TestExtendedAcls.class);
     //setup the mini DFS with acl's enabled.
     conf.set("dfs.namenode.acls.enabled", "true");
+    conf.setVar(HiveConf.ConfVars.HIVEMAPREDMODE, "nonstrict");
     baseSetup();
   }
 

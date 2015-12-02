@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 SET hive.vectorized.execution.enabled=true;
 SET hive.vectorized.execution.mapjoin.native.enabled=true;
 set hive.fetch.task.conversion=none;

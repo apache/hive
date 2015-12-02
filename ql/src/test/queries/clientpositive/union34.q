@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 create table src10_1 (key string, value string);
 create table src10_2 (key string, value string);
 create table src10_3 (key string, value string);

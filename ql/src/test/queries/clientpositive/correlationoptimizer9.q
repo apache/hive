@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 -- SORT_QUERY_RESULTS
 
 CREATE TABLE tmp(c1 INT, c2 INT, c3 STRING, c4 STRING);

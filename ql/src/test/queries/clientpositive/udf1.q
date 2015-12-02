@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 CREATE TABLE dest1(c1 STRING, c2 STRING, c3 STRING, c4 STRING,
   c5 STRING, c6 STRING, c7 STRING, c8 STRING,
   c9 STRING, c10 STRING, c11 STRING, c12 STRING, c13 STRING,

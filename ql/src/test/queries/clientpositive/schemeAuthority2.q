@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 dfs ${system:test.dfs.mkdir} file:///tmp/test;
 dfs ${system:test.dfs.mkdir} hdfs:///tmp/test;
 

@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 -- try the query without indexing, with manual indexing, and with automatic indexing
 -- SORT_QUERY_RESULTS
 

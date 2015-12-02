@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 add jar ${system:maven.local.repository}/org/apache/hive/hcatalog/hive-hcatalog-core/${system:hive.version}/hive-hcatalog-core-${system:hive.version}.jar;
 
 CREATE TABLE parquet_table_json_partition (

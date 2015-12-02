@@ -1,4 +1,6 @@
+set hive.mapred.mode=nonstrict;
 -- testInvalidValueBoundary
+
 select  p_mfgr,p_name, p_size,   
 sum(p_size) over (w1) as s ,    
 dense_rank() over(w1) as dr  

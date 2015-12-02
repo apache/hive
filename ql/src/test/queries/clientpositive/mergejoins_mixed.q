@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 -- HIVE-3464
 
 create table a (key string, value string);

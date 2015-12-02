@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 dfs ${system:test.dfs.mkdir} hdfs:///tmp/test_root_dir_external_table;
 
 insert overwrite directory "hdfs:///tmp/test_root_dir_external_table" select key from src where (key < 20) order by key;

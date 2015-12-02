@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 -- SORT_QUERY_RESULTS
 create table abcd (a int, b int, c int, d int);

@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 -- Test Joins with a variety of literals in the on clause
 
 SELECT COUNT(*) FROM src a JOIN src b ON a.key = b.key AND a.key = 0L;

@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.stats.fetch.column.stats=true;
 
 create table if not exists alltypes (

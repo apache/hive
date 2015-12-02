@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 DROP TABLE parquet_types_staging;
 DROP TABLE parquet_types;
 

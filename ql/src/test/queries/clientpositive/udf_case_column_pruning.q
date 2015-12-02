@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 EXPLAIN
 SELECT CASE a.key
         WHEN '1' THEN 2
