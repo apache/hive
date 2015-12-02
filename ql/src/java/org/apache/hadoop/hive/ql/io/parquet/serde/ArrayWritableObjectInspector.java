@@ -136,10 +136,14 @@ public class ArrayWritableObjectInspector extends SettableStructObjectInspector 
     if (data == null) {
       return null;
     }
-
     if (data instanceof ArrayWritable) {
       final ArrayWritable arr = (ArrayWritable) data;
-      return arr.get()[((StructFieldImpl) fieldRef).getIndex()];
+      final StructFieldImpl structField = (StructFieldImpl) fieldRef;
+      if (structField.getIndex() < arr.get().length) {
+        return arr.get()[structField.getIndex()];
+      } else {
+        return null;
+      }
     }
 
     //since setStructFieldData and create return a list, getStructFieldData should be able to
