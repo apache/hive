@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -127,6 +128,8 @@ class Utils {
     // Currently supports JKS keystore format
     static final String SSL_TRUST_STORE_TYPE = "JKS";
 
+    private static final String HIVE_VAR_PREFIX = "hivevar:";
+    private static final String HIVE_CONF_PREFIX = "hiveconf:";
     private String host = null;
     private int port = 0;
     private String jdbcUriString;
@@ -278,7 +281,7 @@ class Utils {
    * @return
    * @throws SQLException
    */
-  static JdbcConnectionParams parseURL(String uri) throws JdbcUriParseException,
+  static JdbcConnectionParams parseURL(String uri, Properties info) throws JdbcUriParseException,
       SQLException, ZooKeeperHiveClientException {
     JdbcConnectionParams connParams = new JdbcConnectionParams();
 
@@ -362,6 +365,34 @@ class Utils {
       while (varMatcher.find()) {
         connParams.getHiveVars().put(varMatcher.group(1), varMatcher.group(2));
       }
+    }
+    
+    // Apply configs supplied in the JDBC connection properties object
+    for (Map.Entry<Object, Object> kv : info.entrySet()) {
+      if ((kv.getKey() instanceof String)) {
+        String key = (String) kv.getKey();
+        if (key.startsWith(JdbcConnectionParams.HIVE_VAR_PREFIX)) {
+          connParams.getHiveVars().put(
+              key.substring(JdbcConnectionParams.HIVE_VAR_PREFIX.length()), info.getProperty(key));
+        } else if (key.startsWith(JdbcConnectionParams.HIVE_CONF_PREFIX)) {
+          connParams.getHiveConfs().put(
+              key.substring(JdbcConnectionParams.HIVE_CONF_PREFIX.length()), info.getProperty(key));
+        }
+      }
+    }
+    // Extract user/password from JDBC connection properties if its not supplied
+    // in the connection URL
+    if (info.containsKey(JdbcConnectionParams.AUTH_USER)) {
+      connParams.getSessionVars().put(JdbcConnectionParams.AUTH_USER,
+          info.getProperty(JdbcConnectionParams.AUTH_USER));
+      if (info.containsKey(JdbcConnectionParams.AUTH_PASSWD)) {
+        connParams.getSessionVars().put(JdbcConnectionParams.AUTH_PASSWD,
+            info.getProperty(JdbcConnectionParams.AUTH_PASSWD));
+      }
+    }
+    if (info.containsKey(JdbcConnectionParams.AUTH_TYPE)) {
+      connParams.getSessionVars().put(JdbcConnectionParams.AUTH_TYPE,
+          info.getProperty(JdbcConnectionParams.AUTH_TYPE));
     }
 
     // Handle all deprecations here:
