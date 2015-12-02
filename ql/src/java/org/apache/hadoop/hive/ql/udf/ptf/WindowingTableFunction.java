@@ -496,18 +496,18 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
         }
       } else {
         while (numRowsRemaining > 0) {
-          int rowToProcess = streamingState.rollingPart.size()
-              - numRowsRemaining;
-          Range rng = getRange(wFn, rowToProcess, streamingState.rollingPart,
-              streamingState.order);
-          PTFPartitionIterator<Object> rItr = rng.iterator();
-          PTFOperator.connectLeadLagFunctionsToPartition(ptfDesc, rItr);
-          Object out = evaluateWindowFunction(wFn, rItr);
-          streamingState.fnOutputs[i].add(out);
+          int rowToProcess = streamingState.rollingPart.size() - numRowsRemaining;
+          if (rowToProcess >= 0) {
+            Range rng = getRange(wFn, rowToProcess, streamingState.rollingPart,
+                streamingState.order);
+            PTFPartitionIterator<Object> rItr = rng.iterator();
+            PTFOperator.connectLeadLagFunctionsToPartition(ptfDesc, rItr);
+            Object out = evaluateWindowFunction(wFn, rItr);
+            streamingState.fnOutputs[i].add(out);
+          }
           numRowsRemaining--;
         }
       }
-
     }
 
     List<Object> oRows = new ArrayList<Object>();
