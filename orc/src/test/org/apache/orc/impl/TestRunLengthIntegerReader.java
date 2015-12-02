@@ -22,6 +22,7 @@ import static junit.framework.Assert.assertEquals;
 import java.nio.ByteBuffer;
 import java.util.Random;
 
+import org.apache.orc.CompressionCodec;
 import org.junit.Test;
 
 public class TestRunLengthIntegerReader {

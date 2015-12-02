@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.io.orc;
 
-import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -38,7 +37,7 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.HadoopShims.ByteBufferPoolShim;
 import org.apache.hadoop.hive.shims.HadoopShims.ZeroCopyReaderShim;
 import org.apache.orc.impl.BufferChunk;
-import org.apache.orc.impl.CompressionCodec;
+import org.apache.orc.CompressionCodec;
 import org.apache.orc.DataReader;
 import org.apache.orc.impl.DirectDecompressionCodec;
 import org.apache.orc.OrcProto;

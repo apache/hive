@@ -29,7 +29,7 @@ import java.util.Set;
 import org.apache.orc.impl.BufferChunk;
 import org.apache.orc.ColumnStatistics;
 import org.apache.orc.impl.ColumnStatisticsImpl;
-import org.apache.orc.impl.CompressionCodec;
+import org.apache.orc.CompressionCodec;
 import org.apache.orc.DataReader;
 import org.apache.orc.FileMetaInfo;
 import org.apache.orc.FileMetadata;

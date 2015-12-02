@@ -27,9 +27,10 @@ import java.util.zip.Inflater;
 import javax.annotation.Nullable;
 
 import org.apache.hadoop.io.compress.DirectDecompressor;
+import org.apache.orc.CompressionCodec;
 
 public class ZlibCodec implements CompressionCodec, DirectDecompressionCodec {
-
+  private static final HadoopShims SHIMS = HadoopShims.Factory.get();
   private Boolean direct = null;
 
   private final int level;
@@ -106,7 +107,7 @@ public class ZlibCodec implements CompressionCodec, DirectDecompressionCodec {
     if (direct == null) {
       // see nowrap option in new Inflater(boolean) which disables zlib headers
       try {
-        if (HadoopShims.getDirectDecompressor(
+        if (SHIMS.getDirectDecompressor(
             HadoopShims.DirectCompressionType.ZLIB_NOHEADER) != null) {
           direct = Boolean.valueOf(true);
         } else {
@@ -122,8 +123,8 @@ public class ZlibCodec implements CompressionCodec, DirectDecompressionCodec {
   @Override
   public void directDecompress(ByteBuffer in, ByteBuffer out)
       throws IOException {
-    DirectDecompressor decompressShim =
-        HadoopShims.getDirectDecompressor(HadoopShims.DirectCompressionType.ZLIB_NOHEADER);
+    HadoopShims.DirectDecompressor decompressShim =
+        SHIMS.getDirectDecompressor(HadoopShims.DirectCompressionType.ZLIB_NOHEADER);
     decompressShim.decompress(in, out);
     out.flip(); // flip for read
   }

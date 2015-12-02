@@ -29,13 +29,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.orc.impl.CompressionCodec;
-import org.apache.orc.impl.DynamicByteArray;
-import org.apache.orc.impl.InStream;
-import org.apache.orc.impl.OutStream;
-import org.apache.orc.impl.PositionProvider;
-import org.apache.orc.impl.PositionRecorder;
-import org.apache.orc.impl.ZlibCodec;
+import org.apache.orc.CompressionCodec;
 import org.junit.Test;
 
 public class TestInStream {

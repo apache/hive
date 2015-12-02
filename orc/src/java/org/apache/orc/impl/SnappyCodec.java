@@ -18,7 +18,7 @@
 
 package org.apache.orc.impl;
 
-import org.apache.hadoop.io.compress.DirectDecompressor;
+import org.apache.orc.CompressionCodec;
 import org.iq80.snappy.Snappy;
 
 import java.io.IOException;
@@ -26,6 +26,7 @@ import java.nio.ByteBuffer;
 import java.util.EnumSet;
 
 public class SnappyCodec implements CompressionCodec, DirectDecompressionCodec {
+  private static final HadoopShims SHIMS = HadoopShims.Factory.get();
 
   Boolean direct = null;
 
@@ -77,7 +78,7 @@ public class SnappyCodec implements CompressionCodec, DirectDecompressionCodec {
   public boolean isAvailable() {
     if (direct == null) {
       try {
-        if (HadoopShims.getDirectDecompressor(
+        if (SHIMS.getDirectDecompressor(
             HadoopShims.DirectCompressionType.SNAPPY) != null) {
           direct = Boolean.valueOf(true);
         } else {
@@ -93,8 +94,8 @@ public class SnappyCodec implements CompressionCodec, DirectDecompressionCodec {
   @Override
   public void directDecompress(ByteBuffer in, ByteBuffer out)
       throws IOException {
-    DirectDecompressor decompressShim =
-        HadoopShims .getDirectDecompressor(HadoopShims.DirectCompressionType.SNAPPY);
+    HadoopShims.DirectDecompressor decompressShim =
+        SHIMS.getDirectDecompressor(HadoopShims.DirectCompressionType.SNAPPY);
     decompressShim.decompress(in, out);
     out.flip(); // flip for read
   }

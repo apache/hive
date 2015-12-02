@@ -25,6 +25,7 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.io.DiskRange;
+import org.apache.orc.CompressionCodec;
 import org.apache.orc.OrcProto;
 import org.apache.orc.StripeInformation;
 

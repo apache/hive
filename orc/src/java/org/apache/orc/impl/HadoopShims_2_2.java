@@ -18,39 +18,19 @@
 
 package org.apache.orc.impl;
 
-import org.apache.orc.CompressionCodec;
-import org.junit.Test;
+import org.apache.hadoop.io.compress.snappy.SnappyDecompressor;
+import org.apache.hadoop.io.compress.zlib.ZlibDecompressor;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.fail;
+/**
+ * Shims for versions of Hadoop up to and including 2.2.x
+ */
+public class HadoopShims_2_2 implements HadoopShims {
 
-public class TestZlib {
-
-  @Test
-  public void testNoOverflow() throws Exception {
-    ByteBuffer in = ByteBuffer.allocate(10);
-    ByteBuffer out = ByteBuffer.allocate(10);
-    in.put(new byte[]{1,2,3,4,5,6,7,10});
-    in.flip();
-    CompressionCodec codec = new ZlibCodec();
-    assertEquals(false, codec.compress(in, out, null));
-  }
-
-  @Test
-  public void testCorrupt() throws Exception {
-    ByteBuffer buf = ByteBuffer.allocate(1000);
-    buf.put(new byte[]{127,-128,0,99,98,-1});
-    buf.flip();
-    CompressionCodec codec = new ZlibCodec();
-    ByteBuffer out = ByteBuffer.allocate(1000);
-    try {
-      codec.decompress(buf, out);
-      fail();
-    } catch (IOException ioe) {
-      // EXPECTED
-    }
+  public DirectDecompressor getDirectDecompressor(
+      DirectCompressionType codec) {
+    return null;
   }
 }

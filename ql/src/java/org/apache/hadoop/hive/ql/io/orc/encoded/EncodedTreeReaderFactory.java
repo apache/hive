@@ -22,7 +22,7 @@ import java.util.List;
 
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch;
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch.ColumnStreamData;
-import org.apache.orc.impl.CompressionCodec;
+import org.apache.orc.CompressionCodec;
 import org.apache.orc.impl.PositionProvider;
 import org.apache.orc.impl.SettableUncompressedStream;
 import org.apache.hadoop.hive.ql.io.orc.TreeReaderFactory;

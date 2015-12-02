@@ -18,32 +18,47 @@
 
 package org.apache.orc.impl;
 
-import org.apache.hadoop.io.compress.DirectDecompressor;
-import org.apache.hadoop.io.compress.snappy.SnappyDecompressor;
-import org.apache.hadoop.io.compress.zlib.ZlibDecompressor;
+import org.apache.hadoop.util.VersionInfo;
 
-public class HadoopShims {
+import java.io.IOException;
+import java.nio.ByteBuffer;
 
-  public enum DirectCompressionType {
+public interface HadoopShims {
+
+  enum DirectCompressionType {
     NONE,
     ZLIB_NOHEADER,
     ZLIB,
     SNAPPY,
-  };
+  }
 
-  public static DirectDecompressor getDirectDecompressor(
-      DirectCompressionType codec) {
-    DirectDecompressor decompressor = null;
-    switch (codec) {
-      case ZLIB:
-        return new ZlibDecompressor.ZlibDirectDecompressor();
-      case ZLIB_NOHEADER:
-        return new ZlibDecompressor.ZlibDirectDecompressor(ZlibDecompressor.CompressionHeader.NO_HEADER, 0);
-      case SNAPPY:
-        return new SnappyDecompressor.SnappyDirectDecompressor();
-      default:
+  interface DirectDecompressor {
+    void decompress(ByteBuffer var1, ByteBuffer var2) throws IOException;
+  }
+
+  /**
+   * Get a direct decompressor codec, if it is available
+   * @param codec
+   * @return
+   */
+  DirectDecompressor getDirectDecompressor(DirectCompressionType codec);
+
+
+  class Factory {
+    private static HadoopShims SHIMS = null;
+
+    public static synchronized HadoopShims get() {
+      if (SHIMS == null) {
+        String[] versionParts = VersionInfo.getVersion().split("[.]");
+        int major = Integer.parseInt(versionParts[0]);
+        int minor = Integer.parseInt(versionParts[1]);
+        if (major < 2 || (major == 2 && minor < 3)) {
+          SHIMS = new HadoopShims_2_2();
+        } else {
+          SHIMS = new HadoopShimsCurrent();
+        }
+      }
+      return SHIMS;
     }
-    /* not supported */
-    return null;
   }
 }
