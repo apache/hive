@@ -251,7 +251,7 @@ public class GenericUDAFMax extends AbstractGenericUDAFResolver {
         s.maxChain.addLast(new Object[] { o, s.numRows });
       }
 
-      if (s.numRows >= wFrameDef.getEnd().getRelativeOffset()) {
+      if (s.hasResultReady()) {
         s.results.add(s.maxChain.getFirst()[0]);
       }
       s.numRows++;
@@ -287,20 +287,24 @@ public class GenericUDAFMax extends AbstractGenericUDAFResolver {
       // For the case: X following and Y following, process first Y-X results and then insert X nulls.
       // For the case X preceding and Y following, process Y results.
       for (int i = Math.max(0, wFrameDef.getStart().getRelativeOffset()); i < wFrameDef.getEnd().getRelativeOffset(); i++) {
-        s.results.add(r == null ? null : r[0]);
+        if (s.hasResultReady()) {
+          s.results.add(r == null ? null : r[0]);
+        }
         s.numRows++;
         if (r != null) {
           int fIdx = (Integer) r[1];
           if (!wFrameDef.isStartUnbounded()
-              && s.numRows + i >= fIdx + wFrameDef.getWindowSize()
+              && s.numRows >= fIdx + wFrameDef.getWindowSize()
               && !s.maxChain.isEmpty()) {
             s.maxChain.removeFirst();
-            r = !s.maxChain.isEmpty() ? s.maxChain.getFirst() : r;
+            r = !s.maxChain.isEmpty() ? s.maxChain.getFirst() : null;
           }
         }
       }
       for (int i = 0; i < wFrameDef.getStart().getRelativeOffset(); i++) {
-        s.results.add(null);
+        if (s.hasResultReady()) {
+          s.results.add(null);
+        }
         s.numRows++;
       }
 
