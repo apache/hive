@@ -1162,6 +1162,7 @@ public class Commands {
       beeLine.setCompletions();
       return true;
     } catch (SQLException sqle) {
+      beeLine.getDatabaseConnections().remove();
       return beeLine.error(sqle);
     } catch (IOException ioe) {
       return beeLine.error(ioe);
