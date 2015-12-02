@@ -57,11 +57,12 @@ public class TestOperationLoggingAPI {
   private final String[] expectedLogs = {
     "Parsing command",
     "Parse Completed",
-    "Starting Semantic Analysis",
-    "Semantic Analysis Completed",
-    "Starting command"
+    "Starting Semantic Analysis"
   };
   private final String[] expectedLogsExecution = {
+    "Total jobs",
+    "Semantic Analysis Completed",
+    "Starting command",
     "Number of reduce tasks determined at compile time",
     "number of splits",
     "Submitting tokens for job",
