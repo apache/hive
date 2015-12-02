@@ -1148,8 +1148,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     String taskID = Utilities.getTaskIdFromFilename(Utilities.getTaskId(hconf));
     String spSpec = conf.getStaticSpec();
 
-    int maxKeyLength = conf.getMaxStatsKeyPrefixLength();
-
     for (Map.Entry<String, FSPaths> entry : valToPaths.entrySet()) {
       String fspKey = entry.getKey();     // DP/LB
       FSPaths fspValue = entry.getValue();
@@ -1176,7 +1174,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       // use lowercase table name as prefix here, as StatsTask get table name from metastore to fetch counter.
       String prefix = conf.getTableInfo().getTableName().toLowerCase();
       prefix = Utilities.join(prefix, spSpec, dpSpec);
-      prefix = Utilities.getHashedStatsPrefix(prefix, maxKeyLength);
+      prefix = prefix.endsWith(Path.SEPARATOR) ? prefix : prefix + Path.SEPARATOR;
 
       Map<String, String> statsToPublish = new HashMap<String, String>();
       for (String statType : fspValue.stat.getStoredStats()) {

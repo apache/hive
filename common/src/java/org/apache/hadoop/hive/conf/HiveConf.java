@@ -1391,9 +1391,6 @@ public class HiveConf extends Configuration {
         "A lower value for error indicates higher accuracy and a higher compute cost."),
     HIVE_METASTORE_STATS_NDV_DENSITY_FUNCTION("hive.metastore.stats.ndv.densityfunction", false,
         "Whether to use density function to estimate the NDV for the whole table based on the NDV of partitions"),
-    HIVE_STATS_KEY_PREFIX_MAX_LENGTH("hive.stats.key.prefix.max.length", 150,
-        "Determines if when the prefix of the key used for intermediate stats collection\n" +
-        "exceeds a certain length, a hash of the key is used instead.  If the value < 0 then hashing"),
     HIVE_STATS_KEY_PREFIX("hive.stats.key.prefix", "", "", true), // internal usage only
     // if length of variable length data type cannot be determined this length will be used.
     HIVE_STATS_MAX_VARIABLE_LENGTH("hive.stats.max.variable.length", 100,

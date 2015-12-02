@@ -332,7 +332,6 @@ public class GenSparkUtils {
       for (FileSinkOperator fsOp : fileSinkList) {
         fsOp.getConf().setGatherStats(fileSink.getConf().isGatherStats());
         fsOp.getConf().setStatsReliable(fileSink.getConf().isStatsReliable());
-        fsOp.getConf().setMaxStatsKeyPrefixLength(fileSink.getConf().getMaxStatsKeyPrefixLength());
       }
     }
 

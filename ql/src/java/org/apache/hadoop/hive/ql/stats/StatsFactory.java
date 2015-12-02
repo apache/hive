@@ -29,7 +29,6 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.util.ReflectionUtils;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVESTATSDBCLASS;
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_STATS_KEY_PREFIX_MAX_LENGTH;
 
 /**
  * A factory of stats publisher and aggregator implementations of the
@@ -42,16 +41,6 @@ public final class StatsFactory {
   private Class <? extends Serializable> publisherImplementation;
   private Class <? extends Serializable> aggregatorImplementation;
   private final Configuration jobConf;
-
-  public static int getMaxPrefixLength(Configuration conf) {
-
-    if (HiveConf.getVar(conf, HIVESTATSDBCLASS).equalsIgnoreCase(StatDB.fs.name())) {
-      // no limit on prefix for fs.
-      return -1;
-    }
-    int maxPrefixLength = HiveConf.getIntVar(conf, HIVE_STATS_KEY_PREFIX_MAX_LENGTH);
-    return maxPrefixLength;
-  }
 
   public static StatsFactory newFactory(Configuration conf) {
     return newFactory(HiveConf.getVar(conf, HIVESTATSDBCLASS), conf);

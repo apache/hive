@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -153,9 +154,9 @@ public class PartialScanMapper extends MapReduceBase implements
       throw new HiveException(ErrorMsg.STATSPUBLISHER_CONNECTION_ERROR.getErrorCodedMsg());
     }
 
-    int maxPrefixLength = StatsFactory.getMaxPrefixLength(jc);
     // construct key used to store stats in intermediate db
-    String key = Utilities.getHashedStatsPrefix(statsAggKeyPrefix, maxPrefixLength);
+    String key = statsAggKeyPrefix.endsWith(Path.SEPARATOR) ? statsAggKeyPrefix : statsAggKeyPrefix
+        + Path.SEPARATOR;
 
     // construct statistics to be stored
     Map<String, String> statsToPublish = new HashMap<String, String>();

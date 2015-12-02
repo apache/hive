@@ -3026,31 +3026,6 @@ public final class Utilities {
     return factory == null ? null : factory.getStatsPublisher();
   }
 
-  /**
-   * If statsPrefix's length is greater than maxPrefixLength and maxPrefixLength > 0,
-   * then it returns an MD5 hash of statsPrefix followed by path separator, otherwise
-   * it returns statsPrefix
-   *
-   * @param statsPrefix prefix of stats key
-   * @param maxPrefixLength max length of stats key
-   * @return if the length of prefix is longer than max, return MD5 hashed value of the prefix
-   */
-  public static String getHashedStatsPrefix(String statsPrefix, int maxPrefixLength) {
-    // todo: this might return possibly longer prefix than
-    // maxPrefixLength (if set) when maxPrefixLength - postfixLength < 17,
-    // which would make stat values invalid (especially for 'counter' type)
-    if (maxPrefixLength >= 0 && statsPrefix.length() > maxPrefixLength) {
-      try {
-        MessageDigest digester = MessageDigest.getInstance("MD5");
-        digester.update(statsPrefix.getBytes());
-        return new String(digester.digest()) + Path.SEPARATOR;  // 17 byte
-      } catch (NoSuchAlgorithmException e) {
-        throw new RuntimeException(e);
-      }
-    }
-    return statsPrefix.endsWith(Path.SEPARATOR) ? statsPrefix : statsPrefix + Path.SEPARATOR;
-  }
-
   public static String join(String... elements) {
     StringBuilder builder = new StringBuilder();
     for (String element : elements) {
