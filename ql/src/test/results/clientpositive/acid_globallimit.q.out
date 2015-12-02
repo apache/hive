@@ -1,0 +1,90 @@
+PREHOOK: query: -- Global Limit optimization does not work with ACID table. Make sure to skip it for ACID table.
+CREATE TABLE acidtest1(c1 INT, c2 STRING)
+CLUSTERED BY (c1) INTO 3 BUCKETS
+STORED AS ORC
+TBLPROPERTIES ("transactional"="true")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@acidtest1
+POSTHOOK: query: -- Global Limit optimization does not work with ACID table. Make sure to skip it for ACID table.
+CREATE TABLE acidtest1(c1 INT, c2 STRING)
+CLUSTERED BY (c1) INTO 3 BUCKETS
+STORED AS ORC
+TBLPROPERTIES ("transactional"="true")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@acidtest1
+PREHOOK: query: insert into table acidtest1 select cint, cstring1 from alltypesorc where cint is not null order by cint
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@acidtest1
+POSTHOOK: query: insert into table acidtest1 select cint, cstring1 from alltypesorc where cint is not null order by cint
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@acidtest1
+POSTHOOK: Lineage: acidtest1.c1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: acidtest1.c2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+PREHOOK: query: explain
+select cast (c1 as string) from acidtest1 limit 10
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select cast (c1 as string) from acidtest1 limit 10
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: acidtest1
+            Statistics: Num rows: 9173 Data size: 101822 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: UDFToString(c1) (type: string)
+              outputColumnNames: _col0
+              Statistics: Num rows: 9173 Data size: 101822 Basic stats: COMPLETE Column stats: NONE
+              Limit
+                Number of rows: 10
+                Statistics: Num rows: 10 Data size: 110 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 10 Data size: 110 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 10
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select cast (c1 as string) from acidtest1 limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acidtest1
+#### A masked pattern was here ####
+POSTHOOK: query: select cast (c1 as string) from acidtest1 limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acidtest1
+#### A masked pattern was here ####
+185520768
+186950964
+186967185
+187206627
+187503456
+188474907
+190070046
+190435023
+190587882
+191372331
+PREHOOK: query: drop table acidtest1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@acidtest1
+PREHOOK: Output: default@acidtest1
+POSTHOOK: query: drop table acidtest1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@acidtest1
+POSTHOOK: Output: default@acidtest1
