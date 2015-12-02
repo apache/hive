@@ -26,6 +26,7 @@ import java.util.Map;
 import org.apache.hadoop.hive.ql.exec.PTFUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
+import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.TableSample;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -130,6 +131,10 @@ public class TableScanDesc extends AbstractOperatorDesc {
   @Explain(displayName = "alias", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getAlias() {
     return alias;
+  }
+
+  public boolean isAcidTable() {
+    return SemanticAnalyzer.isAcidTable(this.tableMetadata);
   }
 
   @Explain(displayName = "filterExpr")

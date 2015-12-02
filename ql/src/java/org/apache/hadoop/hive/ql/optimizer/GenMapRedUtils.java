@@ -485,6 +485,7 @@ public final class GenMapRedUtils {
       HiveConf conf, boolean local) throws SemanticException {
     ArrayList<Path> partDir = new ArrayList<Path>();
     ArrayList<PartitionDesc> partDesc = new ArrayList<PartitionDesc>();
+    boolean isAcidTable = false;
 
     Path tblDir = null;
     plan.setNameToSplitSample(parseCtx.getNameToSplitSample());
@@ -493,6 +494,7 @@ public final class GenMapRedUtils {
       try {
         TableScanOperator tsOp = (TableScanOperator) topOp;
         partsList = PartitionPruner.prune(tsOp, parseCtx, alias_id);
+        isAcidTable = ((TableScanOperator) topOp).getConf().isAcidTable();
       } catch (SemanticException e) {
         throw e;
       } catch (HiveException e) {
@@ -535,26 +537,31 @@ public final class GenMapRedUtils {
     long sizeNeeded = Integer.MAX_VALUE;
     int fileLimit = -1;
     if (parseCtx.getGlobalLimitCtx().isEnable()) {
-      long sizePerRow = HiveConf.getLongVar(parseCtx.getConf(),
-          HiveConf.ConfVars.HIVELIMITMAXROWSIZE);
-      sizeNeeded = parseCtx.getGlobalLimitCtx().getGlobalLimit() * sizePerRow;
-      // for the optimization that reduce number of input file, we limit number
-      // of files allowed. If more than specific number of files have to be
-      // selected, we skip this optimization. Since having too many files as
-      // inputs can cause unpredictable latency. It's not necessarily to be
-      // cheaper.
-      fileLimit =
-          HiveConf.getIntVar(parseCtx.getConf(), HiveConf.ConfVars.HIVELIMITOPTLIMITFILE);
-
-      if (sizePerRow <= 0 || fileLimit <= 0) {
-        LOG.info("Skip optimization to reduce input size of 'limit'");
+      if (isAcidTable) {
+        LOG.info("Skip Global Limit optimization for ACID table");
         parseCtx.getGlobalLimitCtx().disableOpt();
-      } else if (parts.isEmpty()) {
-        LOG.info("Empty input: skip limit optimiztion");
       } else {
-        LOG.info("Try to reduce input size for 'limit' " +
-            "sizeNeeded: " + sizeNeeded +
-            "  file limit : " + fileLimit);
+        long sizePerRow = HiveConf.getLongVar(parseCtx.getConf(),
+            HiveConf.ConfVars.HIVELIMITMAXROWSIZE);
+        sizeNeeded = parseCtx.getGlobalLimitCtx().getGlobalLimit() * sizePerRow;
+        // for the optimization that reduce number of input file, we limit number
+        // of files allowed. If more than specific number of files have to be
+        // selected, we skip this optimization. Since having too many files as
+        // inputs can cause unpredictable latency. It's not necessarily to be
+        // cheaper.
+        fileLimit =
+            HiveConf.getIntVar(parseCtx.getConf(), HiveConf.ConfVars.HIVELIMITOPTLIMITFILE);
+
+        if (sizePerRow <= 0 || fileLimit <= 0) {
+          LOG.info("Skip optimization to reduce input size of 'limit'");
+          parseCtx.getGlobalLimitCtx().disableOpt();
+        } else if (parts.isEmpty()) {
+          LOG.info("Empty input: skip limit optimiztion");
+        } else {
+          LOG.info("Try to reduce input size for 'limit' " +
+              "sizeNeeded: " + sizeNeeded +
+              "  file limit : " + fileLimit);
+        }
       }
     }
     boolean isFirstPart = true;
