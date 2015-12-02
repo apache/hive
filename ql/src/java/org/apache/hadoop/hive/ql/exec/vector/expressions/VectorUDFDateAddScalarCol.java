@@ -72,6 +72,7 @@ public class VectorUDFDateAddScalarCol extends VectorExpression {
     /* every line below this is identical for evaluateLong & evaluateString */
     final int n = inputCol.isRepeating ? 1 : batch.size;
     int[] sel = batch.selected;
+    final boolean selectedInUse = (inputCol.isRepeating == false) && batch.selectedInUse;
     BytesColumnVector outV = (BytesColumnVector) batch.cols[outputColumn];
 
     switch (inputTypes[0]) {
@@ -91,7 +92,7 @@ public class VectorUDFDateAddScalarCol extends VectorExpression {
           break;
         } catch (Exception e) {
           outV.noNulls = false;
-          if (batch.selectedInUse) {
+          if (selectedInUse) {
             for(int j=0; j < n; j++) {
               int i = sel[j];
               outV.isNull[i] = true;
@@ -117,7 +118,7 @@ public class VectorUDFDateAddScalarCol extends VectorExpression {
 
     if (inputCol.noNulls) {
       outV.noNulls = true;
-      if (batch.selectedInUse) {
+      if (selectedInUse) {
         for(int j=0; j < n; j++) {
           int i = sel[j];
           evaluate(baseDate, inputCol.vector[i], outV, i);
@@ -131,7 +132,7 @@ public class VectorUDFDateAddScalarCol extends VectorExpression {
       // Handle case with nulls. Don't do function if the value is null, to save time,
       // because calling the function can be expensive.
       outV.noNulls = false;
-      if (batch.selectedInUse) {
+      if (selectedInUse) {
         for(int j = 0; j < n; j++) {
           int i = sel[j];
           outV.isNull[i] = inputCol.isNull[i];
