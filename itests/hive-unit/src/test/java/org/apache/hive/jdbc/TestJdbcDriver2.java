@@ -1953,7 +1953,7 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
     ZooKeeperHiveClientException {
   new HiveDriver();
   for (String[] testValues : HTTP_URL_PROPERTIES) {
-    JdbcConnectionParams params = Utils.parseURL(testValues[0]);
+    JdbcConnectionParams params = Utils.parseURL(testValues[0], new Properties());
     assertEquals(params.getHost(), testValues[1]);
     assertEquals(params.getPort(), Integer.parseInt(testValues[2]));
     assertEquals(params.getDbName(), testValues[3]);

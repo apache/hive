@@ -1138,7 +1138,7 @@ public class cbo_rp_TestJdbcDriver2 {
     for (String checkPattern: tests.keySet()) {
       ResultSet rs = con.getMetaData().getTables("default", null, checkPattern, null);
       ResultSetMetaData resMeta = rs.getMetaData();
-      assertEquals(5, resMeta.getColumnCount());
+      assertEquals(10, resMeta.getColumnCount());
       assertEquals("TABLE_CAT", resMeta.getColumnName(1));
       assertEquals("TABLE_SCHEM", resMeta.getColumnName(2));
       assertEquals("TABLE_NAME", resMeta.getColumnName(3));
@@ -1817,7 +1817,7 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
     ZooKeeperHiveClientException {
   new HiveDriver();
   for (String[] testValues : HTTP_URL_PROPERTIES) {
-    JdbcConnectionParams params = Utils.parseURL(testValues[0]);
+    JdbcConnectionParams params = Utils.parseURL(testValues[0], new Properties());
     assertEquals(params.getHost(), testValues[1]);
     assertEquals(params.getPort(), Integer.parseInt(testValues[2]));
     assertEquals(params.getDbName(), testValues[3]);
