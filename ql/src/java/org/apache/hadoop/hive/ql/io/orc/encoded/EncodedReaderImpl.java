@@ -778,19 +778,18 @@ class EncodedReaderImpl implements EncodedReader {
     }
     // Account for maximum cache buffer size.
     long streamLen = streamEnd - streamOffset;
-    int partSize = determineUncompressedPartSize(), //
+    int partSize = determineUncompressedPartSize(),
         partCount = (int)(streamLen / partSize) + (((streamLen % partSize) != 0) ? 1 : 0);
 
     CacheChunk lastUncompressed = null;
     MemoryBuffer[] singleAlloc = new MemoryBuffer[1];
-    /*
-Starting pre-read for [12187411,17107411) at start: 12187411 end: 12449555 cache buffer: 0x5f64a8f6(2)
-Processing uncompressed file data at [12187411, 12449555)
-  */
     for (int i = 0; i < partCount; ++i) {
       long partOffset = streamOffset + (i * partSize),
            partEnd = Math.min(partOffset + partSize, streamEnd);
       long hasEntirePartTo = partOffset; // We have 0 bytes of data for this part, for now.
+      if (current == null) {
+        break; // We have no data from this point on (could be unneeded), skip.
+      }
       assert partOffset <= current.getOffset();
       if (partOffset == current.getOffset() && current instanceof CacheChunk) {
         // We assume cache chunks would always match the way we read, so check and skip it.
