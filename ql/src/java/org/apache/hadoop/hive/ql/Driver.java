@@ -1868,6 +1868,11 @@ public class Driver implements CommandProcessor {
 
   public int close() {
     try {
+      try {
+        releaseResources();
+      } catch (Exception e) {
+        LOG.info("Exception while releasing resources", e);
+      }
       if (fetchTask != null) {
         try {
           fetchTask.clearFetch();
