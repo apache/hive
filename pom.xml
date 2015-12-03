@@ -1049,6 +1049,7 @@
 	    <exclude>**/xmlReport.pl</exclude>
 	    <exclude>**/*.html</exclude>
 	    <exclude>**/sit</exclude>
+      <exclude>**/test/queries/**/*.sql</exclude>
 	  </excludes>
 	</configuration>
       </plugin>
