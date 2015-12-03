@@ -93,11 +93,6 @@ public class TestMetaStoreMetrics {
     JsonNode methodCounterNode = timersNode.path("api_get_all_databases");
     JsonNode methodCountNode = methodCounterNode.path("count");
     Assert.assertTrue(methodCountNode.asInt() > 0);
-
-    JsonNode countersNode = rootNode.path("counters");
-    JsonNode committedJdoTxNode = countersNode.path("committed_jdo_transactions");
-    JsonNode committedCountNode = committedJdoTxNode.path("count");
-    Assert.assertTrue(committedCountNode.asInt() > 0);
   }
 
 
