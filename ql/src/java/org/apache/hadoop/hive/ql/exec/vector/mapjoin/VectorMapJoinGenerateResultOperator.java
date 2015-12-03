@@ -162,6 +162,8 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
 
       int batchIndex = allMatchs[allMatchesIndex + i];
 
+      // Outer key copying is only used when we are using the input BigTable batch as the output.
+      //
       if (bigTableVectorCopyOuterKeys != null) {
         // Copy within row.
         bigTableVectorCopyOuterKeys.copyByReference(batch, batchIndex, batch, batchIndex);
@@ -228,15 +230,10 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
 
         // Copy the BigTable values into the overflow batch. Since the overflow batch may
         // not get flushed here, we must copy by value.
+        // Note this includes any outer join keys that need to go into the small table "area".
         if (bigTableRetainedVectorCopy != null) {
           bigTableRetainedVectorCopy.copyByValue(batch, batchIndex,
                                                  overflowBatch, overflowBatch.size);
-        }
-
-        // Reference the keys we just copied above.
-        if (bigTableVectorCopyOuterKeys != null) {
-          bigTableVectorCopyOuterKeys.copyByReference(overflowBatch, overflowBatch.size,
-                                                      overflowBatch, overflowBatch.size);
         }
 
         if (smallTableVectorDeserializeRow != null) {
@@ -329,12 +326,6 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
             overflowBatch.cols[column].isRepeating = true;
           }
         }
-        if (bigTableVectorCopyOuterKeys != null) {
-          bigTableVectorCopyOuterKeys.copyByReference(batch, batchIndex, overflowBatch, 0);
-          for (int column : bigTableOuterKeyOutputVectorColumns) {
-            overflowBatch.cols[column].isRepeating = true;
-          }
-        }
 
         // Crucial here that we don't reset the overflow batch, or we will loose the small table
         // values we put in above.
@@ -344,13 +335,6 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
         for (int column : bigTableRetainedMapping.getOutputColumns()) {
           ColumnVector colVector = overflowBatch.cols[column];
           colVector.reset();
-        }
-
-        if (bigTableVectorCopyOuterKeys != null) {
-          for (int column : bigTableOuterKeyOutputVectorColumns) {
-            ColumnVector colVector = overflowBatch.cols[column];
-            colVector.reset();
-          }
         }
       }
 
