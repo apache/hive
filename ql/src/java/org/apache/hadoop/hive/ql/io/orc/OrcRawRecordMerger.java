@@ -533,7 +533,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
    * @return the maximum size of the file to use
    * @throws IOException
    */
-  private static long getLastFlushLength(FileSystem fs,
+  static long getLastFlushLength(FileSystem fs,
                                          Path deltaFile) throws IOException {
     Path lengths = OrcRecordUpdater.getSideFile(deltaFile);
     long result = Long.MAX_VALUE;
