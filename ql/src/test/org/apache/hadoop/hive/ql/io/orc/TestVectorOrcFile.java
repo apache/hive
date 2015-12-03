@@ -1984,9 +1984,9 @@ public class TestVectorOrcFile {
           stripe.getDataLength() < 5000);
     }
     // with HIVE-7832, the dictionaries will be disabled after writing the first
-    // stripe as there are too many distinct values. Hence only 4 stripes as
+    // stripe as there are too many distinct values. Hence only 3 stripes as
     // compared to 25 stripes in version 0.11 (above test case)
-    assertEquals(4, i);
+    assertEquals(3, i);
     assertEquals(2500, reader.getNumberOfRows());
   }
 

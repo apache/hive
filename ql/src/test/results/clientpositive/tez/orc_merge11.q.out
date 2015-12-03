@@ -96,22 +96,22 @@ File Statistics:
   Column 5: count: 50000 hasNull: false min: 1969-12-31 16:00:00.0 max: 1969-12-31 16:04:10.0
 
 Stripes:
-  Stripe: offset: 3 data: 10104 rows: 50000 tail: 117 index: 509
+  Stripe: offset: 3 data: 5897 rows: 50000 tail: 113 index: 498
     Stream: column 0 section ROW_INDEX start: 3 length 17
-    Stream: column 1 section ROW_INDEX start: 20 length 85
-    Stream: column 2 section ROW_INDEX start: 105 length 87
-    Stream: column 3 section ROW_INDEX start: 192 length 111
-    Stream: column 4 section ROW_INDEX start: 303 length 108
-    Stream: column 5 section ROW_INDEX start: 411 length 101
-    Stream: column 1 section DATA start: 512 length 871
-    Stream: column 2 section DATA start: 1383 length 362
-    Stream: column 2 section LENGTH start: 1745 length 8
-    Stream: column 2 section DICTIONARY_DATA start: 1753 length 23
-    Stream: column 3 section DATA start: 1776 length 5167
-    Stream: column 4 section DATA start: 6943 length 524
-    Stream: column 4 section SECONDARY start: 7467 length 118
-    Stream: column 5 section DATA start: 7585 length 2913
-    Stream: column 5 section SECONDARY start: 10498 length 118
+    Stream: column 1 section ROW_INDEX start: 20 length 83
+    Stream: column 2 section ROW_INDEX start: 103 length 81
+    Stream: column 3 section ROW_INDEX start: 184 length 111
+    Stream: column 4 section ROW_INDEX start: 295 length 110
+    Stream: column 5 section ROW_INDEX start: 405 length 96
+    Stream: column 1 section DATA start: 501 length 45
+    Stream: column 2 section DATA start: 546 length 41
+    Stream: column 2 section LENGTH start: 587 length 8
+    Stream: column 2 section DICTIONARY_DATA start: 595 length 23
+    Stream: column 3 section DATA start: 618 length 5167
+    Stream: column 4 section DATA start: 5785 length 524
+    Stream: column 4 section SECONDARY start: 6309 length 18
+    Stream: column 5 section DATA start: 6327 length 53
+    Stream: column 5 section SECONDARY start: 6380 length 18
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT_V2
     Encoding column 2: DICTIONARY_V2[6]
@@ -120,12 +120,12 @@ Stripes:
     Encoding column 5: DIRECT_V2
     Row group indices for column 1:
       Entry 0: count: 10000 hasNull: false min: 2 max: 100 sum: 999815 positions: 0,0,0
-      Entry 1: count: 10000 hasNull: false min: 29 max: 100 sum: 999899 positions: 133,1071,391
-      Entry 2: count: 10000 hasNull: false min: 2 max: 100 sum: 999807 positions: 292,2147,391
-      Entry 3: count: 10000 hasNull: false min: 13 max: 100 sum: 999842 positions: 453,3223,391
-      Entry 4: count: 10000 hasNull: false min: 5 max: 100 sum: 999875 positions: 683,203,391
+      Entry 1: count: 10000 hasNull: false min: 29 max: 100 sum: 999899 positions: 0,101,391
+      Entry 2: count: 10000 hasNull: false min: 2 max: 100 sum: 999807 positions: 0,207,391
+      Entry 3: count: 10000 hasNull: false min: 13 max: 100 sum: 999842 positions: 0,313,391
+      Entry 4: count: 10000 hasNull: false min: 5 max: 100 sum: 999875 positions: 0,419,391
 
-File length: 11071 bytes
+File length: 6849 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
 -- END ORC FILE DUMP --
@@ -155,22 +155,22 @@ File Statistics:
   Column 5: count: 50000 hasNull: false min: 1969-12-31 16:00:00.0 max: 1969-12-31 16:04:10.0
 
 Stripes:
-  Stripe: offset: 3 data: 10104 rows: 50000 tail: 117 index: 509
+  Stripe: offset: 3 data: 5897 rows: 50000 tail: 113 index: 498
     Stream: column 0 section ROW_INDEX start: 3 length 17
-    Stream: column 1 section ROW_INDEX start: 20 length 85
-    Stream: column 2 section ROW_INDEX start: 105 length 87
-    Stream: column 3 section ROW_INDEX start: 192 length 111
-    Stream: column 4 section ROW_INDEX start: 303 length 108
-    Stream: column 5 section ROW_INDEX start: 411 length 101
-    Stream: column 1 section DATA start: 512 length 871
-    Stream: column 2 section DATA start: 1383 length 362
-    Stream: column 2 section LENGTH start: 1745 length 8
-    Stream: column 2 section DICTIONARY_DATA start: 1753 length 23
-    Stream: column 3 section DATA start: 1776 length 5167
-    Stream: column 4 section DATA start: 6943 length 524
-    Stream: column 4 section SECONDARY start: 7467 length 118
-    Stream: column 5 section DATA start: 7585 length 2913
-    Stream: column 5 section SECONDARY start: 10498 length 118
+    Stream: column 1 section ROW_INDEX start: 20 length 83
+    Stream: column 2 section ROW_INDEX start: 103 length 81
+    Stream: column 3 section ROW_INDEX start: 184 length 111
+    Stream: column 4 section ROW_INDEX start: 295 length 110
+    Stream: column 5 section ROW_INDEX start: 405 length 96
+    Stream: column 1 section DATA start: 501 length 45
+    Stream: column 2 section DATA start: 546 length 41
+    Stream: column 2 section LENGTH start: 587 length 8
+    Stream: column 2 section DICTIONARY_DATA start: 595 length 23
+    Stream: column 3 section DATA start: 618 length 5167
+    Stream: column 4 section DATA start: 5785 length 524
+    Stream: column 4 section SECONDARY start: 6309 length 18
+    Stream: column 5 section DATA start: 6327 length 53
+    Stream: column 5 section SECONDARY start: 6380 length 18
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT_V2
     Encoding column 2: DICTIONARY_V2[6]
@@ -179,12 +179,12 @@ Stripes:
     Encoding column 5: DIRECT_V2
     Row group indices for column 1:
       Entry 0: count: 10000 hasNull: false min: 2 max: 100 sum: 999815 positions: 0,0,0
-      Entry 1: count: 10000 hasNull: false min: 29 max: 100 sum: 999899 positions: 133,1071,391
-      Entry 2: count: 10000 hasNull: false min: 2 max: 100 sum: 999807 positions: 292,2147,391
-      Entry 3: count: 10000 hasNull: false min: 13 max: 100 sum: 999842 positions: 453,3223,391
-      Entry 4: count: 10000 hasNull: false min: 5 max: 100 sum: 999875 positions: 683,203,391
+      Entry 1: count: 10000 hasNull: false min: 29 max: 100 sum: 999899 positions: 0,101,391
+      Entry 2: count: 10000 hasNull: false min: 2 max: 100 sum: 999807 positions: 0,207,391
+      Entry 3: count: 10000 hasNull: false min: 13 max: 100 sum: 999842 positions: 0,313,391
+      Entry 4: count: 10000 hasNull: false min: 5 max: 100 sum: 999875 positions: 0,419,391
 
-File length: 11071 bytes
+File length: 6849 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
 -- END ORC FILE DUMP --
@@ -244,22 +244,22 @@ File Statistics:
   Column 5: count: 100000 hasNull: false min: 1969-12-31 16:00:00.0 max: 1969-12-31 16:04:10.0
 
 Stripes:
-  Stripe: offset: 3 data: 10104 rows: 50000 tail: 117 index: 509
+  Stripe: offset: 3 data: 5897 rows: 50000 tail: 113 index: 498
     Stream: column 0 section ROW_INDEX start: 3 length 17
-    Stream: column 1 section ROW_INDEX start: 20 length 85
-    Stream: column 2 section ROW_INDEX start: 105 length 87
-    Stream: column 3 section ROW_INDEX start: 192 length 111
-    Stream: column 4 section ROW_INDEX start: 303 length 108
-    Stream: column 5 section ROW_INDEX start: 411 length 101
-    Stream: column 1 section DATA start: 512 length 871
-    Stream: column 2 section DATA start: 1383 length 362
-    Stream: column 2 section LENGTH start: 1745 length 8
-    Stream: column 2 section DICTIONARY_DATA start: 1753 length 23
-    Stream: column 3 section DATA start: 1776 length 5167
-    Stream: column 4 section DATA start: 6943 length 524
-    Stream: column 4 section SECONDARY start: 7467 length 118
-    Stream: column 5 section DATA start: 7585 length 2913
-    Stream: column 5 section SECONDARY start: 10498 length 118
+    Stream: column 1 section ROW_INDEX start: 20 length 83
+    Stream: column 2 section ROW_INDEX start: 103 length 81
+    Stream: column 3 section ROW_INDEX start: 184 length 111
+    Stream: column 4 section ROW_INDEX start: 295 length 110
+    Stream: column 5 section ROW_INDEX start: 405 length 96
+    Stream: column 1 section DATA start: 501 length 45
+    Stream: column 2 section DATA start: 546 length 41
+    Stream: column 2 section LENGTH start: 587 length 8
+    Stream: column 2 section DICTIONARY_DATA start: 595 length 23
+    Stream: column 3 section DATA start: 618 length 5167
+    Stream: column 4 section DATA start: 5785 length 524
+    Stream: column 4 section SECONDARY start: 6309 length 18
+    Stream: column 5 section DATA start: 6327 length 53
+    Stream: column 5 section SECONDARY start: 6380 length 18
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT_V2
     Encoding column 2: DICTIONARY_V2[6]
@@ -268,26 +268,26 @@ Stripes:
     Encoding column 5: DIRECT_V2
     Row group indices for column 1:
       Entry 0: count: 10000 hasNull: false min: 2 max: 100 sum: 999815 positions: 0,0,0
-      Entry 1: count: 10000 hasNull: false min: 29 max: 100 sum: 999899 positions: 133,1071,391
-      Entry 2: count: 10000 hasNull: false min: 2 max: 100 sum: 999807 positions: 292,2147,391
-      Entry 3: count: 10000 hasNull: false min: 13 max: 100 sum: 999842 positions: 453,3223,391
-      Entry 4: count: 10000 hasNull: false min: 5 max: 100 sum: 999875 positions: 683,203,391
-  Stripe: offset: 10733 data: 10104 rows: 50000 tail: 117 index: 509
-    Stream: column 0 section ROW_INDEX start: 10733 length 17
-    Stream: column 1 section ROW_INDEX start: 10750 length 85
-    Stream: column 2 section ROW_INDEX start: 10835 length 87
-    Stream: column 3 section ROW_INDEX start: 10922 length 111
-    Stream: column 4 section ROW_INDEX start: 11033 length 108
-    Stream: column 5 section ROW_INDEX start: 11141 length 101
-    Stream: column 1 section DATA start: 11242 length 871
-    Stream: column 2 section DATA start: 12113 length 362
-    Stream: column 2 section LENGTH start: 12475 length 8
-    Stream: column 2 section DICTIONARY_DATA start: 12483 length 23
-    Stream: column 3 section DATA start: 12506 length 5167
-    Stream: column 4 section DATA start: 17673 length 524
-    Stream: column 4 section SECONDARY start: 18197 length 118
-    Stream: column 5 section DATA start: 18315 length 2913
-    Stream: column 5 section SECONDARY start: 21228 length 118
+      Entry 1: count: 10000 hasNull: false min: 29 max: 100 sum: 999899 positions: 0,101,391
+      Entry 2: count: 10000 hasNull: false min: 2 max: 100 sum: 999807 positions: 0,207,391
+      Entry 3: count: 10000 hasNull: false min: 13 max: 100 sum: 999842 positions: 0,313,391
+      Entry 4: count: 10000 hasNull: false min: 5 max: 100 sum: 999875 positions: 0,419,391
+  Stripe: offset: 6511 data: 5897 rows: 50000 tail: 113 index: 498
+    Stream: column 0 section ROW_INDEX start: 6511 length 17
+    Stream: column 1 section ROW_INDEX start: 6528 length 83
+    Stream: column 2 section ROW_INDEX start: 6611 length 81
+    Stream: column 3 section ROW_INDEX start: 6692 length 111
+    Stream: column 4 section ROW_INDEX start: 6803 length 110
+    Stream: column 5 section ROW_INDEX start: 6913 length 96
+    Stream: column 1 section DATA start: 7009 length 45
+    Stream: column 2 section DATA start: 7054 length 41
+    Stream: column 2 section LENGTH start: 7095 length 8
+    Stream: column 2 section DICTIONARY_DATA start: 7103 length 23
+    Stream: column 3 section DATA start: 7126 length 5167
+    Stream: column 4 section DATA start: 12293 length 524
+    Stream: column 4 section SECONDARY start: 12817 length 18
+    Stream: column 5 section DATA start: 12835 length 53
+    Stream: column 5 section SECONDARY start: 12888 length 18
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT_V2
     Encoding column 2: DICTIONARY_V2[6]
@@ -296,12 +296,12 @@ Stripes:
     Encoding column 5: DIRECT_V2
     Row group indices for column 1:
       Entry 0: count: 10000 hasNull: false min: 2 max: 100 sum: 999815 positions: 0,0,0
-      Entry 1: count: 10000 hasNull: false min: 29 max: 100 sum: 999899 positions: 133,1071,391
-      Entry 2: count: 10000 hasNull: false min: 2 max: 100 sum: 999807 positions: 292,2147,391
-      Entry 3: count: 10000 hasNull: false min: 13 max: 100 sum: 999842 positions: 453,3223,391
-      Entry 4: count: 10000 hasNull: false min: 5 max: 100 sum: 999875 positions: 683,203,391
+      Entry 1: count: 10000 hasNull: false min: 29 max: 100 sum: 999899 positions: 0,101,391
+      Entry 2: count: 10000 hasNull: false min: 2 max: 100 sum: 999807 positions: 0,207,391
+      Entry 3: count: 10000 hasNull: false min: 13 max: 100 sum: 999842 positions: 0,313,391
+      Entry 4: count: 10000 hasNull: false min: 5 max: 100 sum: 999875 positions: 0,419,391
 
-File length: 21814 bytes
+File length: 13369 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
 -- END ORC FILE DUMP --
