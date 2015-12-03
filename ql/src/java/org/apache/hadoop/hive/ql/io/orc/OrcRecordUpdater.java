@@ -138,7 +138,7 @@ public class OrcRecordUpdater implements RecordUpdater {
     }
   }
 
-  static Path getSideFile(Path main) {
+  public static Path getSideFile(Path main) {
     return new Path(main + AcidUtils.DELTA_SIDE_FILE_SUFFIX);
   }
 

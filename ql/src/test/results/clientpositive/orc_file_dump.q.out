@@ -195,6 +195,8 @@ Stripes:
 File length: 33416 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
+________________________________________________________________________________________________________________________
+
 -- END ORC FILE DUMP --
 124	336	65664	4294967435	74.72	42.47	true	bob davidson	2013-03-01 09:11:58.703302	45.40	yard duty
 PREHOOK: query: alter table orc_ppd set tblproperties("orc.bloom.filter.fpp"="0.01")
@@ -313,6 +315,8 @@ Stripes:
 File length: 38568 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
+________________________________________________________________________________________________________________________
+
 -- END ORC FILE DUMP --
 124	336	65664	4294967435	74.72	42.47	true	bob davidson	2013-03-01 09:11:58.703302	45.40	yard duty
 PREHOOK: query: CREATE TABLE orc_ppd_part(t tinyint,
@@ -443,5 +447,7 @@ Stripes:
 File length: 33416 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
+________________________________________________________________________________________________________________________
+
 -- END ORC FILE DUMP --
 124	336	65664	4294967435	74.72	42.47	true	bob davidson	2013-03-01 09:11:58.703302	45.40	yard duty	2015	10
