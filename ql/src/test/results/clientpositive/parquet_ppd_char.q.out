@@ -142,6 +142,11 @@ POSTHOOK: query: select * from newtypestbl where c="apple "
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
+apple     	bee	0.220	1970-02-20
+apple     	bee	0.220	1970-02-20
+apple     	bee	0.220	1970-02-20
+apple     	bee	0.220	1970-02-20
+apple     	bee	0.220	1970-02-20
 PREHOOK: query: select * from newtypestbl where c="apple "
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl
@@ -150,6 +155,11 @@ POSTHOOK: query: select * from newtypestbl where c="apple "
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
+apple     	bee	0.220	1970-02-20
+apple     	bee	0.220	1970-02-20
+apple     	bee	0.220	1970-02-20
+apple     	bee	0.220	1970-02-20
+apple     	bee	0.220	1970-02-20
 PREHOOK: query: select * from newtypestbl where c in ("apple", "carrot")
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl
