@@ -140,7 +140,9 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
       } else if (heapSize == heap.length) {
         // The buffer is not in the (full) heap. Demote the top item of the heap into the list.
         LlapCacheableBuffer demoted = heap[0];
-        synchronized (listLock) {
+        listLock.lock();
+        try {
+          assert demoted.indexInHeap == 0; // Noone could have moved it, we have the heap lock.
           demoted.indexInHeap = LlapCacheableBuffer.IN_LIST;
           demoted.prev = null;
           if (listHead != null) {
@@ -151,6 +153,8 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
             listHead = listTail = demoted;
             demoted.next = null;
           }
+        } finally {
+          listLock.unlock();
         }
         // Now insert the buffer in its place and restore heap property.
         buffer.indexInHeap = 0;
@@ -340,44 +344,62 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
   }
 
   private void removeFromListUnderLock(LlapCacheableBuffer buffer) {
-    if (buffer == listTail) {
+    buffer.indexInHeap = LlapCacheableBuffer.NOT_IN_CACHE;
+    boolean isTail = buffer == listTail, isHead = buffer == listHead;
+    if ((isTail != (buffer.next == null)) || (isHead != (buffer.prev == null))) {
+      debugDumpListOnError(buffer);
+      throw new AssertionError("LRFU list is corrupted.");
+    }
+    if (isTail) {
       listTail = buffer.prev;
     } else {
       buffer.next.prev = buffer.prev;
     }
-    if (buffer == listHead) {
+    if (isHead) {
       listHead = buffer.next;
     } else {
       buffer.prev.next = buffer.next;
     }
-    buffer.indexInHeap = LlapCacheableBuffer.NOT_IN_CACHE;
   }
 
   private void removeFromListUnderLockNoStateUpdate(
       LlapCacheableBuffer from, LlapCacheableBuffer to) {
-    if (to == listTail) {
+    boolean isToTail = to == listTail, isFromHead = from == listHead;
+    if ((isToTail != (to.next == null)) || (isFromHead != (from.prev == null))) {
+      debugDumpListOnError(from, to);
+      throw new AssertionError("LRFU list is corrupted.");
+    }
+    if (isToTail) {
       listTail = from.prev;
     } else {
       to.next.prev = from.prev;
     }
-    if (from == listHead) {
+    if (isFromHead) {
       listHead = to.next;
     } else {
       from.prev.next = to.next;
     }
   }
 
+  private void debugDumpListOnError(LlapCacheableBuffer... buffers) {
+    // Hopefully this will be helpful in case of NPEs.
+    StringBuilder listDump = new StringBuilder("Invalid list removal. List: ");
+    try {
+      dumpList(listDump, listHead, listTail);
+      int i = 0;
+      for (LlapCacheableBuffer buffer : buffers) {
+        listDump.append("; list from the buffer #").append(i).append(" being removed: ");
+        dumpList(listDump, buffer, null);
+      }
+    } catch (Throwable t) {
+      LlapIoImpl.LOG.error("Error dumping the lists on error", t);
+    }
+    LlapIoImpl.LOG.error(listDump.toString());
+  }
+
   public String debugDumpHeap() {
     StringBuilder result = new StringBuilder("List: ");
-    if (listHead == null) {
-      result.append("<empty>");
-    } else {
-      LlapCacheableBuffer listItem = listHead;
-      while (listItem != null) {
-        result.append(listItem.toStringForCache()).append(" -> ");
-        listItem = listItem.next;
-      }
-    }
+    dumpList(result, listHead, listTail);
     result.append("\nHeap:");
     if (heapSize == 0) {
       result.append(" <empty>\n");
@@ -419,6 +441,29 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
       result.append("\n");
     }
     return result.toString();
+  }
+
+  private static void dumpList(StringBuilder result,
+      LlapCacheableBuffer listHeadLocal, LlapCacheableBuffer listTailLocal) {
+    if (listHeadLocal == null) {
+      result.append("<empty>");
+      return;
+    }
+    LlapCacheableBuffer listItem = listHeadLocal;
+    while (listItem.prev != null) {
+      listItem = listItem.prev;  // To detect incorrect lists.
+    }
+    while (listItem != null) {
+      result.append(listItem.toStringForCache());
+      if (listItem == listTailLocal) {
+        result.append("(tail)"); // To detect incorrect lists.
+      }
+      if (listItem == listHeadLocal) {
+        result.append("(head)"); // To detect incorrect lists.
+      }
+      result.append(" -> ");
+      listItem = listItem.next;
+    }
   }
 
   @Override
