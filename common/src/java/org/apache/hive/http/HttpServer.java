@@ -34,7 +34,9 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeys;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.authentication.server.AuthenticationFilter;
 import org.apache.hadoop.security.authorize.AccessControlList;
 import org.apache.hadoop.util.Shell;
 import org.apache.logging.log4j.LogManager;
@@ -51,7 +53,10 @@ import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.server.ssl.SslSelectChannelConnector;
 import org.eclipse.jetty.servlet.DefaultServlet;
+import org.eclipse.jetty.servlet.FilterHolder;
+import org.eclipse.jetty.servlet.FilterMapping;
 import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
@@ -82,6 +87,12 @@ public class HttpServer {
     webServer = new Server();
     appDir = getWebAppsPath(b.name);
     webAppContext = createWebAppContext(b);
+
+    if (b.useSPNEGO) {
+      // Secure the web server with kerberos
+      setupSpnegoFilter(b);
+    }
+
     initializeWebServer(b);
   }
 
@@ -94,6 +105,9 @@ public class HttpServer {
     private Map<String, Object> contextAttrs = new HashMap<String, Object>();
     private String keyStorePassword;
     private String keyStorePath;
+    private String spnegoPrincipal;
+    private String spnegoKeytab;
+    private boolean useSPNEGO;
     private boolean useSSL;
 
     public HttpServer build() throws IOException {
@@ -145,6 +159,21 @@ public class HttpServer {
 
     public Builder setUseSSL(boolean useSSL) {
       this.useSSL = useSSL;
+      return this;
+    }
+
+    public Builder setUseSPNEGO(boolean useSPNEGO) {
+      this.useSPNEGO = useSPNEGO;
+      return this;
+    }
+
+    public Builder setSPNEGOPrincipal(String principal) {
+      this.spnegoPrincipal = principal;
+      return this;
+    }
+
+    public Builder setSPNEGOKeytab(String keytab) {
+      this.spnegoKeytab = keytab;
       return this;
     }
 
@@ -264,6 +293,24 @@ public class HttpServer {
     ctx.setContextPath("/");
     ctx.setWar(appDir + "/" + b.name);
     return ctx;
+  }
+
+  /**
+   * Secure the web server with kerberos (AuthenticationFilter).
+   */
+  void setupSpnegoFilter(Builder b) throws IOException {
+    Map<String, String> params = new HashMap<String, String>();
+    params.put("kerberos.principal",
+      SecurityUtil.getServerPrincipal(b.spnegoPrincipal, b.host));
+    params.put("kerberos.keytab", b.spnegoKeytab);
+    params.put(AuthenticationFilter.AUTH_TYPE, "kerberos");
+    FilterHolder holder = new FilterHolder();
+    holder.setClassName(AuthenticationFilter.class.getName());
+    holder.setInitParameters(params);
+
+    ServletHandler handler = webAppContext.getServletHandler();
+    handler.addFilterWithMapping(
+      holder, "/*", FilterMapping.ALL);
   }
 
   /**
