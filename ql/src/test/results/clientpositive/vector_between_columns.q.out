@@ -1,0 +1,157 @@
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+create table if not exists TSINT_txt ( RNUM int , CSINT smallint )
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' LINES TERMINATED BY '\n'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@TSINT_txt
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+create table if not exists TSINT_txt ( RNUM int , CSINT smallint )
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' LINES TERMINATED BY '\n'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@TSINT_txt
+PREHOOK: query: create table if not exists TINT_txt ( RNUM int , CINT int )
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' LINES TERMINATED BY '\n'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@TINT_txt
+POSTHOOK: query: create table if not exists TINT_txt ( RNUM int , CINT int )
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' LINES TERMINATED BY '\n'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@TINT_txt
+PREHOOK: query: load data local inpath '../../data/files/TSINT' into table TSINT_txt
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@tsint_txt
+POSTHOOK: query: load data local inpath '../../data/files/TSINT' into table TSINT_txt
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@tsint_txt
+PREHOOK: query: load data local inpath '../../data/files/TINT' into table TINT_txt
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@tint_txt
+POSTHOOK: query: load data local inpath '../../data/files/TINT' into table TINT_txt
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@tint_txt
+PREHOOK: query: create table TSINT stored as orc AS SELECT * FROM TSINT_txt
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@tsint_txt
+PREHOOK: Output: database:default
+PREHOOK: Output: default@TSINT
+POSTHOOK: query: create table TSINT stored as orc AS SELECT * FROM TSINT_txt
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@tsint_txt
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@TSINT
+tsint_txt.rnum	tsint_txt.csint
+PREHOOK: query: create table TINT stored as orc AS SELECT * FROM TINT_txt
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@tint_txt
+PREHOOK: Output: database:default
+PREHOOK: Output: default@TINT
+POSTHOOK: query: create table TINT stored as orc AS SELECT * FROM TINT_txt
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@tint_txt
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@TINT
+tint_txt.rnum	tint_txt.cint
+Warning: Map Join MAPJOIN[13][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
+PREHOOK: query: -- We DO NOT expect the following to vectorized because the BETWEEN range expressions
+-- are not constants.  We currently do not support the range expressions being columns.
+explain
+select tint.rnum, tsint.rnum from tint , tsint where tint.cint between tsint.csint and tsint.csint
+PREHOOK: type: QUERY
+POSTHOOK: query: -- We DO NOT expect the following to vectorized because the BETWEEN range expressions
+-- are not constants.  We currently do not support the range expressions being columns.
+explain
+select tint.rnum, tsint.rnum from tint , tsint where tint.cint between tsint.csint and tsint.csint
+POSTHOOK: type: QUERY
+Explain
+STAGE DEPENDENCIES:
+  Stage-4 is a root stage
+  Stage-3 depends on stages: Stage-4
+  Stage-0 depends on stages: Stage-3
+
+STAGE PLANS:
+  Stage: Stage-4
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $hdt$_0:tint 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $hdt$_0:tint 
+          TableScan
+            alias: tint
+            Statistics: Num rows: 5 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: rnum (type: int), cint (type: int)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 5 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 
+                  1 
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: tsint
+            Statistics: Num rows: 5 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: rnum (type: int), csint (type: smallint)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 5 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 5 Data size: 39 Basic stats: COMPLETE Column stats: NONE
+                Filter Operator
+                  predicate: _col1 BETWEEN _col3 AND _col3 (type: boolean)
+                  Statistics: Num rows: 2 Data size: 15 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: _col0 (type: int), _col2 (type: int)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 2 Data size: 15 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 2 Data size: 15 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+Warning: Map Join MAPJOIN[13][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
+PREHOOK: query: select tint.rnum, tsint.rnum from tint , tsint where tint.cint between tsint.csint and tsint.csint
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tint
+PREHOOK: Input: default@tsint
+#### A masked pattern was here ####
+POSTHOOK: query: select tint.rnum, tsint.rnum from tint , tsint where tint.cint between tsint.csint and tsint.csint
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tint
+POSTHOOK: Input: default@tsint
+#### A masked pattern was here ####
+tint.rnum	tsint.rnum
+1	1
+2	2
+3	3
+4	4

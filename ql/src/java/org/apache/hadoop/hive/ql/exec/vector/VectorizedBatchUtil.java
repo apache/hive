@@ -685,7 +685,7 @@ public class VectorizedBatchUtil {
     LOG.info(sb.toString());
   }
 
-  public static void debugDisplayBatch(VectorizedRowBatch batch, String prefix) throws HiveException {
+  public static void debugDisplayBatch(VectorizedRowBatch batch, String prefix) {
     for (int i = 0; i < batch.size; i++) {
       int index = (batch.selectedInUse ? batch.selected[i] : i);
       debugDisplayOneRow(batch, index, prefix);
