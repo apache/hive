@@ -462,7 +462,7 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
     while (dataInCache) {
       for (byte pos = 0; pos < order.length; pos++) {
         if (this.foundNextKeyGroup[pos] && this.nextKeyWritables[pos] != null) {
-          promoteNextGroupToCandidate(pos);
+          fetchNextGroup(pos);
         }
       }
       joinOneGroup();
