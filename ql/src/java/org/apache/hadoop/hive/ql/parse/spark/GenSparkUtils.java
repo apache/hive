@@ -160,7 +160,7 @@ public class GenSparkUtils {
     String alias = ((TableScanOperator) root).getConf().getAlias();
 
     if (!deferSetup) {
-      setupMapWork(mapWork, context, partitions, root, alias);
+      setupMapWork(mapWork, context, partitions,(TableScanOperator) root, alias);
     }
 
     // add new item to the Spark work
@@ -171,7 +171,7 @@ public class GenSparkUtils {
 
   // this method's main use is to help unit testing this class
   protected void setupMapWork(MapWork mapWork, GenSparkProcContext context,
-      PrunedPartitionList partitions, Operator<? extends OperatorDesc> root,
+      PrunedPartitionList partitions, TableScanOperator root,
       String alias) throws SemanticException {
     // All the setup is done in GenMapRedUtils
     GenMapRedUtils.setMapWork(mapWork, context.parseContext,

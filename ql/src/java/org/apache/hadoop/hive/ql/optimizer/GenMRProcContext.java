@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.DependencyCollectionTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
@@ -94,13 +95,13 @@ public class GenMRProcContext implements NodeProcessorCtx {
     final Task<? extends Serializable> uTask;
     List<String> taskTmpDir;
     List<TableDesc> tt_desc;
-    List<Operator<? extends OperatorDesc>> listTopOperators;
+    List<TableScanOperator> listTopOperators;
 
     public GenMRUnionCtx(Task<? extends Serializable> uTask) {
       this.uTask = uTask;
       taskTmpDir = new ArrayList<String>();
       tt_desc = new ArrayList<TableDesc>();
-      listTopOperators = new ArrayList<Operator<? extends OperatorDesc>>();
+      listTopOperators = new ArrayList<>();
     }
 
     public Task<? extends Serializable> getUTask() {
@@ -123,16 +124,11 @@ public class GenMRProcContext implements NodeProcessorCtx {
       return tt_desc;
     }
 
-    public List<Operator<? extends OperatorDesc>> getListTopOperators() {
+    public List<TableScanOperator> getListTopOperators() {
       return listTopOperators;
     }
 
-    public void setListTopOperators(
-        List<Operator<? extends OperatorDesc>> listTopOperators) {
-      this.listTopOperators = listTopOperators;
-    }
-
-    public void addListTopOperators(Operator<? extends OperatorDesc> topOperator) {
+    public void addListTopOperators(TableScanOperator topOperator) {
       listTopOperators.add(topOperator);
     }
   }
@@ -152,7 +148,7 @@ public class GenMRProcContext implements NodeProcessorCtx {
 
   private LinkedHashMap<Operator<? extends OperatorDesc>, GenMapRedCtx> mapCurrCtx;
   private Task<? extends Serializable> currTask;
-  private Operator<? extends OperatorDesc> currTopOp;
+  private TableScanOperator currTopOp;
   private UnionOperator currUnionOp;
   private String currAliasId;
   private DependencyCollectionTask dependencyTaskForMultiInsert;
@@ -355,7 +351,7 @@ public class GenMRProcContext implements NodeProcessorCtx {
   /**
    * @return current top operator
    */
-  public Operator<? extends OperatorDesc> getCurrTopOp() {
+  public TableScanOperator getCurrTopOp() {
     return currTopOp;
   }
 
@@ -363,7 +359,7 @@ public class GenMRProcContext implements NodeProcessorCtx {
    * @param currTopOp
    *          current top operator
    */
-  public void setCurrTopOp(Operator<? extends OperatorDesc> currTopOp) {
+  public void setCurrTopOp(TableScanOperator currTopOp) {
     this.currTopOp = currTopOp;
   }
 

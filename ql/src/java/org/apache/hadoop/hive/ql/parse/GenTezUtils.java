@@ -49,7 +49,6 @@ import org.apache.hadoop.hive.ql.plan.DynamicPruningEventDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
-import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TezEdgeProperty;
@@ -179,7 +178,7 @@ public class GenTezUtils {
 
     String alias = ts.getConf().getAlias();
 
-    setupMapWork(mapWork, context, partitions, root, alias);
+    setupMapWork(mapWork, context, partitions, ts, alias);
 
     if (ts.getConf().getTableMetadata() != null && ts.getConf().getTableMetadata().isDummyTable()) {
       mapWork.setDummyTableScan(true);
@@ -197,7 +196,7 @@ public class GenTezUtils {
 
   // this method's main use is to help unit testing this class
   protected void setupMapWork(MapWork mapWork, GenTezProcContext context,
-      PrunedPartitionList partitions, Operator<? extends OperatorDesc> root,
+      PrunedPartitionList partitions, TableScanOperator root,
       String alias) throws SemanticException {
     // All the setup is done in GenMapRedUtils
     GenMapRedUtils.setMapWork(mapWork, context.parseContext,

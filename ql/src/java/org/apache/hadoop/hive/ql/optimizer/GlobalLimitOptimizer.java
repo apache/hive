@@ -39,10 +39,8 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.SplitSample;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
-import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 
 import com.google.common.collect.ImmutableSet;
@@ -65,11 +63,11 @@ public class GlobalLimitOptimizer implements Transform {
 
   private final Logger LOG = LoggerFactory.getLogger(GlobalLimitOptimizer.class.getName());
 
+  @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
     Context ctx = pctx.getContext();
-    Map<String, Operator<? extends OperatorDesc>> topOps = pctx.getTopOps();
+    Map<String, TableScanOperator> topOps = pctx.getTopOps();
     GlobalLimitCtx globalLimitCtx = pctx.getGlobalLimitCtx();
-    Map<TableScanOperator, ExprNodeDesc> opToPartPruner = pctx.getOpToPartPruner();
     Map<String, SplitSample> nameToSplitSample = pctx.getNameToSplitSample();
 
     // determine the query qualifies reduce input size for LIMIT
@@ -92,7 +90,7 @@ public class GlobalLimitOptimizer implements Transform {
       //                               FROM ... LIMIT...
       //    SELECT * FROM (SELECT col1 as col2 (SELECT * FROM ...) t1 LIMIT ...) t2);
       //
-      TableScanOperator ts = (TableScanOperator) topOps.values().toArray()[0];
+      TableScanOperator ts = topOps.values().iterator().next();
       Integer tempGlobalLimit = checkQbpForGlobalLimit(ts);
 
       // query qualify for the optimization

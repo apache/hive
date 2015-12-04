@@ -240,8 +240,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private HashMap<TableScanOperator, ExprNodeDesc> opToPartPruner;
   private HashMap<TableScanOperator, PrunedPartitionList> opToPartList;
-  protected HashMap<String, Operator<? extends OperatorDesc>> topOps;
-  private final HashMap<String, Operator<? extends OperatorDesc>> topSelOps;
+  protected HashMap<String, TableScanOperator> topOps;
   protected LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtx;
   private List<LoadTableDesc> loadTableWork;
   private List<LoadFileDesc> loadFileWork;
@@ -318,8 +317,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     opToSamplePruner = new HashMap<TableScanOperator, SampleDesc>();
     nameToSplitSample = new HashMap<String, SplitSample>();
     // Must be deterministic order maps - see HIVE-8707
-    topOps = new LinkedHashMap<String, Operator<? extends OperatorDesc>>();
-    topSelOps = new LinkedHashMap<String, Operator<? extends OperatorDesc>>();
+    topOps = new LinkedHashMap<String, TableScanOperator>();
     loadTableWork = new ArrayList<LoadTableDesc>();
     loadFileWork = new ArrayList<LoadFileDesc>();
     opParseCtx = new LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext>();
@@ -357,7 +355,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     loadTableWork.clear();
     loadFileWork.clear();
     topOps.clear();
-    topSelOps.clear();
     destTableId = 1;
     idToTableNameMap.clear();
     qb = null;
@@ -9254,11 +9251,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     RowResolver rwsch;
 
     // is the table already present
-    Operator<? extends OperatorDesc> top = topOps.get(alias_id);
-    Operator<? extends OperatorDesc> dummySel = topSelOps.get(alias_id);
-    if (dummySel != null) {
-      top = dummySel;
-    }
+    TableScanOperator top = topOps.get(alias_id);
 
     if (top == null) {
       // Determine row schema for TSOP.
@@ -9312,7 +9305,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         nameToSplitSample.remove(alias_id);
       }
 
-      top = putOpInsertMap(OperatorFactory.get(tsDesc,
+      top = (TableScanOperator) putOpInsertMap(OperatorFactory.get(tsDesc,
           new RowSchema(rwsch.getColumnInfos())), rwsch);
 
       // Add this to the list of top operators - we always start from a table
@@ -9320,11 +9313,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       topOps.put(alias_id, top);
 
       // Add a mapping from the table scan operator to Table
-      topToTable.put((TableScanOperator) top, tab);
+      topToTable.put(top, tab);
 
       Map<String, String> props = qb.getTabPropsForAlias(alias);
       if (props != null) {
-        topToTableProps.put((TableScanOperator) top, props);
+        topToTableProps.put(top, props);
         tsDesc.setOpProps(props);
       }
     } else {
@@ -9336,7 +9329,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Operator<? extends OperatorDesc> op = top;
     TableSample ts = qb.getParseInfo().getTabSample(alias);
     if (ts != null) {
-      TableScanOperator tableScanOp = (TableScanOperator) top;
+      TableScanOperator tableScanOp = top;
       tableScanOp.getConf().setTableSample(ts);
       int num = ts.getNumerator();
       int den = ts.getDenominator();
@@ -10536,6 +10529,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // For example, in Column[a].b.c and Column[a].b, Column[a].b should be
       // unparsed before Column[a].b.c
       Collections.sort(fieldDescList, new Comparator<Map.Entry<ASTNode, ExprNodeDesc>>() {
+        @Override
         public int compare(Entry<ASTNode, ExprNodeDesc> o1, Entry<ASTNode, ExprNodeDesc> o2) {
           ExprNodeFieldDesc fieldDescO1 = (ExprNodeFieldDesc) o1.getValue();
           ExprNodeFieldDesc fieldDescO2 = (ExprNodeFieldDesc) o2.getValue();

@@ -171,27 +171,24 @@ public class ExprProcFactory {
 
   private static boolean findSourceColumn(
       LineageCtx lctx, Predicate cond, String tabAlias, String alias) {
-    for (Map.Entry<String, Operator<? extends OperatorDesc>> topOpMap: lctx
-        .getParseCtx().getTopOps().entrySet()) {
-      Operator<? extends OperatorDesc> topOp = topOpMap.getValue();
-      if (topOp instanceof TableScanOperator) {
-        TableScanOperator tableScanOp = (TableScanOperator) topOp;
-        Table tbl = tableScanOp.getConf().getTableMetadata();
-        if (tbl.getTableName().equals(tabAlias)
-            || tabAlias.equals(tableScanOp.getConf().getAlias())) {
-          for (FieldSchema column: tbl.getCols()) {
-            if (column.getName().equals(alias)) {
-              TableAliasInfo table = new TableAliasInfo();
-              table.setTable(tbl.getTTable());
-              table.setAlias(tabAlias);
-              BaseColumnInfo colInfo = new BaseColumnInfo();
-              colInfo.setColumn(column);
-              colInfo.setTabAlias(table);
-              cond.getBaseCols().add(colInfo);
-              return true;
-            }
+    for (Map.Entry<String, TableScanOperator> topOpMap: lctx.getParseCtx().getTopOps().entrySet()) {
+      TableScanOperator tableScanOp = topOpMap.getValue();
+      Table tbl = tableScanOp.getConf().getTableMetadata();
+      if (tbl.getTableName().equals(tabAlias)
+          || tabAlias.equals(tableScanOp.getConf().getAlias())) {
+        for (FieldSchema column: tbl.getCols()) {
+          if (column.getName().equals(alias)) {
+            TableAliasInfo table = new TableAliasInfo();
+            table.setTable(tbl.getTTable());
+            table.setAlias(tabAlias);
+            BaseColumnInfo colInfo = new BaseColumnInfo();
+            colInfo.setColumn(column);
+            colInfo.setTabAlias(table);
+            cond.getBaseCols().add(colInfo);
+            return true;
           }
         }
+
       }
     }
     return false;

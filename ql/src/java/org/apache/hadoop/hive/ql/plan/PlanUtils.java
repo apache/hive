@@ -951,7 +951,7 @@ public final class PlanUtils {
       throw new RuntimeException(e);
     }
   }
-  
+
   public static void addPartitionInputs(Collection<Partition> parts, Collection<ReadEntity> inputs,
       ReadEntity parentViewInfo, boolean isDirectRead) {
     // Store the inputs in a HashMap since we can't get a ReadEntity from inputs since it is
@@ -990,12 +990,9 @@ public final class PlanUtils {
 
   public static void addInputsForView(ParseContext parseCtx) throws HiveException {
     Set<ReadEntity> inputs = parseCtx.getSemanticInputs();
-    for (Map.Entry<String, Operator<?>> entry : parseCtx.getTopOps().entrySet()) {
-      if (!(entry.getValue() instanceof TableScanOperator)) {
-        continue;
-      }
+    for (Map.Entry<String, TableScanOperator> entry : parseCtx.getTopOps().entrySet()) {
       String alias = entry.getKey();
-      TableScanOperator topOp = (TableScanOperator) entry.getValue();
+      TableScanOperator topOp = entry.getValue();
       ReadEntity parentViewInfo = getParentViewInfo(alias, parseCtx.getViewAliasToInput());
 
       // Adds tables only for create view (PPD filter can be appended by outer query)

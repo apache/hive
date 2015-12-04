@@ -151,7 +151,7 @@ public final class GenMapRedUtils {
     MapredWork plan = (MapredWork) currTask.getWork();
     HashMap<Operator<? extends OperatorDesc>, Task<? extends Serializable>> opTaskMap =
         opProcCtx.getOpTaskMap();
-    Operator<? extends OperatorDesc> currTopOp = opProcCtx.getCurrTopOp();
+    TableScanOperator currTopOp = opProcCtx.getCurrTopOp();
 
     opTaskMap.put(reducer, currTask);
     plan.setReduceWork(new ReduceWork());
@@ -216,7 +216,7 @@ public final class GenMapRedUtils {
   private static void setUnionPlan(GenMRProcContext opProcCtx,
       boolean local, Task<? extends Serializable> currTask, GenMRUnionCtx uCtx,
       boolean mergeTask) throws SemanticException {
-    Operator<? extends OperatorDesc> currTopOp = opProcCtx.getCurrTopOp();
+    TableScanOperator currTopOp = opProcCtx.getCurrTopOp();
 
     if (currTopOp != null) {
       String currAliasId = opProcCtx.getCurrAliasId();
@@ -234,7 +234,7 @@ public final class GenMapRedUtils {
         int size = taskTmpDirLst.size();
         assert local == false;
 
-        List<Operator<? extends OperatorDesc>> topOperators =
+        List<TableScanOperator> topOperators =
             uCtx.getListTopOperators();
 
         MapredWork plan = (MapredWork) currTask.getWork();
@@ -332,7 +332,7 @@ public final class GenMapRedUtils {
       throws SemanticException {
     assert currTask != null && oldTask != null;
 
-    Operator<? extends OperatorDesc> currTopOp = opProcCtx.getCurrTopOp();
+    TableScanOperator currTopOp = opProcCtx.getCurrTopOp();
     List<Task<? extends Serializable>> parTasks = null;
     // terminate the old task and make current task dependent on it
     if (currTask.getParentTasks() != null
@@ -368,7 +368,7 @@ public final class GenMapRedUtils {
   /**
    * If currTopOp is not set for input of the task, add input for to the task
    */
-  static boolean mergeInput(Operator<? extends OperatorDesc> currTopOp,
+  static boolean mergeInput(TableScanOperator currTopOp,
       GenMRProcContext opProcCtx, Task<? extends Serializable> task, boolean local)
       throws SemanticException {
     if (!opProcCtx.isSeenOp(task, currTopOp)) {
@@ -437,7 +437,7 @@ public final class GenMapRedUtils {
    *          processing context
    */
   public static void setTaskPlan(String alias_id,
-      Operator<? extends OperatorDesc> topOp, Task<?> task, boolean local,
+      TableScanOperator topOp, Task<?> task, boolean local,
       GenMRProcContext opProcCtx) throws SemanticException {
     setTaskPlan(alias_id, topOp, task, local, opProcCtx, null);
   }
@@ -459,7 +459,7 @@ public final class GenMapRedUtils {
    *          pruned partition list. If it is null it will be computed on-the-fly.
    */
   public static void setTaskPlan(String alias_id,
-      Operator<? extends OperatorDesc> topOp, Task<?> task, boolean local,
+      TableScanOperator topOp, Task<?> task, boolean local,
       GenMRProcContext opProcCtx, PrunedPartitionList pList) throws SemanticException {
     setMapWork(((MapredWork) task.getWork()).getMapWork(), opProcCtx.getParseCtx(),
         opProcCtx.getInputs(), pList, topOp, alias_id, opProcCtx.getConf(), local);
@@ -485,7 +485,7 @@ public final class GenMapRedUtils {
    *          current instance of hive conf
    */
   public static void setMapWork(MapWork plan, ParseContext parseCtx, Set<ReadEntity> inputs,
-      PrunedPartitionList partsList, Operator<? extends OperatorDesc> topOp, String alias_id,
+      PrunedPartitionList partsList, TableScanOperator tsOp, String alias_id,
       HiveConf conf, boolean local) throws SemanticException {
     ArrayList<Path> partDir = new ArrayList<Path>();
     ArrayList<PartitionDesc> partDesc = new ArrayList<PartitionDesc>();
@@ -496,9 +496,8 @@ public final class GenMapRedUtils {
 
     if (partsList == null) {
       try {
-        TableScanOperator tsOp = (TableScanOperator) topOp;
         partsList = PartitionPruner.prune(tsOp, parseCtx, alias_id);
-        isAcidTable = ((TableScanOperator) topOp).getConf().isAcidTable();
+        isAcidTable = tsOp.getConf().isAcidTable();
       } catch (SemanticException e) {
         throw e;
       }
@@ -520,11 +519,11 @@ public final class GenMapRedUtils {
 
     // The table does not have any partitions
     if (aliasPartnDesc == null) {
-      aliasPartnDesc = new PartitionDesc(Utilities.getTableDesc(((TableScanOperator) topOp)
+      aliasPartnDesc = new PartitionDesc(Utilities.getTableDesc(tsOp
           .getConf().getTableMetadata()), null);
     }
 
-    Map<String, String> props = topOp.getConf().getOpProps();
+    Map<String, String> props = tsOp.getConf().getOpProps();
     if (props != null) {
       Properties target = aliasPartnDesc.getProperties();
       if (target == null) {
@@ -590,10 +589,10 @@ public final class GenMapRedUtils {
       // Later the properties have to come from the partition as opposed
       // to from the table in order to support versioning.
       Path[] paths = null;
-      SampleDesc sampleDescr = parseCtx.getOpToSamplePruner().get(topOp);
+      SampleDesc sampleDescr = parseCtx.getOpToSamplePruner().get(tsOp);
 
       // Lookup list bucketing pruner
-      Map<String, ExprNodeDesc> partToPruner = parseCtx.getOpToPartToSkewedPruner().get(topOp);
+      Map<String, ExprNodeDesc> partToPruner = parseCtx.getOpToPartToSkewedPruner().get(tsOp);
       ExprNodeDesc listBucketingPruner = (partToPruner != null) ? partToPruner.get(part.getName())
           : null;
 
@@ -701,10 +700,7 @@ public final class GenMapRedUtils {
       parseCtx.getGlobalLimitCtx().disableOpt();
     }
 
-    if (topOp instanceof TableScanOperator) {
-      Utilities.addSchemaEvolutionToTableScanOperator(partsList.getSourceTable(),
-          (TableScanOperator) topOp);
-    }
+    Utilities.addSchemaEvolutionToTableScanOperator(partsList.getSourceTable(),tsOp);
 
     Iterator<Path> iterPath = partDir.iterator();
     Iterator<PartitionDesc> iterPartnDesc = partDesc.iterator();
@@ -728,7 +724,7 @@ public final class GenMapRedUtils {
       }
 
       assert plan.getAliasToWork().get(alias_id) == null;
-      plan.getAliasToWork().put(alias_id, topOp);
+      plan.getAliasToWork().put(alias_id, tsOp);
     } else {
       // populate local work if needed
       MapredLocalWork localPlan = plan.getMapRedLocalWork();
@@ -740,7 +736,7 @@ public final class GenMapRedUtils {
 
       assert localPlan.getAliasToWork().get(alias_id) == null;
       assert localPlan.getAliasToFetchWork().get(alias_id) == null;
-      localPlan.getAliasToWork().put(alias_id, topOp);
+      localPlan.getAliasToWork().put(alias_id, tsOp);
       if (tblDir == null) {
         tblDesc = Utilities.getTableDesc(partsList.getSourceTable());
         localPlan.getAliasToFetchWork().put(
@@ -1275,7 +1271,7 @@ public final class GenMapRedUtils {
 
     // Create a TableScan operator
     RowSchema inputRS = fsInput.getSchema();
-    Operator<? extends OperatorDesc> tsMerge =
+    TableScanOperator tsMerge =
         GenMapRedUtils.createTemporaryTableScanOperator(inputRS);
 
     // Create a FileSink operator
@@ -1539,7 +1535,7 @@ public final class GenMapRedUtils {
    * @return the MapredWork
    */
   private static MapWork createMRWorkForMergingFiles (HiveConf conf,
-    Operator<? extends OperatorDesc> topOp,  FileSinkDesc fsDesc) {
+    TableScanOperator topOp,  FileSinkDesc fsDesc) {
 
     ArrayList<String> aliases = new ArrayList<String>();
     String inputDir = fsDesc.getFinalDirName().toString();
