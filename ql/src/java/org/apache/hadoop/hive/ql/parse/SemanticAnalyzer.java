@@ -7585,22 +7585,27 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     RowResolver inputRR = opParseCtx.get(input).getRowResolver();
     ArrayList<ExprNodeDesc> colList = new ArrayList<ExprNodeDesc>();
-    ArrayList<String> columnNames = new ArrayList<String>();
-
+    ArrayList<String> outputColumnNames = new ArrayList<String>();
     Map<String, ExprNodeDesc> colExprMap = new HashMap<String, ExprNodeDesc>();
+
+    RowResolver outputRR = new RowResolver();
+
     // construct the list of columns that need to be projected
-    for (ASTNode field : fields) {
-      ExprNodeColumnDesc exprNode = (ExprNodeColumnDesc) genExprNodeDesc(field,
-          inputRR);
+    for (int i = 0; i < fields.size(); ++i) {
+      ASTNode field = fields.get(i);
+      ExprNodeDesc exprNode = genExprNodeDesc(field, inputRR);
+      String colName = getColumnInternalName(i);
+      outputColumnNames.add(colName);
+      ColumnInfo colInfo = new ColumnInfo(colName, exprNode.getTypeInfo(), "", false);
+      outputRR.putExpression(field, colInfo);
       colList.add(exprNode);
-      columnNames.add(exprNode.getColumn());
-      colExprMap.put(exprNode.getColumn(), exprNode);
+      colExprMap.put(colName, exprNode);
     }
 
     // create selection operator
     Operator output = putOpInsertMap(OperatorFactory.getAndMakeChild(
-        new SelectDesc(colList, columnNames, false), new RowSchema(inputRR
-            .getColumnInfos()), input), inputRR);
+        new SelectDesc(colList, outputColumnNames, false),
+        new RowSchema(outputRR.getColumnInfos()), input), outputRR);
 
     output.setColumnExprMap(colExprMap);
     return output;
