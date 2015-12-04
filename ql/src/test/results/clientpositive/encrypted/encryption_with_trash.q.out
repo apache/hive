@@ -1,0 +1,122 @@
+Warning: Value had a \n character in it.
+PREHOOK: query: drop table IF EXISTS unencryptedTable PURGE
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table IF EXISTS unencryptedTable PURGE
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table encryptedTableSrc(key string, value string)
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@encryptedTableSrc
+POSTHOOK: query: create table encryptedTableSrc(key string, value string)
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@encryptedTableSrc
+PREHOOK: query: create table encryptedTable(key string, value string) partitioned by (ds string)
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@encryptedTable
+POSTHOOK: query: create table encryptedTable(key string, value string) partitioned by (ds string)
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@encryptedTable
+Encryption key created: 'key_1'
+Encryption zone created: '/build/ql/test/data/warehouse/encryptedTableSrc' using key: 'key_1'
+Encryption zone created: '/build/ql/test/data/warehouse/encryptedTable' using key: 'key_1'
+PREHOOK: query: -- insert src table from values
+insert into table encryptedTableSrc values ('501', 'val_501'), ('502', 'val_502')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__1
+PREHOOK: Output: default@encryptedtablesrc
+POSTHOOK: query: -- insert src table from values
+insert into table encryptedTableSrc values ('501', 'val_501'), ('502', 'val_502')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__1
+POSTHOOK: Output: default@encryptedtablesrc
+POSTHOOK: Lineage: encryptedtablesrc.key SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: encryptedtablesrc.value SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: insert into table encryptedTable partition (ds='today') select key, value from encryptedTableSrc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@encryptedtablesrc
+PREHOOK: Output: default@encryptedtable@ds=today
+POSTHOOK: query: insert into table encryptedTable partition (ds='today') select key, value from encryptedTableSrc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@encryptedtablesrc
+POSTHOOK: Output: default@encryptedtable@ds=today
+POSTHOOK: Lineage: encryptedtable PARTITION(ds=today).key SIMPLE [(encryptedtablesrc)encryptedtablesrc.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: encryptedtable PARTITION(ds=today).value SIMPLE [(encryptedtablesrc)encryptedtablesrc.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select count(*) from encryptedTable where ds='today'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@encryptedtable
+PREHOOK: Input: default@encryptedtable@ds=today
+#### A PARTIAL masked pattern was here #### data/warehouse/encryptedTable/.hive-staging
+POSTHOOK: query: select count(*) from encryptedTable where ds='today'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@encryptedtable
+POSTHOOK: Input: default@encryptedtable@ds=today
+#### A PARTIAL masked pattern was here #### data/warehouse/encryptedTable/.hive-staging
+2
+PREHOOK: query: insert into table encryptedTable partition (ds='today') select key, value from encryptedTableSrc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@encryptedtablesrc
+PREHOOK: Output: default@encryptedtable@ds=today
+POSTHOOK: query: insert into table encryptedTable partition (ds='today') select key, value from encryptedTableSrc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@encryptedtablesrc
+POSTHOOK: Output: default@encryptedtable@ds=today
+POSTHOOK: Lineage: encryptedtable PARTITION(ds=today).key SIMPLE [(encryptedtablesrc)encryptedtablesrc.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: encryptedtable PARTITION(ds=today).value SIMPLE [(encryptedtablesrc)encryptedtablesrc.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select count(*) from encryptedTable where ds='today'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@encryptedtable
+PREHOOK: Input: default@encryptedtable@ds=today
+#### A PARTIAL masked pattern was here #### data/warehouse/encryptedTable/.hive-staging
+POSTHOOK: query: select count(*) from encryptedTable where ds='today'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@encryptedtable
+POSTHOOK: Input: default@encryptedtable@ds=today
+#### A PARTIAL masked pattern was here #### data/warehouse/encryptedTable/.hive-staging
+4
+PREHOOK: query: insert overwrite table encryptedTable partition (ds='today') select key, value from encryptedTableSrc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@encryptedtablesrc
+PREHOOK: Output: default@encryptedtable@ds=today
+POSTHOOK: query: insert overwrite table encryptedTable partition (ds='today') select key, value from encryptedTableSrc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@encryptedtablesrc
+POSTHOOK: Output: default@encryptedtable@ds=today
+POSTHOOK: Lineage: encryptedtable PARTITION(ds=today).key SIMPLE [(encryptedtablesrc)encryptedtablesrc.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: encryptedtable PARTITION(ds=today).value SIMPLE [(encryptedtablesrc)encryptedtablesrc.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select count(*) from encryptedTable where ds='today'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@encryptedtable
+PREHOOK: Input: default@encryptedtable@ds=today
+#### A PARTIAL masked pattern was here #### data/warehouse/encryptedTable/.hive-staging
+POSTHOOK: query: select count(*) from encryptedTable where ds='today'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@encryptedtable
+POSTHOOK: Input: default@encryptedtable@ds=today
+#### A PARTIAL masked pattern was here #### data/warehouse/encryptedTable/.hive-staging
+2
+PREHOOK: query: -- clean up
+drop table encryptedTable PURGE
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@encryptedtable
+PREHOOK: Output: default@encryptedtable
+POSTHOOK: query: -- clean up
+drop table encryptedTable PURGE
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@encryptedtable
+POSTHOOK: Output: default@encryptedtable
+PREHOOK: query: drop table unencryptedTable PURGE
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table unencryptedTable PURGE
+POSTHOOK: type: DROPTABLE
+Encryption key deleted: 'key_1'
