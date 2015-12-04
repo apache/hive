@@ -2820,19 +2820,35 @@ private void constructOneLBLocationMap(FileStatus fSta,
       List<List<Path[]>> result = checkPaths(conf, destFs, srcs, srcFs, destf, true);
 
       if (oldPath != null) {
+        boolean oldPathDeleted = false;
+        boolean isOldPathUnderDestf = false;
         try {
           FileSystem fs2 = oldPath.getFileSystem(conf);
           if (fs2.exists(oldPath)) {
             // Do not delete oldPath if:
             //  - destf is subdir of oldPath
             //if ( !(fs2.equals(destf.getFileSystem(conf)) && FileUtils.isSubDir(oldPath, destf, fs2)))
-            if (FileUtils.isSubDir(oldPath, destf, fs2)) {
-              FileUtils.trashFilesUnderDir(fs2, oldPath, conf);
+            isOldPathUnderDestf = FileUtils.isSubDir(oldPath, destf, fs2);
+            if (isOldPathUnderDestf) {
+              // if oldPath is destf or its subdir, its should definitely be deleted, otherwise its
+              // existing content might result in incorrect (extra) data.
+              // But not sure why we changed not to delete the oldPath in HIVE-8750 if it is
+              // not the destf or its subdir?
+              oldPathDeleted = FileUtils.trashFilesUnderDir(fs2, oldPath, conf);
             }
           }
-        } catch (Exception e) {
-          //swallow the exception
-          LOG.warn("Directory " + oldPath.toString() + " cannot be removed: " + e, e);
+        } catch (IOException e) {
+          if (isOldPathUnderDestf) {
+            // if oldPath is a subdir of destf but it could not be cleaned
+            throw new HiveException("Directory " + oldPath.toString()
+                + " could not be cleaned up.", e);
+          } else {
+            //swallow the exception since it won't affect the final result
+            LOG.warn("Directory " + oldPath.toString() + " cannot be cleaned: " + e, e);
+          }
+        }
+        if (isOldPathUnderDestf && !oldPathDeleted) {
+          throw new HiveException("Destination directory " + destf + " has not be cleaned up.");
         }
       }
 
