@@ -574,7 +574,7 @@ public final class FileUtils {
   }
 
   /**
-   * Deletes all files under a directory, sending them to the trash.  Leaves the directory as is.
+   * Trashes or deletes all files under a directory. Leaves the directory as is.
    * @param fs FileSystem to use
    * @param f path of directory
    * @param conf hive configuration
@@ -582,17 +582,34 @@ public final class FileUtils {
    * @throws FileNotFoundException
    * @throws IOException
    */
-  public static boolean trashFilesUnderDir(FileSystem fs, Path f, Configuration conf) throws FileNotFoundException, IOException {
+  public static boolean trashFilesUnderDir(FileSystem fs, Path f, Configuration conf)
+      throws FileNotFoundException, IOException {
+    return trashFilesUnderDir(fs, f, conf, true);
+  }
+
+  /**
+   * Trashes or deletes all files under a directory. Leaves the directory as is.
+   * @param fs FileSystem to use
+   * @param f path of directory
+   * @param conf hive configuration
+   * @param forceDelete whether to force delete files if trashing does not succeed
+   * @return true if deletion successful
+   * @throws FileNotFoundException
+   * @throws IOException
+   */
+  public static boolean trashFilesUnderDir(FileSystem fs, Path f, Configuration conf,
+      boolean forceDelete) throws FileNotFoundException, IOException {
     FileStatus[] statuses = fs.listStatus(f, HIDDEN_FILES_PATH_FILTER);
     boolean result = true;
     for (FileStatus status : statuses) {
-      result = result & moveToTrash(fs, status.getPath(), conf);
+      result = result & moveToTrash(fs, status.getPath(), conf, forceDelete);
     }
     return result;
   }
 
   /**
-   * Move a particular file or directory to the trash.
+   * Move a particular file or directory to the trash. If for a certain reason the trashing fails
+   * it will force deletes the file or directory
    * @param fs FileSystem to use
    * @param f path of file or directory to move to trash.
    * @param conf
@@ -600,18 +617,47 @@ public final class FileUtils {
    * @throws IOException
    */
   public static boolean moveToTrash(FileSystem fs, Path f, Configuration conf) throws IOException {
+    return moveToTrash(fs, f, conf, true);
+  }
+
+  /**
+   * Move a particular file or directory to the trash.
+   * @param fs FileSystem to use
+   * @param f path of file or directory to move to trash.
+   * @param conf
+   * @param forceDelete whether force delete the file or directory if trashing fails
+   * @return true if move successful
+   * @throws IOException
+   */
+  public static boolean moveToTrash(FileSystem fs, Path f, Configuration conf, boolean forceDelete)
+      throws IOException {
     LOG.info("deleting  " + f);
     HadoopShims hadoopShim = ShimLoader.getHadoopShims();
 
-    if (hadoopShim.moveToAppropriateTrash(fs, f, conf)) {
-      LOG.info("Moved to trash: " + f);
-      return true;
+    boolean result = false;
+    try {
+      result = hadoopShim.moveToAppropriateTrash(fs, f, conf);
+      if (result) {
+        LOG.info("Moved to trash: " + f);
+        return true;
+      }
+    } catch (IOException ioe) {
+      if (forceDelete) {
+        // for whatever failure reason including that trash has lower encryption zone
+        // retry with force delete
+        LOG.warn(ioe.getMessage() + "; Force to delete it.");
+      } else {
+        throw ioe;
+      }
     }
 
-    boolean result = fs.delete(f, true);
-    if (!result) {
-      LOG.error("Failed to delete " + f);
+    if (forceDelete) {
+      result = fs.delete(f, true);
+      if (!result) {
+        LOG.error("Failed to delete " + f);
+      }
     }
+
     return result;
   }
 
