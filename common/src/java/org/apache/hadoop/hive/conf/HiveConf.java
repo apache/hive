@@ -1410,8 +1410,8 @@ public class HiveConf extends Configuration {
     HIVE_UNLOCK_NUMRETRIES("hive.unlock.numretries", 10,
         "The number of times you want to retry to do one unlock"),
     HIVE_LOCK_SLEEP_BETWEEN_RETRIES("hive.lock.sleep.between.retries", "60s",
-        new TimeValidator(TimeUnit.SECONDS),
-        "The sleep time between various retries"),
+        new TimeValidator(TimeUnit.SECONDS, 0L, false, Long.MAX_VALUE, false),
+        "The maximum sleep time between various retries"),
     HIVE_LOCK_MAPRED_ONLY("hive.lock.mapred.only.operation", false,
         "This param is to control whether or not only do lock on queries\n" +
         "that need to execute at least one mapred job."),
@@ -1455,6 +1455,10 @@ public class HiveConf extends Configuration {
         "no transactions."),
     HIVE_TXN_TIMEOUT("hive.txn.timeout", "300s", new TimeValidator(TimeUnit.SECONDS),
         "time after which transactions are declared aborted if the client has not sent a heartbeat."),
+    TXN_MGR_DUMP_LOCK_STATE_ON_ACQUIRE_TIMEOUT("hive.txn.manager.dump.lock.state.on.acquire.timeout", false,
+      "Set this to true so that when attempt to acquire a lock on resource times out, the current state" +
+        " of the lock manager is dumped to log file.  This is for debugging.  See also " +
+        "hive.lock.numretries and hive.lock.sleep.between.retries."),
 
     HIVE_TXN_MAX_OPEN_BATCH("hive.txn.max.open.batch", 1000,
         "Maximum number of transactions that can be fetched in one call to open_txns().\n" +

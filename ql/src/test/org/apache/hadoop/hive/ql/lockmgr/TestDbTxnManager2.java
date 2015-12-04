@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -211,7 +212,35 @@ public class TestDbTxnManager2 {
     Assert.assertEquals("Unexpected number of locks found", 0, locks.size());
     checkCmdOnDriver(cpr);
   }
-  
+
+  @Test
+  public void testLockRetryLimit() throws Exception {
+    conf.setIntVar(HiveConf.ConfVars.HIVE_LOCK_NUMRETRIES, 2);
+    conf.setBoolVar(HiveConf.ConfVars.TXN_MGR_DUMP_LOCK_STATE_ON_ACQUIRE_TIMEOUT, true);
+    HiveTxnManager otherTxnMgr = new DbTxnManager();
+    ((DbTxnManager)otherTxnMgr).setHiveConf(conf);
+    CommandProcessorResponse cpr = driver.run("create table T9(a int)");
+    checkCmdOnDriver(cpr);
+    cpr = driver.compileAndRespond("select * from T9");
+    checkCmdOnDriver(cpr);
+    txnMgr.acquireLocks(driver.getPlan(), ctx, "Vincent Vega");
+    List<ShowLocksResponseElement > locks = getLocks(txnMgr);
+    Assert.assertEquals("Unexpected lock count", 1, locks.size());
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T9", null, locks.get(0));
+
+    cpr = driver.compileAndRespond("drop table T9");
+    checkCmdOnDriver(cpr);
+    try {
+      otherTxnMgr.acquireLocks(driver.getPlan(), ctx, "Winston Winnfield");
+    }
+    catch(LockException ex) {
+      Assert.assertEquals("Got wrong lock exception", ErrorMsg.LOCK_ACQUIRE_TIMEDOUT, ex.getCanonicalErrorMsg());
+    }
+    locks = getLocks(txnMgr);
+    Assert.assertEquals("Unexpected lock count", 1, locks.size());
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T9", null, locks.get(0));
+    otherTxnMgr.closeTxnManager();
+  }
   
   private void checkLock(LockType type, LockState state, String db, String table, String partition, ShowLocksResponseElement l) {
     Assert.assertEquals(l.toString(),l.getType(), type);
@@ -227,6 +256,9 @@ public class TestDbTxnManager2 {
     return s == null ? null : s.toLowerCase();
   }
   private List<ShowLocksResponseElement> getLocks() throws Exception {
+    return getLocks(this.txnMgr);
+  }
+  private List<ShowLocksResponseElement> getLocks(HiveTxnManager txnMgr) throws Exception {
     ShowLocksResponse rsp = ((DbLockManager)txnMgr.getLockManager()).getLocks();
     return rsp.getLocks();
   }

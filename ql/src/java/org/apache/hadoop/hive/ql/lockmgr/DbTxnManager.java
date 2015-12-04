@@ -96,7 +96,7 @@ public class DbTxnManager extends HiveTxnManagerImpl {
   public HiveLockManager getLockManager() throws LockException {
     init();
     if (lockMgr == null) {
-      lockMgr = new DbLockManager(client);
+      lockMgr = new DbLockManager(client, conf);
     }
     return lockMgr;
   }
