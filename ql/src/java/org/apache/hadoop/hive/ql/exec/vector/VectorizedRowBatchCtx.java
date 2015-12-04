@@ -34,6 +34,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
@@ -57,7 +58,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.Pr
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.DataOutputBuffer;
@@ -226,14 +229,18 @@ public class VectorizedRowBatchCtx {
           partitionTypes.put(key, PrimitiveCategory.STRING);       
         } else {
           // Create a Standard java object Inspector
+          PrimitiveTypeInfo partColTypeInfo = TypeInfoFactory.getPrimitiveTypeInfo(partKeyTypes[i]);
           objectInspector = TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(
-              TypeInfoFactory.getPrimitiveTypeInfo(partKeyTypes[i]));
+              partColTypeInfo);
           objectVal = 
               ObjectInspectorConverters.
               getConverter(PrimitiveObjectInspectorFactory.
                   javaStringObjectInspector, objectInspector).
-                  convert(partSpec.get(key));              
-          partitionTypes.put(key, TypeInfoFactory.getPrimitiveTypeInfo(partKeyTypes[i]).getPrimitiveCategory());
+                  convert(partSpec.get(key));
+          if (partColTypeInfo instanceof CharTypeInfo) {
+            objectVal = ((HiveChar) objectVal).getStrippedValue();
+          }
+          partitionTypes.put(key, partColTypeInfo.getPrimitiveCategory());
         }
         if (LOG.isDebugEnabled()) {
           LOG.debug("Partition column: name: " + key + ", value: " + objectVal + ", type: " + partitionTypes.get(key));
