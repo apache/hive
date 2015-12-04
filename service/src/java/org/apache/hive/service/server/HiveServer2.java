@@ -155,6 +155,21 @@ public class HiveServer2 extends CompositeService {
             builder.setKeyStorePath(keyStorePath);
             builder.setUseSSL(true);
           }
+          if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_USE_SPNEGO)) {
+            String spnegoPrincipal = hiveConf.getVar(
+                ConfVars.HIVE_SERVER2_WEBUI_SPNEGO_PRINCIPAL);
+            String spnegoKeytab = hiveConf.getVar(
+                ConfVars.HIVE_SERVER2_WEBUI_SPNEGO_KEYTAB);
+            if (Strings.isBlank(spnegoPrincipal) || Strings.isBlank(spnegoKeytab)) {
+              throw new IllegalArgumentException(
+                ConfVars.HIVE_SERVER2_WEBUI_SPNEGO_PRINCIPAL.varname
+                  + "/" + ConfVars.HIVE_SERVER2_WEBUI_SPNEGO_KEYTAB.varname
+                  + " Not configured for SPNEGO authentication");
+            }
+            builder.setSPNEGOPrincipal(spnegoPrincipal);
+            builder.setSPNEGOKeytab(spnegoKeytab);
+            builder.setUseSPNEGO(true);
+          }
           webServer = builder.build();
         }
       }
