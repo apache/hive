@@ -2520,7 +2520,60 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
     return 0;
   }
+  public static void dumpLockInfo(DataOutputStream os, ShowLocksResponse rsp) throws IOException {
+    // Write a header
+    os.writeBytes("Lock ID");
+    os.write(separator);
+    os.writeBytes("Database");
+    os.write(separator);
+    os.writeBytes("Table");
+    os.write(separator);
+    os.writeBytes("Partition");
+    os.write(separator);
+    os.writeBytes("State");
+    os.write(separator);
+    os.writeBytes("Type");
+    os.write(separator);
+    os.writeBytes("Transaction ID");
+    os.write(separator);
+    os.writeBytes("Last Hearbeat");
+    os.write(separator);
+    os.writeBytes("Acquired At");
+    os.write(separator);
+    os.writeBytes("User");
+    os.write(separator);
+    os.writeBytes("Hostname");
+    os.write(terminator);
 
+    List<ShowLocksResponseElement> locks = rsp.getLocks();
+    if (locks != null) {
+      for (ShowLocksResponseElement lock : locks) {
+        os.writeBytes(Long.toString(lock.getLockid()));
+        os.write(separator);
+        os.writeBytes(lock.getDbname());
+        os.write(separator);
+        os.writeBytes((lock.getTablename() == null) ? "NULL" : lock.getTablename());
+        os.write(separator);
+        os.writeBytes((lock.getPartname() == null) ? "NULL" : lock.getPartname());
+        os.write(separator);
+        os.writeBytes(lock.getState().toString());
+        os.write(separator);
+        os.writeBytes(lock.getType().toString());
+        os.write(separator);
+        os.writeBytes((lock.getTxnid() == 0) ? "NULL" : Long.toString(lock.getTxnid()));
+        os.write(separator);
+        os.writeBytes(Long.toString(lock.getLastheartbeat()));
+        os.write(separator);
+        os.writeBytes((lock.getAcquiredat() == 0) ? "NULL" : Long.toString(lock.getAcquiredat()));
+        os.write(separator);
+        os.writeBytes(lock.getUser());
+        os.write(separator);
+        os.writeBytes(lock.getHostname());
+        os.write(separator);
+        os.write(terminator);
+      }
+    }
+  }
   private int showLocksNewFormat(ShowLocksDesc showLocks, HiveLockManager lm)
       throws  HiveException {
 
@@ -2535,59 +2588,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // write the results in the file
     DataOutputStream os = getOutputStream(showLocks.getResFile());
     try {
-      // Write a header
-      os.writeBytes("Lock ID");
-      os.write(separator);
-      os.writeBytes("Database");
-      os.write(separator);
-      os.writeBytes("Table");
-      os.write(separator);
-      os.writeBytes("Partition");
-      os.write(separator);
-      os.writeBytes("State");
-      os.write(separator);
-      os.writeBytes("Type");
-      os.write(separator);
-      os.writeBytes("Transaction ID");
-      os.write(separator);
-      os.writeBytes("Last Hearbeat");
-      os.write(separator);
-      os.writeBytes("Acquired At");
-      os.write(separator);
-      os.writeBytes("User");
-      os.write(separator);
-      os.writeBytes("Hostname");
-      os.write(terminator);
-
-      List<ShowLocksResponseElement> locks = rsp.getLocks();
-      if (locks != null) {
-        for (ShowLocksResponseElement lock : locks) {
-          os.writeBytes(Long.toString(lock.getLockid()));
-          os.write(separator);
-          os.writeBytes(lock.getDbname());
-          os.write(separator);
-          os.writeBytes((lock.getTablename() == null) ? "NULL" : lock.getTablename());
-          os.write(separator);
-          os.writeBytes((lock.getPartname() == null) ? "NULL" : lock.getPartname());
-          os.write(separator);
-          os.writeBytes(lock.getState().toString());
-          os.write(separator);
-          os.writeBytes(lock.getType().toString());
-          os.write(separator);
-          os.writeBytes((lock.getTxnid() == 0) ? "NULL" : Long.toString(lock.getTxnid()));
-          os.write(separator);
-          os.writeBytes(Long.toString(lock.getLastheartbeat()));
-          os.write(separator);
-          os.writeBytes((lock.getAcquiredat() == 0) ? "NULL" : Long.toString(lock.getAcquiredat()));
-          os.write(separator);
-          os.writeBytes(lock.getUser());
-          os.write(separator);
-          os.writeBytes(lock.getHostname());
-          os.write(separator);
-          os.write(terminator);
-        }
-
-      }
+      dumpLockInfo(os, rsp);
     } catch (FileNotFoundException e) {
       LOG.warn("show function: " + stringifyException(e));
       return 1;
