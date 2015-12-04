@@ -1,0 +1,30 @@
+PREHOOK: query: select
+  a.key, b.value, c.value
+from
+  src a,
+  src1 b,
+  src1 c
+where
+  a.key = b.key and a.key = c.key
+  and b.key != '' and b.value != ''
+  and a.value > 'wal_6789'
+  and c.value > 'wal_6789'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  a.key, b.value, c.value
+from
+  src a,
+  src1 b,
+  src1 c
+where
+  a.key = b.key and a.key = c.key
+  and b.key != '' and b.value != ''
+  and a.value > 'wal_6789'
+  and c.value > 'wal_6789'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
