@@ -2065,37 +2065,15 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       StringBuilder tbl_row_format = new StringBuilder();
       StorageDescriptor sd = tbl.getTTable().getSd();
       SerDeInfo serdeInfo = sd.getSerdeInfo();
-      tbl_row_format.append("ROW FORMAT");
+      Map<String, String> serdeParams = serdeInfo.getParameters();
+      tbl_row_format.append("ROW FORMAT SERDE \n");
+      tbl_row_format.append("  '" + escapeHiveCommand(serdeInfo.getSerializationLib()) + "' \n");
       if (tbl.getStorageHandler() == null) {
-        Map<String, String> serdeParams = serdeInfo.getParameters();
-        String[] delimiters = new String[] {
-            serdeParams.remove(serdeConstants.FIELD_DELIM),
-            serdeParams.remove(serdeConstants.COLLECTION_DELIM),
-            serdeParams.remove(serdeConstants.MAPKEY_DELIM),
-            serdeParams.remove(serdeConstants.LINE_DELIM),
-            serdeParams.remove(serdeConstants.SERIALIZATION_NULL_FORMAT)
-        };
-        serdeParams.remove(serdeConstants.SERIALIZATION_FORMAT);
-        if (containsNonNull(delimiters)) {
-          // There is a "serialization.format" property by default,
-          // even with a delimited row format.
-          // But our result will only cover the following four delimiters.
-          tbl_row_format.append(" DELIMITED \n");
-
-          // Warn:
-          // If the four delimiters all exist in a CREATE TABLE query,
-          // this following order needs to be strictly followed,
-          // or the query will fail with a ParseException.
-          for (int i = 0; i < DELIMITER_PREFIXES.length; i++) {
-            if (delimiters[i] != null) {
-              tbl_row_format.append("  ").append(DELIMITER_PREFIXES[i]).append(" '");
-              tbl_row_format.append(escapeHiveCommand(StringEscapeUtils.escapeJava(delimiters[i])));
-              tbl_row_format.append("' \n");
-            }
-          }
-        } else {
-          tbl_row_format.append(" SERDE \n  '" +
-              escapeHiveCommand(serdeInfo.getSerializationLib()) + "' \n");
+        // If serialization.format property has the default value, it will not to be included in
+        // SERDE properties
+        if (MetaStoreUtils.DEFAULT_SERIALIZATION_FORMAT.equals(serdeParams.get(
+            serdeConstants.SERIALIZATION_FORMAT))){
+          serdeParams.remove(serdeConstants.SERIALIZATION_FORMAT);
         }
         if (!serdeParams.isEmpty()) {
           appendSerdeParams(tbl_row_format, serdeParams).append(" \n");
@@ -2106,12 +2084,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
             escapeHiveCommand(sd.getOutputFormat()) + "'");
       } else {
         duplicateProps.add(META_TABLE_STORAGE);
-        tbl_row_format.append(" SERDE \n  '" +
-            escapeHiveCommand(serdeInfo.getSerializationLib()) + "' \n");
         tbl_row_format.append("STORED BY \n  '" + escapeHiveCommand(tbl.getParameters().get(
             META_TABLE_STORAGE)) + "' \n");
         // SerDe Properties
-        if (serdeInfo.getParametersSize() > 0) {
+        if (!serdeParams.isEmpty()) {
           appendSerdeParams(tbl_row_format, serdeInfo.getParameters());
         }
       }
@@ -2160,15 +2136,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     return 0;
-  }
-
-  private boolean containsNonNull(String[] values) {
-    for (String value : values) {
-      if (value != null) {
-        return true;
-      }
-    }
-    return false;
   }
 
   private StringBuilder appendSerdeParams(StringBuilder builder, Map<String, String> serdeParam) {
