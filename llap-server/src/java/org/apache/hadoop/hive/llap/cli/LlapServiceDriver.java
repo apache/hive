@@ -20,10 +20,8 @@ package org.apache.hadoop.hive.llap.cli;
 
 import java.io.OutputStreamWriter;
 import java.net.URL;
-import java.util.Enumeration;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +38,6 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.google.common.base.Preconditions;
@@ -57,7 +54,13 @@ public class LlapServiceDriver {
 
   public static void main(String[] args) throws Exception {
     int ret = 0;
-    ret = new LlapServiceDriver().run(args);
+    try {
+      new LlapServiceDriver().run(args);
+    } catch (Throwable t) {
+      System.err.println("Failed: " + t.getMessage());
+      t.printStackTrace();
+      ret = 3;
+    }
     if (LOG.isDebugEnabled()) {
       LOG.debug("Completed processing - exiting with " + ret);
     }
@@ -89,20 +92,19 @@ public class LlapServiceDriver {
     return slice;
   }
 
-  private int run(String[] args) throws Exception {
+  private void run(String[] args) throws Exception {
     LlapOptionsProcessor optionsProcessor = new LlapOptionsProcessor();
     LlapOptions options = optionsProcessor.processOptions(args);
 
     if (options == null) {
       // help
-      return 0;
+      return;
     }
 
     Path tmpDir = new Path(options.getDirectory());
 
     if (conf == null) {
-      LOG.warn("Cannot load any configuration to run command");
-      return 1;
+      throw new Exception("Cannot load any configuration to run command");
     }
 
     FileSystem fs = FileSystem.get(conf);
@@ -115,8 +117,7 @@ public class LlapServiceDriver {
     for (String f : neededConfig) {
       conf.addResource(f);
       if (conf.getResource(f) == null) {
-        LOG.warn("Unable to find required config file: " + f);
-        return 2;
+        throw new Exception("Unable to find required config file: " + f);
       }
     }
 
@@ -174,19 +175,17 @@ public class LlapServiceDriver {
       conf.set((String) props.getKey(), (String) props.getValue());
     }
 
-    URL logger = conf.getResource("llap-daemon-log4j.properties");
+    URL logger = conf.getResource("llap-daemon-log4j2.properties");
 
     if (null == logger) {
-      LOG.warn("Unable to find required config file: llap-daemon-log4j.properties");
-      return 3;
+      throw new Exception("Unable to find required config file: llap-daemon-log4j2.properties");
     }
 
     Path home = new Path(System.getenv("HIVE_HOME"));
     Path scripts = new Path(new Path(new Path(home, "scripts"), "llap"), "bin");
 
     if (!lfs.exists(home)) {
-      LOG.warn("Unable to find HIVE_HOME:" + home);
-      return 3;
+      throw new Exception("Unable to find HIVE_HOME:" + home);
     } else if (!lfs.exists(scripts)) {
       LOG.warn("Unable to find llap scripts:" + scripts);
     }
@@ -277,7 +276,5 @@ public class LlapServiceDriver {
     if (LOG.isDebugEnabled()) {
       LOG.debug("Exiting successfully");
     }
-
-    return 0;
   }
 }
