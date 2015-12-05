@@ -30,6 +30,8 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.configuration.LlapConfiguration;
 import org.apache.hadoop.service.AbstractService;
 import org.apache.tez.common.CallableWithNdc;
@@ -46,8 +48,8 @@ public class QueryFileCleaner extends AbstractService {
 
   public QueryFileCleaner(Configuration conf, FileSystem localFs) {
     super(QueryFileCleaner.class.getName());
-    int numCleanerThreads = conf.getInt(LlapConfiguration.LLAP_DAEMON_NUM_FILE_CLEANER_THREADS,
-        LlapConfiguration.LLAP_DAEMON_NUM_FILE_CLEANER_THREADS_DEFAULT);
+    int numCleanerThreads = HiveConf.getIntVar(
+        conf, ConfVars.LLAP_DAEMON_NUM_FILE_CLEANER_THREADS);
     ScheduledExecutorService rawExecutor = Executors.newScheduledThreadPool(numCleanerThreads,
         new ThreadFactoryBuilder().setDaemon(true).setNameFormat("QueryFileCleaner %d").build());
     this.executorService = MoreExecutors.listeningDecorator(rawExecutor);

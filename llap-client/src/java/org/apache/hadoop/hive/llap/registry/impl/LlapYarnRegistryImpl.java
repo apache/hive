@@ -32,6 +32,8 @@ import java.util.concurrent.TimeUnit;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.configuration.LlapConfiguration;
 import org.apache.hadoop.hive.llap.registry.ServiceInstance;
 import org.apache.hadoop.hive.llap.registry.ServiceInstanceSet;
@@ -97,37 +99,28 @@ public class LlapYarnRegistryImpl implements ServiceRegistry {
     encoder = new RegistryUtils.ServiceRecordMarshal();
     this.path = RegistryPathUtils.join(RegistryUtils.componentPath(RegistryUtils.currentUser(),
         SERVICE_CLASS, instanceName, "workers"), "worker-");
-    refreshDelay =
-        conf.getInt(LlapConfiguration.LLAP_DAEMON_SERVICE_REFRESH_INTERVAL,
-            LlapConfiguration.LLAP_DAEMON_SERVICE_REFRESH_INTERVAL_DEFAULT);
+    refreshDelay = HiveConf.getTimeVar(
+        conf, ConfVars.LLAP_DAEMON_SERVICE_REFRESH_INTERVAL, TimeUnit.SECONDS);
     this.isDaemon = isDaemon;
     Preconditions.checkArgument(refreshDelay > 0,
         "Refresh delay for registry has to be positive = %d", refreshDelay);
   }
 
   public Endpoint getRpcEndpoint() {
-    final int rpcPort =
-        conf.getInt(LlapConfiguration.LLAP_DAEMON_RPC_PORT,
-            LlapConfiguration.LLAP_DAEMON_RPC_PORT_DEFAULT);
+    final int rpcPort = HiveConf.getIntVar(conf, ConfVars.LLAP_DAEMON_RPC_PORT);
     return RegistryTypeUtils.ipcEndpoint("llap", new InetSocketAddress(hostname, rpcPort));
   }
 
   public Endpoint getShuffleEndpoint() {
-    final int shufflePort =
-        conf.getInt(LlapConfiguration.LLAP_DAEMON_YARN_SHUFFLE_PORT,
-            LlapConfiguration.LLAP_DAEMON_YARN_SHUFFLE_PORT_DEFAULT);
+    final int shufflePort = HiveConf.getIntVar(conf, ConfVars.LLAP_DAEMON_YARN_SHUFFLE_PORT);
     // HTTP today, but might not be
     return RegistryTypeUtils.inetAddrEndpoint("shuffle", ProtocolTypes.PROTOCOL_TCP, hostname,
         shufflePort);
   }
 
   public Endpoint getServicesEndpoint() {
-    final int servicePort =
-        conf.getInt(LlapConfiguration.LLAP_DAEMON_SERVICE_PORT,
-            LlapConfiguration.LLAP_DAEMON_SERVICE_PORT_DEFAULT);
-    final boolean isSSL =
-        conf.getBoolean(LlapConfiguration.LLAP_DAEMON_SERVICE_SSL,
-            LlapConfiguration.LLAP_DAEMON_SERVICE_SSL_DEFAULT);
+    final int servicePort = HiveConf.getIntVar(conf, ConfVars.LLAP_DAEMON_WEB_PORT);
+    final boolean isSSL = HiveConf.getBoolVar(conf, ConfVars.LLAP_DAEMON_WEB_SSL);
     final String scheme = isSSL ? "https" : "http";
     final URL serviceURL;
     try {
@@ -238,8 +231,8 @@ public class LlapYarnRegistryImpl implements ServiceRegistry {
 
     @Override
     public Resource getResource() {
-      int memory = Integer.valueOf(srv.get(LlapConfiguration.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB));
-      int vCores = Integer.valueOf(srv.get(LlapConfiguration.LLAP_DAEMON_NUM_EXECUTORS));
+      int memory = Integer.valueOf(srv.get(ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB.varname));
+      int vCores = Integer.valueOf(srv.get(ConfVars.LLAP_DAEMON_NUM_EXECUTORS.varname));
       return Resource.newInstance(memory, vCores);
     }
 

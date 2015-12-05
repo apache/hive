@@ -28,6 +28,7 @@ import javax.management.ObjectName;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.configuration.LlapConfiguration;
 import org.apache.hadoop.hive.llap.daemon.ContainerRunner;
 import org.apache.hadoop.hive.llap.daemon.QueryFailedHandler;
@@ -104,12 +105,10 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     this.numExecutors = numExecutors;
     this.localDirs = localDirs;
 
-    int waitQueueSize = daemonConf.getInt(
-        LlapConfiguration.LLAP_DAEMON_TASK_SCHEDULER_WAIT_QUEUE_SIZE,
-        LlapConfiguration.LLAP_DAEMON_TASK_SCHEDULER_WAIT_QUEUE_SIZE_DEFAULT);
-    boolean enablePreemption = daemonConf.getBoolean(
-        LlapConfiguration.LLAP_DAEMON_TASK_SCHEDULER_ENABLE_PREEMPTION,
-        LlapConfiguration.LLAP_DAEMON_TASK_SCHEDULER_ENABLE_PREEMPTION_DEFAULT);
+    int waitQueueSize = HiveConf.getIntVar(
+        daemonConf, ConfVars.LLAP_DAEMON_TASK_SCHEDULER_WAIT_QUEUE_SIZE);
+    boolean enablePreemption = HiveConf.getBoolVar(
+        daemonConf, ConfVars.LLAP_DAEMON_TASK_SCHEDULER_ENABLE_PREEMPTION);
     LOG.info("Attempting to start LlapDaemonConf with the following configuration: " +
         "numExecutors=" + numExecutors +
         ", rpcListenerPort=" + rpcPort +
@@ -135,13 +134,11 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     this.shuffleHandlerConf.setInt(ShuffleHandler.SHUFFLE_PORT_CONFIG_KEY, shufflePort);
     this.shuffleHandlerConf.set(ShuffleHandler.SHUFFLE_HANDLER_LOCAL_DIRS,
         StringUtils.arrayToString(localDirs));
-    this.shuffleHandlerConf.setBoolean(ShuffleHandler.SHUFFLE_DIR_WATCHER_ENABLED, daemonConf
-        .getBoolean(LlapConfiguration.LLAP_DAEMON_SHUFFLE_DIR_WATCHER_ENABLED,
-            LlapConfiguration.LLAP_DAEMON_SHUFFLE_DIR_WATCHER_ENABLED_DEFAULT));
+    this.shuffleHandlerConf.setBoolean(ShuffleHandler.SHUFFLE_DIR_WATCHER_ENABLED,
+        HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_DAEMON_SHUFFLE_DIR_WATCHER_ENABLED));
 
     // Less frequently set parameter, not passing in as a param.
-    int numHandlers = daemonConf.getInt(LlapConfiguration.LLAP_DAEMON_RPC_NUM_HANDLERS,
-        LlapConfiguration.LLAP_DAEMON_RPC_NUM_HANDLERS_DEFAULT);
+    int numHandlers = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_DAEMON_RPC_NUM_HANDLERS);
 
     // Initialize the metrics system
     LlapMetricsSystem.initialize("LlapDaemon");
@@ -275,18 +272,14 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
       // Cache settings will need to be setup in llap-daemon-site.xml - since the daemons don't read hive-site.xml
       // Ideally, these properties should be part of LlapDameonConf rather than HiveConf
       LlapConfiguration daemonConf = new LlapConfiguration();
-      int numExecutors = daemonConf.getInt(LlapConfiguration.LLAP_DAEMON_NUM_EXECUTORS,
-          LlapConfiguration.LLAP_DAEMON_NUM_EXECUTORS_DEFAULT);
+      int numExecutors = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_DAEMON_NUM_EXECUTORS);
 
-      String[] localDirs =
-          daemonConf.getTrimmedStrings(LlapConfiguration.LLAP_DAEMON_WORK_DIRS);
-      int rpcPort = daemonConf.getInt(LlapConfiguration.LLAP_DAEMON_RPC_PORT,
-          LlapConfiguration.LLAP_DAEMON_RPC_PORT_DEFAULT);
+      String[] localDirs = daemonConf.getTrimmedStrings(ConfVars.LLAP_DAEMON_WORK_DIRS.varname);
+      int rpcPort = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_DAEMON_RPC_PORT);
       int shufflePort = daemonConf
           .getInt(ShuffleHandler.SHUFFLE_PORT_CONFIG_KEY, ShuffleHandler.DEFAULT_SHUFFLE_PORT);
-      long executorMemoryBytes = daemonConf
-          .getInt(LlapConfiguration.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB,
-              LlapConfiguration.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB_DEFAULT) * 1024l * 1024l;
+      long executorMemoryBytes = HiveConf.getIntVar(
+          daemonConf, ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB) * 1024l * 1024l;
       long cacheMemoryBytes =
           HiveConf.getLongVar(daemonConf, HiveConf.ConfVars.LLAP_ORC_CACHE_MAX_SIZE);
       boolean isDirectCache =
