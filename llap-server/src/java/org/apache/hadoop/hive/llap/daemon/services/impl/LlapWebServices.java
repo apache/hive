@@ -18,7 +18,8 @@
 package org.apache.hadoop.hive.llap.daemon.services.impl;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.llap.configuration.LlapConfiguration;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.service.AbstractService;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.webapp.WebApp;
@@ -43,10 +44,8 @@ public class LlapWebServices extends AbstractService {
     this.conf = new Configuration(conf);
     this.conf.addResource(YarnConfiguration.YARN_SITE_CONFIGURATION_FILE);
 
-    this.port = conf.getInt(LlapConfiguration.LLAP_DAEMON_SERVICE_PORT,
-            LlapConfiguration.LLAP_DAEMON_SERVICE_PORT_DEFAULT);
-    this.ssl = conf.getBoolean(LlapConfiguration.LLAP_DAEMON_SERVICE_SSL,
-            LlapConfiguration.LLAP_DAEMON_SERVICE_SSL_DEFAULT);
+    this.port = HiveConf.getIntVar(conf, ConfVars.LLAP_DAEMON_WEB_PORT);
+    this.ssl = HiveConf.getBoolVar(conf, ConfVars.LLAP_DAEMON_WEB_SSL);
 
     this.webAppInstance = new LlapWebApp();
   }

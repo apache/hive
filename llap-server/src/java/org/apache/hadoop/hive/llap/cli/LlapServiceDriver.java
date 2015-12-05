@@ -31,8 +31,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.CompressionUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.cli.LlapOptionsProcessor.LlapOptions;
-import org.apache.hadoop.hive.llap.configuration.LlapConfiguration;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapInputFormat;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
@@ -128,7 +128,7 @@ public class LlapServiceDriver {
       // as read by the AM
       // if needed, use --hiveconf llap.daemon.service.hosts=@llap0 to dynamically switch between
       // instances
-      conf.set(LlapConfiguration.LLAP_DAEMON_SERVICE_HOSTS, "@" + options.getName());
+      conf.set(ConfVars.LLAP_DAEMON_SERVICE_HOSTS.varname, "@" + options.getName());
     }
 
     if (options.getSize() != -1) {
@@ -151,11 +151,11 @@ public class LlapServiceDriver {
       final long containerSize = options.getSize() / (1024 * 1024);
       Preconditions.checkArgument(containerSize >= minAlloc,
           "Container size should be greater than minimum allocation(%s)", minAlloc + "m");
-      conf.setLong(LlapConfiguration.LLAP_DAEMON_YARN_CONTAINER_MB, containerSize);
+      conf.setLong(ConfVars.LLAP_DAEMON_YARN_CONTAINER_MB.varname, containerSize);
     }
 
     if (options.getExecutors() != -1) {
-      conf.setLong(LlapConfiguration.LLAP_DAEMON_NUM_EXECUTORS, options.getExecutors());
+      conf.setLong(ConfVars.LLAP_DAEMON_NUM_EXECUTORS.varname, options.getExecutors());
       // TODO: vcpu settings - possibly when DRFA works right
     }
 
@@ -167,7 +167,7 @@ public class LlapServiceDriver {
       // Needs more explanation here
       // Xmx is not the max heap value in JDK8
       // You need to subtract 50% of the survivor fraction from this, to get actual usable memory before it goes into GC 
-      conf.setLong(LlapConfiguration.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB, (long)(options.getXmx())
+      conf.setLong(ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB.varname, (long)(options.getXmx())
           / (1024 * 1024));
     }
 
@@ -236,9 +236,8 @@ public class LlapServiceDriver {
     // extract configs for processing by the python fragments in Slider
     JSONObject configs = new JSONObject();
 
-    configs.put(LlapConfiguration.LLAP_DAEMON_YARN_CONTAINER_MB, conf.getInt(
-        LlapConfiguration.LLAP_DAEMON_YARN_CONTAINER_MB,
-        LlapConfiguration.LLAP_DAEMON_YARN_CONTAINER_MB_DEFAULT));
+    configs.put(ConfVars.LLAP_DAEMON_YARN_CONTAINER_MB.varname, HiveConf.getIntVar(conf,
+        ConfVars.LLAP_DAEMON_YARN_CONTAINER_MB));
 
     configs.put(HiveConf.ConfVars.LLAP_ORC_CACHE_MAX_SIZE.varname,
         HiveConf.getLongVar(conf, HiveConf.ConfVars.LLAP_ORC_CACHE_MAX_SIZE));
@@ -246,17 +245,14 @@ public class LlapServiceDriver {
     configs.put(HiveConf.ConfVars.LLAP_ORC_CACHE_ALLOCATE_DIRECT.varname,
         HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_ORC_CACHE_ALLOCATE_DIRECT));
 
-    configs.put(LlapConfiguration.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB, conf.getInt(
-        LlapConfiguration.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB,
-        LlapConfiguration.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB_DEFAULT));
+    configs.put(ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB.varname, HiveConf.getIntVar(conf,
+        ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB));
 
-    configs.put(LlapConfiguration.LLAP_DAEMON_VCPUS_PER_INSTANCE, conf.getInt(
-        LlapConfiguration.LLAP_DAEMON_VCPUS_PER_INSTANCE,
-        LlapConfiguration.LLAP_DAEMON_VCPUS_PER_INSTANCE_DEFAULT));
+    configs.put(ConfVars.LLAP_DAEMON_VCPUS_PER_INSTANCE.varname, HiveConf.getIntVar(conf,
+        ConfVars.LLAP_DAEMON_VCPUS_PER_INSTANCE));
 
-    configs.put(LlapConfiguration.LLAP_DAEMON_NUM_EXECUTORS, conf.getInt(
-        LlapConfiguration.LLAP_DAEMON_NUM_EXECUTORS,
-        LlapConfiguration.LLAP_DAEMON_NUM_EXECUTORS_DEFAULT));
+    configs.put(ConfVars.LLAP_DAEMON_NUM_EXECUTORS.varname, HiveConf.getIntVar(conf,
+        ConfVars.LLAP_DAEMON_NUM_EXECUTORS));
 
     configs.put(YarnConfiguration.RM_SCHEDULER_MINIMUM_ALLOCATION_MB,
         conf.getInt(YarnConfiguration.RM_SCHEDULER_MINIMUM_ALLOCATION_MB, -1));

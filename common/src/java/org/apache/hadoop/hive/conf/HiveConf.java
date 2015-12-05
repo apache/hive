@@ -2366,6 +2366,112 @@ public class HiveConf extends Configuration {
     LLAP_IO_THREADPOOL_SIZE("hive.llap.io.threadpool.size", 10,
         "Specify the number of threads to use for low-level IO thread pool."),
 
+    LLAP_DAEMON_RPC_NUM_HANDLERS("hive.llap.daemon.rpc.num.handlers", 5,
+      "Number of RPC handlers for LLAP daemon.", "llap.daemon.rpc.num.handlers"),
+    LLAP_DAEMON_WORK_DIRS("hive.llap.daemon.work.dirs", "",
+      "Working directories for the daemon. Needs to be set for a secure cluster, since LLAP may\n" +
+      "not have access to the default YARN working directories.", "llap.daemon.work.dirs"),
+    LLAP_DAEMON_YARN_SHUFFLE_PORT("hive.llap.daemon.yarn.shuffle.port", 15551,
+      "YARN shuffle port for LLAP-daemon-hosted shuffle.", "llap.daemon.yarn.shuffle.port"),
+    LLAP_DAEMON_YARN_CONTAINER_MB("hive.llap.daemon.yarn.container.mb", -1,
+      "TODO doc. Unused?", "llap.daemon.yarn.container.mb"),
+    LLAP_DAEMON_SHUFFLE_DIR_WATCHER_ENABLED("hive.llap.daemon.shuffle.dir.watcher.enabled", false,
+      "TODO doc", "llap.daemon.shuffle.dir-watcher.enabled"),
+    LLAP_DAEMON_AM_LIVENESS_HEARTBEAT_INTERVAL_MS(
+      "hive.llap.daemon.am.liveness.heartbeat.interval.ms", "10000ms",
+      new TimeValidator(TimeUnit.MILLISECONDS),
+      "Tez AM-LLAP heartbeat interval (milliseconds). This needs to be below the task timeout\n" +
+      "interval, but otherwise as high as possible to avoid unnecessary traffic.",
+      "llap.daemon.am.liveness.heartbeat.interval-ms"),
+    LLAP_DAEMON_AM_LIVENESS_CONNECTION_TIMEOUT_MS(
+      "hive.llap.am.liveness.connection.timeout.ms", "10000ms",
+      new TimeValidator(TimeUnit.MILLISECONDS),
+      "Amount of time to wait on connection failures to the AM from an LLAP daemon before\n" +
+      "considering the AM to be dead.", "llap.am.liveness.connection.timeout-millis"),
+    // Not used yet - since the Writable RPC engine does not support this policy.
+    LLAP_DAEMON_AM_LIVENESS_CONNECTION_SLEEP_BETWEEN_RETRIES_MS(
+      "hive.llap.am.liveness.connection.sleep.between.retries.ms", "2000ms",
+      new TimeValidator(TimeUnit.MILLISECONDS),
+      "Sleep duration while waiting to retry connection failures to the AM from the daemon for\n" +
+      "the general keep-alive thread (milliseconds).",
+      "llap.am.liveness.connection.sleep-between-retries-millis"),
+    LLAP_DAEMON_NUM_EXECUTORS("hive.llap.daemon.num.executors", 4,
+      "Number of executors to use in LLAP daemon; essentially, the number of tasks that can be\n" +
+      "executed in parallel.", "llap.daemon.num.executors"),
+    LLAP_DAEMON_RPC_PORT("hive.llap.daemon.rpc.port", 15001, "The LLAP daemon RPC port.",
+      "llap.daemon.rpc.port"),
+    LLAP_DAEMON_MEMORY_PER_INSTANCE_MB("hive.llap.daemon.memory.per.instance.mb", 4096,
+      "The total amount of memory to use for the executors inside LLAP (in megabytes).",
+      "llap.daemon.memory.per.instance.mb"),
+    LLAP_DAEMON_VCPUS_PER_INSTANCE("hive.llap.daemon.vcpus.per.instance", 4,
+      "The total number of vcpus to use for the executors inside LLAP.",
+      "llap.daemon.vcpus.per.instance"),
+    LLAP_DAEMON_NUM_FILE_CLEANER_THREADS("hive.llap.daemon.num.file.cleaner.threads", 1,
+      "Number of file cleaner threads in LLAP.", "llap.daemon.num.file.cleaner.threads"),
+    LLAP_FILE_CLEANUP_DELAY_SECONDS("hive.llap.file.cleanup.delay.seconds", "300s",
+       new TimeValidator(TimeUnit.SECONDS),
+      "How long to delay before cleaning up query files in LLAP (in seconds, for debugging).",
+      "llap.file.cleanup.delay-seconds"),
+    LLAP_DAEMON_SERVICE_HOSTS("hive.llap.daemon.service.hosts", "",
+      "Explicitly specified hosts to use for LLAP scheduling. Useful for testing. By default,\n" +
+      "YARN registry is used.", "llap.daemon.service.hosts"),
+    LLAP_DAEMON_SERVICE_REFRESH_INTERVAL("hive.llap.daemon.service.refresh.interval.sec", "60s",
+       new TimeValidator(TimeUnit.SECONDS),
+      "LLAP YARN registry service list refresh delay, in seconds.",
+      "llap.daemon.service.refresh.interval"),
+    LLAP_DAEMON_COMMUNICATOR_NUM_THREADS("hive.llap.daemon.communicator.num.threads", 10,
+      "Number of threads to use in LLAP task communicator in Tez AM.",
+      "llap.daemon.communicator.num.threads"),
+    LLAP_TASK_SCHEDULER_NODE_REENABLE_MIN_TIMEOUT_MS(
+      "hive.llap.task.scheduler.node.reenable.min.timeout.ms", "200ms",
+      new TimeValidator(TimeUnit.MILLISECONDS),
+      "Minimum time after which a previously disabled node will be re-enabled for scheduling,\n" +
+      "in milliseconds. This may be modified by an exponential back-off if failures persist.",
+      "llap.task.scheduler.node.re-enable.min.timeout.ms"),
+    LLAP_TASK_SCHEDULER_NODE_REENABLE_MAX_TIMEOUT_MS(
+      "hive.llap.task.scheduler.node.reenable.max.timeout.ms", "10000ms",
+      new TimeValidator(TimeUnit.MILLISECONDS),
+      "Maximum time after which a previously disabled node will be re-enabled for scheduling,\n" +
+      "in milliseconds. This may be modified by an exponential back-off if failures persist.",
+      "llap.task.scheduler.node.re-enable.max.timeout.ms"),
+    LLAP_TASK_SCHEDULER_NODE_DISABLE_BACK_OFF_FACTOR(
+      "hive.llap.task.scheduler.node.disable.backoff.factor", 1.5f,
+      "Backoff factor on successive blacklists of a node due to some failures. Blacklist times\n" +
+      "start at the min timeout and go up to the max timeout based on this backoff factor.",
+      "llap.task.scheduler.node.disable.backoff.factor"),
+    LLAP_TASK_SCHEDULER_NUM_SCHEDULABLE_TASKS_PER_NODE(
+      "hive.llap.task.scheduler.num.schedulable.tasks.per.node", 0,
+      "The number of tasks the AM TaskScheduler will try allocating per node. 0 indicates that\n" +
+      "this should be picked up from the Registry. -1 indicates unlimited capacity; positive\n" +
+      "values indicate a specific bound.", "llap.task.scheduler.num.schedulable.tasks.per.node"),
+    LLAP_DAEMON_TASK_SCHEDULER_WAIT_QUEUE_SIZE("hive.llap.daemon.task.scheduler.wait.queue.size",
+      10, "LLAP scheduler maximum queue size.", "llap.daemon.task.scheduler.wait.queue.size"),
+    LLAP_DAEMON_WAIT_QUEUE_COMPARATOR_CLASS_NAME(
+      "hive.llap.daemon.wait.queue.comparator.class.name",
+      "org.apache.hadoop.hive.llap.daemon.impl.comparator.ShortestJobFirstComparator",
+      "The priority comparator to use for LLAP scheduler prioroty queue. The built-in options\n" +
+      "are org.apache.hadoop.hive.llap.daemon.impl.comparator.ShortestJobFirstComparator and\n" +
+      ".....FirstInFirstOutComparator", "llap.daemon.wait.queue.comparator.class.name"),
+    LLAP_DAEMON_TASK_SCHEDULER_ENABLE_PREEMPTION(
+      "hive.llap.daemon.task.scheduler.enable.preemption", true,
+      "Whether non-finishable running tasks (e.g. a reducer waiting for inputs) should be\n" +
+      "preempted by finishable tasks inside LLAP scheduler.",
+      "llap.daemon.task.scheduler.enable.preemption"),
+    LLAP_TASK_COMMUNICATOR_CONNECTION_TIMEOUT_MS(
+      "hive.llap.task.communicator.connection.timeout.ms", "16000ms",
+      new TimeValidator(TimeUnit.MILLISECONDS),
+      "Connection timeout (in milliseconds) before a failure to an LLAP daemon from Tez AM.",
+      "llap.task.communicator.connection.timeout-millis"),
+    LLAP_TASK_COMMUNICATOR_CONNECTION_SLEEP_BETWEEN_RETRIES_MS(
+      "hive.llap.task.communicator.connection.sleep.between.retries.ms", "2000ms",
+      new TimeValidator(TimeUnit.MILLISECONDS),
+      "Sleep duration (in milliseconds) to wait before retrying on error when obtaining a\n" +
+      "connection to LLAP daemon from Tez AM.",
+      "llap.task.communicator.connection.sleep-between-retries-millis"),
+    LLAP_DAEMON_WEB_PORT("hive.llap.daemon.web.port", 15002, "LLAP daemon web UI port.",
+      "llap.daemon.service.port"),
+    LLAP_DAEMON_WEB_SSL("hive.llap.daemon.web.ssl", false,
+      "Whether LLAP daemon web UI should use SSL.", "llap.daemon.service.ssl"),
 
     SPARK_CLIENT_FUTURE_TIMEOUT("hive.spark.client.future.timeout",
       "60s", new TimeValidator(TimeUnit.SECONDS),
@@ -2418,6 +2524,7 @@ public class HiveConf extends Configuration {
 
 
     public final String varname;
+    private final String altName;
     private final String defaultExpr;
 
     public final String defaultStrVal;
@@ -2437,28 +2544,39 @@ public class HiveConf extends Configuration {
     private final boolean caseSensitive;
 
     ConfVars(String varname, Object defaultVal, String description) {
-      this(varname, defaultVal, null, description, true, false);
+      this(varname, defaultVal, null, description, true, false, null);
+    }
+
+    ConfVars(String varname, Object defaultVal, String description, String altName) {
+      this(varname, defaultVal, null, description, true, false, altName);
+    }
+
+    ConfVars(String varname, Object defaultVal, Validator validator, String description,
+        String altName) {
+      this(varname, defaultVal, validator, description, true, false, altName);
     }
 
     ConfVars(String varname, Object defaultVal, String description, boolean excluded) {
-      this(varname, defaultVal, null, description, true, excluded);
+      this(varname, defaultVal, null, description, true, excluded, null);
     }
 
     ConfVars(String varname, String defaultVal, boolean caseSensitive, String description) {
-      this(varname, defaultVal, null, description, caseSensitive, false);
+      this(varname, defaultVal, null, description, caseSensitive, false, null);
     }
 
     ConfVars(String varname, Object defaultVal, Validator validator, String description) {
-      this(varname, defaultVal, validator, description, true, false);
+      this(varname, defaultVal, validator, description, true, false, null);
     }
 
-    ConfVars(String varname, Object defaultVal, Validator validator, String description, boolean caseSensitive, boolean excluded) {
+    ConfVars(String varname, Object defaultVal, Validator validator, String description,
+        boolean caseSensitive, boolean excluded, String altName) {
       this.varname = varname;
       this.validator = validator;
       this.description = description;
       this.defaultExpr = defaultVal == null ? null : String.valueOf(defaultVal);
       this.excluded = excluded;
       this.caseSensitive = caseSensitive;
+      this.altName = altName;
       if (defaultVal == null || defaultVal instanceof String) {
         this.valClass = String.class;
         this.valType = VarType.STRING;
@@ -2700,6 +2818,9 @@ public class HiveConf extends Configuration {
 
   public static int getIntVar(Configuration conf, ConfVars var) {
     assert (var.valClass == Integer.class) : var.varname;
+    if (var.altName != null) {
+      return conf.getInt(var.varname, conf.getInt(var.altName, var.defaultIntVal));
+    }
     return conf.getInt(var.varname, var.defaultIntVal);
   }
 
@@ -2794,10 +2915,16 @@ public class HiveConf extends Configuration {
 
   public static long getLongVar(Configuration conf, ConfVars var) {
     assert (var.valClass == Long.class) : var.varname;
+    if (var.altName != null) {
+      return conf.getLong(var.varname, conf.getLong(var.altName, var.defaultLongVal));
+    }
     return conf.getLong(var.varname, var.defaultLongVal);
   }
 
   public static long getLongVar(Configuration conf, ConfVars var, long defaultVal) {
+    if (var.altName != null) {
+      return conf.getLong(var.varname, conf.getLong(var.altName, defaultVal));
+    }
     return conf.getLong(var.varname, defaultVal);
   }
 
@@ -2816,10 +2943,16 @@ public class HiveConf extends Configuration {
 
   public static float getFloatVar(Configuration conf, ConfVars var) {
     assert (var.valClass == Float.class) : var.varname;
+    if (var.altName != null) {
+      return conf.getFloat(var.varname, conf.getFloat(var.altName, var.defaultFloatVal));
+    }
     return conf.getFloat(var.varname, var.defaultFloatVal);
   }
 
   public static float getFloatVar(Configuration conf, ConfVars var, float defaultVal) {
+    if (var.altName != null) {
+      return conf.getFloat(var.varname, conf.getFloat(var.altName, defaultVal));
+    }
     return conf.getFloat(var.varname, defaultVal);
   }
 
@@ -2838,10 +2971,16 @@ public class HiveConf extends Configuration {
 
   public static boolean getBoolVar(Configuration conf, ConfVars var) {
     assert (var.valClass == Boolean.class) : var.varname;
+    if (var.altName != null) {
+      return conf.getBoolean(var.varname, conf.getBoolean(var.altName, var.defaultBoolVal));
+    }
     return conf.getBoolean(var.varname, var.defaultBoolVal);
   }
 
   public static boolean getBoolVar(Configuration conf, ConfVars var, boolean defaultVal) {
+    if (var.altName != null) {
+      return conf.getBoolean(var.varname, conf.getBoolean(var.altName, defaultVal));
+    }
     return conf.getBoolean(var.varname, defaultVal);
   }
 
@@ -2860,10 +2999,24 @@ public class HiveConf extends Configuration {
 
   public static String getVar(Configuration conf, ConfVars var) {
     assert (var.valClass == String.class) : var.varname;
+    if (var.altName != null) {
+      return conf.get(var.varname, conf.get(var.altName, var.defaultStrVal));
+    }
     return conf.get(var.varname, var.defaultStrVal);
   }
 
+  public static String getTrimmedVar(Configuration conf, ConfVars var) {
+    assert (var.valClass == String.class) : var.varname;
+    if (var.altName != null) {
+      return conf.getTrimmed(var.varname, conf.getTrimmed(var.altName, var.defaultStrVal));
+    }
+    return conf.getTrimmed(var.varname, var.defaultStrVal);
+  }
+
   public static String getVar(Configuration conf, ConfVars var, String defaultVal) {
+    if (var.altName != null) {
+      return conf.get(var.varname, conf.get(var.altName, defaultVal));
+    }
     return conf.get(var.varname, defaultVal);
   }
 
