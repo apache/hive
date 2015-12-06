@@ -131,6 +131,7 @@ public class Driver implements CommandProcessor {
   private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   static final private LogHelper console = new LogHelper(LOG);
   static final int SHUTDOWN_HOOK_PRIORITY = 0;
+  private Runnable shutdownRunner = null;
 
   private int maxRows = 100;
   ByteStream.Output bos = new ByteStream.Output();
@@ -400,18 +401,19 @@ public class Driver implements CommandProcessor {
       // Initialize the transaction manager.  This must be done before analyze is called.
       final HiveTxnManager txnManager = SessionState.get().initTxnMgr(conf);
       // In case when user Ctrl-C twice to kill Hive CLI JVM, we want to release locks
-      ShutdownHookManager.addShutdownHook(
-          new Runnable() {
-            @Override
-            public void run() {
-              try {
-                releaseLocksAndCommitOrRollback(false, txnManager);
-              } catch (LockException e) {
-                LOG.warn("Exception when releasing locks in ShutdownHook for Driver: " +
-                    e.getMessage());
-              }
-            }
-          }, SHUTDOWN_HOOK_PRIORITY);
+
+      shutdownRunner = new Runnable() {
+        @Override
+        public void run() {
+          try {
+            releaseLocksAndCommitOrRollback(false, txnManager);
+          } catch (LockException e) {
+            LOG.warn("Exception when releasing locks in ShutdownHook for Driver: " +
+                e.getMessage());
+          }
+        }
+      };
+      ShutdownHookManager.addShutdownHook(shutdownRunner, SHUTDOWN_HOOK_PRIORITY);
 
       command = new VariableSubstitution(new HiveVariableSource() {
         @Override
@@ -1949,6 +1951,9 @@ public class Driver implements CommandProcessor {
       } catch (LockException e) {
         LOG.warn("Exception when releasing locking in destroy: " +
             e.getMessage());
+      }
+      if (shutdownRunner != null) {
+        ShutdownHookManager.removeShutdownHook(shutdownRunner);
       }
     }
   }
