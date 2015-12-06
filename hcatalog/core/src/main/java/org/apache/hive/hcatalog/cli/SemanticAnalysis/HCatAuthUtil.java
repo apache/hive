@@ -20,7 +20,7 @@ package org.apache.hive.hcatalog.cli.SemanticAnalysis;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.security.authorization.StorageBasedAuthorizationProvider;
 
 final class HCatAuthUtil {
   public static boolean isAuthorizationEnabled(Configuration conf) {
@@ -31,6 +31,7 @@ final class HCatAuthUtil {
     // additional checks if a V2 authorizer is in use. The reccomended configuration is to
     // use storage based authorization in metastore server
     return HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED)
-        && SessionState.get().getAuthorizer() != null;
+        && HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER)
+        == StorageBasedAuthorizationProvider.class.getName();
   }
 }

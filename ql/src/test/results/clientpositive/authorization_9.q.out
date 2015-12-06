@@ -46,7 +46,67 @@ POSTHOOK: query: show grant user hive_test_user on all
 POSTHOOK: type: SHOW_GRANT
 				hive_test_user	USER	SELECT	false	-1	hive_test_user
 default				hive_test_user	USER	SELECT	false	-1	hive_test_user
+default	alltypesorc			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	alltypesorc			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	alltypesorc			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	alltypesorc			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	cbo_t1			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	cbo_t1			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	cbo_t1			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	cbo_t1			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	cbo_t2			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	cbo_t2			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	cbo_t2			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	cbo_t2			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	cbo_t3			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	cbo_t3			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	cbo_t3			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	cbo_t3			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 default	dummy			hive_test_user	USER	SELECT	false	-1	hive_test_user
+default	lineitem			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	lineitem			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	lineitem			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	lineitem			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	part			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	part			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	part			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	part			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	src			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	src			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	src			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	src			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	src1			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	src1			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	src1			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	src1			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	src_cbo			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	src_cbo			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	src_cbo			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	src_cbo			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	src_json			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	src_json			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	src_json			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	src_json			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	src_sequencefile			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	src_sequencefile			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	src_sequencefile			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	src_sequencefile			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	src_thrift			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	src_thrift			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	src_thrift			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	src_thrift			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	srcbucket			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	srcbucket			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	srcbucket			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	srcbucket			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	srcbucket2			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	srcbucket2			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	srcbucket2			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	srcbucket2			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	srcpart			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	srcpart			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	srcpart			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	srcpart			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 default	dummy		[key]	hive_test_user	USER	SELECT	false	-1	hive_test_user
 default	dummy		[value]	hive_test_user	USER	SELECT	false	-1	hive_test_user
 PREHOOK: query: grant select to user hive_test_user2
@@ -78,8 +138,68 @@ POSTHOOK: type: SHOW_GRANT
 				hive_test_user2	USER	SELECT	false	-1	hive_test_user
 default				hive_test_user	USER	SELECT	false	-1	hive_test_user
 default				hive_test_user2	USER	SELECT	false	-1	hive_test_user
+default	alltypesorc			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	alltypesorc			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	alltypesorc			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	alltypesorc			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	cbo_t1			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	cbo_t1			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	cbo_t1			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	cbo_t1			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	cbo_t2			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	cbo_t2			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	cbo_t2			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	cbo_t2			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	cbo_t3			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	cbo_t3			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	cbo_t3			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	cbo_t3			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 default	dummy			hive_test_user	USER	SELECT	false	-1	hive_test_user
 default	dummy			hive_test_user2	USER	SELECT	false	-1	hive_test_user
+default	lineitem			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	lineitem			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	lineitem			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	lineitem			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	part			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	part			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	part			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	part			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	src			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	src			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	src			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	src			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	src1			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	src1			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	src1			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	src1			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	src_cbo			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	src_cbo			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	src_cbo			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	src_cbo			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	src_json			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	src_json			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	src_json			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	src_json			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	src_sequencefile			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	src_sequencefile			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	src_sequencefile			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	src_sequencefile			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	src_thrift			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	src_thrift			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	src_thrift			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	src_thrift			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	srcbucket			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	srcbucket			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	srcbucket			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	srcbucket			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	srcbucket2			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	srcbucket2			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	srcbucket2			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	srcbucket2			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	srcpart			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	srcpart			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	srcpart			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	srcpart			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 default	dummy		[key]	hive_test_user	USER	SELECT	false	-1	hive_test_user
 default	dummy		[key]	hive_test_user2	USER	SELECT	false	-1	hive_test_user
 default	dummy		[value]	hive_test_user	USER	SELECT	false	-1	hive_test_user
@@ -90,7 +210,67 @@ POSTHOOK: query: show grant user hive_test_user on all
 POSTHOOK: type: SHOW_GRANT
 				hive_test_user	USER	SELECT	false	-1	hive_test_user
 default				hive_test_user	USER	SELECT	false	-1	hive_test_user
+default	alltypesorc			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	alltypesorc			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	alltypesorc			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	alltypesorc			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	cbo_t1			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	cbo_t1			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	cbo_t1			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	cbo_t1			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	cbo_t2			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	cbo_t2			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	cbo_t2			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	cbo_t2			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	cbo_t3			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	cbo_t3			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	cbo_t3			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	cbo_t3			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 default	dummy			hive_test_user	USER	SELECT	false	-1	hive_test_user
+default	lineitem			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	lineitem			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	lineitem			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	lineitem			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	part			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	part			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	part			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	part			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	src			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	src			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	src			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	src			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	src1			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	src1			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	src1			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	src1			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	src_cbo			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	src_cbo			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	src_cbo			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	src_cbo			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	src_json			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	src_json			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	src_json			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	src_json			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	src_sequencefile			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	src_sequencefile			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	src_sequencefile			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	src_sequencefile			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	src_thrift			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	src_thrift			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	src_thrift			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	src_thrift			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	srcbucket			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	srcbucket			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	srcbucket			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	srcbucket			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	srcbucket2			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	srcbucket2			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	srcbucket2			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	srcbucket2			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	srcpart			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	srcpart			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	srcpart			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	srcpart			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 default	dummy		[key]	hive_test_user	USER	SELECT	false	-1	hive_test_user
 default	dummy		[value]	hive_test_user	USER	SELECT	false	-1	hive_test_user
 PREHOOK: query: show grant user hive_test_user2 on all

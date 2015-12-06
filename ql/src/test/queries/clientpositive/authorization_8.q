@@ -1,3 +1,4 @@
+set hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider;
 set hive.security.authorization.enabled=true;
 GRANT ALL TO USER hive_test_user;
 CREATE TABLE tbl_j5jbymsx8e (key INT, value STRING) PARTITIONED BY (ds STRING);

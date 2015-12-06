@@ -1641,7 +1641,7 @@ public class HiveConf extends Configuration {
     HIVE_AUTHORIZATION_ENABLED("hive.security.authorization.enabled", false,
         "enable or disable the Hive client authorization"),
     HIVE_AUTHORIZATION_MANAGER("hive.security.authorization.manager",
-        "org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider",
+        "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory",
         "The Hive client authorization manager class name. The user defined authorization class should implement \n" +
         "interface org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider."),
     HIVE_AUTHENTICATOR_MANAGER("hive.security.authenticator.manager",
