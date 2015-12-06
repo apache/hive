@@ -127,6 +127,7 @@ public class Driver implements CommandProcessor {
   static final private Log LOG = LogFactory.getLog(CLASS_NAME);
   static final private LogHelper console = new LogHelper(LOG);
   static final int SHUTDOWN_HOOK_PRIORITY = 0;
+  private Runnable shutdownRunner = null;
 
   private static final Object compileMonitor = new Object();
 
@@ -391,18 +392,18 @@ public class Driver implements CommandProcessor {
       // Initialize the transaction manager.  This must be done before analyze is called.
       final HiveTxnManager txnManager = SessionState.get().initTxnMgr(conf);
       // In case when user Ctrl-C twice to kill Hive CLI JVM, we want to release locks
-      ShutdownHookManager.addShutdownHook(
-          new Runnable() {
-            @Override
-            public void run() {
-              try {
-                releaseLocksAndCommitOrRollback(ctx.getHiveLocks(), false, txnManager);
-              } catch (LockException e) {
-                LOG.warn("Exception when releasing locks in ShutdownHook for Driver: " +
-                    e.getMessage());
-              }
-            }
-          }, SHUTDOWN_HOOK_PRIORITY);
+      shutdownRunner = new Runnable() {
+        @Override
+        public void run() {
+          try {
+            releaseLocksAndCommitOrRollback(ctx.getHiveLocks(), false, txnManager);
+          } catch (LockException e) {
+            LOG.warn("Exception when releasing locks in ShutdownHook for Driver: " +
+                e.getMessage());
+          }
+        }
+      };
+      ShutdownHookManager.addShutdownHook(shutdownRunner, SHUTDOWN_HOOK_PRIORITY);
 
       command = new VariableSubstitution().substitute(conf, command);
       ctx = new Context(conf);
@@ -1890,6 +1891,9 @@ public class Driver implements CommandProcessor {
       } catch (LockException e) {
         LOG.warn("Exception when releasing locking in destroy: " +
             e.getMessage());
+      }
+      if (shutdownRunner != null) {
+        ShutdownHookManager.removeShutdownHook(shutdownRunner);
       }
     }
   }
