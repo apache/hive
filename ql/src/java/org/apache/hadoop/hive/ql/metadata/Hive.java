@@ -784,7 +784,7 @@ public class Hive {
   public static List<FieldSchema> getFieldsFromDeserializerForMsStorage(
       Table tbl, Deserializer deserializer) throws SerDeException, MetaException {
     List<FieldSchema> schema = MetaStoreUtils.getFieldsFromDeserializer(
-        tbl.getTableName(), tbl.getDeserializer());
+        tbl.getTableName(), deserializer);
     for (FieldSchema field : schema) {
       field.setType(MetaStoreUtils.TYPE_FROM_DESERIALIZER);
     }
