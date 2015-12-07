@@ -2601,6 +2601,11 @@ public class HiveConf extends Configuration {
       "Channel logging level for remote Spark driver.  One of {DEBUG, ERROR, INFO, TRACE, WARN}."),
     SPARK_RPC_SASL_MECHANISM("hive.spark.client.rpc.sasl.mechanisms", "DIGEST-MD5",
       "Name of the SASL mechanism to use for authentication."),
+    SPARK_RPC_SERVER_ADDRESS("hive.spark.client.rpc.server.address", "",
+      "The server address of HiverServer2 host to be used for communication between Hive client and remote Spark driver. " + 
+      "Default is empty, which means the address will be determined in the same way as for hive.server2.thrift.bind.host." +
+      "This is only necessary if the host has mutiple network addresses and if a different network address other than " +
+      "hive.server2.thrift.bind.host is to be used."),
     SPARK_DYNAMIC_PARTITION_PRUNING(
         "hive.spark.dynamic.partition.pruning", false,
         "When dynamic pruning is enabled, joins on partition keys will be processed by writing\n" +

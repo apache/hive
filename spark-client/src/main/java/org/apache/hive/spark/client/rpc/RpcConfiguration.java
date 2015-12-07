@@ -18,20 +18,19 @@
 package org.apache.hive.spark.client.rpc;
 
 import java.io.IOException;
-import java.net.Inet4Address;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
 import javax.security.sasl.Sasl;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.conf.HiveConf;
 
@@ -49,14 +48,13 @@ public final class RpcConfiguration {
     HiveConf.ConfVars.SPARK_RPC_CHANNEL_LOG_LEVEL.varname,
     HiveConf.ConfVars.SPARK_RPC_MAX_MESSAGE_SIZE.varname,
     HiveConf.ConfVars.SPARK_RPC_MAX_THREADS.varname,
-    HiveConf.ConfVars.SPARK_RPC_SECRET_RANDOM_BITS.varname
+    HiveConf.ConfVars.SPARK_RPC_SECRET_RANDOM_BITS.varname,
+    HiveConf.ConfVars.SPARK_RPC_SERVER_ADDRESS.varname
   );
   public static final ImmutableSet<String> HIVE_SPARK_TIME_CONFIGS = ImmutableSet.of(
     HiveConf.ConfVars.SPARK_RPC_CLIENT_CONNECT_TIMEOUT.varname,
     HiveConf.ConfVars.SPARK_RPC_CLIENT_HANDSHAKE_TIMEOUT.varname
   );
-
-  public static final String SERVER_LISTEN_ADDRESS_KEY = "hive.spark.client.server.address";
 
   /** Prefix for other SASL options. */
   public static final String RPC_SASL_OPT_PREFIX = "hive.spark.client.rpc.sasl.";
@@ -91,39 +89,22 @@ public final class RpcConfiguration {
     return value != null ? Integer.parseInt(value) : HiveConf.ConfVars.SPARK_RPC_SECRET_RANDOM_BITS.defaultIntVal;
   }
 
+  /**
+   * Here we assume that the remote driver will connect back to HS2 using the same network interface
+   * as if it were just a HS2 client. If this isn't true, we can have a separate configuration for that.
+   * For now, I think we are okay.
+   * @return server host name in the network
+   * @throws IOException
+   */
   String getServerAddress() throws IOException {
-    String value = config.get(SERVER_LISTEN_ADDRESS_KEY);
-    if (value != null) {
-      return value;
-    }
-
-    InetAddress address = InetAddress.getLocalHost();
-    if (address.isLoopbackAddress()) {
-      // Address resolves to something like 127.0.1.1, which happens on Debian;
-      // try to find a better address using the local network interfaces
-      Enumeration<NetworkInterface> ifaces = NetworkInterface.getNetworkInterfaces();
-      while (ifaces.hasMoreElements()) {
-        NetworkInterface ni = ifaces.nextElement();
-        Enumeration<InetAddress> addrs = ni.getInetAddresses();
-        while (addrs.hasMoreElements()) {
-          InetAddress addr = addrs.nextElement();
-          if (!addr.isLinkLocalAddress() && !addr.isLoopbackAddress()
-              && addr instanceof Inet4Address) {
-            // We've found an address that looks reasonable!
-            LOG.warn("Your hostname, {}, resolves to a loopback address; using {} "
-                + " instead (on interface {})", address.getHostName(), addr.getHostAddress(),
-                ni.getName());
-            LOG.warn("Set '{}' if you need to bind to another address.", SERVER_LISTEN_ADDRESS_KEY);
-            return addr.getHostAddress();
-          }
-        }
+    String hiveHost = config.get(HiveConf.ConfVars.SPARK_RPC_SERVER_ADDRESS);
+    if(StringUtils.isEmpty(hiveHost)) {
+      hiveHost = System.getenv("HIVE_SERVER2_THRIFT_BIND_HOST");
+      if (hiveHost == null) {
+        hiveHost = config.get(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_BIND_HOST);
       }
     }
-
-    LOG.warn("Your hostname, {}, resolves to a loopback address, but we couldn't find "
-        + " any external IP address!", address.getHostName());
-    LOG.warn("Set {} if you need to bind to another address.", SERVER_LISTEN_ADDRESS_KEY);
-    return address.getHostName();
+    return ServerUtils.getHostAddress(hiveHost).getHostName();
   }
 
   String getRpcChannelLogLevel() {

@@ -18,6 +18,9 @@
 
 package org.apache.hadoop.hive.common;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileSystem;
@@ -45,6 +48,22 @@ public class ServerUtils {
         LOG.warn("Unable to delete scratchDir : " + hiveScratchDir, e);
       }
     }
+  }
+
+  /**
+   * Get the Inet address of the machine of the given host name.
+   * @param hostname The name of the host
+   * @return The network address of the the host
+   * @throws UnknownHostException
+   */
+  public static InetAddress getHostAddress(String hostname) throws UnknownHostException {
+    InetAddress serverIPAddress;
+    if (hostname != null && !hostname.isEmpty()) {
+      serverIPAddress = InetAddress.getByName(hostname);
+    } else {
+      serverIPAddress = InetAddress.getLocalHost();
+    }
+    return serverIPAddress;
   }
 
 }
