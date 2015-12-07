@@ -317,6 +317,12 @@ POSTHOOK: Input: default@default__temp_temp_index__
 POSTHOOK: Input: default@temp
 #### A masked pattern was here ####
 86	val_86
+PREHOOK: query: drop index temp_index on temp
+PREHOOK: type: DROPINDEX
+PREHOOK: Input: default@temp
+POSTHOOK: query: drop index temp_index on temp
+POSTHOOK: type: DROPINDEX
+POSTHOOK: Input: default@temp
 PREHOOK: query: DROP table temp
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@temp

@@ -24,4 +24,6 @@ SELECT * FROM temp WHERE key  = 86;
 
 SET hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 SET hive.optimize.index.filter=false;
+drop index temp_index on temp;
 DROP table temp;
+

@@ -19,4 +19,5 @@ INSERT OVERWRITE TABLE temp SELECT * FROM src;
 -- should return correct results bypassing index
 EXPLAIN SELECT * FROM temp WHERE key  = 86;
 SELECT * FROM temp WHERE key  = 86;
+DROP index temp_index on temp;
 DROP table temp;
