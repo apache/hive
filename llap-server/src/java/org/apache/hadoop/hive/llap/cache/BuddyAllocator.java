@@ -216,7 +216,6 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
   private void deallocateInternal(MemoryBuffer buffer, boolean doReleaseMemory) {
     LlapDataBuffer buf = (LlapDataBuffer)buffer;
     long memUsage = buf.getMemoryUsage();
-    metrics.decrCacheCapacityUsed(buf.byteBuffer.capacity());
     arenas[buf.arenaIndex].deallocate(buf);
     if (doReleaseMemory) {
       memoryManager.releaseMemory(memUsage);
