@@ -35,7 +35,7 @@ import org.apache.calcite.rex.RexFieldCollation;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexOver;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 
 /**
  * Rule to fix windowing issue when it is done over
@@ -58,7 +58,7 @@ public class HiveWindowingFixRule extends RelOptRule {
     super(
         operand(Project.class,
             operand(Aggregate.class, any())));
-    this.projectFactory = HiveProject.DEFAULT_PROJECT_FACTORY;
+    this.projectFactory = HiveRelFactories.HIVE_PROJECT_FACTORY;
   }
 
   @Override

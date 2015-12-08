@@ -34,7 +34,6 @@ import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelWriter;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinRelType;
-import org.apache.calcite.rel.core.RelFactories.JoinFactory;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
@@ -43,8 +42,8 @@ import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.ImmutableIntList;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinPredicateInfo;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveCostModel.JoinAlgorithm;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveDefaultCostModel.DefaultJoinAlgorithm;
@@ -53,8 +52,6 @@ import com.google.common.collect.ImmutableList;
 
 //TODO: Should we convert MultiJoin to be a child of HiveJoin
 public class HiveJoin extends Join implements HiveRelNode {
-
-  public static final JoinFactory HIVE_JOIN_FACTORY = new HiveJoinFactoryImpl();
 
   public enum MapJoinStreamingRelation {
     NONE, LEFT_RELATION, RIGHT_RELATION
@@ -244,32 +241,6 @@ public class HiveJoin extends Join implements HiveRelNode {
           Collections.<RelDataTypeField> emptyList());
     }
     return super.deriveRowType();
-  }
-
-  private static class HiveJoinFactoryImpl implements JoinFactory {
-    /**
-     * Creates a join.
-     *
-     * @param left
-     *          Left input
-     * @param right
-     *          Right input
-     * @param condition
-     *          Join condition
-     * @param joinType
-     *          Join type
-     * @param variablesStopped
-     *          Set of names of variables which are set by the LHS and used by
-     *          the RHS and are not available to nodes above this JoinRel in the
-     *          tree
-     * @param semiJoinDone
-     *          Whether this join has been translated to a semi-join
-     */
-    @Override
-    public RelNode createJoin(RelNode left, RelNode right, RexNode condition, JoinRelType joinType,
-        Set<String> variablesStopped, boolean semiJoinDone) {
-      return getJoin(left.getCluster(), left, right, condition, joinType, false);
-    }
   }
 
 }
