@@ -18,6 +18,13 @@
 package org.apache.hadoop.hive.llap.cache;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
+
+import org.mockito.stubbing.Answer;
+
+import java.util.concurrent.atomic.AtomicLong;
+
+import org.mockito.invocation.InvocationOnMock;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -133,7 +140,7 @@ public class TestLowLevelLrfuCachePolicy {
         lfu.notifyUnlock(inserted.get(i));
       }
     }
-    verifyOrder(mm, lfu, et, inserted);
+    verifyOrder(mm, lfu, et, inserted, null);
   }
 
   private Configuration createConf(int min, int heapSize, Double lambda) {
@@ -176,7 +183,7 @@ public class TestLowLevelLrfuCachePolicy {
         lru.notifyUnlock(inserted.get(i));
       }
     }
-    verifyOrder(mm, lru, et, inserted);
+    verifyOrder(mm, lru, et, inserted, null);
   }
 
   @Test
@@ -236,6 +243,27 @@ public class TestLowLevelLrfuCachePolicy {
     lrfu.notifyUnlock(locked);
   }
 
+  private static class MetricsMock {
+    public MetricsMock(AtomicLong cacheUsed, LlapDaemonCacheMetrics metricsMock) {
+      this.cacheUsed = cacheUsed;
+      this.metricsMock = metricsMock;
+    }
+    public AtomicLong cacheUsed;
+    public LlapDaemonCacheMetrics metricsMock;
+  }
+
+  private MetricsMock createMetricsMock() {
+    LlapDaemonCacheMetrics metricsMock = mock(LlapDaemonCacheMetrics.class);
+    final AtomicLong cacheUsed = new AtomicLong(0);
+    doAnswer(new Answer<Object>() {
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        cacheUsed.addAndGet((Long)invocation.getArguments()[0]);
+        return null;
+      }
+    }).when(metricsMock).incrCacheCapacityUsed(anyLong());
+    return new MetricsMock(cacheUsed, metricsMock);
+  }
+
   private void testHeapSize(int heapSize) {
     LOG.info("Testing heap size " + heapSize);
     Random rdm = new Random(1234);
@@ -243,8 +271,8 @@ public class TestLowLevelLrfuCachePolicy {
     conf.setFloat(HiveConf.ConfVars.LLAP_LRFU_LAMBDA.varname, 0.2f); // very small heap, 14 elements
     EvictionTracker et = new EvictionTracker();
     LowLevelLrfuCachePolicy lrfu = new LowLevelLrfuCachePolicy(conf);
-    LowLevelCacheMemoryManager mm = new LowLevelCacheMemoryManager(conf, lrfu,
-        LlapDaemonCacheMetrics.create("test", "1"));
+    MetricsMock m = createMetricsMock();
+    LowLevelCacheMemoryManager mm = new LowLevelCacheMemoryManager(conf, lrfu, m.metricsMock);
     lrfu.setEvictionListener(et);
     // Insert the number of elements plus 2, to trigger 2 evictions.
     int toEvict = 2;
@@ -254,6 +282,7 @@ public class TestLowLevelLrfuCachePolicy {
     for (int i = 0; i < heapSize + toEvict; ++i) {
       LlapDataBuffer buffer = LowLevelCacheImpl.allocateFake();
       assertTrue(cache(mm, lrfu, et, buffer));
+      assertEquals((long)Math.min(i + 1, heapSize), m.cacheUsed.get());
       LlapDataBuffer evictedBuf = getOneEvictedBuffer(et);
       if (i < toEvict) {
         evicted[i] = buffer;
@@ -275,6 +304,7 @@ public class TestLowLevelLrfuCachePolicy {
     for (LlapDataBuffer buf : inserted) {
       lock(lrfu, buf);
     }
+    assertEquals(heapSize, m.cacheUsed.get());
     assertFalse(mm.reserveMemory(1, false));
     if (!et.evicted.isEmpty()) {
       assertTrue("Got " + et.evicted.get(0), et.evicted.isEmpty());
@@ -291,23 +321,33 @@ public class TestLowLevelLrfuCachePolicy {
         lrfu.notifyUnlock(buf);
       }
     }
-    verifyOrder(mm, lrfu, et, inserted);
+    verifyOrder(mm, lrfu, et, inserted, m.cacheUsed);
   }
 
   private void verifyOrder(LowLevelCacheMemoryManager mm, LowLevelLrfuCachePolicy lrfu,
-      EvictionTracker et, ArrayList<LlapDataBuffer> inserted) {
+      EvictionTracker et, ArrayList<LlapDataBuffer> inserted, AtomicLong cacheUsed) {
     LlapDataBuffer block;
     // Evict all blocks.
     et.evicted.clear();
     for (int i = 0; i < inserted.size(); ++i) {
       assertTrue(mm.reserveMemory(1, false));
+      if (cacheUsed != null) {
+        assertEquals(inserted.size(), cacheUsed.get());
+      }
     }
     // The map should now be empty.
     assertFalse(mm.reserveMemory(1, false));
+    if (cacheUsed != null) {
+      assertEquals(inserted.size(), cacheUsed.get());
+    }
     for (int i = 0; i < inserted.size(); ++i) {
       block = et.evicted.get(i);
       assertTrue(block.isInvalid());
       assertSame(inserted.get(i), block);
+    }
+    if (cacheUsed != null) {
+      mm.releaseMemory(inserted.size());
+      assertEquals(0, cacheUsed.get());
     }
   }
 
