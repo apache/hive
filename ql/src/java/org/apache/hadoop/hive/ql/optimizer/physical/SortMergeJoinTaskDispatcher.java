@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -147,7 +148,7 @@ public class SortMergeJoinTaskDispatcher extends AbstractJoinTaskDispatcher impl
       throws SemanticException {
     try {
       // deep copy a new mapred work
-      MapredWork currJoinWork = Utilities.clonePlan(currWork);
+      MapredWork currJoinWork = SerializationUtilities.clonePlan(currWork);
       SMBMapJoinOperator newSMBJoinOp = getSMBMapJoinOp(currJoinWork);
 
       // change the newly created map-red plan as if it was a join operator
@@ -165,7 +166,7 @@ public class SortMergeJoinTaskDispatcher extends AbstractJoinTaskDispatcher impl
       SMBMapJoinOperator smbJoinOp)
       throws UnsupportedEncodingException, SemanticException {
     // deep copy a new mapred work
-    MapredWork newWork = Utilities.clonePlan(origWork);
+    MapredWork newWork = SerializationUtilities.clonePlan(origWork);
     // create a mapred task for this work
     MapRedTask newTask = (MapRedTask) TaskFactory.get(newWork, physicalContext
         .getParseContext().getConf());
