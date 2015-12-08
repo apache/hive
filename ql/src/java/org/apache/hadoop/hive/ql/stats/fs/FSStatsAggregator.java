@@ -24,17 +24,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.StatsSetupConst;
-import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.stats.StatsAggregator;
 import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 
 public class FSStatsAggregator implements StatsAggregator {
@@ -62,7 +63,12 @@ public class FSStatsAggregator implements StatsAggregator {
       });
       for (FileStatus file : status) {
         Input in = new Input(fs.open(file.getPath()));
-        statsMap = Utilities.runtimeSerializationKryo.get().readObject(in, statsMap.getClass());
+        Kryo kryo = SerializationUtilities.borrowKryo();
+        try {
+          statsMap = kryo.readObject(in, statsMap.getClass());
+        } finally {
+          SerializationUtilities.releaseKryo(kryo);
+        }
         LOG.info("Read stats : " +statsMap);
         statsList.add(statsMap);
         in.close();

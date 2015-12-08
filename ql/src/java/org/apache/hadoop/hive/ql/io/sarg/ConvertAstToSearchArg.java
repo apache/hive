@@ -23,11 +23,9 @@ import java.sql.Timestamp;
 import java.util.List;
 
 import org.apache.commons.codec.binary.Base64;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveChar;
-import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -51,6 +49,8 @@ import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
@@ -433,7 +433,7 @@ public class ConvertAstToSearchArg {
   public static SearchArgument createFromConf(Configuration conf) {
     String sargString;
     if ((sargString = conf.get(TableScanDesc.FILTER_EXPR_CONF_STR)) != null) {
-      return create(Utilities.deserializeExpression(sargString));
+      return create(SerializationUtilities.deserializeExpression(sargString));
     } else if ((sargString = conf.get(SARG_PUSHDOWN)) != null) {
       return create(sargString);
     }

@@ -45,7 +45,7 @@ import org.apache.hadoop.hive.accumulo.predicate.compare.NotEqual;
 import org.apache.hadoop.hive.accumulo.predicate.compare.PrimitiveComparison;
 import org.apache.hadoop.hive.accumulo.predicate.compare.StringCompare;
 import org.apache.hadoop.hive.accumulo.serde.AccumuloSerDeParameters;
-import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.index.IndexPredicateAnalyzer;
 import org.apache.hadoop.hive.ql.index.IndexSearchCondition;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
@@ -358,7 +358,7 @@ public class AccumuloPredicateHandler {
     if (filteredExprSerialized == null)
       return null;
 
-    return Utilities.deserializeExpression(filteredExprSerialized);
+    return SerializationUtilities.deserializeExpression(filteredExprSerialized);
   }
 
   /**

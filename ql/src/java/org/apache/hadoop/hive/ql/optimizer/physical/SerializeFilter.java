@@ -19,29 +19,18 @@ package org.apache.hadoop.hive.ql.optimizer.physical;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Iterator;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.Stack;
-import java.util.TreeSet;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.StatsTask;
-import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
-import org.apache.hadoop.hive.ql.exec.tez.DagUtils;
+import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
@@ -52,13 +41,14 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.lib.TaskGraphWalker;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MergeJoinWork;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.TezWork;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * SerializeFilter is a simple physical optimizer that serializes all filter expressions in
@@ -151,7 +141,7 @@ public class SerializeFilter implements PhysicalPlanResolver {
             LOG.debug("Serializing: " + ts.getConf().getFilterExpr().getExprString());
           }
           ts.getConf().setSerializedFilterExpr(
-            Utilities.serializeExpression(ts.getConf().getFilterExpr()));
+              SerializationUtilities.serializeExpression(ts.getConf().getFilterExpr()));
         }
 
         if (ts.getConf() != null && ts.getConf().getFilterObject() != null) {
@@ -160,7 +150,7 @@ public class SerializeFilter implements PhysicalPlanResolver {
           }
 
           ts.getConf().setSerializedFilterObject(
-            Utilities.serializeObject(ts.getConf().getFilterObject()));
+              SerializationUtilities.serializeObject(ts.getConf().getFilterObject()));
         }
       }
     }

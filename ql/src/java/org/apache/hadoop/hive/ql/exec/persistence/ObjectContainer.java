@@ -17,21 +17,22 @@
  */
 package org.apache.hadoop.hive.ql.exec.persistence;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
+import org.apache.hadoop.fs.FileUtil;
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.apache.hadoop.fs.FileUtil;
-import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 
 /**
  * An eager object container that puts every row directly to output stream.
@@ -58,14 +59,11 @@ public class ObjectContainer<ROW> {
   private Input input;
   private Output output;
 
-  private Kryo kryo;
-
   public ObjectContainer() {
     readBuffer = (ROW[]) new Object[IN_MEMORY_NUM_ROWS];
     for (int i = 0; i < IN_MEMORY_NUM_ROWS; i++) {
       readBuffer[i] = (ROW) new Object();
     }
-    kryo = Utilities.runtimeSerializationKryo.get();
     try {
       setupOutput();
     } catch (IOException | HiveException e) {
@@ -101,7 +99,12 @@ public class ObjectContainer<ROW> {
   }
 
   public void add(ROW row) {
-    kryo.writeClassAndObject(output, row);
+    Kryo kryo = SerializationUtilities.borrowKryo();
+    try {
+      kryo.writeClassAndObject(output, row);
+    } finally {
+      SerializationUtilities.releaseKryo(kryo);
+    }
     rowsOnDisk++;
   }
 
@@ -164,8 +167,13 @@ public class ObjectContainer<ROW> {
             rowsInReadBuffer = rowsOnDisk;
           }
 
-          for (int i = 0; i < rowsInReadBuffer; i++) {
-            readBuffer[i] = (ROW) kryo.readClassAndObject(input);
+          Kryo kryo = SerializationUtilities.borrowKryo();
+          try {
+            for (int i = 0; i < rowsInReadBuffer; i++) {
+              readBuffer[i] = (ROW) kryo.readClassAndObject(input);
+            }
+          } finally {
+            SerializationUtilities.releaseKryo(kryo);
           }
 
           if (input.eof()) {

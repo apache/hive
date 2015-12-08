@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
@@ -128,7 +129,7 @@ public class ProjectionPusher {
     }
 
     final String filterText = filterExpr.getExprString();
-    final String filterExprSerialized = Utilities.serializeExpression(filterExpr);
+    final String filterExprSerialized = SerializationUtilities.serializeExpression(filterExpr);
     jobConf.set(
         TableScanDesc.FILTER_TEXT_CONF_STR,
         filterText);

@@ -26,16 +26,8 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-
-import com.google.common.collect.Sets;
-import com.google.common.io.Files;
-import junit.framework.Assert;
-import junit.framework.TestCase;
 
 import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -46,6 +38,14 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFFromUtcTimestamp;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.JobConf;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Sets;
+import com.google.common.io.Files;
+
+import junit.framework.Assert;
+import junit.framework.TestCase;
 
 public class TestUtilities extends TestCase {
   public static final Logger LOG = LoggerFactory.getLogger(TestUtilities.class);
@@ -85,8 +85,8 @@ public class TestUtilities extends TestCase {
     children.add(constant);
     ExprNodeGenericFuncDesc desc = new ExprNodeGenericFuncDesc(TypeInfoFactory.timestampTypeInfo,
         new GenericUDFFromUtcTimestamp(), children);
-    assertEquals(desc.getExprString(), Utilities.deserializeExpression(
-        Utilities.serializeExpression(desc)).getExprString());
+    assertEquals(desc.getExprString(), SerializationUtilities.deserializeExpression(
+        SerializationUtilities.serializeExpression(desc)).getExprString());
   }
 
   public void testgetDbTableName() throws HiveException{

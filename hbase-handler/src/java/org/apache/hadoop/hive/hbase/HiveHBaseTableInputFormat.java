@@ -20,12 +20,9 @@ package org.apache.hadoop.hive.hbase;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HConstants;
@@ -39,7 +36,7 @@ import org.apache.hadoop.hbase.mapreduce.TableSplit;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hive.hbase.ColumnMappings.ColumnMapping;
 import org.apache.hadoop.hive.ql.exec.ExprNodeConstantEvaluator;
-import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.index.IndexPredicateAnalyzer;
 import org.apache.hadoop.hive.ql.index.IndexSearchCondition;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -74,6 +71,8 @@ import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * HiveHBaseTableInputFormat implements InputFormat for HBase storage handler
@@ -187,7 +186,7 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
     Scan scan = new Scan();
     String filterObjectSerialized = jobConf.get(TableScanDesc.FILTER_OBJECT_CONF_STR);
     if (filterObjectSerialized != null) {
-      HBaseScanRange range = Utilities.deserializeObject(filterObjectSerialized,
+      HBaseScanRange range = SerializationUtilities.deserializeObject(filterObjectSerialized,
           HBaseScanRange.class);
       try {
         range.setup(scan, jobConf);
@@ -203,7 +202,7 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
     }
 
     ExprNodeGenericFuncDesc filterExpr =
-      Utilities.deserializeExpression(filterExprSerialized);
+        SerializationUtilities.deserializeExpression(filterExprSerialized);
 
     String keyColName = jobConf.get(serdeConstants.LIST_COLUMNS).split(",")[iKey];
     String colType = jobConf.get(serdeConstants.LIST_COLUMN_TYPES).split(",")[iKey];

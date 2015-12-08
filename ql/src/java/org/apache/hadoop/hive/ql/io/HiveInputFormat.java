@@ -30,6 +30,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map.Entry;
 
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configurable;
@@ -532,14 +533,14 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     if (!hasObj) {
       Serializable filterObject = scanDesc.getFilterObject();
       if (filterObject != null) {
-        serializedFilterObj = Utilities.serializeObject(filterObject);
+        serializedFilterObj = SerializationUtilities.serializeObject(filterObject);
       }
     }
     if (serializedFilterObj != null) {
       jobConf.set(TableScanDesc.FILTER_OBJECT_CONF_STR, serializedFilterObj);
     }
     if (!hasExpr) {
-      serializedFilterExpr = Utilities.serializeExpression(filterExpr);
+      serializedFilterExpr = SerializationUtilities.serializeExpression(filterExpr);
     }
     String filterText = filterExpr.getExprString();
     if (LOG.isDebugEnabled()) {

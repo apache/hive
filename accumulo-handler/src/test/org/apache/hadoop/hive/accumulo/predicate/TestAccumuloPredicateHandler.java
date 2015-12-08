@@ -53,7 +53,7 @@ import org.apache.hadoop.hive.accumulo.predicate.compare.StringCompare;
 import org.apache.hadoop.hive.accumulo.serde.AccumuloSerDeParameters;
 import org.apache.hadoop.hive.accumulo.serde.TooManyAccumuloColumnsException;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
-import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.index.IndexSearchCondition;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
@@ -117,7 +117,7 @@ public class TestAccumuloPredicateHandler {
     ExprNodeGenericFuncDesc node = new ExprNodeGenericFuncDesc(TypeInfoFactory.stringTypeInfo,
         new GenericUDFOPEqual(), children);
     assertNotNull(node);
-    String filterExpr = Utilities.serializeExpression(node);
+    String filterExpr = SerializationUtilities.serializeExpression(node);
     conf.set(TableScanDesc.FILTER_EXPR_CONF_STR, filterExpr);
 
     List<IndexSearchCondition> sConditions = handler.getSearchConditions(conf);
@@ -134,7 +134,7 @@ public class TestAccumuloPredicateHandler {
     ExprNodeGenericFuncDesc node = new ExprNodeGenericFuncDesc(TypeInfoFactory.stringTypeInfo,
         new GenericUDFOPEqual(), children);
     assertNotNull(node);
-    String filterExpr = Utilities.serializeExpression(node);
+    String filterExpr = SerializationUtilities.serializeExpression(node);
     conf.set(TableScanDesc.FILTER_EXPR_CONF_STR, filterExpr);
 
     Collection<Range> ranges = handler.getRanges(conf, columnMapper);
@@ -157,7 +157,7 @@ public class TestAccumuloPredicateHandler {
     ExprNodeGenericFuncDesc node = new ExprNodeGenericFuncDesc(TypeInfoFactory.stringTypeInfo,
         new GenericUDFOPGreaterThan(), children);
     assertNotNull(node);
-    String filterExpr = Utilities.serializeExpression(node);
+    String filterExpr = SerializationUtilities.serializeExpression(node);
     conf.set(TableScanDesc.FILTER_EXPR_CONF_STR, filterExpr);
 
     Collection<Range> ranges = handler.getRanges(conf, columnMapper);
@@ -182,7 +182,7 @@ public class TestAccumuloPredicateHandler {
     ExprNodeGenericFuncDesc node = new ExprNodeGenericFuncDesc(TypeInfoFactory.stringTypeInfo,
         new GenericUDFOPEqualOrGreaterThan(), children);
     assertNotNull(node);
-    String filterExpr = Utilities.serializeExpression(node);
+    String filterExpr = SerializationUtilities.serializeExpression(node);
     conf.set(TableScanDesc.FILTER_EXPR_CONF_STR, filterExpr);
 
     Collection<Range> ranges = handler.getRanges(conf, columnMapper);
@@ -206,7 +206,7 @@ public class TestAccumuloPredicateHandler {
     ExprNodeGenericFuncDesc node = new ExprNodeGenericFuncDesc(TypeInfoFactory.stringTypeInfo,
         new GenericUDFOPLessThan(), children);
     assertNotNull(node);
-    String filterExpr = Utilities.serializeExpression(node);
+    String filterExpr = SerializationUtilities.serializeExpression(node);
     conf.set(TableScanDesc.FILTER_EXPR_CONF_STR, filterExpr);
 
     Collection<Range> ranges = handler.getRanges(conf, columnMapper);
@@ -231,7 +231,7 @@ public class TestAccumuloPredicateHandler {
     ExprNodeGenericFuncDesc node = new ExprNodeGenericFuncDesc(TypeInfoFactory.stringTypeInfo,
         new GenericUDFOPEqualOrLessThan(), children);
     assertNotNull(node);
-    String filterExpr = Utilities.serializeExpression(node);
+    String filterExpr = SerializationUtilities.serializeExpression(node);
     conf.set(TableScanDesc.FILTER_EXPR_CONF_STR, filterExpr);
 
     Collection<Range> ranges = handler.getRanges(conf, columnMapper);
@@ -273,7 +273,7 @@ public class TestAccumuloPredicateHandler {
     ExprNodeGenericFuncDesc both = new ExprNodeGenericFuncDesc(TypeInfoFactory.stringTypeInfo,
         new GenericUDFOPAnd(), bothFilters);
 
-    String filterExpr = Utilities.serializeExpression(both);
+    String filterExpr = SerializationUtilities.serializeExpression(both);
     conf.set(TableScanDesc.FILTER_EXPR_CONF_STR, filterExpr);
 
     Collection<Range> ranges = handler.getRanges(conf, columnMapper);
@@ -309,7 +309,7 @@ public class TestAccumuloPredicateHandler {
     ExprNodeGenericFuncDesc both = new ExprNodeGenericFuncDesc(TypeInfoFactory.stringTypeInfo,
         new GenericUDFOPAnd(), bothFilters);
 
-    String filterExpr = Utilities.serializeExpression(both);
+    String filterExpr = SerializationUtilities.serializeExpression(both);
     conf.set(TableScanDesc.FILTER_EXPR_CONF_STR, filterExpr);
 
     List<Range> ranges = handler.getRanges(conf, columnMapper);
@@ -329,7 +329,7 @@ public class TestAccumuloPredicateHandler {
     ExprNodeGenericFuncDesc node = new ExprNodeGenericFuncDesc(TypeInfoFactory.stringTypeInfo,
         new GenericUDFOPEqual(), children);
     assertNotNull(node);
-    String filterExpr = Utilities.serializeExpression(node);
+    String filterExpr = SerializationUtilities.serializeExpression(node);
     conf.set(TableScanDesc.FILTER_EXPR_CONF_STR, filterExpr);
 
     List<IndexSearchCondition> sConditions = handler.getSearchConditions(conf);
@@ -356,7 +356,7 @@ public class TestAccumuloPredicateHandler {
     ExprNodeGenericFuncDesc node = new ExprNodeGenericFuncDesc(TypeInfoFactory.stringTypeInfo,
         new GenericUDFOPEqual(), children);
     assertNotNull(node);
-    String filterExpr = Utilities.serializeExpression(node);
+    String filterExpr = SerializationUtilities.serializeExpression(node);
     conf.set(TableScanDesc.FILTER_EXPR_CONF_STR, filterExpr);
     List<IndexSearchCondition> sConditions = handler.getSearchConditions(conf);
     assertEquals(sConditions.size(), 1);
@@ -375,7 +375,7 @@ public class TestAccumuloPredicateHandler {
       ExprNodeGenericFuncDesc node = new ExprNodeGenericFuncDesc(TypeInfoFactory.stringTypeInfo,
           new GenericUDFOPNotNull(), children);
       assertNotNull(node);
-      String filterExpr = Utilities.serializeExpression(node);
+      String filterExpr = SerializationUtilities.serializeExpression(node);
       conf.set(TableScanDesc.FILTER_EXPR_CONF_STR, filterExpr);
       List<IndexSearchCondition> sConditions = handler.getSearchConditions(conf);
       assertEquals(sConditions.size(), 1);
@@ -417,7 +417,7 @@ public class TestAccumuloPredicateHandler {
     ExprNodeGenericFuncDesc both = new ExprNodeGenericFuncDesc(TypeInfoFactory.stringTypeInfo,
         new GenericUDFOPAnd(), bothFilters);
 
-    String filterExpr = Utilities.serializeExpression(both);
+    String filterExpr = SerializationUtilities.serializeExpression(both);
     conf.set(TableScanDesc.FILTER_EXPR_CONF_STR, filterExpr);
     try {
       List<IteratorSetting> iterators = handler.getIterators(conf, columnMapper);
@@ -468,7 +468,7 @@ public class TestAccumuloPredicateHandler {
     ExprNodeGenericFuncDesc both = new ExprNodeGenericFuncDesc(TypeInfoFactory.stringTypeInfo,
         new GenericUDFOPAnd(), bothFilters);
 
-    String filterExpr = Utilities.serializeExpression(both);
+    String filterExpr = SerializationUtilities.serializeExpression(both);
     conf.set(TableScanDesc.FILTER_EXPR_CONF_STR, filterExpr);
     conf.setBoolean(AccumuloSerDeParameters.ITERATOR_PUSHDOWN_KEY, false);
     try {
@@ -519,7 +519,7 @@ public class TestAccumuloPredicateHandler {
     ExprNodeGenericFuncDesc both = new ExprNodeGenericFuncDesc(TypeInfoFactory.stringTypeInfo,
         new GenericUDFOPAnd(), bothFilters);
 
-    String filterExpr = Utilities.serializeExpression(both);
+    String filterExpr = SerializationUtilities.serializeExpression(both);
     conf.set(TableScanDesc.FILTER_EXPR_CONF_STR, filterExpr);
     List<IteratorSetting> iterators = handler.getIterators(conf, columnMapper);
     assertEquals(iterators.size(), 2);
@@ -665,7 +665,7 @@ public class TestAccumuloPredicateHandler {
     ExprNodeGenericFuncDesc both = new ExprNodeGenericFuncDesc(TypeInfoFactory.stringTypeInfo,
         new GenericUDFOPAnd(), bothFilters);
 
-    String filterExpr = Utilities.serializeExpression(both);
+    String filterExpr = SerializationUtilities.serializeExpression(both);
     conf.set(TableScanDesc.FILTER_EXPR_CONF_STR, filterExpr);
 
     // Should make ['f', 'm\0')
@@ -697,7 +697,7 @@ public class TestAccumuloPredicateHandler {
         new GenericUDFOPLessThan(), children);
     assertNotNull(node);
 
-    String filterExpr = Utilities.serializeExpression(node);
+    String filterExpr = SerializationUtilities.serializeExpression(node);
     conf.set(TableScanDesc.FILTER_EXPR_CONF_STR, filterExpr);
 
     // Should make (100, +inf)
@@ -738,7 +738,7 @@ public class TestAccumuloPredicateHandler {
         new GenericUDFOPLessThan(), children);
     assertNotNull(node);
 
-    String filterExpr = Utilities.serializeExpression(node);
+    String filterExpr = SerializationUtilities.serializeExpression(node);
     conf.set(TableScanDesc.FILTER_EXPR_CONF_STR, filterExpr);
 
     // Should make (100, +inf)
