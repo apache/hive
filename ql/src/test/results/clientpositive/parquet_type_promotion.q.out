@@ -213,12 +213,35 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@arrays_of_struct_to_map
 #### A masked pattern was here ####
 [{"c1":1,"c2":2}]	[{"f1":77,"f2":88,"f3":99}]
-PREHOOK: query: ALTER TABLE arrays_of_struct_to_map REPLACE COLUMNS (locations1 array<struct<c1:int,c2:int,c3:int>>, locations2
+PREHOOK: query: -- Testing schema evolution of dropping column from array<struct<>>
+ALTER TABLE arrays_of_struct_to_map REPLACE COLUMNS (locations1 array<struct<c1:int>>, locations2
+array<struct<f2:int>>)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@arrays_of_struct_to_map
+PREHOOK: Output: default@arrays_of_struct_to_map
+POSTHOOK: query: -- Testing schema evolution of dropping column from array<struct<>>
+ALTER TABLE arrays_of_struct_to_map REPLACE COLUMNS (locations1 array<struct<c1:int>>, locations2
+array<struct<f2:int>>)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@arrays_of_struct_to_map
+POSTHOOK: Output: default@arrays_of_struct_to_map
+PREHOOK: query: SELECT * FROM arrays_of_struct_to_map
+PREHOOK: type: QUERY
+PREHOOK: Input: default@arrays_of_struct_to_map
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM arrays_of_struct_to_map
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@arrays_of_struct_to_map
+#### A masked pattern was here ####
+[{"c1":1}]	[{"f2":77}]
+PREHOOK: query: -- Testing schema evolution of adding columns into array<struct<>>
+ALTER TABLE arrays_of_struct_to_map REPLACE COLUMNS (locations1 array<struct<c1:int,c2:int,c3:int>>, locations2
 array<struct<f1:int,f2:int,f3:int>>)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@arrays_of_struct_to_map
 PREHOOK: Output: default@arrays_of_struct_to_map
-POSTHOOK: query: ALTER TABLE arrays_of_struct_to_map REPLACE COLUMNS (locations1 array<struct<c1:int,c2:int,c3:int>>, locations2
+POSTHOOK: query: -- Testing schema evolution of adding columns into array<struct<>>
+ALTER TABLE arrays_of_struct_to_map REPLACE COLUMNS (locations1 array<struct<c1:int,c2:int,c3:int>>, locations2
 array<struct<f1:int,f2:int,f3:int>>)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@arrays_of_struct_to_map
