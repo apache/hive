@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.txn;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.jolbox.bonecp.BoneCPConfig;
 import com.jolbox.bonecp.BoneCPDataSource;
 import org.apache.commons.dbcp.ConnectionFactory;
@@ -528,6 +529,7 @@ public class TxnHandler {
         else {
           heartbeatLock(dbConn, extLockId);
         }
+        closeDbConn(dbConn);
         dbConn = getDbConn(Connection.TRANSACTION_SERIALIZABLE);
         return checkLock(dbConn, extLockId);
       } catch (SQLException e) {
@@ -935,22 +937,24 @@ public class TxnHandler {
   /**
    * For testing only, do not use.
    */
+  @VisibleForTesting
   int numLocksInLockTable() throws SQLException, MetaException {
-    Connection dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+    Connection dbConn = null;
     Statement stmt = null;
+    ResultSet rs = null;
     try {
+      dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
       stmt = dbConn.createStatement();
       String s = "select count(*) from HIVE_LOCKS";
       LOG.debug("Going to execute query <" + s + ">");
-      ResultSet rs = stmt.executeQuery(s);
+      rs = stmt.executeQuery(s);
       rs.next();
       int rc = rs.getInt(1);
       // Necessary to clean up the transaction in the db.
       dbConn.rollback();
       return rc;
     } finally {
-      closeDbConn(dbConn);
-      closeStmt(stmt);
+      close(rs, stmt, dbConn);
     }
   }
 
@@ -977,7 +981,8 @@ public class TxnHandler {
         return dbConn;
       } catch (SQLException e){
         if ((--rc) <= 0) throw e;
-        LOG.error("There is a problem with a connection from the pool, retrying", e);
+        LOG.error("There is a problem with a connection from the pool, retrying(rc=" + rc + "): " +
+          getMessage(e), e);
       }
     }
   }
@@ -1951,7 +1956,7 @@ public class TxnHandler {
       }
       if (!sawAtLeastOne) {
         throw new MetaException("This should never happen!  We already " +
-          "checked the lock existed but now we can't find it!");
+          "checked the lock(" + JavaUtils.lockIdToString(extLockId) + ") existed but now we can't find it!");
       }
       return ourLockInfo;
     } finally {
@@ -2116,6 +2121,9 @@ public class TxnHandler {
     if ("bonecp".equals(connectionPooler)) {
       BoneCPConfig config = new BoneCPConfig();
       config.setJdbcUrl(driverUrl);
+      //if we are waiting for connection for 60s, something is really wrong
+      //better raise an error than hang forever
+      config.setConnectionTimeoutInMs(60000);
       config.setMaxConnectionsPerPartition(10);
       config.setPartitionCount(1);
       config.setUser(user);
@@ -2271,9 +2279,14 @@ public class TxnHandler {
    */
   private int getRequiredIsolationLevel() throws MetaException, SQLException {
     if(dbProduct == null) {
-      Connection tmp = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
-      determineDatabaseProduct(tmp);
-      closeDbConn(tmp);
+      Connection tmp = null;
+      try {
+        tmp = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        determineDatabaseProduct(tmp);
+      }
+      finally {
+        closeDbConn(tmp);
+      }
     }
     switch (dbProduct) {
       case DERBY:
