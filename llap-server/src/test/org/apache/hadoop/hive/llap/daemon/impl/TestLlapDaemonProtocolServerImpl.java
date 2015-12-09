@@ -39,7 +39,8 @@ public class TestLlapDaemonProtocolServerImpl {
     int numHandlers = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_DAEMON_RPC_NUM_HANDLERS);
     LlapDaemonProtocolServerImpl server =
         new LlapDaemonProtocolServerImpl(numHandlers, mock(ContainerRunner.class),
-            new AtomicReference<InetSocketAddress>(), rpcPort);
+           new AtomicReference<InetSocketAddress>(), new AtomicReference<InetSocketAddress>(),
+           rpcPort, rpcPort + 1);
 
     try {
       server.init(new Configuration());

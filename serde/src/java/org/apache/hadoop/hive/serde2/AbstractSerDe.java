@@ -122,6 +122,6 @@ public abstract class AbstractSerDe implements SerDe {
    *        does, in fact, store it inside metastore, based on table parameters.
    */
   public boolean shouldStoreFieldsInMetastore(Map<String, String> tableParams) {
-    return false; // The default, unless SerDe overrides it. TODO#
+    return false; // The default, unless SerDe overrides it.
   }
 }
