@@ -40,6 +40,13 @@ public interface ServiceInstance {
   public int getRpcPort();
 
   /**
+   * Management endpoint for service instance
+   *
+   * @return
+   */
+  public int getManagementPort();
+
+  /**
    * Shuffle Endpoint for service instance
    * 
    * @return

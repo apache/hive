@@ -46,6 +46,7 @@ public class LlapFixedRegistryImpl implements ServiceRegistry {
 
   private final int port;
   private final int shuffle;
+  private final int mngPort;
   private final String[] hosts;
   private final int memory;
   private final int vcores;
@@ -58,6 +59,7 @@ public class LlapFixedRegistryImpl implements ServiceRegistry {
     this.port = HiveConf.getIntVar(conf, ConfVars.LLAP_DAEMON_RPC_PORT);
     this.shuffle = HiveConf.getIntVar(conf, ConfVars.LLAP_DAEMON_YARN_SHUFFLE_PORT);
     this.resolveHosts = conf.getBoolean(FIXED_REGISTRY_RESOLVE_HOST_NAMES, true);
+    this.mngPort = HiveConf.getIntVar(conf, ConfVars.LLAP_MANAGEMENT_RPC_PORT);
 
     for (Map.Entry<String, String> kv : conf) {
       if (kv.getKey().startsWith(LlapConfiguration.LLAP_DAEMON_PREFIX)
@@ -133,6 +135,11 @@ public class LlapFixedRegistryImpl implements ServiceRegistry {
     public int getRpcPort() {
       // TODO: allow >1 port per host?
       return LlapFixedRegistryImpl.this.port;
+    }
+
+    @Override
+    public int getManagementPort() {
+      return LlapFixedRegistryImpl.this.mngPort;
     }
 
     @Override

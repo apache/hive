@@ -58,6 +58,10 @@ import com.google.common.base.Preconditions;
 
 public class LlapYarnRegistryImpl implements ServiceRegistry {
 
+  /** IPC endpoint names. */
+  private static final String IPC_SERVICES = "services",
+      IPC_MNG = "llapmng", IPC_SHUFFLE = "shuffle", IPC_LLAP = "llap";
+
   private static final Logger LOG = LoggerFactory.getLogger(LlapYarnRegistryImpl.class);
 
   private final RegistryOperationsService client;
@@ -108,13 +112,13 @@ public class LlapYarnRegistryImpl implements ServiceRegistry {
 
   public Endpoint getRpcEndpoint() {
     final int rpcPort = HiveConf.getIntVar(conf, ConfVars.LLAP_DAEMON_RPC_PORT);
-    return RegistryTypeUtils.ipcEndpoint("llap", new InetSocketAddress(hostname, rpcPort));
+    return RegistryTypeUtils.ipcEndpoint(IPC_LLAP, new InetSocketAddress(hostname, rpcPort));
   }
 
   public Endpoint getShuffleEndpoint() {
     final int shufflePort = HiveConf.getIntVar(conf, ConfVars.LLAP_DAEMON_YARN_SHUFFLE_PORT);
     // HTTP today, but might not be
-    return RegistryTypeUtils.inetAddrEndpoint("shuffle", ProtocolTypes.PROTOCOL_TCP, hostname,
+    return RegistryTypeUtils.inetAddrEndpoint(IPC_SHUFFLE, ProtocolTypes.PROTOCOL_TCP, hostname,
         shufflePort);
   }
 
@@ -125,12 +129,17 @@ public class LlapYarnRegistryImpl implements ServiceRegistry {
     final URL serviceURL;
     try {
       serviceURL = new URL(scheme, hostname, servicePort, "");
-      return RegistryTypeUtils.webEndpoint("services", serviceURL.toURI());
+      return RegistryTypeUtils.webEndpoint(IPC_SERVICES, serviceURL.toURI());
     } catch (MalformedURLException e) {
       throw new RuntimeException(e);
     } catch (URISyntaxException e) {
       throw new RuntimeException("llap service URI for " + hostname + " is invalid", e);
     }
+  }
+
+  public Endpoint getMngEndpoint() {
+    return RegistryTypeUtils.ipcEndpoint(IPC_MNG, new InetSocketAddress(hostname,
+        HiveConf.getIntVar(conf, ConfVars.LLAP_MANAGEMENT_RPC_PORT)));
   }
 
   private final String getPath() {
@@ -142,6 +151,7 @@ public class LlapYarnRegistryImpl implements ServiceRegistry {
     String path = getPath();
     ServiceRecord srv = new ServiceRecord();
     srv.addInternalEndpoint(getRpcEndpoint());
+    srv.addInternalEndpoint(getMngEndpoint());
     srv.addInternalEndpoint(getShuffleEndpoint());
     srv.addExternalEndpoint(getServicesEndpoint());
 
@@ -174,19 +184,24 @@ public class LlapYarnRegistryImpl implements ServiceRegistry {
     private boolean alive = true;
     private final String host;
     private final int rpcPort;
+    private final int mngPort;
     private final int shufflePort;
 
     public DynamicServiceInstance(ServiceRecord srv) throws IOException {
       this.srv = srv;
 
-      final Endpoint shuffle = srv.getInternalEndpoint("shuffle");
-      final Endpoint rpc = srv.getInternalEndpoint("llap");
+      final Endpoint shuffle = srv.getInternalEndpoint(IPC_SHUFFLE);
+      final Endpoint rpc = srv.getInternalEndpoint(IPC_LLAP);
+      final Endpoint mng = srv.getInternalEndpoint(IPC_MNG);
 
       this.host =
           RegistryTypeUtils.getAddressField(rpc.addresses.get(0),
               AddressTypes.ADDRESS_HOSTNAME_FIELD);
       this.rpcPort =
           Integer.valueOf(RegistryTypeUtils.getAddressField(rpc.addresses.get(0),
+              AddressTypes.ADDRESS_PORT_FIELD));
+      this.mngPort =
+          Integer.valueOf(RegistryTypeUtils.getAddressField(mng.addresses.get(0),
               AddressTypes.ADDRESS_PORT_FIELD));
       this.shufflePort =
           Integer.valueOf(RegistryTypeUtils.getAddressField(shuffle.addresses.get(0),
@@ -239,6 +254,11 @@ public class LlapYarnRegistryImpl implements ServiceRegistry {
     @Override
     public String toString() {
       return "DynamicServiceInstance [alive=" + alive + ", host=" + host + ":" + rpcPort + " with resources=" + getResource() +"]";
+    }
+
+    @Override
+    public int getManagementPort() {
+      return mngPort;
     }
 
     // Relying on the identity hashCode and equality, since refreshing instances retains the old copy

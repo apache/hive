@@ -115,7 +115,6 @@ public class LlapDaemonProtocolClientImpl implements LlapDaemonProtocolBlockingP
   }
 
   public LlapDaemonProtocolBlockingPB createProxy() throws IOException {
-    // TODO Fix security
     RPC.setProtocolEngine(conf, LlapDaemonProtocolBlockingPB.class, ProtobufRpcEngine.class);
     ProtocolProxy<LlapDaemonProtocolBlockingPB> proxy =
         RPC.getProtocolProxy(LlapDaemonProtocolBlockingPB.class, 0, serverAddr,

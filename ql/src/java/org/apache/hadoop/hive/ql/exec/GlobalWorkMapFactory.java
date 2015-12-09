@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.llap.io.api.LlapIoProxy;
+import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 
 public class GlobalWorkMapFactory {
 
@@ -99,7 +99,7 @@ public class GlobalWorkMapFactory {
   DummyMap<Path, BaseWork> dummy = new DummyMap<Path, BaseWork>();
 
   public Map<Path, BaseWork> get(Configuration conf) {
-    if (LlapIoProxy.isDaemon()
+    if (LlapProxy.isDaemon()
         || (SessionState.get() != null && SessionState.get().isHiveServerQuery())
         || HiveConf.getVar(conf, ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
       if (threadLocalWorkMap == null) {

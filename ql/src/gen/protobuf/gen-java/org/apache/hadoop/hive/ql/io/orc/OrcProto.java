@@ -17765,6 +17765,7 @@ public final class OrcProto {
      * Version of the writer:
      *   0 (or missing) = original
      *   1 = HIVE-8732 fixed
+     *   2 = HIVE-4243 fixed
      * </pre>
      */
     boolean hasWriterVersion();
@@ -17775,6 +17776,7 @@ public final class OrcProto {
      * Version of the writer:
      *   0 (or missing) = original
      *   1 = HIVE-8732 fixed
+     *   2 = HIVE-4243 fixed
      * </pre>
      */
     int getWriterVersion();
@@ -18077,6 +18079,7 @@ public final class OrcProto {
      * Version of the writer:
      *   0 (or missing) = original
      *   1 = HIVE-8732 fixed
+     *   2 = HIVE-4243 fixed
      * </pre>
      */
     public boolean hasWriterVersion() {
@@ -18089,6 +18092,7 @@ public final class OrcProto {
      * Version of the writer:
      *   0 (or missing) = original
      *   1 = HIVE-8732 fixed
+     *   2 = HIVE-4243 fixed
      * </pre>
      */
     public int getWriterVersion() {
@@ -18759,6 +18763,7 @@ public final class OrcProto {
        * Version of the writer:
        *   0 (or missing) = original
        *   1 = HIVE-8732 fixed
+       *   2 = HIVE-4243 fixed
        * </pre>
        */
       public boolean hasWriterVersion() {
@@ -18771,6 +18776,7 @@ public final class OrcProto {
        * Version of the writer:
        *   0 (or missing) = original
        *   1 = HIVE-8732 fixed
+       *   2 = HIVE-4243 fixed
        * </pre>
        */
       public int getWriterVersion() {
@@ -18783,6 +18789,7 @@ public final class OrcProto {
        * Version of the writer:
        *   0 (or missing) = original
        *   1 = HIVE-8732 fixed
+       *   2 = HIVE-4243 fixed
        * </pre>
        */
       public Builder setWriterVersion(int value) {
@@ -18798,6 +18805,7 @@ public final class OrcProto {
        * Version of the writer:
        *   0 (or missing) = original
        *   1 = HIVE-8732 fixed
+       *   2 = HIVE-4243 fixed
        * </pre>
        */
       public Builder clearWriterVersion() {

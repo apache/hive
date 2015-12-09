@@ -218,6 +218,9 @@ public class HiveConf extends Configuration {
     }
   }
 
+  public static final String HIVE_LLAP_DAEMON_SERVICE_PRINCIPAL_NAME = "hive.llap.daemon.service.principal";
+
+
   /**
    * dbVars are the parameters can be set per database. If these
    * parameters are set as a database property, when switching to that
@@ -2117,16 +2120,6 @@ public class HiveConf extends Configuration {
 
     HIVE_SECURITY_COMMAND_WHITELIST("hive.security.command.whitelist", "set,reset,dfs,add,list,delete,reload,compile",
         "Comma separated list of non-SQL Hive commands users are authorized to execute"),
-    HIVE_CONF_RESTRICTED_LIST("hive.conf.restricted.list",
-        "hive.security.authenticator.manager,hive.security.authorization.manager,hive.users.in.admin.role",
-        "Comma separated list of configuration options which are immutable at runtime"),
-    HIVE_CONF_HIDDEN_LIST("hive.conf.hidden.list",
-        METASTOREPWD.varname + "," + HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname,
-        "Comma separated list of configuration options which should not be read by normal user like passwords"),
-
-    HIVE_CONF_INTERNAL_VARIABLE_LIST("hive.conf.internal.variable.list",
-        "hive.added.files.path,hive.added.jars.path,hive.added.archives.path",
-        "Comma separated list of variables which are used internally and should not be configurable."),
 
     // If this is set all move tasks at the end of a multi-insert query will only begin once all
     // outputs are ready
@@ -2377,6 +2370,26 @@ public class HiveConf extends Configuration {
         "By default, percentile latency metrics are disabled."),
     LLAP_IO_THREADPOOL_SIZE("hive.llap.io.threadpool.size", 10,
         "Specify the number of threads to use for low-level IO thread pool."),
+    LLAP_KERBEROS_PRINCIPAL(HIVE_LLAP_DAEMON_SERVICE_PRINCIPAL_NAME, "",
+        "The name of the LLAP daemon's service principal."),
+    LLAP_KERBEROS_KEYTAB_FILE("hive.llap.daemon.keytab.file", "",
+        "The path to the Kerberos Keytab file containing the LLAP daemon's service principal."),
+    LLAP_ZKSM_KERBEROS_PRINCIPAL("hive.llap.zk.sm.principal", "",
+        "The name of the principal to use to talk to ZooKeeper for ZooKeeper SecretManager."),
+    LLAP_ZKSM_KERBEROS_KEYTAB_FILE("hive.llap.zk.sm.keytab.file", "",
+        "The path to the Kerberos Keytab file containing the principal to use to talk to\n" +
+        "ZooKeeper for ZooKeeper SecretManager."),
+    LLAP_ZKSM_ZK_CONNECTION_STRING("hive.llap.zk.sm.connectionString", "",
+        "ZooKeeper connection string for ZooKeeper SecretManager."),
+    LLAP_SECURITY_ACL("hive.llap.daemon.service.acl", "*", "The ACL for LLAP daemon."),
+    LLAP_MANAGEMENT_ACL("hive.llap.management.service.acl", "*",
+        "The ACL for LLAP daemon management."),
+    // Hadoop DelegationTokenManager default is 1 week.
+    LLAP_DELEGATION_TOKEN_LIFETIME("hive.llap.daemon.delegation.token.lifetime", "14d",
+         new TimeValidator(TimeUnit.SECONDS),
+        "LLAP delegation token lifetime, in seconds if specified without a unit."),
+    LLAP_MANAGEMENT_RPC_PORT("hive.llap.management.rpc.port", 15004,
+        "RPC port for LLAP daemon management service."),
 
     LLAP_DAEMON_RPC_NUM_HANDLERS("hive.llap.daemon.rpc.num.handlers", 5,
       "Number of RPC handlers for LLAP daemon.", "llap.daemon.rpc.num.handlers"),
@@ -2532,7 +2545,18 @@ public class HiveConf extends Configuration {
         "Expected inflation factor between disk/in memory representation of hash tables"),
     HIVE_LOG_TRACE_ID("hive.log.trace.id", "",
         "Log tracing id that can be used by upstream clients for tracking respective logs. " +
-        "Truncated to " + LOG_PREFIX_LENGTH + " characters. Defaults to use auto-generated session id.");
+        "Truncated to " + LOG_PREFIX_LENGTH + " characters. Defaults to use auto-generated session id."),
+
+
+    HIVE_CONF_RESTRICTED_LIST("hive.conf.restricted.list",
+        "hive.security.authenticator.manager,hive.security.authorization.manager,hive.users.in.admin.role",
+        "Comma separated list of configuration options which are immutable at runtime"),
+    HIVE_CONF_HIDDEN_LIST("hive.conf.hidden.list",
+        METASTOREPWD.varname + "," + HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname,
+        "Comma separated list of configuration options which should not be read by normal user like passwords"),
+    HIVE_CONF_INTERNAL_VARIABLE_LIST("hive.conf.internal.variable.list",
+        "hive.added.files.path,hive.added.jars.path,hive.added.archives.path",
+        "Comma separated list of variables which are used internally and should not be configurable.");
 
 
     public final String varname;

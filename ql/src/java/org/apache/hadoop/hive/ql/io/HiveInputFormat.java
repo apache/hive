@@ -40,7 +40,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
 import org.apache.hadoop.hive.llap.io.api.LlapIo;
-import org.apache.hadoop.hive.llap.io.api.LlapIoProxy;
+import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.ql.exec.spark.SparkDynamicPartitionPruner;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -214,7 +214,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       LOG.debug("Wrapping " + inputFormat);
     }
     @SuppressWarnings("unchecked")
-    LlapIo<VectorizedRowBatch> llapIo = LlapIoProxy.getIo();
+    LlapIo<VectorizedRowBatch> llapIo = LlapProxy.getIo();
     if (llapIo == null) {
       LOG.info("Not using LLAP because IO is not initialized");
       return inputFormat;
