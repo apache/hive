@@ -45,9 +45,9 @@ public class MetricsTestUtils {
   }
 
   public static void verifyMetricFile(File jsonReportFile, MetricsCategory category, String metricsName,
-    Object value) throws Exception {
+    Object expectedValue) throws Exception {
     JsonNode jsonNode = getJsonNode(jsonReportFile, category, metricsName);
-    Assert.assertEquals(jsonNode.asText(), value.toString());
+    Assert.assertEquals(expectedValue.toString(), jsonNode.asText());
   }
 
   private static JsonNode getJsonNode(File jsonReportFile, MetricsCategory category, String metricsName) throws Exception {

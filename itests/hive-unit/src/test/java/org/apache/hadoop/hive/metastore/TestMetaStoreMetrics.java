@@ -19,26 +19,32 @@ package org.apache.hadoop.hive.metastore;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import junit.framework.TestCase;
 import org.apache.hadoop.hive.cli.CliSessionState;
+import org.apache.hadoop.hive.common.metrics.MetricsTestUtils;
+import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.metrics2.MetricsReporting;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.SerDeInfo;
+import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hive.service.server.HiveServer2;
-import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -71,19 +77,18 @@ public class TestMetaStoreMetrics {
     hiveConf.setVar(HiveConf.ConfVars.HIVE_METRICS_JSON_FILE_INTERVAL, "100ms");
 
     MetaStoreUtils.startMetaStore(port, ShimLoader.getHadoopThriftAuthBridge(), hiveConf);
-
     SessionState.start(new CliSessionState(hiveConf));
     driver = new Driver(hiveConf);
   }
 
+
   @Test
-  public void testMetricsFile() throws Exception {
+  public void testMethodCounts() throws Exception {
     driver.run("show databases");
 
     //give timer thread a chance to print the metrics
     Thread.sleep(2000);
 
-    //As the file is being written, try a few times.
     //This can be replaced by CodahaleMetrics's JsonServlet reporter once it is exposed.
     byte[] jsonData = Files.readAllBytes(Paths.get(jsonReportFile.getAbsolutePath()));
     ObjectMapper objectMapper = new ObjectMapper();
@@ -93,6 +98,66 @@ public class TestMetaStoreMetrics {
     JsonNode methodCounterNode = timersNode.path("api_get_all_databases");
     JsonNode methodCountNode = methodCounterNode.path("count");
     Assert.assertTrue(methodCountNode.asInt() > 0);
+  }
+
+  @Test
+  public void testMetaDataCounts() throws Exception {
+    //1 databases created
+    driver.run("create database testdb1");
+
+    //4 tables
+    driver.run("create table testtbl1 (key string)");
+    driver.run("create table testtblpart (key string) partitioned by (partkey string)");
+    driver.run("use testdb1");
+    driver.run("create table testtbl2 (key string)");
+    driver.run("create table testtblpart2 (key string) partitioned by (partkey string)");
+
+    //6 partitions
+    driver.run("alter table default.testtblpart add partition (partkey='a')");
+    driver.run("alter table default.testtblpart add partition (partkey='b')");
+    driver.run("alter table default.testtblpart add partition (partkey='c')");
+    driver.run("alter table testdb1.testtblpart2 add partition (partkey='a')");
+    driver.run("alter table testdb1.testtblpart2 add partition (partkey='b')");
+    driver.run("alter table testdb1.testtblpart2 add partition (partkey='c')");
+
+
+    //create and drop some additional metadata, to test drop counts.
+    driver.run("create database tempdb");
+    driver.run("use tempdb");
+
+    driver.run("create table delete_by_table (key string) partitioned by (partkey string)");
+    driver.run("alter table delete_by_table add partition (partkey='temp')");
+    driver.run("drop table delete_by_table");
+
+    driver.run("create table delete_by_part (key string) partitioned by (partkey string)");
+    driver.run("alter table delete_by_part add partition (partkey='temp')");
+    driver.run("alter table delete_by_part drop partition (partkey='temp')");
+
+    driver.run("create table delete_by_db (key string) partitioned by (partkey string)");
+    driver.run("alter table delete_by_db add partition (partkey='temp')");
+    driver.run("use default");
+    driver.run("drop database tempdb cascade");
+
+    //give timer thread a chance to print the metrics
+    Thread.sleep(2000);
+
+    MetricsTestUtils.verifyMetricFile(jsonReportFile, MetricsTestUtils.COUNTER, MetricsConstant.DELTA_TOTAL_DATABASES, 1);
+    MetricsTestUtils.verifyMetricFile(jsonReportFile, MetricsTestUtils.COUNTER, MetricsConstant.DELTA_TOTAL_TABLES, 4);
+    MetricsTestUtils.verifyMetricFile(jsonReportFile, MetricsTestUtils.COUNTER, MetricsConstant.DELTA_TOTAL_PARTITIONS, 6);
+
+
+    //to test initial metadata count metrics.
+    hiveConf.setVar(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL, ObjectStore.class.getName());
+    HiveMetaStore.HMSHandler baseHandler = new HiveMetaStore.HMSHandler("test", hiveConf, false);
+    baseHandler.init();
+    baseHandler.updateMetrics();
+
+    Thread.sleep(2000);
+
+    //1 new db + default
+    MetricsTestUtils.verifyMetricFile(jsonReportFile, MetricsTestUtils.GAUGE, MetricsConstant.INIT_TOTAL_DATABASES, 2);
+    MetricsTestUtils.verifyMetricFile(jsonReportFile, MetricsTestUtils.GAUGE, MetricsConstant.INIT_TOTAL_TABLES, 4);
+    MetricsTestUtils.verifyMetricFile(jsonReportFile, MetricsTestUtils.GAUGE, MetricsConstant.INIT_TOTAL_PARTITIONS, 6);
   }
 
 
