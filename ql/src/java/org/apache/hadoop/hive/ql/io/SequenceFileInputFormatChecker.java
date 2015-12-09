@@ -19,7 +19,7 @@
 package org.apache.hadoop.hive.ql.io;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -35,7 +35,7 @@ public class SequenceFileInputFormatChecker implements InputFormatChecker {
 
   @Override
   public boolean validateInput(FileSystem fs, HiveConf conf,
-      ArrayList<FileStatus> files) throws IOException {
+      List<FileStatus> files) throws IOException {
     if (files.size() <= 0) {
       return false;
     }
@@ -48,7 +48,7 @@ public class SequenceFileInputFormatChecker implements InputFormatChecker {
         reader = null;
       } catch (IOException e) {
         return false;
-      }finally{
+      } finally{
         IOUtils.closeStream(reader);
       }
     }

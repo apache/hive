@@ -24,8 +24,8 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -58,7 +58,7 @@ public class GenericUDTFParseUrlTuple extends GenericUDTF {
     HOST, PATH, QUERY, REF, PROTOCOL, AUTHORITY, FILE, USERINFO, QUERY_WITH_KEY, NULLNAME
   };
 
-  private static Log LOG = LogFactory.getLog(GenericUDTFParseUrlTuple.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(GenericUDTFParseUrlTuple.class.getName());
 
   int numCols;    // number of output columns
   String[] paths; // array of pathnames, each of which corresponds to a column

@@ -26,8 +26,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -62,7 +62,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
  */
 public class SyntheticJoinPredicate implements Transform {
 
-  private static transient Log LOG = LogFactory.getLog(SyntheticJoinPredicate.class.getName());
+  private static transient Logger LOG = LoggerFactory.getLogger(SyntheticJoinPredicate.class.getName());
 
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {

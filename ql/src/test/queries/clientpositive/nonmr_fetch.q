@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.fetch.task.conversion=minimal;
 set hive.exec.submitviachild=true;
 set hive.exec.submit.local.task.via.child=true;

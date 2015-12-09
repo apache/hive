@@ -1,9 +1,10 @@
+set hive.mapred.mode=nonstrict;
 set hive.auto.convert.join=true;
 set hive.auto.convert.sortmerge.join=true;
 set hive.optimize.bucketmapjoin = true;
 set hive.optimize.bucketmapjoin.sortedmerge = true;
-set hive.enforce.bucketing=true;
-set hive.enforce.sorting=true;
+
+
 set hive.exec.reducers.max = 1;
 set hive.merge.mapfiles=false;
 set hive.merge.mapredfiles=false; 

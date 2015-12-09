@@ -1,7 +1,8 @@
+set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;
 set hive.support.concurrency=true;
-set hive.enforce.bucketing=true;
+
 
 CREATE TABLE non_orc_table(a INT, b STRING) CLUSTERED BY(a) INTO 2 BUCKETS STORED AS sequencefile; 
 

@@ -26,8 +26,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -82,7 +82,7 @@ import com.google.common.collect.Maps;
 
 public class StatsRulesProcFactory {
 
-  private static final Log LOG = LogFactory.getLog(StatsRulesProcFactory.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(StatsRulesProcFactory.class.getName());
   private static final boolean isDebugEnabled = LOG.isDebugEnabled();
 
   /**
@@ -117,7 +117,7 @@ public class StatsRulesProcFactory {
       } catch (CloneNotSupportedException e) {
         throw new SemanticException(ErrorMsg.STATISTICS_CLONING_FAILED.getMsg());
       } catch (HiveException e) {
-        LOG.debug(e);
+        LOG.debug("Failed to retrieve stats ",e);
         throw new SemanticException(e);
       }
       return null;
@@ -967,20 +967,6 @@ public class StatsRulesProcFactory {
       // worst-case, hash aggregation disabled
       return false;
     }
-
-    private long applyGBYRule(long numRows, long dvProd) {
-      long newNumRows = numRows;
-
-      // to avoid divide by 2 to become 0
-      if (numRows > 1) {
-        if (dvProd != 0) {
-          newNumRows = Math.min(numRows / 2, dvProd);
-        } else {
-          newNumRows = numRows / 2;
-        }
-      }
-      return newNumRows;
-    }
   }
 
   /**
@@ -1032,170 +1018,156 @@ public class StatsRulesProcFactory {
       int numAttr = 1;
       AnnotateStatsProcCtx aspCtx = (AnnotateStatsProcCtx) procCtx;
       HiveConf conf = aspCtx.getConf();
-      boolean allStatsAvail = true;
       boolean allSatisfyPreCondition = true;
 
       for (Operator<? extends OperatorDesc> op : parents) {
         if (op.getStatistics() == null) {
-          allStatsAvail = false;
+          return null;
         }
       }
 
-      if (allStatsAvail) {
+      for (Operator<? extends OperatorDesc> op : parents) {
+        if (!satisfyPrecondition(op.getStatistics())) {
+          allSatisfyPreCondition = false;
+          break;
+        }
+      }
 
-        for (Operator<? extends OperatorDesc> op : parents) {
-          if (!satisfyPrecondition(op.getStatistics())) {
-            allSatisfyPreCondition = false;
+      if (allSatisfyPreCondition) {
+
+        // statistics object that is combination of statistics from all
+        // relations involved in JOIN
+        Statistics stats = new Statistics();
+        int numParent = parents.size();
+        Map<Integer, Long> rowCountParents = Maps.newHashMap();
+        Map<Integer, Statistics> joinStats = Maps.newHashMap();
+        Map<Integer, List<String>> joinKeys = Maps.newHashMap();
+        List<Long> rowCounts = Lists.newArrayList();
+
+        // detect if there are multiple attributes in join key
+        ReduceSinkOperator rsOp = (ReduceSinkOperator) jop.getParentOperators().get(0);
+        List<String> keyExprs = StatsUtils.getQualifedReducerKeyNames(rsOp.getConf()
+            .getOutputKeyColumnNames());
+        numAttr = keyExprs.size();
+
+        // infer PK-FK relationship in single attribute join case
+        long inferredRowCount = inferPKFKRelationship(numAttr, parents, jop);
+        // get the join keys from parent ReduceSink operators
+        for (int pos = 0; pos < parents.size(); pos++) {
+          ReduceSinkOperator parent = (ReduceSinkOperator) jop.getParentOperators().get(pos);
+          Statistics parentStats = parent.getStatistics();
+          keyExprs = StatsUtils.getQualifedReducerKeyNames(parent.getConf()
+              .getOutputKeyColumnNames());
+
+          rowCountParents.put(pos, parentStats.getNumRows());
+          rowCounts.add(parentStats.getNumRows());
+
+          // internal name for expressions and estimate column statistics for expression.
+          joinKeys.put(pos, keyExprs);
+
+          // get column statistics for all output columns
+          joinStats.put(pos, parentStats);
+
+          // since new statistics is derived from all relations involved in
+          // JOIN, we need to update the state information accordingly
+          stats.updateColumnStatsState(parentStats.getColumnStatsState());
+        }
+
+        List<Long> distinctVals = Lists.newArrayList();
+        long denom = 1;
+        if (inferredRowCount == -1) {
+          // failed to infer PK-FK relationship for row count estimation fall-back on default logic
+          // compute denominator  max(V(R,y1), V(S,y1)) * max(V(R,y2), V(S,y2))
+          // in case of multi-attribute join
+          List<Long> perAttrDVs = Lists.newArrayList();
+          for (int idx = 0; idx < numAttr; idx++) {
+            for (Integer i : joinKeys.keySet()) {
+              String col = joinKeys.get(i).get(idx);
+              ColStatistics cs = joinStats.get(i).getColumnStatisticsFromColName(col);
+              if (cs != null) {
+                perAttrDVs.add(cs.getCountDistint());
+              }
+            }
+            distinctVals.add(getDenominator(perAttrDVs));
+            perAttrDVs.clear();
+          }
+
+          if (numAttr > numParent) {
+            // To avoid denominator getting larger and aggressively reducing
+            // number of rows, we will ease out denominator.
+            denom = StatsUtils.addWithExpDecay(distinctVals);
+          } else {
+            for (Long l : distinctVals) {
+              denom = StatsUtils.safeMult(denom, l);
+            }
           }
         }
 
-        if (allSatisfyPreCondition) {
+        // Update NDV of joined columns to be min(V(R,y), V(S,y))
+        updateJoinColumnsNDV(joinKeys, joinStats, numAttr);
 
-          // statistics object that is combination of statistics from all
-          // relations involved in JOIN
-          Statistics stats = new Statistics();
-          List<Long> distinctVals = Lists.newArrayList();
-          int numParent = parents.size();
-          Map<Integer, Long> rowCountParents = Maps.newHashMap();
-          Map<Integer, Statistics> joinStats = Maps.newHashMap();
-          Map<Integer, List<String>> joinKeys = Maps.newHashMap();
-          List<Long> rowCounts = Lists.newArrayList();
-
-          // detect if there are multiple attributes in join key
-          ReduceSinkOperator rsOp = (ReduceSinkOperator) jop.getParentOperators().get(0);
-          List<String> keyExprs = StatsUtils.getQualifedReducerKeyNames(rsOp.getConf()
-              .getOutputKeyColumnNames());
-          numAttr = keyExprs.size();
-
-          // infer PK-FK relationship in single attribute join case
-          long inferredRowCount = inferPKFKRelationship(numAttr, parents, jop);
-          // get the join keys from parent ReduceSink operators
-          for (int pos = 0; pos < parents.size(); pos++) {
-            ReduceSinkOperator parent = (ReduceSinkOperator) jop.getParentOperators().get(pos);
-            Statistics parentStats = parent.getStatistics();
-            keyExprs = StatsUtils.getQualifedReducerKeyNames(parent.getConf()
-                .getOutputKeyColumnNames());
-
-            rowCountParents.put(pos, parentStats.getNumRows());
-            rowCounts.add(parentStats.getNumRows());
-
-            // internal name for expressions and estimate column statistics for expression.
-            joinKeys.put(pos, keyExprs);
-
-            // get column statistics for all output columns
-            joinStats.put(pos, parentStats);
-
-            // since new statistics is derived from all relations involved in
-            // JOIN, we need to update the state information accordingly
-            stats.updateColumnStatsState(parentStats.getColumnStatsState());
-          }
-
-          // compute denominator i.e, max(V(R,Y), V(S,Y)) in case of single
-          // attribute join, else max(V(R,y1), V(S,y1)) * max(V(R,y2), V(S,y2))
-          // in case of multi-attribute join
-          long denom = 1;
-          if (numAttr > 1) {
-            List<Long> perAttrDVs = Lists.newArrayList();
-            for (int idx = 0; idx < numAttr; idx++) {
-              for (Integer i : joinKeys.keySet()) {
-                String col = joinKeys.get(i).get(idx);
-                ColStatistics cs = joinStats.get(i).getColumnStatisticsFromColName(col);
-                if (cs != null) {
-                  perAttrDVs.add(cs.getCountDistint());
-                }
-              }
-              distinctVals.add(getDenominator(perAttrDVs));
-              perAttrDVs.clear();
+        // column statistics from different sources are put together and
+        // rename based on output schema of join operator
+        Map<String, ExprNodeDesc> colExprMap = jop.getColumnExprMap();
+        RowSchema rs = jop.getSchema();
+        List<ColStatistics> outColStats = Lists.newArrayList();
+        for (ColumnInfo ci : rs.getSignature()) {
+          String key = ci.getInternalName();
+          ExprNodeDesc end = colExprMap.get(key);
+          if (end instanceof ExprNodeColumnDesc) {
+            String colName = ((ExprNodeColumnDesc) end).getColumn();
+            int pos = jop.getConf().getReversedExprs().get(key);
+            ColStatistics cs = joinStats.get(pos).getColumnStatisticsFromColName(colName);
+            String outColName = key;
+            if (cs != null) {
+              cs.setColumnName(outColName);
             }
-
-            if (numAttr > numParent) {
-              // To avoid denominator getting larger and aggressively reducing
-              // number of rows, we will ease out denominator.
-              denom = getEasedOutDenominator(distinctVals);
-            } else {
-              for (Long l : distinctVals) {
-                denom = StatsUtils.safeMult(denom, l);
-              }
-            }
-          } else {
-            if (numAttr == 1) {
-              for (Integer i : joinKeys.keySet()) {
-                String col = joinKeys.get(i).get(0);
-                ColStatistics cs = joinStats.get(i).getColumnStatisticsFromColName(col);
-                if (cs != null) {
-                  distinctVals.add(cs.getCountDistint());
-                }
-              }
-            }
-            denom = getDenominator(distinctVals);
+            outColStats.add(cs);
           }
+        }
 
-          // Update NDV of joined columns to be min(V(R,y), V(S,y))
-          updateJoinColumnsNDV(joinKeys, joinStats, numAttr);
+        // update join statistics
+        stats.setColumnStats(outColStats);
+        long newRowCount = inferredRowCount !=-1 ? inferredRowCount : computeNewRowCount(rowCounts, denom);
+        updateStatsForJoinType(stats, newRowCount, jop, rowCountParents);
+        jop.setStatistics(stats);
 
-          // column statistics from different sources are put together and
-          // rename based on output schema of join operator
-          Map<String, ExprNodeDesc> colExprMap = jop.getColumnExprMap();
-          RowSchema rs = jop.getSchema();
-          List<ColStatistics> outColStats = Lists.newArrayList();
-          for (ColumnInfo ci : rs.getSignature()) {
-            String key = ci.getInternalName();
-            ExprNodeDesc end = colExprMap.get(key);
-            if (end instanceof ExprNodeColumnDesc) {
-              String colName = ((ExprNodeColumnDesc) end).getColumn();
-              int pos = jop.getConf().getReversedExprs().get(key);
-              ColStatistics cs = joinStats.get(pos).getColumnStatisticsFromColName(colName);
-              String outColName = key;
-              if (cs != null) {
-                cs.setColumnName(outColName);
-              }
-              outColStats.add(cs);
-            }
+        if (isDebugEnabled) {
+          LOG.debug("[0] STATS-" + jop.toString() + ": " + stats.extendedToString());
+        }
+      } else {
+
+        // worst case when there are no column statistics
+        float joinFactor = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVE_STATS_JOIN_FACTOR);
+        int numParents = parents.size();
+        List<Long> parentRows = Lists.newArrayList();
+        List<Long> parentSizes = Lists.newArrayList();
+        int maxRowIdx = 0;
+        long maxRowCount = 0;
+        int idx = 0;
+
+        for (Operator<? extends OperatorDesc> op : parents) {
+          Statistics ps = op.getStatistics();
+          long rowCount = ps.getNumRows();
+          if (rowCount > maxRowCount) {
+            maxRowCount = rowCount;
+            maxRowIdx = idx;
           }
+          parentRows.add(rowCount);
+          parentSizes.add(ps.getDataSize());
+          idx++;
+        }
 
-          // update join statistics
-          stats.setColumnStats(outColStats);
-          long newRowCount = inferredRowCount !=-1 ? inferredRowCount : computeNewRowCount(rowCounts, denom);
-          updateStatsForJoinType(stats, newRowCount, jop, rowCountParents);
-          jop.setStatistics(stats);
+        long maxDataSize = parentSizes.get(maxRowIdx);
+        newNumRows = StatsUtils.safeMult(StatsUtils.safeMult(maxRowCount, (numParents - 1)), joinFactor);
+        long newDataSize = StatsUtils.safeMult(StatsUtils.safeMult(maxDataSize, (numParents - 1)), joinFactor);
+        Statistics wcStats = new Statistics();
+        wcStats.setNumRows(newNumRows);
+        wcStats.setDataSize(newDataSize);
+        jop.setStatistics(wcStats);
 
-          if (isDebugEnabled) {
-            LOG.debug("[0] STATS-" + jop.toString() + ": " + stats.extendedToString());
-          }
-        } else {
-
-          // worst case when there are no column statistics
-          float joinFactor = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVE_STATS_JOIN_FACTOR);
-          int numParents = parents.size();
-          List<Long> parentRows = Lists.newArrayList();
-          List<Long> parentSizes = Lists.newArrayList();
-          int maxRowIdx = 0;
-          long maxRowCount = 0;
-          int idx = 0;
-
-          for (Operator<? extends OperatorDesc> op : parents) {
-            Statistics ps = op.getStatistics();
-            long rowCount = ps.getNumRows();
-            if (rowCount > maxRowCount) {
-              maxRowCount = rowCount;
-              maxRowIdx = idx;
-            }
-            parentRows.add(rowCount);
-            parentSizes.add(ps.getDataSize());
-            idx++;
-          }
-
-          long maxDataSize = parentSizes.get(maxRowIdx);
-          newNumRows = StatsUtils.safeMult(StatsUtils.safeMult(maxRowCount, (numParents - 1)), joinFactor);
-          long newDataSize = StatsUtils.safeMult(StatsUtils.safeMult(maxDataSize, (numParents - 1)), joinFactor);
-          Statistics wcStats = new Statistics();
-          wcStats.setNumRows(newNumRows);
-          wcStats.setDataSize(newDataSize);
-          jop.setStatistics(wcStats);
- 
-          if (isDebugEnabled) {
-            LOG.debug("[1] STATS-" + jop.toString() + ": " + wcStats.extendedToString());
-          }
+        if (isDebugEnabled) {
+          LOG.debug("[1] STATS-" + jop.toString() + ": " + wcStats.extendedToString());
         }
       }
       return null;
@@ -1204,44 +1176,46 @@ public class StatsRulesProcFactory {
     private long inferPKFKRelationship(int numAttr, List<Operator<? extends OperatorDesc>> parents,
         CommonJoinOperator<? extends JoinDesc> jop) {
       long newNumRows = -1;
-      if (numAttr == 1) {
-        // If numAttr is 1, this means we join on one single key column.
-        Map<Integer, ColStatistics> parentsWithPK = getPrimaryKeyCandidates(parents);
+      if (numAttr != 1) {
+        return newNumRows;
+      }
 
-        // We only allow one single PK.
-        if (parentsWithPK.size() != 1) {
-          LOG.debug("STATS-" + jop.toString() + ": detects none/multiple PK parents.");
-          return newNumRows;
-        }
-        Integer pkPos = parentsWithPK.keySet().iterator().next();
-        ColStatistics csPK = parentsWithPK.values().iterator().next();
+      // If numAttr is 1, this means we join on one single key column.
+      Map<Integer, ColStatistics> parentsWithPK = getPrimaryKeyCandidates(parents);
 
-        // infer foreign key candidates positions
-        Map<Integer, ColStatistics> csFKs = getForeignKeyCandidates(parents, csPK);
+      // We only allow one single PK.
+      if (parentsWithPK.size() != 1) {
+        LOG.debug("STATS-" + jop.toString() + ": detects none/multiple PK parents.");
+        return newNumRows;
+      }
+      Integer pkPos = parentsWithPK.keySet().iterator().next();
+      ColStatistics csPK = parentsWithPK.values().iterator().next();
 
-        // we allow multiple foreign keys (snowflake schema)
-        // csfKs.size() + 1 == parents.size() means we have a single PK and all
-        // the rest ops are FKs.
-        if (csFKs.size() + 1 == parents.size()) {
-          newNumRows = getCardinality(parents, pkPos, csPK, csFKs, jop);
+      // infer foreign key candidates positions
+      Map<Integer, ColStatistics> csFKs = getForeignKeyCandidates(parents, csPK);
 
-          // some debug information
-          if (isDebugEnabled) {
-            List<String> parentIds = Lists.newArrayList();
+      // we allow multiple foreign keys (snowflake schema)
+      // csfKs.size() + 1 == parents.size() means we have a single PK and all
+      // the rest ops are FKs.
+      if (csFKs.size() + 1 == parents.size()) {
+        newNumRows = getCardinality(parents, pkPos, csPK, csFKs, jop);
 
-            // print primary key containing parents
-            for (Integer i : parentsWithPK.keySet()) {
-              parentIds.add(parents.get(i).toString());
-            }
-            LOG.debug("STATS-" + jop.toString() + ": PK parent id(s) - " + parentIds);
-            parentIds.clear();
+        // some debug information
+        if (isDebugEnabled) {
+          List<String> parentIds = Lists.newArrayList();
 
-            // print foreign key containing parents
-            for (Integer i : csFKs.keySet()) {
-              parentIds.add(parents.get(i).toString());
-            }
-            LOG.debug("STATS-" + jop.toString() + ": FK parent id(s) - " + parentIds);
+          // print primary key containing parents
+          for (Integer i : parentsWithPK.keySet()) {
+            parentIds.add(parents.get(i).toString());
           }
+          LOG.debug("STATS-" + jop.toString() + ": PK parent id(s) - " + parentIds);
+          parentIds.clear();
+
+          // print foreign key containing parents
+          for (Integer i : csFKs.keySet()) {
+            parentIds.add(parents.get(i).toString());
+          }
+          LOG.debug("STATS-" + jop.toString() + ": FK parent id(s) - " + parentIds);
         }
       }
       return newNumRows;
@@ -1423,20 +1397,6 @@ public class StatsRulesProcFactory {
         }
       }
       return result;
-    }
-
-    private Long getEasedOutDenominator(List<Long> distinctVals) {
-      // Exponential back-off for NDVs.
-      // 1) Descending order sort of NDVs
-      // 2) denominator = NDV1 * (NDV2 ^ (1/2)) * (NDV3 ^ (1/4))) * ....
-      Collections.sort(distinctVals, Collections.reverseOrder());
-
-      long denom = distinctVals.get(0);
-      for (int i = 1; i < distinctVals.size(); i++) {
-        denom = (long) (denom * Math.pow(distinctVals.get(i), 1.0 / (1 << i)));
-      }
-
-      return denom;
     }
 
     private void updateStatsForJoinType(Statistics stats, long newNumRows,

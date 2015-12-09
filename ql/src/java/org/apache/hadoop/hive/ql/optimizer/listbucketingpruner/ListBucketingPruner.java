@@ -24,8 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
@@ -42,7 +42,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
  *
  */
 public class ListBucketingPruner implements Transform {
-  static final Log LOG = LogFactory.getLog(ListBucketingPruner.class.getName());
+  static final Logger LOG = LoggerFactory.getLogger(ListBucketingPruner.class.getName());
 
   /*
    * (non-Javadoc)

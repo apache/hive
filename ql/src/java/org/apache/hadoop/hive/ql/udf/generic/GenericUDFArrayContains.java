@@ -37,6 +37,7 @@ import org.apache.hadoop.io.BooleanWritable;
     extended="Example:\n"
       + "  > SELECT _FUNC_(array(1, 2, 3), 2) FROM src LIMIT 1;\n"
       + "  true")
+@NDV(maxNdv = 2)
 public class GenericUDFArrayContains extends GenericUDF {
 
   private static final int ARRAY_IDX = 0;

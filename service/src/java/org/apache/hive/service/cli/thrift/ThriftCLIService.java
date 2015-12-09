@@ -28,11 +28,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.security.auth.login.LoginException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.service.AbstractService;
@@ -66,7 +66,7 @@ import org.apache.thrift.transport.TTransport;
  */
 public abstract class ThriftCLIService extends AbstractService implements TCLIService.Iface, Runnable {
 
-  public static final Log LOG = LogFactory.getLog(ThriftCLIService.class.getName());
+  public static final Logger LOG = LoggerFactory.getLogger(ThriftCLIService.class.getName());
 
   protected CLIService cliService;
   private static final TStatus OK_STATUS = new TStatus(TStatusCode.SUCCESS_STATUS);
@@ -434,14 +434,11 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
 
   private String getDelegationToken(String userName)
       throws HiveSQLException, LoginException, IOException {
-    if (userName == null || !cliService.getHiveConf().getVar(ConfVars.HIVE_SERVER2_AUTHENTICATION)
-        .equalsIgnoreCase(HiveAuthFactory.AuthTypes.KERBEROS.toString())) {
-      return null;
-    }
     try {
       return cliService.getDelegationTokenFromMetaStore(userName);
     } catch (UnsupportedOperationException e) {
       // The delegation token is not applicable in the given deployment mode
+      // such as HMS is not kerberos secured 
     }
     return null;
   }
@@ -512,6 +509,9 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
           resp.setOperationHandle(operationHandle.toTOperationHandle());
           resp.setStatus(OK_STATUS);
     } catch (Exception e) {
+      // Note: it's rather important that this (and other methods) catch Exception, not Throwable;
+      //       in combination with HiveSessionProxy.invoke code, perhaps unintentionally, it used
+      //       to also catch all errors; and now it allows OOMs only to propagate.
       LOG.warn("Error executing statement: ", e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }

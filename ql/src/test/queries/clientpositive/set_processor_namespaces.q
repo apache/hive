@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set zzz=5;
 set zzz;
 

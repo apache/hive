@@ -22,8 +22,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -50,8 +50,8 @@ import org.apache.hadoop.mapred.Reporter;
 public class BucketizedHiveInputFormat<K extends WritableComparable, V extends Writable>
     extends HiveInputFormat<K, V> {
 
-  public static final Log LOG = LogFactory
-      .getLog("org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat");
+  public static final Logger LOG = LoggerFactory
+      .getLogger("org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat");
 
   @Override
   public RecordReader getRecordReader(InputSplit split, JobConf job,

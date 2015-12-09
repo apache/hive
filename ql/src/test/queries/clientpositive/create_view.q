@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 DROP VIEW view1;
 DROP VIEW view2;
 DROP VIEW view3;

@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.fetch.task.conversion=more;
 
 DROP TABLE IF EXISTS DECIMAL_UDF;

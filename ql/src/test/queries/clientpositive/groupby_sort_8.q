@@ -1,5 +1,4 @@
-set hive.enforce.bucketing = true;
-set hive.enforce.sorting = true;
+set hive.mapred.mode=nonstrict;
 set hive.exec.reducers.max = 10;
 set hive.map.groupby.sorted=true;
 
@@ -14,12 +13,6 @@ INSERT OVERWRITE TABLE T1 PARTITION (ds='1') select key, val from T1 where ds = 
 -- The plan is not converted to a map-side, since although the sorting columns and grouping
 -- columns match, the user is issueing a distinct.
 -- However, after HIVE-4310, partial aggregation is performed on the mapper
-EXPLAIN
-select count(distinct key) from T1;
-select count(distinct key) from T1;
-
-set hive.map.groupby.sorted.testmode=true;
--- In testmode, the plan is not changed
 EXPLAIN
 select count(distinct key) from T1;
 select count(distinct key) from T1;

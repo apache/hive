@@ -22,8 +22,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.DriverContext;
@@ -51,7 +51,7 @@ import org.apache.hadoop.mapred.InputFormat;
  */
 public class ProcessAnalyzeTable implements NodeProcessor {
 
-  static final private Log LOG = LogFactory.getLog(ProcessAnalyzeTable.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(ProcessAnalyzeTable.class.getName());
 
   // shared plan utils for tez
   private GenTezUtils utils = null;
@@ -70,7 +70,7 @@ public class ProcessAnalyzeTable implements NodeProcessor {
       throws SemanticException {
 
     GenTezProcContext context = (GenTezProcContext) procContext;
-    
+
     TableScanOperator tableScan = (TableScanOperator) nd;
 
     ParseContext parseContext = context.parseContext;
@@ -124,6 +124,7 @@ public class ProcessAnalyzeTable implements NodeProcessor {
 
       StatsWork statsWork = new StatsWork(tableScan.getConf().getTableMetadata().getTableSpec());
       statsWork.setAggKey(tableScan.getConf().getStatsAggPrefix());
+      statsWork.setStatsTmpDir(tableScan.getConf().getTmpStatsDir());
       statsWork.setSourceTask(context.currentTask);
       statsWork.setStatsReliable(parseContext.getConf().getBoolVar(HiveConf.ConfVars.HIVE_STATS_RELIABLE));
       Task<StatsWork> statsTask = TaskFactory.get(statsWork, parseContext.getConf());
@@ -181,6 +182,7 @@ public class ProcessAnalyzeTable implements NodeProcessor {
     PartialScanWork scanWork = new PartialScanWork(inputPaths);
     scanWork.setMapperCannotSpanPartns(true);
     scanWork.setAggKey(aggregationKey);
+    scanWork.setStatsTmpDir(tableScan.getConf().getTmpStatsDir(), parseContext.getConf());
 
     // stats work
     statsWork.setPartialScanAnalyzeCommand(true);

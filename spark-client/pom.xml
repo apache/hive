@@ -22,14 +22,14 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive</artifactId>
-    <version>2.0.0-SNAPSHOT</version>
+    <version>2.1.0-SNAPSHOT</version>
   </parent>
 
   <groupId>org.apache.hive</groupId>
   <artifactId>spark-client</artifactId>
   <packaging>jar</packaging>
   <name>Spark Remote Client</name>
-  <version>2.0.0-SNAPSHOT</version>
+  <version>2.1.0-SNAPSHOT</version>
 
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
@@ -39,8 +39,8 @@
 
   <dependencies>
     <dependency>
-      <groupId>com.esotericsoftware.kryo</groupId>
-      <artifactId>kryo</artifactId>
+      <groupId>com.esotericsoftware</groupId>
+      <artifactId>kryo-shaded</artifactId>
     </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>
@@ -54,12 +54,32 @@
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-common</artifactId>
       <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.eclipse.jetty.aggregate</groupId>
+          <artifactId>jetty-all</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.spark</groupId>
       <artifactId>spark-core_${scala.binary.version}</artifactId>
       <version>${spark.version}</version>
-    </dependency>
+      <exclusions>
+       <exclusion>
+         <groupId>com.esotericsoftware.kryo</groupId>
+         <artifactId>kryo</artifactId>
+       </exclusion>
+       <exclusion>
+         <groupId>org.slf4j</groupId>
+         <artifactId>slf4j-log4j12</artifactId>
+       </exclusion>
+       <exclusion>
+         <groupId>commmons-logging</groupId>
+         <artifactId>commons-logging</artifactId>
+       </exclusion>
+     </exclusions>
+   </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>

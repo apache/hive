@@ -27,6 +27,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.metadata.*;
@@ -101,6 +103,7 @@ public final class CommandProcessorFactory {
     }
   }
 
+  static Logger LOG = LoggerFactory.getLogger(CommandProcessorFactory.class);
   public static CommandProcessor get(String[] cmd, HiveConf conf)
       throws SQLException {
     CommandProcessor result = getForHiveCommand(cmd, conf);

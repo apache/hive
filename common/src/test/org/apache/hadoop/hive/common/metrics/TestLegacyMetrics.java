@@ -32,7 +32,7 @@ import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
-import org.apache.hadoop.hive.common.metrics.LegacyMetrics.MetricsScope;
+import org.apache.hadoop.hive.common.metrics.common.MetricsScope;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.junit.After;
 import org.junit.Before;
@@ -124,8 +124,8 @@ public class TestLegacyMetrics {
 
   @Test
   public void testScopeSingleThread() throws Exception {
-    metrics.startScope(scopeName);
-    final MetricsScope fooScope = metrics.getScope(scopeName);
+    metrics.startStoredScope(scopeName);
+    final LegacyMetrics.LegacyMetricsScope fooScope = (LegacyMetrics.LegacyMetricsScope) metrics.getStoredScope(scopeName);
     // the time and number counters become available only after the 1st
     // scope close:
     expectIOE(new Callable<Long>() {
@@ -151,15 +151,15 @@ public class TestLegacyMetrics {
       }
     });
 
-    assertSame(fooScope, metrics.getScope(scopeName));
+    assertSame(fooScope, metrics.getStoredScope(scopeName));
     Thread.sleep(periodMs+ 1);
     // 1st close:
     // closing of open scope should be ok:
-    metrics.endScope(scopeName);
+    metrics.endStoredScope(scopeName);
     expectIOE(new Callable<Void>() {
       @Override
       public Void call() throws Exception {
-        metrics.endScope(scopeName); // closing of closed scope not allowed
+        metrics.endStoredScope(scopeName); // closing of closed scope not allowed
         return null;
       }
     });
@@ -168,15 +168,15 @@ public class TestLegacyMetrics {
     final long t1 = fooScope.getTimeCounter().longValue();
     assertTrue(t1 > periodMs);
 
-    assertSame(fooScope, metrics.getScope(scopeName));
+    assertSame(fooScope, metrics.getStoredScope(scopeName));
 
    // opening allowed after closing:
-    metrics.startScope(scopeName);
+    metrics.startStoredScope(scopeName);
     // opening of already open scope not allowed:
     expectIOE(new Callable<Void>() {
       @Override
       public Void call() throws Exception {
-        metrics.startScope(scopeName);
+        metrics.startStoredScope(scopeName);
         return null;
       }
     });
@@ -184,7 +184,7 @@ public class TestLegacyMetrics {
     assertEquals(Long.valueOf(1), fooScope.getNumCounter());
     assertEquals(t1, fooScope.getTimeCounter().longValue());
 
-    assertSame(fooScope, metrics.getScope(scopeName));
+    assertSame(fooScope, metrics.getStoredScope(scopeName));
     Thread.sleep(periodMs + 1);
     // Reopening (close + open) allowed in opened state:
     fooScope.reopen();
@@ -204,8 +204,8 @@ public class TestLegacyMetrics {
 
   @Test
   public void testScopeConcurrency() throws Exception {
-    metrics.startScope(scopeName);
-    MetricsScope fooScope = metrics.getScope(scopeName);
+    metrics.startStoredScope(scopeName);
+    LegacyMetrics.LegacyMetricsScope fooScope = (LegacyMetrics.LegacyMetricsScope) metrics.getStoredScope(scopeName);
     final int threads = 10;
     ExecutorService executorService = Executors.newFixedThreadPool(threads);
     for (int i=0; i<threads; i++) {
@@ -221,17 +221,17 @@ public class TestLegacyMetrics {
     executorService.shutdown();
     assertTrue(executorService.awaitTermination(periodMs * 3 * threads, TimeUnit.MILLISECONDS));
 
-    fooScope = metrics.getScope(scopeName);
+    fooScope = (LegacyMetrics.LegacyMetricsScope) metrics.getStoredScope(scopeName);
     assertEquals(Long.valueOf(3 * threads), fooScope.getNumCounter());
     assertTrue(fooScope.getTimeCounter().longValue() > 3 * periodMs * threads);
     Double avgT = (Double) metrics.get("foo.avg_t");
     assertTrue(avgT.doubleValue() > periodMs);
-    metrics.endScope(scopeName);
+    metrics.endStoredScope(scopeName);
   }
 
   void testScopeImpl(int n) throws Exception {
-    metrics.startScope(scopeName);
-    final MetricsScope fooScope = metrics.getScope(scopeName);
+    metrics.startStoredScope(scopeName);
+    final LegacyMetrics.LegacyMetricsScope fooScope = (LegacyMetrics.LegacyMetricsScope) metrics.getStoredScope(scopeName);
       // cannot open scope that is already open:
     expectIOE(new Callable<Void>() {
       @Override
@@ -241,10 +241,10 @@ public class TestLegacyMetrics {
       }
     });
 
-    assertSame(fooScope, metrics.getScope(scopeName));
+    assertSame(fooScope, metrics.getStoredScope(scopeName));
     Thread.sleep(periodMs+ 1);
     // 1st close:
-    metrics.endScope(scopeName); // closing of open scope should be ok.
+    metrics.endStoredScope(scopeName); // closing of open scope should be ok.
 
     assertTrue(fooScope.getNumCounter().longValue() >= 1);
     final long t1 = fooScope.getTimeCounter().longValue();
@@ -253,15 +253,15 @@ public class TestLegacyMetrics {
     expectIOE(new Callable<Void>() {
       @Override
       public Void call() throws Exception {
-        metrics.endScope(scopeName); // closing of closed scope not allowed
+        metrics.endStoredScope(scopeName); // closing of closed scope not allowed
         return null;
       }
     });
 
-    assertSame(fooScope, metrics.getScope(scopeName));
+    assertSame(fooScope, metrics.getStoredScope(scopeName));
 
    // opening allowed after closing:
-    metrics.startScope(scopeName);
+    metrics.startStoredScope(scopeName);
 
     assertTrue(fooScope.getNumCounter().longValue() >= 1);
     assertTrue(fooScope.getTimeCounter().longValue() >= t1);
@@ -270,12 +270,12 @@ public class TestLegacyMetrics {
     expectIOE(new Callable<Void>() {
       @Override
       public Void call() throws Exception {
-        metrics.startScope(scopeName);
+        metrics.startStoredScope(scopeName);
         return null;
       }
     });
 
-    assertSame(fooScope, metrics.getScope(scopeName));
+    assertSame(fooScope, metrics.getStoredScope(scopeName));
     Thread.sleep(periodMs + 1);
     // Reopening (close + open) allowed in opened state:
     fooScope.reopen();

@@ -1,4 +1,4 @@
-set hive.mapred.supports.subdirectories=true;
+set hive.mapred.mode=nonstrict;
 set hive.optimize.skewjoin.compiletime = true;
 
 -- SORT_QUERY_RESULTS

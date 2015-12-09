@@ -1,6 +1,7 @@
+set hive.mapred.mode=nonstrict;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
-set hive.enforce.bucketing=true;
+
 
 create temporary table acid_ivtt(i int, de decimal(5,2), vc varchar(128)) clustered by (vc) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true');
 

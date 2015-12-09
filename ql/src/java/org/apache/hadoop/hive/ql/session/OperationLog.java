@@ -18,10 +18,10 @@
 package org.apache.hadoop.hive.ql.session;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.sql.SQLException;
@@ -33,7 +33,7 @@ import java.util.List;
  * for accessing, reading, writing, and removing the file.
  */
 public class OperationLog {
-  private static final Log LOG = LogFactory.getLog(OperationLog.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(OperationLog.class.getName());
 
   private final String operationName;
   private final LogFile logFile;
@@ -103,6 +103,16 @@ public class OperationLog {
   }
 
   /**
+   * Write operation execution logs into log file
+   * @param operationLogMessage one line of log emitted from log4j
+   */
+  public void writeOperationLog(LoggingLevel level, String operationLogMessage) {
+    if (opLoggingLevel.compareTo(level) < 0) return;
+    logFile.write(operationLogMessage);
+  }
+
+
+  /**
    * Read operation execution logs from log file
    * @param isFetchFirst true if the Enum FetchOrientation value is Fetch_First
    * @param maxRows the max number of fetched lines from log
@@ -125,9 +135,9 @@ public class OperationLog {
    * Wrapper for read/write the operation log file
    */
   private class LogFile {
-    private File file;
+    private final File file;
     private BufferedReader in;
-    private PrintStream out;
+    private final PrintStream out;
     private volatile boolean isRemoved;
 
     LogFile(File file) throws FileNotFoundException {
@@ -169,7 +179,7 @@ public class OperationLog {
 
     private void resetIn() {
       if (in != null) {
-        IOUtils.cleanup(LOG, in);
+        IOUtils.closeStream(in);
         in = null;
       }
     }

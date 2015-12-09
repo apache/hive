@@ -25,8 +25,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
@@ -59,7 +59,7 @@ import com.google.common.base.Preconditions;
  * Cloned from GenTezWork.
  */
 public class GenSparkWork implements NodeProcessor {
-  static final private Log LOG = LogFactory.getLog(GenSparkWork.class.getName());
+  static final private Logger LOG = LoggerFactory.getLogger(GenSparkWork.class.getName());
 
   // instance of shared utils
   private GenSparkUtils utils = null;
@@ -93,12 +93,6 @@ public class GenSparkWork implements NodeProcessor {
 
     LOG.debug("Root operator: " + root);
     LOG.debug("Leaf operator: " + operator);
-
-    if (context.clonedReduceSinks.contains(operator)) {
-      // if we're visiting a terminal we've created ourselves,
-      // just skip and keep going
-      return null;
-    }
 
     SparkWork sparkWork = context.currentTask.getWork();
     SMBMapJoinOperator smbOp = GenSparkUtils.getChildOperator(root, SMBMapJoinOperator.class);
@@ -192,7 +186,6 @@ public class GenSparkWork implements NodeProcessor {
                   // we've already set this one up. Need to clone for the next work.
                   r = (ReduceSinkOperator) OperatorFactory.getAndMakeChild(
                       (ReduceSinkDesc)r.getConf().clone(), r.getParentOperators());
-                  context.clonedReduceSinks.add(r);
                 }
                 r.getConf().setOutputName(work.getName());
               }

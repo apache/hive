@@ -57,10 +57,12 @@ public interface HiveTxnManager {
    * A list of acquired locks will be stored in the
    * {@link org.apache.hadoop.hive.ql.Context} object and can be retrieved
    * via {@link org.apache.hadoop.hive.ql.Context#getHiveLocks}.
+   *
    * @param plan query plan
    * @param ctx Context for this query
    * @param username name of the user for this query
-   * @throws LockException if there is an error getting the locks
+   * @throws LockException if there is an error getting the locks.  Use {@link LockException#getCanonicalErrorMsg()}
+   * to get more info on how to handle the exception.
    */
   void acquireLocks(QueryPlan plan, Context ctx, String username) throws LockException;
 

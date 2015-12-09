@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 CREATE TABLE tmp(c1 INT, c2 INT, c3 STRING, c4 STRING);
 INSERT OVERWRITE TABLE tmp
 SELECT x.key, y.key, x.value, y.value FROM src x JOIN src y ON (x.key = y.key);

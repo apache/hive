@@ -22,8 +22,8 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.MapOperator;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -53,8 +53,7 @@ import org.apache.hadoop.mapred.Reporter;
  *
  */
 public class SparkMapRecordHandler extends SparkRecordHandler {
-  private static final Log LOG = LogFactory.getLog(SparkMapRecordHandler.class);
-  private static final String PLAN_KEY = "__MAP_PLAN__";
+  private static final Logger LOG = LoggerFactory.getLogger(SparkMapRecordHandler.class);
   private MapOperator mo;
   private MapredLocalWork localWork = null;
   private boolean isLogInfoEnabled = false;
@@ -143,7 +142,7 @@ public class SparkMapRecordHandler extends SparkRecordHandler {
         throw (OutOfMemoryError) e;
       } else {
         String msg = "Error processing row: " + e;
-        LOG.fatal(msg, e);
+        LOG.error(msg, e);
         throw new RuntimeException(msg, e);
       }
     }
@@ -196,7 +195,7 @@ public class SparkMapRecordHandler extends SparkRecordHandler {
       }
     } finally {
       MapredContext.close();
-      Utilities.clearWorkMap();
+      Utilities.clearWorkMap(jc);
     }
   }
 

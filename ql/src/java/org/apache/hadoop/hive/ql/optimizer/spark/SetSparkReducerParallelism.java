@@ -21,8 +21,8 @@ package org.apache.hadoop.hive.ql.optimizer.spark;
 import java.util.List;
 import java.util.Stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
@@ -51,7 +51,7 @@ import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
  */
 public class SetSparkReducerParallelism implements NodeProcessor {
 
-  private static final Log LOG = LogFactory.getLog(SetSparkReducerParallelism.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(SetSparkReducerParallelism.class.getName());
 
   // Spark memory per task, and total number of cores
   private ObjectPair<Long, Integer> sparkMemoryAndCores;

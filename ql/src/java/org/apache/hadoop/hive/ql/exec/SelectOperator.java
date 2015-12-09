@@ -44,12 +44,12 @@ public class SelectOperator extends Operator<SelectDesc> implements Serializable
   private transient boolean isSelectStarNoCompute = false;
 
   @Override
-  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
-    Collection<Future<?>> result = super.initializeOp(hconf);
+  protected void initializeOp(Configuration hconf) throws HiveException {
+    super.initializeOp(hconf);
     // Just forward the row as is
     if (conf.isSelStarNoCompute()) {
       isSelectStarNoCompute = true;
-      return result;
+      return;
     }
     List<ExprNodeDesc> colList = conf.getColList();
     eval = new ExprNodeEvaluator[colList.size()];
@@ -66,7 +66,6 @@ public class SelectOperator extends Operator<SelectDesc> implements Serializable
     }
     outputObjInspector = initEvaluatorsAndReturnStruct(eval, conf.getOutputColumnNames(),
         inputObjInspectors[0]);
-    return result;
   }
 
   @Override

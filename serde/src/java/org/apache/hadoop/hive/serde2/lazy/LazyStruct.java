@@ -22,9 +22,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.google.common.primitives.Bytes;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.serde2.SerDeStatsStruct;
 import org.apache.hadoop.hive.serde2.StructObject;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazySimpleStructObjectInspector;
@@ -40,7 +40,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 public class LazyStruct extends LazyNonPrimitive<LazySimpleStructObjectInspector>
     implements StructObject, SerDeStatsStruct {
 
-  private static Log LOG = LogFactory.getLog(LazyStruct.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(LazyStruct.class.getName());
 
   /**
    * Whether the data is already parsed or not.

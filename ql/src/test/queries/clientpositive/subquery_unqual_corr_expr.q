@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 
 explain 
 select * from src tablesample (10 rows) where lower(key) in (select key from src);

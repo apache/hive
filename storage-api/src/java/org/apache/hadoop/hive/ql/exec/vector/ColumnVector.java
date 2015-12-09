@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 /**
@@ -36,10 +37,15 @@ public abstract class ColumnVector {
    * The current kinds of column vectors.
    */
   public static enum Type {
+    NONE,    // Useful when the type of column vector has not be determined yet.
     LONG,
     DOUBLE,
     BYTES,
-    DECIMAL
+    DECIMAL,
+    STRUCT,
+    LIST,
+    MAP,
+    UNION
   }
 
   /*
@@ -72,28 +78,42 @@ public abstract class ColumnVector {
     isNull = new boolean[len];
     noNulls = true;
     isRepeating = false;
+    preFlattenNoNulls = true;
+    preFlattenIsRepeating = false;
   }
 
   /**
-     * Resets the column to default state
-     *  - fills the isNull array with false
-     *  - sets noNulls to true
-     *  - sets isRepeating to false
-     */
-    public void reset() {
-      if (false == noNulls) {
-        Arrays.fill(isNull, false);
-      }
-      noNulls = true;
-      isRepeating = false;
+   * Resets the column to default state
+   *  - fills the isNull array with false
+   *  - sets noNulls to true
+   *  - sets isRepeating to false
+   */
+  public void reset() {
+    if (!noNulls) {
+      Arrays.fill(isNull, false);
     }
+    noNulls = true;
+    isRepeating = false;
+    preFlattenNoNulls = true;
+    preFlattenIsRepeating = false;
+  }
 
-    abstract public void flatten(boolean selectedInUse, int[] sel, int size);
+  /**
+   * Sets the isRepeating flag. Recurses over structs and unions so that the
+   * flags are set correctly.
+   * @param isRepeating
+   */
+  public void setRepeating(boolean isRepeating) {
+    this.isRepeating = isRepeating;
+  }
+
+  abstract public void flatten(boolean selectedInUse, int[] sel, int size);
 
     // Simplify vector by brute-force flattening noNulls if isRepeating
     // This can be used to reduce combinatorial explosion of code paths in VectorExpressions
     // with many arguments.
-    public void flattenRepeatingNulls(boolean selectedInUse, int[] sel, int size) {
+    protected void flattenRepeatingNulls(boolean selectedInUse, int[] sel,
+                                         int size) {
 
       boolean nullFillValue;
 
@@ -116,13 +136,13 @@ public abstract class ColumnVector {
       noNulls = false;
     }
 
-    public void flattenNoNulls(boolean selectedInUse, int[] sel, int size) {
+    protected void flattenNoNulls(boolean selectedInUse, int[] sel,
+                                  int size) {
       if (noNulls) {
         noNulls = false;
         if (selectedInUse) {
           for (int j = 0; j < size; j++) {
-            int i = sel[j];
-            isNull[i] = false;
+            isNull[sel[j]] = false;
           }
         } else {
           Arrays.fill(isNull, 0, size, false);
@@ -151,8 +171,10 @@ public abstract class ColumnVector {
 
     /**
      * Set the element in this column vector from the given input vector.
+     * This method can assume that the output does not have isRepeating set.
      */
-    public abstract void setElement(int outElementNum, int inputElementNum, ColumnVector inputVector);
+    public abstract void setElement(int outElementNum, int inputElementNum,
+                                    ColumnVector inputVector);
 
     /**
      * Initialize the column vector. This method can be overridden by specific column vector types.
@@ -161,6 +183,27 @@ public abstract class ColumnVector {
      */
     public void init() {
       // Do nothing by default
+    }
+
+    /**
+     * Ensure the ColumnVector can hold at least size values.
+     * This method is deliberately *not* recursive because the complex types
+     * can easily have more (or less) children than the upper levels.
+     * @param size the new minimum size
+     * @param presesrveData should the old data be preserved?
+     */
+    public void ensureSize(int size, boolean presesrveData) {
+      if (isNull.length < size) {
+        boolean[] oldArray = isNull;
+        isNull = new boolean[size];
+        if (presesrveData && !noNulls) {
+          if (isRepeating) {
+            isNull[0] = oldArray[0];
+          } else {
+            System.arraycopy(oldArray, 0, isNull, 0, oldArray.length);
+          }
+        }
+      }
     }
 
     /**

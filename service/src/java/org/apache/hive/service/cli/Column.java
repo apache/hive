@@ -40,7 +40,6 @@ import org.apache.hive.service.cli.thrift.TI16Column;
 import org.apache.hive.service.cli.thrift.TI32Column;
 import org.apache.hive.service.cli.thrift.TI64Column;
 import org.apache.hive.service.cli.thrift.TStringColumn;
-import sun.misc.FloatingDecimal;
 
 /**
  * Column.
@@ -350,7 +349,7 @@ public class Column extends AbstractList {
         break;
       case FLOAT_TYPE:
         nulls.set(size, field == null);
-        doubleVars()[size] = field == null ? 0 : new FloatingDecimal((Float)field).doubleValue();
+        doubleVars()[size] = field == null ? 0 : new Double(field.toString());
         break;
       case DOUBLE_TYPE:
         nulls.set(size, field == null);

@@ -70,7 +70,7 @@ export AUX_CLASSPATH=${AUX_CLASSPATH}
 
 
 export HADOOP_HOME=$HADOOP_HOME
-#export HADOOP_OPTS="-Dlog4j.configurationFile=file://${ROOT}/conf/log4j2.xml"
+#export HADOOP_OPTS="-Dlog4j.configurationFile=file://${ROOT}/conf/log4j2.properties"
 export HADOOP_OPTS="${HADOOP_OPTS} -server -XX:+UseConcMarkSweepGC -XX:ErrorFile=${ROOT}/var/log/hcat_err_pid%p.log -Xloggc:${ROOT}/var/log/hcat_gc.log-`date +'%Y%m%d%H%M'` -verbose:gc -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps"
 export HADOOP_HEAPSIZE=2048 # 8G is better if you have it
 

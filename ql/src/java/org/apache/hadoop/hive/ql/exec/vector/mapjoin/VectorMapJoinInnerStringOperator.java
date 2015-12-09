@@ -21,8 +21,8 @@ package org.apache.hadoop.hive.ql.exec.vector.mapjoin;
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -44,7 +44,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
 public class VectorMapJoinInnerStringOperator extends VectorMapJoinInnerGenerateResultOperator {
 
   private static final long serialVersionUID = 1L;
-  private static final Log LOG = LogFactory.getLog(VectorMapJoinInnerStringOperator.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinInnerStringOperator.class.getName());
   private static final String CLASS_NAME = VectorMapJoinInnerStringOperator.class.getName();
 
   // (none)
@@ -127,7 +127,7 @@ public class VectorMapJoinInnerStringOperator extends VectorMapJoinInnerGenerate
       final int inputLogicalSize = batch.size;
 
       if (inputLogicalSize == 0) {
-        if (LOG.isDebugEnabled()) {
+        if (isLogDebugEnabled) {
           LOG.debug(CLASS_NAME + " batch #" + batchCounter + " empty");
         }
         return;
@@ -169,17 +169,21 @@ public class VectorMapJoinInnerStringOperator extends VectorMapJoinInnerGenerate
         /*
          * Single-Column String specific repeated lookup.
          */
-
-        byte[] keyBytes = vector[0];
-        int keyStart = start[0];
-        int keyLength = length[0];
-        JoinUtil.JoinResult joinResult = hashMap.lookup(keyBytes, keyStart, keyLength, hashMapResults[0]);
+        JoinUtil.JoinResult joinResult;
+        if (!joinColVector.noNulls && joinColVector.isNull[0]) {
+          joinResult = JoinUtil.JoinResult.NOMATCH;
+        } else {
+          byte[] keyBytes = vector[0];
+          int keyStart = start[0];
+          int keyLength = length[0];
+          joinResult = hashMap.lookup(keyBytes, keyStart, keyLength, hashMapResults[0]);
+        }
 
         /*
          * Common repeated join result processing.
          */
 
-        if (LOG.isDebugEnabled()) {
+        if (isLogDebugEnabled) {
           LOG.debug(CLASS_NAME + " batch #" + batchCounter + " repeated joinResult " + joinResult.name());
         }
         finishInnerRepeated(batch, joinResult, hashMapResults[0]);
@@ -189,7 +193,7 @@ public class VectorMapJoinInnerStringOperator extends VectorMapJoinInnerGenerate
          * NOT Repeating.
          */
 
-        if (LOG.isDebugEnabled()) {
+        if (isLogDebugEnabled) {
           LOG.debug(CLASS_NAME + " batch #" + batchCounter + " non-repeated");
         }
 
@@ -223,12 +227,13 @@ public class VectorMapJoinInnerStringOperator extends VectorMapJoinInnerGenerate
            */
 
           // Implicit -- use batchIndex.
+          boolean isNull = !joinColVector.noNulls && joinColVector.isNull[batchIndex];
 
           /*
            * Equal key series checking.
            */
 
-          if (!haveSaveKey ||
+          if (isNull || !haveSaveKey ||
               StringExpr.equal(vector[saveKeyBatchIndex], start[saveKeyBatchIndex], length[saveKeyBatchIndex],
                                  vector[batchIndex], start[batchIndex], length[batchIndex]) == false) {
 
@@ -249,24 +254,29 @@ public class VectorMapJoinInnerStringOperator extends VectorMapJoinInnerGenerate
               }
             }
 
-            // Regardless of our matching result, we keep that information to make multiple use
-            // of it for a possible series of equal keys.
-            haveSaveKey = true;
-
-            /*
-             * Single-Column String specific save key.
-             */
-
-            saveKeyBatchIndex = batchIndex;
-
-            /*
-             * Single-Column String specific lookup key.
-             */
-
-            byte[] keyBytes = vector[batchIndex];
-            int keyStart = start[batchIndex];
-            int keyLength = length[batchIndex];
-            saveJoinResult = hashMap.lookup(keyBytes, keyStart, keyLength, hashMapResults[hashMapResultCount]);
+            if (isNull) {
+              saveJoinResult = JoinUtil.JoinResult.NOMATCH;
+              haveSaveKey = false;
+            } else {
+              // Regardless of our matching result, we keep that information to make multiple use
+              // of it for a possible series of equal keys.
+              haveSaveKey = true;
+  
+              /*
+               * Single-Column String specific save key.
+               */
+  
+              saveKeyBatchIndex = batchIndex;
+  
+              /*
+               * Single-Column String specific lookup key.
+               */
+  
+              byte[] keyBytes = vector[batchIndex];
+              int keyStart = start[batchIndex];
+              int keyLength = length[batchIndex];
+              saveJoinResult = hashMap.lookup(keyBytes, keyStart, keyLength, hashMapResults[hashMapResultCount]);
+            }
 
             /*
              * Common inner join result processing.
@@ -330,7 +340,7 @@ public class VectorMapJoinInnerStringOperator extends VectorMapJoinInnerGenerate
           }
         }
 
-        if (LOG.isDebugEnabled()) {
+        if (isLogDebugEnabled) {
           LOG.debug(CLASS_NAME +
               " allMatchs " + intArrayToRangesString(allMatchs,allMatchCount) +
               " equalKeySeriesHashMapResultIndices " + intArrayToRangesString(equalKeySeriesHashMapResultIndices, equalKeySeriesCount) +

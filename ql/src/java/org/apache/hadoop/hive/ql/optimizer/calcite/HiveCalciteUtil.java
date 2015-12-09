@@ -32,7 +32,6 @@ import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.RelFactories.ProjectFactory;
 import org.apache.calcite.rel.core.Sort;
-import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
@@ -53,8 +52,6 @@ import org.apache.calcite.sql.validate.SqlValidatorUtil;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
 import org.apache.calcite.util.Util;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveMultiJoin;
@@ -64,6 +61,8 @@ import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
@@ -79,7 +78,7 @@ import com.google.common.collect.Sets;
 
 public class HiveCalciteUtil {
 
-  private static final Log LOG = LogFactory.getLog(HiveCalciteUtil.class);
+  private static final Logger LOG = LoggerFactory.getLogger(HiveCalciteUtil.class);
 
 
   /**
@@ -233,8 +232,8 @@ public class HiveCalciteUtil {
       leftKeys.add(origLeftInputSize + i);
       rightKeys.add(origRightInputSize + i);
       RexNode cond = rexBuilder.makeCall(SqlStdOperatorTable.EQUALS,
-          rexBuilder.makeInputRef(newLeftFields.get(i).getType(), newLeftOffset + i),
-          rexBuilder.makeInputRef(newLeftFields.get(i).getType(), newRightOffset + i));
+          rexBuilder.makeInputRef(newLeftFields.get(origLeftInputSize + i).getType(), newLeftOffset + i),
+          rexBuilder.makeInputRef(newRightFields.get(origRightInputSize + i).getType(), newRightOffset + i));
       if (outJoinCond == null) {
         outJoinCond = cond;
       } else {
@@ -565,16 +564,26 @@ public class HiveCalciteUtil {
     }
   }
 
+  public static boolean pureLimitRelNode(RelNode rel) {
+    return limitRelNode(rel) && !orderRelNode(rel);
+  }
+
+  public static boolean pureOrderRelNode(RelNode rel) {
+    return !limitRelNode(rel) && orderRelNode(rel);
+  }
+
   public static boolean limitRelNode(RelNode rel) {
-    if ((rel instanceof Sort) && ((Sort) rel).getCollation().getFieldCollations().isEmpty())
+    if ((rel instanceof Sort) && ((Sort) rel).fetch != null) {
       return true;
+    }
 
     return false;
   }
 
   public static boolean orderRelNode(RelNode rel) {
-    if ((rel instanceof Sort) && !((Sort) rel).getCollation().getFieldCollations().isEmpty())
+    if ((rel instanceof Sort) && !((Sort) rel).getCollation().getFieldCollations().isEmpty()) {
       return true;
+    }
 
     return false;
   }
@@ -708,11 +717,21 @@ public class HiveCalciteUtil {
       String inputTabAlias) {
     List<ExprNodeDesc> exprNodes = new ArrayList<ExprNodeDesc>();
     List<RexNode> rexInputRefs = getInputRef(inputRefs, inputRel);
+    List<RexNode> exprs = inputRel.getChildExps();
     // TODO: Change ExprNodeConverter to be independent of Partition Expr
     ExprNodeConverter exprConv = new ExprNodeConverter(inputTabAlias, inputRel.getRowType(),
         new HashSet<Integer>(), inputRel.getCluster().getTypeFactory());
-    for (RexNode iRef : rexInputRefs) {
-      exprNodes.add(iRef.accept(exprConv));
+    for (int index = 0; index < rexInputRefs.size(); index++) {
+      // The following check is only a guard against failures.
+      // TODO: Knowing which expr is constant in GBY's aggregation function
+      // arguments could be better done using Metadata provider of Calcite.
+      if (exprs != null && index < exprs.size() && exprs.get(index) instanceof RexLiteral) {
+        ExprNodeDesc exprNodeDesc = exprConv.visitLiteral((RexLiteral) exprs.get(index));
+        exprNodes.add(exprNodeDesc);
+      } else {
+        RexNode iRef = rexInputRefs.get(index);
+        exprNodes.add(iRef.accept(exprConv));
+      }
     }
     return exprNodes;
   }

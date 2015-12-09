@@ -1,5 +1,6 @@
+set hive.mapred.mode=nonstrict;
 set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.LineageLogger;
-
+set hive.metastore.disallow.incompatible.col.type.changes=false;
 drop table if exists d1;
 create table d1(a int);
 
@@ -176,3 +177,30 @@ alter view dest_v3 as
 
 select * from dest_v3 limit 2;
 
+drop table if exists src_dp;
+create table src_dp (first string, word string, year int, month int, day int);
+drop table if exists dest_dp1;
+create table dest_dp1 (first string, word string) partitioned by (year int);
+drop table if exists dest_dp2;
+create table dest_dp2 (first string, word string) partitioned by (y int, m int);
+drop table if exists dest_dp3;
+create table dest_dp3 (first string, word string) partitioned by (y int, m int, d int);
+
+set hive.exec.dynamic.partition.mode=nonstrict;
+
+insert into dest_dp1 partition (year) select first, word, year from src_dp;
+insert into dest_dp2 partition (y, m) select first, word, year, month from src_dp;
+insert into dest_dp2 partition (y=0, m) select first, word, month from src_dp where year=0;
+insert into dest_dp3 partition (y=0, m, d) select first, word, month m, day d from src_dp where year=0;
+
+drop table if exists src_dp1;
+create table src_dp1 (f string, w string, m int);
+
+from src_dp, src_dp1
+insert into dest_dp1 partition (year) select first, word, year
+insert into dest_dp2 partition (y, m) select first, word, year, month
+insert into dest_dp3 partition (y=2, m, d) select first, word, month m, day d where year=2
+insert into dest_dp2 partition (y=1, m) select f, w, m
+insert into dest_dp1 partition (year=0) select f, w;
+
+reset hive.metastore.disallow.incompatible.col.type.changes;

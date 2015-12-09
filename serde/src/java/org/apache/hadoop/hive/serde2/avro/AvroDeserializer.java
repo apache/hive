@@ -42,8 +42,8 @@ import org.apache.avro.io.BinaryEncoder;
 import org.apache.avro.io.DecoderFactory;
 import org.apache.avro.io.EncoderFactory;
 import org.apache.avro.UnresolvedUnionException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
@@ -61,7 +61,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 import org.apache.hadoop.io.Writable;
 
 class AvroDeserializer {
-  private static final Log LOG = LogFactory.getLog(AvroDeserializer.class);
+  private static final Logger LOG = LoggerFactory.getLogger(AvroDeserializer.class);
   /**
    * Set of already seen and valid record readers IDs which doesn't need re-encoding
    */
@@ -163,7 +163,7 @@ class AvroDeserializer {
         reEncoder = new SchemaReEncoder(r.getSchema(), readerSchema);
         reEncoderCache.put(recordReaderId, reEncoder);
       } else{
-        LOG.info("Adding new valid RRID :" +  recordReaderId);
+        LOG.debug("Adding new valid RRID :" +  recordReaderId);
         noEncodingNeeded.add(recordReaderId);
       }
       if(reEncoder != null) {

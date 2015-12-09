@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 -- Tests truncating a column from a table with multiple files, then merging those files
 
 CREATE TABLE test_tab (key STRING, value STRING) STORED AS RCFILE;

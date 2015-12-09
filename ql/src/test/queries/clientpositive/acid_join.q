@@ -1,6 +1,7 @@
+set hive.mapred.mode=nonstrict;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
-set hive.enforce.bucketing=true;
+
 
 -- This test checks that a join with tables with two different buckets send the right bucket info to each table.
 create table acidjoin1(name varchar(50), age int) clustered by (age) into 2 buckets stored as orc TBLPROPERTIES ("transactional"="true"); 

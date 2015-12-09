@@ -20,12 +20,15 @@ package org.apache.hive.service.cli.operation;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.metrics.common.Metrics;
+import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
+import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -46,15 +49,17 @@ import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * OperationManager.
  *
  */
 public class OperationManager extends AbstractService {
-  private final Log LOG = LogFactory.getLog(OperationManager.class.getName());
-  private final Map<OperationHandle, Operation> handleToOperation =
-      new HashMap<OperationHandle, Operation>();
+  private final Logger LOG = LoggerFactory.getLogger(OperationManager.class.getName());
+  private final ConcurrentHashMap<OperationHandle, Operation> handleToOperation =
+      new ConcurrentHashMap<OperationHandle, Operation>();
 
   public OperationManager() {
     super(OperationManager.class.getSimpleName());
@@ -88,7 +93,7 @@ public class OperationManager extends AbstractService {
     Appender ap = LogDivertAppender.createInstance(this, OperationLog.getLoggingLevel(loggingMode));
     LoggerContext context = (LoggerContext) LogManager.getContext(false);
     Configuration configuration = context.getConfiguration();
-    LoggerConfig loggerConfig = configuration.getLoggerConfig(LogManager.getLogger().getName());
+    LoggerConfig loggerConfig = configuration.getLoggerConfig(LoggerFactory.getLogger(getClass()).getName());
     loggerConfig.addAppender(ap, null, null);
     context.updateLoggers();
     ap.start();
@@ -161,24 +166,24 @@ public class OperationManager extends AbstractService {
     return operation;
   }
 
-  private synchronized Operation getOperationInternal(OperationHandle operationHandle) {
+  private Operation getOperationInternal(OperationHandle operationHandle) {
     return handleToOperation.get(operationHandle);
   }
 
-  private synchronized Operation removeTimedOutOperation(OperationHandle operationHandle) {
+  private Operation removeTimedOutOperation(OperationHandle operationHandle) {
     Operation operation = handleToOperation.get(operationHandle);
     if (operation != null && operation.isTimedOut(System.currentTimeMillis())) {
-      handleToOperation.remove(operationHandle);
+      handleToOperation.remove(operationHandle, operation);
       return operation;
     }
     return null;
   }
 
-  private synchronized void addOperation(Operation operation) {
+  private void addOperation(Operation operation) {
     handleToOperation.put(operation.getHandle(), operation);
   }
 
-  private synchronized Operation removeOperation(OperationHandle opHandle) {
+  private Operation removeOperation(OperationHandle opHandle) {
     return handleToOperation.remove(opHandle);
   }
 
@@ -208,6 +213,14 @@ public class OperationManager extends AbstractService {
     Operation operation = removeOperation(opHandle);
     if (operation == null) {
       throw new HiveSQLException("Operation does not exist!");
+    }
+    Metrics metrics = MetricsFactory.getInstance();
+    if (metrics != null) {
+      try {
+        metrics.decrementCounter(MetricsConstant.OPEN_OPERATIONS);
+      } catch (Exception e) {
+        LOG.warn("Error Reporting close operation to Metrics system", e);
+      }
     }
     operation.close();
   }
@@ -279,6 +292,11 @@ public class OperationManager extends AbstractService {
     schema.addToFieldSchemas(fieldSchema);
     return schema;
   }
+
+  public Collection<Operation> getOperations() {
+    return Collections.unmodifiableCollection(handleToOperation.values());
+  }
+
 
   public OperationLog getOperationLogByThread() {
     return OperationLog.getCurrentOperationLog();

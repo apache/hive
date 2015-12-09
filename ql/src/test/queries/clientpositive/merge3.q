@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.merge.mapfiles=false;
 set hive.merge.mapredfiles=false;
 set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;

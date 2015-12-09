@@ -18,8 +18,8 @@
  */
 package org.apache.hive.hcatalog.templeton.tool;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -34,6 +34,7 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Shell;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hive.hcatalog.templeton.AppConfig;
 import org.apache.hive.hcatalog.templeton.BadParam;
 import org.apache.hive.hcatalog.templeton.LauncherDelegator;
 
@@ -43,6 +44,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -71,7 +73,7 @@ public class LaunchMapper extends Mapper<NullWritable, NullWritable, Text, Text>
    * This class currently sends everything to stderr, but it should probably use Log4J - 
    * it will end up in 'syslog' of this Map task.  For example, look for KeepAlive heartbeat msgs.
    */
-  private static final Log LOG = LogFactory.getLog(LaunchMapper.class);
+  private static final Logger LOG = LoggerFactory.getLogger(LaunchMapper.class);
   /**
    * When a Pig job is submitted and it uses HCat, WebHCat may be configured to ship hive tar
    * to the target node.  Pig on the target node needs some env vars configured.
@@ -479,7 +481,7 @@ public class LaunchMapper extends Mapper<NullWritable, NullWritable, Text, Text>
         try {
           state.close();
         } catch (IOException e) {
-          LOG.warn(e);
+          LOG.warn("Caught exception while closing job state ", e);
         }
       }
     }
@@ -544,9 +546,10 @@ public class LaunchMapper extends Mapper<NullWritable, NullWritable, Text, Text>
     public void run() {
       PrintWriter writer = null;
       try {
-        InputStreamReader isr = new InputStreamReader(in);
+        String enc = conf.get(AppConfig.EXEC_ENCODING_NAME);
+        InputStreamReader isr = new InputStreamReader(in, enc);
         BufferedReader reader = new BufferedReader(isr);
-        writer = new PrintWriter(out);
+        writer = new PrintWriter(new OutputStreamWriter(out, enc));
 
         String line;
         while ((line = reader.readLine()) != null) {

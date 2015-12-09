@@ -28,8 +28,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -73,14 +74,16 @@ import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.spark.counter.SparkCounters;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 
 public class SparkTask extends Task<SparkWork> {
   private static final String CLASS_NAME = SparkTask.class.getName();
-  private static final Log LOG = LogFactory.getLog(CLASS_NAME);
+  private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   private static final LogHelper console = new LogHelper(LOG);
-  private final PerfLogger perfLogger = PerfLogger.getPerfLogger();
+  private final PerfLogger perfLogger = SessionState.getPerfLogger();
   private static final long serialVersionUID = 1L;
   private SparkCounters sparkCounters;
 
@@ -270,14 +273,13 @@ public class SparkTask extends Task<SparkWork> {
     StatsWork statsWork = statsTask.getWork();
     String tablePrefix = getTablePrefix(statsWork);
     List<Map<String, String>> partitionSpecs = getPartitionSpecs(statsWork);
-    int maxPrefixLength = StatsFactory.getMaxPrefixLength(conf);
 
     if (partitionSpecs == null) {
-      prefixs.add(Utilities.getHashedStatsPrefix(tablePrefix, maxPrefixLength));
+      prefixs.add(tablePrefix.endsWith(Path.SEPARATOR) ? tablePrefix : tablePrefix + Path.SEPARATOR);
     } else {
       for (Map<String, String> partitionSpec : partitionSpecs) {
         String prefixWithPartition = Utilities.join(tablePrefix, Warehouse.makePartPath(partitionSpec));
-        prefixs.add(Utilities.getHashedStatsPrefix(prefixWithPartition, maxPrefixLength));
+        prefixs.add(prefixWithPartition.endsWith(Path.SEPARATOR) ? prefixWithPartition : prefixWithPartition + Path.SEPARATOR);
       }
     }
 

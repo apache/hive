@@ -49,11 +49,11 @@ import jline.console.completer.ArgumentCompleter.ArgumentDelimiter;
 import jline.console.completer.ArgumentCompleter.AbstractArgumentDelimiter;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.cli.CliSessionState;
+import org.apache.hadoop.hive.cli.OptionsProcessor;
 import org.apache.hadoop.hive.common.HiveInterruptUtils;
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
@@ -61,7 +61,10 @@ import org.apache.hadoop.hive.common.cli.ShellCmdExecutor;
 import org.apache.hadoop.hive.common.io.CachingPrintStream;
 import org.apache.hadoop.hive.common.io.FetchConverter;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveVariableSource;
 import org.apache.hadoop.hive.conf.Validator;
+import org.apache.hadoop.hive.conf.VariableSubstitution;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
@@ -69,13 +72,14 @@ import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.mr.HadoopJobExecHelper;
 import org.apache.hadoop.hive.ql.exec.tez.TezJobExecHelper;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
-import org.apache.hadoop.hive.ql.parse.VariableSubstitution;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import sun.misc.Signal;
 import sun.misc.SignalHandler;
@@ -97,20 +101,25 @@ public class CliDriver {
   private final LogHelper console;
   protected ConsoleReader reader;
   private Configuration conf;
+  private final String originalThreadName;
 
   public CliDriver() {
     SessionState ss = SessionState.get();
     conf = (ss != null) ? ss.getConf() : new Configuration();
-    Log LOG = LogFactory.getLog("CliDriver");
+    Logger LOG = LoggerFactory.getLogger("CliDriver");
     if (LOG.isDebugEnabled()) {
-      LOG.debug("CliDriver inited with classpath " + System.getProperty("java.class.path"));
+      LOG.debug("CliDriver inited with classpath {}", System.getProperty("java.class.path"));
     }
     console = new LogHelper(LOG);
+    originalThreadName = Thread.currentThread().getName();
   }
 
   public int processCmd(String cmd) {
     CliSessionState ss = (CliSessionState) SessionState.get();
     ss.setLastCommand(cmd);
+
+    String callerInfo = ss.getConf().getLogIdVar(ss.getSessionId());
+    Thread.currentThread().setName(callerInfo + " " + originalThreadName);
     // Flush the print stream, so it doesn't include output from the last command
     ss.err.flush();
     String cmd_trimmed = cmd.trim();
@@ -127,7 +136,12 @@ public class CliDriver {
 
     } else if (tokens[0].equalsIgnoreCase("source")) {
       String cmd_1 = getFirstCmd(cmd_trimmed, tokens[0].length());
-      cmd_1 = new VariableSubstitution().substitute(ss.getConf(), cmd_1);
+      cmd_1 = new VariableSubstitution(new HiveVariableSource() {
+        @Override
+        public Map<String, String> getHiveVariable() {
+          return SessionState.get().getHiveVariables();
+        }
+      }).substitute(ss.getConf(), cmd_1);
 
       File sourceFile = new File(cmd_1);
       if (! sourceFile.isFile()){
@@ -145,7 +159,12 @@ public class CliDriver {
     } else if (cmd_trimmed.startsWith("!")) {
 
       String shell_cmd = cmd_trimmed.substring(1);
-      shell_cmd = new VariableSubstitution().substitute(ss.getConf(), shell_cmd);
+      shell_cmd = new VariableSubstitution(new HiveVariableSource() {
+        @Override
+        public Map<String, String> getHiveVariable() {
+          return SessionState.get().getHiveVariables();
+        }
+      }).substitute(ss.getConf(), shell_cmd);
 
       // shell_cmd = "/bin/bash -c \'" + shell_cmd + "\'";
       try {
@@ -170,6 +189,7 @@ public class CliDriver {
       }
     }
 
+    Thread.currentThread().setName(originalThreadName);
     return ret;
   }
 
@@ -270,6 +290,11 @@ public class CliDriver {
               ss.out.println("Query returned non-zero code: " + res.getResponseCode() +
                   ", cause: " + res.getErrorMessage());
             }
+            if (res.getConsoleMessages() != null) {
+              for (String consoleMsg : res.getConsoleMessages()) {
+                console.printInfo(consoleMsg);
+              }
+            }
             ret = res.getResponseCode();
           }
         }
@@ -330,7 +355,6 @@ public class CliDriver {
       // Hook up the custom Ctrl+C handler while processing this line
       interruptSignal = new Signal("INT");
       oldSignal = Signal.handle(interruptSignal, new SignalHandler() {
-        private final Thread cliThread = Thread.currentThread();
         private boolean interruptRequested;
 
         @Override
@@ -671,11 +695,23 @@ public class CliDriver {
 
     // read prompt configuration and substitute variables.
     prompt = conf.getVar(HiveConf.ConfVars.CLIPROMPT);
-    prompt = new VariableSubstitution().substitute(conf, prompt);
+    prompt = new VariableSubstitution(new HiveVariableSource() {
+      @Override
+      public Map<String, String> getHiveVariable() {
+        return SessionState.get().getHiveVariables();
+      }
+    }).substitute(conf, prompt);
     prompt2 = spacesForString(prompt);
 
-    SessionState.start(ss);
+    if (HiveConf.getBoolVar(conf, ConfVars.HIVE_CLI_TEZ_SESSION_ASYNC)) {
+      // Start the session in a fire-and-forget manner. When the asynchronously initialized parts of
+      // the session are needed, the corresponding getters and other methods will wait as needed.
+      SessionState.beginStart(ss, console);
+    } else {
+      SessionState.start(ss);
+    }
 
+    Thread.currentThread().setName(conf.getLogIdVar(ss.getSessionId()) + " " + originalThreadName);
     // execute cli driver work
     try {
       return executeDriver(ss, conf, oproc);
@@ -717,6 +753,9 @@ public class CliDriver {
       System.err.println("Could not open input file for reading. (" + e.getMessage() + ")");
       return 3;
     }
+    if ("mr".equals(HiveConf.getVar(conf, ConfVars.HIVE_EXECUTION_ENGINE))) {
+      console.printInfo(HiveConf.generateMrDeprecationWarning());
+    }
 
     setupConsoleReader();
 
@@ -730,6 +769,9 @@ public class CliDriver {
     while ((line = reader.readLine(curPrompt + "> ")) != null) {
       if (!prefix.equals("")) {
         prefix += '\n';
+      }
+      if (line.trim().startsWith("--")) {
+        continue;
       }
       if (line.trim().endsWith(";") && !line.trim().endsWith("\\;")) {
         line = prefix + line;

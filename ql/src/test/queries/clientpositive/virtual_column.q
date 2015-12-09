@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 select INPUT__FILE__NAME, key, BLOCK__OFFSET__INSIDE__FILE from src;
 
 select key, count(INPUT__FILE__NAME) from src group by key order by key;

@@ -241,7 +241,7 @@
 
     <p>Server activity logs are located in
     <em>root</em><code>/var/log/hcat_server</code>.  Logging configuration is located at
-    <em>root</em><code>/conf/log4j2.xml</code>.  Server logging uses
+    <em>root</em><code>/conf/log4j2.properties</code>.  Server logging uses
     <code>DailyRollingFileAppender</code> by default. It will generate a new
     file per day and does not expire old log files automatically.</p>
 

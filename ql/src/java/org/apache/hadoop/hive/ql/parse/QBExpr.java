@@ -18,8 +18,8 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implementation of the query block expression.
@@ -28,7 +28,7 @@ import org.apache.commons.logging.LogFactory;
 
 public class QBExpr {
 
-  private static final Log LOG = LogFactory.getLog("hive.ql.parse.QBExpr");
+  private static final Logger LOG = LoggerFactory.getLogger("hive.ql.parse.QBExpr");
 
   /**
    * Opcode.

@@ -56,7 +56,7 @@ public class LateralViewForwardOperator extends Operator<LateralViewForwardDesc>
   }
 
   @Override
-  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
-    return super.initializeOp(hconf);
+  protected void initializeOp(Configuration hconf) throws HiveException {
+    super.initializeOp(hconf);
   }
 }

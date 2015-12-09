@@ -30,10 +30,11 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.Callable;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.llap.io.api.LlapIoProxy;
 import org.apache.hadoop.hive.ql.exec.DummyStoreOperator;
 import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
 import org.apache.hadoop.hive.ql.exec.MapOperator;
@@ -42,6 +43,7 @@ import org.apache.hadoop.hive.ql.exec.ObjectCache;
 import org.apache.hadoop.hive.ql.exec.ObjectCacheFactory;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
+import org.apache.hadoop.hive.ql.exec.TezDummyStoreOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper.ReportStats;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
@@ -49,6 +51,7 @@ import org.apache.hadoop.hive.ql.exec.tez.TezProcessor.TezKVOutputCollector;
 import org.apache.hadoop.hive.ql.exec.tez.tools.KeyValueInputMerger;
 import org.apache.hadoop.hive.ql.exec.vector.VectorMapOperator;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -69,36 +72,49 @@ import org.apache.tez.runtime.library.api.KeyValueReader;
  * Just pump the records through the query plan.
  */
 public class MapRecordProcessor extends RecordProcessor {
-
+  public static final Logger l4j = LoggerFactory.getLogger(MapRecordProcessor.class);
+  protected static final String MAP_PLAN_KEY = "__MAP_PLAN__";
 
   private MapOperator mapOp;
   private final List<MapOperator> mergeMapOpList = new ArrayList<MapOperator>();
-  public static final Log l4j = LogFactory.getLog(MapRecordProcessor.class);
   private MapRecordSource[] sources;
   private final Map<String, MultiMRInput> multiMRInputMap = new HashMap<String, MultiMRInput>();
-  private int position = 0;
-  MRInputLegacy legacyMRInput = null;
-  MultiMRInput mainWorkMultiMRInput = null;
-  private ExecMapperContext execContext = null;
-  private boolean abort = false;
-  protected static final String MAP_PLAN_KEY = "__MAP_PLAN__";
+  private int position;
+  MRInputLegacy legacyMRInput;
+  MultiMRInput mainWorkMultiMRInput;
+  private final ExecMapperContext execContext;
+  private boolean abort;
   private MapWork mapWork;
-  List<BaseWork> mergeWorkList = null;
+  List<MapWork> mergeWorkList;
   List<String> cacheKeys;
   ObjectCache cache;
+  private int nRows;
 
   private static Map<Integer, DummyStoreOperator> connectOps =
     new TreeMap<Integer, DummyStoreOperator>();
 
   public MapRecordProcessor(final JobConf jconf, final ProcessorContext context) throws Exception {
     super(jconf, context);
-    ObjectCache cache = ObjectCacheFactory.getCache(jconf);
+    String queryId = HiveConf.getVar(jconf, HiveConf.ConfVars.HIVEQUERYID);
+    if (LlapIoProxy.isDaemon()) { // do not cache plan
+      cache = new org.apache.hadoop.hive.ql.exec.mr.ObjectCache();
+    } else {
+      cache = ObjectCacheFactory.getCache(jconf, queryId);
+    }
     execContext = new ExecMapperContext(jconf);
     execContext.setJc(jconf);
     cacheKeys = new ArrayList<String>();
+    nRows = 0;
+  }
 
-    String queryId = HiveConf.getVar(jconf, HiveConf.ConfVars.HIVEQUERYID);
-    String key = queryId + MAP_PLAN_KEY;
+  @Override
+  void init(MRTaskReporter mrReporter,
+      Map<String, LogicalInput> inputs, Map<String, LogicalOutput> outputs) throws Exception {
+    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_INIT_OPERATORS);
+    super.init(mrReporter, inputs, outputs);
+
+
+    String key = processorContext.getTaskVertexName() + MAP_PLAN_KEY;
     cacheKeys.add(key);
 
     // create map and fetch operators
@@ -110,14 +126,28 @@ public class MapRecordProcessor extends RecordProcessor {
       });
     Utilities.setMapWork(jconf, mapWork);
 
-    mergeWorkList = getMergeWorkList(jconf, key, queryId, cache, cacheKeys);
-  }
+    String prefixes = jconf.get(DagUtils.TEZ_MERGE_WORK_FILE_PREFIXES);
+    if (prefixes != null) {
+      mergeWorkList = new ArrayList<MapWork>();
 
-  @Override
-  void init(MRTaskReporter mrReporter,
-      Map<String, LogicalInput> inputs, Map<String, LogicalOutput> outputs) throws Exception {
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_INIT_OPERATORS);
-    super.init(mrReporter, inputs, outputs);
+      for (final String prefix : prefixes.split(",")) {
+        if (prefix == null || prefix.isEmpty()) {
+          continue;
+        }
+
+        key = processorContext.getTaskVertexName() + prefix;
+        cacheKeys.add(key);
+
+        mergeWorkList.add(
+            (MapWork) cache.retrieve(key,
+                new Callable<Object>() {
+                  @Override
+                  public Object call() {
+                    return Utilities.getMergeWork(jconf, prefix);
+                  }
+                }));
+      }
+    }
 
     MapredContext.init(true, new JobConf(jconf));
     ((TezContext) MapredContext.get()).setInputs(inputs);
@@ -150,9 +180,9 @@ public class MapRecordProcessor extends RecordProcessor {
         mapOp = new MapOperator();
       }
 
+      mapOp.clearConnectedOperators();
       mapOp.setExecContext(execContext);
 
-      connectOps.clear();
       if (mergeWorkList != null) {
         MapOperator mergeMapOp = null;
         for (BaseWork mergeWork : mergeWorkList) {
@@ -170,10 +200,40 @@ public class MapRecordProcessor extends RecordProcessor {
             l4j.info("Input name is " + mergeMapWork.getName());
             jconf.set(Utilities.INPUT_NAME, mergeMapWork.getName());
             mergeMapOp.initialize(jconf, null);
-            mergeMapOp.setChildren(jconf);
+            // if there are no files/partitions to read, we need to skip trying to read
+            MultiMRInput multiMRInput = multiMRInputMap.get(mergeMapWork.getName());
+            boolean skipRead = false;
+            if (multiMRInput == null) {
+              l4j.info("Multi MR Input for work " + mergeMapWork.getName() + " is null. Skipping read.");
+              skipRead = true;
+            } else {
+              Collection<KeyValueReader> keyValueReaders = multiMRInput.getKeyValueReaders();
+              if ((keyValueReaders == null) || (keyValueReaders.isEmpty())) {
+                l4j.info("Key value readers are null or empty and hence skipping read. "
+                    + "KeyValueReaders = " + keyValueReaders);
+                skipRead = true;
+              }
+            }
+            if (skipRead) {
+              List<Operator<?>> children = new ArrayList<Operator<?>>();
+              children.addAll(mergeMapOp.getConf().getAliasToWork().values());
+              // do the same thing as setChildren when there is nothing to read.
+              // the setChildren method initializes the object inspector needed by the operators
+              // based on path and partition information which we don't have in this case.
+              mergeMapOp.initEmptyInputChildren(children, jconf);
+            } else {
+              // the setChildren method initializes the object inspector needed by the operators
+              // based on path and partition information.
+              mergeMapOp.setChildren(jconf);
+            }
 
             DummyStoreOperator dummyOp = getJoinParentOp(mergeMapOp);
-            connectOps.put(mergeMapWork.getTag(), dummyOp);
+            if (dummyOp instanceof TezDummyStoreOperator) {
+              // we ensure that we don't try to read any data for this table.
+              ((TezDummyStoreOperator) dummyOp).setFetchDone(skipRead);
+            }
+
+            mapOp.setConnectedOperators(mergeMapWork.getTag(), dummyOp);
 
             mergeMapOp.passExecContext(new ExecMapperContext(jconf));
             mergeMapOp.initializeLocalWork(jconf);
@@ -181,7 +241,7 @@ public class MapRecordProcessor extends RecordProcessor {
         }
       }
 
-      ((TezContext) (MapredContext.get())).setDummyOpsMap(connectOps);
+      ((TezContext) (MapredContext.get())).setDummyOpsMap(mapOp.getConnectedOperators());
 
       // initialize map operator
       mapOp.setConf(mapWork);
@@ -252,8 +312,10 @@ public class MapRecordProcessor extends RecordProcessor {
       MultiMRInput multiMRInput = multiMRInputMap.get(inputName);
       Collection<KeyValueReader> kvReaders = multiMRInput.getKeyValueReaders();
       l4j.debug("There are " + kvReaders.size() + " key-value readers for input " + inputName);
-      reader = getKeyValueReader(kvReaders, mapOp);
-      sources[tag].init(jconf, mapOp, reader);
+      if (kvReaders.size() > 0) {
+        reader = getKeyValueReader(kvReaders, mapOp);
+        sources[tag].init(jconf, mapOp, reader);
+      }
     }
     ((TezContext) MapredContext.get()).setRecordSources(sources);
   }
@@ -287,7 +349,25 @@ public class MapRecordProcessor extends RecordProcessor {
 
   @Override
   void run() throws Exception {
-    while (sources[position].pushRecord()) {}
+    while (sources[position].pushRecord()) {
+      if (nRows++ == CHECK_INTERRUPTION_AFTER_ROWS) {
+        if (abort && Thread.interrupted()) {
+          throw new HiveException("Processing thread interrupted");
+        }
+        nRows = 0;
+      }
+    }
+  }
+
+  @Override
+  public void abort() {
+    // this will stop run() from pushing records
+    abort = true;
+
+    // this will abort initializeOp()
+    if (mapOp != null) {
+      mapOp.abort();
+    }
   }
 
   @Override
@@ -335,7 +415,7 @@ public class MapRecordProcessor extends RecordProcessor {
         throw new RuntimeException("Hive Runtime Error while closing operators", e);
       }
     } finally {
-      Utilities.clearWorkMap();
+      Utilities.clearWorkMap(jconf);
       MapredContext.close();
     }
   }

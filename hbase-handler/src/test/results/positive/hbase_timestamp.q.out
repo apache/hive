@@ -20,9 +20,9 @@ PREHOOK: Input: default@hbase_table
 POSTHOOK: query: DESC extended hbase_table
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@hbase_table
-key                 	string              	from deserializer   
-value               	string              	from deserializer   
-time                	timestamp           	from deserializer   
+key                 	string              	                    
+value               	string              	                    
+time                	timestamp           	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: FROM src INSERT OVERWRITE TABLE hbase_table SELECT key, value, "2012-02-23 10:14:52" WHERE (key % 17) = 0

@@ -23,8 +23,8 @@ import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
@@ -56,7 +56,7 @@ import java.util.Map;
 
 public class TestDbNotificationListener {
 
-  private static final Log LOG = LogFactory.getLog(TestDbNotificationListener.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(TestDbNotificationListener.class.getName());
   private static Map<String, String> emptyParameters = new HashMap<String, String>();
   private static IMetaStoreClient msClient;
   private static Driver driver;

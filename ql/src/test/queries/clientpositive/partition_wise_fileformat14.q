@@ -1,5 +1,4 @@
-set hive.enforce.bucketing = true;
-set hive.enforce.sorting = true;
+set hive.mapred.mode=nonstrict;
 set hive.exec.reducers.max = 1;
 
 CREATE TABLE tbl1(key int, value string) PARTITIONED by (ds string)

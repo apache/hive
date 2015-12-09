@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.stats.fetch.column.stats=true;
 set hive.stats.autogather=false;
 set hive.exec.dynamic.partition=true;

@@ -18,8 +18,8 @@
 
 package org.apache.hadoop.hive.ql.io;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -91,7 +91,7 @@ public class AcidUtils {
   private AcidUtils() {
     // NOT USED
   }
-  private static final Log LOG = LogFactory.getLog(AcidUtils.class);
+  private static final Logger LOG = LoggerFactory.getLogger(AcidUtils.class);
 
   private static final Pattern ORIGINAL_PATTERN =
       Pattern.compile("[0-9]+_[0-9]+");
@@ -132,6 +132,9 @@ public class AcidUtils {
     return deltaSubdir(min, max) + "_" + String.format(STATEMENT_DIGITS, statementId);
   }
 
+  public static String baseDir(long txnId) {
+    return BASE_PREFIX + String.format(DELTA_DIGITS, txnId);
+  }
   /**
    * Create a filename for a bucket file.
    * @param directory the partition directory
@@ -221,14 +224,16 @@ public class AcidUtils {
     Path getBaseDirectory();
 
     /**
-     * Get the list of original files.
+     * Get the list of original files.  Not {@code null}.
      * @return the list of original files (eg. 000000_0)
      */
     List<HdfsFileStatusWithId> getOriginalFiles();
 
     /**
      * Get the list of base and delta directories that are valid and not
-     * obsolete.
+     * obsolete.  Not {@code null}.  List must be sorted in a specific way.
+     * See {@link org.apache.hadoop.hive.ql.io.AcidUtils.ParsedDelta#compareTo(org.apache.hadoop.hive.ql.io.AcidUtils.ParsedDelta)}
+     * for details.
      * @return the minimal list of current directories
      */
     List<ParsedDelta> getCurrentDirectories();
@@ -237,7 +242,7 @@ public class AcidUtils {
      * Get the list of obsolete directories. After filtering out bases and
      * deltas that are not selected by the valid transaction list, return the
      * list of original files, bases, and deltas that have been replaced by
-     * more up to date ones.
+     * more up to date ones.  Not {@code null}.
      */
     List<FileStatus> getObsolete();
   }
@@ -284,6 +289,7 @@ public class AcidUtils {
      * happens in a different process; thus it's possible to have bases/deltas with
      * overlapping txnId boundaries.  The sort order helps figure out the "best" set of files
      * to use to get data.
+     * This sorts "wider" delta before "narrower" i.e. delta_5_20 sorts before delta_5_10 (and delta_11_20)
      */
     @Override
     public int compareTo(ParsedDelta parsedDelta) {
@@ -499,6 +505,9 @@ public class AcidUtils {
     }
 
     Collections.sort(working);
+    //so now, 'working' should be sorted like delta_5_20 delta_5_10 delta_11_20 delta_51_60 for example
+    //and we want to end up with the best set containing all relevant data: delta_5_20 delta_51_60,
+    //subject to list of 'exceptions' in 'txnList' (not show in above example).
     long current = bestBase.txn;
     int lastStmtId = -1;
     for(ParsedDelta next: working) {

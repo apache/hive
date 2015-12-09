@@ -1,6 +1,7 @@
+set hive.mapred.mode=nonstrict;
 set hive.exec.infer.bucket.sort=true;
-set hive.enforce.bucketing = true;
-set hive.enforce.sorting = true;
+;
+
 
 -- This tests inferring how data is bucketed/sorted from the operators in the reducer
 -- and populating that information in partitions' metadata, in particular, this tests

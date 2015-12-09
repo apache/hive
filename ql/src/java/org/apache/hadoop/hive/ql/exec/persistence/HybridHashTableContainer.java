@@ -29,13 +29,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
-import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.JoinUtil.JoinResult;
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinBytesTableContainer.KeyValueHelper;
 import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapper;
 import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapperBatch;
@@ -55,6 +54,10 @@ import org.apache.hadoop.hive.serde2.lazybinary.objectinspector.LazyBinaryStruct
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Writable;
+import org.apache.hive.common.util.BloomFilter;
+import org.apache.hive.common.util.HashCodeUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.esotericsoftware.kryo.Kryo;
 
@@ -70,7 +73,7 @@ import com.esotericsoftware.kryo.Kryo;
  */
 public class HybridHashTableContainer
       implements MapJoinTableContainer, MapJoinTableContainerDirectAccess {
-  private static final Log LOG = LogFactory.getLog(HybridHashTableContainer.class);
+  private static final Logger LOG = LoggerFactory.getLogger(HybridHashTableContainer.class);
 
   private final HashPartition[] hashPartitions; // an array of partitions holding the triplets
   private int totalInMemRowCount = 0;           // total number of small table rows in memory
@@ -90,6 +93,18 @@ public class HybridHashTableContainer
   private boolean[] sortableSortOrders;
   private MapJoinBytesTableContainer.KeyValueHelper writeHelper;
   private MapJoinBytesTableContainer.DirectKeyValueWriter directWriteHelper;
+  /*
+   * this is not a real bloom filter, but is a cheap version of the 1-memory
+   * access bloom filters
+   * 
+   * In several cases, we'll have map-join spills because the value columns are
+   * a few hundred columns of Text each, while there are very few keys in total
+   * (a few thousand).
+   * 
+   * This is a cheap exit option to prevent spilling the big-table in such a
+   * scenario.
+   */
+  private transient final BloomFilter bloom1;
 
   private final List<Object> EMPTY_LIST = new ArrayList<Object>(0);
 
@@ -144,8 +159,13 @@ public class HybridHashTableContainer
       } else {
         InputStream inputStream = Files.newInputStream(hashMapLocalPath);
         com.esotericsoftware.kryo.io.Input input = new com.esotericsoftware.kryo.io.Input(inputStream);
-        Kryo kryo = Utilities.runtimeSerializationKryo.get();
-        BytesBytesMultiHashMap restoredHashMap = kryo.readObject(input, BytesBytesMultiHashMap.class);
+        Kryo kryo = SerializationUtilities.borrowKryo();
+        BytesBytesMultiHashMap restoredHashMap = null;
+        try {
+          restoredHashMap = kryo.readObject(input, BytesBytesMultiHashMap.class);
+        } finally {
+          SerializationUtilities.releaseKryo(kryo);
+        }
 
         if (rowCount > 0) {
           restoredHashMap.expandAndRehashToTarget(rowCount);
@@ -239,11 +259,11 @@ public class HybridHashTableContainer
       throws SerDeException, IOException {
     this(HiveConf.getFloatVar(hconf, HiveConf.ConfVars.HIVEHASHTABLEKEYCOUNTADJUSTMENT),
         HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHASHTABLETHRESHOLD),
-        HiveConf.getFloatVar(hconf,HiveConf.ConfVars.HIVEHASHTABLELOADFACTOR),
-        HiveConf.getIntVar(hconf,HiveConf.ConfVars.HIVEHYBRIDGRACEHASHJOINMEMCHECKFREQ),
-        HiveConf.getIntVar(hconf,HiveConf.ConfVars.HIVEHYBRIDGRACEHASHJOINMINWBSIZE),
-        HiveConf.getIntVar(hconf,HiveConf.ConfVars.HIVEHASHTABLEWBSIZE),
-        HiveConf.getIntVar(hconf,HiveConf.ConfVars.HIVEHYBRIDGRACEHASHJOINMINNUMPARTITIONS),
+        HiveConf.getFloatVar(hconf, HiveConf.ConfVars.HIVEHASHTABLELOADFACTOR),
+        HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHYBRIDGRACEHASHJOINMEMCHECKFREQ),
+        HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHYBRIDGRACEHASHJOINMINWBSIZE),
+        HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHASHTABLEWBSIZE),
+        HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHYBRIDGRACEHASHJOINMINNUMPARTITIONS),
         HiveConf.getFloatVar(hconf, HiveConf.ConfVars.HIVEMAPJOINOPTIMIZEDTABLEPROBEPERCENT),
         estimatedTableSize, keyCount, memoryAvailable, nwayConf);
   }
@@ -296,7 +316,14 @@ public class HybridHashTableContainer
 
     // Cap WriteBufferSize to avoid large preallocations
     writeBufferSize = writeBufferSize < minWbSize ? minWbSize : Math.min(maxWbSize, writeBufferSize);
-    LOG.info("Write buffer size: " + writeBufferSize);
+
+    this.bloom1 = new BloomFilter(newKeyCount);
+
+    if (LOG.isInfoEnabled()) {
+      LOG.info(String.format("Using a bloom-1 filter %d keys of size %d bytes",
+          newKeyCount, bloom1.sizeInBytes()));
+      LOG.info("Write buffer size: " + writeBufferSize);
+    }
 
     hashPartitions = new HashPartition[numPartitions];
     int numPartitionsSpilledOnCreation = 0;
@@ -430,6 +457,8 @@ public class HybridHashTableContainer
     int partitionId = keyHash & (hashPartitions.length - 1);
     HashPartition hashPartition = hashPartitions[partitionId];
 
+    bloom1.addLong(keyHash);
+
     if (isOnDisk(partitionId) || isHashMapSpilledOnCreation(partitionId)) {
       KeyValueContainer kvContainer = hashPartition.getSidefileKVContainer();
       kvContainer.add((HiveKey) currentKey, (BytesWritable) currentValue);
@@ -527,10 +556,14 @@ public class HybridHashTableContainer
 
     com.esotericsoftware.kryo.io.Output output =
         new com.esotericsoftware.kryo.io.Output(outputStream);
-    Kryo kryo = Utilities.runtimeSerializationKryo.get();
-    kryo.writeObject(output, partition.hashMap);  // use Kryo to serialize hashmap
-    output.close();
-    outputStream.close();
+    Kryo kryo = SerializationUtilities.borrowKryo();
+    try {
+      kryo.writeObject(output, partition.hashMap);  // use Kryo to serialize hashmap
+      output.close();
+      outputStream.close();
+    } finally {
+      SerializationUtilities.releaseKryo(kryo);
+    }
 
     partition.hashMapLocalPath = path;
     partition.hashMapOnDisk = true;
@@ -805,7 +838,19 @@ public class HybridHashTableContainer
      *        the evaluation for this big table row will be postponed.
      */
     public JoinUtil.JoinResult setFromOutput(Output output) throws HiveException {
-      int keyHash = WriteBuffers.murmurHash(output.getData(), 0, output.getLength());
+      int keyHash = HashCodeUtil.murmurHash(output.getData(), 0, output.getLength());
+
+      if (!bloom1.testLong(keyHash)) {
+        /*
+         * if the keyHash is missing in the bloom filter, then the value cannot
+         * exist in any of the spilled partition - return NOMATCH
+         */
+        dummyRow = null;
+        aliasFilter = (byte) 0xff;
+        hashMapResult.forget();
+        return JoinResult.NOMATCH;
+      }
+
       partitionId = keyHash & (hashPartitions.length - 1);
 
       // If the target hash table is on disk, spill this row to disk as well to be processed later
@@ -946,8 +991,19 @@ public class HybridHashTableContainer
     public JoinUtil.JoinResult setDirect(byte[] bytes, int offset, int length,
         BytesBytesMultiHashMap.Result hashMapResult) {
 
-      int keyHash = WriteBuffers.murmurHash(bytes, offset, length);
+      int keyHash = HashCodeUtil.murmurHash(bytes, offset, length);
       partitionId = keyHash & (hashPartitions.length - 1);
+
+      if (!bloom1.testLong(keyHash)) {
+        /*
+         * if the keyHash is missing in the bloom filter, then the value cannot exist in any of the
+         * spilled partition - return NOMATCH
+         */
+        dummyRow = null;
+        aliasFilter = (byte) 0xff;
+        hashMapResult.forget();
+        return JoinResult.NOMATCH;
+      }
 
       // If the target hash table is on disk, spill this row to disk as well to be processed later
       if (isOnDisk(partitionId)) {

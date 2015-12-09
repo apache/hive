@@ -20,18 +20,20 @@ package org.apache.hive.hcatalog.streaming;
 
 
 import com.google.common.annotations.VisibleForTesting;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
-import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
+import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
+import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazySimpleStructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.io.BytesWritable;
 
 import java.io.IOException;
@@ -51,9 +53,13 @@ public class DelimitedInputWriter extends AbstractRecordWriter {
   private char serdeSeparator;
   private int[] fieldToColMapping;
   private final ArrayList<String> tableColumns;
-  private AbstractSerDe serde = null;
+  private LazySimpleSerDe serde = null;
 
-  static final private Log LOG = LogFactory.getLog(DelimitedInputWriter.class.getName());
+  private final LazySimpleStructObjectInspector recordObjInspector;
+  private final ObjectInspector[] bucketObjInspectors;
+  private final StructField[] bucketStructFields;
+
+  static final private Logger LOG = LoggerFactory.getLogger(DelimitedInputWriter.class.getName());
 
   /** Constructor. Uses default separator of the LazySimpleSerde
    * @param colNamesForFields Column name assignment for input fields. nulls or empty
@@ -120,6 +126,22 @@ public class DelimitedInputWriter extends AbstractRecordWriter {
     this.reorderingNeeded = isReorderingNeeded(delimiter, getTableColumns());
     LOG.debug("Field reordering needed = " + this.reorderingNeeded + ", for endpoint " + endPoint);
     this.serdeSeparator = serdeSeparator;
+    this.serde = createSerde(tbl, conf, serdeSeparator);
+
+    // get ObjInspectors for entire record and bucketed cols
+    try {
+      this.recordObjInspector = (LazySimpleStructObjectInspector) serde.getObjectInspector();
+      this.bucketObjInspectors = getObjectInspectorsForBucketedCols(bucketIds, recordObjInspector);
+    } catch (SerDeException e) {
+      throw new SerializationError("Unable to get ObjectInspector for bucket columns", e);
+    }
+
+    // get StructFields for bucketed cols
+    bucketStructFields = new StructField[bucketIds.size()];
+    List<? extends StructField> allFields = recordObjInspector.getAllStructFieldRefs();
+    for (int i = 0; i < bucketIds.size(); i++) {
+      bucketStructFields[i] = allFields.get(bucketIds.get(i));
+    }
   }
 
   private boolean isReorderingNeeded(String delimiter, ArrayList<String> tableColumns) {
@@ -173,14 +195,14 @@ public class DelimitedInputWriter extends AbstractRecordWriter {
     }
     String[] reorderedFields = new String[getTableColumns().size()];
     String decoded = new String(record);
-    String[] fields = decoded.split(delimiter);
+    String[] fields = decoded.split(delimiter,-1);
     for (int i=0; i<fieldToColMapping.length; ++i) {
       int newIndex = fieldToColMapping[i];
       if(newIndex != -1) {
         reorderedFields[newIndex] = fields[i];
       }
     }
-    return join(reorderedFields,getSerdeSeparator());
+    return join(reorderedFields, getSerdeSeparator());
   }
 
   // handles nulls in items[]
@@ -212,7 +234,8 @@ public class DelimitedInputWriter extends AbstractRecordWriter {
     try {
       byte[] orderedFields = reorderFields(record);
       Object encodedRow = encode(orderedFields);
-      updater.insert(transactionId, encodedRow);
+      int bucket = getBucket(encodedRow);
+      updaters.get(bucket).insert(transactionId, encodedRow);
     } catch (IOException e) {
       throw new StreamingIOFailure("Error writing record in transaction ("
               + transactionId + ")", e);
@@ -220,15 +243,25 @@ public class DelimitedInputWriter extends AbstractRecordWriter {
   }
 
   @Override
-  SerDe getSerde() throws SerializationError {
-    if(serde!=null) {
-      return serde;
-    }
-    serde = createSerde(tbl, conf);
+  public SerDe getSerde() {
     return serde;
   }
 
-  private Object encode(byte[] record) throws SerializationError {
+  protected LazySimpleStructObjectInspector getRecordObjectInspector() {
+    return recordObjInspector;
+  }
+
+  @Override
+  protected StructField[] getBucketStructFields() {
+    return bucketStructFields;
+  }
+
+  protected ObjectInspector[] getBucketObjectInspectors() {
+    return bucketObjInspectors;
+  }
+
+  @Override
+  public Object encode(byte[] record) throws SerializationError {
     try {
       BytesWritable blob = new BytesWritable();
       blob.set(record, 0, record.length);
@@ -244,7 +277,7 @@ public class DelimitedInputWriter extends AbstractRecordWriter {
    * @throws SerializationError if serde could not be initialized
    * @param tbl
    */
-  protected LazySimpleSerDe createSerde(Table tbl, HiveConf conf)
+  protected static LazySimpleSerDe createSerde(Table tbl, HiveConf conf, char serdeSeparator)
           throws SerializationError {
     try {
       Properties tableProps = MetaStoreUtils.getTableMetadata(tbl);

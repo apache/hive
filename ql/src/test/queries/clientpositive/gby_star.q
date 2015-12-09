@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 explain
 select *, sum(key) from src group by key, value limit 10;
 select *, sum(key) from src group by key, value limit 10;

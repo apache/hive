@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 -- SORT_QUERY_RESULTS
 
 CREATE TABLE dest1(key1 INT, value1 STRING, key2 INT, value2 STRING) STORED AS TEXTFILE;

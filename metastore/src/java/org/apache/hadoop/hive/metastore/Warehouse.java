@@ -34,8 +34,8 @@ import java.util.regex.Pattern;
 
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileStatus;
@@ -63,7 +63,7 @@ public class Warehouse {
   private final Configuration conf;
   private final String whRootString;
 
-  public static final Log LOG = LogFactory.getLog("hive.metastore.warehouse");
+  public static final Logger LOG = LoggerFactory.getLogger("hive.metastore.warehouse");
 
   private MetaStoreFS fsHandler = null;
   private boolean storageAuthCheck = false;
@@ -162,7 +162,7 @@ public class Warehouse {
 
   public Path getTablePath(String whRootString, String tableName) throws MetaException {
     Path whRoot = getDnsPath(new Path(whRootString));
-    return new Path(whRoot, tableName.toLowerCase());
+    return new Path(whRoot, MetaStoreUtils.encodeTableName(tableName.toLowerCase()));
   }
 
   public Path getDatabasePath(Database db) throws MetaException {
@@ -181,7 +181,7 @@ public class Warehouse {
 
   public Path getTablePath(Database db, String tableName)
       throws MetaException {
-    return getDnsPath(new Path(getDatabasePath(db), tableName.toLowerCase()));
+    return getDnsPath(new Path(getDatabasePath(db), MetaStoreUtils.encodeTableName(tableName.toLowerCase())));
   }
 
   public static String getQualifiedName(Table table) {

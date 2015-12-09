@@ -122,7 +122,7 @@ public class TestMemoryManager {
     }
     // add enough rows to get the memory manager to check the limits
     for(int i=0; i < 10000; ++i) {
-      mgr.addedRow();
+      mgr.addedRow(1);
     }
     for(int call=0; call < calls.length; ++call) {
       verify(calls[call], times(2))

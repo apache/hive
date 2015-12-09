@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 -- SORT_QUERY_RESULTS
 
 create table src2 as select key, count(1) as count from src group by key;

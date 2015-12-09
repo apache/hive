@@ -26,8 +26,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
@@ -87,6 +87,7 @@ import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
+import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
  * SparkCompiler translates the operator plan into SparkTasks.
@@ -95,8 +96,8 @@ import org.apache.hadoop.hive.ql.plan.SparkWork;
  */
 public class SparkCompiler extends TaskCompiler {
   private static final String CLASS_NAME = SparkCompiler.class.getName();
-  private static final PerfLogger PERF_LOGGER = PerfLogger.getPerfLogger();
-  private static final Log LOGGER = LogFactory.getLog(SparkCompiler.class);
+  private static final PerfLogger PERF_LOGGER = SessionState.getPerfLogger();
+  private static final Logger LOGGER = LoggerFactory.getLogger(SparkCompiler.class);
 
   public SparkCompiler() {
   }

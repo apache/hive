@@ -22,8 +22,8 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.sql.Timestamp;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyTimestampObjectInspector;
 
@@ -36,7 +36,7 @@ import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyTimestam
  *
  */
 public class LazyTimestamp extends LazyPrimitive<LazyTimestampObjectInspector, TimestampWritable> {
-  static final private Log LOG = LogFactory.getLog(LazyTimestamp.class);
+  private static final Logger LOG = LoggerFactory.getLogger(LazyTimestamp.class);
 
   public LazyTimestamp(LazyTimestampObjectInspector oi) {
     super(oi);
@@ -62,7 +62,7 @@ public class LazyTimestamp extends LazyPrimitive<LazyTimestampObjectInspector, T
     try {
       s = new String(bytes.getData(), start, length, "US-ASCII");
     } catch (UnsupportedEncodingException e) {
-      LOG.error(e);
+      LOG.error("Unsupported encoding found ", e);
       s = "";
     }
 
@@ -81,8 +81,6 @@ public class LazyTimestamp extends LazyPrimitive<LazyTimestampObjectInspector, T
     }
     data.set(t);
   }
-
-  private static final String nullTimestamp = "NULL";
 
   /**
    * Writes a Timestamp in JDBC timestamp format to the output stream

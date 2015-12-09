@@ -39,8 +39,8 @@ import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.util.ImmutableBitSet;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -79,8 +79,8 @@ public class RelOptHiveTable extends RelOptAbstractTable {
   Map<String, PrunedPartitionList>                partitionCache;
   AtomicInteger                                   noColsMissingStats;
 
-  protected static final Log                      LOG             = LogFactory
-                                                                      .getLog(RelOptHiveTable.class
+  protected static final Logger                      LOG             = LoggerFactory
+                                                                      .getLogger(RelOptHiveTable.class
                                                                           .getName());
 
   public RelOptHiveTable(RelOptSchema calciteSchema, String qualifiedTblName,
@@ -312,6 +312,19 @@ public class RelOptHiveTable extends RelOptAbstractTable {
           setOfFiledCols.removeAll(setOfObtainedColStats);
 
           colNamesFailedStats.addAll(setOfFiledCols);
+        } else {
+          // Column stats in hiveColStats might not be in the same order as the columns in
+          // nonPartColNamesThatRqrStats. reorder hiveColStats so we can build hiveColStatsMap
+          // using nonPartColIndxsThatRqrStats as below
+          Map<String, ColStatistics> columnStatsMap =
+              new HashMap<String, ColStatistics>(hiveColStats.size());
+          for (ColStatistics cs : hiveColStats) {
+            columnStatsMap.put(cs.getColumnName(), cs);
+          }
+          hiveColStats.clear();
+          for (String colName : nonPartColNamesThatRqrStats) {
+            hiveColStats.add(columnStatsMap.get(colName));
+          }
         }
       } else {
         // 2.2 Obtain col stats for partitioned table.
@@ -349,6 +362,8 @@ public class RelOptHiveTable extends RelOptAbstractTable {
 
       if (hiveColStats != null && hiveColStats.size() == nonPartColNamesThatRqrStats.size()) {
         for (int i = 0; i < hiveColStats.size(); i++) {
+          // the columns in nonPartColIndxsThatRqrStats/nonPartColNamesThatRqrStats/hiveColStats
+          // are in same order
           hiveColStatsMap.put(nonPartColIndxsThatRqrStats.get(i), hiveColStats.get(i));
         }
       }

@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.cbo.returnpath.hiveop=true;
 set hive.stats.fetch.column.stats=true;
 set hive.auto.convert.join = true;

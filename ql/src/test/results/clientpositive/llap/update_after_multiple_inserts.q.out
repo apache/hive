@@ -1,0 +1,78 @@
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+create table acid_uami(i int,
+                 de decimal(5,2),
+                 vc varchar(128)) clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@acid_uami
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+create table acid_uami(i int,
+                 de decimal(5,2),
+                 vc varchar(128)) clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@acid_uami
+PREHOOK: query: insert into table acid_uami values 
+    (1, 109.23, 'mary had a little lamb'),
+    (6553, 923.19, 'its fleece was white as snow')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__1
+PREHOOK: Output: default@acid_uami
+POSTHOOK: query: insert into table acid_uami values 
+    (1, 109.23, 'mary had a little lamb'),
+    (6553, 923.19, 'its fleece was white as snow')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__1
+POSTHOOK: Output: default@acid_uami
+POSTHOOK: Lineage: acid_uami.de EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: acid_uami.i EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: acid_uami.vc EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+PREHOOK: query: insert into table acid_uami values 
+    (10, 119.23, 'and everywhere that mary went'),
+    (65530, 823.19, 'the lamb was sure to go')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__2
+PREHOOK: Output: default@acid_uami
+POSTHOOK: query: insert into table acid_uami values 
+    (10, 119.23, 'and everywhere that mary went'),
+    (65530, 823.19, 'the lamb was sure to go')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__2
+POSTHOOK: Output: default@acid_uami
+POSTHOOK: Lineage: acid_uami.de EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: acid_uami.i EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: acid_uami.vc EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+PREHOOK: query: select * from acid_uami order by de
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid_uami
+#### A masked pattern was here ####
+POSTHOOK: query: select * from acid_uami order by de
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid_uami
+#### A masked pattern was here ####
+1	109.23	mary had a little lamb
+10	119.23	and everywhere that mary went
+6553	923.19	its fleece was white as snow
+65530	823.19	the lamb was sure to go
+PREHOOK: query: update acid_uami set de = 3.14 where de = 109.23 or de = 119.23
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid_uami
+PREHOOK: Output: default@acid_uami
+POSTHOOK: query: update acid_uami set de = 3.14 where de = 109.23 or de = 119.23
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid_uami
+POSTHOOK: Output: default@acid_uami
+PREHOOK: query: select * from acid_uami order by de
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid_uami
+#### A masked pattern was here ####
+POSTHOOK: query: select * from acid_uami order by de
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid_uami
+#### A masked pattern was here ####
+1	3.14	mary had a little lamb
+10	3.14	and everywhere that mary went
+6553	923.19	its fleece was white as snow
+65530	823.19	the lamb was sure to go

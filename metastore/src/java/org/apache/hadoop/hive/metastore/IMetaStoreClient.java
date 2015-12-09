@@ -70,6 +70,7 @@ import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.api.TxnOpenException;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
@@ -79,8 +80,10 @@ import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.thrift.TException;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * Wrapper around hive metastore thrift api
@@ -100,6 +103,13 @@ public interface IMetaStoreClient {
    * @param addedJars the hive.added.jars.path. It is qualified paths separated by commas.
    */
   void setHiveAddedJars(String addedJars);
+
+  /**
+   * Returns true if the current client is using an in process metastore (local metastore).
+   *
+   * @return
+   */
+  boolean isLocalMetaStore();
 
   /**
    *  Tries to reconnect this MetaStoreClient to the MetaStore.
@@ -149,6 +159,12 @@ public interface IMetaStoreClient {
    * @throws UnknownDBException
    */
   List<String> getTables(String dbName, String tablePattern)
+      throws MetaException, TException, UnknownDBException;
+
+  /**
+   * For quick GetTablesOperation
+   */
+  List<TableMeta> getTableMeta(String dbPatterns, String tablePatterns, List<String> tableTypes)
       throws MetaException, TException, UnknownDBException;
 
   /**
@@ -439,6 +455,22 @@ public interface IMetaStoreClient {
    * @return partition object
    */
   Partition exchange_partition(Map<String, String> partitionSpecs,
+      String sourceDb, String sourceTable, String destdb,
+      String destTableName) throws MetaException, NoSuchObjectException,
+      InvalidObjectException, TException;
+
+  /**
+   * With the one partitionSpecs to exchange, multiple partitions could be exchanged.
+   * e.g., year=2015/month/day, exchanging partition year=2015 results to all the partitions
+   * belonging to it exchanged. This function returns the list of affected partitions.
+   * @param partitionSpecs
+   * @param sourceDb
+   * @param sourceTable
+   * @param destdb
+   * @param destTableName
+   * @return the list of the new partitions
+   */
+  List<Partition> exchange_partitions(Map<String, String> partitionSpecs,
       String sourceDb, String sourceTable, String destdb,
       String destTableName) throws MetaException, NoSuchObjectException,
       InvalidObjectException, TException;
@@ -1453,4 +1485,28 @@ public interface IMetaStoreClient {
       List<String> colNames, List<String> partName)  throws NoSuchObjectException, MetaException, TException;
 
   boolean setPartitionColumnStatistics(SetPartitionsStatsRequest request) throws NoSuchObjectException, InvalidObjectException, MetaException, TException, InvalidInputException;
+
+  /**
+   * Flush any catalog objects held by the metastore implementation.  Note that this does not
+   * flush statistics objects.  This should be called at the beginning of each query.
+   */
+  void flushCache();
+
+  /**
+   * Gets file metadata, as cached by metastore, for respective file IDs.
+   * The metadata that is not cached in metastore may be missing.
+   */
+  Iterable<Entry<Long, ByteBuffer>> getFileMetadata(List<Long> fileIds) throws TException;
+
+  /**
+   * Cleares the file metadata cache for respective file IDs.
+   */
+  void clearFileMetadata(List<Long> fileIds) throws TException;
+
+  /**
+   * Adds file metadata for respective file IDs to metadata cache in metastore.
+   */
+  void putFileMetadata(List<Long> fileIds, List<ByteBuffer> metadata) throws TException;
+
+  boolean isSameConfObj(HiveConf c);
 }

@@ -14,10 +14,10 @@ hr                  	string
 	 	 
 ds                  	string              	                    
 hr                  	string              	                    
-PREHOOK: query: describe srcpart.key
+PREHOOK: query: describe srcpart key
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@srcpart
-POSTHOOK: query: describe srcpart.key
+POSTHOOK: query: describe srcpart key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@srcpart
 key                 	string              	from deserializer   
@@ -53,10 +53,10 @@ hr                  	string
 	 	 
 ds                  	string              	                    
 hr                  	string              	                    
-PREHOOK: query: describe `srcpart`.`key`
+PREHOOK: query: describe `srcpart` `key`
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@srcpart
-POSTHOOK: query: describe `srcpart`.`key`
+POSTHOOK: query: describe `srcpart` `key`
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@srcpart
 key                 	string              	from deserializer   
@@ -94,10 +94,10 @@ ds                  	string
 hr                  	string              	                    
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: describe extended srcpart.key
+PREHOOK: query: describe extended srcpart key
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@srcpart
-POSTHOOK: query: describe extended srcpart.key
+POSTHOOK: query: describe extended srcpart key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@srcpart
 key                 	string              	from deserializer   
@@ -137,10 +137,10 @@ ds                  	string
 hr                  	string              	                    
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: describe extended `srcpart`.`key`
+PREHOOK: query: describe extended `srcpart` `key`
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@srcpart
-POSTHOOK: query: describe extended `srcpart`.`key`
+POSTHOOK: query: describe extended `srcpart` `key`
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@srcpart
 key                 	string              	from deserializer   
@@ -198,10 +198,10 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: describe formatted srcpart.key
+PREHOOK: query: describe formatted srcpart key
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@srcpart
-POSTHOOK: query: describe formatted srcpart.key
+POSTHOOK: query: describe formatted srcpart key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@srcpart
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
@@ -283,10 +283,10 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: describe formatted `srcpart`.`key`
+PREHOOK: query: describe formatted `srcpart` `key`
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@srcpart
-POSTHOOK: query: describe formatted `srcpart`.`key`
+POSTHOOK: query: describe formatted `srcpart` `key`
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@srcpart
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
@@ -420,3 +420,369 @@ POSTHOOK: query: drop table srcpart_serdeprops
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@srcpart_serdeprops
 POSTHOOK: Output: default@srcpart_serdeprops
+PREHOOK: query: CREATE DATABASE IF NOT EXISTS name1
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:name1
+POSTHOOK: query: CREATE DATABASE IF NOT EXISTS name1
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:name1
+PREHOOK: query: CREATE DATABASE IF NOT EXISTS name2
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:name2
+POSTHOOK: query: CREATE DATABASE IF NOT EXISTS name2
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:name2
+PREHOOK: query: use name1
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:name1
+POSTHOOK: query: use name1
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:name1
+PREHOOK: query: CREATE TABLE IF NOT EXISTS name1 (name1 int, name2 string) PARTITIONED BY (name3 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:name1
+PREHOOK: Output: name1@name1
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS name1 (name1 int, name2 string) PARTITIONED BY (name3 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:name1
+POSTHOOK: Output: name1@name1
+PREHOOK: query: ALTER TABLE name1 ADD PARTITION (name3=1)
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: name1@name1
+POSTHOOK: query: ALTER TABLE name1 ADD PARTITION (name3=1)
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: name1@name1
+POSTHOOK: Output: name1@name1@name3=1
+PREHOOK: query: CREATE TABLE IF NOT EXISTS name2 (name3 int, name4 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:name1
+PREHOOK: Output: name1@name2
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS name2 (name3 int, name4 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:name1
+POSTHOOK: Output: name1@name2
+PREHOOK: query: use name2
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:name2
+POSTHOOK: query: use name2
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:name2
+PREHOOK: query: CREATE TABLE IF NOT EXISTS table1 (col1 int, col2 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:name2
+PREHOOK: Output: name2@table1
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS table1 (col1 int, col2 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:name2
+POSTHOOK: Output: name2@table1
+PREHOOK: query: use default
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
+POSTHOOK: query: use default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
+PREHOOK: query: DESCRIBE name1.name1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: name1@name1
+POSTHOOK: query: DESCRIBE name1.name1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: name1@name1
+name1               	int                 	                    
+name2               	string              	                    
+name3               	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+name3               	int                 	                    
+PREHOOK: query: DESCRIBE name1.name1 name2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: name1@name1
+POSTHOOK: query: DESCRIBE name1.name1 name2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: name1@name1
+name2               	string              	from deserializer   
+PREHOOK: query: DESCRIBE name1.name1 PARTITION (name3=1)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: name1@name1
+POSTHOOK: query: DESCRIBE name1.name1 PARTITION (name3=1)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: name1@name1
+name1               	int                 	                    
+name2               	string              	                    
+name3               	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+name3               	int                 	                    
+PREHOOK: query: DESCRIBE name1.name2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: name1@name2
+POSTHOOK: query: DESCRIBE name1.name2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: name1@name2
+name3               	int                 	                    
+name4               	string              	                    
+PREHOOK: query: DESCRIBE name1.name2 name3
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: name1@name2
+POSTHOOK: query: DESCRIBE name1.name2 name3
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: name1@name2
+name3               	int                 	from deserializer   
+PREHOOK: query: DESCRIBE name1.name2 name4
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: name1@name2
+POSTHOOK: query: DESCRIBE name1.name2 name4
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: name1@name2
+name4               	string              	from deserializer   
+PREHOOK: query: use name1
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:name1
+POSTHOOK: query: use name1
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:name1
+PREHOOK: query: DESCRIBE name1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: name1@name1
+POSTHOOK: query: DESCRIBE name1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: name1@name1
+name1               	int                 	                    
+name2               	string              	                    
+name3               	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+name3               	int                 	                    
+PREHOOK: query: DESCRIBE name1 name2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: name1@name1
+POSTHOOK: query: DESCRIBE name1 name2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: name1@name1
+name2               	string              	from deserializer   
+PREHOOK: query: DESCRIBE name1 PARTITION (name3=1)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: name1@name1
+POSTHOOK: query: DESCRIBE name1 PARTITION (name3=1)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: name1@name1
+name1               	int                 	                    
+name2               	string              	                    
+name3               	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+name3               	int                 	                    
+PREHOOK: query: DESCRIBE name1.name1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: name1@name1
+POSTHOOK: query: DESCRIBE name1.name1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: name1@name1
+name1               	int                 	                    
+name2               	string              	                    
+name3               	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+name3               	int                 	                    
+PREHOOK: query: DESCRIBE name1.name1 name2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: name1@name1
+POSTHOOK: query: DESCRIBE name1.name1 name2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: name1@name1
+name2               	string              	from deserializer   
+PREHOOK: query: DESCRIBE name1.name1 PARTITION (name3=1)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: name1@name1
+POSTHOOK: query: DESCRIBE name1.name1 PARTITION (name3=1)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: name1@name1
+name1               	int                 	                    
+name2               	string              	                    
+name3               	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+name3               	int                 	                    
+PREHOOK: query: DESCRIBE name2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: name1@name2
+POSTHOOK: query: DESCRIBE name2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: name1@name2
+name3               	int                 	                    
+name4               	string              	                    
+PREHOOK: query: DESCRIBE name2 name3
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: name1@name2
+POSTHOOK: query: DESCRIBE name2 name3
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: name1@name2
+name3               	int                 	from deserializer   
+PREHOOK: query: DESCRIBE name2 name4
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: name1@name2
+POSTHOOK: query: DESCRIBE name2 name4
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: name1@name2
+name4               	string              	from deserializer   
+PREHOOK: query: DESCRIBE name1.name2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: name1@name2
+POSTHOOK: query: DESCRIBE name1.name2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: name1@name2
+name3               	int                 	                    
+name4               	string              	                    
+PREHOOK: query: DESCRIBE name1.name2 name3
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: name1@name2
+POSTHOOK: query: DESCRIBE name1.name2 name3
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: name1@name2
+name3               	int                 	from deserializer   
+PREHOOK: query: DESCRIBE name1.name2 name4
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: name1@name2
+POSTHOOK: query: DESCRIBE name1.name2 name4
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: name1@name2
+name4               	string              	from deserializer   
+PREHOOK: query: DESCRIBE name2.table1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: name2@table1
+POSTHOOK: query: DESCRIBE name2.table1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: name2@table1
+col1                	int                 	                    
+col2                	string              	                    
+PREHOOK: query: DESCRIBE name2.table1 col1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: name2@table1
+POSTHOOK: query: DESCRIBE name2.table1 col1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: name2@table1
+col1                	int                 	from deserializer   
+PREHOOK: query: DESCRIBE name2.table1 col2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: name2@table1
+POSTHOOK: query: DESCRIBE name2.table1 col2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: name2@table1
+col2                	string              	from deserializer   
+PREHOOK: query: use name2
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:name2
+POSTHOOK: query: use name2
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:name2
+PREHOOK: query: DESCRIBE table1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: name2@table1
+POSTHOOK: query: DESCRIBE table1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: name2@table1
+col1                	int                 	                    
+col2                	string              	                    
+PREHOOK: query: DESCRIBE table1 col1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: name2@table1
+POSTHOOK: query: DESCRIBE table1 col1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: name2@table1
+col1                	int                 	from deserializer   
+PREHOOK: query: DESCRIBE table1 col2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: name2@table1
+POSTHOOK: query: DESCRIBE table1 col2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: name2@table1
+col2                	string              	from deserializer   
+PREHOOK: query: DESCRIBE name2.table1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: name2@table1
+POSTHOOK: query: DESCRIBE name2.table1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: name2@table1
+col1                	int                 	                    
+col2                	string              	                    
+PREHOOK: query: DESCRIBE name2.table1 col1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: name2@table1
+POSTHOOK: query: DESCRIBE name2.table1 col1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: name2@table1
+col1                	int                 	from deserializer   
+PREHOOK: query: DESCRIBE name2.table1 col2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: name2@table1
+POSTHOOK: query: DESCRIBE name2.table1 col2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: name2@table1
+col2                	string              	from deserializer   
+PREHOOK: query: DROP TABLE IF EXISTS table1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: name2@table1
+PREHOOK: Output: name2@table1
+POSTHOOK: query: DROP TABLE IF EXISTS table1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: name2@table1
+POSTHOOK: Output: name2@table1
+PREHOOK: query: use name1
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:name1
+POSTHOOK: query: use name1
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:name1
+PREHOOK: query: DROP TABLE IF EXISTS name1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: name1@name1
+PREHOOK: Output: name1@name1
+POSTHOOK: query: DROP TABLE IF EXISTS name1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: name1@name1
+POSTHOOK: Output: name1@name1
+PREHOOK: query: DROP TABLE IF EXISTS name2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: name1@name2
+PREHOOK: Output: name1@name2
+POSTHOOK: query: DROP TABLE IF EXISTS name2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: name1@name2
+POSTHOOK: Output: name1@name2
+PREHOOK: query: use name2
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:name2
+POSTHOOK: query: use name2
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:name2
+PREHOOK: query: DROP TABLE IF EXISTS table1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS table1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP DATABASE IF EXISTS name1
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:name1
+PREHOOK: Output: database:name1
+POSTHOOK: query: DROP DATABASE IF EXISTS name1
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:name1
+POSTHOOK: Output: database:name1
+PREHOOK: query: DROP DATABASE IF EXISTS name2
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:name2
+PREHOOK: Output: database:name2
+POSTHOOK: query: DROP DATABASE IF EXISTS name2
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:name2
+POSTHOOK: Output: database:name2

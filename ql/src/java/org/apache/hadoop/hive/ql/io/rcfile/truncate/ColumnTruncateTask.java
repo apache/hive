@@ -43,10 +43,10 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.Counters;
 import org.apache.hadoop.mapred.FileInputFormat;
-import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RunningJob;
+import org.apache.hadoop.mapreduce.MRJobConfig;
 
 @SuppressWarnings( { "deprecation", "unchecked" })
 public class ColumnTruncateTask extends Task<ColumnTruncateWork> implements Serializable,
@@ -121,7 +121,7 @@ public class ColumnTruncateTask extends Task<ColumnTruncateWork> implements Seri
     LOG.info("Using " + inpFormat);
 
     try {
-      job.setInputFormat((Class<? extends InputFormat>) JavaUtils.loadClass(inpFormat));
+      job.setInputFormat(JavaUtils.loadClass(inpFormat));
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e.getMessage(), e);
     }
@@ -143,8 +143,8 @@ public class ColumnTruncateTask extends Task<ColumnTruncateWork> implements Seri
 
     int returnVal = 0;
     RunningJob rj = null;
-    boolean noName = StringUtils.isEmpty(HiveConf.getVar(job,
-        HiveConf.ConfVars.HADOOPJOBNAME));
+
+    boolean noName = StringUtils.isEmpty(job.get(MRJobConfig.JOB_NAME));
 
     String jobName = null;
     if (noName && this.getQueryPlan() != null) {
@@ -155,7 +155,7 @@ public class ColumnTruncateTask extends Task<ColumnTruncateWork> implements Seri
 
     if (noName) {
       // This is for a special case to ensure unit tests pass
-      HiveConf.setVar(job, HiveConf.ConfVars.HADOOPJOBNAME,
+      job.set(MRJobConfig.JOB_NAME,
           jobName != null ? jobName : "JOB" + Utilities.randGen.nextInt());
     }
 
@@ -218,7 +218,7 @@ public class ColumnTruncateTask extends Task<ColumnTruncateWork> implements Seri
         ColumnTruncateMapper.jobClose(outputPath, success, job, console,
           work.getDynPartCtx(), null);
       } catch (Exception e) {
-	LOG.warn(e);
+	LOG.warn("Failed while cleaning up ", e);
       } finally {
 	HadoopJobExecHelper.runningJobs.remove(rj);
       }

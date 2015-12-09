@@ -28,3 +28,7 @@ SELECT * FROM parquet_columnar_access;
 ALTER TABLE parquet_columnar_access REPLACE COLUMNS (s1 string, x1 int, y1 int, f1 float);
 
 SELECT * FROM parquet_columnar_access;
+
+ALTER TABLE parquet_columnar_access REPLACE COLUMNS (s1 string, x1 bigint, y1 int, f1 double);
+
+SELECT * FROM parquet_columnar_access;

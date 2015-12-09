@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.avro.AvroLazyObjectInspector;
 import org.apache.hadoop.hive.serde2.avro.AvroSchemaRetriever;
 import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils;
+import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils.AvroTableProperties;
 import org.apache.hadoop.hive.serde2.lazy.LazyFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
@@ -57,7 +58,7 @@ public class AvroHBaseValueFactory extends DefaultHBaseValueFactory {
   public void init(HBaseSerDeParameters hbaseParams, Configuration conf, Properties properties)
       throws SerDeException {
     super.init(hbaseParams, conf, properties);
-    String avroSchemaRetClass = properties.getProperty(AvroSerdeUtils.SCHEMA_RETRIEVER);
+    String avroSchemaRetClass = properties.getProperty(AvroTableProperties.SCHEMA_RETRIEVER.getPropName());
 
     if (avroSchemaRetClass != null) {
       Class<?> avroSchemaRetrieverClass = null;

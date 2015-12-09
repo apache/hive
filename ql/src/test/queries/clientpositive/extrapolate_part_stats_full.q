@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.stats.fetch.column.stats=true;
 set hive.exec.dynamic.partition=true;
 set hive.exec.dynamic.partition.mode=nonstrict;
@@ -23,7 +24,7 @@ analyze table loc_orc_1d partition(year='2000') compute statistics for columns s
 
 analyze table loc_orc_1d partition(year='2001') compute statistics for columns state,locid;
 
-describe formatted loc_orc_1d.state PARTITION(year='2001');
+describe formatted loc_orc_1d PARTITION(year='2001') state;
 
 -- basicStatState: COMPLETE colStatState: PARTIAL
 explain extended select state from loc_orc_1d;

@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.fetch.task.conversion=more;
 
 -- JAVA_VERSION_SPECIFIC_OUTPUT

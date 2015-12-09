@@ -18,12 +18,13 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinBytesHashSet;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashSetResult;
 import org.apache.hadoop.io.BytesWritable;
+import org.apache.hive.common.util.HashCodeUtil;
 
 /*
  * An single byte array value hash multi-set optimized for vector map join.
@@ -32,7 +33,7 @@ public abstract class VectorMapJoinFastBytesHashSet
         extends VectorMapJoinFastBytesHashTable
         implements VectorMapJoinBytesHashSet {
 
-  private static final Log LOG = LogFactory.getLog(VectorMapJoinFastBytesHashSet.class);
+  private static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinFastBytesHashSet.class);
 
   @Override
   public VectorMapJoinHashSetResult createHashSetResult() {
@@ -62,7 +63,7 @@ public abstract class VectorMapJoinFastBytesHashSet
 
     optimizedHashSetResult.forget();
 
-    long hashCode = VectorMapJoinFastBytesHashUtil.hashKey(keyBytes, keyStart, keyLength);
+    long hashCode = HashCodeUtil.murmurHash(keyBytes, keyStart, keyLength);
     long existance = findReadSlot(keyBytes, keyStart, keyLength, hashCode);
     JoinUtil.JoinResult joinResult;
     if (existance == -1) {

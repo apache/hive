@@ -26,8 +26,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
@@ -52,7 +52,7 @@ import org.apache.hadoop.io.Writable;
 
 public class HashMapWrapper extends AbstractMapJoinTableContainer implements Serializable {
   private static final long serialVersionUID = 1L;
-  protected static final Log LOG = LogFactory.getLog(HashMapWrapper.class);
+  protected static final Logger LOG = LoggerFactory.getLogger(HashMapWrapper.class);
 
   // default threshold for using main memory based HashMap
   private static final int THRESHOLD = 1000000;

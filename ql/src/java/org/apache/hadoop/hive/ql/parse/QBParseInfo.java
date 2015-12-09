@@ -28,8 +28,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.antlr.runtime.tree.Tree;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.AnalyzeRewriteContext;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
 
@@ -65,7 +65,6 @@ public class QBParseInfo {
   private final HashSet<String> insertIntoTables;
 
   private boolean isAnalyzeCommand; // used for the analyze command (statistics)
-  private boolean isInsertToTable;  // used for insert overwrite command (statistics)
   private boolean isNoScanAnalyzeCommand; // used for the analyze command (statistics) (noscan)
   private boolean isPartialScanAnalyzeCommand; // used for the analyze command (statistics)
                                                // (partialscan)
@@ -112,7 +111,7 @@ public class QBParseInfo {
 
 
   @SuppressWarnings("unused")
-  private static final Log LOG = LogFactory.getLog(QBParseInfo.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(QBParseInfo.class.getName());
 
   public QBParseInfo(String alias, boolean isSubQ) {
     aliasToSrc = new HashMap<String, ASTNode>();
@@ -548,14 +547,6 @@ public class QBParseInfo {
 
   public boolean isAnalyzeCommand() {
     return isAnalyzeCommand;
-  }
-
-  public void setIsInsertToTable(boolean isInsertToTable) {
-    this.isInsertToTable = isInsertToTable;
-  }
-
-  public boolean isInsertToTable() {
-    return isInsertToTable;
   }
 
   public void addTableSpec(String tName, TableSpec tSpec) {

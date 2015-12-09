@@ -20,11 +20,12 @@ package org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast;
 
 import java.io.IOException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinBytesHashTable;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.io.BytesWritable;
+import org.apache.hive.common.util.HashCodeUtil;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -35,7 +36,9 @@ public abstract class VectorMapJoinFastBytesHashTable
         extends VectorMapJoinFastHashTable
         implements VectorMapJoinBytesHashTable {
 
-  private static final Log LOG = LogFactory.getLog(VectorMapJoinFastBytesHashTable.class);
+  private static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinFastBytesHashTable.class);
+
+  private final boolean isLogDebugEnabled = LOG.isDebugEnabled();
 
   protected VectorMapJoinFastKeyStore keyStore;
 
@@ -70,7 +73,7 @@ public abstract class VectorMapJoinFastBytesHashTable
       expandAndRehash();
     }
 
-    long hashCode = VectorMapJoinFastBytesHashUtil.hashKey(keyBytes, keyStart, keyLength);
+    long hashCode = HashCodeUtil.murmurHash(keyBytes, keyStart, keyLength);
     int intHashCode = (int) hashCode;
     int slot = (intHashCode & logicalHashBucketMask);
     long probeSlot = slot;
@@ -97,7 +100,7 @@ public abstract class VectorMapJoinFastBytesHashTable
     }
 
     if (largestNumberOfSteps < i) {
-      if (LOG.isDebugEnabled()) {
+      if (isLogDebugEnabled) {
         LOG.debug("Probed " + i + " slots (the longest so far) to find space");
       }
       largestNumberOfSteps = i;
@@ -147,7 +150,7 @@ public abstract class VectorMapJoinFastBytesHashTable
         }
 
         if (newLargestNumberOfSteps < i) {
-          if (LOG.isDebugEnabled()) {
+          if (isLogDebugEnabled) {
             LOG.debug("Probed " + i + " slots (the longest so far) to find space");
           }
           newLargestNumberOfSteps = i;

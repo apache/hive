@@ -74,8 +74,10 @@ STAGE PLANS:
                       key expressions: _col0 (type: double)
                       sort order: +
                       Statistics: Num rows: 200 Data size: 54496 Basic stats: COMPLETE Column stats: NONE
+                      TopN Hash Memory Usage: 0.1
             Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: double)
@@ -91,7 +93,6 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator

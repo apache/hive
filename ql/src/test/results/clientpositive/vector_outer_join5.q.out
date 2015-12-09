@@ -85,11 +85,11 @@ STAGE PLANS:
   Stage: Stage-5
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$hdt$_1:st 
+        $hdt$_1:st 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$hdt$_1:st 
+        $hdt$_1:st 
           TableScan
             alias: st
             Statistics: Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE
@@ -128,9 +128,9 @@ STAGE PLANS:
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -193,11 +193,11 @@ STAGE PLANS:
   Stage: Stage-5
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$hdt$_1:sm 
+        $hdt$_1:sm 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$hdt$_1:sm 
+        $hdt$_1:sm 
           TableScan
             alias: sm
             Statistics: Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE
@@ -242,9 +242,9 @@ STAGE PLANS:
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -307,11 +307,11 @@ STAGE PLANS:
   Stage: Stage-5
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$hdt$_1:sm 
+        $hdt$_1:sm 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$hdt$_1:sm 
+        $hdt$_1:sm 
           TableScan
             alias: sm
             Statistics: Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE
@@ -356,9 +356,9 @@ STAGE PLANS:
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -421,11 +421,11 @@ STAGE PLANS:
   Stage: Stage-5
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$hdt$_1:sm 
+        $hdt$_1:sm 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$hdt$_1:sm 
+        $hdt$_1:sm 
           TableScan
             alias: sm
             Statistics: Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE
@@ -470,9 +470,9 @@ STAGE PLANS:
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -539,14 +539,14 @@ STAGE PLANS:
   Stage: Stage-8
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$hdt$_1:sm 
+        $hdt$_1:sm 
           Fetch Operator
             limit: -1
-        $hdt$_0:$hdt$_2:s 
+        $hdt$_2:s 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$hdt$_1:sm 
+        $hdt$_1:sm 
           TableScan
             alias: sm
             Statistics: Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE
@@ -558,7 +558,7 @@ STAGE PLANS:
                 keys:
                   0 UDFToLong(_col1) (type: bigint)
                   1 (_col0 pmod UDFToLong(8)) (type: bigint)
-        $hdt$_0:$hdt$_2:s 
+        $hdt$_2:s 
           TableScan
             alias: s
             Statistics: Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE
@@ -605,9 +605,9 @@ STAGE PLANS:
                       sort order: 
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -732,11 +732,11 @@ STAGE PLANS:
   Stage: Stage-5
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$hdt$_1:st 
+        $hdt$_1:st 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$hdt$_1:st 
+        $hdt$_1:st 
           TableScan
             alias: st
             Statistics: Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE
@@ -775,9 +775,9 @@ STAGE PLANS:
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -840,11 +840,11 @@ STAGE PLANS:
   Stage: Stage-5
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$hdt$_1:sm 
+        $hdt$_1:sm 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$hdt$_1:sm 
+        $hdt$_1:sm 
           TableScan
             alias: sm
             Statistics: Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE
@@ -889,9 +889,9 @@ STAGE PLANS:
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -954,11 +954,11 @@ STAGE PLANS:
   Stage: Stage-5
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$hdt$_1:sm 
+        $hdt$_1:sm 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$hdt$_1:sm 
+        $hdt$_1:sm 
           TableScan
             alias: sm
             Statistics: Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE
@@ -1003,9 +1003,9 @@ STAGE PLANS:
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -1068,11 +1068,11 @@ STAGE PLANS:
   Stage: Stage-5
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$hdt$_1:sm 
+        $hdt$_1:sm 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$hdt$_1:sm 
+        $hdt$_1:sm 
           TableScan
             alias: sm
             Statistics: Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE
@@ -1117,9 +1117,9 @@ STAGE PLANS:
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -1186,14 +1186,14 @@ STAGE PLANS:
   Stage: Stage-8
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$hdt$_1:sm 
+        $hdt$_1:sm 
           Fetch Operator
             limit: -1
-        $hdt$_0:$hdt$_2:s 
+        $hdt$_2:s 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$hdt$_1:sm 
+        $hdt$_1:sm 
           TableScan
             alias: sm
             Statistics: Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE
@@ -1205,7 +1205,7 @@ STAGE PLANS:
                 keys:
                   0 UDFToLong(_col1) (type: bigint)
                   1 (_col0 pmod UDFToLong(8)) (type: bigint)
-        $hdt$_0:$hdt$_2:s 
+        $hdt$_2:s 
           TableScan
             alias: s
             Statistics: Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE
@@ -1252,9 +1252,9 @@ STAGE PLANS:
                       sort order: 
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)

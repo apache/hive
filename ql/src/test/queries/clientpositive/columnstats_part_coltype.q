@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 -- Test type date, int, and string in partition column
 drop table if exists partcolstats;
 
@@ -9,33 +10,33 @@ insert into partcolstats partition (ds=date '2015-04-03', hr=3, part='partA') se
 insert into partcolstats partition (ds=date '2015-04-03', hr=3, part='partB') select key, value from src limit 60;
 
 analyze table partcolstats partition (ds=date '2015-04-02', hr=2, part='partA') compute statistics for columns;
-describe formatted partcolstats.key partition (ds=date '2015-04-02', hr=2, part='partA');
-describe formatted partcolstats.value partition (ds=date '2015-04-02', hr=2, part='partA');
+describe formatted partcolstats partition (ds=date '2015-04-02', hr=2, part='partA') key;
+describe formatted partcolstats partition (ds=date '2015-04-02', hr=2, part='partA') value;
 
-describe formatted partcolstats.key partition (ds=date '2015-04-02', hr=2, part='partB');
-describe formatted partcolstats.value partition (ds=date '2015-04-02', hr=2, part='partB');
+describe formatted partcolstats partition (ds=date '2015-04-02', hr=2, part='partB') key;
+describe formatted partcolstats partition (ds=date '2015-04-02', hr=2, part='partB') value;
 
 analyze table partcolstats partition (ds=date '2015-04-02', hr=2, part) compute statistics for columns;
-describe formatted partcolstats.key partition (ds=date '2015-04-02', hr=2, part='partB');
-describe formatted partcolstats.value partition (ds=date '2015-04-02', hr=2, part='partB');
+describe formatted partcolstats partition (ds=date '2015-04-02', hr=2, part='partB') key;
+describe formatted partcolstats partition (ds=date '2015-04-02', hr=2, part='partB') value;
 
-describe formatted partcolstats.key partition (ds=date '2015-04-02', hr=3, part='partA');
-describe formatted partcolstats.value partition (ds=date '2015-04-02', hr=3, part='partA');
+describe formatted partcolstats partition (ds=date '2015-04-02', hr=3, part='partA') key;
+describe formatted partcolstats partition (ds=date '2015-04-02', hr=3, part='partA') value;
 
 analyze table partcolstats partition (ds=date '2015-04-02', hr, part) compute statistics for columns;
-describe formatted partcolstats.key partition (ds=date '2015-04-02', hr=3, part='partA');
-describe formatted partcolstats.value partition (ds=date '2015-04-02', hr=3, part='partA');
+describe formatted partcolstats partition (ds=date '2015-04-02', hr=3, part='partA') key;
+describe formatted partcolstats partition (ds=date '2015-04-02', hr=3, part='partA') value;
 
-describe formatted partcolstats.key partition (ds=date '2015-04-03', hr=3, part='partA');
-describe formatted partcolstats.value partition (ds=date '2015-04-03', hr=3, part='partA');
-describe formatted partcolstats.key partition (ds=date '2015-04-03', hr=3, part='partB');
-describe formatted partcolstats.value partition (ds=date '2015-04-03', hr=3, part='partB');
+describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partA') key;
+describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partA') value;
+describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partB') key;
+describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partB') value;
 
 analyze table partcolstats partition (ds, hr, part) compute statistics for columns;
-describe formatted partcolstats.key partition (ds=date '2015-04-03', hr=3, part='partA');
-describe formatted partcolstats.value partition (ds=date '2015-04-03', hr=3, part='partA');
-describe formatted partcolstats.key partition (ds=date '2015-04-03', hr=3, part='partB');
-describe formatted partcolstats.value partition (ds=date '2015-04-03', hr=3, part='partB');
+describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partA') key;
+describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partA') value;
+describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partB') key;
+describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partB') value;
 
 drop table partcolstats;
 
@@ -45,7 +46,7 @@ create table partcolstatsnum (key int, value string) partitioned by (tint tinyin
 insert into partcolstatsnum partition (tint=100, sint=1000, bint=1000000) select key, value from src limit 30;
 
 analyze table partcolstatsnum partition (tint=100, sint=1000, bint=1000000) compute statistics for columns;
-describe formatted partcolstatsnum.value partition (tint=100, sint=1000, bint=1000000);
+describe formatted partcolstatsnum partition (tint=100, sint=1000, bint=1000000) value;
 
 drop table partcolstatsnum;
 
@@ -55,7 +56,7 @@ create table partcolstatsdec (key int, value string) partitioned by (decpart dec
 insert into partcolstatsdec partition (decpart='1000.0001') select key, value from src limit 30;
 
 analyze table partcolstatsdec partition (decpart='1000.0001') compute statistics for columns;
-describe formatted partcolstatsdec.value partition (decpart='1000.0001');
+describe formatted partcolstatsdec partition (decpart='1000.0001') value;
 
 drop table partcolstatsdec;
 
@@ -65,7 +66,7 @@ create table partcolstatschar (key int, value string) partitioned by (varpart va
 insert into partcolstatschar partition (varpart='part1', charpart='aaa') select key, value from src limit 30;
 
 analyze table partcolstatschar partition (varpart='part1', charpart='aaa') compute statistics for columns;
-describe formatted partcolstatschar.value partition (varpart='part1', charpart='aaa');
+describe formatted partcolstatschar partition (varpart='part1', charpart='aaa') value;
 
 drop table partcolstatschar;
 

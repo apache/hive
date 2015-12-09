@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 -- small 1 part, 2 bucket & big 2 part, 4 bucket
 
 CREATE TABLE bucket_small (key string, value string) partitioned by (ds string) 

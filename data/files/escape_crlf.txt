@@ -1,0 +1,2 @@
+This\nis\rthe first\r\nmulti-line field|field1-2
+This\nis\rthe second\r\nmulti-line field|field2-2

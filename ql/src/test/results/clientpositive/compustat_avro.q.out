@@ -28,10 +28,10 @@ create table testAvro
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testAvro
-PREHOOK: query: describe formatted testAvro.col1
+PREHOOK: query: describe formatted testAvro col1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@testavro
-POSTHOOK: query: describe formatted testAvro.col1
+POSTHOOK: query: describe formatted testAvro col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@testavro
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
@@ -45,10 +45,10 @@ POSTHOOK: query: analyze table testAvro compute statistics for columns col1,col3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testavro
 #### A masked pattern was here ####
-PREHOOK: query: describe formatted testAvro.col1
+PREHOOK: query: describe formatted testAvro col1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@testavro
-POSTHOOK: query: describe formatted testAvro.col1
+POSTHOOK: query: describe formatted testAvro col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@testavro
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             

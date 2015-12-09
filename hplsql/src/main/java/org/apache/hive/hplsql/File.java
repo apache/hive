@@ -46,17 +46,27 @@ public class File {
   /**
    * Create a file
    */
-  public void create(String dir, String file, boolean overwrite) {
-    path = new Path(dir, file);
+  public FSDataOutputStream create(boolean overwrite) {
     try {
       if (fs == null) {
-        fs = FileSystem.get(new Configuration());
+        fs = createFs();
       }
       out = fs.create(path, overwrite);
     } 
     catch (IOException e) {
       e.printStackTrace();
     }
+    return out;
+  }
+  
+  public FSDataOutputStream create(String dir, String file, boolean overwrite) {
+    path = new Path(dir, file);
+    return create(overwrite);
+  }
+
+  public FSDataOutputStream create(String file, boolean overwrite) {
+    path = new Path(file);
+    return create(overwrite);
   }
   
   /**
@@ -66,7 +76,7 @@ public class File {
    path = new Path(dir, file);
    try {
      if (fs == null) {
-       fs = FileSystem.get(new Configuration());
+       fs = createFs();
      }
      in = fs.open(path);
    } catch (IOException e) {

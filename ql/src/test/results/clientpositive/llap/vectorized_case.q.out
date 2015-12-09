@@ -1,0 +1,95 @@
+PREHOOK: query: explain
+select 
+  csmallint,
+  case 
+    when csmallint = 418 then "a"
+    when csmallint = 12205 then "b"
+    else "c"
+  end,
+  case csmallint
+    when 418 then "a"
+    when 12205 then "b"
+    else "c"
+  end
+from alltypesorc
+where csmallint = 418
+or csmallint = 12205
+or csmallint = 10583
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select 
+  csmallint,
+  case 
+    when csmallint = 418 then "a"
+    when csmallint = 12205 then "b"
+    else "c"
+  end,
+  case csmallint
+    when 418 then "a"
+    when 12205 then "b"
+    else "c"
+  end
+from alltypesorc
+where csmallint = 418
+or csmallint = 12205
+or csmallint = 10583
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: alltypesorc
+          Filter Operator
+            predicate: ((csmallint = 418) or (csmallint = 12205) or (csmallint = 10583)) (type: boolean)
+            Select Operator
+              expressions: csmallint (type: smallint), CASE WHEN ((csmallint = 418)) THEN ('a') WHEN ((csmallint = 12205)) THEN ('b') ELSE ('c') END (type: string), CASE (csmallint) WHEN (418) THEN ('a') WHEN (12205) THEN ('b') ELSE ('c') END (type: string)
+              outputColumnNames: _col0, _col1, _col2
+              ListSink
+
+PREHOOK: query: select 
+  csmallint,
+  case 
+    when csmallint = 418 then "a"
+    when csmallint = 12205 then "b"
+    else "c"
+  end,
+  case csmallint
+    when 418 then "a"
+    when 12205 then "b"
+    else "c"
+  end
+from alltypesorc
+where csmallint = 418
+or csmallint = 12205
+or csmallint = 10583
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select 
+  csmallint,
+  case 
+    when csmallint = 418 then "a"
+    when csmallint = 12205 then "b"
+    else "c"
+  end,
+  case csmallint
+    when 418 then "a"
+    when 12205 then "b"
+    else "c"
+  end
+from alltypesorc
+where csmallint = 418
+or csmallint = 12205
+or csmallint = 10583
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+12205	b	b
+10583	c	c
+418	a	a
+12205	b	b

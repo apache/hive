@@ -29,8 +29,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -68,7 +68,7 @@ public class SQLAuthorizationUtils {
   private static final String[] SUPPORTED_PRIVS = { "INSERT", "UPDATE", "DELETE", "SELECT" };
   private static final Set<String> SUPPORTED_PRIVS_SET = new HashSet<String>(
       Arrays.asList(SUPPORTED_PRIVS));
-  public static final Log LOG = LogFactory.getLog(SQLAuthorizationUtils.class);
+  public static final Logger LOG = LoggerFactory.getLogger(SQLAuthorizationUtils.class);
 
   /**
    * Create thrift privileges bag

@@ -183,6 +183,7 @@ STAGE PLANS:
                   key expressions: _col0 (type: bigint), _col1 (type: double)
                   sort order: ++
                   Statistics: Num rows: 1365 Data size: 293479 Basic stats: COMPLETE Column stats: NONE
+                  TopN Hash Memory Usage: 0.1
                   value expressions: _col2 (type: double)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -351,6 +352,7 @@ STAGE PLANS:
                   key expressions: _col0 (type: double), _col1 (type: double)
                   sort order: ++
                   Statistics: Num rows: 1365 Data size: 293479 Basic stats: COMPLETE Column stats: NONE
+                  TopN Hash Memory Usage: 0.1
                   value expressions: _col2 (type: double), _col4 (type: double), _col5 (type: double)
       Execution mode: vectorized
       Reduce Operator Tree:

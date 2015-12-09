@@ -28,7 +28,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@myinput1_txt
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@myinput1
-Warning: Map Join MAPJOIN[21][bigTable=?] in task 'Stage-2:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[22][bigTable=?] in task 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value))  FROM myinput1 a JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
@@ -38,7 +38,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
 3078400
-Warning: Map Join MAPJOIN[17][bigTable=a] in task 'Stage-2:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[18][bigTable=?] in task 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value))  FROM myinput1 a LEFT OUTER JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
@@ -48,7 +48,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
 4937935
-Warning: Map Join MAPJOIN[17][bigTable=b] in task 'Stage-2:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[18][bigTable=?] in task 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value))  FROM myinput1 a RIGHT OUTER JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1

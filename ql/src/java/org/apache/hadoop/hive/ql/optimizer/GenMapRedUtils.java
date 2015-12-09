@@ -34,8 +34,9 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -109,7 +110,8 @@ import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.TezWork;
-import org.apache.hadoop.hive.ql.stats.StatsFactory;
+import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.InputFormat;
 
@@ -121,10 +123,10 @@ import com.google.common.collect.Interner;
  * map-reduce tasks.
  */
 public final class GenMapRedUtils {
-  private static Log LOG;
+  private static Logger LOG;
 
   static {
-    LOG = LogFactory.getLog("org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils");
+    LOG = LoggerFactory.getLogger("org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils");
   }
 
   public static boolean needsTagging(ReduceWork rWork) {
@@ -487,6 +489,7 @@ public final class GenMapRedUtils {
       HiveConf conf, boolean local) throws SemanticException {
     ArrayList<Path> partDir = new ArrayList<Path>();
     ArrayList<PartitionDesc> partDesc = new ArrayList<PartitionDesc>();
+    boolean isAcidTable = false;
 
     Path tblDir = null;
     plan.setNameToSplitSample(parseCtx.getNameToSplitSample());
@@ -495,11 +498,9 @@ public final class GenMapRedUtils {
       try {
         TableScanOperator tsOp = (TableScanOperator) topOp;
         partsList = PartitionPruner.prune(tsOp, parseCtx, alias_id);
+        isAcidTable = ((TableScanOperator) topOp).getConf().isAcidTable();
       } catch (SemanticException e) {
         throw e;
-      } catch (HiveException e) {
-        LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
-        throw new SemanticException(e.getMessage(), e);
       }
     }
 
@@ -537,26 +538,31 @@ public final class GenMapRedUtils {
     long sizeNeeded = Integer.MAX_VALUE;
     int fileLimit = -1;
     if (parseCtx.getGlobalLimitCtx().isEnable()) {
-      long sizePerRow = HiveConf.getLongVar(parseCtx.getConf(),
-          HiveConf.ConfVars.HIVELIMITMAXROWSIZE);
-      sizeNeeded = parseCtx.getGlobalLimitCtx().getGlobalLimit() * sizePerRow;
-      // for the optimization that reduce number of input file, we limit number
-      // of files allowed. If more than specific number of files have to be
-      // selected, we skip this optimization. Since having too many files as
-      // inputs can cause unpredictable latency. It's not necessarily to be
-      // cheaper.
-      fileLimit =
-          HiveConf.getIntVar(parseCtx.getConf(), HiveConf.ConfVars.HIVELIMITOPTLIMITFILE);
-
-      if (sizePerRow <= 0 || fileLimit <= 0) {
-        LOG.info("Skip optimization to reduce input size of 'limit'");
+      if (isAcidTable) {
+        LOG.info("Skip Global Limit optimization for ACID table");
         parseCtx.getGlobalLimitCtx().disableOpt();
-      } else if (parts.isEmpty()) {
-        LOG.info("Empty input: skip limit optimiztion");
       } else {
-        LOG.info("Try to reduce input size for 'limit' " +
-            "sizeNeeded: " + sizeNeeded +
-            "  file limit : " + fileLimit);
+        long sizePerRow = HiveConf.getLongVar(parseCtx.getConf(),
+            HiveConf.ConfVars.HIVELIMITMAXROWSIZE);
+        sizeNeeded = parseCtx.getGlobalLimitCtx().getGlobalLimit() * sizePerRow;
+        // for the optimization that reduce number of input file, we limit number
+        // of files allowed. If more than specific number of files have to be
+        // selected, we skip this optimization. Since having too many files as
+        // inputs can cause unpredictable latency. It's not necessarily to be
+        // cheaper.
+        fileLimit =
+            HiveConf.getIntVar(parseCtx.getConf(), HiveConf.ConfVars.HIVELIMITOPTLIMITFILE);
+
+        if (sizePerRow <= 0 || fileLimit <= 0) {
+          LOG.info("Skip optimization to reduce input size of 'limit'");
+          parseCtx.getGlobalLimitCtx().disableOpt();
+        } else if (parts.isEmpty()) {
+          LOG.info("Empty input: skip limit optimiztion");
+        } else {
+          LOG.info("Try to reduce input size for 'limit' " +
+              "sizeNeeded: " + sizeNeeded +
+              "  file limit : " + fileLimit);
+        }
       }
     }
     boolean isFirstPart = true;
@@ -578,13 +584,9 @@ public final class GenMapRedUtils {
     TableDesc tblDesc = null;
     boolean initTableDesc = false;
 
-    for (Partition part : parts) {
-      if (part.getTable().isPartitioned()) {
-        PlanUtils.addInput(inputs, new ReadEntity(part, parentViewInfo, isDirectRead));
-      } else {
-        PlanUtils.addInput(inputs, new ReadEntity(part.getTable(), parentViewInfo, isDirectRead));
-      }
+    PlanUtils.addPartitionInputs(parts, inputs, parentViewInfo, isDirectRead);
 
+    for (Partition part: parts) {
       // Later the properties have to come from the partition as opposed
       // to from the table in order to support versioning.
       Path[] paths = null;
@@ -694,8 +696,14 @@ public final class GenMapRedUtils {
         }
       }
     }
+
     if (emptyInput) {
       parseCtx.getGlobalLimitCtx().disableOpt();
+    }
+
+    if (topOp instanceof TableScanOperator) {
+      Utilities.addSchemaEvolutionToTableScanOperator(partsList.getSourceTable(),
+          (TableScanOperator) topOp);
     }
 
     Iterator<Path> iterPath = partDir.iterator();
@@ -759,6 +767,7 @@ public final class GenMapRedUtils {
    *          whether you need to add to map-reduce or local work
    * @param tt_desc
    *          table descriptor
+   * @throws SerDeException
    */
   public static void setTaskPlan(String path, String alias,
       Operator<? extends OperatorDesc> topOp, MapWork plan, boolean local,
@@ -766,6 +775,16 @@ public final class GenMapRedUtils {
 
     if (path == null || alias == null) {
       return;
+    }
+
+    if (topOp instanceof TableScanOperator) {
+      try {
+      Utilities.addSchemaEvolutionToTableScanOperator(
+          (StructObjectInspector) tt_desc.getDeserializer().getObjectInspector(),
+          (TableScanOperator) topOp);
+      } catch (Exception e) {
+        throw new SemanticException(e);
+      }
     }
 
     if (!local) {
@@ -883,6 +902,45 @@ public final class GenMapRedUtils {
     }
   }
 
+  /**
+   * Called at the end of TaskCompiler::compile to derive final
+   * explain attributes based on previous compilation.
+   */
+  public static void deriveFinalExplainAttributes(
+      Task<? extends Serializable> task, Configuration conf) {
+    // TODO: deriveExplainAttributes should be called here, code is too fragile to move it around.
+    if (task instanceof ConditionalTask) {
+      for (Task<? extends Serializable> tsk : ((ConditionalTask) task).getListTasks()) {
+        deriveFinalExplainAttributes(tsk, conf);
+      }
+    } else if (task instanceof ExecDriver) {
+      MapredWork work = (MapredWork) task.getWork();
+      work.getMapWork().deriveLlap(conf);
+    } else if (task != null && (task.getWork() instanceof TezWork)) {
+      TezWork work = (TezWork)task.getWork();
+      for (BaseWork w : work.getAllWorkUnsorted()) {
+        if (w instanceof MapWork) {
+          ((MapWork)w).deriveLlap(conf);
+        }
+      }
+    } else if (task instanceof SparkTask) {
+      SparkWork work = (SparkWork) task.getWork();
+      for (BaseWork w : work.getAllWorkUnsorted()) {
+        if (w instanceof MapWork) {
+          ((MapWork) w).deriveLlap(conf);
+        }
+      }
+    }
+
+    if (task.getChildTasks() == null) {
+      return;
+    }
+
+    for (Task<? extends Serializable> childTask : task.getChildTasks()) {
+      deriveFinalExplainAttributes(childTask, conf);
+    }
+  }
+
   public static void internTableDesc(Task<?> task, Interner<TableDesc> interner) {
 
     if (task instanceof ConditionalTask) {
@@ -990,7 +1048,7 @@ public final class GenMapRedUtils {
     fileSinkOp.setParentOperators(Utilities.makeList(parent));
 
     // Create a dummy TableScanOperator for the file generated through fileSinkOp
-    TableScanOperator tableScanOp = (TableScanOperator) createTemporaryTableScanOperator(
+    TableScanOperator tableScanOp = createTemporaryTableScanOperator(
             parent.getSchema());
 
     // Connect this TableScanOperator to child.
@@ -1235,19 +1293,16 @@ public final class GenMapRedUtils {
       // adding DP ColumnInfo to the RowSchema signature
       ArrayList<ColumnInfo> signature = inputRS.getSignature();
       String tblAlias = fsInputDesc.getTableInfo().getTableName();
-      LinkedHashMap<String, String> colMap = new LinkedHashMap<String, String>();
       for (String dpCol : dpCtx.getDPColNames()) {
         ColumnInfo colInfo = new ColumnInfo(dpCol,
             TypeInfoFactory.stringTypeInfo, // all partition column type should be string
             tblAlias, true); // partition column is virtual column
         signature.add(colInfo);
-        colMap.put(dpCol, dpCol); // input and output have the same column name
       }
       inputRS.setSignature(signature);
 
       // create another DynamicPartitionCtx, which has a different input-to-DP column mapping
       DynamicPartitionCtx dpCtx2 = new DynamicPartitionCtx(dpCtx);
-      dpCtx2.setInputToDPCols(colMap);
       fsOutputDesc.setDynPartCtx(dpCtx2);
 
       // update the FileSinkOperator to include partition columns
@@ -1422,7 +1477,7 @@ public final class GenMapRedUtils {
 
     statsWork.setSourceTask(currTask);
     statsWork.setStatsReliable(hconf.getBoolVar(ConfVars.HIVE_STATS_RELIABLE));
-
+    statsWork.setStatsTmpDir(nd.getConf().getStatsTmpDir());
     if (currTask.getWork() instanceof MapredWork) {
       MapredWork mrWork = (MapredWork) currTask.getWork();
       mrWork.getMapWork().setGatheringStats(true);
@@ -1449,7 +1504,6 @@ public final class GenMapRedUtils {
     // mark the MapredWork and FileSinkOperator for gathering stats
     nd.getConf().setGatherStats(true);
     nd.getConf().setStatsReliable(hconf.getBoolVar(ConfVars.HIVE_STATS_RELIABLE));
-    nd.getConf().setMaxStatsKeyPrefixLength(StatsFactory.getMaxPrefixLength(hconf));
     // mrWork.addDestinationTable(nd.getConf().getTableInfo().getTableName());
 
     // subscribe feeds from the MoveTask so that MoveTask can forward the list
@@ -1466,8 +1520,7 @@ public final class GenMapRedUtils {
    * @return
    */
   public static boolean isInsertInto(ParseContext parseCtx, FileSinkOperator fsOp) {
-    return fsOp.getConf().getTableInfo().getTableName() != null &&
-        parseCtx.getQueryProperties().isInsertToTable();
+    return fsOp.getConf().getTableInfo().getTableName() != null;
   }
 
   /**
@@ -1896,7 +1949,7 @@ public final class GenMapRedUtils {
         "Partition Names, " + Arrays.toString(partNames) + " don't match partition Types, "
         + Arrays.toString(partTypes));
 
-    Map<String, String> typeMap = new HashMap();
+    Map<String, String> typeMap = new HashMap<>();
     for (int i = 0; i < partNames.length; i++) {
       String previousValue = typeMap.put(partNames[i], partTypes[i]);
       Preconditions.checkArgument(previousValue == null, "Partition columns configuration is inconsistent. "
@@ -1926,4 +1979,5 @@ public final class GenMapRedUtils {
   private GenMapRedUtils() {
     // prevent instantiation
   }
+
 }

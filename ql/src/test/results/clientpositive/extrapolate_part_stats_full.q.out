@@ -75,10 +75,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@loc_orc_1d
 POSTHOOK: Input: default@loc_orc_1d@year=2001
 #### A masked pattern was here ####
-PREHOOK: query: describe formatted loc_orc_1d.state PARTITION(year='2001')
+PREHOOK: query: describe formatted loc_orc_1d PARTITION(year='2001') state
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@loc_orc_1d
-POSTHOOK: query: describe formatted loc_orc_1d.state PARTITION(year='2001')
+POSTHOOK: query: describe formatted loc_orc_1d PARTITION(year='2001') state
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_1d
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
@@ -136,7 +136,7 @@ STAGE PLANS:
               serialization.ddl struct loc_orc_1d { string state, i32 locid, i32 zip}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 362
+              totalSize 369
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -179,7 +179,7 @@ STAGE PLANS:
               serialization.ddl struct loc_orc_1d { string state, i32 locid, i32 zip}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 382
+              totalSize 389
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -204,7 +204,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: loc_orc_1d
-          Statistics: Num rows: 6 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 6 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
           GatherStats: false
           Select Operator
             expressions: state (type: string)
@@ -269,7 +269,7 @@ STAGE PLANS:
               serialization.ddl struct loc_orc_1d { string state, i32 locid, i32 zip}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 362
+              totalSize 369
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -312,7 +312,7 @@ STAGE PLANS:
               serialization.ddl struct loc_orc_1d { string state, i32 locid, i32 zip}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 382
+              totalSize 389
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -337,7 +337,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: loc_orc_1d
-          Statistics: Num rows: 6 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 6 Data size: 534 Basic stats: COMPLETE Column stats: COMPLETE
           GatherStats: false
           Select Operator
             expressions: state (type: string), locid (type: int)
@@ -469,7 +469,7 @@ STAGE PLANS:
               serialization.ddl struct loc_orc_2d { string state, i32 locid}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 277
+              totalSize 281
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -513,7 +513,7 @@ STAGE PLANS:
               serialization.ddl struct loc_orc_2d { string state, i32 locid}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 279
+              totalSize 283
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -557,7 +557,7 @@ STAGE PLANS:
               serialization.ddl struct loc_orc_2d { string state, i32 locid}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 261
+              totalSize 265
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -601,7 +601,7 @@ STAGE PLANS:
               serialization.ddl struct loc_orc_2d { string state, i32 locid}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 261
+              totalSize 265
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -626,7 +626,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: loc_orc_2d
-          Statistics: Num rows: 6 Data size: 532 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 6 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
           GatherStats: false
           Select Operator
             expressions: state (type: string)
@@ -688,7 +688,7 @@ STAGE PLANS:
               serialization.ddl struct loc_orc_2d { string state, i32 locid}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 277
+              totalSize 281
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -732,7 +732,7 @@ STAGE PLANS:
               serialization.ddl struct loc_orc_2d { string state, i32 locid}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 279
+              totalSize 283
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -776,7 +776,7 @@ STAGE PLANS:
               serialization.ddl struct loc_orc_2d { string state, i32 locid}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 261
+              totalSize 265
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -820,7 +820,7 @@ STAGE PLANS:
               serialization.ddl struct loc_orc_2d { string state, i32 locid}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 261
+              totalSize 265
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -845,7 +845,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: loc_orc_2d
-          Statistics: Num rows: 6 Data size: 532 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 6 Data size: 534 Basic stats: COMPLETE Column stats: COMPLETE
           GatherStats: false
           Select Operator
             expressions: state (type: string), locid (type: int)

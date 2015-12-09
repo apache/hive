@@ -40,7 +40,7 @@ import java.util.Stack;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.tree.BaseTree;
 import org.antlr.runtime.tree.CommonTree;
-import org.apache.hadoop.hive.ql.exec.Utilities.EnumDelegate;
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities.EnumDelegate;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.Direction;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;

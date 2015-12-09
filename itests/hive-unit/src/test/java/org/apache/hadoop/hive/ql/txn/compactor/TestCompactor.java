@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
 import org.apache.hadoop.conf.Configuration;
@@ -93,6 +110,7 @@ public class TestCompactor {
     hiveConf.setVar(HiveConf.ConfVars.METASTOREWAREHOUSE, TEST_WAREHOUSE_DIR);
     hiveConf.setVar(HiveConf.ConfVars.HIVEINPUTFORMAT, HiveInputFormat.class.getName());
     hiveConf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
+    hiveConf.setVar(HiveConf.ConfVars.HIVEMAPREDMODE, "nonstrict");
     //"org.apache.hadoop.hive.ql.io.HiveInputFormat"
 
     TxnDbUtil.setConfValues(hiveConf);
@@ -128,7 +146,194 @@ public class TestCompactor {
       driver.close();
     }
   }
-  
+
+  /**
+   * Simple schema evolution add columns with partitioning.
+   * @throws Exception
+   */
+  @Test
+  public void schemaEvolutionAddColDynamicPartitioningInsert() throws Exception {
+    String tblName = "dpct";
+    List<String> colNames = Arrays.asList("a", "b");
+    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
+      " PARTITIONED BY(ds string)" +
+      " CLUSTERED BY(a) INTO 2 BUCKETS" + //currently ACID requires table to be bucketed
+      " STORED AS ORC TBLPROPERTIES ('transactional'='true')", driver);
+
+    // First INSERT round.
+    executeStatementOnDriver("insert into " + tblName + " partition (ds) values (1, 'fred', " +
+        "'today'), (2, 'wilma', 'yesterday')", driver);
+
+    // ALTER TABLE ... ADD COLUMNS
+    executeStatementOnDriver("ALTER TABLE " + tblName + " ADD COLUMNS(c int)", driver);
+
+    // Validate there is an added NULL for column c.
+    executeStatementOnDriver("SELECT * FROM " + tblName + " ORDER BY a", driver);
+    ArrayList<String> valuesReadFromHiveDriver = new ArrayList<String>();
+    driver.getResults(valuesReadFromHiveDriver);
+    Assert.assertEquals(2, valuesReadFromHiveDriver.size());
+    Assert.assertEquals("1\tfred\tNULL\ttoday", valuesReadFromHiveDriver.get(0));
+    Assert.assertEquals("2\twilma\tNULL\tyesterday", valuesReadFromHiveDriver.get(1));
+
+    // Second INSERT round with new inserts into previously existing partition 'yesterday'.
+    executeStatementOnDriver("insert into " + tblName + " partition (ds) values " +
+        "(3, 'mark', 1900, 'soon'), (4, 'douglas', 1901, 'last_century'), " +
+        "(5, 'doc', 1902, 'yesterday')",
+        driver);
+
+    // Validate there the new insertions for column c.
+    executeStatementOnDriver("SELECT * FROM " + tblName + " ORDER BY a", driver);
+    valuesReadFromHiveDriver = new ArrayList<String>();
+    driver.getResults(valuesReadFromHiveDriver);
+    Assert.assertEquals(5, valuesReadFromHiveDriver.size());
+    Assert.assertEquals("1\tfred\tNULL\ttoday", valuesReadFromHiveDriver.get(0));
+    Assert.assertEquals("2\twilma\tNULL\tyesterday", valuesReadFromHiveDriver.get(1));
+    Assert.assertEquals("3\tmark\t1900\tsoon", valuesReadFromHiveDriver.get(2));
+    Assert.assertEquals("4\tdouglas\t1901\tlast_century", valuesReadFromHiveDriver.get(3));
+    Assert.assertEquals("5\tdoc\t1902\tyesterday", valuesReadFromHiveDriver.get(4));
+
+    Initiator initiator = new Initiator();
+    initiator.setThreadId((int)initiator.getId());
+    conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD, 0);
+    initiator.setHiveConf(conf);
+    AtomicBoolean stop = new AtomicBoolean();
+    stop.set(true);
+    initiator.init(stop, new AtomicBoolean());
+    initiator.run();
+
+    CompactionTxnHandler txnHandler = new CompactionTxnHandler(conf);
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    Assert.assertEquals(4, compacts.size());
+    SortedSet<String> partNames = new TreeSet<String>();
+    for (int i = 0; i < compacts.size(); i++) {
+      Assert.assertEquals("default", compacts.get(i).getDbname());
+      Assert.assertEquals(tblName, compacts.get(i).getTablename());
+      Assert.assertEquals("initiated", compacts.get(i).getState());
+      partNames.add(compacts.get(i).getPartitionname());
+    }
+    List<String> names = new ArrayList<String>(partNames);
+    Assert.assertEquals("ds=last_century", names.get(0));
+    Assert.assertEquals("ds=soon", names.get(1));
+    Assert.assertEquals("ds=today", names.get(2));
+    Assert.assertEquals("ds=yesterday", names.get(3));
+
+    // Validate after compaction.
+    executeStatementOnDriver("SELECT * FROM " + tblName + " ORDER BY a", driver);
+    valuesReadFromHiveDriver = new ArrayList<String>();
+    driver.getResults(valuesReadFromHiveDriver);
+    Assert.assertEquals(5, valuesReadFromHiveDriver.size());
+    Assert.assertEquals("1\tfred\tNULL\ttoday", valuesReadFromHiveDriver.get(0));
+    Assert.assertEquals("2\twilma\tNULL\tyesterday", valuesReadFromHiveDriver.get(1));
+    Assert.assertEquals("3\tmark\t1900\tsoon", valuesReadFromHiveDriver.get(2));
+    Assert.assertEquals("4\tdouglas\t1901\tlast_century", valuesReadFromHiveDriver.get(3));
+    Assert.assertEquals("5\tdoc\t1902\tyesterday", valuesReadFromHiveDriver.get(4));
+
+  }
+
+  @Test
+  public void schemaEvolutionAddColDynamicPartitioningUpdate() throws Exception {
+    String tblName = "udpct";
+    List<String> colNames = Arrays.asList("a", "b");
+    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
+      " PARTITIONED BY(ds string)" +
+      " CLUSTERED BY(a) INTO 2 BUCKETS" + //currently ACID requires table to be bucketed
+      " STORED AS ORC TBLPROPERTIES ('transactional'='true')", driver);
+    executeStatementOnDriver("insert into " + tblName + " partition (ds) values (1, 'fred', " +
+        "'today'), (2, 'wilma', 'yesterday')", driver);
+
+    executeStatementOnDriver("update " + tblName + " set b = 'barney'", driver);
+
+    // Validate the update.
+    executeStatementOnDriver("SELECT * FROM " + tblName + " ORDER BY a", driver);
+    ArrayList<String> valuesReadFromHiveDriver = new ArrayList<String>();
+    driver.getResults(valuesReadFromHiveDriver);
+    Assert.assertEquals(2, valuesReadFromHiveDriver.size());
+    Assert.assertEquals("1\tbarney\ttoday", valuesReadFromHiveDriver.get(0));
+    Assert.assertEquals("2\tbarney\tyesterday", valuesReadFromHiveDriver.get(1));
+
+    // ALTER TABLE ... ADD COLUMNS
+    executeStatementOnDriver("ALTER TABLE " + tblName + " ADD COLUMNS(c int)", driver);
+
+    // Validate there is an added NULL for column c.
+    executeStatementOnDriver("SELECT * FROM " + tblName + " ORDER BY a", driver);
+    valuesReadFromHiveDriver = new ArrayList<String>();
+    driver.getResults(valuesReadFromHiveDriver);
+    Assert.assertEquals(2, valuesReadFromHiveDriver.size());
+    Assert.assertEquals("1\tbarney\tNULL\ttoday", valuesReadFromHiveDriver.get(0));
+    Assert.assertEquals("2\tbarney\tNULL\tyesterday", valuesReadFromHiveDriver.get(1));
+
+    // Second INSERT round with new inserts into previously existing partition 'yesterday'.
+    executeStatementOnDriver("insert into " + tblName + " partition (ds) values " +
+        "(3, 'mark', 1900, 'soon'), (4, 'douglas', 1901, 'last_century'), " +
+        "(5, 'doc', 1902, 'yesterday')",
+        driver);
+
+    // Validate there the new insertions for column c.
+    executeStatementOnDriver("SELECT * FROM " + tblName + " ORDER BY a", driver);
+    valuesReadFromHiveDriver = new ArrayList<String>();
+    driver.getResults(valuesReadFromHiveDriver);
+    Assert.assertEquals(5, valuesReadFromHiveDriver.size());
+    Assert.assertEquals("1\tbarney\tNULL\ttoday", valuesReadFromHiveDriver.get(0));
+    Assert.assertEquals("2\tbarney\tNULL\tyesterday", valuesReadFromHiveDriver.get(1));
+    Assert.assertEquals("3\tmark\t1900\tsoon", valuesReadFromHiveDriver.get(2));
+    Assert.assertEquals("4\tdouglas\t1901\tlast_century", valuesReadFromHiveDriver.get(3));
+    Assert.assertEquals("5\tdoc\t1902\tyesterday", valuesReadFromHiveDriver.get(4));
+
+    executeStatementOnDriver("update " + tblName + " set c = 2000", driver);
+
+    // Validate the update of new column c, even in old rows.
+    executeStatementOnDriver("SELECT * FROM " + tblName + " ORDER BY a", driver);
+    valuesReadFromHiveDriver = new ArrayList<String>();
+    driver.getResults(valuesReadFromHiveDriver);
+    Assert.assertEquals(5, valuesReadFromHiveDriver.size());
+    Assert.assertEquals("1\tbarney\t2000\ttoday", valuesReadFromHiveDriver.get(0));
+    Assert.assertEquals("2\tbarney\t2000\tyesterday", valuesReadFromHiveDriver.get(1));
+    Assert.assertEquals("3\tmark\t2000\tsoon", valuesReadFromHiveDriver.get(2));
+    Assert.assertEquals("4\tdouglas\t2000\tlast_century", valuesReadFromHiveDriver.get(3));
+    Assert.assertEquals("5\tdoc\t2000\tyesterday", valuesReadFromHiveDriver.get(4));
+
+    Initiator initiator = new Initiator();
+    initiator.setThreadId((int)initiator.getId());
+    // Set to 1 so insert doesn't set it off but update does
+    conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD, 1);
+    initiator.setHiveConf(conf);
+    AtomicBoolean stop = new AtomicBoolean();
+    stop.set(true);
+    initiator.init(stop, new AtomicBoolean());
+    initiator.run();
+
+    CompactionTxnHandler txnHandler = new CompactionTxnHandler(conf);
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    Assert.assertEquals(4, compacts.size());
+    SortedSet<String> partNames = new TreeSet<String>();
+    for (int i = 0; i < compacts.size(); i++) {
+      Assert.assertEquals("default", compacts.get(i).getDbname());
+      Assert.assertEquals(tblName, compacts.get(i).getTablename());
+      Assert.assertEquals("initiated", compacts.get(i).getState());
+      partNames.add(compacts.get(i).getPartitionname());
+    }
+    List<String> names = new ArrayList<String>(partNames);
+    Assert.assertEquals("ds=last_century", names.get(0));
+    Assert.assertEquals("ds=soon", names.get(1));
+    Assert.assertEquals("ds=today", names.get(2));
+    Assert.assertEquals("ds=yesterday", names.get(3));
+
+    // Validate after compaction.
+    executeStatementOnDriver("SELECT * FROM " + tblName + " ORDER BY a", driver);
+    valuesReadFromHiveDriver = new ArrayList<String>();
+    driver.getResults(valuesReadFromHiveDriver);
+    Assert.assertEquals(5, valuesReadFromHiveDriver.size());
+    Assert.assertEquals("1\tbarney\t2000\ttoday", valuesReadFromHiveDriver.get(0));
+    Assert.assertEquals("2\tbarney\t2000\tyesterday", valuesReadFromHiveDriver.get(1));
+    Assert.assertEquals("3\tmark\t2000\tsoon", valuesReadFromHiveDriver.get(2));
+    Assert.assertEquals("4\tdouglas\t2000\tlast_century", valuesReadFromHiveDriver.get(3));
+    Assert.assertEquals("5\tdoc\t2000\tyesterday", valuesReadFromHiveDriver.get(4));
+  }
+
   /**
    * After each major compaction, stats need to be updated on each column of the
    * table/partition which previously had stats.
@@ -139,7 +344,7 @@ public class TestCompactor {
    * 5. Trigger major compaction (which should update stats)
    * 6. check that stats have been updated
    * @throws Exception
-   * todo: 
+   * todo:
    * 2. add non-partitioned test
    * 4. add a test with sorted table?
    */
@@ -154,11 +359,12 @@ public class TestCompactor {
     executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
       " PARTITIONED BY(bkt INT)" +
       " CLUSTERED BY(a) INTO 4 BUCKETS" + //currently ACID requires table to be bucketed
-      " STORED AS ORC", driver);
+      " STORED AS ORC  TBLPROPERTIES ('transactional'='true')", driver);
     executeStatementOnDriver("CREATE EXTERNAL TABLE " + tblNameStg + "(a INT, b STRING)" +
       " ROW FORMAT DELIMITED FIELDS TERMINATED BY '\\t' LINES TERMINATED BY '\\n'" +
       " STORED AS TEXTFILE" +
-      " LOCATION '" + stagingFolder.newFolder().toURI().getPath() + "'", driver);
+      " LOCATION '" + stagingFolder.newFolder().toURI().getPath() + "'" +
+      " TBLPROPERTIES ('transactional'='true')", driver);
 
     executeStatementOnDriver("load data local inpath '" + BASIC_FILE_NAME +
       "' overwrite into table " + tblNameStg, driver);
@@ -186,7 +392,7 @@ public class TestCompactor {
     su = Worker.StatsUpdater.init(ciPart2, colNames, conf, System.getProperty("user.name"));
     su.gatherStats();//compute stats before compaction
     LOG.debug("List of stats columns after analyze Part2: " + txnHandler.findColumnsWithStats(ci));
-    
+
     //now make sure we get the stats we expect for partition we are going to add data to later
     Map<String, List<ColumnStatisticsObj>> stats = msClient.getPartitionColumnStatistics(ci.dbname,
       ci.tableName, Arrays.asList(ci.partName), colNames);
@@ -254,7 +460,9 @@ public class TestCompactor {
     t.run();
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
-    Assert.assertEquals(1, compacts.size());
+    if (1 != compacts.size()) {
+      Assert.fail("Expecting 1 file and found " + compacts.size() + " files " + compacts.toString());
+    }
     Assert.assertEquals("ready for cleaning", compacts.get(0).getState());
 
     stats = msClient.getPartitionColumnStatistics(ci.dbname, ci.tableName,
@@ -408,10 +616,12 @@ public class TestCompactor {
     String dbName = "default";
     String tblName = "cws";
     List<String> colNames = Arrays.asList("a", "b");
+    String columnNamesProperty = "a,b";
+    String columnTypesProperty = "int:string";
     executeStatementOnDriver("drop table if exists " + tblName, driver);
     executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
         " CLUSTERED BY(a) INTO 1 BUCKETS" + //currently ACID requires table to be bucketed
-        " STORED AS ORC", driver);
+        " STORED AS ORC  TBLPROPERTIES ('transactional'='true')", driver);
 
     HiveEndPoint endPt = new HiveEndPoint(null, dbName, tblName, null);
     DelimitedInputWriter writer = new DelimitedInputWriter(new String[] {"a","b"},",", endPt);
@@ -451,9 +661,12 @@ public class TestCompactor {
         }
       }
       Arrays.sort(names);
-      Assert.assertArrayEquals(names, new String[]{"delta_0000001_0000002",
-          "delta_0000001_0000004", "delta_0000003_0000004", "delta_0000005_0000006"});
-      checkExpectedTxnsPresent(null, new Path[]{resultFile}, 0, 1L, 4L);
+      String[] expected = new String[]{"delta_0000001_0000002",
+          "delta_0000001_0000004", "delta_0000003_0000004", "delta_0000005_0000006"};
+      if (!Arrays.deepEquals(expected, names)) {
+        Assert.fail("Expected: " + Arrays.toString(expected) + ", found: " + Arrays.toString(names));
+      }
+      checkExpectedTxnsPresent(null, new Path[]{resultFile},columnNamesProperty, columnTypesProperty,  0, 1L, 4L);
 
     } finally {
       connection.close();
@@ -465,10 +678,12 @@ public class TestCompactor {
     String dbName = "default";
     String tblName = "cws";
     List<String> colNames = Arrays.asList("a", "b");
+    String columnNamesProperty = "a,b";
+    String columnTypesProperty = "int:string";
     executeStatementOnDriver("drop table if exists " + tblName, driver);
     executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
         " CLUSTERED BY(a) INTO 1 BUCKETS" + //currently ACID requires table to be bucketed
-        " STORED AS ORC", driver);
+        " STORED AS ORC  TBLPROPERTIES ('transactional'='true') ", driver);
 
     HiveEndPoint endPt = new HiveEndPoint(null, dbName, tblName, null);
     DelimitedInputWriter writer = new DelimitedInputWriter(new String[] {"a","b"},",", endPt);
@@ -499,10 +714,12 @@ public class TestCompactor {
       FileSystem fs = FileSystem.get(conf);
       FileStatus[] stat =
           fs.listStatus(new Path(table.getSd().getLocation()), AcidUtils.baseFileFilter);
-      Assert.assertEquals(1, stat.length);
+      if (1 != stat.length) {
+        Assert.fail("Expecting 1 file \"base_0000004\" and found " + stat.length + " files " + Arrays.toString(stat));
+      }
       String name = stat[0].getPath().getName();
       Assert.assertEquals(name, "base_0000004");
-      checkExpectedTxnsPresent(stat[0].getPath(), null, 0, 1L, 4L);
+      checkExpectedTxnsPresent(stat[0].getPath(), null, columnNamesProperty, columnTypesProperty, 0, 1L, 4L);
     } finally {
       connection.close();
     }
@@ -513,10 +730,12 @@ public class TestCompactor {
     String dbName = "default";
     String tblName = "cws";
     List<String> colNames = Arrays.asList("a", "b");
+    String columnNamesProperty = "a,b";
+    String columnTypesProperty = "int:string";
     executeStatementOnDriver("drop table if exists " + tblName, driver);
     executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
         " CLUSTERED BY(a) INTO 1 BUCKETS" + //currently ACID requires table to be bucketed
-        " STORED AS ORC", driver);
+        " STORED AS ORC  TBLPROPERTIES ('transactional'='true')", driver);
 
     HiveEndPoint endPt = new HiveEndPoint(null, dbName, tblName, null);
     DelimitedInputWriter writer = new DelimitedInputWriter(new String[] {"a","b"},",", endPt);
@@ -560,9 +779,12 @@ public class TestCompactor {
         }
       }
       Arrays.sort(names);
-      Assert.assertArrayEquals(names, new String[]{"delta_0000001_0000002",
-          "delta_0000001_0000006", "delta_0000003_0000004", "delta_0000005_0000006"});
-      checkExpectedTxnsPresent(null, new Path[]{resultDelta}, 0, 1L, 4L);
+      String[] expected = new String[]{"delta_0000001_0000002",
+          "delta_0000001_0000006", "delta_0000003_0000004", "delta_0000005_0000006"};
+      if (!Arrays.deepEquals(expected, names)) {
+        Assert.fail("Expected: " + Arrays.toString(expected) + ", found: " + Arrays.toString(names));
+      }
+      checkExpectedTxnsPresent(null, new Path[]{resultDelta}, columnNamesProperty, columnTypesProperty, 0, 1L, 4L);
     } finally {
       connection.close();
     }
@@ -573,10 +795,12 @@ public class TestCompactor {
     String dbName = "default";
     String tblName = "cws";
     List<String> colNames = Arrays.asList("a", "b");
+    String columnNamesProperty = "a,b";
+    String columnTypesProperty = "int:string";
     executeStatementOnDriver("drop table if exists " + tblName, driver);
     executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
         " CLUSTERED BY(a) INTO 1 BUCKETS" + //currently ACID requires table to be bucketed
-        " STORED AS ORC", driver);
+        " STORED AS ORC  TBLPROPERTIES ('transactional'='true')", driver);
 
     HiveEndPoint endPt = new HiveEndPoint(null, dbName, tblName, null);
     DelimitedInputWriter writer = new DelimitedInputWriter(new String[] {"a","b"},",", endPt);
@@ -612,10 +836,17 @@ public class TestCompactor {
       FileSystem fs = FileSystem.get(conf);
       FileStatus[] stat =
           fs.listStatus(new Path(table.getSd().getLocation()), AcidUtils.baseFileFilter);
-      Assert.assertEquals(1, stat.length);
+      if (1 != stat.length) {
+        Assert.fail("majorCompactAfterAbort FileStatus[] stat " + Arrays.toString(stat));
+      }
+      if (1 != stat.length) {
+        Assert.fail("Expecting 1 file \"base_0000006\" and found " + stat.length + " files " + Arrays.toString(stat));
+      }
       String name = stat[0].getPath().getName();
-      Assert.assertEquals(name, "base_0000006");
-      checkExpectedTxnsPresent(stat[0].getPath(), null, 0, 1L, 4L);
+      if (!name.equals("base_0000006")) {
+        Assert.fail("majorCompactAfterAbort name " + name + " not equals to base_0000006");
+      }
+      checkExpectedTxnsPresent(stat[0].getPath(), null, columnNamesProperty, columnTypesProperty, 0, 1L, 4L);
     } finally {
       connection.close();
     }
@@ -641,7 +872,8 @@ public class TestCompactor {
     }
   }
 
-  private void checkExpectedTxnsPresent(Path base, Path[] deltas, int bucket, long min, long max)
+  private void checkExpectedTxnsPresent(Path base, Path[] deltas, String columnNamesProperty,
+      String columnTypesProperty, int bucket, long min, long max)
       throws IOException {
     ValidTxnList txnList = new ValidTxnList() {
       @Override
@@ -677,8 +909,11 @@ public class TestCompactor {
 
     OrcInputFormat aif = new OrcInputFormat();
 
+    Configuration conf = new Configuration();
+    conf.set("columns", columnNamesProperty);
+    conf.set("columns.types", columnTypesProperty);
     AcidInputFormat.RawReader<OrcStruct> reader =
-        aif.getRawReader(new Configuration(), false, bucket, txnList, base, deltas);
+        aif.getRawReader(conf, false, bucket, txnList, base, deltas);
     RecordIdentifier identifier = reader.createKey();
     OrcStruct value = reader.createValue();
     long currentTxn = min;

@@ -435,7 +435,13 @@ public class Stmt {
    * INCLUDE statement
    */
   public Integer include(HplsqlParser.Include_stmtContext ctx) {
-    String file = ctx.file_name().getText();
+    String file;
+    if (ctx.file_name() != null) {
+      file = ctx.file_name().getText();
+    }
+    else {
+      file = evalPop(ctx.expr()).toString();
+    }    
     trace(ctx, "INCLUDE " + file);
     exec.includeFile(file);
     return 0; 
@@ -870,7 +876,7 @@ public class Stmt {
   public Boolean execProc(HplsqlParser.Exec_stmtContext ctx) { 
     String name = evalPop(ctx.expr()).toString();
     if (exec.function.isProc(name)) {
-      if (exec.function.execProc(ctx.expr_func_params(), name)) {
+      if (exec.function.execProc(name, ctx.expr_func_params())) {
         return true;
       }
     }

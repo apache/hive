@@ -1,6 +1,8 @@
+set hive.mapred.mode=nonstrict;
 set hive.execution.engine=tez;
 set hive.optimize.constant.propagation=true;
 set hive.tez.dynamic.partition.pruning=true;
+set hive.explain.user=true;
 
 drop table if exists tb1;
 create table tb1 (id int);

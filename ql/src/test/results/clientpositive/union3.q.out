@@ -59,6 +59,7 @@ STAGE PLANS:
                 Reduce Output Operator
                   sort order: 
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  TopN Hash Memory Usage: 0.1
       Reduce Operator Tree:
         Limit
           Number of rows: 1
@@ -136,6 +137,7 @@ STAGE PLANS:
                 Reduce Output Operator
                   sort order: 
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  TopN Hash Memory Usage: 0.1
       Reduce Operator Tree:
         Limit
           Number of rows: 1
@@ -165,6 +167,7 @@ STAGE PLANS:
                 Reduce Output Operator
                   sort order: 
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  TopN Hash Memory Usage: 0.1
       Reduce Operator Tree:
         Limit
           Number of rows: 1
@@ -194,6 +197,7 @@ STAGE PLANS:
                 Reduce Output Operator
                   sort order: 
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  TopN Hash Memory Usage: 0.1
       Reduce Operator Tree:
         Limit
           Number of rows: 1

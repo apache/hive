@@ -38,8 +38,8 @@ import javax.jdo.Transaction;
 import javax.jdo.datastore.JDOConnection;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -95,7 +95,7 @@ class MetaStoreDirectSql {
 
   private static final int NO_BATCHING = -1, DETECT_BATCHING = 0;
 
-  private static final Log LOG = LogFactory.getLog(MetaStoreDirectSql.class);
+  private static final Logger LOG = LoggerFactory.getLogger(MetaStoreDirectSql.class);
   private final PersistenceManager pm;
   /**
    * We want to avoid db-specific code in this class and stick with ANSI SQL. However:
@@ -109,6 +109,7 @@ class MetaStoreDirectSql {
   private final DB dbType;
   private final int batchSize;
   private final boolean convertMapNullsToEmptyStrings;
+  private final String defaultPartName;
 
   /**
    * Whether direct SQL can be used with the current datastore backing {@link #pm}.
@@ -116,6 +117,7 @@ class MetaStoreDirectSql {
   private final boolean isCompatibleDatastore;
   private final boolean isAggregateStatsCacheEnabled;
   private AggregateStatsCache aggrStatsCache;
+
   public MetaStoreDirectSql(PersistenceManager pm, Configuration conf) {
     this.pm = pm;
     this.dbType = determineDbType();
@@ -127,6 +129,7 @@ class MetaStoreDirectSql {
 
     convertMapNullsToEmptyStrings =
         HiveConf.getBoolVar(conf, ConfVars.METASTORE_ORM_RETRIEVE_MAPNULLS_AS_EMPTY_STRINGS);
+    defaultPartName = HiveConf.getVar(conf, ConfVars.DEFAULTPARTITIONNAME);
 
     String jdoIdFactory = HiveConf.getVar(conf, ConfVars.METASTORE_IDENTIFIER_FACTORY);
     if (! ("datanucleus1".equalsIgnoreCase(jdoIdFactory))){
@@ -229,7 +232,7 @@ class MetaStoreDirectSql {
     // Run a self-test query. If it doesn't work, we will self-disable. What a PITA...
     String selfTestQuery = "select \"DB_ID\" from \"DBS\"";
     try {
-      doDbSpecificInitializationsBeforeQuery();
+      prepareTxn();
       query = pm.newQuery("javax.jdo.query.SQL", selfTestQuery);
       query.execute();
       return true;
@@ -252,21 +255,6 @@ class MetaStoreDirectSql {
     return isCompatibleDatastore;
   }
 
-  /**
-   * This function is intended to be called by functions before they put together a query
-   * Thus, any query-specific instantiation to be done from within the transaction is done
-   * here - for eg., for MySQL, we signal that we want to use ANSI SQL quoting behaviour
-   */
-  private void doDbSpecificInitializationsBeforeQuery() throws MetaException {
-    if (dbType != DB.MYSQL) return;
-    try {
-      assert pm.currentTransaction().isActive(); // must be inside tx together with queries
-      executeNoResult("SET @@session.sql_mode=ANSI_QUOTES");
-    } catch (SQLException sqlEx) {
-      throw new MetaException("Error setting ansi quotes: " + sqlEx.getMessage());
-    }
-  }
-
   private void executeNoResult(final String queryText) throws SQLException {
     JDOConnection jdoConn = pm.getDataStoreConnection();
     boolean doTrace = LOG.isDebugEnabled();
@@ -284,8 +272,6 @@ class MetaStoreDirectSql {
     Query queryDbParams = null;
     try {
       dbName = dbName.toLowerCase();
-
-      doDbSpecificInitializationsBeforeQuery();
 
       String queryTextDbSelector= "select "
           + "\"DB_ID\", \"NAME\", \"DB_LOCATION_URI\", \"DESC\", "
@@ -390,7 +376,7 @@ class MetaStoreDirectSql {
     // Derby and Oracle do not interpret filters ANSI-properly in some cases and need a workaround.
     boolean dbHasJoinCastBug = (dbType == DB.DERBY || dbType == DB.ORACLE);
     String sqlFilter = PartitionFilterGenerator.generateSqlFilter(
-        table, tree, params, joins, dbHasJoinCastBug);
+        table, tree, params, joins, dbHasJoinCastBug, defaultPartName);
     if (sqlFilter == null) {
       return null; // Cannot make SQL filter to push down.
     }
@@ -458,8 +444,6 @@ class MetaStoreDirectSql {
     // We have to be mindful of order during filtering if we are not returning all partitions.
     String orderForFilter = (max != null) ? " order by \"PART_NAME\" asc" : "";
 
-    doDbSpecificInitializationsBeforeQuery();
-
     // Get all simple fields for partitions and related objects, which we can map one-on-one.
     // We will do this in 2 queries to use different existing indices for each one.
     // We do not get table and DB name, assuming they are the same as we are using to filter.
@@ -490,8 +474,8 @@ class MetaStoreDirectSql {
     }
     List<Object> sqlResult = executeWithArray(query, params, queryText);
     long queryTime = doTrace ? System.nanoTime() : 0;
+    timingTrace(doTrace, queryText, start, queryTime);
     if (sqlResult.isEmpty()) {
-      timingTrace(doTrace, queryText, start, queryTime);
       return new ArrayList<Partition>(); // no partitions, bail early.
     }
 
@@ -508,7 +492,6 @@ class MetaStoreDirectSql {
       result = getPartitionsFromPartitionIds(dbName, tblName, isView, sqlResult);
     }
 
-    timingTrace(doTrace, queryText, start, queryTime);
     query.closeAll();
     return result;
   }
@@ -644,6 +627,10 @@ class MetaStoreDirectSql {
       public void apply(Partition t, Object[] fields) {
         t.putToParameters((String)fields[1], (String)fields[2]);
       }});
+    // Perform conversion of null map values
+    for (Partition t : partitions.values()) {
+      t.setParameters(MetaStoreUtils.trimMapNulls(t.getParameters(), convertMapNullsToEmptyStrings));
+    }
 
     queryText = "select \"PART_ID\", \"PART_KEY_VAL\" from \"PARTITION_KEY_VALS\""
         + " where \"PART_ID\" in (" + partIds + ") and \"INTEGER_IDX\" >= 0"
@@ -671,6 +658,10 @@ class MetaStoreDirectSql {
       public void apply(StorageDescriptor t, Object[] fields) {
         t.putToParameters((String)fields[1], (String)fields[2]);
       }});
+    // Perform conversion of null map values
+    for (StorageDescriptor t : sds.values()) {
+      t.setParameters(MetaStoreUtils.trimMapNulls(t.getParameters(), convertMapNullsToEmptyStrings));
+    }
 
     queryText = "select \"SD_ID\", \"COLUMN_NAME\", \"SORT_COLS\".\"ORDER\" from \"SORT_COLS\""
         + " where \"SD_ID\" in (" + sdIds + ") and \"INTEGER_IDX\" >= 0"
@@ -808,6 +799,10 @@ class MetaStoreDirectSql {
       public void apply(SerDeInfo t, Object[] fields) {
         t.putToParameters((String)fields[1], (String)fields[2]);
       }});
+    // Perform conversion of null map values
+    for (SerDeInfo t : serdes.values()) {
+      t.setParameters(MetaStoreUtils.trimMapNulls(t.getParameters(), convertMapNullsToEmptyStrings));
+    }
 
     return orderedResult;
   }
@@ -921,14 +916,16 @@ class MetaStoreDirectSql {
     private final List<Object> params;
     private final List<String> joins;
     private final boolean dbHasJoinCastBug;
+    private final String defaultPartName;
 
-    private PartitionFilterGenerator(
-        Table table, List<Object> params, List<String> joins, boolean dbHasJoinCastBug) {
+    private PartitionFilterGenerator(Table table, List<Object> params, List<String> joins,
+        boolean dbHasJoinCastBug, String defaultPartName) {
       this.table = table;
       this.params = params;
       this.joins = joins;
       this.dbHasJoinCastBug = dbHasJoinCastBug;
       this.filterBuffer = new FilterBuilder(false);
+      this.defaultPartName = defaultPartName;
     }
 
     /**
@@ -939,13 +936,14 @@ class MetaStoreDirectSql {
      * @return the string representation of the expression tree
      */
     private static String generateSqlFilter(Table table, ExpressionTree tree,
-        List<Object> params, List<String> joins, boolean dbHasJoinCastBug) throws MetaException {
+        List<Object> params, List<String> joins, boolean dbHasJoinCastBug, String defaultPartName)
+            throws MetaException {
       assert table != null;
       if (tree.getRoot() == null) {
         return "";
       }
       PartitionFilterGenerator visitor = new PartitionFilterGenerator(
-          table, params, joins, dbHasJoinCastBug);
+          table, params, joins, dbHasJoinCastBug, defaultPartName);
       tree.accept(visitor);
       if (visitor.filterBuffer.hasError()) {
         LOG.info("Unable to push down SQL filter: " + visitor.filterBuffer.getErrorMessage());
@@ -1071,28 +1069,33 @@ class MetaStoreDirectSql {
 
       // Build the filter and add parameters linearly; we are traversing leaf nodes LTR.
       String tableValue = "\"FILTER" + partColIndex + "\".\"PART_KEY_VAL\"";
+
       if (node.isReverseOrder) {
         params.add(nodeValue);
       }
+      String tableColumn = tableValue;
       if (colType != FilterType.String) {
         // The underlying database field is varchar, we need to compare numbers.
-        // Note that this won't work with __HIVE_DEFAULT_PARTITION__. It will fail and fall
-        // back to JDO. That is by design; we could add an ugly workaround here but didn't.
         if (colType == FilterType.Integral) {
           tableValue = "cast(" + tableValue + " as decimal(21,0))";
         } else if (colType == FilterType.Date) {
           tableValue = "cast(" + tableValue + " as date)";
         }
 
+        // Workaround for HIVE_DEFAULT_PARTITION - ignore it like JDO does, for now.
+        String tableValue0 = tableValue;
+        tableValue = "(case when " + tableColumn + " <> ?";
+        params.add(defaultPartName);
+
         if (dbHasJoinCastBug) {
           // This is a workaround for DERBY-6358 and Oracle bug; it is pretty horrible.
-          tableValue = "(case when \"TBLS\".\"TBL_NAME\" = ? and \"DBS\".\"NAME\" = ? and "
+          tableValue += (" and \"TBLS\".\"TBL_NAME\" = ? and \"DBS\".\"NAME\" = ? and "
               + "\"FILTER" + partColIndex + "\".\"PART_ID\" = \"PARTITIONS\".\"PART_ID\" and "
-                + "\"FILTER" + partColIndex + "\".\"INTEGER_IDX\" = " + partColIndex + " then "
-              + tableValue + " else null end)";
+                + "\"FILTER" + partColIndex + "\".\"INTEGER_IDX\" = " + partColIndex);
           params.add(table.getTableName().toLowerCase());
           params.add(table.getDbName().toLowerCase());
         }
+        tableValue += " then " + tableValue0 + " else null end)";
       }
       if (!node.isReverseOrder) {
         params.add(nodeValue);
@@ -1109,7 +1112,6 @@ class MetaStoreDirectSql {
     if (colNames.isEmpty()) {
       return null;
     }
-    doDbSpecificInitializationsBeforeQuery();
     boolean doTrace = LOG.isDebugEnabled();
     long start = doTrace ? System.nanoTime() : 0;
     String queryText = "select " + STATS_COLLIST + " from \"TAB_COL_STATS\" "
@@ -1140,7 +1142,10 @@ class MetaStoreDirectSql {
   public AggrStats aggrColStatsForPartitions(String dbName, String tableName,
       List<String> partNames, List<String> colNames, boolean useDensityFunctionForNDVEstimation)
       throws MetaException {
-    if (colNames.isEmpty() || partNames.isEmpty()) return new AggrStats(); // Nothing to aggregate.
+    if (colNames.isEmpty() || partNames.isEmpty()) {
+      LOG.debug("Columns is empty or partNames is empty : Short-circuiting stats eval");
+      return new AggrStats(new ArrayList<ColumnStatisticsObj>(),0); // Nothing to aggregate
+    }
     long partsFound = partsFoundForPartitions(dbName, tableName, partNames, colNames);
     List<ColumnStatisticsObj> colStatsList;
     // Try to read from the cache first
@@ -1229,7 +1234,6 @@ class MetaStoreDirectSql {
   private List<ColumnStatisticsObj> columnStatisticsObjForPartitions(String dbName,
       String tableName, List<String> partNames, List<String> colNames, long partsFound,
       boolean useDensityFunctionForNDVEstimation) throws MetaException {
-    doDbSpecificInitializationsBeforeQuery();
     // TODO: all the extrapolation logic should be moved out of this class,
     // only mechanical data retrieval should remain here.
     String commonPrefix = "select \"COLUMN_NAME\", \"COLUMN_TYPE\", "
@@ -1546,7 +1550,6 @@ class MetaStoreDirectSql {
       return Lists.newArrayList();
     }
     boolean doTrace = LOG.isDebugEnabled();
-    doDbSpecificInitializationsBeforeQuery();
     long start = doTrace ? System.nanoTime() : 0;
     String queryText = "select \"PARTITION_NAME\", " + STATS_COLLIST + " from \"PART_COL_STATS\""
       + " where \"DB_NAME\" = ? and \"TABLE_NAME\" = ? and \"COLUMN_NAME\" in ("
@@ -1641,6 +1644,23 @@ class MetaStoreDirectSql {
       LOG.warn(error + "]", ex);
       // We just logged an exception with (in case of JDO) a humongous callstack. Make a new one.
       throw new MetaException("See previous errors; " + ex.getMessage());
+    }
+  }
+
+  /**
+   * This run the necessary logic to prepare for queries. It should be called once, after the
+   * txn on DataNucleus connection is opened, and before any queries are issued. What it does
+   * currently is run db-specific logic, e.g. setting ansi quotes mode for MySQL. The reason it
+   * must be used inside of the txn is connection pooling; there's no way to guarantee that the
+   * effect will apply to the connection that is executing the queries otherwise.
+   */
+  public void prepareTxn() throws MetaException {
+    if (dbType != DB.MYSQL) return;
+    try {
+      assert pm.currentTransaction().isActive(); // must be inside tx together with queries
+      executeNoResult("SET @@session.sql_mode=ANSI_QUOTES");
+    } catch (SQLException sqlEx) {
+      throw new MetaException("Error setting ansi quotes: " + sqlEx.getMessage());
     }
   }
 }

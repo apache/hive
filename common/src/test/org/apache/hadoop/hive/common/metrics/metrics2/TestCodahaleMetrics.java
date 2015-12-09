@@ -22,11 +22,10 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
+import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.common.metrics.common.MetricsVariable;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -57,8 +56,7 @@ public class TestCodahaleMetrics {
 
     jsonReportFile = new File(workDir, "json_reporting");
     jsonReportFile.delete();
-    String defaultFsName = ShimLoader.getHadoopShims().getHadoopConfNames().get("HADOOPFS");
-    conf.set(defaultFsName, "local");
+    conf.set(CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY, "local");
     conf.setVar(HiveConf.ConfVars.HIVE_METRICS_CLASS, CodahaleMetrics.class.getCanonicalName());
     conf.setVar(HiveConf.ConfVars.HIVE_METRICS_REPORTER, MetricsReporting.JSON_FILE.name() + "," + MetricsReporting.JMX.name());
     conf.setVar(HiveConf.ConfVars.HIVE_METRICS_JSON_FILE_LOCATION, jsonReportFile.toString());
@@ -77,8 +75,8 @@ public class TestCodahaleMetrics {
   public void testScope() throws Exception {
     int runs = 5;
     for (int i = 0; i < runs; i++) {
-      MetricsFactory.getInstance().startScope("method1");
-      MetricsFactory.getInstance().endScope("method1");
+      MetricsFactory.getInstance().startStoredScope("method1");
+      MetricsFactory.getInstance().endStoredScope("method1");
     }
 
     Timer timer = metricRegistry.getTimers().get("api_method1");
@@ -106,8 +104,8 @@ public class TestCodahaleMetrics {
       executorService.submit(new Callable<Void>() {
         @Override
         public Void call() throws Exception {
-          MetricsFactory.getInstance().startScope("method2");
-          MetricsFactory.getInstance().endScope("method2");
+          MetricsFactory.getInstance().startStoredScope("method2");
+          MetricsFactory.getInstance().endStoredScope("method2");
           return null;
         }
       });

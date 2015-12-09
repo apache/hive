@@ -25,8 +25,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -73,7 +73,7 @@ public class CompactIndexHandler extends TableBasedIndexHandler {
   private Set<String> partitionCols;
   // Whether or not the conditions have been met to use the fact the index is sorted
   private boolean useSorted;
-  private static final Log LOG = LogFactory.getLog(CompactIndexHandler.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(CompactIndexHandler.class.getName());
 
 
   @Override
@@ -150,7 +150,6 @@ public class CompactIndexHandler extends TableBasedIndexHandler {
     builderConf.setBoolVar(HiveConf.ConfVars.HIVEMERGETEZFILES, false);
     Task<?> rootTask = IndexUtils.createRootTask(builderConf, inputs, outputs,
         command, partSpec, indexTableName, dbName);
-    super.setStatsDir(builderConf);
     return rootTask;
   }
 

@@ -180,8 +180,8 @@ public class GroupByOperator extends Operator<GroupByDesc> {
   }
 
   @Override
-  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
-    Collection<Future<?>> result = super.initializeOp(hconf);
+  protected void initializeOp(Configuration hconf) throws HiveException {
+    super.initializeOp(hconf);
     numRowsInput = 0;
     numRowsHashTbl = 0;
 
@@ -393,7 +393,6 @@ public class GroupByOperator extends Operator<GroupByDesc> {
     memoryMXBean = ManagementFactory.getMemoryMXBean();
     maxMemory = memoryMXBean.getHeapMemoryUsage().getMax();
     memoryThreshold = this.getConf().getMemoryThreshold();
-    return result;
   }
 
   /**

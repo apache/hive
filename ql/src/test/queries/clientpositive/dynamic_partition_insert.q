@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 CREATE TABLE t1 (c1 BIGINT, c2 STRING);
 
 CREATE TABLE t2 (c1 INT, c2 STRING)

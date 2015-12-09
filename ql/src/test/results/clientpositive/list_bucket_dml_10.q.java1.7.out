@@ -367,8 +367,8 @@ Table:              	list_bucketing_static_part
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	4                   
-	numRows             	0                   
-	rawDataSize         	0                   
+	numRows             	500                 
+	rawDataSize         	4812                
 	totalSize           	5520                
 #### A masked pattern was here ####
 	 	 

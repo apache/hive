@@ -241,6 +241,7 @@ STAGE PLANS:
               tag: -1
               value expressions: p_size (type: int), p_retailprice (type: double)
               auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -263,7 +264,7 @@ STAGE PLANS:
               serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 2639
+              totalSize 2689
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -283,14 +284,13 @@ STAGE PLANS:
                 serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 2639
+                totalSize 2689
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.part_orc
             name: default.part_orc
       Truncated Path -> Alias:
         /part_orc [part_orc]
-      Execution mode: vectorized
       Needs Tagging: false
       Reduce Operator Tree:
         Select Operator
@@ -347,7 +347,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -mr-10002
+            base file name: -mr-10003
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
@@ -426,6 +426,7 @@ STAGE PLANS:
                       columns.types string:string:int:int:int:double
                       escape.delim \
                       hive.serialization.extend.additional.nesting.levels true
+                      serialization.escape.crlf true
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -654,7 +655,7 @@ STAGE PLANS:
               serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 2639
+              totalSize 2689
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -674,7 +675,7 @@ STAGE PLANS:
                 serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 2639
+                totalSize 2689
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.part_orc
@@ -727,7 +728,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -mr-10002
+            base file name: -mr-10003
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
@@ -803,7 +804,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -mr-10003
+            base file name: -mr-10004
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
@@ -869,6 +870,7 @@ STAGE PLANS:
                       columns.types string:string:int:int
                       escape.delim \
                       hive.serialization.extend.additional.nesting.levels true
+                      serialization.escape.crlf true
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -995,6 +997,7 @@ STAGE PLANS:
               tag: -1
               value expressions: p_size (type: int)
               auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -1017,7 +1020,7 @@ STAGE PLANS:
               serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 2639
+              totalSize 2689
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -1037,14 +1040,13 @@ STAGE PLANS:
                 serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 2639
+                totalSize 2689
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.part_orc
             name: default.part_orc
       Truncated Path -> Alias:
         /part_orc [part_orc]
-      Execution mode: vectorized
       Needs Tagging: false
       Reduce Operator Tree:
         Select Operator
@@ -1084,6 +1086,7 @@ STAGE PLANS:
                       columns.types string:string:int
                       escape.delim \
                       hive.serialization.extend.additional.nesting.levels true
+                      serialization.escape.crlf true
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -1261,6 +1264,7 @@ STAGE PLANS:
               tag: -1
               value expressions: p_size (type: int), p_retailprice (type: double)
               auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -1283,7 +1287,7 @@ STAGE PLANS:
               serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 2639
+              totalSize 2689
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -1303,14 +1307,13 @@ STAGE PLANS:
                 serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 2639
+                totalSize 2689
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.part_orc
             name: default.part_orc
       Truncated Path -> Alias:
         /part_orc [part_orc]
-      Execution mode: vectorized
       Needs Tagging: false
       Reduce Operator Tree:
         Select Operator
@@ -1367,7 +1370,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -mr-10002
+            base file name: -mr-10003
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
@@ -1446,6 +1449,7 @@ STAGE PLANS:
                       columns.types string:string:int:int:int:double
                       escape.delim \
                       hive.serialization.extend.additional.nesting.levels true
+                      serialization.escape.crlf true
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -1635,6 +1639,7 @@ STAGE PLANS:
               tag: -1
               value expressions: p_size (type: int)
               auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -1657,7 +1662,7 @@ STAGE PLANS:
               serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 2639
+              totalSize 2689
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -1677,14 +1682,13 @@ STAGE PLANS:
                 serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 2639
+                totalSize 2689
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.part_orc
             name: default.part_orc
       Truncated Path -> Alias:
         /part_orc [part_orc]
-      Execution mode: vectorized
       Needs Tagging: false
       Reduce Operator Tree:
         Select Operator
@@ -1741,7 +1745,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -mr-10002
+            base file name: -mr-10003
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
@@ -1821,6 +1825,7 @@ STAGE PLANS:
                       columns.types string:string:int:int:int:int:int
                       escape.delim \
                       hive.serialization.extend.additional.nesting.levels true
+                      serialization.escape.crlf true
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -2019,6 +2024,7 @@ STAGE PLANS:
               tag: -1
               value expressions: p_size (type: int)
               auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -2041,7 +2047,7 @@ STAGE PLANS:
               serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 2639
+              totalSize 2689
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -2061,14 +2067,13 @@ STAGE PLANS:
                 serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 2639
+                totalSize 2689
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.part_orc
             name: default.part_orc
       Truncated Path -> Alias:
         /part_orc [part_orc]
-      Execution mode: vectorized
       Needs Tagging: false
       Reduce Operator Tree:
         Select Operator
@@ -2133,7 +2138,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -mr-10002
+            base file name: -mr-10003
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
@@ -2214,6 +2219,7 @@ STAGE PLANS:
                       columns.types string:string:int:int:int:int:int
                       escape.delim \
                       hive.serialization.extend.additional.nesting.levels true
+                      serialization.escape.crlf true
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -2358,6 +2364,7 @@ STAGE PLANS:
               tag: -1
               value expressions: p_partkey (type: int), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
               auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -2380,7 +2387,7 @@ STAGE PLANS:
               serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 2639
+              totalSize 2689
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -2400,14 +2407,13 @@ STAGE PLANS:
                 serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 2639
+                totalSize 2689
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.part_orc
             name: default.part_orc
       Truncated Path -> Alias:
         /part_orc [part_orc]
-      Execution mode: vectorized
       Needs Tagging: false
       Reduce Operator Tree:
         Select Operator
@@ -2483,7 +2489,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -mr-10002
+            base file name: -mr-10003
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
@@ -2520,7 +2526,7 @@ STAGE PLANS:
               serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 2639
+              totalSize 2689
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -2540,7 +2546,7 @@ STAGE PLANS:
                 serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 2639
+                totalSize 2689
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.part_orc
@@ -2573,6 +2579,7 @@ STAGE PLANS:
                   columns.types int:string:string:string:string:int:string:double:string
                   escape.delim \
                   hive.serialization.extend.additional.nesting.levels true
+                  serialization.escape.crlf true
                   serialization.format 1
                   serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -2712,6 +2719,7 @@ STAGE PLANS:
               tag: -1
               value expressions: p_partkey (type: int), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
               auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -2734,7 +2742,7 @@ STAGE PLANS:
               serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 2639
+              totalSize 2689
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -2754,14 +2762,13 @@ STAGE PLANS:
                 serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 2639
+                totalSize 2689
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.part_orc
             name: default.part_orc
       Truncated Path -> Alias:
         /part_orc [part_orc]
-      Execution mode: vectorized
       Needs Tagging: false
       Reduce Operator Tree:
         Select Operator
@@ -2837,7 +2844,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -mr-10002
+            base file name: -mr-10003
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
@@ -2874,7 +2881,7 @@ STAGE PLANS:
               serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 2639
+              totalSize 2689
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -2894,7 +2901,7 @@ STAGE PLANS:
                 serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 2639
+                totalSize 2689
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.part_orc
@@ -2931,6 +2938,7 @@ STAGE PLANS:
                     columns.types int:string:string:string:string:int:string:double:string
                     escape.delim \
                     hive.serialization.extend.additional.nesting.levels true
+                    serialization.escape.crlf true
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -3116,7 +3124,7 @@ STAGE PLANS:
               serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 2639
+              totalSize 2689
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -3136,7 +3144,7 @@ STAGE PLANS:
                 serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 2639
+                totalSize 2689
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.part_orc
@@ -3199,7 +3207,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -mr-10002
+            base file name: -mr-10003
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
@@ -3265,6 +3273,7 @@ STAGE PLANS:
                       columns.types string:string:int:int
                       escape.delim \
                       hive.serialization.extend.additional.nesting.levels true
+                      serialization.escape.crlf true
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -3479,7 +3488,7 @@ STAGE PLANS:
               serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 2639
+              totalSize 2689
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -3499,7 +3508,7 @@ STAGE PLANS:
                 serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 2639
+                totalSize 2689
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.part_orc
@@ -3563,7 +3572,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -mr-10002
+            base file name: -mr-10003
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
@@ -3642,6 +3651,7 @@ STAGE PLANS:
                       columns.types string:string:int:int:int:double
                       escape.delim \
                       hive.serialization.extend.additional.nesting.levels true
+                      serialization.escape.crlf true
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -3822,6 +3832,7 @@ STAGE PLANS:
               tag: -1
               value expressions: p_size (type: int), p_retailprice (type: double)
               auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -3844,7 +3855,7 @@ STAGE PLANS:
               serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 2639
+              totalSize 2689
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -3864,14 +3875,13 @@ STAGE PLANS:
                 serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 2639
+                totalSize 2689
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.part_orc
             name: default.part_orc
       Truncated Path -> Alias:
         /part_orc [part_orc]
-      Execution mode: vectorized
       Needs Tagging: false
       Reduce Operator Tree:
         Select Operator
@@ -3928,7 +3938,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -mr-10002
+            base file name: -mr-10003
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
@@ -4007,6 +4017,7 @@ STAGE PLANS:
                       columns.types string:string:int:int:int:double
                       escape.delim \
                       hive.serialization.extend.additional.nesting.levels true
+                      serialization.escape.crlf true
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -4197,6 +4208,7 @@ STAGE PLANS:
               tag: -1
               value expressions: p_size (type: int), p_retailprice (type: double)
               auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -4219,7 +4231,7 @@ STAGE PLANS:
               serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 2639
+              totalSize 2689
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -4239,14 +4251,13 @@ STAGE PLANS:
                 serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 2639
+                totalSize 2689
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.part_orc
             name: default.part_orc
       Truncated Path -> Alias:
         /part_orc [part_orc]
-      Execution mode: vectorized
       Needs Tagging: false
       Reduce Operator Tree:
         Select Operator
@@ -4326,7 +4337,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -mr-10002
+            base file name: -mr-10003
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
@@ -4410,7 +4421,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -mr-10003
+            base file name: -mr-10004
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
@@ -4489,6 +4500,7 @@ STAGE PLANS:
                       columns.types string:string:int:int:int:double
                       escape.delim \
                       hive.serialization.extend.additional.nesting.levels true
+                      serialization.escape.crlf true
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -4699,6 +4711,7 @@ STAGE PLANS:
               tag: -1
               value expressions: p_size (type: int), p_retailprice (type: double)
               auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -4721,7 +4734,7 @@ STAGE PLANS:
               serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 2639
+              totalSize 2689
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -4741,14 +4754,13 @@ STAGE PLANS:
                 serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 2639
+                totalSize 2689
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.part_orc
             name: default.part_orc
       Truncated Path -> Alias:
         /part_orc [sub1:part_orc]
-      Execution mode: vectorized
       Needs Tagging: false
       Reduce Operator Tree:
         Select Operator
@@ -4805,7 +4817,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -mr-10002
+            base file name: -mr-10003
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
@@ -4876,6 +4888,7 @@ STAGE PLANS:
                       columns.types string:string:bigint:double
                       escape.delim \
                       hive.serialization.extend.additional.nesting.levels true
+                      serialization.escape.crlf true
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -5163,6 +5176,7 @@ STAGE PLANS:
               tag: -1
               value expressions: p_partkey (type: int), p_size (type: int), p_retailprice (type: double)
               auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -5185,7 +5199,7 @@ STAGE PLANS:
               serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 2639
+              totalSize 2689
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -5205,14 +5219,13 @@ STAGE PLANS:
                 serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 2639
+                totalSize 2689
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.part_orc
             name: default.part_orc
       Truncated Path -> Alias:
         /part_orc [part_orc]
-      Execution mode: vectorized
       Needs Tagging: false
       Reduce Operator Tree:
         Select Operator
@@ -5288,7 +5301,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -mr-10002
+            base file name: -mr-10003
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
@@ -5325,7 +5338,7 @@ STAGE PLANS:
               serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 2639
+              totalSize 2689
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -5345,7 +5358,7 @@ STAGE PLANS:
                 serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 2639
+                totalSize 2689
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.part_orc
@@ -5399,7 +5412,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -mr-10003
+            base file name: -mr-10004
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
@@ -5491,6 +5504,7 @@ STAGE PLANS:
                       columns.types string:string:int:int:bigint:double:double:int:int
                       escape.delim \
                       hive.serialization.extend.additional.nesting.levels true
+                      serialization.escape.crlf true
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -5628,6 +5642,7 @@ STAGE PLANS:
               tag: -1
               value expressions: p_size (type: int)
               auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -5650,7 +5665,7 @@ STAGE PLANS:
               serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 2639
+              totalSize 2689
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -5670,14 +5685,13 @@ STAGE PLANS:
                 serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 2639
+                totalSize 2689
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.part_orc
             name: default.part_orc
       Truncated Path -> Alias:
         /part_orc [part_orc]
-      Execution mode: vectorized
       Needs Tagging: false
       Reduce Operator Tree:
         Select Operator
@@ -5742,7 +5756,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -mr-10002
+            base file name: -mr-10003
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
@@ -5784,6 +5798,7 @@ STAGE PLANS:
                   columns.types string:string:int
                   escape.delim \
                   hive.serialization.extend.additional.nesting.levels true
+                  serialization.escape.crlf true
                   serialization.format 1
                   serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -5960,6 +5975,7 @@ STAGE PLANS:
                   tag: -1
                   value expressions: _col2 (type: double)
                   auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -5982,7 +5998,7 @@ STAGE PLANS:
               serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 2639
+              totalSize 2689
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -6002,14 +6018,13 @@ STAGE PLANS:
                 serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 2639
+                totalSize 2689
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.part_orc
             name: default.part_orc
       Truncated Path -> Alias:
         /part_orc [mfgr_price_view:part_orc]
-      Execution mode: vectorized
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -6068,7 +6083,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -mr-10002
+            base file name: -mr-10003
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
@@ -6133,6 +6148,7 @@ STAGE PLANS:
                       columns.types string:string:double:double
                       escape.delim \
                       hive.serialization.extend.additional.nesting.levels true
+                      serialization.escape.crlf true
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -6479,6 +6495,7 @@ STAGE PLANS:
               tag: -1
               value expressions: p_size (type: int), p_retailprice (type: double)
               auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -6501,7 +6518,7 @@ STAGE PLANS:
               serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 2639
+              totalSize 2689
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -6521,14 +6538,13 @@ STAGE PLANS:
                 serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 2639
+                totalSize 2689
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.part_orc
             name: default.part_orc
       Truncated Path -> Alias:
         /part_orc [part_orc]
-      Execution mode: vectorized
       Needs Tagging: false
       Reduce Operator Tree:
         Select Operator
@@ -6602,7 +6618,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -mr-10002
+            base file name: -mr-10004
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
@@ -6737,7 +6753,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -mr-10003
+            base file name: -mr-10005
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
@@ -6823,7 +6839,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -mr-10004
+            base file name: -mr-10006
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
@@ -7229,6 +7245,7 @@ STAGE PLANS:
               tag: -1
               value expressions: p_name (type: string), p_size (type: int)
               auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -7251,7 +7268,7 @@ STAGE PLANS:
               serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 2639
+              totalSize 2689
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -7271,14 +7288,13 @@ STAGE PLANS:
                 serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 2639
+                totalSize 2689
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.part_orc
             name: default.part_orc
       Truncated Path -> Alias:
         /part_orc [part_orc]
-      Execution mode: vectorized
       Needs Tagging: false
       Reduce Operator Tree:
         Select Operator
@@ -7365,7 +7381,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -mr-10002
+            base file name: -mr-10003
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
@@ -7449,7 +7465,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -mr-10003
+            base file name: -mr-10004
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
@@ -7528,6 +7544,7 @@ STAGE PLANS:
                       columns.types string:string:int:int:int:bigint
                       escape.delim \
                       hive.serialization.extend.additional.nesting.levels true
+                      serialization.escape.crlf true
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -7769,6 +7786,7 @@ STAGE PLANS:
               tag: -1
               value expressions: p_name (type: string), p_size (type: int)
               auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -7791,7 +7809,7 @@ STAGE PLANS:
               serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 2639
+              totalSize 2689
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -7811,14 +7829,13 @@ STAGE PLANS:
                 serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 2639
+                totalSize 2689
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.part_orc
             name: default.part_orc
       Truncated Path -> Alias:
         /part_orc [part_orc]
-      Execution mode: vectorized
       Needs Tagging: false
       Reduce Operator Tree:
         Select Operator
@@ -7882,7 +7899,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -mr-10002
+            base file name: -mr-10003
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
@@ -7958,7 +7975,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -mr-10003
+            base file name: -mr-10004
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
@@ -8034,7 +8051,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -mr-10004
+            base file name: -mr-10005
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
@@ -8113,6 +8130,7 @@ STAGE PLANS:
                       columns.types string:string:int:int:int:bigint
                       escape.delim \
                       hive.serialization.extend.additional.nesting.levels true
+                      serialization.escape.crlf true
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -8337,6 +8355,7 @@ STAGE PLANS:
               tag: -1
               value expressions: p_size (type: int)
               auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -8359,7 +8378,7 @@ STAGE PLANS:
               serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 2639
+              totalSize 2689
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -8379,14 +8398,13 @@ STAGE PLANS:
                 serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 2639
+                totalSize 2689
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.part_orc
             name: default.part_orc
       Truncated Path -> Alias:
         /part_orc [part_orc]
-      Execution mode: vectorized
       Needs Tagging: false
       Reduce Operator Tree:
         Select Operator
@@ -8450,7 +8468,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -mr-10002
+            base file name: -mr-10003
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
@@ -8533,7 +8551,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -mr-10003
+            base file name: -mr-10004
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
@@ -8612,6 +8630,7 @@ STAGE PLANS:
                       columns.types string:string:int:int:int:bigint
                       escape.delim \
                       hive.serialization.extend.additional.nesting.levels true
+                      serialization.escape.crlf true
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -8848,6 +8867,7 @@ STAGE PLANS:
               tag: -1
               value expressions: p_size (type: int)
               auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -8870,7 +8890,7 @@ STAGE PLANS:
               serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 2639
+              totalSize 2689
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -8890,14 +8910,13 @@ STAGE PLANS:
                 serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 2639
+                totalSize 2689
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.part_orc
             name: default.part_orc
       Truncated Path -> Alias:
         /part_orc [part_orc]
-      Execution mode: vectorized
       Needs Tagging: false
       Reduce Operator Tree:
         Select Operator
@@ -8961,7 +8980,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -mr-10002
+            base file name: -mr-10003
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
@@ -9053,7 +9072,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -mr-10003
+            base file name: -mr-10004
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
@@ -9130,7 +9149,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -mr-10004
+            base file name: -mr-10005
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
@@ -9209,6 +9228,7 @@ STAGE PLANS:
                       columns.types string:string:int:int:int:bigint
                       escape.delim \
                       hive.serialization.extend.additional.nesting.levels true
+                      serialization.escape.crlf true
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -9476,6 +9496,7 @@ STAGE PLANS:
               tag: -1
               value expressions: p_size (type: int)
               auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -9498,7 +9519,7 @@ STAGE PLANS:
               serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 2639
+              totalSize 2689
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -9518,14 +9539,13 @@ STAGE PLANS:
                 serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 2639
+                totalSize 2689
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.part_orc
             name: default.part_orc
       Truncated Path -> Alias:
         /part_orc [part_orc]
-      Execution mode: vectorized
       Needs Tagging: false
       Reduce Operator Tree:
         Select Operator
@@ -9605,7 +9625,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -mr-10002
+            base file name: -mr-10003
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
@@ -9689,7 +9709,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -mr-10003
+            base file name: -mr-10004
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
@@ -9768,6 +9788,7 @@ STAGE PLANS:
                       columns.types string:string:int:int:int:bigint:bigint
                       escape.delim \
                       hive.serialization.extend.additional.nesting.levels true
+                      serialization.escape.crlf true
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -10001,6 +10022,7 @@ STAGE PLANS:
               tag: -1
               value expressions: p_size (type: int)
               auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -10023,7 +10045,7 @@ STAGE PLANS:
               serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 2639
+              totalSize 2689
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -10043,14 +10065,13 @@ STAGE PLANS:
                 serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 2639
+                totalSize 2689
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.part_orc
             name: default.part_orc
       Truncated Path -> Alias:
         /part_orc [part_orc]
-      Execution mode: vectorized
       Needs Tagging: false
       Reduce Operator Tree:
         Select Operator
@@ -10130,7 +10151,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -mr-10002
+            base file name: -mr-10003
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
@@ -10207,7 +10228,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -mr-10003
+            base file name: -mr-10004
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
@@ -10286,6 +10307,7 @@ STAGE PLANS:
                       columns.types string:string:int:int:int:bigint:bigint
                       escape.delim \
                       hive.serialization.extend.additional.nesting.levels true
+                      serialization.escape.crlf true
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe

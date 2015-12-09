@@ -20,7 +20,7 @@ desc extended combine_3_srcpart_seq_rc partition(ds="2010-08-03", hr="001");
 
 select key, value, ds, hr from combine_3_srcpart_seq_rc where ds="2010-08-03" order by key, hr limit 30;
 
-set hive.enforce.bucketing = true;
+;
 set hive.exec.reducers.max = 1;
 
 drop table bucket3_1;

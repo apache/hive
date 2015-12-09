@@ -1,0 +1,45 @@
+PREHOOK: query: create table ivdp(i int,
+                 de decimal(5,2),
+                 vc varchar(128)) partitioned by (ds string) clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ivdp
+POSTHOOK: query: create table ivdp(i int,
+                 de decimal(5,2),
+                 vc varchar(128)) partitioned by (ds string) clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ivdp
+PREHOOK: query: insert into table ivdp partition (ds) values 
+    (1, 109.23, 'and everywhere that mary went', 'today'),
+    (6553, 923.19, 'the lamb was sure to go', 'tomorrow')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__1
+PREHOOK: Output: default@ivdp
+POSTHOOK: query: insert into table ivdp partition (ds) values 
+    (1, 109.23, 'and everywhere that mary went', 'today'),
+    (6553, 923.19, 'the lamb was sure to go', 'tomorrow')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__1
+POSTHOOK: Output: default@ivdp@ds=today
+POSTHOOK: Output: default@ivdp@ds=tomorrow
+POSTHOOK: Lineage: ivdp PARTITION(ds=today).de EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: ivdp PARTITION(ds=today).i EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: ivdp PARTITION(ds=today).vc EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: ivdp PARTITION(ds=tomorrow).de EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: ivdp PARTITION(ds=tomorrow).i EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: ivdp PARTITION(ds=tomorrow).vc EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+PREHOOK: query: select * from ivdp order by ds
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ivdp
+PREHOOK: Input: default@ivdp@ds=today
+PREHOOK: Input: default@ivdp@ds=tomorrow
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ivdp order by ds
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ivdp
+POSTHOOK: Input: default@ivdp@ds=today
+POSTHOOK: Input: default@ivdp@ds=tomorrow
+#### A masked pattern was here ####
+1	109.23	and everywhere that mary went	today
+6553	923.19	the lamb was sure to go	tomorrow

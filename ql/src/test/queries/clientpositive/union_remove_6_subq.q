@@ -1,6 +1,6 @@
+set hive.mapred.mode=nonstrict;
 set hive.stats.autogather=false;
 set hive.optimize.union.remove=true;
-set hive.mapred.supports.subdirectories=true;
 
 set hive.merge.mapfiles=false;
 set hive.merge.mapredfiles=false;

@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.metastore.stats.ndv.densityfunction=true;
 set hive.stats.fetch.column.stats=true;
 set hive.exec.dynamic.partition=true;
@@ -32,21 +33,21 @@ analyze table loc_orc_1d partition(year='2001') compute statistics for columns s
 
 analyze table loc_orc_1d partition(year='2002') compute statistics for columns state,locid,cnt,zip;
 
-describe formatted loc_orc_1d.state PARTITION(year='2001');
+describe formatted loc_orc_1d PARTITION(year='2001') state;
 
-describe formatted loc_orc_1d.state PARTITION(year='2002');
+describe formatted loc_orc_1d PARTITION(year='2002') state;
 
-describe formatted loc_orc_1d.locid PARTITION(year='2001');
+describe formatted loc_orc_1d PARTITION(year='2001') locid;
 
-describe formatted loc_orc_1d.locid PARTITION(year='2002');
+describe formatted loc_orc_1d PARTITION(year='2002') locid;
 
-describe formatted loc_orc_1d.cnt PARTITION(year='2001');
+describe formatted loc_orc_1d PARTITION(year='2001') cnt;
 
-describe formatted loc_orc_1d.cnt PARTITION(year='2002');
+describe formatted loc_orc_1d PARTITION(year='2002') cnt;
 
-describe formatted loc_orc_1d.zip PARTITION(year='2001');
+describe formatted loc_orc_1d PARTITION(year='2001') zip;
 
-describe formatted loc_orc_1d.zip PARTITION(year='2002');
+describe formatted loc_orc_1d PARTITION(year='2002') zip;
 
 explain extended select state,locid,cnt,zip from loc_orc_1d;
 
@@ -54,21 +55,21 @@ analyze table loc_orc_1d partition(year='2000') compute statistics for columns s
 
 analyze table loc_orc_1d partition(year='2003') compute statistics for columns state,locid,cnt,zip;
 
-describe formatted loc_orc_1d.state PARTITION(year='2000');
+describe formatted loc_orc_1d PARTITION(year='2000') state;
 
-describe formatted loc_orc_1d.state PARTITION(year='2003');
+describe formatted loc_orc_1d PARTITION(year='2003') state;
 
-describe formatted loc_orc_1d.locid PARTITION(year='2000');
+describe formatted loc_orc_1d PARTITION(year='2000') locid;
 
-describe formatted loc_orc_1d.locid PARTITION(year='2003');
+describe formatted loc_orc_1d PARTITION(year='2003') locid;
 
-describe formatted loc_orc_1d.cnt PARTITION(year='2000');
+describe formatted loc_orc_1d PARTITION(year='2000') cnt;
 
-describe formatted loc_orc_1d.cnt PARTITION(year='2003');
+describe formatted loc_orc_1d PARTITION(year='2003') cnt;
 
-describe formatted loc_orc_1d.zip PARTITION(year='2000');
+describe formatted loc_orc_1d PARTITION(year='2000') zip;
 
-describe formatted loc_orc_1d.zip PARTITION(year='2003');
+describe formatted loc_orc_1d PARTITION(year='2003') zip;
 
 explain extended select state,locid,cnt,zip from loc_orc_1d;
 
@@ -86,16 +87,16 @@ analyze table loc_orc_2d partition(zip=94086, year='2001') compute statistics fo
 
 analyze table loc_orc_2d partition(zip=94087, year='2002') compute statistics for columns state,locid,cnt;
 
-describe formatted loc_orc_2d.state partition(zip=94086, year='2001');
+describe formatted loc_orc_2d partition(zip=94086, year='2001') state;
 
-describe formatted loc_orc_2d.state partition(zip=94087, year='2002');
+describe formatted loc_orc_2d partition(zip=94087, year='2002') state;
 
-describe formatted loc_orc_2d.locid partition(zip=94086, year='2001');
+describe formatted loc_orc_2d partition(zip=94086, year='2001') locid;
 
-describe formatted loc_orc_2d.locid partition(zip=94087, year='2002');
+describe formatted loc_orc_2d partition(zip=94087, year='2002') locid;
 
-describe formatted loc_orc_2d.cnt partition(zip=94086, year='2001');
+describe formatted loc_orc_2d partition(zip=94086, year='2001') cnt;
 
-describe formatted loc_orc_2d.cnt partition(zip=94087, year='2002');
+describe formatted loc_orc_2d partition(zip=94087, year='2002') cnt;
 
 explain extended select state,locid,cnt,zip from loc_orc_2d;

@@ -127,6 +127,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_tables\n");
   }
 
+  void get_table_meta(std::vector<TableMeta> & _return, const std::string& db_patterns, const std::string& tbl_patterns, const std::vector<std::string> & tbl_types) {
+    // Your implementation goes here
+    printf("get_table_meta\n");
+  }
+
   void get_all_tables(std::vector<std::string> & _return, const std::string& db_name) {
     // Your implementation goes here
     printf("get_all_tables\n");
@@ -240,6 +245,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void exchange_partition(Partition& _return, const std::map<std::string, std::string> & partitionSpecs, const std::string& source_db, const std::string& source_table_name, const std::string& dest_db, const std::string& dest_table_name) {
     // Your implementation goes here
     printf("exchange_partition\n");
+  }
+
+  void exchange_partitions(std::vector<Partition> & _return, const std::map<std::string, std::string> & partitionSpecs, const std::string& source_db, const std::string& source_table_name, const std::string& dest_db, const std::string& dest_table_name) {
+    // Your implementation goes here
+    printf("exchange_partitions\n");
   }
 
   void get_partition_with_auth(Partition& _return, const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const std::string& user_name, const std::vector<std::string> & group_names) {
@@ -640,6 +650,31 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void fire_listener_event(FireEventResponse& _return, const FireEventRequest& rqst) {
     // Your implementation goes here
     printf("fire_listener_event\n");
+  }
+
+  void flushCache() {
+    // Your implementation goes here
+    printf("flushCache\n");
+  }
+
+  void get_file_metadata_by_expr(GetFileMetadataByExprResult& _return, const GetFileMetadataByExprRequest& req) {
+    // Your implementation goes here
+    printf("get_file_metadata_by_expr\n");
+  }
+
+  void get_file_metadata(GetFileMetadataResult& _return, const GetFileMetadataRequest& req) {
+    // Your implementation goes here
+    printf("get_file_metadata\n");
+  }
+
+  void put_file_metadata(PutFileMetadataResult& _return, const PutFileMetadataRequest& req) {
+    // Your implementation goes here
+    printf("put_file_metadata\n");
+  }
+
+  void clear_file_metadata(ClearFileMetadataResult& _return, const ClearFileMetadataRequest& req) {
+    // Your implementation goes here
+    printf("clear_file_metadata\n");
   }
 
 };

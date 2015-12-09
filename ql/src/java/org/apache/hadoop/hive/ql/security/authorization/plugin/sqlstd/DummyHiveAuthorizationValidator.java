@@ -19,8 +19,8 @@ package org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd;
 
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizationValidator;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
@@ -33,7 +33,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObje
  */
 public class DummyHiveAuthorizationValidator implements HiveAuthorizationValidator {
 
-  public static final Log LOG = LogFactory.getLog(DummyHiveAuthorizationValidator.class);
+  public static final Logger LOG = LoggerFactory.getLogger(DummyHiveAuthorizationValidator.class);
 
   @Override
   public void checkPrivileges(HiveOperationType hiveOpType, List<HivePrivilegeObject> inputHObjs,

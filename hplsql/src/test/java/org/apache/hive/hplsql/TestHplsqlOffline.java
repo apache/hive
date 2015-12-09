@@ -43,6 +43,16 @@ public class TestHplsqlOffline {
     run("create_table_ora");
   }
   
+  @Test
+  public void testInsertMysql() throws Exception {
+    run("insert_mysql");
+  }
+
+  @Test
+  public void testSelectDb2() throws Exception {
+    run("select_db2");
+  }
+
   /**
    * Run a test file
    */

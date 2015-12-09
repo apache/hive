@@ -28,8 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ObjectPair;
@@ -61,7 +61,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
 
   private static final long serialVersionUID = 1L;
 
-  private static final Log LOG = LogFactory.getLog(SMBMapJoinOperator.class
+  private static final Logger LOG = LoggerFactory.getLogger(SMBMapJoinOperator.class
       .getName());
 
   private MapredLocalWork localWork = null;
@@ -93,7 +93,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
   }
 
   @Override
-  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
+  protected void initializeOp(Configuration hconf) throws HiveException {
 
     // If there is a sort-merge join followed by a regular join, the SMBJoinOperator may not
     // get initialized at all. Consider the following query:
@@ -101,7 +101,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
     // For the mapper processing C, The SMJ is not initialized, no need to close it either.
     initDone = true;
 
-    Collection<Future<?>> result = super.initializeOp(hconf);
+    super.initializeOp(hconf);
 
     closeCalled = false;
 
@@ -156,7 +156,6 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
       }
       foundNextKeyGroup[pos] = false;
     }
-    return result;
   }
 
   @Override
@@ -166,7 +165,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
   }
 
   public void initializeMapredLocalWork(MapJoinDesc mjConf, Configuration hconf,
-      MapredLocalWork localWork, Log l4j) throws HiveException {
+      MapredLocalWork localWork, Logger l4j) throws HiveException {
     if (localWork == null || localWorkInited) {
       return;
     }

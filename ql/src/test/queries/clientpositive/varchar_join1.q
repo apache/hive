@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 drop table varchar_join1_vc1;
 drop table varchar_join1_vc2;
 drop table varchar_join1_str;

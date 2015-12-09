@@ -24,8 +24,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFMacro;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -51,8 +52,8 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
 
   private static final long serialVersionUID = 1L;
 
-  private static final Log LOG = LogFactory
-      .getLog(ExprNodeGenericFuncDesc.class.getName());
+  private static final Logger LOG = LoggerFactory
+      .getLogger(ExprNodeGenericFuncDesc.class.getName());
 
   /**
    * In case genericUDF is Serializable, we will serialize the object.
@@ -136,11 +137,13 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
     StringBuilder sb = new StringBuilder();
     sb.append(genericUDF.getClass().getSimpleName());
     sb.append("(");
-    for (int i = 0; i < chidren.size(); i++) {
-      if (i > 0) {
-        sb.append(", ");
+    if (chidren != null) {
+      for (int i = 0; i < chidren.size(); i++) {
+        if (i > 0) {
+          sb.append(", ");
+        }
+        sb.append(chidren.get(i));
       }
-      sb.append(chidren.get(i).toString());
     }
     sb.append(")");
     return sb.toString();
@@ -281,6 +284,12 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
       if (!bridge.getUdfClassName().equals(bridge2.getUdfClassName())
           || !bridge.getUdfName().equals(bridge2.getUdfName())
           || bridge.isOperator() != bridge2.isOperator()) {
+        return false;
+      }
+    }
+
+    if (genericUDF instanceof GenericUDFMacro) {
+      if (funcText != null && !funcText.equals(dest.funcText)) {
         return false;
       }
     }

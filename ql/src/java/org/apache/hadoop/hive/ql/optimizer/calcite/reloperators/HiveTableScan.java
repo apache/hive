@@ -29,13 +29,13 @@ import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelWriter;
-import org.apache.calcite.rel.core.RelFactories;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
@@ -152,7 +152,7 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
 
   @Override
   public RelNode project(ImmutableBitSet fieldsUsed, Set<RelDataTypeField> extraFields,
-      RelFactories.ProjectFactory projectFactory) {
+      RelBuilder relBuilder) {
 
     // 1. If the schema is the same then bail out
     final int fieldCount = getRowType().getFieldCount();
@@ -183,7 +183,7 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
         fieldNames));
 
     // 5. Add Proj on top of TS
-    return projectFactory.createProject(newHT, exprList, new ArrayList<String>(fieldNames));
+    return relBuilder.push(newHT).project(exprList, new ArrayList<String>(fieldNames)).build();
   }
 
   public List<Integer> getNeededColIndxsFrmReloptHT() {

@@ -21,8 +21,8 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
@@ -46,7 +46,7 @@ import org.apache.tez.runtime.library.api.KeyValueReader;
  */
 public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTableLoader {
 
-  private static final Log LOG = LogFactory.getLog(VectorMapJoinFastHashTableLoader.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinFastHashTableLoader.class.getName());
 
   private Configuration hconf;
   protected MapJoinDesc desc;

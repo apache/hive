@@ -45,15 +45,24 @@
 </property>
 
 <property>
-  <name>javax.jdo.option.ConnectionURL</name>
-  <value>jdbc:derby:;databaseName=${test.tmp.dir}/junit_metastore_db;create=true</value>
+  <name>datanucleus.autoCreateSchema</name>
+  <value>true</value>
 </property>
 
 <property>
-  <name>hive.stats.dbconnectionstring</name>
-  <value>jdbc:derby:;databaseName=${test.tmp.dir}/TempStatsStore;create=true</value>
+  <name>datanucleus.fixedDatastore</name>
+  <value>false</value>
 </property>
 
+<property>
+  <name>hive.metastore.schema.verification</name>
+  <value>false</value>
+</property>
+
+<property>
+  <name>javax.jdo.option.ConnectionURL</name>
+  <value>jdbc:derby:;databaseName=${test.tmp.dir}/junit_metastore_db;create=true</value>
+</property>
 
 <property>
   <name>javax.jdo.option.ConnectionDriverName</name>
@@ -186,7 +195,7 @@
 <property>
   <name>hive.stats.dbclass</name>
   <value>fs</value>
-  <description>The default storatge that stores temporary hive statistics. Currently, jdbc, hbase and counter type is supported</description>
+  <description>The default storatge that stores temporary hive statistics. Currently, fs type is supported</description>
 </property>
 
 <property>

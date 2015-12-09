@@ -46,8 +46,8 @@ import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.commons.exec.ExecuteException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authentication.client.PseudoAuthenticator;
@@ -123,7 +123,7 @@ public class Server {
   private @QueryParam(DO_AS_PARAM) String doAs;
   private @Context HttpServletRequest request;
 
-  private static final Log LOG = LogFactory.getLog(Server.class);
+  private static final Logger LOG = LoggerFactory.getLogger(Server.class);
 
   /**
    * Check the status of this server.  Always OK.
@@ -1002,8 +1002,18 @@ public class Server {
       throw new BadParam("Invalid numrecords format: numrecords should be an integer > 0");
     }
 
-    // Sort the list lexicographically
-    Collections.sort(list);
+    // Sort the list as requested
+    boolean isAscendingOrder = true;
+    switch (appConf.getListJobsOrder()) {
+    case lexicographicaldesc:
+      Collections.sort(list, Collections.reverseOrder());
+      isAscendingOrder = false;
+      break;
+    case lexicographicalasc:
+    default:
+      Collections.sort(list);
+      break;
+    }
 
     for (String job : list) {
       // If numRecords = -1, fetch all records.
@@ -1013,9 +1023,12 @@ public class Server {
         if (currRecord >= numRecords) {
           break;
         }
+        else if (jobid == null || jobid.trim().length() == 0) {
+            currRecord++;
+        }
         // If the current record needs to be returned based on the
         // filter conditions specified by the user, increment the counter
-        else if ((jobid != null && job.compareTo(jobid) > 0) || jobid == null) {
+        else if (isAscendingOrder && job.compareTo(jobid) > 0 || !isAscendingOrder && job.compareTo(jobid) < 0) {
           currRecord++;
         }
         // The current record should not be included in the output detailList.

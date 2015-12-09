@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 set hive.merge.orcfile.stripe.level=true;
 
@@ -9,12 +10,14 @@ CREATE TABLE orcfile_merge3a (key int, value string)
 CREATE TABLE orcfile_merge3b (key int, value string) STORED AS TEXTFILE;
 
 set hive.merge.mapfiles=false;
+set hive.merge.sparkfiles=false;
 INSERT OVERWRITE TABLE orcfile_merge3a PARTITION (ds='1')
     SELECT * FROM src;
 
 dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/orcfile_merge3a/ds=1/;
 
 set hive.merge.mapfiles=true;
+set hive.merge.sparkfiles=true;
 INSERT OVERWRITE TABLE orcfile_merge3a PARTITION (ds='1')
     SELECT * FROM src;
 

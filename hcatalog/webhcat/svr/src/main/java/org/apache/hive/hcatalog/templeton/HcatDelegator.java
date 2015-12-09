@@ -28,8 +28,8 @@ import javax.ws.rs.core.Response;
 
 import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -43,7 +43,7 @@ import org.eclipse.jetty.http.HttpStatus;
  * the backend of the ddl web service.
  */
 public class HcatDelegator extends LauncherDelegator {
-  private static final Log LOG = LogFactory.getLog(HcatDelegator.class);
+  private static final Logger LOG = LoggerFactory.getLogger(HcatDelegator.class);
   private ExecService execService;
 
   public HcatDelegator(AppConfig appConf, ExecService execService) {

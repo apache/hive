@@ -1,5 +1,5 @@
 set hive.msck.path.validation=skip;
-
+set hive.mapred.mode=nonstrict;
 dfs ${system:test.dfs.mkdir} hdfs:///tmp/temp_table_external/day=¢Bar;
 dfs -copyFromLocal ../../data/files/in1.txt hdfs:///tmp/temp_table_external/day=¢Bar;
 dfs -ls hdfs:///tmp/temp_table_external/day=¢Bar;

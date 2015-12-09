@@ -25,8 +25,8 @@ import java.nio.charset.CharsetDecoder;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
@@ -45,14 +45,13 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Lists;
 
 /**
  * A RecordUpdater where the files are stored as ORC.
  */
 public class OrcRecordUpdater implements RecordUpdater {
 
-  private static final Log LOG = LogFactory.getLog(OrcRecordUpdater.class);
+  private static final Logger LOG = LoggerFactory.getLogger(OrcRecordUpdater.class);
 
   public static final String ACID_KEY_INDEX_NAME = "hive.acid.key.index";
   public static final String ACID_FORMAT = "_orc_acid_version";
@@ -128,9 +127,18 @@ public class OrcRecordUpdater implements RecordUpdater {
       builder.append(deletes);
       return builder.toString();
     }
+
+    @Override
+    public String toString() {
+      StringBuilder builder = new StringBuilder();
+      builder.append(" inserts: ").append(inserts);
+      builder.append(" updates: ").append(updates);
+      builder.append(" deletes: ").append(deletes);
+      return builder.toString();
+    }
   }
 
-  static Path getSideFile(Path main) {
+  public static Path getSideFile(Path main) {
     return new Path(main + AcidUtils.DELTA_SIDE_FILE_SUFFIX);
   }
 
@@ -239,7 +247,8 @@ public class OrcRecordUpdater implements RecordUpdater {
       writerOptions = ((OrcOptions) options).getOrcOptions();
     }
     if (writerOptions == null) {
-      writerOptions = OrcFile.writerOptions(options.getConfiguration());
+      writerOptions = OrcFile.writerOptions(options.getTableProperties(),
+          options.getConfiguration());
     }
     writerOptions.fileSystem(fs).callback(indexBuilder);
     if (!options.isWritingBase()) {
@@ -259,6 +268,9 @@ public class OrcRecordUpdater implements RecordUpdater {
     item.setFieldValue(ROW_ID, rowId);
   }
 
+  public String toString() {
+    return getClass().getName() + "[" + path +"]";
+  }
   /**
    * To handle multiple INSERT... statements in a single transaction, we want to make sure
    * to generate unique {@code rowId} for all inserted rows of the transaction.
@@ -448,17 +460,21 @@ public class OrcRecordUpdater implements RecordUpdater {
    * {@link KeyIndexBuilder} creates these
    */
   static AcidStats parseAcidStats(Reader reader) {
-    String statsSerialized;
-    try {
-      ByteBuffer val =
-        reader.getMetadataValue(OrcRecordUpdater.ACID_STATS)
-          .duplicate();
-      statsSerialized = utf8Decoder.decode(val).toString();
-    } catch (CharacterCodingException e) {
-      throw new IllegalArgumentException("Bad string encoding for " +
-        OrcRecordUpdater.ACID_STATS, e);
+    if (reader.hasMetadataValue(OrcRecordUpdater.ACID_STATS)) {
+      String statsSerialized;
+      try {
+        ByteBuffer val =
+            reader.getMetadataValue(OrcRecordUpdater.ACID_STATS)
+                .duplicate();
+        statsSerialized = utf8Decoder.decode(val).toString();
+      } catch (CharacterCodingException e) {
+        throw new IllegalArgumentException("Bad string encoding for " +
+            OrcRecordUpdater.ACID_STATS, e);
+      }
+      return new AcidStats(statsSerialized);
+    } else {
+      return null;
     }
-    return new AcidStats(statsSerialized);
   }
 
   static class KeyIndexBuilder implements OrcFile.WriterCallback {

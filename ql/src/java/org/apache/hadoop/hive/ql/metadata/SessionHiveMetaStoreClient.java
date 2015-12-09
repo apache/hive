@@ -31,13 +31,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.hive.common.FileUtils;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
@@ -55,9 +49,8 @@ import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
-import org.apache.hadoop.hive.metastore.api.PartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
-import org.apache.hadoop.hive.metastore.api.TableStatsRequest;
+import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -108,7 +101,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
         deleteTempTableColumnStatsForTable(dbname, name);
       } catch (NoSuchObjectException err){
         // No stats to delete, forgivable error.
-        LOG.info(err);
+        LOG.info("Object not found in metastore", err);
       }
       dropTempTable(table, deleteData, envContext);
       return;
@@ -169,11 +162,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     Matcher matcher = pattern.matcher("");
     Set<String> combinedTableNames = new HashSet<String>();
     for (String tableName : tables.keySet()) {
-      if (matcher == null) {
-        matcher = pattern.matcher(tableName);
-      } else {
-        matcher.reset(tableName);
-      }
+      matcher.reset(tableName);
       if (matcher.matches()) {
         combinedTableNames.add(tableName);
       }
@@ -184,6 +173,55 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     tableNames = new ArrayList<String>(combinedTableNames);
     Collections.sort(tableNames);
     return tableNames;
+  }
+  
+  @Override
+  public List<TableMeta> getTableMeta(String dbPatterns, String tablePatterns, List<String> tableTypes)
+      throws MetaException {
+    List<TableMeta> tableMetas = super.getTableMeta(dbPatterns, tablePatterns, tableTypes);
+    Map<String, Map<String, Table>> tmpTables = getTempTables();
+    if (tmpTables.isEmpty()) {
+      return tableMetas;
+    }
+
+    List<Matcher> dbPatternList = new ArrayList<>();
+    for (String element : dbPatterns.split("\\|")) {
+      dbPatternList.add(Pattern.compile(element.replaceAll("\\*", ".*")).matcher(""));
+    }
+    List<Matcher> tblPatternList = new ArrayList<>();
+    for (String element : tablePatterns.split("\\|")) {
+      tblPatternList.add(Pattern.compile(element.replaceAll("\\*", ".*")).matcher(""));
+    }
+    StringBuilder builder = new StringBuilder();
+    for (Map.Entry<String, Map<String, Table>> outer : tmpTables.entrySet()) {
+      if (!matchesAny(outer.getKey(), dbPatternList)) {
+        continue;
+      }
+      for (Map.Entry<String, Table> inner : outer.getValue().entrySet()) {
+        Table table = inner.getValue();
+        String tableName = table.getTableName();
+        String typeString = table.getTableType().name();
+        if (tableTypes != null && !tableTypes.contains(typeString)) {
+          continue;
+        }
+        if (!matchesAny(inner.getKey(), tblPatternList)) {
+          continue;
+        }
+        TableMeta tableMeta = new TableMeta(table.getDbName(), tableName, typeString);
+        tableMeta.setComments(table.getProperty("comment"));
+        tableMetas.add(tableMeta);
+      }
+    }
+    return tableMetas;
+  }
+  
+  private boolean matchesAny(String string, List<Matcher> matchers) {
+    for (Matcher matcher : matchers) {
+      if (matcher.reset(string).matches()) {
+        return true;
+      }
+    }
+    return matchers.isEmpty();
   }
 
   @Override
@@ -426,7 +464,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
         deleteTempTableColumnStatsForTable(dbname, tbl_name);
       } catch (NoSuchObjectException err){
         // No stats to delete, forgivable error.
-        LOG.info(err);
+        LOG.info("Object not found in metastore",err);
       }
     }
   }
@@ -515,13 +553,17 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     return newCopy;
   }
 
-  private Map<String, Table> getTempTablesForDatabase(String dbName) {
+  public static Map<String, Table> getTempTablesForDatabase(String dbName) {
+    return getTempTables().get(dbName);
+  }
+  
+  public static Map<String, Map<String, Table>> getTempTables() {
     SessionState ss = SessionState.get();
     if (ss == null) {
       LOG.debug("No current SessionState, skipping temp tables");
-      return null;
+      return Collections.emptyMap();
     }
-    return ss.getTempTables().get(dbName);
+    return ss.getTempTables();
   }
 
   private Map<String, ColumnStatisticsObj> getTempTableColumnStatsForTable(String dbName,
@@ -534,14 +576,6 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     String lookupName = StatsUtils.getFullyQualifiedTableName(dbName.toLowerCase(),
         tableName.toLowerCase());
     return ss.getTempTableColStats().get(lookupName);
-  }
-
-  private static List<ColumnStatisticsObj> copyColumnStatisticsObjList(Map<String, ColumnStatisticsObj> csoMap) {
-    List<ColumnStatisticsObj> retval = new ArrayList<ColumnStatisticsObj>(csoMap.size());
-    for (ColumnStatisticsObj cso : csoMap.values()) {
-      retval.add(new ColumnStatisticsObj(cso));
-    }
-    return retval;
   }
 
   private List<ColumnStatisticsObj> getTempTableColumnStats(String dbName, String tableName,

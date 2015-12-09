@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 -- SORT_QUERY_RESULTS
 
 create table join_rc1(key string, value string) stored as RCFile;

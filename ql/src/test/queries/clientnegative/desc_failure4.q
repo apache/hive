@@ -1,0 +1,5 @@
+CREATE DATABASE IF NOT EXISTS db1;
+use db1;
+CREATE TABLE IF NOT EXISTS name1 (col1 string);
+
+DESCRIBE name1.col1;

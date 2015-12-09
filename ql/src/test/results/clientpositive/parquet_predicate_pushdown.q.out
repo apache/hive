@@ -241,7 +241,7 @@ POSTHOOK: query: SELECT * FROM tbl_pred WHERE t>2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_pred
 #### A masked pattern was here ####
-124	336	65664	4294967435	74.72	42.47	true	bob davidson	2013-03-01 09:11:58.703302	45.4	yard duty
+124	336	65664	4294967435	74.72	42.47	true	bob davidson	2013-03-01 09:11:58.703302	45.40	yard duty
 PREHOOK: query: SELECT * FROM tbl_pred WHERE t>2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_pred
@@ -250,7 +250,7 @@ POSTHOOK: query: SELECT * FROM tbl_pred WHERE t>2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_pred
 #### A masked pattern was here ####
-124	336	65664	4294967435	74.72	42.47	true	bob davidson	2013-03-01 09:11:58.703302	45.4	yard duty
+124	336	65664	4294967435	74.72	42.47	true	bob davidson	2013-03-01 09:11:58.703302	45.40	yard duty
 PREHOOK: query: SELECT * FROM tbl_pred
   WHERE t IS NOT NULL
   AND t < 0
@@ -766,6 +766,7 @@ STAGE PLANS:
                   key expressions: _col3 (type: string)
                   sort order: -
                   Statistics: Num rows: 4 Data size: 44 Basic stats: COMPLETE Column stats: NONE
+                  TopN Hash Memory Usage: 0.1
                   value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double)
       Reduce Operator Tree:
         Select Operator
@@ -834,6 +835,7 @@ STAGE PLANS:
                   key expressions: _col3 (type: string)
                   sort order: -
                   Statistics: Num rows: 4 Data size: 44 Basic stats: COMPLETE Column stats: NONE
+                  TopN Hash Memory Usage: 0.1
                   value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double)
       Reduce Operator Tree:
         Select Operator
@@ -1013,6 +1015,7 @@ STAGE PLANS:
                   key expressions: _col3 (type: string)
                   sort order: -
                   Statistics: Num rows: 1 Data size: 11 Basic stats: COMPLETE Column stats: NONE
+                  TopN Hash Memory Usage: 0.1
                   value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double)
       Reduce Operator Tree:
         Select Operator
@@ -1037,6 +1040,7 @@ STAGE PLANS:
               key expressions: _col3 (type: string)
               sort order: -
               Statistics: Num rows: 1 Data size: 11 Basic stats: COMPLETE Column stats: NONE
+              TopN Hash Memory Usage: 0.1
               value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double)
       Reduce Operator Tree:
         Select Operator
@@ -1110,6 +1114,7 @@ STAGE PLANS:
                   key expressions: _col3 (type: string)
                   sort order: -
                   Statistics: Num rows: 1 Data size: 11 Basic stats: COMPLETE Column stats: NONE
+                  TopN Hash Memory Usage: 0.1
                   value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double)
       Reduce Operator Tree:
         Select Operator
@@ -1134,6 +1139,7 @@ STAGE PLANS:
               key expressions: _col3 (type: string)
               sort order: -
               Statistics: Num rows: 1 Data size: 11 Basic stats: COMPLETE Column stats: NONE
+              TopN Hash Memory Usage: 0.1
               value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double)
       Reduce Operator Tree:
         Select Operator
@@ -1219,6 +1225,7 @@ STAGE PLANS:
                   key expressions: _col0 (type: float)
                   sort order: -
                   Statistics: Num rows: 1 Data size: 11 Basic stats: COMPLETE Column stats: NONE
+                  TopN Hash Memory Usage: 0.1
                   value expressions: _col1 (type: int), _col2 (type: bigint)
       Reduce Operator Tree:
         Select Operator
@@ -1243,6 +1250,7 @@ STAGE PLANS:
               key expressions: _col0 (type: float)
               sort order: -
               Statistics: Num rows: 1 Data size: 11 Basic stats: COMPLETE Column stats: NONE
+              TopN Hash Memory Usage: 0.1
               value expressions: _col1 (type: int), _col2 (type: bigint)
       Reduce Operator Tree:
         Select Operator

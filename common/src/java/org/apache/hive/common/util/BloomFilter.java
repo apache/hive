@@ -18,9 +18,10 @@
 
 package org.apache.hive.common.util;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import java.util.Arrays;
+import java.util.List;
+
+import static com.google.common.base.Preconditions.checkArgument;
 
 /**
  * BloomFilter is a probabilistic data structure for set membership check. BloomFilters are
@@ -63,6 +64,21 @@ public class BloomFilter {
     this.bitSet = new BitSet(numBits);
   }
 
+  /**
+   * A constructor to support rebuilding the BloomFilter from a serialized representation.
+   * @param bits
+   * @param numBits
+   * @param numFuncs
+   */
+  public BloomFilter(List<Long> bits, int numBits, int numFuncs) {
+    super();
+    long[] copied = new long[bits.size()];
+    for (int i = 0; i < bits.size(); i++) copied[i] = bits.get(i);
+    bitSet = new BitSet(copied);
+    this.numBits = numBits;
+    numHashFunctions = numFuncs;
+  }
+
   static int optimalNumOfHashFunctions(long n, long m) {
     return Math.max(1, (int) Math.round((double) m / n * Math.log(2)));
   }
@@ -73,20 +89,21 @@ public class BloomFilter {
 
   public void add(byte[] val) {
     if (val == null) {
-      addBytes(val, -1);
+      addBytes(val, -1, -1);
     } else {
-      addBytes(val, val.length);
+      addBytes(val, 0, val.length);
     }
   }
 
-  public void addBytes(byte[] val, int length) {
+  public void addBytes(byte[] val, int offset, int length) {
     // We use the trick mentioned in "Less Hashing, Same Performance: Building a Better Bloom Filter"
     // by Kirsch et.al. From abstract 'only two hash functions are necessary to effectively
     // implement a Bloom filter without any loss in the asymptotic false positive probability'
 
     // Lets split up 64-bit hashcode into two 32-bit hash codes and employ the technique mentioned
     // in the above paper
-    long hash64 = val == null ? Murmur3.NULL_HASHCODE : Murmur3.hash64(val, length);
+    long hash64 = val == null ? Murmur3.NULL_HASHCODE :
+        Murmur3.hash64(val, offset, length);
     addHash(hash64);
   }
 
@@ -123,13 +140,14 @@ public class BloomFilter {
 
   public boolean test(byte[] val) {
     if (val == null) {
-      return testBytes(val, -1);
+      return testBytes(val, -1, -1);
     }
-    return testBytes(val, val.length);
+    return testBytes(val, 0, val.length);
   }
 
-  public boolean testBytes(byte[] val, int length) {
-    long hash64 = val == null ? Murmur3.NULL_HASHCODE : Murmur3.hash64(val, length);
+  public boolean testBytes(byte[] val, int offset, int length) {
+    long hash64 = val == null ? Murmur3.NULL_HASHCODE :
+        Murmur3.hash64(val, offset, length);
     return testHash(hash64);
   }
 

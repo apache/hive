@@ -20,18 +20,20 @@ package org.apache.hadoop.hive.ql.lockmgr;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
+import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
+import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
-import org.apache.hadoop.hive.ql.metadata.DummyPartition;import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.metadata.DummyPartition;
+import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.txn.AcidHouseKeeperService;
 import org.apache.log4j.Level;
-import org.apache.log4j.LogManager;
+import org.slf4j.LoggerFactory;
 import static org.hamcrest.CoreMatchers.is;
 import org.junit.After;
 import org.junit.Assert;
@@ -47,12 +49,11 @@ import java.util.concurrent.TimeUnit;
  */
 public class TestDbTxnManager {
 
-  private HiveConf conf = new HiveConf();
+  private final HiveConf conf = new HiveConf();
   private HiveTxnManager txnMgr;
   private AcidHouseKeeperService houseKeeperService = null;
-  private Context ctx;
+  private final Context ctx;
   private int nextInput;
-  private int nextOutput;
   HashSet<ReadEntity> readEntities;
   HashSet<WriteEntity> writeEntities;
 
@@ -60,7 +61,6 @@ public class TestDbTxnManager {
     TxnDbUtil.setConfValues(conf);
     SessionState.start(conf);
     ctx = new Context(conf);
-    LogManager.getRootLogger().setLevel(Level.DEBUG);
     tearDown();
   }
 
@@ -236,7 +236,7 @@ public class TestDbTxnManager {
       exception = ex;
     }
     Assert.assertNotNull("Expected exception3", exception);
-    Assert.assertEquals("Wrong Exception3", ErrorMsg.LOCK_NO_SUCH_LOCK, exception.getCanonicalErrorMsg());
+    Assert.assertEquals("Wrong Exception3", ErrorMsg.TXN_ABORTED, exception.getCanonicalErrorMsg());
   }
 
   @Test
@@ -361,7 +361,6 @@ public class TestDbTxnManager {
     txnMgr = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
     Assert.assertTrue(txnMgr instanceof DbTxnManager);
     nextInput = 1;
-    nextOutput = 1;
     readEntities = new HashSet<ReadEntity>();
     writeEntities = new HashSet<WriteEntity>();
     conf.setTimeVar(HiveConf.ConfVars.HIVE_TIMEDOUT_TXN_REAPER_START, 0, TimeUnit.SECONDS);
@@ -377,14 +376,16 @@ public class TestDbTxnManager {
   }
 
   private static class MockQueryPlan extends QueryPlan {
-    private HashSet<ReadEntity> inputs;
-    private HashSet<WriteEntity> outputs;
-
+    private final HashSet<ReadEntity> inputs;
+    private final HashSet<WriteEntity> outputs;
+    private final String queryId;
+    
     MockQueryPlan(TestDbTxnManager test) {
       HashSet<ReadEntity> r = test.readEntities;
       HashSet<WriteEntity> w = test.writeEntities;
       inputs = (r == null) ? new HashSet<ReadEntity>() : r;
       outputs = (w == null) ? new HashSet<WriteEntity>() : w;
+      queryId = makeQueryId();
     }
 
     @Override
@@ -395,6 +396,10 @@ public class TestDbTxnManager {
     @Override
     public HashSet<WriteEntity> getOutputs() {
       return outputs;
+    }
+    @Override
+    public String getQueryId() {
+      return queryId;
     }
   }
 

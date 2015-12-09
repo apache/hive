@@ -21,7 +21,6 @@ package org.apache.hive.service.cli.thrift;
 import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -46,9 +45,11 @@ import org.eclipse.jetty.util.thread.ExecutorThreadPool;
 
 
 public class ThriftHttpCLIService extends ThriftCLIService {
+  private final Runnable oomHook;
 
-  public ThriftHttpCLIService(CLIService cliService) {
+  public ThriftHttpCLIService(CLIService cliService, Runnable oomHook) {
     super(cliService, ThriftHttpCLIService.class.getSimpleName());
+    this.oomHook = oomHook;
   }
 
   /**
@@ -65,14 +66,21 @@ public class ThriftHttpCLIService extends ThriftCLIService {
       // Server thread pool
       // Start with minWorkerThreads, expand till maxWorkerThreads and reject subsequent requests
       String threadPoolName = "HiveServer2-HttpHandler-Pool";
-      ExecutorService executorService = new ThreadPoolExecutor(minWorkerThreads, maxWorkerThreads,
-          workerKeepAliveTime, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(),
-          new ThreadFactoryWithGarbageCleanup(threadPoolName));
+      ExecutorService executorService = new ThreadPoolExecutorWithOomHook(minWorkerThreads,
+          maxWorkerThreads, workerKeepAliveTime, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(),
+          new ThreadFactoryWithGarbageCleanup(threadPoolName), oomHook);
       ExecutorThreadPool threadPool = new ExecutorThreadPool(executorService);
       httpServer.setThreadPool(threadPool);
 
       // Connector configs
       SelectChannelConnector connector = new SelectChannelConnector();
+      // Configure header size
+      int requestHeaderSize =
+          hiveConf.getIntVar(ConfVars.HIVE_SERVER2_THRIFT_HTTP_REQUEST_HEADER_SIZE);
+      int responseHeaderSize =
+          hiveConf.getIntVar(ConfVars.HIVE_SERVER2_THRIFT_HTTP_RESPONSE_HEADER_SIZE);
+      connector.setRequestHeaderSize(requestHeaderSize);
+      connector.setResponseHeaderSize(responseHeaderSize);
       boolean useSsl = hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_USE_SSL);
       String schemeName = useSsl ? "https" : "http";
       // Change connector if SSL is used
@@ -134,7 +142,7 @@ public class ThriftHttpCLIService extends ThriftCLIService {
       LOG.info(msg);
       httpServer.join();
     } catch (Throwable t) {
-      LOG.fatal(
+      LOG.error(
           "Error starting HiveServer2: could not start "
               + ThriftHttpCLIService.class.getSimpleName(), t);
       System.exit(-1);

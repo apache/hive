@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 -- Test timestamp functions in vectorized mode to verify they run correctly end-to-end.
 -- Turning on vectorization has been temporarily moved after filling the test table

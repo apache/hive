@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 -- SORT_BEFORE_DIFF
 EXPLAIN
 SELECT count(1) FROM (

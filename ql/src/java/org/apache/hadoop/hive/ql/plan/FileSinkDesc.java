@@ -85,7 +85,7 @@ public class FileSinkDesc extends AbstractOperatorDesc {
 
   private boolean statsReliable;
   private ListBucketingCtx lbCtx;
-  private int maxStatsKeyPrefixLength = -1;
+  private String statsTmpDir;
 
   private boolean statsCollectRawDataSize;
 
@@ -151,12 +151,12 @@ public class FileSinkDesc extends AbstractOperatorDesc {
     ret.setParentDir(parentDir);
     ret.setLinkedFileSinkDesc(linkedFileSinkDesc);
     ret.setStatsReliable(statsReliable);
-    ret.setMaxStatsKeyPrefixLength(maxStatsKeyPrefixLength);
     ret.setStatsCollectRawDataSize(statsCollectRawDataSize);
     ret.setDpSortState(dpSortState);
     ret.setWriteType(writeType);
     ret.setTransactionId(txnId);
-    return (Object) ret;
+    ret.setStatsTmpDir(statsTmpDir);
+    return ret;
   }
 
   @Explain(displayName = "directory", explainLevels = { Level.EXTENDED })
@@ -229,7 +229,7 @@ public class FileSinkDesc extends AbstractOperatorDesc {
   public void setMultiFileSpray(boolean multiFileSpray) {
     this.multiFileSpray = multiFileSpray;
   }
-  
+
   /**
    * @return destination is temporary
    */
@@ -398,14 +398,6 @@ public class FileSinkDesc extends AbstractOperatorDesc {
     this.linkedFileSinkDesc = linkedFileSinkDesc;
   }
 
-  public int getMaxStatsKeyPrefixLength() {
-    return maxStatsKeyPrefixLength;
-  }
-
-  public void setMaxStatsKeyPrefixLength(int maxStatsKeyPrefixLength) {
-    this.maxStatsKeyPrefixLength = maxStatsKeyPrefixLength;
-  }
-
   public boolean isStatsCollectRawDataSize() {
     return statsCollectRawDataSize;
   }
@@ -465,4 +457,14 @@ public class FileSinkDesc extends AbstractOperatorDesc {
   public void setTable(Table table) {
     this.table = table;
   }
+
+
+  public String getStatsTmpDir() {
+    return statsTmpDir;
+  }
+
+  public void setStatsTmpDir(String statsCollectionTempDir) {
+    this.statsTmpDir = statsCollectionTempDir;
+  }
+
 }

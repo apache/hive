@@ -19,12 +19,14 @@
 package org.apache.hadoop.hive.ql.io.orc;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 import java.util.concurrent.Callable;
@@ -33,10 +35,12 @@ import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.commons.codec.binary.Hex;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.FileStatus;
@@ -50,25 +54,27 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
-import org.apache.hadoop.hive.ql.io.AcidInputFormat.DeltaMetaData;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils.Directory;
 import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
+import org.apache.hadoop.hive.ql.io.LlapWrappableInputFormatInterface;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
+import org.apache.hadoop.hive.ql.io.SelfDescribingInputFormatInterface;
 import org.apache.hadoop.hive.ql.io.StatsProvidingRecordReader;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile.WriterVersion;
-import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat.Context;
+import org.apache.hadoop.hive.ql.io.orc.OrcProto.Type;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatusWithId;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -109,23 +115,20 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  * that added this event. Insert and update events include the entire row, while
  * delete events have null for row.
  */
-public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
-  InputFormatChecker, VectorizedInputFormatInterface,
-    AcidInputFormat<NullWritable, OrcStruct>, CombineHiveInputFormat.AvoidSplitCombination {
+public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
+  InputFormatChecker, VectorizedInputFormatInterface, LlapWrappableInputFormatInterface,
+  SelfDescribingInputFormatInterface, AcidInputFormat<NullWritable, OrcStruct>,
+  CombineHiveInputFormat.AvoidSplitCombination {
 
-  static enum SplitStrategyKind{
+  static enum SplitStrategyKind {
     HYBRID,
     BI,
     ETL
   }
 
-  private static final Log LOG = LogFactory.getLog(OrcInputFormat.class);
+  private static final Logger LOG = LoggerFactory.getLogger(OrcInputFormat.class);
   private static boolean isDebugEnabled = LOG.isDebugEnabled();
   static final HadoopShims SHIMS = ShimLoader.getHadoopShims();
-  static final String MIN_SPLIT_SIZE =
-      SHIMS.getHadoopConfNames().get("MAPREDMINSPLITSIZE");
-  static final String MAX_SPLIT_SIZE =
-      SHIMS.getHadoopConfNames().get("MAPREDMAXSPLITSIZE");
 
   private static final long DEFAULT_MIN_SPLIT_SIZE = 16 * 1024 * 1024;
   private static final long DEFAULT_MAX_SPLIT_SIZE = 256 * 1024 * 1024;
@@ -227,7 +230,14 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
                                                   Configuration conf,
                                                   long offset, long length
                                                   ) throws IOException {
+
+    /**
+     * Do we have schema on read in the configuration variables?
+     */
+    TypeDescription schema = OrcUtils.getDesiredRowTypeDescr(conf);
+
     Reader.Options options = new Reader.Options().range(offset, length);
+    options.schema(schema);
     boolean isOriginal = isOriginal(file);
     List<OrcProto.Type> types = file.getTypes();
     options.include(genIncludedColumns(types, conf, isOriginal));
@@ -258,6 +268,45 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     }
   }
 
+  /**
+   * Modifies the SARG, replacing column names with column indexes in target table schema. This
+   * basically does the same thing as all the shennannigans with included columns, except for the
+   * last step where ORC gets direct subtypes of root column and uses the ordered match to map
+   * table columns to file columns. The numbers put into predicate leaf should allow to go into
+   * said subtypes directly by index to get the proper index in the file.
+   * This won't work with schema evolution, although it's probably much easier to reason about
+   * if schema evolution was to be supported, because this is a clear boundary between table
+   * schema columns and all things ORC. None of the ORC stuff is used here and none of the
+   * table schema stuff is used after that - ORC doesn't need a bunch of extra crap to apply
+   * the SARG thus modified.
+   */
+  public static void translateSargToTableColIndexes(
+      SearchArgument sarg, Configuration conf, int rootColumn) {
+    String nameStr = getNeededColumnNamesString(conf), idStr = getSargColumnIDsString(conf);
+    String[] knownNames = nameStr.split(",");
+    String[] idStrs = (idStr == null) ? null : idStr.split(",");
+    assert idStrs == null || knownNames.length == idStrs.length;
+    HashMap<String, Integer> nameIdMap = new HashMap<>();
+    for (int i = 0; i < knownNames.length; ++i) {
+      Integer newId = (idStrs != null) ? Integer.parseInt(idStrs[i]) : i;
+      Integer oldId = nameIdMap.put(knownNames[i], newId);
+      if (oldId != null && oldId.intValue() != newId.intValue()) {
+        throw new RuntimeException("Multiple IDs for " + knownNames[i] + " in column strings: ["
+            + idStr + "], [" + nameStr + "]");
+      }
+    }
+    List<PredicateLeaf> leaves = sarg.getLeaves();
+    for (int i = 0; i < leaves.size(); ++i) {
+      PredicateLeaf pl = leaves.get(i);
+      Integer colId = nameIdMap.get(pl.getColumnName());
+      String newColName = RecordReaderImpl.encodeTranslatedSargColumn(rootColumn, colId);
+      SearchArgumentFactory.setPredicateLeafColumn(pl, newColName);
+    }
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("SARG translated into " + sarg);
+    }
+  }
+
   public static boolean[] genIncludedColumns(
       List<OrcProto.Type> types, List<Integer> included, boolean isOriginal) {
     int rootColumn = getRootColumn(isOriginal);
@@ -265,13 +314,14 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     boolean[] result = new boolean[numColumns];
     result[0] = true;
     OrcProto.Type root = types.get(rootColumn);
-    for(int i=0; i < root.getSubtypesCount(); ++i) {
+    for (int i = 0; i < root.getSubtypesCount(); ++i) {
       if (included.contains(i)) {
         includeColumnRecursive(types, result, root.getSubtypes(i), rootColumn);
       }
     }
     return result;
   }
+
   /**
    * Take the configuration and figure out which columns we need to include.
    * @param types the types for the file
@@ -327,7 +377,9 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
       return;
     }
 
-    LOG.info("ORC pushdown predicate: " + sarg);
+    if (LOG.isInfoEnabled()) {
+      LOG.info("ORC pushdown predicate: " + sarg);
+    }
     options.searchArgument(sarg, getSargColumnNames(
         neededColumnNames.split(","), types, options.getInclude(), isOriginal));
   }
@@ -364,7 +416,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
   }
   @Override
   public boolean validateInput(FileSystem fs, HiveConf conf,
-                               ArrayList<FileStatus> files
+                               List<FileStatus> files
                               ) throws IOException {
 
     if (Utilities.isVectorMode(conf)) {
@@ -375,6 +427,10 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
       return false;
     }
     for (FileStatus file : files) {
+      // 0 length files cannot be ORC files
+      if (file.getLen() == 0) {
+        return false;
+      }
       try {
         OrcFile.createReader(file.getPath(),
             OrcFile.readerOptions(conf).filesystem(fs));
@@ -410,9 +466,15 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
    */
   static class Context {
     private final Configuration conf;
-    private static Cache<Path, FileInfo> footerCache;
+
+    // We store all caches in variables to change the main one based on config.
+    // This is not thread safe between different split generations (and wasn't anyway).
+    private FooterCache footerCache;
+    private static LocalCache localCache;
+    private static MetastoreCache metaCache;
     private static ExecutorService threadPool = null;
     private final int numBuckets;
+    private final int splitStrategyBatchMs;
     private final long maxSize;
     private final long minSize;
     private final int minSplits;
@@ -420,8 +482,9 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     private final boolean cacheStripeDetails;
     private final AtomicInteger cacheHitCounter = new AtomicInteger(0);
     private final AtomicInteger numFilesCounter = new AtomicInteger(0);
-    private ValidTxnList transactionList;
+    private final ValidTxnList transactionList;
     private SplitStrategyKind splitStrategyKind;
+    private final SearchArgument sarg;
 
     Context(Configuration conf) {
       this(conf, 1);
@@ -429,8 +492,9 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
 
     Context(Configuration conf, final int minSplits) {
       this.conf = conf;
-      minSize = conf.getLong(MIN_SPLIT_SIZE, DEFAULT_MIN_SPLIT_SIZE);
-      maxSize = conf.getLong(MAX_SPLIT_SIZE, DEFAULT_MAX_SPLIT_SIZE);
+      this.sarg = ConvertAstToSearchArg.createFromConf(conf);
+      minSize = HiveConf.getLongVar(conf, ConfVars.MAPREDMINSPLITSIZE, DEFAULT_MIN_SPLIT_SIZE);
+      maxSize = HiveConf.getLongVar(conf, ConfVars.MAPREDMAXSPLITSIZE, DEFAULT_MAX_SPLIT_SIZE);
       String ss = conf.get(ConfVars.HIVE_ORC_SPLIT_STRATEGY.varname);
       if (ss == null || ss.equals(SplitStrategyKind.HYBRID.name())) {
         splitStrategyKind = SplitStrategyKind.HYBRID;
@@ -442,6 +506,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
           ConfVars.HIVE_ORC_INCLUDE_FILE_FOOTER_IN_SPLITS);
       numBuckets =
           Math.max(conf.getInt(hive_metastoreConstants.BUCKET_COUNT, 0), 0);
+      splitStrategyBatchMs = HiveConf.getIntVar(conf, ConfVars.HIVE_ORC_SPLIT_DIRECTORY_BATCH_MS);
       LOG.debug("Number of buckets specified by conf file is " + numBuckets);
       int cacheStripeDetailsSize = HiveConf.getIntVar(conf,
           ConfVars.HIVE_ORC_CACHE_STRIPE_DETAILS_SIZE);
@@ -459,13 +524,26 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
                   .setNameFormat("ORC_GET_SPLITS #%d").build());
         }
 
-        if (footerCache == null && cacheStripeDetails) {
-          footerCache = CacheBuilder.newBuilder()
-              .concurrencyLevel(numThreads)
-              .initialCapacity(cacheStripeDetailsSize)
-              .maximumSize(cacheStripeDetailsSize)
-              .softValues()
-              .build();
+        // TODO: local cache is created once, so the configs for future queries will not be honored.
+        if (cacheStripeDetails) {
+          // Note that there's no FS check here; we implicitly only use metastore cache for
+          // HDFS, because only HDFS would return fileIds for us. If fileId is extended using
+          // size/mod time/etc. for other FSes, we might need to check FSes explicitly because
+          // using such an aggregate fileId cache is not bulletproof and should be disable-able.
+          boolean useMetastoreCache = HiveConf.getBoolVar(
+              conf, HiveConf.ConfVars.HIVE_ORC_MS_FOOTER_CACHE_ENABLED);
+          if (localCache == null) {
+            localCache = new LocalCache(numThreads, cacheStripeDetailsSize);
+          }
+          if (useMetastoreCache) {
+            if (metaCache == null) {
+              metaCache = new MetastoreCache(localCache);
+            }
+            assert conf instanceof HiveConf;
+            metaCache.configure((HiveConf)conf);
+          }
+          // Set footer cache for current split generation. See field comment - not thread safe.
+          footerCache = useMetastoreCache ? metaCache : localCache;
         }
       }
       String value = conf.get(ValidTxnList.VALID_TXNS_KEY,
@@ -539,70 +617,81 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
    * ETL strategy is used when spending little more time in split generation is acceptable
    * (split generation reads and caches file footers).
    */
-  static final class ETLSplitStrategy implements SplitStrategy<SplitInfo> {
+  static final class ETLSplitStrategy implements SplitStrategy<SplitInfo>, Callable<Void> {
+    private static final int ETL_COMBINE_FILE_LIMIT = 500;
+
+    private static class ETLDir {
+      public ETLDir(Path dir, FileSystem fs, int fileCount) {
+        this.dir = dir;
+        this.fs = fs;
+        this.fileCount = fileCount;
+      }
+      private final int fileCount;
+      private final Path dir;
+      private final FileSystem fs;
+    }
+
+
     Context context;
-    FileSystem fs;
+    List<ETLDir> dirs;
     List<HdfsFileStatusWithId> files;
     boolean isOriginal;
     List<DeltaMetaData> deltas;
-    Path dir;
     boolean[] covered;
+    private List<Future<List<OrcSplit>>> splitFuturesRef;
 
     public ETLSplitStrategy(Context context, FileSystem fs, Path dir,
         List<HdfsFileStatusWithId> children, boolean isOriginal, List<DeltaMetaData> deltas,
         boolean[] covered) {
+      assert !children.isEmpty();
       this.context = context;
-      this.dir = dir;
-      this.fs = fs;
+      this.dirs = Lists.newArrayList(new ETLDir(dir, fs, children.size()));
       this.files = children;
       this.isOriginal = isOriginal;
       this.deltas = deltas;
       this.covered = covered;
     }
 
-    private FileInfo verifyCachedFileInfo(FileStatus file) {
-      FileInfo fileInfo = Context.footerCache.getIfPresent(file.getPath());
-      if (fileInfo != null) {
-        if (isDebugEnabled) {
-          LOG.debug("Info cached for path: " + file.getPath());
-        }
-        if (fileInfo.modificationTime == file.getModificationTime() &&
-            fileInfo.size == file.getLen()) {
-          // Cached copy is valid
-          context.cacheHitCounter.incrementAndGet();
-          return fileInfo;
-        } else {
-          // Invalidate
-          Context.footerCache.invalidate(file.getPath());
-          if (isDebugEnabled) {
-            LOG.debug("Meta-Info for : " + file.getPath() +
-                " changed. CachedModificationTime: "
-                + fileInfo.modificationTime + ", CurrentModificationTime: "
-                + file.getModificationTime()
-                + ", CachedLength: " + fileInfo.size + ", CurrentLength: " +
-                file.getLen());
+    @Override
+    public List<SplitInfo> getSplits() throws IOException {
+      List<SplitInfo> result = new ArrayList<>(files.size());
+      // Force local cache if we have deltas.
+      FooterCache cache = context.cacheStripeDetails ?
+          (deltas == null ? context.footerCache : Context.localCache) : null;
+      if (cache != null) {
+        FileInfo[] infos = cache.getAndValidate(files);
+        int dirIx = -1, fileInDirIx = -1, filesInDirCount = 0;
+        ETLDir dir = null;
+        for (int i = 0; i < files.size(); ++i) {
+          if ((++fileInDirIx) == filesInDirCount) {
+            dir = dirs.get(++dirIx);
+            filesInDirCount = dir.fileCount;
+          }
+          FileInfo info = infos[i];
+          if (info != null) {
+            // Cached copy is valid
+            context.cacheHitCounter.incrementAndGet();
+          }
+          HdfsFileStatusWithId file = files.get(i);
+          // ignore files of 0 length
+          if (file.getFileStatus().getLen() > 0) {
+            result.add(new SplitInfo(
+                context, dir.fs, file, info, isOriginal, deltas, true, dir.dir, covered));
           }
         }
       } else {
-        if (isDebugEnabled) {
-          LOG.debug("Info not cached for path: " + file.getPath());
-        }
-      }
-      return null;
-    }
-
-    @Override
-    public List<SplitInfo> getSplits() throws IOException {
-      List<SplitInfo> result = Lists.newArrayList();
-      for (HdfsFileStatusWithId file : files) {
-        FileInfo info = null;
-        if (context.cacheStripeDetails) {
-          info = verifyCachedFileInfo(file.getFileStatus());
-        }
-        // ignore files of 0 length
-        if (file.getFileStatus().getLen() > 0) {
-          result.add(new SplitInfo(
-              context, fs, file, info, isOriginal, deltas, true, dir, covered));
+        int dirIx = -1, fileInDirIx = -1, filesInDirCount = 0;
+        ETLDir dir = null;
+        for (HdfsFileStatusWithId file : files) {
+          if ((++fileInDirIx) == filesInDirCount) {
+            dir = dirs.get(++dirIx);
+            filesInDirCount = dir.fileCount;
+          }
+          // ignore files of 0 length
+          if (file.getFileStatus().getLen() > 0) {
+            result.add(new SplitInfo(
+                context, dir.fs, file, null, isOriginal, deltas, true, dir.dir, covered));
+          }
         }
       }
       return result;
@@ -610,7 +699,67 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
 
     @Override
     public String toString() {
-      return ETLSplitStrategy.class.getSimpleName() + " strategy for " + dir;
+      if (dirs.size() == 1) {
+        return ETLSplitStrategy.class.getSimpleName() + " strategy for " + dirs.get(0).dir;
+      } else {
+        StringBuilder sb = new StringBuilder(ETLSplitStrategy.class.getSimpleName()
+            + " strategy for ");
+        boolean isFirst = true;
+        for (ETLDir dir : dirs) {
+          if (!isFirst) sb.append(", ");
+          isFirst = false;
+          sb.append(dir.dir);
+        }
+        return sb.toString();
+      }
+    }
+
+    enum CombineResult {
+      YES, // Combined, all good.
+      NO_AND_CONTINUE, // Don't combine with that, but may combine with others.
+      NO_AND_SWAP // Don't combine with with that, and make that a base for new combines.
+      // We may add NO_AND_STOP in future where combine is impossible and other should not be base.
+    }
+
+    public CombineResult combineWith(FileSystem fs, Path dir,
+        List<HdfsFileStatusWithId> otherFiles, boolean isOriginal) {
+      if ((files.size() + otherFiles.size()) > ETL_COMBINE_FILE_LIMIT
+        || this.isOriginal != isOriginal) {
+        return (files.size() > otherFiles.size())
+            ? CombineResult.NO_AND_SWAP : CombineResult.NO_AND_CONTINUE;
+      }
+      // All good, combine the base/original only ETL strategies.
+      files.addAll(otherFiles);
+      dirs.add(new ETLDir(dir, fs, otherFiles.size()));
+      return CombineResult.YES;
+    }
+
+    public Future<Void> generateSplitWork(
+        Context context, List<Future<List<OrcSplit>>> splitFutures) throws IOException {
+      if (context.cacheStripeDetails && context.footerCache.isBlocking()) {
+        this.splitFuturesRef = splitFutures;
+        return Context.threadPool.submit(this);
+      } else {
+        runGetSplitsSync(splitFutures);
+        return null;
+      }
+    }
+
+    @Override
+    public Void call() throws IOException {
+      runGetSplitsSync(splitFuturesRef);
+      return null;
+    }
+
+    private void runGetSplitsSync(List<Future<List<OrcSplit>>> splitFutures) throws IOException {
+      List<SplitInfo> splits = getSplits();
+      List<Future<List<OrcSplit>>> localList = new ArrayList<>(splits.size());
+      for (SplitInfo splitInfo : splits) {
+        localList.add(Context.threadPool.submit(new SplitGenerator(splitInfo)));
+      }
+      synchronized (splitFutures) {
+        splitFutures.addAll(localList);
+      }
     }
   }
 
@@ -736,6 +885,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
           LOG.error("Failed to get files with ID; using regular API", t);
         }
       }
+
       // Fall back to regular API and create states without ID.
       List<FileStatus> children = SHIMS.listLocatedStatus(fs, base, AcidUtils.hiddenFileFilter);
       List<HdfsFileStatusWithId> result = new ArrayList<>(children.size());
@@ -759,8 +909,8 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     private final TreeMap<Long, BlockLocation> locations;
     private final FileInfo fileInfo;
     private List<StripeInformation> stripes;
-    private ReaderImpl.FileMetaInfo fileMetaInfo;
-    private Metadata metadata;
+    private FileMetaInfo fileMetaInfo;
+    private List<StripeStatistics> stripeStats;
     private List<OrcProto.Type> types;
     private boolean[] includedCols;
     private final boolean isOriginal;
@@ -768,7 +918,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     private final boolean hasBase;
     private OrcFile.WriterVersion writerVersion;
     private long projColsUncompressedSize;
-    private List<OrcSplit> deltaSplits;
+    private final List<OrcSplit> deltaSplits;
 
     public SplitGenerator(SplitInfo splitInfo) throws IOException {
       this.context = splitInfo.context;
@@ -777,7 +927,8 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
       this.file = this.fileWithId.getFileStatus();
       this.blockSize = this.file.getBlockSize();
       this.fileInfo = splitInfo.fileInfo;
-      locations = SHIMS.getLocationsWithOffset(fs, file);
+      // TODO: potential DFS call
+      this.locations = SHIMS.getLocationsWithOffset(fs, fileWithId.getFileStatus());
       this.isOriginal = splitInfo.isOriginal;
       this.deltas = splitInfo.deltas;
       this.hasBase = splitInfo.hasBase;
@@ -786,12 +937,12 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     }
 
     Path getPath() {
-      return file.getPath();
+      return fileWithId.getFileStatus().getPath();
     }
 
     @Override
     public String toString() {
-      return "splitter(" + file.getPath() + ")";
+      return "splitter(" + fileWithId.getFileStatus().getPath() + ")";
     }
 
     /**
@@ -824,7 +975,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
      * @throws IOException
      */
     OrcSplit createSplit(long offset, long length,
-                     ReaderImpl.FileMetaInfo fileMetaInfo) throws IOException {
+                     FileMetaInfo fileMetaInfo) throws IOException {
       String[] hosts;
       Map.Entry<Long, BlockLocation> startEntry = locations.floorEntry(offset);
       BlockLocation start = startEntry.getValue();
@@ -833,7 +984,6 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
         hosts = start.getHosts();
       } else {
         Map.Entry<Long, BlockLocation> endEntry = locations.floorEntry(offset + length);
-        BlockLocation end = endEntry.getValue();
         //get the submap
         NavigableMap<Long, BlockLocation> navigableMap = locations.subMap(startEntry.getKey(),
                   true, endEntry.getKey(), true);
@@ -855,7 +1005,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
               maxSize = Math.max(maxSize, val.get());
             }
           } else {
-            throw new IOException("File " + file.getPath().toString() +
+            throw new IOException("File " + fileWithId.getFileStatus().getPath().toString() +
                     " should have had overlap on block starting at " + block.getOffset());
           }
         }
@@ -901,11 +1051,11 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
 
       // we can't eliminate stripes if there are deltas because the
       // deltas may change the rows making them match the predicate.
-      if (deltas.isEmpty() && canCreateSargFromConf(context.conf)) {
+      if ((deltas == null || deltas.isEmpty()) && context.sarg != null) {
         SearchArgument sarg = ConvertAstToSearchArg.createFromConf(context.conf);
-        String[] sargColNames = extractNeededColNames(types, context.conf, includedCols, isOriginal);
-        includeStripe = pickStripes(sarg, sargColNames, writerVersion, isOriginal,
-            metadata.getStripeStatistics(), stripes.size(), file.getPath());
+        String[] colNames = extractNeededColNames(types, context.conf, includedCols, isOriginal);
+        includeStripe = pickStripes(context.sarg, colNames, writerVersion, isOriginal,
+            stripeStats, stripes.size(), file.getPath());
       }
 
       // if we didn't have predicate pushdown, read everything
@@ -959,41 +1109,51 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     }
 
     private void populateAndCacheStripeDetails() throws IOException {
-      Reader orcReader = OrcFile.createReader(file.getPath(),
-          OrcFile.readerOptions(context.conf).filesystem(fs));
+      // Only create OrcReader if we are missing some information.
+      List<OrcProto.ColumnStatistics> colStatsLocal;
+      List<OrcProto.Type> typesLocal;
       if (fileInfo != null) {
         stripes = fileInfo.stripeInfos;
+        stripeStats = fileInfo.stripeStats;
         fileMetaInfo = fileInfo.fileMetaInfo;
-        metadata = fileInfo.metadata;
-        types = fileInfo.types;
+        typesLocal = types = fileInfo.types;
+        colStatsLocal = fileInfo.fileStats;
         writerVersion = fileInfo.writerVersion;
         // For multiple runs, in case sendSplitsInFooter changes
         if (fileMetaInfo == null && context.footerInSplits) {
+          Reader orcReader = createOrcReader();
           fileInfo.fileMetaInfo = ((ReaderImpl) orcReader).getFileMetaInfo();
-          fileInfo.metadata = orcReader.getMetadata();
-          fileInfo.types = orcReader.getTypes();
-          fileInfo.writerVersion = orcReader.getWriterVersion();
+          assert fileInfo.stripeStats != null && fileInfo.types != null
+              && fileInfo.writerVersion != null;
+          // We assume that if we needed to create a reader, we need to cache it to meta cache.
+          // TODO: This will also needlessly overwrite it in local cache for now.
+          context.footerCache.put(fileWithId.getFileId(), file, fileInfo.fileMetaInfo, orcReader);
         }
       } else {
+        Reader orcReader = createOrcReader();
         stripes = orcReader.getStripes();
-        metadata = orcReader.getMetadata();
-        types = orcReader.getTypes();
+        typesLocal = types = orcReader.getTypes();
+        colStatsLocal = orcReader.getOrcProtoFileStatistics();
         writerVersion = orcReader.getWriterVersion();
+        stripeStats = orcReader.getStripeStatistics();
         fileMetaInfo = context.footerInSplits ?
             ((ReaderImpl) orcReader).getFileMetaInfo() : null;
         if (context.cacheStripeDetails) {
-          // Populate into cache.
-          Context.footerCache.put(file.getPath(),
-              new FileInfo(file.getModificationTime(), file.getLen(), stripes,
-                  metadata, types, fileMetaInfo, writerVersion));
+          Long fileId = fileWithId.getFileId();
+          context.footerCache.put(fileId, file, fileMetaInfo, orcReader);
         }
       }
       includedCols = genIncludedColumns(types, context.conf, isOriginal);
-      projColsUncompressedSize = computeProjectionSize(orcReader, includedCols, isOriginal);
+      projColsUncompressedSize = computeProjectionSize(typesLocal, colStatsLocal, includedCols, isOriginal);
     }
 
-    private long computeProjectionSize(final Reader orcReader, final boolean[] includedCols,
-        final boolean isOriginal) {
+    private Reader createOrcReader() throws IOException {
+      return OrcFile.createReader(file.getPath(),
+          OrcFile.readerOptions(context.conf).filesystem(fs));
+    }
+
+    private long computeProjectionSize(List<OrcProto.Type> types,
+        List<OrcProto.ColumnStatistics> stats, boolean[] includedCols, boolean isOriginal) {
       final int rootIdx = getRootColumn(isOriginal);
       List<Integer> internalColIds = Lists.newArrayList();
       if (includedCols != null) {
@@ -1003,7 +1163,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
           }
         }
       }
-      return orcReader.getRawDataSizeFromColIndices(internalColIds);
+      return ReaderImpl.getRawDataSizeFromColIndices(internalColIds, types, stats);
     }
   }
 
@@ -1012,16 +1172,31 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     return generateSplitsInfo(conf, -1);
   }
 
+  /** Class intended to update two values from methods... Java-related cruft. */
+  @VisibleForTesting
+  static final class CombinedCtx {
+    ETLSplitStrategy combined;
+    long combineStartUs;
+  }
+
   static List<OrcSplit> generateSplitsInfo(Configuration conf, int numSplits)
       throws IOException {
-    // use threads to resolve directories into splits
+    // Use threads to resolve directories into splits.
+    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ORC_MS_FOOTER_CACHE_ENABLED)) {
+      // Create HiveConf once, since this is expensive.
+      conf = new HiveConf(conf, OrcInputFormat.class);
+    }
     Context context = new Context(conf, numSplits);
+    if (LOG.isInfoEnabled()) {
+      LOG.info("ORC pushdown predicate: " + context.sarg);
+    }
+    boolean useFileIds = HiveConf.getBoolVar(conf, ConfVars.HIVE_ORC_INCLUDE_FILE_ID_IN_SPLITS);
     List<OrcSplit> splits = Lists.newArrayList();
     List<Future<AcidDirInfo>> pathFutures = Lists.newArrayList();
-    List<Future<List<OrcSplit>>> splitFutures = Lists.newArrayList();
+    List<Future<Void>> strategyFutures = Lists.newArrayList();
+    final List<Future<List<OrcSplit>>> splitFutures = Lists.newArrayList();
 
     // multi-threaded file statuses and split strategy
-    boolean useFileIds = HiveConf.getBoolVar(conf, ConfVars.HIVE_ORC_INCLUDE_FILE_ID_IN_SPLITS);
     Path[] paths = getInputPaths(conf);
     CompletionService<AcidDirInfo> ecs = new ExecutorCompletionService<>(Context.threadPool);
     for (Path dir : paths) {
@@ -1032,20 +1207,43 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
 
     // complete path futures and schedule split generation
     try {
-      for (int notIndex = 0; notIndex < paths.length; ++notIndex) {
-        AcidDirInfo adi = ecs.take().get();
-        SplitStrategy<?> splitStrategy = determineSplitStrategy(
-            context, adi.fs, adi.splitPath, adi.acidInfo, adi.baseOrOriginalFiles);
-
-        if (isDebugEnabled) {
-          LOG.debug(splitStrategy);
+      CombinedCtx combinedCtx = (context.splitStrategyBatchMs > 0) ? new CombinedCtx() : null;
+      long maxWaitUs = context.splitStrategyBatchMs * 1000000;
+      int resultsLeft = paths.length;
+      while (resultsLeft > 0) {
+        AcidDirInfo adi = null;
+        if (combinedCtx != null && combinedCtx.combined != null) {
+          long waitTimeUs = combinedCtx.combineStartUs + maxWaitUs - System.nanoTime();
+          if (waitTimeUs >= 0) {
+            Future<AcidDirInfo> f = ecs.poll(waitTimeUs, TimeUnit.NANOSECONDS);
+            adi = (f == null) ? null : f.get();
+          }
+        } else {
+          adi = ecs.take().get();
         }
 
+        if (adi == null) {
+          // We were combining SS-es and the time has expired.
+          assert combinedCtx.combined != null;
+          scheduleSplits(combinedCtx.combined, context, splitFutures, strategyFutures);
+          combinedCtx.combined = null;
+          continue;
+        }
+
+        // We have received a new directory information, make a split strategy.
+        --resultsLeft;
+        SplitStrategy<?> splitStrategy = determineSplitStrategy(combinedCtx, context,
+            adi.fs, adi.splitPath, adi.acidInfo, adi.baseOrOriginalFiles);
+        if (splitStrategy == null) continue; // Combined.
+
+        if (isDebugEnabled) {
+          LOG.debug("Split strategy: {}", splitStrategy);
+        }
+
+        // Hack note - different split strategies return differently typed lists, yay Java.
+        // This works purely by magic, because we know which strategy produces which type.
         if (splitStrategy instanceof ETLSplitStrategy) {
-          List<SplitInfo> splitInfos = ((ETLSplitStrategy)splitStrategy).getSplits();
-          for (SplitInfo splitInfo : splitInfos) {
-            splitFutures.add(Context.threadPool.submit(new SplitGenerator(splitInfo)));
-          }
+          scheduleSplits((ETLSplitStrategy)splitStrategy, context, splitFutures, strategyFutures);
         } else {
           @SuppressWarnings("unchecked")
           List<OrcSplit> readySplits = (List<OrcSplit>)splitStrategy.getSplits();
@@ -1053,14 +1251,25 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
         }
       }
 
+      // Run the last combined strategy, if any.
+      if (combinedCtx != null && combinedCtx.combined != null) {
+        scheduleSplits(combinedCtx.combined, context, splitFutures, strategyFutures);
+        combinedCtx.combined = null;
+      }
+
       // complete split futures
+      for (Future<Void> ssFuture : strategyFutures) {
+         ssFuture.get(); // Make sure we get exceptions strategies might have thrown.
+      }
+      // All the split strategies are done, so it must be safe to access splitFutures.
       for (Future<List<OrcSplit>> splitFuture : splitFutures) {
         splits.addAll(splitFuture.get());
       }
     } catch (Exception e) {
       cancelFutures(pathFutures);
+      cancelFutures(strategyFutures);
       cancelFutures(splitFutures);
-      throw new RuntimeException("serious problem", e);
+      throw new RuntimeException("ORC split generation failed with exception: " + e.getMessage(), e);
     }
 
     if (context.cacheStripeDetails) {
@@ -1071,15 +1280,52 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     if (isDebugEnabled) {
       for (OrcSplit split : splits) {
         LOG.debug(split + " projected_columns_uncompressed_size: "
-            + split.getProjectedColumnsUncompressedSize());
+            + split.getColumnarProjectionSize());
       }
     }
     return splits;
   }
 
+  private static void scheduleSplits(ETLSplitStrategy splitStrategy, Context context,
+      List<Future<List<OrcSplit>>> splitFutures, List<Future<Void>> strategyFutures)
+          throws IOException {
+    Future<Void> ssFuture = splitStrategy.generateSplitWork(context, splitFutures);
+    if (ssFuture == null) return;
+    strategyFutures.add(ssFuture);
+  }
+
   private static <T> void cancelFutures(List<Future<T>> futures) {
     for (Future<T> future : futures) {
       future.cancel(true);
+    }
+  }
+
+  private static SplitStrategy<?> combineOrCreateETLStrategy(CombinedCtx combinedCtx,
+      Context context, FileSystem fs, Path dir, List<HdfsFileStatusWithId> files,
+      List<DeltaMetaData> deltas, boolean[] covered, boolean isOriginal) {
+    if (!deltas.isEmpty() || combinedCtx == null) {
+      return new ETLSplitStrategy(context, fs, dir, files, isOriginal, deltas, covered);
+    } else if (combinedCtx.combined == null) {
+      combinedCtx.combined = new ETLSplitStrategy(
+          context, fs, dir, files, isOriginal, deltas, covered);
+      combinedCtx.combineStartUs = System.nanoTime();
+      return null;
+    } else {
+      ETLSplitStrategy.CombineResult r =
+          combinedCtx.combined.combineWith(fs, dir, files, isOriginal);
+      switch (r) {
+      case YES: return null;
+      case NO_AND_CONTINUE:
+        return new ETLSplitStrategy(context, fs, dir, files, isOriginal, deltas, covered);
+      case NO_AND_SWAP: {
+        ETLSplitStrategy oldBase = combinedCtx.combined;
+        combinedCtx.combined = new ETLSplitStrategy(
+            context, fs, dir, files, isOriginal, deltas, covered);
+        combinedCtx.combineStartUs = System.nanoTime();
+        return oldBase;
+      }
+      default: throw new AssertionError("Unknown result " + r);
+      }
     }
   }
 
@@ -1103,26 +1349,29 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
    *
    */
   private static class FileInfo {
-    long modificationTime;
-    long size;
-    List<StripeInformation> stripeInfos;
-    ReaderImpl.FileMetaInfo fileMetaInfo;
-    Metadata metadata;
-    List<OrcProto.Type> types;
-    private OrcFile.WriterVersion writerVersion;
+    private final long modificationTime;
+    private final long size;
+    private final Long fileId;
+    private final List<StripeInformation> stripeInfos;
+    private FileMetaInfo fileMetaInfo;
+    private final List<StripeStatistics> stripeStats;
+    private final List<OrcProto.ColumnStatistics> fileStats;
+    private final List<OrcProto.Type> types;
+    private final OrcFile.WriterVersion writerVersion;
 
 
-    FileInfo(long modificationTime, long size,
-             List<StripeInformation> stripeInfos,
-             Metadata metadata, List<OrcProto.Type> types,
-             ReaderImpl.FileMetaInfo fileMetaInfo,
-             OrcFile.WriterVersion writerVersion) {
+    FileInfo(long modificationTime, long size, List<StripeInformation> stripeInfos,
+             List<StripeStatistics> stripeStats, List<OrcProto.Type> types,
+             List<OrcProto.ColumnStatistics> fileStats, FileMetaInfo fileMetaInfo,
+             OrcFile.WriterVersion writerVersion, Long fileId) {
       this.modificationTime = modificationTime;
       this.size = size;
+      this.fileId = fileId;
       this.stripeInfos = stripeInfos;
       this.fileMetaInfo = fileMetaInfo;
-      this.metadata = metadata;
+      this.stripeStats = stripeStats;
       this.types = types;
+      this.fileStats = fileStats;
       this.writerVersion = writerVersion;
     }
   }
@@ -1171,7 +1420,8 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
 
     if (vectorMode) {
       return (org.apache.hadoop.mapred.RecordReader)
-          new VectorizedOrcAcidRowReader(inner, conf, (FileSplit) inputSplit);
+          new VectorizedOrcAcidRowReader(inner, conf,
+              Utilities.getMapWork(conf).getVectorizedRowBatchCtx(), (FileSplit) inputSplit);
     }
     return new NullKeyRecordReader(inner, conf);
   }
@@ -1183,6 +1433,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     private final RecordIdentifier id;
     private final RowReader<OrcStruct> inner;
 
+    @Override
     public RecordIdentifier getRecordIdentifier() {
       return id;
     }
@@ -1222,10 +1473,14 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     }
   }
 
+  // The schema type description does not include the ACID fields (i.e. it is the
+  // non-ACID original schema).
+  private static boolean SCHEMA_TYPES_IS_ORIGINAL = true;
 
   @Override
   public RowReader<OrcStruct> getReader(InputSplit inputSplit,
-                                        Options options) throws IOException {
+                                        Options options)
+                                            throws IOException {
     final OrcSplit split = (OrcSplit) inputSplit;
     final Path path = split.getPath();
     Path root;
@@ -1240,36 +1495,30 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     }
     final Path[] deltas = AcidUtils.deserializeDeltas(root, split.getDeltas());
     final Configuration conf = options.getConfiguration();
+
+
+    /**
+     * Do we have schema on read in the configuration variables?
+     */
+    TypeDescription schema = OrcUtils.getDesiredRowTypeDescr(conf);
+
     final Reader reader;
     final int bucket;
-    Reader.Options readOptions = new Reader.Options();
+    Reader.Options readOptions = new Reader.Options().schema(schema);
     readOptions.range(split.getStart(), split.getLength());
+
+    // TODO: Convert genIncludedColumns and setSearchArgument to use TypeDescription.
+    final List<Type> schemaTypes = OrcUtils.getOrcTypes(schema);
+    readOptions.include(genIncludedColumns(schemaTypes, conf, SCHEMA_TYPES_IS_ORIGINAL));
+    setSearchArgument(readOptions, schemaTypes, conf, SCHEMA_TYPES_IS_ORIGINAL);
+
     if (split.hasBase()) {
       bucket = AcidUtils.parseBaseBucketFilename(split.getPath(), conf)
           .getBucket();
       reader = OrcFile.createReader(path, OrcFile.readerOptions(conf));
-      final List<OrcProto.Type> types = reader.getTypes();
-      readOptions.include(genIncludedColumns(types, conf, split.isOriginal()));
-      setSearchArgument(readOptions, types, conf, split.isOriginal());
     } else {
       bucket = (int) split.getStart();
       reader = null;
-      if(deltas != null && deltas.length > 0) {
-        Path bucketPath = AcidUtils.createBucketFile(deltas[0], bucket);
-        OrcFile.ReaderOptions readerOptions = OrcFile.readerOptions(conf);
-        FileSystem fs = readerOptions.getFilesystem();
-        if(fs == null) {
-          fs = path.getFileSystem(options.getConfiguration());
-        }
-        if(fs.exists(bucketPath)) {
-        /* w/o schema evolution (which ACID doesn't support yet) all delta
-        files have the same schema, so choosing the 1st one*/
-          final List<OrcProto.Type> types =
-            OrcFile.createReader(bucketPath, readerOptions).getTypes();
-          readOptions.include(genIncludedColumns(types, conf, split.isOriginal()));
-          setSearchArgument(readOptions, types, conf, split.isOriginal());
-        }
-      }
     }
     String txnString = conf.get(ValidTxnList.VALID_TXNS_KEY,
                                 Long.MAX_VALUE + ":");
@@ -1282,9 +1531,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
 
       @Override
       public ObjectInspector getObjectInspector() {
-        return ((StructObjectInspector) records.getObjectInspector())
-            .getAllStructFieldRefs().get(OrcRecordUpdater.ROW)
-            .getFieldObjectInspector();
+        return OrcStruct.createObjectInspector(0, schemaTypes);
       }
 
       @Override
@@ -1346,10 +1593,23 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
         directory);
   }
 
+  public static boolean[] pickStripesViaTranslatedSarg(SearchArgument sarg,
+      WriterVersion writerVersion, List<OrcProto.Type> types,
+      List<StripeStatistics> stripeStats, int stripeCount) {
+    LOG.info("Translated ORC pushdown predicate: " + sarg);
+    assert sarg != null;
+    if (stripeStats == null || writerVersion == OrcFile.WriterVersion.ORIGINAL) {
+      return null; // only do split pruning if HIVE-8732 has been fixed in the writer
+    }
+    // eliminate stripes that doesn't satisfy the predicate condition
+    List<PredicateLeaf> sargLeaves = sarg.getLeaves();
+    int[] filterColumns = RecordReaderImpl.mapTranslatedSargColumns(types, sargLeaves);
+    return pickStripesInternal(sarg, filterColumns, stripeStats, stripeCount, null);
+  }
+
   private static boolean[] pickStripes(SearchArgument sarg, String[] sargColNames,
       WriterVersion writerVersion, boolean isOriginal, List<StripeStatistics> stripeStats,
       int stripeCount, Path filePath) {
-    LOG.info("ORC pushdown predicate: " + sarg);
     if (sarg == null || stripeStats == null || writerVersion == OrcFile.WriterVersion.ORIGINAL) {
       return null; // only do split pruning if HIVE-8732 has been fixed in the writer
     }
@@ -1396,8 +1656,9 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
   }
 
   @VisibleForTesting
-  static SplitStrategy determineSplitStrategy(Context context, FileSystem fs, Path dir,
-      AcidUtils.Directory dirInfo, List<HdfsFileStatusWithId> baseOrOriginalFiles) {
+  static SplitStrategy<?> determineSplitStrategy(CombinedCtx combinedCtx, Context context,
+      FileSystem fs, Path dir, AcidUtils.Directory dirInfo,
+      List<HdfsFileStatusWithId> baseOrOriginalFiles) {
     Path base = dirInfo.getBaseDirectory();
     List<HdfsFileStatusWithId> original = dirInfo.getOriginalFiles();
     List<DeltaMetaData> deltas = AcidUtils.serializeDeltas(dirInfo.getCurrentDirectories());
@@ -1425,16 +1686,20 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
       switch(context.splitStrategyKind) {
         case BI:
           // BI strategy requested through config
-          return new BISplitStrategy(context, fs, dir, baseOrOriginalFiles, isOriginal, deltas, covered);
+          return new BISplitStrategy(
+              context, fs, dir, baseOrOriginalFiles, isOriginal, deltas, covered);
         case ETL:
           // ETL strategy requested through config
-          return new ETLSplitStrategy(context, fs, dir, baseOrOriginalFiles, isOriginal, deltas, covered);
+          return combineOrCreateETLStrategy(combinedCtx, context, fs,
+            dir, baseOrOriginalFiles, deltas, covered, isOriginal);
         default:
           // HYBRID strategy
           if (avgFileSize > context.maxSize || totalFiles <= context.minSplits) {
-            return new ETLSplitStrategy(context, fs, dir, baseOrOriginalFiles, isOriginal, deltas, covered);
+            return combineOrCreateETLStrategy(combinedCtx, context, fs,
+                dir, baseOrOriginalFiles, deltas, covered, isOriginal);
           } else {
-            return new BISplitStrategy(context, fs, dir, baseOrOriginalFiles, isOriginal, deltas, covered);
+            return new BISplitStrategy(
+                context, fs, dir, baseOrOriginalFiles, isOriginal, deltas, covered);
           }
       }
     } else {
@@ -1468,5 +1733,198 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
         bucket, validTxnList, new Reader.Options(), deltaDirectory);
   }
 
+  /**
+   * Represents footer cache.
+   */
+  public interface FooterCache {
+    FileInfo[] getAndValidate(List<HdfsFileStatusWithId> files) throws IOException;
+    boolean isBlocking();
+    void put(Long fileId, FileStatus file, FileMetaInfo fileMetaInfo, Reader orcReader)
+        throws IOException;
+  }
 
+  /** Local footer cache using Guava. Stores convoluted Java objects. */
+  private static class LocalCache implements FooterCache {
+    private final Cache<Path, FileInfo> cache;
+
+    public LocalCache(int numThreads, int cacheStripeDetailsSize) {
+      cache = CacheBuilder.newBuilder()
+        .concurrencyLevel(numThreads)
+        .initialCapacity(cacheStripeDetailsSize)
+        .maximumSize(cacheStripeDetailsSize)
+        .softValues()
+        .build();
+    }
+
+    @Override
+    public FileInfo[] getAndValidate(List<HdfsFileStatusWithId> files) {
+      // TODO: should local cache also be by fileId? Preserve the original logic for now.
+      FileInfo[] result = new FileInfo[files.size()];
+      int i = -1;
+      for (HdfsFileStatusWithId fileWithId : files) {
+        ++i;
+        FileStatus file = fileWithId.getFileStatus();
+        Path path = file.getPath();
+        Long fileId = fileWithId.getFileId();
+        FileInfo fileInfo = cache.getIfPresent(path);
+        if (isDebugEnabled) {
+          LOG.debug("Info " + (fileInfo == null ? "not " : "") + "cached for path: " + path);
+        }
+        if (fileInfo == null) continue;
+        if ((fileId != null && fileInfo.fileId != null && fileId == fileInfo.fileId)
+            || (fileInfo.modificationTime == file.getModificationTime() &&
+            fileInfo.size == file.getLen())) {
+          result[i] = fileInfo;
+          continue;
+        }
+        // Invalidate
+        cache.invalidate(path);
+        if (isDebugEnabled) {
+          LOG.debug("Meta-Info for : " + path + " changed. CachedModificationTime: "
+              + fileInfo.modificationTime + ", CurrentModificationTime: "
+              + file.getModificationTime() + ", CachedLength: " + fileInfo.size
+              + ", CurrentLength: " + file.getLen());
+        }
+      }
+      return result;
+    }
+
+    public void put(Path path, FileInfo fileInfo) {
+      cache.put(path, fileInfo);
+    }
+
+    @Override
+    public void put(Long fileId, FileStatus file, FileMetaInfo fileMetaInfo, Reader orcReader)
+        throws IOException {
+      cache.put(file.getPath(), new FileInfo(file.getModificationTime(), file.getLen(),
+          orcReader.getStripes(), orcReader.getStripeStatistics(), orcReader.getTypes(),
+          orcReader.getOrcProtoFileStatistics(), fileMetaInfo, orcReader.getWriterVersion(),
+          fileId));
+    }
+
+    @Override
+    public boolean isBlocking() {
+      return false;
+    }
+  }
+
+  /** Metastore-based footer cache storing serialized footers. Also has a local cache. */
+  public static class MetastoreCache implements FooterCache {
+    private final LocalCache localCache;
+    private boolean isWarnLogged = false;
+    private HiveConf conf;
+
+    public MetastoreCache(LocalCache lc) {
+      localCache = lc;
+    }
+
+    @Override
+    public FileInfo[] getAndValidate(List<HdfsFileStatusWithId> files) throws IOException {
+      // First, check the local cache.
+      FileInfo[] result = localCache.getAndValidate(files);
+      assert result.length == files.size();
+      // This is an unfortunate consequence of batching/iterating thru MS results.
+      // TODO: maybe have a direct map call for small lists if this becomes a perf issue.
+      HashMap<Long, Integer> posMap = new HashMap<>(files.size());
+      for (int i = 0; i < result.length; ++i) {
+        if (result[i] != null) continue;
+        HdfsFileStatusWithId file = files.get(i);
+        Long fileId = file.getFileId();
+        if (fileId == null) {
+          if (!isWarnLogged || isDebugEnabled) {
+            LOG.warn("Not using metastore cache because fileId is missing: "
+                + file.getFileStatus().getPath());
+            isWarnLogged = true;
+          }
+          continue;
+        }
+        posMap.put(fileId, i);
+      }
+      Iterator<Entry<Long, ByteBuffer>> iter = null;
+      Hive hive;
+      try {
+        hive = getHive();
+        iter = hive.getFileMetadata(Lists.newArrayList(posMap.keySet()), conf).iterator();
+      } catch (HiveException ex) {
+        throw new IOException(ex);
+      }
+      List<Long> corruptIds = null;
+      while (iter.hasNext()) {
+        Entry<Long, ByteBuffer> e = iter.next();
+        int ix = posMap.get(e.getKey());
+        assert result[ix] == null;
+        HdfsFileStatusWithId file = files.get(ix);
+        assert file.getFileId() == e.getKey();
+        result[ix] = createFileInfoFromMs(file, e.getValue());
+        if (result[ix] == null) {
+          if (corruptIds == null) {
+            corruptIds = new ArrayList<>();
+          }
+          corruptIds.add(file.getFileId());
+        } else {
+          localCache.put(file.getFileStatus().getPath(), result[ix]);
+        }
+      }
+      if (corruptIds != null) {
+        try {
+          hive.clearFileMetadata(corruptIds);
+        } catch (HiveException ex) {
+          LOG.error("Failed to clear corrupt cache data", ex);
+        }
+      }
+      return result;
+    }
+
+    private Hive getHive() throws HiveException {
+      // TODO: we wish we could cache the Hive object, but it's not thread safe, and each
+      //       threadlocal we "cache" would need to be reinitialized for every query. This is
+      //       a huge PITA. Hive object will be cached internally, but the compat check will be
+      //       done every time inside get().
+      return Hive.getWithFastCheck(conf);
+    }
+
+    private static FileInfo createFileInfoFromMs(
+        HdfsFileStatusWithId file, ByteBuffer bb) throws IOException {
+      FileStatus fs = file.getFileStatus();
+      ReaderImpl.FooterInfo fi = null;
+      ByteBuffer original = bb.duplicate();
+      try {
+        fi = ReaderImpl.extractMetaInfoFromFooter(bb, fs.getPath());
+      } catch (Exception ex) {
+        byte[] data = new byte[original.remaining()];
+        System.arraycopy(original.array(), original.arrayOffset() + original.position(),
+            data, 0, data.length);
+        String msg = "Failed to parse the footer stored in cache for file ID "
+            + file.getFileId() + " " + original + " [ " + Hex.encodeHexString(data) + " ]";
+        LOG.error(msg, ex);
+        return null;
+      }
+      return new FileInfo(fs.getModificationTime(), fs.getLen(), fi.getStripes(), fi.getMetadata(),
+          fi.getFooter().getTypesList(), fi.getFooter().getStatisticsList(), fi.getFileMetaInfo(),
+          fi.getFileMetaInfo().writerVersion, file.getFileId());
+    }
+
+    @Override
+    public void put(Long fileId, FileStatus file, FileMetaInfo fileMetaInfo, Reader orcReader)
+        throws IOException {
+      localCache.put(fileId, file, fileMetaInfo, orcReader);
+      if (fileId != null) {
+        try {
+          getHive().putFileMetadata(Lists.newArrayList(fileId),
+              Lists.newArrayList(((ReaderImpl)orcReader).getSerializedFileFooter()));
+        } catch (HiveException e) {
+          throw new IOException(e);
+        }
+      }
+    }
+
+    public void configure(HiveConf queryConfig) {
+      this.conf = queryConfig;
+    }
+
+    @Override
+    public boolean isBlocking() {
+      return true;
+    }
+  }
 }

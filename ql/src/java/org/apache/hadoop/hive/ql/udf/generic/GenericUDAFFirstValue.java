@@ -21,8 +21,8 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.exec.WindowFunctionDescription;
@@ -52,7 +52,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 )
 public class GenericUDAFFirstValue extends AbstractGenericUDAFResolver {
 
-  static final Log LOG = LogFactory.getLog(GenericUDAFFirstValue.class.getName());
+  static final Logger LOG = LoggerFactory.getLogger(GenericUDAFFirstValue.class.getName());
 
   @Override
   public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException {
@@ -262,7 +262,7 @@ public class GenericUDAFFirstValue extends AbstractGenericUDAFResolver {
         }
       }
 
-      if (s.numRows >= wFrameDef.getEnd().getRelativeOffset()) {
+      if (s.hasResultReady()) {
         /*
          * if skipNulls is true and there are no rows in valueChain => all rows
          * in partition are null so far; so add null in o/p
@@ -293,12 +293,14 @@ public class GenericUDAFFirstValue extends AbstractGenericUDAFResolver {
       // For the case: X following and Y following, process first Y-X results and then insert X nulls.
       // For the case X preceding and Y following, process Y results.
       for (int i = Math.max(0, wFrameDef.getStart().getRelativeOffset()); i < wFrameDef.getEnd().getRelativeOffset(); i++) {
-        s.results.add(r == null ? null : r.val);
+        if (s.hasResultReady()) {
+          s.results.add(r == null ? null : r.val);
+        }
         s.numRows++;
         if (r != null) {
           int fIdx = (Integer) r.idx;
           if (!wFrameDef.isStartUnbounded()
-              && s.numRows + i >= fIdx + wFrameDef.getWindowSize()
+              && s.numRows >= fIdx + wFrameDef.getWindowSize()
               && !s.valueChain.isEmpty()) {
             s.valueChain.removeFirst();
             r = !s.valueChain.isEmpty() ? s.valueChain.getFirst() : r;
@@ -307,7 +309,9 @@ public class GenericUDAFFirstValue extends AbstractGenericUDAFResolver {
       }
 
       for (int i = 0; i < wFrameDef.getStart().getRelativeOffset(); i++) {
-        s.results.add(null);
+        if (s.hasResultReady()) {
+          s.results.add(null);
+        }
         s.numRows++;
       }
 

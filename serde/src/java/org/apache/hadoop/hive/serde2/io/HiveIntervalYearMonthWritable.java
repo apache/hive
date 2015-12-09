@@ -22,8 +22,8 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.serde2.ByteStream.RandomAccessOutput;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils;
@@ -34,7 +34,7 @@ import org.apache.hadoop.io.WritableUtils;
 public class HiveIntervalYearMonthWritable
     implements WritableComparable<HiveIntervalYearMonthWritable> {
 
-  static final private Log LOG = LogFactory.getLog(HiveIntervalYearMonthWritable.class);
+  static final private Logger LOG = LoggerFactory.getLogger(HiveIntervalYearMonthWritable.class);
 
   protected HiveIntervalYearMonth intervalValue = new HiveIntervalYearMonth();
 

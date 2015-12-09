@@ -41,7 +41,6 @@ public class RawStoreProxy implements InvocationHandler {
   private final RawStore base;
   private final MetaStoreInit.MetaStoreInitData metaStoreInitData =
     new MetaStoreInit.MetaStoreInitData();
-  private final int id;
   private final HiveConf hiveConf;
   private final Configuration conf; // thread local conf from HMS
 
@@ -49,7 +48,6 @@ public class RawStoreProxy implements InvocationHandler {
       Class<? extends RawStore> rawStoreClass, int id) throws MetaException {
     this.conf = conf;
     this.hiveConf = hiveConf;
-    this.id = id;
 
     // This has to be called before initializing the instance of RawStore
     init();
@@ -110,7 +108,6 @@ public class RawStoreProxy implements InvocationHandler {
         Deadline.startTimer(method.getName());
         isTimerStarted = true;
       }
-
       ret = method.invoke(base, args);
 
       if (isTimerStarted) {

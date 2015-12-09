@@ -22,8 +22,6 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.List;
 
-import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
-import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -46,11 +44,11 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
  * Note that when serializing a row, the logical mapping using selected in use has already
  * been performed.
  */
-public class VectorSerializeRow {
+public final class VectorSerializeRow<T extends SerializeWrite> {
 
-  private SerializeWrite serializeWrite;
+  private T serializeWrite;
 
-  public VectorSerializeRow(SerializeWrite serializeWrite) {
+  public VectorSerializeRow(T serializeWrite) {
     this();
     this.serializeWrite = serializeWrite;
   }
@@ -59,7 +57,7 @@ public class VectorSerializeRow {
   private VectorSerializeRow() {
   }
 
-  private abstract class Writer {
+  private abstract class Writer<W extends SerializeWrite> {
     protected int columnIndex;
 
     Writer(int columnIndex) {
@@ -69,7 +67,7 @@ public class VectorSerializeRow {
     abstract boolean apply(VectorizedRowBatch batch, int batchIndex) throws IOException;
   }
 
-  private abstract class AbstractLongWriter extends Writer {
+  private abstract class AbstractLongWriter extends Writer<T> {
 
     AbstractLongWriter(int columnIndex) {
       super(columnIndex);
@@ -351,7 +349,7 @@ public class VectorSerializeRow {
     }
   }
 
-  private abstract class AbstractDoubleWriter extends Writer {
+  private abstract class AbstractDoubleWriter extends Writer<T> {
 
     AbstractDoubleWriter(int columnIndex) {
       super(columnIndex);
@@ -418,7 +416,7 @@ public class VectorSerializeRow {
     }
   }
 
-  private class StringWriter extends Writer {
+  private class StringWriter extends Writer<T> {
 
     StringWriter(int columnIndex) {
       super(columnIndex);
@@ -449,7 +447,7 @@ public class VectorSerializeRow {
     }
   }
 
-  private class BinaryWriter extends Writer {
+  private class BinaryWriter extends Writer<T> {
 
     BinaryWriter(int columnIndex) {
       super(columnIndex);
@@ -480,7 +478,7 @@ public class VectorSerializeRow {
     }
   }
 
-  private class HiveDecimalWriter extends Writer {
+  private class HiveDecimalWriter extends Writer<T> {
     protected HiveDecimalWritable[] vector;
 
     HiveDecimalWriter(int columnIndex) {
@@ -493,7 +491,7 @@ public class VectorSerializeRow {
 
       if (colVector.isRepeating) {
         if (colVector.noNulls || !colVector.isNull[0]) {
-          serializeWrite.writeHiveDecimal(colVector.vector[0].getHiveDecimal());
+          serializeWrite.writeHiveDecimal(colVector.vector[0].getHiveDecimal(), colVector.scale);
           return true;
         } else {
           serializeWrite.writeNull();
@@ -501,7 +499,7 @@ public class VectorSerializeRow {
         }
       } else {
         if (colVector.noNulls || !colVector.isNull[batchIndex]) {
-          serializeWrite.writeHiveDecimal(colVector.vector[batchIndex].getHiveDecimal());
+          serializeWrite.writeHiveDecimal(colVector.vector[batchIndex].getHiveDecimal(), colVector.scale);
           return true;
         } else {
           serializeWrite.writeNull();
@@ -511,10 +509,10 @@ public class VectorSerializeRow {
     }
   }
 
-  private Writer[] writers;
+  private Writer<T>[] writers;
 
-  private Writer createWriter(TypeInfo typeInfo, int columnIndex) throws HiveException {
-    Writer writer;
+  private Writer<T> createWriter(TypeInfo typeInfo, int columnIndex) throws HiveException {
+    Writer<T> writer;
     Category category = typeInfo.getCategory();
     switch (category) {
     case PRIMITIVE:
@@ -588,7 +586,7 @@ public class VectorSerializeRow {
       String typeName = typeNames.get(i);
       TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(typeName);
       int columnIndex = columnMap[i];
-      Writer writer = createWriter(typeInfo, columnIndex);
+      Writer<T> writer = createWriter(typeInfo, columnIndex);
       writers[i] = writer;
     }
   }
@@ -599,18 +597,18 @@ public class VectorSerializeRow {
     for (int i = 0; i < typeNames.size(); i++) {
       String typeName = typeNames.get(i);
       TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(typeName);
-      Writer writer = createWriter(typeInfo, i);
+      Writer<T> writer = createWriter(typeInfo, i);
       writers[i] = writer;
     }
   }
 
-  public void init(PrimitiveTypeInfo[] primitiveTypeInfos, List<Integer> columnMap)
+  public void init(TypeInfo[] typeInfos, int[] columnMap)
       throws HiveException {
 
-    writers = new Writer[primitiveTypeInfos.length];
-    for (int i = 0; i < primitiveTypeInfos.length; i++) {
-      int columnIndex = columnMap.get(i);
-      Writer writer = createWriter(primitiveTypeInfos[i], columnIndex);
+    writers = new Writer[typeInfos.length];
+    for (int i = 0; i < typeInfos.length; i++) {
+      int columnIndex = columnMap[i];
+      Writer<T> writer = createWriter(typeInfos[i], columnIndex);
       writers[i] = writer;
     }
   }
@@ -627,17 +625,31 @@ public class VectorSerializeRow {
     serializeWrite.setAppend(output);
   }
 
+  private boolean hasAnyNulls;
+  private boolean isAllNulls;
+
   /*
    * Note that when serializing a row, the logical mapping using selected in use has already
    * been performed.  batchIndex is the actual index of the row.
    */
-  public boolean serializeWrite(VectorizedRowBatch batch, int batchIndex) throws IOException {
-    boolean anyNulls = false;
-    for (Writer writer : writers) {
+  public void serializeWrite(VectorizedRowBatch batch, int batchIndex) throws IOException {
+
+    hasAnyNulls = false;
+    isAllNulls = true;
+    for (Writer<T> writer : writers) {
       if (!writer.apply(batch, batchIndex)) {
-        anyNulls = true;
+        hasAnyNulls = true;
+      } else {
+        isAllNulls = false;
       }
     }
-    return anyNulls;
+  }
+
+  public boolean getHasAnyNulls() {
+    return hasAnyNulls;
+  }
+
+  public boolean getIsAllNulls() {
+    return isAllNulls;
   }
 }

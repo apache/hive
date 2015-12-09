@@ -45,7 +45,7 @@ import org.apache.hadoop.hive.accumulo.predicate.compare.NotEqual;
 import org.apache.hadoop.hive.accumulo.predicate.compare.PrimitiveComparison;
 import org.apache.hadoop.hive.accumulo.predicate.compare.StringCompare;
 import org.apache.hadoop.hive.accumulo.serde.AccumuloSerDeParameters;
-import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.index.IndexPredicateAnalyzer;
 import org.apache.hadoop.hive.ql.index.IndexSearchCondition;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
@@ -69,7 +69,8 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqual;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -91,7 +92,7 @@ public class AccumuloPredicateHandler {
   // Want to start sufficiently "high" enough in the iterator stack
   private static int iteratorCount = 50;
 
-  private static final Logger log = Logger.getLogger(AccumuloPredicateHandler.class);
+  private static final Logger log = LoggerFactory.getLogger(AccumuloPredicateHandler.class);
   static {
     compareOps.put(GenericUDFOPEqual.class.getName(), Equal.class);
     compareOps.put(GenericUDFOPNotEqual.class.getName(), NotEqual.class);
@@ -357,7 +358,7 @@ public class AccumuloPredicateHandler {
     if (filteredExprSerialized == null)
       return null;
 
-    return Utilities.deserializeExpression(filteredExprSerialized);
+    return SerializationUtilities.deserializeExpression(filteredExprSerialized);
   }
 
   /**

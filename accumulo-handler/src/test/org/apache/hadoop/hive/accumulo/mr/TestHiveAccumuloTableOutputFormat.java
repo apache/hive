@@ -18,15 +18,18 @@ package org.apache.hadoop.hive.accumulo.mr;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
 
+import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.apache.accumulo.core.client.Connector;
 import org.apache.accumulo.core.client.Instance;
 import org.apache.accumulo.core.client.mock.MockInstance;
+import org.apache.accumulo.core.client.security.tokens.AuthenticationToken;
 import org.apache.accumulo.core.client.security.tokens.PasswordToken;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Mutation;
@@ -36,6 +39,7 @@ import org.apache.accumulo.core.security.ColumnVisibility;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.accumulo.AccumuloConnectionParameters;
+import org.apache.hadoop.hive.accumulo.HiveAccumuloHelper;
 import org.apache.hadoop.hive.accumulo.columns.ColumnEncoding;
 import org.apache.hadoop.hive.accumulo.serde.AccumuloRowSerializer;
 import org.apache.hadoop.hive.accumulo.serde.AccumuloSerDe;
@@ -54,6 +58,10 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordWriter;
+import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.token.Token;
+import org.apache.hadoop.security.token.TokenIdentifier;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -87,6 +95,15 @@ public class TestHiveAccumuloTableOutputFormat {
     conf.set(AccumuloConnectionParameters.INSTANCE_NAME, instanceName);
     conf.set(AccumuloConnectionParameters.ZOOKEEPERS, zookeepers);
     conf.set(AccumuloConnectionParameters.TABLE_NAME, outputTable);
+
+    System.setProperty("java.security.krb5.realm", "accumulo");
+    System.setProperty("java.security.krb5.kdc", "fake");
+  }
+
+  @After
+  public void cleanup() {
+    System.setProperty("java.security.krb5.realm", "");
+    System.setProperty("java.security.krb5.kdc", "");
   }
 
   @Test
@@ -94,12 +111,72 @@ public class TestHiveAccumuloTableOutputFormat {
     HiveAccumuloTableOutputFormat outputFormat = Mockito.mock(HiveAccumuloTableOutputFormat.class);
 
     Mockito.doCallRealMethod().when(outputFormat).configureAccumuloOutputFormat(conf);
+    Mockito.doCallRealMethod().when(outputFormat).getConnectionParams(conf);
 
     outputFormat.configureAccumuloOutputFormat(conf);
 
-    Mockito.verify(outputFormat).setAccumuloConnectorInfo(conf, user, new PasswordToken(password));
-    Mockito.verify(outputFormat).setAccumuloZooKeeperInstance(conf, instanceName, zookeepers, false);
+    Mockito.verify(outputFormat).setConnectorInfoWithErrorChecking(conf, user, new PasswordToken(password));
+    Mockito.verify(outputFormat).setZooKeeperInstanceWithErrorChecking(conf, instanceName, zookeepers, false);
     Mockito.verify(outputFormat).setDefaultAccumuloTableName(conf, outputTable);
+  }
+
+  @SuppressWarnings({"rawtypes", "unchecked"})
+  @Test
+  public void testSaslConfiguration() throws IOException, AccumuloException, AccumuloSecurityException {
+    final HiveAccumuloTableOutputFormat outputFormat = Mockito.mock(HiveAccumuloTableOutputFormat.class);
+    final AuthenticationToken authToken = Mockito.mock(AuthenticationToken.class);
+    final Token hadoopToken = Mockito.mock(Token.class);
+    final HiveAccumuloHelper helper = Mockito.mock(HiveAccumuloHelper.class);
+    final AccumuloConnectionParameters cnxnParams = Mockito.mock(AccumuloConnectionParameters.class);
+    final Connector connector = Mockito.mock(Connector.class);
+
+    // Set UGI to use Kerberos
+    // Have to use the string constant to support hadoop 1
+    conf.set("hadoop.security.authentication", "kerberos");
+    UserGroupInformation.setConfiguration(conf);
+
+    // Set the current UGI to a fake user
+    UserGroupInformation user1 = UserGroupInformation.createUserForTesting(user, new String[0]);
+    // Use that as the "current user"
+    Mockito.when(outputFormat.getCurrentUser()).thenReturn(user1);
+
+    // Turn off passwords, enable sasl and set a keytab
+    conf.unset(AccumuloConnectionParameters.USER_PASS);
+
+    // Call the real method instead of the mock
+    Mockito.doCallRealMethod().when(outputFormat).configureAccumuloOutputFormat(conf);
+
+    // Return our mocked objects
+    Mockito.when(outputFormat.getHelper()).thenReturn(helper);
+    Mockito.when(outputFormat.getConnectionParams(conf)).thenReturn(cnxnParams);
+    Mockito.when(cnxnParams.getConnector()).thenReturn(connector);
+    Mockito.when(helper.getDelegationToken(connector)).thenReturn(authToken);
+    Mockito.when(helper.getHadoopToken(authToken)).thenReturn(hadoopToken);
+
+    // Stub AccumuloConnectionParameters actions
+    Mockito.when(cnxnParams.useSasl()).thenReturn(true);
+    Mockito.when(cnxnParams.getAccumuloUserName()).thenReturn(user);
+    Mockito.when(cnxnParams.getAccumuloInstanceName()).thenReturn(instanceName);
+    Mockito.when(cnxnParams.getZooKeepers()).thenReturn(zookeepers);
+
+    // Stub OutputFormat actions
+    Mockito.when(outputFormat.hasKerberosCredentials(user1)).thenReturn(true);
+
+    // Invoke the method
+    outputFormat.configureAccumuloOutputFormat(conf);
+
+    // The AccumuloInputFormat methods
+    Mockito.verify(outputFormat).setZooKeeperInstanceWithErrorChecking(conf, instanceName, zookeepers, true);
+    Mockito.verify(outputFormat).setConnectorInfoWithErrorChecking(conf, user, authToken);
+    Mockito.verify(outputFormat).setDefaultAccumuloTableName(conf, outputTable);
+
+    // Other methods we expect
+    Mockito.verify(helper).mergeTokenIntoJobConf(conf, hadoopToken);
+
+    // Make sure the token made it into the UGI
+    Collection<Token<? extends TokenIdentifier>> tokens = user1.getTokens();
+    Assert.assertEquals(1, tokens.size());
+    Assert.assertEquals(hadoopToken, tokens.iterator().next());
   }
 
   @Test
@@ -109,11 +186,12 @@ public class TestHiveAccumuloTableOutputFormat {
     conf.unset(AccumuloConnectionParameters.ZOOKEEPERS);
 
     Mockito.doCallRealMethod().when(outputFormat).configureAccumuloOutputFormat(conf);
+    Mockito.doCallRealMethod().when(outputFormat).getConnectionParams(conf);
 
     outputFormat.configureAccumuloOutputFormat(conf);
 
-    Mockito.verify(outputFormat).setAccumuloConnectorInfo(conf, user, new PasswordToken(password));
-    Mockito.verify(outputFormat).setAccumuloMockInstance(conf, instanceName);
+    Mockito.verify(outputFormat).setConnectorInfoWithErrorChecking(conf, user, new PasswordToken(password));
+    Mockito.verify(outputFormat).setMockInstanceWithErrorChecking(conf, instanceName);
     Mockito.verify(outputFormat).setDefaultAccumuloTableName(conf, outputTable);
   }
 

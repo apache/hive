@@ -28,8 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
@@ -121,7 +121,7 @@ import org.apache.hadoop.io.Writable;
     serdeConstants.SERIALIZATION_SORT_ORDER})
 public class BinarySortableSerDe extends AbstractSerDe {
 
-  public static final Log LOG = LogFactory.getLog(BinarySortableSerDe.class.getName());
+  public static final Logger LOG = LoggerFactory.getLogger(BinarySortableSerDe.class.getName());
 
   List<String> columnNames;
   List<TypeInfo> columnTypes;

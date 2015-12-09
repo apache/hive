@@ -25,8 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -64,7 +64,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan;
 public class BitmapIndexHandler extends TableBasedIndexHandler {
 
   private Configuration configuration;
-  private static final Log LOG = LogFactory.getLog(BitmapIndexHandler.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(BitmapIndexHandler.class.getName());
 
   @Override
   public void generateIndexQuery(List<Index> indexes, ExprNodeDesc predicate,
@@ -289,7 +289,6 @@ public class BitmapIndexHandler extends TableBasedIndexHandler {
 
     Task<?> rootTask = IndexUtils.createRootTask(builderConf, inputs, outputs,
         command, partSpec, indexTableName, dbName);
-    super.setStatsDir(builderConf);
     return rootTask;
   }
 

@@ -19,6 +19,7 @@
 package org.apache.hive.service.cli.operation;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.security.PrivilegedExceptionAction;
@@ -31,7 +32,10 @@ import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.CharEncoding;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveVariableSource;
+import org.apache.hadoop.hive.conf.VariableSubstitution;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
@@ -39,7 +43,6 @@ import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.exec.ExplainTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.parse.VariableSubstitution;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.OperationLog;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -80,7 +83,23 @@ public class SQLOperation extends ExecuteStatementOperation {
       String> confOverlay, boolean runInBackground) {
     // TODO: call setRemoteUser in ExecuteStatementOperation or higher.
     super(parentSession, statement, confOverlay, runInBackground);
+    setupSessionIO(parentSession.getSessionState());
   }
+
+  private void setupSessionIO(SessionState sessionState) {
+    try {
+      sessionState.in = null; // hive server's session input stream is not used
+      sessionState.out = new PrintStream(System.out, true, CharEncoding.UTF_8);
+      sessionState.info = new PrintStream(System.err, true, CharEncoding.UTF_8);
+      sessionState.err = new PrintStream(System.err, true, CharEncoding.UTF_8);
+    } catch (UnsupportedEncodingException e) {
+        LOG.error("Error creating PrintStream", e);
+        e.printStackTrace();
+        sessionState.out = null;
+        sessionState.info = null;
+        sessionState.err = null;
+      }
+    }
 
   /***
    * Compile the query and extract metadata
@@ -105,7 +124,12 @@ public class SQLOperation extends ExecuteStatementOperation {
       // For now, we disable the test attempts.
       driver.setTryCount(Integer.MAX_VALUE);
 
-      String subStatement = new VariableSubstitution().substitute(sqlOperationConf, statement);
+      String subStatement = new VariableSubstitution(new HiveVariableSource() {
+        @Override
+        public Map<String, String> getHiveVariable() {
+          return SessionState.get().getHiveVariables();
+        }
+      }).substitute(sqlOperationConf, statement);
       response = driver.compileAndRespond(subStatement);
       if (0 != response.getResponseCode()) {
         throw toSQLException("Error while compiling statement", response);
@@ -138,10 +162,14 @@ public class SQLOperation extends ExecuteStatementOperation {
     } catch (HiveSQLException e) {
       setState(OperationState.ERROR);
       throw e;
-    } catch (Exception e) {
+    } catch (Throwable e) {
       setState(OperationState.ERROR);
       throw new HiveSQLException("Error running query: " + e.toString(), e);
     }
+  }
+
+  public String getQueryStr() {
+    return driver == null || driver.getPlan() == null ? "Unknown" : driver.getPlan().getQueryStr();
   }
 
   private void runQuery(HiveConf sqlOperationConf) throws HiveSQLException {
@@ -166,7 +194,7 @@ public class SQLOperation extends ExecuteStatementOperation {
         setState(OperationState.ERROR);
         throw e;
       }
-    } catch (Exception e) {
+    } catch (Throwable e) {
       setState(OperationState.ERROR);
       throw new HiveSQLException("Error running query: " + e.toString(), e);
     }
@@ -201,12 +229,14 @@ public class SQLOperation extends ExecuteStatementOperation {
               SessionState.setCurrentSessionState(parentSessionState);
               // Set current OperationLog in this async thread for keeping on saving query log.
               registerCurrentOperationLog();
+              registerLoggingContext();
               try {
                 runQuery(opConfig);
               } catch (HiveSQLException e) {
                 setOperationException(e);
                 LOG.error("Error running hive query: ", e);
               } finally {
+                unregisterLoggingContext();
                 unregisterOperationLog();
               }
               return null;
@@ -287,9 +317,8 @@ public class SQLOperation extends ExecuteStatementOperation {
     driver = null;
 
     SessionState ss = SessionState.get();
-    if (ss.getTmpOutputFile() != null) {
-      ss.getTmpOutputFile().delete();
-    }
+    ss.deleteTmpOutputFile();
+    ss.deleteTmpErrOutputFile();
   }
 
   @Override
@@ -441,12 +470,12 @@ public class SQLOperation extends ExecuteStatementOperation {
    */
   private HiveConf getConfigForOperation() throws HiveSQLException {
     HiveConf sqlOperationConf = getParentSession().getHiveConf();
-    if (!getConfOverlay().isEmpty() || shouldRunAsync()) {
+    if (!confOverlay.isEmpty() || shouldRunAsync()) {
       // clone the partent session config for this query
       sqlOperationConf = new HiveConf(sqlOperationConf);
 
       // apply overlay query specific settings, if any
-      for (Map.Entry<String, String> confEntry : getConfOverlay().entrySet()) {
+      for (Map.Entry<String, String> confEntry : confOverlay.entrySet()) {
         try {
           sqlOperationConf.verifyAndSet(confEntry.getKey(), confEntry.getValue());
         } catch (IllegalArgumentException e) {

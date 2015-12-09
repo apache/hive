@@ -166,6 +166,7 @@ STAGE PLANS:
               key expressions: _col0 (type: int)
               sort order: +
               Statistics: Num rows: 524 Data size: 155436 Basic stats: COMPLETE Column stats: NONE
+              TopN Hash Memory Usage: 0.1
               value expressions: _col1 (type: double), _col2 (type: double), _col3 (type: decimal(14,4))
       Reduce Operator Tree:
         Select Operator
@@ -207,13 +208,13 @@ POSTHOOK: query: SELECT
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over1korc
 #### A masked pattern was here ####
-65536	50.0	50.0	50
-65537	50.0	50.0	50
-65538	50.0	50.0	50
-65539	50.0	50.0	50
-65540	50.0	50.0	50
-65541	50.0	50.0	50
-65542	50.0	50.0	50
-65543	50.0	50.0	50
-65544	50.0	50.0	50
-65545	50.0	50.0	50
+65536	50.0	50.0	50.0000
+65537	50.0	50.0	50.0000
+65538	50.0	50.0	50.0000
+65539	50.0	50.0	50.0000
+65540	50.0	50.0	50.0000
+65541	50.0	50.0	50.0000
+65542	50.0	50.0	50.0000
+65543	50.0	50.0	50.0000
+65544	50.0	50.0	50.0000
+65545	50.0	50.0	50.0000

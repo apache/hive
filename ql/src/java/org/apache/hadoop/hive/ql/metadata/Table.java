@@ -19,8 +19,9 @@
 package org.apache.hadoop.hive.ql.metadata;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -44,6 +45,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -54,6 +56,7 @@ import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
+import org.apache.hive.common.util.ReflectionUtil;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -75,7 +78,7 @@ public class Table implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  static final private Log LOG = LogFactory.getLog("hive.ql.metadata.Table");
+  static final private Logger LOG = LoggerFactory.getLogger("hive.ql.metadata.Table");
 
   private org.apache.hadoop.hive.metastore.api.Table tTable;
 
@@ -181,11 +184,11 @@ public class Table implements Serializable {
     return t;
   }
 
-  public void checkValidity() throws HiveException {
+  public void checkValidity(Configuration conf) throws HiveException {
     // check for validity
     String name = tTable.getTableName();
     if (null == name || name.length() == 0
-        || !MetaStoreUtils.validateName(name)) {
+        || !MetaStoreUtils.validateName(name, conf)) {
       throw new HiveException("[" + name + "]: is not a valid table name");
     }
     if (0 == getCols().size()) {
@@ -595,11 +598,22 @@ public class Table implements Serializable {
   }
 
   public List<FieldSchema> getCols() {
+    return getColsInternal(false);
+  }
 
+  public List<FieldSchema> getColsForMetastore() {
+    return getColsInternal(true);
+  }
+
+  private List<FieldSchema> getColsInternal(boolean forMs) {
     String serializationLib = getSerializationLib();
     try {
+      // Do the lightweight check for general case.
       if (hasMetastoreBasedSchema(SessionState.getSessionConf(), serializationLib)) {
         return tTable.getSd().getCols();
+      } else if (forMs && !shouldStoreFieldsInMetastore(
+          SessionState.getSessionConf(), serializationLib, tTable.getParameters())) {
+        return Hive.getFieldsFromDeserializerForMsStorage(this, getDeserializer());
       } else {
         return MetaStoreUtils.getFieldsFromDeserializer(getTableName(), getDeserializer());
       }
@@ -887,13 +901,26 @@ public class Table implements Serializable {
     return tTable.isTemporary();
   }
 
-  public static boolean hasMetastoreBasedSchema(HiveConf conf, StorageDescriptor serde) {
-    return hasMetastoreBasedSchema(conf, serde.getSerdeInfo().getSerializationLib());
-  }
-
   public static boolean hasMetastoreBasedSchema(HiveConf conf, String serdeLib) {
     return StringUtils.isEmpty(serdeLib) ||
         conf.getStringCollection(ConfVars.SERDESUSINGMETASTOREFORSCHEMA.varname).contains(serdeLib);
+  }
+
+  public static boolean shouldStoreFieldsInMetastore(
+      HiveConf conf, String serdeLib, Map<String, String> tableParams) {
+    if (hasMetastoreBasedSchema(conf, serdeLib))  return true;
+    // Table may or may not be using metastore. Only the SerDe can tell us.
+    AbstractSerDe deserializer = null;
+    try {
+      Class<?> clazz = conf.getClassByName(serdeLib);
+      if (!AbstractSerDe.class.isAssignableFrom(clazz)) return true; // The default.
+      deserializer = ReflectionUtil.newInstance(
+          conf.getClassByName(serdeLib).asSubclass(AbstractSerDe.class), conf);
+    } catch (Exception ex) {
+      LOG.warn("Cannot initialize SerDe: " + serdeLib + ", ignoring", ex);
+      return true;
+    }
+    return deserializer.shouldStoreFieldsInMetastore(tableParams);
   }
 
   public static void validateColumns(List<FieldSchema> columns, List<FieldSchema> partCols)
@@ -933,6 +960,10 @@ public class Table implements Serializable {
 
   public void setTableSpec(TableSpec tableSpec) {
     this.tableSpec = tableSpec;
+  }
+
+  public boolean hasDeserializer() {
+    return deserializer != null;
   }
 
 };

@@ -21,8 +21,8 @@ package org.apache.hadoop.hive.ql.exec.vector.mapjoin;
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -35,7 +35,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinBytesHashSet;
 
 // Multi-Key specific imports.
-import org.apache.hadoop.hive.ql.exec.vector.VectorSerializeRowNoNulls;
+import org.apache.hadoop.hive.ql.exec.vector.VectorSerializeRow;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableSerializeWrite;
 
@@ -46,7 +46,7 @@ import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableSerialize
 public class VectorMapJoinLeftSemiMultiKeyOperator extends VectorMapJoinLeftSemiGenerateResultOperator {
 
   private static final long serialVersionUID = 1L;
-  private static final Log LOG = LogFactory.getLog(VectorMapJoinInnerBigOnlyLongOperator.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinInnerBigOnlyLongOperator.class.getName());
   private static final String CLASS_NAME = VectorMapJoinLeftSemiMultiKeyOperator.class.getName();
 
   // (none)
@@ -64,7 +64,7 @@ public class VectorMapJoinLeftSemiMultiKeyOperator extends VectorMapJoinLeftSemi
 
   // Object that can take a set of columns in row in a vectorized row batch and serialized it.
   // Known to not have any nulls.
-  private transient VectorSerializeRowNoNulls keyVectorSerializeWriteNoNulls;
+  private transient VectorSerializeRow keyVectorSerializeWrite;
 
   // The BinarySortable serialization of the current key.
   private transient Output currentKeyOutput;
@@ -104,9 +104,9 @@ public class VectorMapJoinLeftSemiMultiKeyOperator extends VectorMapJoinLeftSemi
          * Initialize Multi-Key members for this specialized class.
          */
 
-        keyVectorSerializeWriteNoNulls = new VectorSerializeRowNoNulls(
+        keyVectorSerializeWrite = new VectorSerializeRow(
                                         new BinarySortableSerializeWrite(bigTableKeyColumnMap.length));
-        keyVectorSerializeWriteNoNulls.init(bigTableKeyTypeNames, bigTableKeyColumnMap);
+        keyVectorSerializeWrite.init(bigTableKeyTypeNames, bigTableKeyColumnMap);
 
         currentKeyOutput = new Output();
         saveKeyOutput = new Output();
@@ -142,7 +142,7 @@ public class VectorMapJoinLeftSemiMultiKeyOperator extends VectorMapJoinLeftSemi
       final int inputLogicalSize = batch.size;
 
       if (inputLogicalSize == 0) {
-        if (LOG.isDebugEnabled()) {
+        if (isLogDebugEnabled) {
           LOG.debug(CLASS_NAME + " batch #" + batchCounter + " empty");
         }
         return;
@@ -193,18 +193,23 @@ public class VectorMapJoinLeftSemiMultiKeyOperator extends VectorMapJoinLeftSemi
          * Multi-Key specific repeated lookup.
          */
 
-        keyVectorSerializeWriteNoNulls.setOutput(currentKeyOutput);
-        keyVectorSerializeWriteNoNulls.serializeWriteNoNulls(batch, 0);
-        byte[] keyBytes = currentKeyOutput.getData();
-        int keyLength = currentKeyOutput.getLength();
-        // LOG.debug(CLASS_NAME + " processOp all " + displayBytes(keyBytes, 0, keyLength));
-        JoinUtil.JoinResult joinResult = hashSet.contains(keyBytes, 0, keyLength, hashSetResults[0]);
+        keyVectorSerializeWrite.setOutput(currentKeyOutput);
+        keyVectorSerializeWrite.serializeWrite(batch, 0);
+        JoinUtil.JoinResult joinResult;
+        if (keyVectorSerializeWrite.getHasAnyNulls()) {
+          joinResult = JoinUtil.JoinResult.NOMATCH;
+        } else {
+          byte[] keyBytes = currentKeyOutput.getData();
+          int keyLength = currentKeyOutput.getLength();
+          // LOG.debug(CLASS_NAME + " processOp all " + displayBytes(keyBytes, 0, keyLength));
+          joinResult = hashSet.contains(keyBytes, 0, keyLength, hashSetResults[0]);
+        }
 
         /*
          * Common repeated join result processing.
          */
 
-        if (LOG.isDebugEnabled()) {
+        if (isLogDebugEnabled) {
           LOG.debug(CLASS_NAME + " batch #" + batchCounter + " repeated joinResult " + joinResult.name());
         }
         finishLeftSemiRepeated(batch, joinResult, hashSetResults[0]);
@@ -214,7 +219,7 @@ public class VectorMapJoinLeftSemiMultiKeyOperator extends VectorMapJoinLeftSemi
          * NOT Repeating.
          */
 
-        if (LOG.isDebugEnabled()) {
+        if (isLogDebugEnabled) {
           LOG.debug(CLASS_NAME + " batch #" + batchCounter + " non-repeated");
         }
 
@@ -247,8 +252,9 @@ public class VectorMapJoinLeftSemiMultiKeyOperator extends VectorMapJoinLeftSemi
            */
 
           // Generate binary sortable key for current row in vectorized row batch.
-          keyVectorSerializeWriteNoNulls.setOutput(currentKeyOutput);
-          keyVectorSerializeWriteNoNulls.serializeWriteNoNulls(batch, batchIndex);
+          keyVectorSerializeWrite.setOutput(currentKeyOutput);
+          keyVectorSerializeWrite.serializeWrite(batch, batchIndex);
+          boolean isAnyNull = keyVectorSerializeWrite.getHasAnyNulls();
 
           // LOG.debug(CLASS_NAME + " currentKey " +
           //      VectorizedBatchUtil.displayBytes(currentKeyOutput.getData(), 0, currentKeyOutput.getLength()));
@@ -257,7 +263,7 @@ public class VectorMapJoinLeftSemiMultiKeyOperator extends VectorMapJoinLeftSemi
            * Equal key series checking.
            */
 
-          if (!haveSaveKey || !saveKeyOutput.arraysEquals(currentKeyOutput)) {
+          if (isAnyNull || !haveSaveKey || !saveKeyOutput.arraysEquals(currentKeyOutput)) {
 
             // New key.
 
@@ -276,25 +282,30 @@ public class VectorMapJoinLeftSemiMultiKeyOperator extends VectorMapJoinLeftSemi
               }
             }
 
-            // Regardless of our matching result, we keep that information to make multiple use
-            // of it for a possible series of equal keys.
-            haveSaveKey = true;
-
-            /*
-             * Multi-Key specific save key and lookup.
-             */
-
-            temp = saveKeyOutput;
-            saveKeyOutput = currentKeyOutput;
-            currentKeyOutput = temp;
-
-            /*
-             * Multi-key specific lookup key.
-             */
-
-            byte[] keyBytes = saveKeyOutput.getData();
-            int keyLength = saveKeyOutput.getLength();
-            saveJoinResult = hashSet.contains(keyBytes, 0, keyLength, hashSetResults[hashSetResultCount]);
+            if (isAnyNull) {
+              saveJoinResult = JoinUtil.JoinResult.NOMATCH;
+              haveSaveKey = false;
+            } else {
+              // Regardless of our matching result, we keep that information to make multiple use
+              // of it for a possible series of equal keys.
+              haveSaveKey = true;
+  
+              /*
+               * Multi-Key specific save key and lookup.
+               */
+  
+              temp = saveKeyOutput;
+              saveKeyOutput = currentKeyOutput;
+              currentKeyOutput = temp;
+  
+              /*
+               * Multi-key specific lookup key.
+               */
+  
+              byte[] keyBytes = saveKeyOutput.getData();
+              int keyLength = saveKeyOutput.getLength();
+              saveJoinResult = hashSet.contains(keyBytes, 0, keyLength, hashSetResults[hashSetResultCount]);
+            }
 
             /*
              * Common left-semi join result processing.
@@ -353,7 +364,7 @@ public class VectorMapJoinLeftSemiMultiKeyOperator extends VectorMapJoinLeftSemi
           }
         }
 
-        if (LOG.isDebugEnabled()) {
+        if (isLogDebugEnabled) {
           LOG.debug(CLASS_NAME +
               " allMatchs " + intArrayToRangesString(allMatchs, allMatchCount) +
               " spills " + intArrayToRangesString(spills, spillCount) +

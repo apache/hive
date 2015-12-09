@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.vectorized.execution.enabled=false;
 
 drop table if exists t1_staging;
@@ -15,8 +16,8 @@ load data local inpath '../../data/files/sortdp.txt' overwrite into table t1_sta
 
 set hive.optimize.sort.dynamic.partition=true;
 set hive.exec.dynamic.partition.mode=nonstrict;
-set hive.enforce.sorting=true;
-set hive.enforce.bucketing=true;
+
+
 
 drop table t1;
 
@@ -44,8 +45,8 @@ dfs -cat ${hiveconf:hive.metastore.warehouse.dir}/t1/e=epart/000008_0;
 
 set hive.optimize.sort.dynamic.partition=false;
 set hive.exec.dynamic.partition.mode=nonstrict;
-set hive.enforce.sorting=true;
-set hive.enforce.bucketing=true;
+
+
 
 -- disable sorted dynamic partition optimization to make sure the results are correct
 drop table t1;

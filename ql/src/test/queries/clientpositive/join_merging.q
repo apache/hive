@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 
 explain select p1.p_size, p2.p_size 
 from part p1 left outer join part p2 on p1.p_partkey = p2.p_partkey 

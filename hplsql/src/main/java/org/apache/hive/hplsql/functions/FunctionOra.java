@@ -34,33 +34,32 @@ public class FunctionOra extends Function {
   @Override
   public void register(Function f) {  
     f.map.put("DBMS_OUTPUT.PUT_LINE", new FuncCommand() { public void run(HplsqlParser.Expr_func_paramsContext ctx) { 
-      execDbmsOutputPutLine(ctx); }});
+      dbmsOutputPutLine(ctx); }});
     f.map.put("UTL_FILE.FOPEN", new FuncCommand() { public void run(HplsqlParser.Expr_func_paramsContext ctx) { 
-      execUtlFileFopen(ctx); }});
+      utlFileFopen(ctx); }});
     f.map.put("UTL_FILE.GET_LINE", new FuncCommand() { public void run(HplsqlParser.Expr_func_paramsContext ctx) { 
-      execUtlFileGetLine(ctx); }});
+      utlFileGetLine(ctx); }});
     f.map.put("UTL_FILE.PUT_LINE", new FuncCommand() { public void run(HplsqlParser.Expr_func_paramsContext ctx) { 
-      execUtlFilePutLine(ctx); }});
+      utlFilePutLine(ctx); }});
     f.map.put("UTL_FILE.PUT", new FuncCommand() { public void run(HplsqlParser.Expr_func_paramsContext ctx) { 
-      execUtlFilePut(ctx); }});
+      utlFilePut(ctx); }});
     f.map.put("UTL_FILE.FCLOSE", new FuncCommand() { public void run(HplsqlParser.Expr_func_paramsContext ctx) { 
-      execUtlFileFclose(ctx); }});
+      utlFileFclose(ctx); }});
   }
   
   /**
    * Print a text message
    */
-  void execDbmsOutputPutLine(HplsqlParser.Expr_func_paramsContext ctx) {
+  void dbmsOutputPutLine(HplsqlParser.Expr_func_paramsContext ctx) {
     if (ctx.func_param().size() > 0) {
-      visit(ctx.func_param(0).expr());
-      System.out.println(exec.stackPop().toString());
+      System.out.println(evalPop(ctx.func_param(0).expr()));
     }
   }
   
   /**
    * Execute UTL_FILE.FOPEN function
    */
-  public void execUtlFileFopen(HplsqlParser.Expr_func_paramsContext ctx) {
+  public void utlFileFopen(HplsqlParser.Expr_func_paramsContext ctx) {
     String dir = "";
     String name = "";
     boolean write = true;
@@ -98,7 +97,7 @@ public class FunctionOra extends Function {
   /**
    * Read a text line from an open file
    */
-  void execUtlFileGetLine(HplsqlParser.Expr_func_paramsContext ctx) {
+  void utlFileGetLine(HplsqlParser.Expr_func_paramsContext ctx) {
     int cnt = ctx.func_param().size();
     Var file = null;
     Var str = null;
@@ -152,21 +151,21 @@ public class FunctionOra extends Function {
   /**
    * Execute UTL_FILE.PUT_LINE function
    */
-  public void execUtlFilePutLine(HplsqlParser.Expr_func_paramsContext ctx) {
-    execUtlFilePut(ctx, true /*newline*/);  
+  public void utlFilePutLine(HplsqlParser.Expr_func_paramsContext ctx) {
+    utlFilePut(ctx, true /*newline*/);  
   }
 
   /**
    * Execute UTL_FILE.PUT function
    */
-  public void execUtlFilePut(HplsqlParser.Expr_func_paramsContext ctx) {
-    execUtlFilePut(ctx, false /*newline*/);  
+  public void utlFilePut(HplsqlParser.Expr_func_paramsContext ctx) {
+    utlFilePut(ctx, false /*newline*/);  
   }
   
   /**
    * Write a string to file
    */
-  void execUtlFilePut(HplsqlParser.Expr_func_paramsContext ctx, boolean newline) {
+  void utlFilePut(HplsqlParser.Expr_func_paramsContext ctx, boolean newline) {
     int cnt = ctx.func_param().size();
     Var file = null;
     String str = "";
@@ -203,7 +202,7 @@ public class FunctionOra extends Function {
   /**
    * Execute UTL_FILE.FCLOSE function
    */
-  void execUtlFileFclose(HplsqlParser.Expr_func_paramsContext ctx) {
+  void utlFileFclose(HplsqlParser.Expr_func_paramsContext ctx) {
     int cnt = ctx.func_param().size();
     Var file = null;
     

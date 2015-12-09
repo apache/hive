@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;
 explain SELECT cbigint, cdouble FROM alltypesorc WHERE cbigint < cdouble and cint > 0 limit 7;
@@ -23,8 +24,8 @@ select distinct(ctinyint) from alltypesorc limit 20;
 select distinct(ctinyint) from alltypesorc limit 20;
 
 explain
-select ctinyint, count(distinct(cdouble)) from alltypesorc group by ctinyint limit 20;
-select ctinyint, count(distinct(cdouble)) from alltypesorc group by ctinyint limit 20;
+select ctinyint, count(distinct(cdouble)) from alltypesorc group by ctinyint order by ctinyint limit 20;
+select ctinyint, count(distinct(cdouble)) from alltypesorc group by ctinyint order by ctinyint limit 20;
 
 -- limit zero
 explain

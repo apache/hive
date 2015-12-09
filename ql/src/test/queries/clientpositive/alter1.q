@@ -21,8 +21,9 @@ describe extended alter1;
 
 alter table alter1 set serde 'org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe';
 describe extended alter1;
-
+set hive.metastore.disallow.incompatible.col.type.changes=false;
 alter table alter1 replace columns (a int, b int, c string);
+reset hive.metastore.disallow.incompatible.col.type.changes;
 describe alter1;
 
 -- Cleanup
@@ -61,8 +62,9 @@ DESCRIBE EXTENDED alter1_db.alter1;
 
 ALTER TABLE alter1_db.alter1 SET SERDE 'org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe';
 DESCRIBE EXTENDED alter1_db.alter1;
-
+set hive.metastore.disallow.incompatible.col.type.changes=false;
 ALTER TABLE alter1_db.alter1 REPLACE COLUMNS (a int, b int, c string);
+reset hive.metastore.disallow.incompatible.col.type.changes;
 DESCRIBE alter1_db.alter1;
 
 DROP TABLE alter1_db.alter1;

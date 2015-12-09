@@ -1,6 +1,7 @@
+set hive.mapred.mode=nonstrict;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
-set hive.enforce.bucketing=true;
+
 set hive.exec.dynamic.partition.mode=nonstrict;
 
 CREATE TABLE acid_vectorized(a INT, b STRING, c float) CLUSTERED BY(a) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true');

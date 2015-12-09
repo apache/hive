@@ -22,8 +22,8 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
@@ -39,7 +39,7 @@ public class NullRowsInputFormat implements InputFormat<NullWritable, NullWritab
     JobConfigurable {
 
   static final int MAX_ROW = 100; // to prevent infinite loop
-  static final Log LOG = LogFactory.getLog(NullRowsRecordReader.class.getName());
+  static final Logger LOG = LoggerFactory.getLogger(NullRowsRecordReader.class.getName());
 
   public static class DummyInputSplit implements InputSplit {
     public DummyInputSplit() {

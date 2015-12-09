@@ -36,6 +36,17 @@ public final class IOConstants {
   public static final String AVRO = "AVRO";
   public static final String AVROFILE = "AVROFILE";
 
+  /**
+   * The desired TABLE column names and types for input format schema evolution.
+   * This is different than COLUMNS and COLUMNS_TYPES, which are based on individual partition
+   * metadata.
+   *
+   * Virtual columns and partition columns are not included
+   *
+   */
+  public static final String SCHEMA_EVOLUTION_COLUMNS = "schema.evolution.columns";
+  public static final String SCHEMA_EVOLUTION_COLUMNS_TYPES = "schema.evolution.columns.types";
+
   @VisibleForTesting
   public static final String CUSTOM_TEXT_SERDE = "CustomTextSerde";
 

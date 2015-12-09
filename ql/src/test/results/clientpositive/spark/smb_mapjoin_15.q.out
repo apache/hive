@@ -132,6 +132,8 @@ STAGE PLANS:
                           sort order: +
                           Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                           tag: -1
+                          TopN: 10
+                          TopN Hash Memory Usage: 0.1
                           value expressions: _col1 (type: string), _col2 (type: int), _col3 (type: string)
                           auto parallelism: false
             Path -> Alias:
@@ -212,6 +214,7 @@ STAGE PLANS:
                           columns.types int:string:int:string
                           escape.delim \
                           hive.serialization.extend.additional.nesting.levels true
+                          serialization.escape.crlf true
                           serialization.format 1
                           serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -401,6 +404,8 @@ STAGE PLANS:
                           sort order: +
                           Statistics: Num rows: 137 Data size: 1984 Basic stats: COMPLETE Column stats: NONE
                           tag: -1
+                          TopN: 10
+                          TopN Hash Memory Usage: 0.1
                           value expressions: _col1 (type: int), _col2 (type: string), _col3 (type: int), _col4 (type: int), _col5 (type: string)
                           auto parallelism: false
             Path -> Alias:
@@ -481,6 +486,7 @@ STAGE PLANS:
                           columns.types int:int:string:int:int:string
                           escape.delim \
                           hive.serialization.extend.additional.nesting.levels true
+                          serialization.escape.crlf true
                           serialization.format 1
                           serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -618,6 +624,8 @@ STAGE PLANS:
                           sort order: +
                           Statistics: Num rows: 137 Data size: 1984 Basic stats: COMPLETE Column stats: NONE
                           tag: -1
+                          TopN: 10
+                          TopN Hash Memory Usage: 0.1
                           value expressions: _col1 (type: int), _col2 (type: string), _col3 (type: int), _col4 (type: int), _col5 (type: string)
                           auto parallelism: false
             Path -> Alias:
@@ -698,6 +706,7 @@ STAGE PLANS:
                           columns.types int:int:string:int:int:string
                           escape.delim \
                           hive.serialization.extend.additional.nesting.levels true
+                          serialization.escape.crlf true
                           serialization.format 1
                           serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -809,12 +818,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 71 Data size: 7718 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 7218 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: (key is not null and value is not null) (type: boolean)
-                    Statistics: Num rows: 18 Data size: 1956 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 125 Data size: 1804 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
                       keys:
                         0 key (type: int), value (type: string)
@@ -846,8 +855,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.test_table2
                     numFiles 16
-                    numRows 0
-                    rawDataSize 0
+                    numRows 500
+                    rawDataSize 7218
                     serialization.ddl struct test_table2 { i32 key, i32 key2, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -868,8 +877,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                       name default.test_table2
                       numFiles 16
-                      numRows 0
-                      rawDataSize 0
+                      numRows 500
+                      rawDataSize 7218
                       serialization.ddl struct test_table2 { i32 key, i32 key2, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -918,6 +927,8 @@ STAGE PLANS:
                           sort order: +
                           Statistics: Num rows: 137 Data size: 1984 Basic stats: COMPLETE Column stats: NONE
                           tag: -1
+                          TopN: 10
+                          TopN Hash Memory Usage: 0.1
                           value expressions: _col1 (type: int), _col2 (type: string), _col3 (type: int), _col4 (type: int), _col5 (type: string)
                           auto parallelism: false
             Local Work:
@@ -1005,6 +1016,7 @@ STAGE PLANS:
                           columns.types int:int:string:int:int:string
                           escape.delim \
                           hive.serialization.extend.additional.nesting.levels true
+                          serialization.escape.crlf true
                           serialization.format 1
                           serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe

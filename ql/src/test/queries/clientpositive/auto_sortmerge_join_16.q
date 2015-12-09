@@ -1,8 +1,8 @@
 set hive.auto.convert.join=true;
 
 set hive.exec.dynamic.partition.mode=nonstrict;
-set hive.enforce.bucketing=true;
-set hive.enforce.sorting=true;
+
+
 
 set hive.auto.convert.sortmerge.join=true;
 set hive.optimize.bucketmapjoin = true;

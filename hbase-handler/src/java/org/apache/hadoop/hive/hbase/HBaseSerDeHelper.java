@@ -30,8 +30,8 @@ import java.util.Properties;
 import org.apache.avro.Schema;
 import org.apache.avro.reflect.ReflectData;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
@@ -41,7 +41,7 @@ import org.apache.hadoop.hive.hbase.ColumnMappings.ColumnMapping;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.avro.AvroObjectInspectorGenerator;
-import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils;
+import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils.AvroTableProperties;
 import org.apache.hadoop.hive.serde2.lazy.LazyFactory;
 import org.apache.hadoop.hive.serde2.lazy.LazyObjectBase;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazyMapObjectInspector;
@@ -57,7 +57,7 @@ public class HBaseSerDeHelper {
   /**
    * Logger
    * */
-  public static final Log LOG = LogFactory.getLog(HBaseSerDeHelper.class);
+  public static final Logger LOG = LoggerFactory.getLogger(HBaseSerDeHelper.class);
 
   /**
    * Autogenerates the columns from the given serialization class
@@ -215,16 +215,17 @@ public class HBaseSerDeHelper {
               // for avro type, the serialization class parameter is optional
               schemaLiteral =
                   tbl.getProperty(colMap.familyName + "." + colMap.qualifierPrefix + "."
-                      + AvroSerdeUtils.SCHEMA_LITERAL);
+                      + AvroTableProperties.SCHEMA_LITERAL.getPropName());
               schemaUrl =
                   tbl.getProperty(colMap.familyName + "." + colMap.qualifierPrefix + "."
-                      + AvroSerdeUtils.SCHEMA_URL);
+                      + AvroTableProperties.SCHEMA_URL.getPropName());
 
               if (schemaLiteral == null && schemaUrl == null) {
                 // either schema literal, schema url or serialization class must
                 // be provided
                 throw new SerDeException("For an avro schema, either "
-                    + AvroSerdeUtils.SCHEMA_LITERAL + ", " + AvroSerdeUtils.SCHEMA_URL + " or "
+                    + AvroTableProperties.SCHEMA_LITERAL.getPropName() + ", "
+                        + AvroTableProperties.SCHEMA_URL.getPropName() + " or "
                     + serdeConstants.SERIALIZATION_CLASS + " property must be set.");
               }
 
@@ -254,13 +255,13 @@ public class HBaseSerDeHelper {
             if (serType.equalsIgnoreCase(AVRO_SERIALIZATION_TYPE)) {
               // for avro type, the serialization class parameter is optional
               schemaLiteral =
-                  tbl.getProperty(colMap.familyName + "." + AvroSerdeUtils.SCHEMA_LITERAL);
-              schemaUrl = tbl.getProperty(colMap.familyName + "." + AvroSerdeUtils.SCHEMA_URL);
+                  tbl.getProperty(colMap.familyName + "." + AvroTableProperties.SCHEMA_LITERAL.getPropName());
+              schemaUrl = tbl.getProperty(colMap.familyName + "." + AvroTableProperties.SCHEMA_URL.getPropName());
 
               if (schemaLiteral == null && schemaUrl == null) {
                 // either schema literal or serialization class must be provided
                 throw new SerDeException("For an avro schema, either "
-                    + AvroSerdeUtils.SCHEMA_LITERAL + " property or "
+                    + AvroTableProperties.SCHEMA_LITERAL.getPropName() + " property or "
                     + serdeConstants.SERIALIZATION_CLASS + " property must be set.");
               }
 
@@ -315,16 +316,16 @@ public class HBaseSerDeHelper {
             // for avro type, the serialization class parameter is optional
             schemaLiteral =
                 tbl.getProperty(colMap.familyName + "." + qualifierName + "."
-                    + AvroSerdeUtils.SCHEMA_LITERAL);
+                    + AvroTableProperties.SCHEMA_LITERAL.getPropName());
             schemaUrl =
                 tbl.getProperty(colMap.familyName + "." + qualifierName + "."
-                    + AvroSerdeUtils.SCHEMA_URL);
+                    + AvroTableProperties.SCHEMA_URL.getPropName());
 
             if (schemaLiteral == null && schemaUrl == null) {
               // either schema literal, schema url or serialization class must
               // be provided
               throw new SerDeException("For an avro schema, either "
-                  + AvroSerdeUtils.SCHEMA_LITERAL + ", " + AvroSerdeUtils.SCHEMA_URL + " or "
+                  + AvroTableProperties.SCHEMA_LITERAL.getPropName() + ", " + AvroTableProperties.SCHEMA_URL.getPropName() + " or "
                   + serdeConstants.SERIALIZATION_CLASS + " property must be set.");
             }
 

@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 SET hive.exec.compress.output=true;
 SET hive.stats.dbclass=fs;
 

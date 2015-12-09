@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.auto.convert.join = true;
 
 CREATE TABLE myinput1(key int, value int);

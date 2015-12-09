@@ -33,8 +33,8 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import com.google.common.collect.LinkedListMultimap;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -105,7 +105,7 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
     }
   }
 
-  private static final Log LOG = LogFactory.getLog(CustomPartitionVertex.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(CustomPartitionVertex.class.getName());
 
   VertexManagerPluginContext context;
 
@@ -319,9 +319,9 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
       Multimap<Integer, InputSplit> bucketToGroupedSplitMap) throws IOException {
     // the bucket to task map should have been setup by the big table.
     LOG.info("Processing events for input " + inputName);
-    if (bucketToTaskMap.isEmpty()) {
-      LOG.info("We don't have a routing table yet. Will need to wait for the main input"
-          + " initialization");
+    if (inputNameInputSpecMap.get(mainWorkName) == null) {
+      LOG.info("We don't have a routing table yet. Will need to wait for the main input "
+          + mainWorkName + " initialization");
       inputToGroupedSplitMap.put(inputName, bucketToGroupedSplitMap);
       return;
     }
@@ -336,6 +336,7 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
         + " multi mr inputs. " + bucketToTaskMap);
 
     Integer[] numSplitsForTask = new Integer[taskCount];
+    Arrays.fill(numSplitsForTask, 0);
 
     Multimap<Integer, ByteBuffer> bucketToSerializedSplitMap = LinkedListMultimap.create();
 
@@ -350,6 +351,9 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
 
     for (Entry<Integer, Collection<ByteBuffer>> entry : bucketToSerializedSplitMap.asMap().entrySet()) {
       Collection<Integer> destTasks = bucketToTaskMap.get(entry.getKey());
+      if ((destTasks == null) || (destTasks.isEmpty())) {
+        continue;
+      }
       for (Integer task : destTasks) {
         int count = 0;
         for (ByteBuffer buf : entry.getValue()) {
@@ -474,8 +478,12 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
 
     LOG.info("Setting vertex parallelism since we have seen all inputs.");
 
+    boolean generateConsistentSplits =  HiveConf.getBoolVar(
+        conf, HiveConf.ConfVars.HIVE_TEZ_GENERATE_CONSISTENT_SPLITS);
+    LOG.info("GenerateConsistenSplitsInHive=" + generateConsistentSplits);
     context.setVertexParallelism(taskCount, VertexLocationHint.create(grouper
-        .createTaskLocationHints(finalSplits.toArray(new InputSplit[finalSplits.size()]))), emMap,
+            .createTaskLocationHints(finalSplits.toArray(new InputSplit[finalSplits.size()]),
+                generateConsistentSplits)), emMap,
         rootInputSpecUpdate);
     finalSplits.clear();
   }

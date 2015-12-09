@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 create table store(s_store_sk int, s_city string)
 stored as orc;

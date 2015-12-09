@@ -19,7 +19,6 @@
 
 package org.apache.hive.hcatalog.mapreduce;
 
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class TestHCatExternalDynamicPartitioned extends TestHCatDynamicPartitioned {

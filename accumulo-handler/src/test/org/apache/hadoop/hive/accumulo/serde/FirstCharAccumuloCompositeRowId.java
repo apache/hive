@@ -22,13 +22,14 @@ import java.util.Properties;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazySimpleStructObjectInspector;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Gets the first character of each string in a struct
  */
 public class FirstCharAccumuloCompositeRowId extends AccumuloCompositeRowId {
-  private static final Logger log = Logger.getLogger(FirstCharAccumuloCompositeRowId.class);
+  private static final Logger log = LoggerFactory.getLogger(FirstCharAccumuloCompositeRowId.class);
 
   private Properties tbl;
   private Configuration conf;

@@ -59,7 +59,7 @@ public class MiniHS2 extends AbstractHiveService {
   private static final AtomicLong hs2Counter = new AtomicLong();
   private MiniMrShim mr;
   private MiniDFSShim dfs;
-  private FileSystem localFS;
+  private final FileSystem localFS;
   private boolean useMiniKdc = false;
   private final String serverPrincipal;
   private final boolean isMetastoreRemote;
@@ -181,7 +181,7 @@ public class MiniHS2 extends AbstractHiveService {
       // Initialize the execution engine based on cluster type
       switch (miniClusterType) {
       case TEZ:
-        mr = ShimLoader.getHadoopShims().getMiniTezCluster(hiveConf, 4, uriString, 1);
+        mr = ShimLoader.getHadoopShims().getMiniTezCluster(hiveConf, 4, uriString, false);
         break;
       case MR:
         mr = ShimLoader.getHadoopShims().getMiniMrCluster(hiveConf, 4, uriString, 1);
@@ -336,16 +336,16 @@ public class MiniHS2 extends AbstractHiveService {
     hiveConfExt = (hiveConfExt == null ? "" : hiveConfExt);
     String krbConfig = "";
     if (isUseMiniKdc()) {
-      krbConfig = ";principal=" + serverPrincipal;
+      krbConfig = "principal=" + serverPrincipal;
     }
     if (isHttpTransportMode()) {
-      hiveConfExt = "hive.server2.transport.mode=http;hive.server2.thrift.http.path=cliservice;"
-          + hiveConfExt;
+      sessionConfExt = "transportMode=http;httpPath=cliservice;" + sessionConfExt;
     }
+    String baseJdbcURL = getBaseJdbcURL() + dbName + ";" + krbConfig + ";" + sessionConfExt;
     if (!hiveConfExt.trim().equals("")) {
-      hiveConfExt = "?" + hiveConfExt;
+      baseJdbcURL = "?" + hiveConfExt;
     }
-    return getBaseJdbcURL() + dbName + krbConfig + sessionConfExt + hiveConfExt;
+    return baseJdbcURL;
   }
 
   /**

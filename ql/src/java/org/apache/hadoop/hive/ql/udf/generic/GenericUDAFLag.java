@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.util.ArrayList;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.WindowFunctionDescription;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -44,7 +44,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFLeadLag.GenericUDAFLeadL
 )
 public class GenericUDAFLag extends GenericUDAFLeadLag {
 
-  static final Log LOG = LogFactory.getLog(GenericUDAFLag.class.getName());
+  static final Logger LOG = LoggerFactory.getLogger(GenericUDAFLag.class.getName());
 
 
   @Override

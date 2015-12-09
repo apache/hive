@@ -23,8 +23,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Future;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.persistence.HybridHashTableContainer;
@@ -45,7 +45,7 @@ import org.apache.hadoop.io.DataOutputBuffer;
  */
 public class VectorMapJoinBaseOperator extends MapJoinOperator implements VectorizationContextRegion {
 
-  private static final Log LOG = LogFactory.getLog(VectorMapJoinBaseOperator.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinBaseOperator.class.getName());
 
   private static final long serialVersionUID = 1L;
 
@@ -86,18 +86,15 @@ public class VectorMapJoinBaseOperator extends MapJoinOperator implements Vector
   }
 
   @Override
-  public Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
-
-    Collection<Future<?>> result = super.initializeOp(hconf);
+  public void initializeOp(Configuration hconf) throws HiveException {
+    super.initializeOp(hconf);
 
     vrbCtx = new VectorizedRowBatchCtx();
-    vrbCtx.init(vOutContext.getScratchColumnTypeMap(), (StructObjectInspector) this.outputObjInspector);
+    vrbCtx.init((StructObjectInspector) this.outputObjInspector, vOutContext.getScratchColumnTypeNames());
 
     outputBatch = vrbCtx.createVectorizedRowBatch();
 
     outputVectorAssignRowMap = new HashMap<ObjectInspector, VectorAssignRowSameBatch>();
-
-    return result;
   }
 
   /**

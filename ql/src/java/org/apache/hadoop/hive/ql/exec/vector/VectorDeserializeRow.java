@@ -23,23 +23,18 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.fast.DeserializeRead;
-import org.apache.hadoop.hive.serde2.objectinspector.StructField;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hive.common.util.DateUtils;
 
@@ -53,20 +48,21 @@ import org.apache.hive.common.util.DateUtils;
  * field-by-field from a serialization format into the primitive values of the VectorizedRowBatch.
  */
 
-public class VectorDeserializeRow {
+public final class VectorDeserializeRow<T extends DeserializeRead> {
+
   private static final long serialVersionUID = 1L;
-  private static final Log LOG = LogFactory.getLog(VectorDeserializeRow.class);
+  private static final Logger LOG = LoggerFactory.getLogger(VectorDeserializeRow.class);
 
-  private DeserializeRead deserializeRead;
+  private T deserializeRead;
 
-  private Reader[] readersByValue;
-  private Reader[] readersByReference;
-  private PrimitiveTypeInfo[] primitiveTypeInfos;
+  private Reader<T>[] readersByValue;
+  private Reader<T>[] readersByReference;
+  private TypeInfo[] typeInfos;
 
-  public VectorDeserializeRow(DeserializeRead deserializeRead) {
+  public VectorDeserializeRow(T deserializeRead) {
     this();
     this.deserializeRead = deserializeRead;
-    primitiveTypeInfos = deserializeRead.primitiveTypeInfos();
+    typeInfos = deserializeRead.typeInfos();
     
   }
 
@@ -74,7 +70,7 @@ public class VectorDeserializeRow {
   private VectorDeserializeRow() {
   }
 
-  private abstract class Reader {
+  private abstract class Reader<R extends DeserializeRead> {
     protected int columnIndex;
 
     Reader(int columnIndex) {
@@ -84,7 +80,7 @@ public class VectorDeserializeRow {
     abstract void apply(VectorizedRowBatch batch, int batchIndex) throws IOException;
   }
 
-  private abstract class AbstractLongReader extends Reader {
+  private abstract class AbstractLongReader extends Reader<T> {
 
     AbstractLongReader(int columnIndex) {
       super(columnIndex);
@@ -277,7 +273,7 @@ public class VectorDeserializeRow {
     }
   }
 
-  private abstract class AbstractDoubleReader extends Reader {
+  private abstract class AbstractDoubleReader extends Reader<T> {
 
     AbstractDoubleReader(int columnIndex) {
       super(columnIndex);
@@ -322,7 +318,7 @@ public class VectorDeserializeRow {
     }
   }
 
-  private abstract class AbstractBytesReader extends Reader {
+  private abstract class AbstractBytesReader extends Reader<T> {
 
     AbstractBytesReader(int columnIndex) {
       super(columnIndex);
@@ -537,7 +533,7 @@ public class VectorDeserializeRow {
     }
   }
 
-  private class HiveDecimalReader extends Reader {
+  private class HiveDecimalReader extends Reader<T> {
 
     private DeserializeRead.ReadDecimalResults readDecimalResults;
 
@@ -561,10 +557,10 @@ public class VectorDeserializeRow {
   }
 
   private void addReader(int index, int outputColumn) throws HiveException {
-    Reader readerByValue = null;
-    Reader readerByReference = null;
+    Reader<T> readerByValue = null;
+    Reader<T> readerByReference = null;
 
-    PrimitiveTypeInfo primitiveTypeInfo = primitiveTypeInfos[index];
+    PrimitiveTypeInfo primitiveTypeInfo = (PrimitiveTypeInfo) typeInfos[index];
     PrimitiveCategory primitiveCategory = primitiveTypeInfo.getPrimitiveCategory();
     switch (primitiveCategory) {
     // case VOID:
@@ -642,10 +638,10 @@ public class VectorDeserializeRow {
 
   public void init(int[] outputColumns) throws HiveException {
 
-    readersByValue = new Reader[primitiveTypeInfos.length];
-    readersByReference = new Reader[primitiveTypeInfos.length];
+    readersByValue = new Reader[typeInfos.length];
+    readersByReference = new Reader[typeInfos.length];
 
-    for (int i = 0; i < primitiveTypeInfos.length; i++) {
+    for (int i = 0; i < typeInfos.length; i++) {
       int outputColumn = outputColumns[i];
       addReader(i, outputColumn);
     }
@@ -653,10 +649,10 @@ public class VectorDeserializeRow {
 
   public void init(List<Integer> outputColumns) throws HiveException {
 
-    readersByValue = new Reader[primitiveTypeInfos.length];
-    readersByReference = new Reader[primitiveTypeInfos.length];
+    readersByValue = new Reader[typeInfos.length];
+    readersByReference = new Reader[typeInfos.length];
 
-    for (int i = 0; i < primitiveTypeInfos.length; i++) {
+    for (int i = 0; i < typeInfos.length; i++) {
       int outputColumn = outputColumns.get(i);
       addReader(i, outputColumn);
     }
@@ -664,10 +660,10 @@ public class VectorDeserializeRow {
 
   public void init(int startColumn) throws HiveException {
 
-    readersByValue = new Reader[primitiveTypeInfos.length];
-    readersByReference = new Reader[primitiveTypeInfos.length];
+    readersByValue = new Reader[typeInfos.length];
+    readersByReference = new Reader[typeInfos.length];
 
-    for (int i = 0; i < primitiveTypeInfos.length; i++) {
+    for (int i = 0; i < typeInfos.length; i++) {
       int outputColumn = startColumn + i;
       addReader(i, outputColumn);
     }
@@ -709,12 +705,12 @@ public class VectorDeserializeRow {
 
   private void throwMoreDetailedException(IOException e, int index) throws EOFException {
     StringBuilder sb = new StringBuilder();
-    sb.append("Detail: \"" + e.toString() + "\" occured for field " + index + " of " +  primitiveTypeInfos.length + " fields (");
-    for (int i = 0; i < primitiveTypeInfos.length; i++) {
+    sb.append("Detail: \"" + e.toString() + "\" occured for field " + index + " of " +  typeInfos.length + " fields (");
+    for (int i = 0; i < typeInfos.length; i++) {
       if (i > 0) {
         sb.append(", ");
       }
-      sb.append(primitiveTypeInfos[i].getPrimitiveCategory().name());
+      sb.append(((PrimitiveTypeInfo) typeInfos[i]).getPrimitiveCategory().name());
     }
     sb.append(")");
     throw new EOFException(sb.toString());

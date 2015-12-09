@@ -22,8 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.vector.VectorAppMasterEventOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorFileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorFilterOperator;
@@ -78,7 +78,7 @@ import org.apache.hadoop.hive.ql.plan.UnionDesc;
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public final class OperatorFactory {
-  protected static transient final Log LOG = LogFactory.getLog(OperatorFactory.class);
+  protected static transient final Logger LOG = LoggerFactory.getLogger(OperatorFactory.class);
   private static final List<OpTuple> opvec;
   private static final List<OpTuple> vectorOpvec;
 

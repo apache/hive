@@ -841,10 +841,10 @@ ABSTRACT SYNTAX TREE:
   
 TOK_DESCTABLE
    TOK_TABTYPE
-      .
+      TOK_TABNAME
          default
          src
-         key
+      key
 
 
 STAGE DEPENDENCIES:

@@ -1,6 +1,9 @@
 PREHOOK: query: -- SORT_QUERY_RESULTS
 
 -- EXCLUDE_OS_WINDOWS
+
+-- NO_SESSION_REUSE
+
 CREATE TABLE dest1(key INT, value STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -8,6 +11,9 @@ PREHOOK: Output: default@dest1
 POSTHOOK: query: -- SORT_QUERY_RESULTS
 
 -- EXCLUDE_OS_WINDOWS
+
+-- NO_SESSION_REUSE
+
 CREATE TABLE dest1(key INT, value STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

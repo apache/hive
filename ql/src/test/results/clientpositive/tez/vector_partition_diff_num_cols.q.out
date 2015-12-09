@@ -100,10 +100,10 @@ STAGE PLANS:
                   Statistics: Num rows: 200 Data size: 3176 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: inv_quantity_on_hand (type: int)
-                    outputColumnNames: _col0
+                    outputColumnNames: inv_quantity_on_hand
                     Statistics: Num rows: 200 Data size: 3176 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: sum(_col0)
+                      aggregations: sum(inv_quantity_on_hand)
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -113,6 +113,7 @@ STAGE PLANS:
                         value expressions: _col0 (type: bigint)
             Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)
@@ -126,7 +127,6 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -226,10 +226,10 @@ STAGE PLANS:
                   Statistics: Num rows: 200 Data size: 11876 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: inv_quantity_on_hand (type: int)
-                    outputColumnNames: _col0
+                    outputColumnNames: inv_quantity_on_hand
                     Statistics: Num rows: 200 Data size: 11876 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: sum(_col0)
+                      aggregations: sum(inv_quantity_on_hand)
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -237,7 +237,9 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: bigint)
+            Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)
@@ -251,7 +253,6 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -353,10 +354,10 @@ STAGE PLANS:
                   Statistics: Num rows: 200 Data size: 3176 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: inv_quantity_on_hand (type: int)
-                    outputColumnNames: _col0
+                    outputColumnNames: inv_quantity_on_hand
                     Statistics: Num rows: 200 Data size: 3176 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: sum(_col0)
+                      aggregations: sum(inv_quantity_on_hand)
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -365,6 +366,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: bigint)
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)
@@ -378,7 +380,6 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -461,10 +462,10 @@ STAGE PLANS:
                   Statistics: Num rows: 200 Data size: 3176 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: inv_quantity_on_hand (type: int)
-                    outputColumnNames: _col0
+                    outputColumnNames: inv_quantity_on_hand
                     Statistics: Num rows: 200 Data size: 3176 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: sum(_col0)
+                      aggregations: sum(inv_quantity_on_hand)
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -473,6 +474,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: bigint)
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)
@@ -486,7 +488,6 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -575,10 +576,10 @@ STAGE PLANS:
                   Statistics: Num rows: 200 Data size: 3176 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: inv_quantity_on_hand (type: int)
-                    outputColumnNames: _col0
+                    outputColumnNames: inv_quantity_on_hand
                     Statistics: Num rows: 200 Data size: 3176 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: sum(_col0)
+                      aggregations: sum(inv_quantity_on_hand)
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -587,6 +588,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: bigint)
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)
@@ -600,7 +602,6 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator

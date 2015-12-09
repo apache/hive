@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 -- SORT_QUERY_RESULTS
 
@@ -22,6 +23,7 @@ set tez.am.grouping.max-size=50000;
 set hive.exec.dynamic.partition=true;
 set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.optimize.sort.dynamic.partition=false;
+set hive.merge.sparkfiles=false;
 
 explain insert overwrite table orc_merge5a partition (st) select userid,string1,subtype,decimal1,ts,subtype from orc_merge5;
 set hive.exec.orc.default.row.index.stride=1000;

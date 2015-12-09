@@ -26,8 +26,8 @@ import java.sql.SQLTransactionRollbackException;
 import java.sql.Statement;
 import java.util.Properties;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.shims.ShimLoader;
 
@@ -37,7 +37,7 @@ import org.apache.hadoop.hive.shims.ShimLoader;
  */
 public final class TxnDbUtil {
 
-  static final private Log LOG = LogFactory.getLog(TxnDbUtil.class.getName());
+  static final private Logger LOG = LoggerFactory.getLogger(TxnDbUtil.class.getName());
   private static final String TXN_MANAGER = "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager";
 
   private static int deadlockCnt = 0;
@@ -229,7 +229,9 @@ public final class TxnDbUtil {
       ShimLoader.getHadoopShims().getPassword(conf, HiveConf.ConfVars.METASTOREPWD.varname);
     prop.setProperty("user", user);
     prop.setProperty("password", passwd);
-    return driver.connect(driverUrl, prop);
+    Connection conn = driver.connect(driverUrl, prop);
+    conn.setAutoCommit(false);
+    return conn;
   }
 
   private static void closeResources(Connection conn, Statement stmt, ResultSet rs) {

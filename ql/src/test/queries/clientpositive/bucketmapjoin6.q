@@ -7,8 +7,8 @@ create table tmp1 (a string, b string) clustered by (a) sorted by (a) into 10 bu
 create table tmp2 (a string, b string) clustered by (a) sorted by (a) into 10 buckets;
 
 
-set hive.enforce.bucketing = true;
-set hive.enforce.sorting = true;
+;
+
 set hive.exec.reducers.max=1;
 
 

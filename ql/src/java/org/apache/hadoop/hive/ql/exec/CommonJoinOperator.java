@@ -27,8 +27,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.persistence.AbstractRowContainer;
@@ -50,7 +50,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 public abstract class CommonJoinOperator<T extends JoinDesc> extends
     Operator<T> implements Serializable {
   private static final long serialVersionUID = 1L;
-  protected static final Log LOG = LogFactory.getLog(CommonJoinOperator.class
+  protected static final Logger LOG = LoggerFactory.getLogger(CommonJoinOperator.class
       .getName());
 
   protected transient int numAliases; // number of aliases
@@ -187,8 +187,8 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
 
   @Override
   @SuppressWarnings("unchecked")
-  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
-    Collection<Future<?>> result = super.initializeOp(hconf);
+  protected void initializeOp(Configuration hconf) throws HiveException {
+    super.initializeOp(hconf);
     this.handleSkewJoin = conf.getHandleSkewJoin();
     this.hconf = hconf;
 
@@ -322,7 +322,6 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
     if (isLogInfoEnabled) {
       LOG.info("JOIN " + outputObjInspector.getTypeName() + " totalsz = " + totalSz);
     }
-    return result;
   }
 
   transient boolean newGroupStarted = false;

@@ -18,8 +18,8 @@
 
 package org.apache.hadoop.hive.ql.io.merge;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -46,7 +46,7 @@ import java.util.List;
 @Explain(displayName = "Merge File Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class MergeFileWork extends MapWork {
 
-  private static final Log LOG = LogFactory.getLog(MergeFileWork.class);
+  private static final Logger LOG = LoggerFactory.getLogger(MergeFileWork.class);
   private List<Path> inputPaths;
   private Path outputDir;
   private boolean hasDynamicPartitions;

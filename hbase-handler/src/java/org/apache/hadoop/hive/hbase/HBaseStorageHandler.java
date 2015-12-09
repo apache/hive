@@ -29,8 +29,8 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.HBaseConfiguration;
@@ -78,7 +78,7 @@ import com.yammer.metrics.core.MetricsRegistry;
 public class HBaseStorageHandler extends DefaultStorageHandler
   implements HiveMetaHook, HiveStoragePredicateHandler {
 
-  private static final Log LOG = LogFactory.getLog(HBaseStorageHandler.class);
+  private static final Logger LOG = LoggerFactory.getLogger(HBaseStorageHandler.class);
 
   /** HBase-internal config by which input format receives snapshot name. */
   private static final String HBASE_SNAPSHOT_NAME_KEY = "hbase.TableSnapshotInputFormat.snapshot.name";

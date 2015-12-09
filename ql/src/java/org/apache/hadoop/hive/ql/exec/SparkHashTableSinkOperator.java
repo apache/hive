@@ -26,8 +26,8 @@ import java.util.Set;
 import java.util.concurrent.Future;
 
 import org.apache.commons.io.FileExistsException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.SparkBucketMapJoinContext;
 import org.apache.hadoop.hive.ql.plan.SparkHashTableSinkDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
 public class SparkHashTableSinkOperator
@@ -48,8 +49,8 @@ public class SparkHashTableSinkOperator
   private static final int MIN_REPLICATION = 10;
   private static final long serialVersionUID = 1L;
   private final String CLASS_NAME = this.getClass().getName();
-  private final PerfLogger perfLogger = PerfLogger.getPerfLogger();
-  protected static final Log LOG = LogFactory.getLog(SparkHashTableSinkOperator.class.getName());
+  private final PerfLogger perfLogger = SessionState.getPerfLogger();
+  protected static final Logger LOG = LoggerFactory.getLogger(SparkHashTableSinkOperator.class.getName());
 
   private final HashTableSinkOperator htsOperator;
 
@@ -58,15 +59,14 @@ public class SparkHashTableSinkOperator
   }
 
   @Override
-  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
-    Collection<Future<?>> result = super.initializeOp(hconf);
+  protected void initializeOp(Configuration hconf) throws HiveException {
+    super.initializeOp(hconf);
     ObjectInspector[] inputOIs = new ObjectInspector[conf.getTagLength()];
     byte tag = conf.getTag();
     inputOIs[tag] = inputObjInspectors[0];
     conf.setTagOrder(new Byte[]{ tag });
     htsOperator.setConf(conf);
     htsOperator.initialize(hconf, inputOIs);
-    return result;
   }
 
   @Override

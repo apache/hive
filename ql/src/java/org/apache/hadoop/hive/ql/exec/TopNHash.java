@@ -29,8 +29,8 @@ import java.util.TreeSet;
 
 import com.google.common.collect.MinMaxPriorityQueue;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -43,7 +43,7 @@ import org.apache.hadoop.io.WritableComparator;
  * TODO: rename to TopNHeap?
  */
 public class TopNHash {
-  public static Log LOG = LogFactory.getLog(TopNHash.class);
+  private static final Logger LOG = LoggerFactory.getLogger(TopNHash.class);
 
   /**
    * For interaction between operator and top-n hash.
@@ -103,8 +103,13 @@ public class TopNHash {
       return; // topN == 0 will cause a short-circuit, don't need any initialization
     }
 
+    // Used Memory = totalMemory() - freeMemory();
+    // Total Free Memory = maxMemory() - Used Memory;
+    long totalFreeMemory = Runtime.getRuntime().maxMemory() -
+      Runtime.getRuntime().totalMemory() + Runtime.getRuntime().freeMemory();
+
     // limit * 64 : compensation of arrays for key/value/hashcodes
-    this.threshold = (long) (memUsage * Runtime.getRuntime().maxMemory()) - topN * 64;
+    this.threshold = (long) (memUsage * totalFreeMemory) - topN * 64L;
     if (threshold < 0) {
       return;
     }

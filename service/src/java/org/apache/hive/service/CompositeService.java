@@ -23,8 +23,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 
 /**
@@ -33,7 +33,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
  */
 public class CompositeService extends AbstractService {
 
-  private static final Log LOG = LogFactory.getLog(CompositeService.class);
+  private static final Logger LOG = LoggerFactory.getLogger(CompositeService.class);
 
   private final List<Service> serviceList = new ArrayList<Service>();
 

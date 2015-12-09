@@ -24,8 +24,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.DataOutputBuffer;
@@ -70,7 +71,7 @@ import org.apache.hadoop.util.StringUtils;
  */
 public class SparkReduceRecordHandler extends SparkRecordHandler {
 
-  private static final Log LOG = LogFactory.getLog(SparkReduceRecordHandler.class);
+  private static final Logger LOG = LoggerFactory.getLogger(SparkReduceRecordHandler.class);
 
   // Input value serde needs to be an array to support different SerDe
   // for different tags
@@ -153,10 +154,6 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
           /* vectorization only works with struct object inspectors */
           valueStructInspectors[tag] = (StructObjectInspector) valueObjectInspector[tag];
 
-          ObjectPair<VectorizedRowBatch, StandardStructObjectInspector> pair = VectorizedBatchUtil.
-              constructVectorizedRowBatch(keyStructInspector,
-              valueStructInspectors[tag], gWork.getVectorScratchColumnTypeMap());
-          batches[tag] = pair.getFirst();
           final int totalColumns = keysColumnOffset
               + valueStructInspectors[tag].getAllStructFieldRefs().size();
           valueStringWriters[tag] = new ArrayList<VectorExpressionWriter>(totalColumns);
@@ -165,7 +162,11 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
           valueStringWriters[tag].addAll(Arrays.asList(VectorExpressionWriterFactory
               .genVectorStructExpressionWritables(valueStructInspectors[tag])));
 
-          rowObjectInspector[tag] = pair.getSecond();
+          rowObjectInspector[tag] = Utilities.constructVectorizedReduceRowOI(keyStructInspector,
+              valueStructInspectors[tag]);
+          batches[tag] = gWork.getVectorizedRowBatchCtx().createVectorizedRowBatch();
+
+
         } else {
           ois.add(keyObjectInspector);
           ois.add(valueObjectInspector[tag]);
@@ -274,7 +275,7 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
         throw (OutOfMemoryError) e;
       } else {
         String msg = "Fatal error: " + e;
-        LOG.fatal(msg, e);
+        LOG.error(msg, e);
         throw new RuntimeException(e);
       }
     }
@@ -424,7 +425,7 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
       }
     } finally {
       MapredContext.close();
-      Utilities.clearWorkMap();
+      Utilities.clearWorkMap(jc);
     }
   }
 

@@ -1,0 +1,106 @@
+PREHOOK: query: create table acid_uap(a int, b varchar(128)) partitioned by (ds string) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@acid_uap
+POSTHOOK: query: create table acid_uap(a int, b varchar(128)) partitioned by (ds string) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@acid_uap
+PREHOOK: query: insert into table acid_uap partition (ds='today') select cint, cast(cstring1 as varchar(128)) as cs from alltypesorc where cint is not null and cint < 0 order by cint, cs limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@acid_uap@ds=today
+POSTHOOK: query: insert into table acid_uap partition (ds='today') select cint, cast(cstring1 as varchar(128)) as cs from alltypesorc where cint is not null and cint < 0 order by cint, cs limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@acid_uap@ds=today
+POSTHOOK: Lineage: acid_uap PARTITION(ds=today).a SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: acid_uap PARTITION(ds=today).b EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+PREHOOK: query: insert into table acid_uap partition (ds='tomorrow') select cint, cast(cstring1 as varchar(128)) as cs from alltypesorc where cint is not null and cint > 10 order by cint, cs limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@acid_uap@ds=tomorrow
+POSTHOOK: query: insert into table acid_uap partition (ds='tomorrow') select cint, cast(cstring1 as varchar(128)) as cs from alltypesorc where cint is not null and cint > 10 order by cint, cs limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@acid_uap@ds=tomorrow
+POSTHOOK: Lineage: acid_uap PARTITION(ds=tomorrow).a SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: acid_uap PARTITION(ds=tomorrow).b EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+PREHOOK: query: select a,b,ds from acid_uap order by a,b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid_uap
+PREHOOK: Input: default@acid_uap@ds=today
+PREHOOK: Input: default@acid_uap@ds=tomorrow
+#### A masked pattern was here ####
+POSTHOOK: query: select a,b,ds from acid_uap order by a,b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid_uap
+POSTHOOK: Input: default@acid_uap@ds=today
+POSTHOOK: Input: default@acid_uap@ds=tomorrow
+#### A masked pattern was here ####
+-1073279343	oj1YrV5Wa	today
+-1073051226	A34p7oRr2WvUJNf	today
+-1072910839	0iqrc5	today
+-1072081801	dPkN74F7	today
+-1072076362	2uLyD28144vklju213J1mr	today
+-1071480828	aw724t8c5558x2xneC624	today
+-1071363017	Anj0oF	today
+-1070883071	0ruyd6Y50JpdGRf6HqD	today
+-1070551679	iUR3Q	today
+-1069736047	k17Am8uPHWk02cEf1jet	today
+762	3WsVeqb28VWEEOLI8ail	tomorrow
+762	40ks5556SV	tomorrow
+762	BLoMwUJ51ns6pd	tomorrow
+762	a10E76jX35YwquKCTA	tomorrow
+762	q5y2Vy1	tomorrow
+6981	NULL	tomorrow
+6981	1FNNhmiFLGw425NA13g	tomorrow
+6981	4KhrrQ0nJ7bMNTvhSCA	tomorrow
+6981	K630vaVf	tomorrow
+6981	Y5x3JuI3M8jngv5N	tomorrow
+PREHOOK: query: update acid_uap set b = 'fred'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid_uap
+PREHOOK: Input: default@acid_uap@ds=today
+PREHOOK: Input: default@acid_uap@ds=tomorrow
+PREHOOK: Output: default@acid_uap@ds=today
+PREHOOK: Output: default@acid_uap@ds=tomorrow
+POSTHOOK: query: update acid_uap set b = 'fred'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid_uap
+POSTHOOK: Input: default@acid_uap@ds=today
+POSTHOOK: Input: default@acid_uap@ds=tomorrow
+POSTHOOK: Output: default@acid_uap@ds=today
+POSTHOOK: Output: default@acid_uap@ds=tomorrow
+PREHOOK: query: select a,b,ds from acid_uap order by a,b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid_uap
+PREHOOK: Input: default@acid_uap@ds=today
+PREHOOK: Input: default@acid_uap@ds=tomorrow
+#### A masked pattern was here ####
+POSTHOOK: query: select a,b,ds from acid_uap order by a,b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid_uap
+POSTHOOK: Input: default@acid_uap@ds=today
+POSTHOOK: Input: default@acid_uap@ds=tomorrow
+#### A masked pattern was here ####
+-1073279343	fred	today
+-1073051226	fred	today
+-1072910839	fred	today
+-1072081801	fred	today
+-1072076362	fred	today
+-1071480828	fred	today
+-1071363017	fred	today
+-1070883071	fred	today
+-1070551679	fred	today
+-1069736047	fred	today
+762	fred	tomorrow
+762	fred	tomorrow
+762	fred	tomorrow
+762	fred	tomorrow
+762	fred	tomorrow
+6981	fred	tomorrow
+6981	fred	tomorrow
+6981	fred	tomorrow
+6981	fred	tomorrow
+6981	fred	tomorrow

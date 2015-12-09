@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 explain
 select s.key2, s.value2
 from (

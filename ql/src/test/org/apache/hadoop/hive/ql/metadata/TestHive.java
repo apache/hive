@@ -249,7 +249,7 @@ public class TestHive extends TestCase {
    * @throws Throwable
    */
   public void testMetaStoreApiTiming() throws Throwable {
-    // Get the RootLogger which, if you don't have log4j2-test.xml defined, will only log ERRORs
+    // Get the RootLogger which, if you don't have log4j2-test.properties defined, will only log ERRORs
     Logger logger = LogManager.getLogger("hive.ql.metadata.Hive");
     Level oldLevel = logger.getLevel();
     LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
@@ -303,7 +303,7 @@ public class TestHive extends TestCase {
 
       ft = hm.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName);
       assertNotNull("Unable to fetch table", ft);
-      ft.checkValidity();
+      ft.checkValidity(hiveConf);
       assertEquals("Table names didn't match for table: " + tableName, tbl
           .getTableName(), ft.getTableName());
       assertEquals("Table owners didn't match for table: " + tableName, tbl

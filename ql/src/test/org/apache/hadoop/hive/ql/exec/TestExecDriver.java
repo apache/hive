@@ -26,8 +26,8 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -73,7 +73,7 @@ public class TestExecDriver extends TestCase {
   static HiveConf conf;
 
   private static final String tmpdir;
-  private static final Log LOG = LogFactory.getLog(TestExecDriver.class);
+  private static final Logger LOG = LoggerFactory.getLogger(TestExecDriver.class);
   private static final Path tmppath;
   private static Hive db;
   private static FileSystem fs;
@@ -139,7 +139,7 @@ public class TestExecDriver extends TestCase {
         db.dropTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, src, true, true);
         db.createTable(src, cols, null, TextInputFormat.class,
             HiveIgnoreKeyTextOutputFormat.class);
-        db.loadTable(hadoopDataFile[i], src, false, false, true, false, false);
+        db.loadTable(hadoopDataFile[i], src, false, true, false, false);
         i++;
       }
 

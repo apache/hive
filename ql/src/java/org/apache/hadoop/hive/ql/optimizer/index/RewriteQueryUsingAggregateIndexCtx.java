@@ -24,9 +24,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
@@ -64,7 +65,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
  */
 
 public final class RewriteQueryUsingAggregateIndexCtx  implements NodeProcessorCtx {
-  private static final Log LOG = LogFactory.getLog(RewriteQueryUsingAggregateIndexCtx.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(RewriteQueryUsingAggregateIndexCtx.class.getName());
   private RewriteQueryUsingAggregateIndexCtx(ParseContext parseContext, Hive hiveDb,
       RewriteCanApplyCtx canApplyCtx) {
     this.parseContext = parseContext;
@@ -180,7 +181,7 @@ public final class RewriteQueryUsingAggregateIndexCtx  implements NodeProcessorC
     TableScanDesc indexTableScanDesc = new TableScanDesc(indexTableHandle);
     indexTableScanDesc.setGatherStats(false);
 
-    String k = indexTableName + Path.SEPARATOR;
+    String k = MetaStoreUtils.encodeTableName(indexTableName) + Path.SEPARATOR;
     indexTableScanDesc.setStatsAggPrefix(k);
     scanOperator.setConf(indexTableScanDesc);
 
@@ -265,7 +266,7 @@ public final class RewriteQueryUsingAggregateIndexCtx  implements NodeProcessorC
     if (index == 0) {
       // the query contains the sum aggregation GenericUDAF
       String selReplacementCommand = "select sum(`" + rewriteQueryCtx.getAggregateFunction() + "`)"
-          + " from " + rewriteQueryCtx.getIndexName() + " group by "
+          + " from `" + rewriteQueryCtx.getIndexName() + "` group by "
           + rewriteQueryCtx.getIndexKey() + " ";
       // retrieve the operator tree for the query, and the required GroupByOperator from it
       Operator<?> newOperatorTree = RewriteParseContextGenerator.generateOperatorTree(

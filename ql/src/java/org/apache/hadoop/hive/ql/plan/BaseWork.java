@@ -26,12 +26,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 
 /**
@@ -40,7 +42,7 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
  */
 @SuppressWarnings({"serial"})
 public abstract class BaseWork extends AbstractOperatorDesc {
-  static final private Log LOG = LogFactory.getLog(BaseWork.class);
+  static final private Logger LOG = LoggerFactory.getLogger(BaseWork.class);
 
   // dummyOps is a reference to all the HashTableDummy operators in the
   // plan. These have to be separately initialized when we setup a task.
@@ -64,9 +66,10 @@ public abstract class BaseWork extends AbstractOperatorDesc {
 
   // Vectorization.
 
-  protected Map<String, Integer> vectorColumnNameMap;
-  protected Map<Integer, String> vectorColumnTypeMap;
-  protected Map<Integer, String> vectorScratchColumnTypeMap;
+  protected VectorizedRowBatchCtx vectorizedRowBatchCtx;
+
+  protected boolean llapMode = false;
+  protected boolean uberMode = false;
 
   public void setGatheringStats(boolean gatherStats) {
     this.gatheringStats = gatherStats;
@@ -105,7 +108,7 @@ public abstract class BaseWork extends AbstractOperatorDesc {
 
   public abstract void replaceRoots(Map<Operator<?>, Operator<?>> replacementMap);
 
-  public abstract Set<Operator<?>> getAllRootOperators();
+  public abstract Set<Operator<? extends OperatorDesc>> getAllRootOperators();
 
   public Set<Operator<?>> getAllOperators() {
 
@@ -131,7 +134,7 @@ public abstract class BaseWork extends AbstractOperatorDesc {
    * Returns a set containing all leaf operators from the operator tree in this work.
    * @return a set containing all leaf operators in this operator tree.
    */
-  public Set<Operator<?>> getAllLeafOperators() {
+  public Set<Operator<? extends OperatorDesc>> getAllLeafOperators() {
     Set<Operator<?>> returnSet = new LinkedHashSet<Operator<?>>();
     Set<Operator<?>> opSet = getAllRootOperators();
     Stack<Operator<?>> opStack = new Stack<Operator<?>>();
@@ -152,29 +155,17 @@ public abstract class BaseWork extends AbstractOperatorDesc {
     return returnSet;
   }
 
-  public Map<String, Integer> getVectorColumnNameMap() {
-    return vectorColumnNameMap;
+  // -----------------------------------------------------------------------------------------------
+
+  public VectorizedRowBatchCtx getVectorizedRowBatchCtx() {
+    return vectorizedRowBatchCtx;
   }
 
-  public void setVectorColumnNameMap(Map<String, Integer> vectorColumnNameMap) {
-    this.vectorColumnNameMap = vectorColumnNameMap;
+  public void setVectorizedRowBatchCtx(VectorizedRowBatchCtx vectorizedRowBatchCtx) {
+    this.vectorizedRowBatchCtx = vectorizedRowBatchCtx;
   }
 
-  public Map<Integer, String> getVectorColumnTypeMap() {
-    return vectorColumnTypeMap;
-  }
-
-  public void setVectorColumnTypeMap(Map<Integer, String> vectorColumnTypeMap) {
-    this.vectorColumnTypeMap = vectorColumnTypeMap;
-  }
-
-  public Map<Integer, String> getVectorScratchColumnTypeMap() {
-    return vectorScratchColumnTypeMap;
-  }
-
-  public void setVectorScratchColumnTypeMap(Map<Integer, String> vectorScratchColumnTypeMap) {
-    this.vectorScratchColumnTypeMap = vectorScratchColumnTypeMap;
-  }
+  // -----------------------------------------------------------------------------------------------
 
   /**
    * @return the mapredLocalWork
@@ -190,6 +181,22 @@ public abstract class BaseWork extends AbstractOperatorDesc {
    */
   public void setMapRedLocalWork(final MapredLocalWork mapLocalWork) {
     this.mrLocalWork = mapLocalWork;
+  }
+
+  public void setUberMode(boolean uberMode) {
+    this.uberMode = uberMode;
+  }
+
+  public boolean getUberMode() {
+    return uberMode;
+  }
+
+  public void setLlapMode(boolean llapMode) {
+    this.llapMode = llapMode;
+  }
+
+  public boolean getLlapMode() {
+    return llapMode;
   }
 
   public abstract void configureJobConf(JobConf job);

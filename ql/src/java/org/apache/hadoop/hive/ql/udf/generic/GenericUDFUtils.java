@@ -159,8 +159,7 @@ public final class GenericUDFUtils {
       // a common base class or not.
       TypeInfo commonTypeInfo = null;
       if (isUnionAll) {
-        commonTypeInfo = FunctionRegistry.getCommonClassForUnionAll(oiTypeInfo,
-          rTypeInfo);
+        commonTypeInfo = FunctionRegistry.getCommonClassForUnionAll(rTypeInfo, oiTypeInfo);
       } else {
         commonTypeInfo = FunctionRegistry.getCommonClass(oiTypeInfo,
           rTypeInfo);

@@ -1,6 +1,7 @@
+set hive.mapred.mode=nonstrict;
 set datanucleus.cache.collections=false;
 set hive.stats.autogather=true;
-set hive.enforce.bucketing = true;
+;
 set hive.exec.reducers.max = 1;
 
 CREATE TABLE bucket3_1(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS;

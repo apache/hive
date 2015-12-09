@@ -30,8 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.MapRedStats;
@@ -61,10 +59,11 @@ import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.Logger;
 import org.apache.logging.log4j.core.appender.FileAppender;
 import org.apache.logging.log4j.core.appender.RollingFileAppender;
+import org.slf4j.LoggerFactory;
 
 public class HadoopJobExecHelper {
 
-  static final private Log LOG = LogFactory.getLog(HadoopJobExecHelper.class.getName());
+  static final private org.slf4j.Logger LOG = LoggerFactory.getLogger(HadoopJobExecHelper.class.getName());
 
   protected transient JobConf job;
   protected Task<? extends Serializable> task;
@@ -76,8 +75,8 @@ public class HadoopJobExecHelper {
   protected transient int lastReduceProgress;
 
   public transient JobID jobId;
-  private LogHelper console;
-  private HadoopJobExecHook callBackObj;
+  private final LogHelper console;
+  private final HadoopJobExecHook callBackObj;
 
   /**
    * Update counters relevant to this task.
@@ -186,7 +185,7 @@ public class HadoopJobExecHelper {
           System.err.println("killing job with: " + rj.getID());
           rj.killJob();
         } catch (Exception e) {
-          LOG.warn(e);
+          LOG.warn("Failed to kill job", e);
           System.err.println("Failed to kill job: "+ rj.getID());
           // do nothing
         }

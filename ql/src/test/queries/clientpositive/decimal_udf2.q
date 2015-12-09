@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 DROP TABLE IF EXISTS DECIMAL_UDF2;
 
 CREATE TABLE DECIMAL_UDF2 (key decimal(20,10), value int)

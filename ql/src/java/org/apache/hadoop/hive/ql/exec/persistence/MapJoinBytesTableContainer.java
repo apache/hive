@@ -24,8 +24,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
@@ -60,6 +60,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.BinaryComparable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Writable;
+import org.apache.hive.common.util.HashCodeUtil;
 
 /**
  * Table container that serializes keys and values using LazyBinarySerDe into
@@ -68,7 +69,7 @@ import org.apache.hadoop.io.Writable;
  */
 public class MapJoinBytesTableContainer
          implements MapJoinTableContainer, MapJoinTableContainerDirectAccess {
-  private static final Log LOG = LogFactory.getLog(MapJoinTableContainer.class);
+  private static final Logger LOG = LoggerFactory.getLogger(MapJoinTableContainer.class);
 
   private final BytesBytesMultiHashMap hashMap;
   /** The OI used to deserialize values. We never deserialize keys. */
@@ -245,7 +246,7 @@ public class MapJoinBytesTableContainer
       }
       sanityCheckKeyForTag();
       BinaryComparable b = (BinaryComparable)key;
-      return WriteBuffers.murmurHash(b.getBytes(), 0, b.getLength() - (hasTag ? 1 : 0));
+      return HashCodeUtil.murmurHash(b.getBytes(), 0, b.getLength() - (hasTag ? 1 : 0));
     }
 
     /**
@@ -340,7 +341,7 @@ public class MapJoinBytesTableContainer
     public int getHashFromKey() throws SerDeException {
       byte[] keyBytes = key.getBytes();
       int keyLength = key.getLength();
-      return WriteBuffers.murmurHash(keyBytes, 0, keyLength);
+      return HashCodeUtil.murmurHash(keyBytes, 0, keyLength);
     }
   }
 
@@ -371,7 +372,7 @@ public class MapJoinBytesTableContainer
 
   @Override
   public void clear() {
-    hashMap.clear();
+    // Don't clear the hash table - reuse is possible. GC will take care of it.
   }
 
   @Override
@@ -704,8 +705,6 @@ public class MapJoinBytesTableContainer
 
     public JoinUtil.JoinResult setDirect(byte[] bytes, int offset, int length,
         BytesBytesMultiHashMap.Result hashMapResult) {
-
-      int keyHash = WriteBuffers.murmurHash(bytes, offset, length);
       aliasFilter = hashMap.getValueResult(bytes, offset, length, hashMapResult);
       dummyRow = null;
       if (hashMapResult.hasRows()) {

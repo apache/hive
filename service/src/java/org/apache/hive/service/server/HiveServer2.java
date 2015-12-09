@@ -34,8 +34,6 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.api.ACLProvider;
@@ -47,22 +45,26 @@ import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.hadoop.hive.common.JvmPauseMonitor;
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
-import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.common.ServerUtils;
+import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManagerImpl;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
 import org.apache.hadoop.hive.ql.util.ZooKeeperHiveHelper;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.HiveVersionInfo;
+import org.apache.hive.http.HttpServer;
 import org.apache.hive.service.CompositeService;
+import org.apache.hive.service.ServiceException;
 import org.apache.hive.service.cli.CLIService;
 import org.apache.hive.service.cli.thrift.ThriftBinaryCLIService;
 import org.apache.hive.service.cli.thrift.ThriftCLIService;
 import org.apache.hive.service.cli.thrift.ThriftHttpCLIService;
+import org.apache.logging.log4j.util.Strings;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
@@ -70,6 +72,8 @@ import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.ZooDefs.Perms;
 import org.apache.zookeeper.data.ACL;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Joiner;
 
@@ -78,15 +82,15 @@ import com.google.common.base.Joiner;
  *
  */
 public class HiveServer2 extends CompositeService {
-  private static final Log LOG = LogFactory.getLog(HiveServer2.class);
   private static CountDownLatch deleteSignal;
-
+  private static final Logger LOG = LoggerFactory.getLogger(HiveServer2.class);
   private CLIService cliService;
   private ThriftCLIService thriftCLIService;
   private PersistentEphemeralNode znode;
   private String znodePath;
   private CuratorFramework zooKeeperClient;
   private boolean registeredWithZooKeeper = false;
+  private HttpServer webServer; // Web UI
 
   public HiveServer2() {
     super(HiveServer2.class.getSimpleName());
@@ -97,10 +101,17 @@ public class HiveServer2 extends CompositeService {
   public synchronized void init(HiveConf hiveConf) {
     cliService = new CLIService(this);
     addService(cliService);
+    final HiveServer2 hiveServer2 = this;
+    Runnable oomHook = new Runnable() {
+      @Override
+      public void run() {
+        hiveServer2.stop();
+      }
+    };
     if (isHTTPTransportMode(hiveConf)) {
-      thriftCLIService = new ThriftHttpCLIService(cliService);
+      thriftCLIService = new ThriftHttpCLIService(cliService, oomHook);
     } else {
-      thriftCLIService = new ThriftBinaryCLIService(cliService);
+      thriftCLIService = new ThriftBinaryCLIService(cliService, oomHook);
     }
     addService(thriftCLIService);
     super.init(hiveConf);
@@ -110,8 +121,47 @@ public class HiveServer2 extends CompositeService {
     } catch (Throwable t) {
       throw new Error("Unable to intitialize HiveServer2", t);
     }
+    // Setup web UI
+    try {
+      if (hiveConf.getBoolVar(ConfVars.HIVE_IN_TEST)) {
+        LOG.info("Web UI is disabled since in test mode");
+      } else {
+        int webUIPort =
+          hiveConf.getIntVar(ConfVars.HIVE_SERVER2_WEBUI_PORT);
+        if (webUIPort <= 0) {
+          LOG.info("Web UI is disabled since port is set to " + webUIPort);
+        } else {
+          HttpServer.Builder builder = new HttpServer.Builder();
+          builder.setName("hiveserver2").setPort(webUIPort).setConf(hiveConf);
+          builder.setHost(hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_BIND_HOST));
+          builder.setMaxThreads(
+            hiveConf.getIntVar(ConfVars.HIVE_SERVER2_WEBUI_MAX_THREADS));
+          builder.setAdmins(hiveConf.getVar(ConfVars.USERS_IN_ADMIN_ROLE));
+          // SessionManager is initialized
+          builder.setContextAttribute("hive.sm",
+            cliService.getSessionManager());
+          hiveConf.set("startcode",
+            String.valueOf(System.currentTimeMillis()));
+          if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_USE_SSL)) {
+            String keyStorePath = hiveConf.getVar(
+              ConfVars.HIVE_SERVER2_WEBUI_SSL_KEYSTORE_PATH);
+            if (Strings.isBlank(keyStorePath)) {
+              throw new IllegalArgumentException(
+                ConfVars.HIVE_SERVER2_WEBUI_SSL_KEYSTORE_PATH.varname
+                  + " Not configured for SSL connection");
+            }
+            builder.setKeyStorePassword(ShimLoader.getHadoopShims().getPassword(
+              hiveConf, ConfVars.HIVE_SERVER2_WEBUI_SSL_KEYSTORE_PASSWORD.varname));
+            builder.setKeyStorePath(keyStorePath);
+            builder.setUseSSL(true);
+          }
+          webServer = builder.build();
+        }
+      }
+    } catch (IOException ie) {
+      throw new ServiceException(ie);
+    }
     // Add a shutdown hook for catching SIGTERM & SIGINT
-    final HiveServer2 hiveServer2 = this;
     Runtime.getRuntime().addShutdownHook(new Thread() {
       @Override
       public void run() {
@@ -202,7 +252,7 @@ public class HiveServer2 extends CompositeService {
       LOG.info("Created the root name space: " + rootNamespace + " on ZooKeeper for HiveServer2");
     } catch (KeeperException e) {
       if (e.code() != KeeperException.Code.NODEEXISTS) {
-        LOG.fatal("Unable to create HiveServer2 namespace: " + rootNamespace + " on ZooKeeper", e);
+        LOG.error("Unable to create HiveServer2 namespace: " + rootNamespace + " on ZooKeeper", e);
         throw e;
       }
     }
@@ -235,7 +285,7 @@ public class HiveServer2 extends CompositeService {
       }
       LOG.info("Created a znode on ZooKeeper for HiveServer2 uri: " + instanceURI);
     } catch (Exception e) {
-      LOG.fatal("Unable to create a znode for this server instance", e);
+      LOG.error("Unable to create a znode for this server instance", e);
       if (znode != null) {
         znode.close();
       }
@@ -366,6 +416,15 @@ public class HiveServer2 extends CompositeService {
   @Override
   public synchronized void start() {
     super.start();
+    if (webServer != null) {
+      try {
+        webServer.start();
+        LOG.info("Web UI has started on port " + webServer.getPort());
+      } catch (Exception e) {
+        LOG.error("Error starting Web UI: ", e);
+        throw new ServiceException(e);
+      }
+    }
   }
 
   @Override
@@ -373,6 +432,14 @@ public class HiveServer2 extends CompositeService {
     LOG.info("Shutting down HiveServer2");
     HiveConf hiveConf = this.getHiveConf();
     super.stop();
+    if (webServer != null) {
+      try {
+        webServer.stop();
+        LOG.info("Web UI has stopped");
+      } catch (Exception e) {
+        LOG.error("Error stopping Web UI: ", e);
+      }
+    }
     // Shutdown Metrics
     if (MetricsFactory.getInstance() != null) {
       try {
@@ -544,7 +611,7 @@ public class HiveServer2 extends CompositeService {
       LOG.debug(initLog4jMessage);
       HiveStringUtils.startupShutdownMessage(HiveServer2.class, args, LOG);
 
-      // Log debug message from "oproc" after log4j initialize properly
+      // Logger debug message from "oproc" after log4j initialize properly
       LOG.debug(oproc.getDebugMessage().toString());
 
       // Call the executor which will execute the appropriate command based on the parsed options
@@ -677,7 +744,7 @@ public class HiveServer2 extends CompositeService {
       try {
         startHiveServer2();
       } catch (Throwable t) {
-        LOG.fatal("Error starting HiveServer2", t);
+        LOG.error("Error starting HiveServer2", t);
         System.exit(-1);
       }
     }
@@ -699,7 +766,7 @@ public class HiveServer2 extends CompositeService {
       try {
         deleteServerInstancesFromZooKeeper(versionNumber);
       } catch (Exception e) {
-        LOG.fatal("Error deregistering HiveServer2 instances for version: " + versionNumber
+        LOG.error("Error deregistering HiveServer2 instances for version: " + versionNumber
             + " from ZooKeeper", e);
         System.out.println("Error deregistering HiveServer2 instances for version: " + versionNumber
             + " from ZooKeeper." + e);

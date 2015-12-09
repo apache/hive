@@ -18,8 +18,8 @@
 
 package org.apache.hive.common.util;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hive.common.HiveVersionAnnotation;
@@ -31,7 +31,7 @@ import org.apache.hive.common.HiveVersionAnnotation;
 @InterfaceAudience.Private
 @InterfaceStability.Unstable
 public class HiveVersionInfo {
-  private static final Log LOG = LogFactory.getLog(HiveVersionInfo.class);
+  private static final Logger LOG = LoggerFactory.getLogger(HiveVersionInfo.class);
 
   private static Package myPackage;
   private static HiveVersionAnnotation version;

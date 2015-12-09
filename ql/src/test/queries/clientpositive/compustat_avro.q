@@ -14,8 +14,8 @@ create table testAvro
      'org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat'
    TBLPROPERTIES ('avro.schema.url'='${system:test.tmp.dir}/grad.avsc');
 
-describe formatted testAvro.col1;
+describe formatted testAvro col1;
 
 analyze table testAvro compute statistics for columns col1,col3;
 
-describe formatted testAvro.col1;
+describe formatted testAvro col1;

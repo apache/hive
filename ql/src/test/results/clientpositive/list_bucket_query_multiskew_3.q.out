@@ -451,7 +451,7 @@ STAGE PLANS:
               name: default.fact_daily
             name: default.fact_daily
       Truncated Path -> Alias:
-        /fact_daily/ds=1/hr=1 [$hdt$_0:fact_daily]
+        /fact_daily/ds=1/hr=1 [fact_daily]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -474,6 +474,7 @@ STAGE PLANS:
                   columns.types bigint
                   escape.delim \
                   hive.serialization.extend.additional.nesting.levels true
+                  serialization.escape.crlf true
                   serialization.format 1
                   serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe

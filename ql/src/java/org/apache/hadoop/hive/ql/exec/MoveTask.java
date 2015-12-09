@@ -18,8 +18,16 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.io.IOException;
+import java.io.Serializable;
+import java.security.AccessControlException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
@@ -62,16 +70,8 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.util.StringUtils;
-
-import java.io.IOException;
-import java.io.Serializable;
-import java.security.AccessControlException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * MoveTask implementation.
@@ -79,7 +79,7 @@ import java.util.Map;
 public class MoveTask extends Task<MoveWork> implements Serializable {
 
   private static final long serialVersionUID = 1L;
-  private static transient final Log LOG = LogFactory.getLog(MoveTask.class);
+  private static transient final Logger LOG = LoggerFactory.getLogger(MoveTask.class);
 
   public MoveTask() {
     super();
@@ -132,7 +132,10 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           try {
             // create the destination if it does not exist
             if (!dstFs.exists(targetPath)) {
-              FileUtils.mkdir(dstFs, targetPath, false, conf);
+              if (!FileUtils.mkdir(dstFs, targetPath, false, conf)) {
+                throw new HiveException(
+                    "Failed to create local target directory for copy:" + targetPath);
+              }
             }
           } catch (IOException e) {
             throw new HiveException("Unable to create target directory for copy" + targetPath, e);
@@ -291,13 +294,39 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
             throw new HiveException(
                 "addFiles: filesystem error in check phase", e);
           }
+
+          // handle file format check for table level
           if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVECHECKFILEFORMAT)) {
-            // Check if the file format of the file matches that of the table.
-            boolean flag = HiveFileFormatUtils.checkInputFormat(
-                srcFs, conf, tbd.getTable().getInputFileFormatClass(), files);
-            if (!flag) {
-              throw new HiveException(
-                  "Wrong file format. Please check the file's format.");
+            boolean flag = true;
+            // work.checkFileFormat is set to true only for Load Task, so assumption here is
+            // dynamic partition context is null
+            if (tbd.getDPCtx() == null) {
+              if (tbd.getPartitionSpec() == null || tbd.getPartitionSpec().isEmpty()) {
+                // Check if the file format of the file matches that of the table.
+                flag = HiveFileFormatUtils.checkInputFormat(
+                    srcFs, conf, tbd.getTable().getInputFileFormatClass(), files);
+              } else {
+                // Check if the file format of the file matches that of the partition
+                Partition oldPart = db.getPartition(table, tbd.getPartitionSpec(), false);
+                if (oldPart == null) {
+                  // this means we have just created a table and are specifying partition in the
+                  // load statement (without pre-creating the partition), in which case lets use
+                  // table input format class. inheritTableSpecs defaults to true so when a new
+                  // partition is created later it will automatically inherit input format
+                  // from table object
+                  flag = HiveFileFormatUtils.checkInputFormat(
+                      srcFs, conf, tbd.getTable().getInputFileFormatClass(), files);
+                } else {
+                  flag = HiveFileFormatUtils.checkInputFormat(
+                      srcFs, conf, oldPart.getInputFormatClass(), files);
+                }
+              }
+              if (!flag) {
+                throw new HiveException(
+                    "Wrong file format. Please check the file's format.");
+              }
+            } else {
+              LOG.warn("Skipping file format check as dpCtx is not null");
             }
           }
         }
@@ -307,7 +336,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         if (tbd.getPartitionSpec().size() == 0) {
           dc = new DataContainer(table.getTTable());
           db.loadTable(tbd.getSourcePath(), tbd.getTable()
-              .getTableName(), tbd.getReplace(), tbd.getHoldDDLTime(), work.isSrcLocal(),
+              .getTableName(), tbd.getReplace(), work.isSrcLocal(),
               isSkewedStoredAsDirs(tbd),
               work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID);
           if (work.getOutputs() != null) {
@@ -389,7 +418,6 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
                 tbd.getPartitionSpec(),
                 tbd.getReplace(),
                 dpCtx.getNumDPCols(),
-                tbd.getHoldDDLTime(),
                 isSkewedStoredAsDirs(tbd),
                 work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID,
                 SessionState.get().getTxnMgr().getCurrentTxnId());
@@ -424,7 +452,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
               // For DP, WriteEntity creation is deferred at this stage so we need to update
               // queryPlan here.
               if (queryPlan.getOutputs() == null) {
-                queryPlan.setOutputs(new HashSet<WriteEntity>());
+                queryPlan.setOutputs(new LinkedHashSet<WriteEntity>());
               }
               queryPlan.getOutputs().add(enty);
 
@@ -448,11 +476,10 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
                 tbd.getPartitionSpec());
             db.validatePartitionNameCharacters(partVals);
             db.loadPartition(tbd.getSourcePath(), tbd.getTable().getTableName(),
-                tbd.getPartitionSpec(), tbd.getReplace(), tbd.getHoldDDLTime(),
+                tbd.getPartitionSpec(), tbd.getReplace(),
                 tbd.getInheritTableSpecs(), isSkewedStoredAsDirs(tbd), work.isSrcLocal(),
                 work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID);
-            Partition partn = db.getPartition(table, tbd.getPartitionSpec(),
-                false);
+            Partition partn = db.getPartition(table, tbd.getPartitionSpec(), false);
 
             if (bucketCols != null || sortCols != null) {
               updatePartitionBucketSortColumns(table, partn, bucketCols,

@@ -23,8 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.persistence.HybridHashTableContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.HybridHashTableContainer.HashPartition;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinBytesTableContainer;
@@ -47,6 +47,8 @@ import org.apache.hadoop.hive.serde2.lazybinary.fast.LazyBinaryDeserializeRead;
 import org.apache.hadoop.hive.serde2.lazybinary.fast.LazyBinarySerializeWrite;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 
 /**
@@ -70,10 +72,12 @@ import org.apache.hadoop.hive.serde2.ByteStream.Output;
 public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinCommonOperator {
 
   private static final long serialVersionUID = 1L;
-  private static final Log LOG = LogFactory.getLog(VectorMapJoinGenerateResultOperator.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinGenerateResultOperator.class.getName());
   private static final String CLASS_NAME = VectorMapJoinGenerateResultOperator.class.getName();
 
-  private transient PrimitiveTypeInfo[] bigTablePrimitiveTypeInfos;
+  //------------------------------------------------------------------------------------------------
+
+  private transient TypeInfo[] bigTableTypeInfos;
 
   private transient VectorSerializeRow bigTableVectorSerializeRow;
 
@@ -162,6 +166,8 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
 
       int batchIndex = allMatchs[allMatchesIndex + i];
 
+      // Outer key copying is only used when we are using the input BigTable batch as the output.
+      //
       if (bigTableVectorCopyOuterKeys != null) {
         // Copy within row.
         bigTableVectorCopyOuterKeys.copyByReference(batch, batchIndex, batch, batchIndex);
@@ -228,15 +234,10 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
 
         // Copy the BigTable values into the overflow batch. Since the overflow batch may
         // not get flushed here, we must copy by value.
+        // Note this includes any outer join keys that need to go into the small table "area".
         if (bigTableRetainedVectorCopy != null) {
           bigTableRetainedVectorCopy.copyByValue(batch, batchIndex,
                                                  overflowBatch, overflowBatch.size);
-        }
-
-        // Reference the keys we just copied above.
-        if (bigTableVectorCopyOuterKeys != null) {
-          bigTableVectorCopyOuterKeys.copyByReference(overflowBatch, overflowBatch.size,
-                                                      overflowBatch, overflowBatch.size);
         }
 
         if (smallTableVectorDeserializeRow != null) {
@@ -329,12 +330,6 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
             overflowBatch.cols[column].isRepeating = true;
           }
         }
-        if (bigTableVectorCopyOuterKeys != null) {
-          bigTableVectorCopyOuterKeys.copyByReference(batch, batchIndex, overflowBatch, 0);
-          for (int column : bigTableOuterKeyOutputVectorColumns) {
-            overflowBatch.cols[column].isRepeating = true;
-          }
-        }
 
         // Crucial here that we don't reset the overflow batch, or we will loose the small table
         // values we put in above.
@@ -344,13 +339,6 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
         for (int column : bigTableRetainedMapping.getOutputColumns()) {
           ColumnVector colVector = overflowBatch.cols[column];
           colVector.reset();
-        }
-
-        if (bigTableVectorCopyOuterKeys != null) {
-          for (int column : bigTableOuterKeyOutputVectorColumns) {
-            ColumnVector colVector = overflowBatch.cols[column];
-            colVector.reset();
-          }
         }
       }
 
@@ -410,14 +398,14 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
 
   private void setupSpillSerDe(VectorizedRowBatch batch) throws HiveException {
 
-    PrimitiveTypeInfo[] inputObjInspectorsTypeInfos =
-        VectorizedBatchUtil.primitiveTypeInfosFromStructObjectInspector(
+    TypeInfo[] inputObjInspectorsTypeInfos =
+        VectorizedBatchUtil.typeInfosFromStructObjectInspector(
                (StructObjectInspector) inputObjInspectors[posBigTable]);
 
     List<Integer> projectedColumns = vContext.getProjectedColumns();
     int projectionSize = vContext.getProjectedColumns().size();
 
-    List<PrimitiveTypeInfo> typeInfoList = new ArrayList<PrimitiveTypeInfo>();
+    List<TypeInfo> typeInfoList = new ArrayList<TypeInfo>();
     List<Integer> noNullsProjectionList = new ArrayList<Integer>();
     for (int i = 0; i < projectionSize; i++) {
       int projectedColumn = projectedColumns.get(i);
@@ -429,17 +417,19 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
 
     int[] noNullsProjection = ArrayUtils.toPrimitive(noNullsProjectionList.toArray(new Integer[0]));
     int noNullsProjectionSize = noNullsProjection.length;
-    bigTablePrimitiveTypeInfos = typeInfoList.toArray(new PrimitiveTypeInfo[0]);
+    bigTableTypeInfos = typeInfoList.toArray(new TypeInfo[0]);
 
     bigTableVectorSerializeRow =
-            new VectorSerializeRow(new LazyBinarySerializeWrite(noNullsProjectionSize));
+            new VectorSerializeRow<LazyBinarySerializeWrite>(
+                new LazyBinarySerializeWrite(noNullsProjectionSize));
 
     bigTableVectorSerializeRow.init(
-                bigTablePrimitiveTypeInfos,
-                noNullsProjectionList);
+                bigTableTypeInfos,
+                noNullsProjection);
 
-    bigTableVectorDeserializeRow = new VectorDeserializeRow(
-            new LazyBinaryDeserializeRead(bigTablePrimitiveTypeInfos));
+    bigTableVectorDeserializeRow =
+        new VectorDeserializeRow<LazyBinaryDeserializeRead>(
+            new LazyBinaryDeserializeRead(bigTableTypeInfos));
 
     bigTableVectorDeserializeRow.init(noNullsProjection);
   }
@@ -512,7 +502,7 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
         smallTable);
     needHashTableSetup = true;
 
-    if (LOG.isDebugEnabled()) {
+    if (isLogDebugEnabled) {
       LOG.debug(CLASS_NAME + " reloadHashTable!");
     }
   }
@@ -521,7 +511,7 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
   protected void reProcessBigTable(int partitionId)
       throws HiveException {
 
-    if (LOG.isDebugEnabled()) {
+    if (isLogDebugEnabled) {
       LOG.debug(CLASS_NAME + " reProcessBigTable enter...");
     }
 
@@ -572,7 +562,7 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
       throw new HiveException(e);
     }
 
-    if (LOG.isDebugEnabled()) {
+    if (isLogDebugEnabled) {
       LOG.debug(CLASS_NAME + " reProcessBigTable exit! " + rowCount + " row processed and " + batchCount + " batches processed");
     }
   }
@@ -636,7 +626,7 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
     if (!aborted && overflowBatch.size > 0) {
       forwardOverflow();
     }
-    if (LOG.isDebugEnabled()) {
+    if (isLogDebugEnabled) {
       LOG.debug("VectorMapJoinInnerLongOperator closeOp " + batchCounter + " batches processed");
     }
   }

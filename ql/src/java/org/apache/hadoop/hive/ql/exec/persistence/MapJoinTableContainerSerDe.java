@@ -32,7 +32,9 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast.VectorMapJoinFastTableContainer;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -192,6 +194,74 @@ public class MapJoinTableContainerSerDe {
         value.readFields(in);
         container.putRow(keyContext, key, valueContext, value);
       }
+    }
+  }
+
+  /**
+   * Loads the small table into a VectorMapJoinFastTableContainer. Only used on Spark path.
+   * @param mapJoinDesc The descriptor for the map join
+   * @param fs FileSystem of the folder.
+   * @param folder The folder to load table container.
+   * @param hconf The hive configuration
+   * @return Loaded table.
+   */
+  @SuppressWarnings("unchecked")
+  public MapJoinTableContainer loadFastContainer(MapJoinDesc mapJoinDesc,
+      FileSystem fs, Path folder, Configuration hconf) throws HiveException {
+    try {
+      if (!fs.isDirectory(folder)) {
+        throw new HiveException("Error, not a directory: " + folder);
+      }
+      FileStatus[] fileStatuses = fs.listStatus(folder);
+      if (fileStatuses == null || fileStatuses.length == 0) {
+        return null;
+      }
+
+      SerDe keySerDe = keyContext.getSerDe();
+      SerDe valueSerDe = valueContext.getSerDe();
+      Writable key = keySerDe.getSerializedClass().newInstance();
+      Writable value = valueSerDe.getSerializedClass().newInstance();
+
+      VectorMapJoinFastTableContainer tableContainer =
+          new VectorMapJoinFastTableContainer(mapJoinDesc, hconf, -1);
+
+      for (FileStatus fileStatus : fileStatuses) {
+        Path filePath = fileStatus.getPath();
+        if (ShimLoader.getHadoopShims().isDirectory(fileStatus)) {
+          throw new HiveException("Error, not a file: " + filePath);
+        }
+        InputStream is = null;
+        ObjectInputStream in = null;
+        try {
+          is = fs.open(filePath, 4096);
+          in = new ObjectInputStream(is);
+          // skip the name and metadata
+          in.readUTF();
+          in.readObject();
+          int numKeys = in.readInt();
+          for (int keyIndex = 0; keyIndex < numKeys; keyIndex++) {
+            key.readFields(in);
+            long numRows = in.readLong();
+            for (long rowIndex = 0L; rowIndex < numRows; rowIndex++) {
+              value.readFields(in);
+              tableContainer.putRow(null, key, null, value);
+            }
+          }
+        } finally {
+          if (in != null) {
+            in.close();
+          } else if (is != null) {
+            is.close();
+          }
+        }
+      }
+
+      tableContainer.seal();
+      return tableContainer;
+    } catch (IOException e) {
+      throw new HiveException("IO error while trying to create table container", e);
+    } catch (Exception e) {
+      throw new HiveException("Error while trying to create table container", e);
     }
   }
 

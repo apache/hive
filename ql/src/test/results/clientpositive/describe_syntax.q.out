@@ -233,30 +233,26 @@ POSTHOOK: Input: db1@t1
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 key1                	int                 	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
-PREHOOK: query: -- describe table.column
--- after first checking t1.key1 for database.table not valid
--- fall back to the old syntax table.column
-DESCRIBE t1.key1
+PREHOOK: query: -- describe table column
+DESCRIBE t1 key1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: db1@t1
-POSTHOOK: query: -- describe table.column
--- after first checking t1.key1 for database.table not valid
--- fall back to the old syntax table.column
-DESCRIBE t1.key1
+POSTHOOK: query: -- describe table column
+DESCRIBE t1 key1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: db1@t1
 key1                	int                 	from deserializer   
-PREHOOK: query: DESCRIBE EXTENDED t1.key1
+PREHOOK: query: DESCRIBE EXTENDED t1 key1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: db1@t1
-POSTHOOK: query: DESCRIBE EXTENDED t1.key1
+POSTHOOK: query: DESCRIBE EXTENDED t1 key1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: db1@t1
 key1                	int                 	from deserializer   
-PREHOOK: query: DESCRIBE FORMATTED t1.key1
+PREHOOK: query: DESCRIBE FORMATTED t1 key1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: db1@t1
-POSTHOOK: query: DESCRIBE FORMATTED t1.key1
+POSTHOOK: query: DESCRIBE FORMATTED t1 key1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: db1@t1
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             

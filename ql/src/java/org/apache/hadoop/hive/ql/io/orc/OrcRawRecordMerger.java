@@ -17,26 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.io.orc;
 
-import com.google.common.annotations.VisibleForTesting;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FSDataInputStream;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.ValidTxnList;
-import org.apache.hadoop.hive.ql.io.AcidInputFormat;
-import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.io.RecordIdentifier;
-import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
-import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.LongWritable;
-
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -46,17 +26,35 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.io.AcidInputFormat;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.RecordIdentifier;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.annotations.VisibleForTesting;
+
 /**
  * Merges a base and a list of delta files together into a single stream of
  * events.
  */
 public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
 
-  private static final Log LOG = LogFactory.getLog(OrcRawRecordMerger.class);
+  private static final Logger LOG = LoggerFactory.getLogger(OrcRawRecordMerger.class);
 
   private final Configuration conf;
   private final boolean collapse;
   private final RecordReader baseReader;
+  private final ObjectInspector objectInspector;
   private final long offset;
   private final long length;
   private final ValidTxnList validTxnList;
@@ -443,6 +441,15 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
     this.offset = options.getOffset();
     this.length = options.getLength();
     this.validTxnList = validTxnList;
+
+    TypeDescription typeDescr = OrcUtils.getDesiredRowTypeDescr(conf);
+    if (typeDescr == null) {
+      throw new IOException(ErrorMsg.SCHEMA_REQUIRED_TO_READ_ACID_TABLES.getErrorCodedMsg());
+    }
+
+    objectInspector = OrcRecordUpdater.createEventSchema
+        (OrcStruct.createObjectInspector(0, OrcUtils.getOrcTypes(typeDescr)));
+
     // modify the options to reflect the event instead of the base row
     Reader.Options eventOptions = createEventOptions(options);
     if (reader == null) {
@@ -533,7 +540,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
    * @return the maximum size of the file to use
    * @throws IOException
    */
-  private static long getLastFlushLength(FileSystem fs,
+  static long getLastFlushLength(FileSystem fs,
                                          Path deltaFile) throws IOException {
     Path lengths = OrcRecordUpdater.getSideFile(deltaFile);
     long result = Long.MAX_VALUE;
@@ -660,6 +667,9 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
 
   @Override
   public void close() throws IOException {
+    if (primary != null) {
+      primary.recordReader.close();
+    }
     for(ReaderPair pair: readers.values()) {
       pair.recordReader.close();
     }
@@ -672,46 +682,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
 
   @Override
   public ObjectInspector getObjectInspector() {
-    // Read the configuration parameters
-    String columnNameProperty = conf.get(serdeConstants.LIST_COLUMNS);
-    // NOTE: if "columns.types" is missing, all columns will be of String type
-    String columnTypeProperty = conf.get(serdeConstants.LIST_COLUMN_TYPES);
-
-    // Parse the configuration parameters
-    ArrayList<String> columnNames = new ArrayList<String>();
-    Deque<Integer> virtualColumns = new ArrayDeque<Integer>();
-    if (columnNameProperty != null && columnNameProperty.length() > 0) {
-      String[] colNames = columnNameProperty.split(",");
-      for (int i = 0; i < colNames.length; i++) {
-        if (VirtualColumn.VIRTUAL_COLUMN_NAMES.contains(colNames[i])) {
-          virtualColumns.addLast(i);
-        } else {
-          columnNames.add(colNames[i]);
-        }
-      }
-    }
-    if (columnTypeProperty == null) {
-      // Default type: all string
-      StringBuilder sb = new StringBuilder();
-      for (int i = 0; i < columnNames.size(); i++) {
-        if (i > 0) {
-          sb.append(":");
-        }
-        sb.append("string");
-      }
-      columnTypeProperty = sb.toString();
-    }
-
-    ArrayList<TypeInfo> fieldTypes =
-        TypeInfoUtils.getTypeInfosFromTypeString(columnTypeProperty);
-    while (virtualColumns.size() > 0) {
-      fieldTypes.remove(virtualColumns.removeLast());
-    }
-    StructTypeInfo rowType = new StructTypeInfo();
-    rowType.setAllStructFieldNames(columnNames);
-    rowType.setAllStructFieldTypeInfos(fieldTypes);
-    return OrcRecordUpdater.createEventSchema
-        (OrcStruct.createObjectInspector(rowType));
+    return objectInspector;
   }
 
   @Override

@@ -22,3 +22,8 @@ from_utc_timestamp(cast('2012-02-11 04:30:00' as timestamp), ''),
 from_utc_timestamp(cast('2012-02-11 04:30:00' as timestamp), '---'),
 from_utc_timestamp(cast(null as timestamp), 'PST'),
 from_utc_timestamp(cast('2012-02-11 04:30:00' as timestamp), cast(null as string));
+
+select
+from_utc_timestamp('2012-02-11-04:30:00', 'UTC'),
+from_utc_timestamp('2012-02-11-04:30:00', 'PST');
+

@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 
 
 create table fileformat_mix_test (src int, value string) partitioned by (ds string);

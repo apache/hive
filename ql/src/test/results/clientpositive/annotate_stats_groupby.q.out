@@ -154,14 +154,14 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: loc_orc
-            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: PARTIAL
+            Statistics: Num rows: 8 Data size: 688 Basic stats: COMPLETE Column stats: PARTIAL
             Select Operator
               expressions: state (type: string), locid (type: int)
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: PARTIAL
+              outputColumnNames: state, locid
+              Statistics: Num rows: 8 Data size: 688 Basic stats: COMPLETE Column stats: PARTIAL
               Group By Operator
                 aggregations: count()
-                keys: _col0 (type: string), _col1 (type: int)
+                keys: state (type: string), locid (type: int)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 8 Data size: 752 Basic stats: COMPLETE Column stats: PARTIAL
@@ -178,22 +178,18 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
           Statistics: Num rows: 7 Data size: 658 Basic stats: COMPLETE Column stats: PARTIAL
-          Select Operator
-            expressions: _col0 (type: string), _col2 (type: bigint), _col1 (type: int)
+          Group By Operator
+            aggregations: min(_col1)
+            keys: _col0 (type: string), _col2 (type: bigint)
+            mode: hash
             outputColumnNames: _col0, _col1, _col2
-            Statistics: Num rows: 7 Data size: 658 Basic stats: COMPLETE Column stats: PARTIAL
-            Group By Operator
-              aggregations: min(_col2)
-              keys: _col0 (type: string), _col1 (type: bigint)
-              mode: hash
-              outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 7 Data size: 686 Basic stats: COMPLETE Column stats: PARTIAL
-              File Output Operator
-                compressed: false
-                table:
-                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+            Statistics: Num rows: 7 Data size: 686 Basic stats: COMPLETE Column stats: PARTIAL
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-2
     Map Reduce
@@ -252,13 +248,13 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: loc_orc
-            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 8 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: year (type: int)
-              outputColumnNames: _col0
-              Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
+              outputColumnNames: year
+              Statistics: Num rows: 8 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
-                keys: _col0 (type: int)
+                keys: year (type: int)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 8 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
@@ -305,13 +301,13 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: loc_orc
-            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 8 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: state (type: string), locid (type: int)
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
+              outputColumnNames: state, locid
+              Statistics: Num rows: 8 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
-                keys: _col0 (type: string), _col1 (type: int)
+                keys: state (type: string), locid (type: int)
                 mode: hash
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 8 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
@@ -358,13 +354,13 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: loc_orc
-            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 8 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: state (type: string), locid (type: int)
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
+              outputColumnNames: state, locid
+              Statistics: Num rows: 8 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
-                keys: _col0 (type: string), _col1 (type: int), '0' (type: string)
+                keys: state (type: string), locid (type: int), '0' (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 32 Data size: 5600 Basic stats: COMPLETE Column stats: COMPLETE
@@ -412,13 +408,13 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: loc_orc
-            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 8 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: state (type: string), locid (type: int)
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
+              outputColumnNames: state, locid
+              Statistics: Num rows: 8 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
-                keys: _col0 (type: string), _col1 (type: int), '0' (type: string)
+                keys: state (type: string), locid (type: int), '0' (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 24 Data size: 4200 Basic stats: COMPLETE Column stats: COMPLETE
@@ -466,13 +462,13 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: loc_orc
-            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 8 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: state (type: string), locid (type: int)
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
+              outputColumnNames: state, locid
+              Statistics: Num rows: 8 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
-                keys: _col0 (type: string), _col1 (type: int), '0' (type: string)
+                keys: state (type: string), locid (type: int), '0' (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 8 Data size: 1400 Basic stats: COMPLETE Column stats: COMPLETE
@@ -520,13 +516,13 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: loc_orc
-            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 8 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: state (type: string), locid (type: int)
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
+              outputColumnNames: state, locid
+              Statistics: Num rows: 8 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
-                keys: _col0 (type: string), _col1 (type: int), '0' (type: string)
+                keys: state (type: string), locid (type: int), '0' (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 16 Data size: 2800 Basic stats: COMPLETE Column stats: COMPLETE
@@ -574,13 +570,13 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: loc_orc
-            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 8 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: state (type: string), locid (type: int)
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
+              outputColumnNames: state, locid
+              Statistics: Num rows: 8 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
-                keys: _col0 (type: string), _col1 (type: int), '0' (type: string)
+                keys: state (type: string), locid (type: int), '0' (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 24 Data size: 4200 Basic stats: COMPLETE Column stats: COMPLETE
@@ -628,13 +624,13 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: loc_orc
-            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 8 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: state (type: string), locid (type: int)
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
+              outputColumnNames: state, locid
+              Statistics: Num rows: 8 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
-                keys: _col0 (type: string), _col1 (type: int), '0' (type: string)
+                keys: state (type: string), locid (type: int), '0' (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 32 Data size: 5600 Basic stats: COMPLETE Column stats: COMPLETE
@@ -686,30 +682,30 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: loc_orc
-            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 8 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: year (type: int)
-              outputColumnNames: _col0
-              Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
+              outputColumnNames: year
+              Statistics: Num rows: 8 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
-                keys: _col0 (type: int)
+                keys: year (type: int)
                 mode: hash
                 outputColumnNames: _col0
-                Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: int)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 2 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 2 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -739,13 +735,13 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: loc_orc
-            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 8 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: state (type: string), locid (type: int)
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
+              outputColumnNames: state, locid
+              Statistics: Num rows: 8 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
-                keys: _col0 (type: string), _col1 (type: int), '0' (type: string)
+                keys: state (type: string), locid (type: int), '0' (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 16 Data size: 2800 Basic stats: COMPLETE Column stats: COMPLETE
@@ -795,13 +791,13 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: loc_orc
-            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: PARTIAL
+            Statistics: Num rows: 8 Data size: 688 Basic stats: COMPLETE Column stats: PARTIAL
             Select Operator
               expressions: state (type: string), zip (type: bigint)
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: PARTIAL
+              outputColumnNames: state, zip
+              Statistics: Num rows: 8 Data size: 688 Basic stats: COMPLETE Column stats: PARTIAL
               Group By Operator
-                keys: _col0 (type: string), _col1 (type: bigint)
+                keys: state (type: string), zip (type: bigint)
                 mode: hash
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 4 Data size: 344 Basic stats: COMPLETE Column stats: PARTIAL
@@ -851,10 +847,10 @@ STAGE PLANS:
             Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: state (type: string), locid (type: int)
-              outputColumnNames: _col0, _col1
+              outputColumnNames: state, locid
               Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: _col0 (type: string), _col1 (type: int), '0' (type: string)
+                keys: state (type: string), locid (type: int), '0' (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 32 Data size: 3184 Basic stats: COMPLETE Column stats: NONE
@@ -905,10 +901,10 @@ STAGE PLANS:
             Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: state (type: string), locid (type: int)
-              outputColumnNames: _col0, _col1
+              outputColumnNames: state, locid
               Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: _col0 (type: string), _col1 (type: int), '0' (type: string)
+                keys: state (type: string), locid (type: int), '0' (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 24 Data size: 2388 Basic stats: COMPLETE Column stats: NONE
@@ -959,10 +955,10 @@ STAGE PLANS:
             Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: state (type: string), locid (type: int)
-              outputColumnNames: _col0, _col1
+              outputColumnNames: state, locid
               Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: _col0 (type: string), _col1 (type: int), '0' (type: string)
+                keys: state (type: string), locid (type: int), '0' (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
@@ -1013,10 +1009,10 @@ STAGE PLANS:
             Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: state (type: string), locid (type: int)
-              outputColumnNames: _col0, _col1
+              outputColumnNames: state, locid
               Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: _col0 (type: string), _col1 (type: int), '0' (type: string)
+                keys: state (type: string), locid (type: int), '0' (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 16 Data size: 1592 Basic stats: COMPLETE Column stats: NONE
@@ -1067,10 +1063,10 @@ STAGE PLANS:
             Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: state (type: string), locid (type: int)
-              outputColumnNames: _col0, _col1
+              outputColumnNames: state, locid
               Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: _col0 (type: string), _col1 (type: int), '0' (type: string)
+                keys: state (type: string), locid (type: int), '0' (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 24 Data size: 2388 Basic stats: COMPLETE Column stats: NONE
@@ -1121,10 +1117,10 @@ STAGE PLANS:
             Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: state (type: string), locid (type: int)
-              outputColumnNames: _col0, _col1
+              outputColumnNames: state, locid
               Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: _col0 (type: string), _col1 (type: int), '0' (type: string)
+                keys: state (type: string), locid (type: int), '0' (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 32 Data size: 3184 Basic stats: COMPLETE Column stats: NONE
@@ -1175,10 +1171,10 @@ STAGE PLANS:
             Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: year (type: int)
-              outputColumnNames: _col0
+              outputColumnNames: year
               Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: _col0 (type: int)
+                keys: year (type: int)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
@@ -1228,10 +1224,10 @@ STAGE PLANS:
             Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: state (type: string), locid (type: int)
-              outputColumnNames: _col0, _col1
+              outputColumnNames: state, locid
               Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: _col0 (type: string), _col1 (type: int), '0' (type: string)
+                keys: state (type: string), locid (type: int), '0' (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 32 Data size: 3184 Basic stats: COMPLETE Column stats: NONE

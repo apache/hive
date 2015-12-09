@@ -1,4 +1,4 @@
-set hive.mapred.supports.subdirectories=true;
+set hive.mapred.mode=nonstrict;
 set hive.optimize.listbucketing=true;
 set mapred.input.dir.recursive=true;	
 set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;	

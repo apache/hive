@@ -20,6 +20,9 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColGreaterEqualLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColGreaterEqualLongScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.LongScalarGreaterEqualLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.*;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -64,6 +67,7 @@ import org.apache.hadoop.io.Text;
   DateColGreaterEqualDateScalar.class,FilterDateColGreaterEqualDateScalar.class,
   DateScalarGreaterEqualDateColumn.class,FilterDateScalarGreaterEqualDateColumn.class,
   })
+@NDV(maxNdv = 2)
 public class GenericUDFOPEqualOrGreaterThan extends GenericUDFBaseCompare {
   public GenericUDFOPEqualOrGreaterThan(){
     this.opName = "EQUAL OR GREATER THAN";

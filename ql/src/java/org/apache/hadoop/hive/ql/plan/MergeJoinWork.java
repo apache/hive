@@ -42,11 +42,6 @@ public class MergeJoinWork extends BaseWork {
   }
 
   @Override
-  public String getName() {
-    return super.getName();
-  }
-
-  @Override
   public void replaceRoots(Map<Operator<?>, Operator<?>> replacementMap) {
     getMainWork().replaceRoots(replacementMap);
   }
@@ -141,6 +136,35 @@ public class MergeJoinWork extends BaseWork {
   }
 
   @Override
+  public void setVectorMode(boolean vectorMode) {
+    getMainWork().setVectorMode(vectorMode);
+  }
+
+  @Override
+  public boolean getVectorMode() {
+    return getMainWork().getVectorMode();
+  }
+
+  @Override
+  public void setUberMode(boolean uberMode) {
+    getMainWork().setUberMode(uberMode);
+  }
+
+  @Override
+  public boolean getUberMode() {
+    return getMainWork().getUberMode();
+  }
+
+  @Override
+  public void setLlapMode(boolean llapMode) {
+    getMainWork().setLlapMode(llapMode);
+  }
+
+  @Override
+  public boolean getLlapMode() {
+    return getMainWork().getLlapMode();
+  }
+  
   public void addDummyOp(HashTableDummyOperator dummyOp) {
     getMainWork().addDummyOp(dummyOp);
   }

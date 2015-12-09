@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 explain
 select key,value,'hello' as ds, 'world' as hr from srcpart where hr=11 order by 1 limit 1;
 select key,value,'hello' as ds, 'world' as hr from srcpart where hr=11 order by 1 limit 1;

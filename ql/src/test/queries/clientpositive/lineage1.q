@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 
 
 CREATE TABLE dest_l1(key INT, value STRING) STORED AS TEXTFILE;

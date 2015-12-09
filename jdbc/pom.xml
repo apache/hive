@@ -19,7 +19,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive</artifactId>
-    <version>2.0.0-SNAPSHOT</version>
+    <version>2.1.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -68,11 +68,6 @@
     </dependency>
     <!-- inter-project -->
     <dependency>
-      <groupId>commons-logging</groupId>
-      <artifactId>commons-logging</artifactId>
-      <version>${commons-logging.version}</version>
-    </dependency>
-    <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>
       <version>${httpcomponents.client.version}</version>
@@ -103,32 +98,23 @@
       <artifactId>curator-framework</artifactId>
       <version>${curator.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-common</artifactId>
+      <version>${hadoop.version}</version>
+      <optional>true</optional>
+    </dependency>
+    <!-- test inter-project -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <profiles>
-    <profile>
-      <id>hadoop-1</id>
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-core</artifactId>
-          <version>${hadoop-20S.version}</version>
-         <optional>true</optional>
-        </dependency>
-      </dependencies>
-    </profile>
    <profile>
-      <id>hadoop-2</id>
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-common</artifactId>
-          <version>${hadoop-23.version}</version>
-          <optional>true</optional>
-        </dependency>
-      </dependencies>
-    </profile>
-    <profile>
       <id>dist</id>
       <properties>
         <packaging.minimizeJar>true</packaging.minimizeJar>
@@ -136,9 +122,9 @@
     </profile>
   </profiles>
 
-
   <build>
     <sourceDirectory>${basedir}/src/java</sourceDirectory>
+    <testSourceDirectory>${basedir}/src/test</testSourceDirectory>
     <resources>
       <resource>
         <directory>${basedir}/src/resources</directory>
@@ -167,12 +153,6 @@
                 </filter>
                 <filter>
                   <artifact>org.apache.hive.shims:hive-shims-0.23</artifact>
-                  <includes>
-                    <include>**</include>
-                  </includes>
-                </filter>
-                <filter>
-                  <artifact>commons-logging:commons-logging</artifact>
                   <includes>
                     <include>**</include>
                   </includes>
@@ -209,6 +189,58 @@
                   <exclude>org.antlr:*</exclude>
                   <exclude>org.slf4j:slf4j-log4j12</exclude>
                   <exclude>log4j:*</exclude>
+                  <exclude>antlr:*</exclude>
+                  <exclude>aopalliance:*</exclude>
+                  <exclude>asm:*</exclude>
+                  <exclude>com.google.code.gson:*</exclude>
+                  <exclude>com.google.inject:*</exclude>
+                  <exclude>com.google.inject.extensions:*</exclude>
+                  <exclude>com.jamesmurty.utils:*</exclude>
+                  <exclude>com.jcraft:*</exclude>
+                  <exclude>com.jolbox:*</exclude>
+                  <exclude>commons-beanutils:*</exclude>
+                  <exclude>commons-cli:*</exclude>
+                  <exclude>commons-dbcp:*</exclude>
+                  <exclude>commons-digester:*</exclude>
+                  <exclude>commons-el:*</exclude>
+                  <exclude>commons-httpclient:*</exclude>
+                  <exclude>commons-io:*</exclude>
+                  <exclude>commons-net:*</exclude>
+                  <exclude>commons-pool:*</exclude>
+                  <exclude>com.google.code.findbugs:*</exclude>
+                  <exclude>com.google.protobuf:*</exclude>
+                  <exclude>com.sun.xml.bind:*</exclude>
+                  <exclude>com.thoughtworks.paranamer:*</exclude>
+                  <exclude>com.twitter:*</exclude>
+                  <exclude>io.netty:*</exclude>
+                  <exclude>javax.activation:*</exclude>
+                  <exclude>javax.inject:*</exclude>
+                  <exclude>javax.jdo:*</exclude>
+                  <exclude>javax.mail:*</exclude>
+                  <exclude>javax.servlet:*</exclude>
+                  <exclude>javax.servlet.jsp:*</exclude>
+                  <exclude>javax.transaction:*</exclude>
+                  <exclude>javax.xml.bind:*</exclude>
+                  <exclude>javax.xml.stream:*</exclude>
+                  <exclude>jline:*</exclude>
+                  <exclude>joda-time:*</exclude>
+                  <exclude>net.java.dev.jets3t:*</exclude>
+                  <exclude>org.apache.commons:commons-math3</exclude>
+                  <exclude>org.apache.curator:*</exclude>
+                  <exclude>org.apache.derby:*</exclude>
+                  <exclude>org.apache.directory.api:*</exclude>
+                  <exclude>org.apache.directory.server:*</exclude>
+                  <exclude>org.apache.geronimo.specs:*</exclude>
+                  <exclude>org.apache.zookeeper:*</exclude>
+                  <exclude>org.codehaus.jackson:*</exclude>
+                  <exclude>org.codehaus.jettison:*</exclude>
+                  <exclude>org.datanucleus:*</exclude>
+                  <exclude>org.fusesource.leveldbjni:*</exclude>
+                  <exclude>org.htrace:*</exclude>
+                  <exclude>org.mortbay.jetty:*</exclude>
+                  <exclude>org.xerial.snappy:*</exclude>
+                  <exclude>tomcat:*</exclude>
+                  <exclude>xmlenc:*</exclude>
                 </excludes>
               </artifactSet>
             </configuration>

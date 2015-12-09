@@ -1,7 +1,8 @@
+set hive.mapred.mode=nonstrict;
 set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
-set hive.enforce.bucketing=true;
+
 
 create table ivdp(i int,
                  de decimal(5,2),

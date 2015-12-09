@@ -978,8 +978,8 @@ SELECT key, value FROM (SELECT key FROM src group by key) a lateral view explode
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_table@part=1
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SCRIPT []
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(part=1).value SCRIPT []
 PREHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@test_table

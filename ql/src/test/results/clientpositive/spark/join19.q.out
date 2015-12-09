@@ -155,7 +155,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: t2
+                  alias: t1
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
                     predicate: ((predicate = 'http://sofa.semanticweb.org/sofa/v1.0/system#__LABEL_REL') and subject is not null) (type: boolean)
@@ -173,7 +173,7 @@ STAGE PLANS:
         Map 6 
             Map Operator Tree:
                 TableScan
-                  alias: t3
+                  alias: t1
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
                     predicate: (((predicate = 'http://www.ontosearch.com/2007/12/ontosofa-ns#_from') and object is not null) and subject is not null) (type: boolean)
@@ -191,7 +191,7 @@ STAGE PLANS:
         Map 7 
             Map Operator Tree:
                 TableScan
-                  alias: t4
+                  alias: t1
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
                     predicate: (((predicate = 'http://sofa.semanticweb.org/sofa/v1.0/system#__INSTANCEOF_REL') and (object = 'http://ontos/OntosMiner/Common.English/ontology#Author')) and subject is not null) (type: boolean)
@@ -208,7 +208,7 @@ STAGE PLANS:
         Map 8 
             Map Operator Tree:
                 TableScan
-                  alias: t5
+                  alias: t1
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
                     predicate: (((predicate = 'http://www.ontosearch.com/2007/12/ontosofa-ns#_to') and subject is not null) and object is not null) (type: boolean)
@@ -226,7 +226,7 @@ STAGE PLANS:
         Map 9 
             Map Operator Tree:
                 TableScan
-                  alias: t6
+                  alias: t1
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
                     predicate: ((predicate = 'http://sofa.semanticweb.org/sofa/v1.0/system#__LABEL_REL') and subject is not null) (type: boolean)

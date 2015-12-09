@@ -21,8 +21,8 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -45,7 +45,7 @@ import com.google.common.collect.Lists;
  * in the file just to verify the impact of bloom filter fpp.
  */
 public class PostExecOrcFileDump implements ExecuteWithHookContext {
-  private static final Log LOG = LogFactory.getLog(PostExecOrcFileDump.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(PostExecOrcFileDump.class.getName());
 
   private static final PathFilter hiddenFileFilter = new PathFilter() {
     public boolean accept(Path p) {

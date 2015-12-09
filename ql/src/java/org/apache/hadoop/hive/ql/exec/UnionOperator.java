@@ -56,19 +56,22 @@ public class UnionOperator extends Operator<UnionDesc> implements Serializable {
    * needsTransform[].
    */
   @Override
-  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
-    Collection<Future<?>> result = super.initializeOp(hconf);
+  protected void initializeOp(Configuration hconf) throws HiveException {
+    super.initializeOp(hconf);
 
     int parents = parentOperators.size();
     parentObjInspectors = new StructObjectInspector[parents];
     parentFields = new List[parents];
+    int columns = 0;
     for (int p = 0; p < parents; p++) {
       parentObjInspectors[p] = (StructObjectInspector) inputObjInspectors[p];
       parentFields[p] = parentObjInspectors[p].getAllStructFieldRefs();
+      if (p == 0 || parentFields[p].size() < columns) {
+        columns = parentFields[p].size();
+      }
     }
 
     // Get columnNames from the first parent
-    int columns = parentFields[0].size();
     ArrayList<String> columnNames = new ArrayList<String>(columns);
     for (int c = 0; c < columns; c++) {
       columnNames.add(parentFields[0].get(c).getFieldName());
@@ -81,7 +84,8 @@ public class UnionOperator extends Operator<UnionDesc> implements Serializable {
     }
 
     for (int p = 0; p < parents; p++) {
-      assert (parentFields[p].size() == columns);
+      //When columns is 0, the union operator is empty.
+      assert (columns == 0 || parentFields[p].size() == columns);
       for (int c = 0; c < columns; c++) {
         if (!columnTypeResolvers[c].updateForUnionAll(parentFields[p].get(c)
             .getFieldObjectInspector())) {
@@ -119,7 +123,6 @@ public class UnionOperator extends Operator<UnionDesc> implements Serializable {
             + "] from " + inputObjInspectors[p] + " to " + outputObjInspector);
       }
     }
-    return result;
   }
 
   @Override

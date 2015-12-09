@@ -48,7 +48,6 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.shims.ShimLoader;
-import org.mortbay.log.Log;
 
 /**
  * TestHiveMetaStoreWithEnvironmentContext. Test case for _with_environment_context
@@ -113,7 +112,7 @@ public class TestHiveMetaStoreWithEnvironmentContext extends TestCase {
     sd.getSerdeInfo().setSerializationLib(LazySimpleSerDe.class.getName());
     sd.setInputFormat(HiveInputFormat.class.getName());
     sd.setOutputFormat(HiveOutputFormat.class.getName());
-    
+
     table.setDbName(dbName);
     table.setTableName(tblName);
     table.setParameters(tableParams);
@@ -147,7 +146,6 @@ public class TestHiveMetaStoreWithEnvironmentContext extends TestCase {
     CreateDatabaseEvent dbEvent = (CreateDatabaseEvent)(notifyList.get(listSize - 1));
     assert dbEvent.getStatus();
 
-    Log.debug("Creating table");
     msc.createTable(table, envContext);
     listSize++;
     assertEquals(notifyList.size(), listSize);
@@ -157,7 +155,6 @@ public class TestHiveMetaStoreWithEnvironmentContext extends TestCase {
 
     table = msc.getTable(dbName, tblName);
 
-    Log.debug("Adding partition");
     partition.getSd().setLocation(table.getSd().getLocation() + "/part1");
     msc.add_partition(partition, envContext);
     listSize++;
@@ -166,7 +163,6 @@ public class TestHiveMetaStoreWithEnvironmentContext extends TestCase {
     assert partEvent.getStatus();
     assertEquals(envContext, partEvent.getEnvironmentContext());
 
-    Log.debug("Appending partition");
     List<String> partVals = new ArrayList<String>();
     partVals.add("2012");
     msc.appendPartition(dbName, tblName, partVals, envContext);
@@ -176,7 +172,6 @@ public class TestHiveMetaStoreWithEnvironmentContext extends TestCase {
     assert appendPartEvent.getStatus();
     assertEquals(envContext, appendPartEvent.getEnvironmentContext());
 
-    Log.debug("Renaming table");
     table.setTableName(renamed);
     msc.alter_table(dbName, tblName, table, envContext);
     listSize++;
@@ -185,13 +180,11 @@ public class TestHiveMetaStoreWithEnvironmentContext extends TestCase {
     assert alterTableEvent.getStatus();
     assertEquals(envContext, alterTableEvent.getEnvironmentContext());
 
-    Log.debug("Renaming table back");
     table.setTableName(tblName);
     msc.alter_table(dbName, renamed, table, envContext);
     listSize++;
     assertEquals(notifyList.size(), listSize);
 
-    Log.debug("Dropping partition");
     List<String> dropPartVals = new ArrayList<String>();
     dropPartVals.add("2011");
     msc.dropPartition(dbName, tblName, dropPartVals, envContext);
@@ -201,7 +194,6 @@ public class TestHiveMetaStoreWithEnvironmentContext extends TestCase {
     assert dropPartEvent.getStatus();
     assertEquals(envContext, dropPartEvent.getEnvironmentContext());
 
-    Log.debug("Dropping partition by name");
     msc.dropPartition(dbName, tblName, "b=2012", true, envContext);
     listSize++;
     assertEquals(notifyList.size(), listSize);
@@ -209,7 +201,6 @@ public class TestHiveMetaStoreWithEnvironmentContext extends TestCase {
     assert dropPartByNameEvent.getStatus();
     assertEquals(envContext, dropPartByNameEvent.getEnvironmentContext());
 
-    Log.debug("Dropping table");
     msc.dropTable(dbName, tblName, true, false, envContext);
     listSize++;
     assertEquals(notifyList.size(), listSize);

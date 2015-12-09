@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 drop table partition_date_1;
 
 create table partition_date_1 (key string, value string) partitioned by (dt date, region string);

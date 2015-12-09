@@ -32,8 +32,8 @@ import org.apache.avro.generic.GenericArray;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericData.Fixed;
 import org.apache.avro.generic.GenericEnumSymbol;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
@@ -56,8 +56,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 import org.apache.hadoop.io.Writable;
 
 class AvroSerializer {
-  private static final Log LOG = LogFactory.getLog(AvroSerializer.class);
-
   /**
    * The Schema to use when serializing Map keys.
    * Since we're sharing this across Serializer instances, it must be immutable;

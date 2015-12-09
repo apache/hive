@@ -33,9 +33,10 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
-import org.apache.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -44,7 +45,7 @@ import java.util.List;
 
 public class TestTypeInfoToSchema {
 
-  private static Logger LOGGER = Logger.getLogger(TestTypeInfoToSchema.class);
+  private static Logger LOGGER = LoggerFactory.getLogger(TestTypeInfoToSchema.class);
   private static final List<String> COLUMN_NAMES = Arrays.asList("testCol");
   private static final TypeInfo STRING = TypeInfoFactory.getPrimitiveTypeInfo(
       serdeConstants.STRING_TYPE_NAME);

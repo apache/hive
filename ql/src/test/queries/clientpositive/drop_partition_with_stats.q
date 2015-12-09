@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 -- This test verifies that a table partition could be dropped with columns stats computed
 -- The column stats for a partitioned table will go to PART_COL_STATS
 CREATE DATABASE IF NOT EXISTS partstatsdb1;

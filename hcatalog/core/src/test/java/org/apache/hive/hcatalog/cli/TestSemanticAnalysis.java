@@ -68,6 +68,7 @@ public class TestSemanticAnalysis extends HCatBaseTest {
           "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe");
       hcatConf.set(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK.varname,
           HCatSemanticAnalyzer.class.getName());
+      hcatConf.setBoolVar(HiveConf.ConfVars.METASTORE_DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES, false);
       hcatDriver = new Driver(hcatConf);
       SessionState.start(new CliSessionState(hcatConf));
     }

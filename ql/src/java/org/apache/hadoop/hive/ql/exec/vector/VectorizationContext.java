@@ -34,8 +34,8 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
@@ -104,19 +104,29 @@ import org.apache.hadoop.hive.ql.udf.UDFToLong;
 import org.apache.hadoop.hive.ql.udf.UDFToShort;
 import org.apache.hadoop.hive.ql.udf.UDFToString;
 import org.apache.hadoop.hive.ql.udf.generic.*;
+import org.apache.hadoop.hive.serde2.ByteStream.Output;
+import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableSerializeWrite;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.typeinfo.BaseCharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.DateUtils;
+
 
 /**
  * Context class for vectorization execution.
@@ -126,13 +136,15 @@ import org.apache.hive.common.util.DateUtils;
  */
 public class VectorizationContext {
 
-  private static final Log LOG = LogFactory.getLog(
+  private static final Logger LOG = LoggerFactory.getLogger(
       VectorizationContext.class.getName());
 
   private final String contextName;
   private final int level;
 
   VectorExpressionDescriptor vMap;
+
+  private List<String> initialColumnNames;
 
   private List<Integer> projectedColumns;
   private List<String> projectionColumnNames;
@@ -147,7 +159,11 @@ public class VectorizationContext {
   public VectorizationContext(String contextName, List<String> initialColumnNames) {
     this.contextName = contextName;
     level = 0;
-    LOG.info("VectorizationContext consructor contextName " + contextName + " level " + level + " initialColumnNames " + initialColumnNames.toString());
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("VectorizationContext consructor contextName " + contextName + " level "
+          + level + " initialColumnNames " + initialColumnNames);
+    }
+    this.initialColumnNames = initialColumnNames;
     this.projectionColumnNames = initialColumnNames;
 
     projectedColumns = new ArrayList<Integer>();
@@ -167,8 +183,11 @@ public class VectorizationContext {
   public VectorizationContext(String contextName) {
     this.contextName = contextName;
     level = 0;
-    LOG.info("VectorizationContext consructor contextName " + contextName + " level " + level);
-      projectedColumns = new ArrayList<Integer>();
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("VectorizationContext consructor contextName " + contextName + " level " + level);
+    }
+    initialColumnNames = new ArrayList<String>();
+    projectedColumns = new ArrayList<Integer>();
     projectionColumnNames = new ArrayList<String>();
     projectionColumnMap = new HashMap<String, Integer>();
     this.ocm = new OutputColumnManager(0);
@@ -183,6 +202,7 @@ public class VectorizationContext {
     this.contextName = contextName;
     level = vContext.level + 1;
     LOG.info("VectorizationContext consructor reference contextName " + contextName + " level " + level);
+    this.initialColumnNames = vContext.initialColumnNames;
     this.projectedColumns = new ArrayList<Integer>();
     this.projectionColumnNames = new ArrayList<String>();
     this.projectionColumnMap = new HashMap<String, Integer>();
@@ -195,6 +215,7 @@ public class VectorizationContext {
   // Add an initial column to a vectorization context when
   // a vectorized row batch is being created.
   public void addInitialColumn(String columnName) {
+    initialColumnNames.add(columnName);
     int index = projectedColumns.size();
     projectedColumns.add(index);
     projectionColumnNames.add(columnName);
@@ -221,6 +242,10 @@ public class VectorizationContext {
     projectedColumns.add(vectorBatchColIndex);
     projectionColumnNames.add(columnName);
     projectionColumnMap.put(columnName, vectorBatchColIndex);
+  }
+
+  public List<String> getInitialColumnNames() {
+    return initialColumnNames;
   }
 
   public List<Integer> getProjectedColumns() {
@@ -619,7 +644,8 @@ public class VectorizationContext {
     } else {
 
       // Casts to exact types including long to double etc. are needed in some special cases.
-      if (udf instanceof GenericUDFCoalesce || udf instanceof GenericUDFElt) {
+      if (udf instanceof GenericUDFCoalesce || udf instanceof GenericUDFNvl
+          || udf instanceof GenericUDFElt) {
         GenericUDF genericUdf = getGenericUDFForCast(castType);
         List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>();
         children.add(child);
@@ -1022,7 +1048,9 @@ public class VectorizationContext {
     VectorExpressionDescriptor.Descriptor descriptor = builder.build();
     Class<?> vclass = this.vMap.getVectorExpressionClass(udfClass, descriptor);
     if (vclass == null) {
-      LOG.info("No vector udf found for " + udfClass.getSimpleName() + ", descriptor: " + descriptor);
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("No vector udf found for "+udfClass.getSimpleName() + ", descriptor: "+descriptor);
+      }
       return null;
     }
     Mode childrenMode = getChildrenMode(mode, udfClass);
@@ -1165,13 +1193,14 @@ public class VectorizationContext {
       return getInExpression(childExpr, mode, returnType);
     } else if (udf instanceof GenericUDFOPPositive) {
       return getIdentityExpression(childExpr);
-    } else if (udf instanceof GenericUDFCoalesce) {
+    } else if (udf instanceof GenericUDFCoalesce || udf instanceof GenericUDFNvl) {
 
       // Coalesce is a special case because it can take variable number of arguments.
+      // Nvl is a specialization of the Coalesce.
       return getCoalesceExpression(childExpr, returnType);
     } else if (udf instanceof GenericUDFElt) {
 
-      // Coalesce is a special case because it can take variable number of arguments.
+      // Elt is a special case because it can take variable number of arguments.
       return getEltExpression(childExpr, returnType);
     } else if (udf instanceof GenericUDFBridge) {
       VectorExpression v = getGenericUDFBridgeVectorExpression((GenericUDFBridge) udf, childExpr, mode,
@@ -1273,17 +1302,208 @@ public class VectorizationContext {
     }
   }
 
+  public enum InConstantType {
+    INT_FAMILY,
+    TIMESTAMP,
+    DATE,
+    FLOAT_FAMILY,
+    STRING_FAMILY,
+    DECIMAL
+  }
+
+  public static InConstantType getInConstantTypeFromPrimitiveCategory(PrimitiveCategory primitiveCategory) {
+
+    switch (primitiveCategory) {
+    case BOOLEAN:
+    case BYTE:
+    case SHORT:
+    case INT:
+    case LONG:
+      return InConstantType.INT_FAMILY;
+  
+    case DATE:
+      return InConstantType.TIMESTAMP;
+
+    case TIMESTAMP:
+      return InConstantType.DATE;
+
+    case FLOAT:
+    case DOUBLE:
+      return InConstantType.FLOAT_FAMILY;
+  
+    case STRING:
+    case CHAR:
+    case VARCHAR:
+    case BINARY:
+      return InConstantType.STRING_FAMILY;
+  
+    case DECIMAL:
+      return InConstantType.DECIMAL;
+  
+
+    case INTERVAL_YEAR_MONTH:
+    case INTERVAL_DAY_TIME:
+      // UNDONE: Fall through for these... they don't appear to be supported yet.
+    default:
+      throw new RuntimeException("Unexpected primitive type category " + primitiveCategory);
+    }
+  }
+
+  private VectorExpression getStructInExpression(List<ExprNodeDesc> childExpr, ExprNodeDesc colExpr,
+      TypeInfo colTypeInfo, List<ExprNodeDesc> inChildren, Mode mode, TypeInfo returnType)
+          throws HiveException {
+
+    VectorExpression expr = null;
+
+    StructTypeInfo structTypeInfo = (StructTypeInfo) colTypeInfo;
+
+    ArrayList<TypeInfo> fieldTypeInfos = structTypeInfo.getAllStructFieldTypeInfos();
+    final int fieldCount = fieldTypeInfos.size();
+    ColumnVector.Type[] fieldVectorColumnTypes = new ColumnVector.Type[fieldCount];
+    InConstantType[] fieldInConstantTypes = new InConstantType[fieldCount];
+    for (int f = 0; f < fieldCount; f++) {
+      TypeInfo fieldTypeInfo = fieldTypeInfos.get(f);
+      // Only primitive fields supports for now.
+      if (fieldTypeInfo.getCategory() != Category.PRIMITIVE) {
+        return null;
+      }
+
+      // We are going to serialize using the 4 basic types.
+      ColumnVector.Type fieldVectorColumnType = getColumnVectorTypeFromTypeInfo(fieldTypeInfo);
+      fieldVectorColumnTypes[f] = fieldVectorColumnType;
+
+      // We currently evaluate the IN (..) constants in special ways.
+      PrimitiveCategory fieldPrimitiveCategory =
+          ((PrimitiveTypeInfo) fieldTypeInfo).getPrimitiveCategory();
+      InConstantType inConstantType = getInConstantTypeFromPrimitiveCategory(fieldPrimitiveCategory);
+      fieldInConstantTypes[f] = inConstantType;
+    }
+
+    Output buffer = new Output();
+    BinarySortableSerializeWrite binarySortableSerializeWrite =
+        new BinarySortableSerializeWrite(fieldCount);
+
+    final int inChildrenCount = inChildren.size();
+    byte[][] serializedInChildren = new byte[inChildrenCount][];
+    try {
+      for (int i = 0; i < inChildrenCount; i++) {
+        final ExprNodeDesc node = inChildren.get(i);
+        final Object[] constants;
+
+        if (node instanceof ExprNodeConstantDesc) {
+          ExprNodeConstantDesc constNode = (ExprNodeConstantDesc) node;
+          ConstantObjectInspector output = constNode.getWritableObjectInspector();
+          constants = ((List<?>) output.getWritableConstantValue()).toArray();
+        } else {
+          ExprNodeGenericFuncDesc exprNode = (ExprNodeGenericFuncDesc) node;
+          ExprNodeEvaluator<?> evaluator = ExprNodeEvaluatorFactory
+              .get(exprNode);
+          ObjectInspector output = evaluator.initialize(exprNode
+              .getWritableObjectInspector());
+          constants = (Object[]) evaluator.evaluate(null);
+        }
+
+        binarySortableSerializeWrite.set(buffer);
+        for (int f = 0; f < fieldCount; f++) {
+          Object constant = constants[f];
+          if (constant == null) {
+            binarySortableSerializeWrite.writeNull();
+          } else {
+            InConstantType inConstantType = fieldInConstantTypes[f];
+            switch (inConstantType) {
+            case STRING_FAMILY:
+              {
+                byte[] bytes;
+                if (constant instanceof Text) {
+                  Text text = (Text) constant;
+                  bytes = text.getBytes();
+                  binarySortableSerializeWrite.writeString(bytes, 0, text.getLength());
+                } else {
+                  throw new HiveException("Unexpected constant String type " +
+                      constant.getClass().getSimpleName());
+                }
+              }
+              break;
+            case INT_FAMILY:
+              {
+                long value;
+                if (constant instanceof IntWritable) {
+                  value = ((IntWritable) constant).get();
+                } else if (constant instanceof LongWritable) {
+                  value = ((LongWritable) constant).get();
+                } else {
+                  throw new HiveException("Unexpected constant Long type " +
+                      constant.getClass().getSimpleName());
+                }
+                binarySortableSerializeWrite.writeLong(value);
+              }
+              break;
+
+            case FLOAT_FAMILY:
+              {
+                double value;
+                if (constant instanceof DoubleWritable) {
+                  value = ((DoubleWritable) constant).get();
+                } else {
+                  throw new HiveException("Unexpected constant Double type " +
+                      constant.getClass().getSimpleName());
+                }
+                binarySortableSerializeWrite.writeDouble(value);
+              }
+              break;
+
+            // UNDONE...
+            case DATE:
+            case TIMESTAMP:
+            case DECIMAL:
+            default:
+              throw new RuntimeException("Unexpected IN constant type " + inConstantType.name());
+            }
+          }
+        }
+        serializedInChildren[i] = Arrays.copyOfRange(buffer.getData(), 0, buffer.getLength());
+      }
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+
+    // Create a single child representing the scratch column where we will
+    // generate the serialized keys of the batch.
+    int scratchBytesCol = ocm.allocateOutputColumn("string");
+
+    Class<?> cl = (mode == Mode.FILTER ? FilterStructColumnInList.class : StructColumnInList.class);
+
+    expr = createVectorExpression(cl, null, Mode.PROJECTION, returnType);
+
+    ((IStringInExpr) expr).setInListValues(serializedInChildren);
+
+    ((IStructInExpr) expr).setScratchBytesColumn(scratchBytesCol);
+    ((IStructInExpr) expr).setStructColumnExprs(this, colExpr.getChildren(),
+        fieldVectorColumnTypes);
+
+    return expr;
+  }
+
   /**
    * Create a filter or boolean-valued expression for column IN ( <list-of-constants> )
    */
   private VectorExpression getInExpression(List<ExprNodeDesc> childExpr, Mode mode, TypeInfo returnType)
       throws HiveException {
     ExprNodeDesc colExpr = childExpr.get(0);
+    List<ExprNodeDesc> inChildren = childExpr.subList(1, childExpr.size());
 
     String colType = colExpr.getTypeString();
+    colType = VectorizationContext.mapTypeNameSynonyms(colType);
+    TypeInfo colTypeInfo = TypeInfoUtils.getTypeInfoFromTypeString(colType);
+    Category category = colTypeInfo.getCategory();
+    if (category == Category.STRUCT){
+      return getStructInExpression(childExpr, colExpr, colTypeInfo, inChildren, mode, returnType);
+    } else if (category != Category.PRIMITIVE) {
+      return null;
+    }
 
     // prepare arguments for createVectorExpression
-    List<ExprNodeDesc> childrenForInList =  evaluateCastOnConstants(childExpr.subList(1, childExpr.size()));
+    List<ExprNodeDesc> childrenForInList =  evaluateCastOnConstants(inChildren);
 
     /* This method assumes that the IN list has no NULL entries. That is enforced elsewhere,
      * in the Vectorizer class. If NULL is passed in as a list entry, behavior is not defined.
@@ -1528,7 +1748,7 @@ public class VectorizationContext {
       // Boolean must come before the integer family. It's a special case.
       return createVectorExpression(CastBooleanToStringViaLongToString.class, childExpr, Mode.PROJECTION, null);
     } else if (isIntFamily(inputType)) {
-      return createVectorExpression(CastLongToString.class, childExpr, Mode.PROJECTION, null);
+      return createVectorExpression(CastLongToString.class, childExpr, Mode.PROJECTION, returnType);
     } else if (isDecimalFamily(inputType)) {
       return createVectorExpression(CastDecimalToString.class, childExpr, Mode.PROJECTION, returnType);
     } else if (isDateFamily(inputType)) {
@@ -1554,9 +1774,9 @@ public class VectorizationContext {
     }
     if (inputType.equals("boolean")) {
       // Boolean must come before the integer family. It's a special case.
-      return createVectorExpression(CastBooleanToCharViaLongToChar.class, childExpr, Mode.PROJECTION, null);
+      return createVectorExpression(CastBooleanToCharViaLongToChar.class, childExpr, Mode.PROJECTION, returnType);
     } else if (isIntFamily(inputType)) {
-      return createVectorExpression(CastLongToChar.class, childExpr, Mode.PROJECTION, null);
+      return createVectorExpression(CastLongToChar.class, childExpr, Mode.PROJECTION, returnType);
     } else if (isDecimalFamily(inputType)) {
       return createVectorExpression(CastDecimalToChar.class, childExpr, Mode.PROJECTION, returnType);
     } else if (isDateFamily(inputType)) {
@@ -1583,9 +1803,9 @@ public class VectorizationContext {
     }
     if (inputType.equals("boolean")) {
       // Boolean must come before the integer family. It's a special case.
-      return createVectorExpression(CastBooleanToVarCharViaLongToVarChar.class, childExpr, Mode.PROJECTION, null);
+      return createVectorExpression(CastBooleanToVarCharViaLongToVarChar.class, childExpr, Mode.PROJECTION, returnType);
     } else if (isIntFamily(inputType)) {
-      return createVectorExpression(CastLongToVarChar.class, childExpr, Mode.PROJECTION, null);
+      return createVectorExpression(CastLongToVarChar.class, childExpr, Mode.PROJECTION, returnType);
     } else if (isDecimalFamily(inputType)) {
       return createVectorExpression(CastDecimalToVarChar.class, childExpr, Mode.PROJECTION, returnType);
     } else if (isDateFamily(inputType)) {
@@ -1690,6 +1910,12 @@ public class VectorizationContext {
 
       // Projection mode is not yet supported for [NOT] BETWEEN. Return null so Vectorizer
       // knows to revert to row-at-a-time execution.
+      return null;
+    }
+
+    // We don't currently support the BETWEEN ends being columns.  They must be scalars.
+    if (!(childExpr.get(2) instanceof ExprNodeConstantDesc) ||
+        !(childExpr.get(3) instanceof ExprNodeConstantDesc)) {
       return null;
     }
 
@@ -1814,12 +2040,7 @@ public class VectorizationContext {
         variableArgPositions.add(i);
         argDescs[i].setVariable(getInputColumnIndex(((ExprNodeColumnDesc) child).getColumn()));
       } else if (child instanceof ExprNodeConstantDesc) {
-         if (((ExprNodeConstantDesc) child).getValue() == null) {
-           // cannot handle constant null at the moment
-           throw new HiveException("Unable to vectorize custom UDF. Custom udf containing "
-               + "constant null argument cannot be currently vectorized.");
-         }
-        // this is a constant
+        // this is a constant (or null)
         argDescs[i].setConstant((ExprNodeConstantDesc) child);
       } else {
         throw new HiveException("Unable to vectorize custom UDF. Encountered unsupported expr desc : "
@@ -2095,36 +2316,51 @@ public class VectorizationContext {
   }
 
   public static ColumnVector.Type getColumnVectorTypeFromTypeInfo(TypeInfo typeInfo) throws HiveException {
-    PrimitiveTypeInfo primitiveTypeInfo = (PrimitiveTypeInfo) typeInfo;
-    PrimitiveCategory primitiveCategory = primitiveTypeInfo.getPrimitiveCategory();
+    switch (typeInfo.getCategory()) {
+      case STRUCT:
+        return Type.STRUCT;
+      case UNION:
+        return Type.UNION;
+      case LIST:
+        return Type.LIST;
+      case MAP:
+        return Type.MAP;
+      case PRIMITIVE: {
+        PrimitiveTypeInfo primitiveTypeInfo = (PrimitiveTypeInfo) typeInfo;
+        PrimitiveCategory primitiveCategory = primitiveTypeInfo.getPrimitiveCategory();
 
-    switch (primitiveCategory) {
-    case BOOLEAN:
-    case BYTE:
-    case SHORT:
-    case INT:
-    case LONG:
-    case DATE:
-    case TIMESTAMP:
-    case INTERVAL_YEAR_MONTH:
-    case INTERVAL_DAY_TIME:
-      return ColumnVector.Type.LONG;
+        switch (primitiveCategory) {
+          case BOOLEAN:
+          case BYTE:
+          case SHORT:
+          case INT:
+          case LONG:
+          case DATE:
+          case TIMESTAMP:
+          case INTERVAL_YEAR_MONTH:
+          case INTERVAL_DAY_TIME:
+            return ColumnVector.Type.LONG;
 
-    case FLOAT:
-    case DOUBLE:
-      return ColumnVector.Type.DOUBLE;
+          case FLOAT:
+          case DOUBLE:
+            return ColumnVector.Type.DOUBLE;
 
-    case STRING:
-    case CHAR:
-    case VARCHAR:
-    case BINARY:
-      return ColumnVector.Type.BYTES;
+          case STRING:
+          case CHAR:
+          case VARCHAR:
+          case BINARY:
+            return ColumnVector.Type.BYTES;
 
-    case DECIMAL:
-      return ColumnVector.Type.DECIMAL;
+          case DECIMAL:
+            return ColumnVector.Type.DECIMAL;
 
-    default:
-      throw new HiveException("Unexpected primitive type category " + primitiveCategory);
+          default:
+            throw new RuntimeException("Unexpected primitive type category " + primitiveCategory);
+        }
+      }
+      default:
+        throw new RuntimeException("Unexpected type category " +
+            typeInfo.getCategory());
     }
   }
 
@@ -2234,13 +2470,16 @@ public class VectorizationContext {
     return firstOutputColumnIndex;
   }
 
-  public Map<Integer, String> getScratchColumnTypeMap() {
-    Map<Integer, String> map = new HashMap<Integer, String>();
+  public String[] getScratchColumnTypeNames() {
+    String[] result = new String[ocm.outputColCount];
     for (int i = 0; i < ocm.outputColCount; i++) {
-      String type = ocm.outputColumnsTypes[i];
-      map.put(i+this.firstOutputColumnIndex, type);
+      String typeName = ocm.outputColumnsTypes[i];
+      if (typeName.equalsIgnoreCase("long")) {
+        typeName = "bigint";   // Convert our synonym to a real Hive type name.
+      }
+      result[i] =  typeName;
     }
-    return map;
+    return result;
   }
 
   @Override
@@ -2260,9 +2499,7 @@ public class VectorizationContext {
     }
     sb.append("sorted projectionColumnMap ").append(sortedColumnMap).append(", ");
 
-    Map<Integer, String> sortedScratchColumnTypeMap = new TreeMap<Integer, String>(comparerInteger);
-    sortedScratchColumnTypeMap.putAll(getScratchColumnTypeMap());
-    sb.append("sorted scratchColumnTypeMap ").append(sortedScratchColumnTypeMap);
+    sb.append("scratchColumnTypeNames ").append(getScratchColumnTypeNames().toString());
 
     return sb.toString();
   }

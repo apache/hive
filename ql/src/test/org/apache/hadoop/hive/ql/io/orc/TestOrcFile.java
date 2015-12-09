@@ -519,9 +519,9 @@ public class TestOrcFile {
       Object row = rows.next(null);
       assertEquals(tslist.get(idx++).getNanos(), ((TimestampWritable) row).getNanos());
     }
-    assertEquals(1, OrcUtils.getFlattenedColumnsCount(inspector));
+    assertEquals(0, writer.getSchema().getMaximumId());
     boolean[] expected = new boolean[] {false};
-    boolean[] included = OrcUtils.includeColumns("", "ts", inspector);
+    boolean[] included = OrcUtils.includeColumns("", writer.getSchema());
     assertEquals(true, Arrays.equals(expected, included));
   }
 
@@ -546,17 +546,18 @@ public class TestOrcFile {
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
 
-    assertEquals(3, OrcUtils.getFlattenedColumnsCount(inspector));
+    TypeDescription schema = writer.getSchema();
+    assertEquals(2, schema.getMaximumId());
     boolean[] expected = new boolean[] {false, false, true};
-    boolean[] included = OrcUtils.includeColumns("string1", "bytes1,string1", inspector);
+    boolean[] included = OrcUtils.includeColumns("string1", schema);
     assertEquals(true, Arrays.equals(expected, included));
 
     expected = new boolean[] {false, false, false};
-    included = OrcUtils.includeColumns("", "bytes1,string1", inspector);
+    included = OrcUtils.includeColumns("", schema);
     assertEquals(true, Arrays.equals(expected, included));
 
     expected = new boolean[] {false, false, false};
-    included = OrcUtils.includeColumns(null, "bytes1,string1", inspector);
+    included = OrcUtils.includeColumns(null, schema);
     assertEquals(true, Arrays.equals(expected, included));
 
     // check the stats
@@ -656,17 +657,18 @@ public class TestOrcFile {
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
 
-    assertEquals(3, OrcUtils.getFlattenedColumnsCount(inspector));
+    TypeDescription schema = writer.getSchema();
+    assertEquals(2, schema.getMaximumId());
     boolean[] expected = new boolean[] {false, true, false};
-    boolean[] included = OrcUtils.includeColumns("int1", "int1,string1", inspector);
+    boolean[] included = OrcUtils.includeColumns("int1", schema);
     assertEquals(true, Arrays.equals(expected, included));
 
-    Metadata metadata = reader.getMetadata();
-    int numStripes = metadata.getStripeStatistics().size();
+    List<StripeStatistics> stats = reader.getStripeStatistics();
+    int numStripes = stats.size();
     assertEquals(3, numStripes);
-    StripeStatistics ss1 = metadata.getStripeStatistics().get(0);
-    StripeStatistics ss2 = metadata.getStripeStatistics().get(1);
-    StripeStatistics ss3 = metadata.getStripeStatistics().get(2);
+    StripeStatistics ss1 = stats.get(0);
+    StripeStatistics ss2 = stats.get(1);
+    StripeStatistics ss3 = stats.get(2);
 
     assertEquals(5000, ss1.getColumnStatistics()[0].getNumberOfValues());
     assertEquals(5000, ss2.getColumnStatistics()[0].getNumberOfValues());
@@ -742,14 +744,14 @@ public class TestOrcFile {
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
 
-    assertEquals(24, OrcUtils.getFlattenedColumnsCount(inspector));
+    TypeDescription schema = writer.getSchema();
+    assertEquals(23, schema.getMaximumId());
     boolean[] expected = new boolean[] {false, false, false, false, false,
         false, false, false, false, false,
         false, false, false, false, false,
         false, false, false, false, false,
         false, false, false, false};
-    boolean[] included = OrcUtils.includeColumns("",
-        "boolean1,byte1,short1,int1,long1,float1,double1,bytes1,string1,middle,list,map", inspector);
+    boolean[] included = OrcUtils.includeColumns("", schema);
     assertEquals(true, Arrays.equals(expected, included));
 
     expected = new boolean[] {false, true, false, false, false,
@@ -757,8 +759,7 @@ public class TestOrcFile {
         true, true, true, true, true,
         false, false, false, false, true,
         true, true, true, true};
-    included = OrcUtils.includeColumns("boolean1,string1,middle,map",
-        "boolean1,byte1,short1,int1,long1,float1,double1,bytes1,string1,middle,list,map", inspector);
+    included = OrcUtils.includeColumns("boolean1,string1,middle,map", schema);
     assertEquals(true, Arrays.equals(expected, included));
 
     expected = new boolean[] {false, true, false, false, false,
@@ -766,8 +767,7 @@ public class TestOrcFile {
         true, true, true, true, true,
         false, false, false, false, true,
         true, true, true, true};
-    included = OrcUtils.includeColumns("boolean1,string1,middle,map",
-        "boolean1,byte1,short1,int1,long1,float1,double1,bytes1,string1,middle,list,map", inspector);
+    included = OrcUtils.includeColumns("boolean1,string1,middle,map", schema);
     assertEquals(true, Arrays.equals(expected, included));
 
     expected = new boolean[] {false, true, true, true, true,
@@ -777,10 +777,8 @@ public class TestOrcFile {
         true, true, true, true};
     included = OrcUtils.includeColumns(
         "boolean1,byte1,short1,int1,long1,float1,double1,bytes1,string1,middle,list,map",
-        "boolean1,byte1,short1,int1,long1,float1,double1,bytes1,string1,middle,list,map", inspector);
+        schema);
     assertEquals(true, Arrays.equals(expected, included));
-
-    Metadata metadata = reader.getMetadata();
 
     // check the stats
     ColumnStatistics[] stats = reader.getStatistics();
@@ -796,7 +794,7 @@ public class TestOrcFile {
     assertEquals("count: 2 hasNull: false min: 1024 max: 2048 sum: 3072",
         stats[3].toString());
 
-    StripeStatistics ss = metadata.getStripeStatistics().get(0);
+    StripeStatistics ss = reader.getStripeStatistics().get(0);
     assertEquals(2, ss.getColumnStatistics()[0].getNumberOfValues());
     assertEquals(1, ((BooleanColumnStatistics) ss.getColumnStatistics()[1]).getTrueCount());
     assertEquals(1024, ((IntegerColumnStatistics) ss.getColumnStatistics()[3]).getMinimum());
@@ -1150,8 +1148,7 @@ public class TestOrcFile {
       }
     }
     assertEquals(3, i);
-    Metadata metadata = reader.getMetadata();
-    int numStripes = metadata.getStripeStatistics().size();
+    int numStripes = reader.getStripeStatistics().size();
     assertEquals(1, numStripes);
   }
 
@@ -1312,17 +1309,18 @@ public class TestOrcFile {
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
 
-    assertEquals(6, OrcUtils.getFlattenedColumnsCount(inspector));
+    TypeDescription schema = writer.getSchema();
+    assertEquals(5, schema.getMaximumId());
     boolean[] expected = new boolean[] {false, false, false, false, false, false};
-    boolean[] included = OrcUtils.includeColumns("", "time,union,decimal", inspector);
+    boolean[] included = OrcUtils.includeColumns("", schema);
     assertEquals(true, Arrays.equals(expected, included));
 
     expected = new boolean[] {false, true, false, false, false, true};
-    included = OrcUtils.includeColumns("time,decimal", "time,union,decimal", inspector);
+    included = OrcUtils.includeColumns("time,decimal", schema);
     assertEquals(true, Arrays.equals(expected, included));
 
     expected = new boolean[] {false, false, true, true, true, false};
-    included = OrcUtils.includeColumns("union", "time,union,decimal", inspector);
+    included = OrcUtils.includeColumns("union", schema);
     assertEquals(true, Arrays.equals(expected, included));
 
     assertEquals(false, reader.getMetadataKeys().iterator().hasNext());
@@ -1820,8 +1818,9 @@ public class TestOrcFile {
     }
 
     @Override
-    void addedRow() throws IOException {
-      if (++rows % 100 == 0) {
+    void addedRow(int count) throws IOException {
+      rows += count;
+      if (rows % 100 == 0) {
         callback.checkMemory(rate);
       }
     }
@@ -1896,9 +1895,9 @@ public class TestOrcFile {
           stripe.getDataLength() < 5000);
     }
     // with HIVE-7832, the dictionaries will be disabled after writing the first
-    // stripe as there are too many distinct values. Hence only 4 stripes as
+    // stripe as there are too many distinct values. Hence only 3 stripes as
     // compared to 25 stripes in version 0.11 (above test case)
-    assertEquals(4, i);
+    assertEquals(3, i);
     assertEquals(2500, reader.getNumberOfRows());
   }
 

@@ -19,7 +19,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive</artifactId>
-    <version>2.0.0-SNAPSHOT</version>
+    <version>2.1.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -59,7 +59,17 @@
       <groupId>net.sf.jpam</groupId>
       <artifactId>jpam</artifactId>
       <version>${jpam.version}</version>
-    </dependency>
+            <exclusions>
+            <exclusion>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>commmons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+        </exclusions>
+   </dependency>
     <!-- used by thrift generated code -->
     <dependency>
       <groupId>commons-lang</groupId>
@@ -67,14 +77,19 @@
       <version>${commons-lang.version}</version>
     </dependency>
     <dependency>
-      <groupId>commons-logging</groupId>
-      <artifactId>commons-logging</artifactId>
-      <version>${commons-logging.version}</version>
-    </dependency>
-    <dependency>
       <groupId>org.eclipse.jetty.aggregate</groupId>
       <artifactId>jetty-all</artifactId>
         <version>${jetty.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>tomcat</groupId>
+      <artifactId>jasper-compiler</artifactId>
+      <version>${jasper.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>tomcat</groupId>
+      <artifactId>jasper-runtime</artifactId>
+      <version>${jasper.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.thrift</groupId>
@@ -96,7 +111,19 @@
       <artifactId>curator-recipes</artifactId>
       <version>${curator.version}</version>
     </dependency>
-    <!-- intra-project -->
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-common</artifactId>
+      <version>${hadoop.version}</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-mapreduce-client-core</artifactId>
+      <version>${hadoop.version}</version>
+      <optional>true</optional>
+    </dependency>
+     <!-- intra-project -->
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-exec</artifactId>
@@ -104,6 +131,13 @@
       <scope>test</scope>
       <classifier>tests</classifier>
     </dependency>
+      <dependency>
+        <groupId>org.apache.hive</groupId>
+        <artifactId>hive-common</artifactId>
+        <version>${project.version}</version>
+        <scope>test</scope>
+        <type>test-jar</type>
+      </dependency>
     <!-- test inter-project -->
     <dependency>
       <groupId>junit</groupId>
@@ -113,40 +147,17 @@
     </dependency>
   </dependencies>
 
-  <profiles>
-    <profile>
-      <id>hadoop-1</id>
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-core</artifactId>
-          <version>${hadoop-20S.version}</version>
-         <optional>true</optional>
-        </dependency>
-      </dependencies>
-    </profile>
-   <profile>
-      <id>hadoop-2</id>
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-common</artifactId>
-          <version>${hadoop-23.version}</version>
-          <optional>true</optional>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-mapreduce-client-core</artifactId>
-          <version>${hadoop-23.version}</version>
-          <optional>true</optional>
-        </dependency>
-      </dependencies>
-    </profile>
-  </profiles>
-
   <build>
     <sourceDirectory>${basedir}/src/java</sourceDirectory>
     <testSourceDirectory>${basedir}/src/test</testSourceDirectory>
+    <resources>
+      <resource>
+        <directory>${project.build.directory}</directory>
+        <includes>
+          <include>hive-webapps/**</include>
+        </includes>
+      </resource>
+    </resources>
     <plugins>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -162,8 +173,46 @@
               <sources>
                 <source>src/model</source>
                 <source>src/gen/thrift/gen-javabean</source>
+                <source>${project.build.directory}/generated-sources/java</source>
               </sources>
             </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <!-- Generate web app sources -->
+          <execution>
+            <id>generate</id>
+            <phase>generate-sources</phase>
+            <configuration>
+              <target>
+                <property name="build.webapps"
+                  location="${project.build.directory}/hive-webapps"/>
+                <property name="src.webapps"
+                  location="${basedir}/src/resources/hive-webapps"/>
+                <property name="generated.sources"
+                  location="${project.build.directory}/generated-sources"/>
+                <mkdir dir="${build.webapps}"/>
+                <copy todir="${build.webapps}">
+                  <fileset dir="${src.webapps}">
+                    <exclude name="**/*.jsp"/>
+                    <exclude name="**/.*"/>
+                  </fileset>
+                </copy>
+                <taskdef classname="org.apache.jasper.JspC"
+                  name="jspcompiler" classpathref="maven.compile.classpath"/>
+                <mkdir dir="${build.webapps}/hiveserver2/WEB-INF"/>
+                <jspcompiler uriroot="${src.webapps}/hiveserver2"
+                  outputdir="${generated.sources}/java"
+                  package="org.apache.hive.generated.hiveserver2"
+                  webxml="${build.webapps}/hiveserver2/WEB-INF/web.xml"/>
+              </target>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
           </execution>
         </executions>
       </plugin>

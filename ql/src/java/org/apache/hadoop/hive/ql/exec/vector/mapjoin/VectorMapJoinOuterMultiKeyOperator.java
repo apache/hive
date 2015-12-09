@@ -21,8 +21,8 @@ package org.apache.hadoop.hive.ql.exec.vector.mapjoin;
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
@@ -46,7 +46,7 @@ import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableSerialize
 public class VectorMapJoinOuterMultiKeyOperator extends VectorMapJoinOuterGenerateResultOperator {
 
   private static final long serialVersionUID = 1L;
-  private static final Log LOG = LogFactory.getLog(VectorMapJoinOuterMultiKeyOperator.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinOuterMultiKeyOperator.class.getName());
   private static final String CLASS_NAME = VectorMapJoinOuterMultiKeyOperator.class.getName();
 
   // (none)
@@ -131,7 +131,7 @@ public class VectorMapJoinOuterMultiKeyOperator extends VectorMapJoinOuterGenera
       final int inputLogicalSize = batch.size;
 
       if (inputLogicalSize == 0) {
-        if (LOG.isDebugEnabled()) {
+        if (isLogDebugEnabled) {
           LOG.debug(CLASS_NAME + " batch #" + batchCounter + " empty");
         }
         return;
@@ -160,7 +160,7 @@ public class VectorMapJoinOuterMultiKeyOperator extends VectorMapJoinOuterGenera
           ve.evaluate(batch);
         }
         someRowsFilteredOut = (batch.size != inputLogicalSize);
-        if (LOG.isDebugEnabled()) {
+        if (isLogDebugEnabled) {
           if (batch.selectedInUse) {
             if (inputSelectedInUse) {
               LOG.debug(CLASS_NAME +
@@ -247,7 +247,7 @@ public class VectorMapJoinOuterMultiKeyOperator extends VectorMapJoinOuterGenera
          * Common repeated join result processing.
          */
 
-        if (LOG.isDebugEnabled()) {
+        if (isLogDebugEnabled) {
           LOG.debug(CLASS_NAME + " batch #" + batchCounter + " repeated joinResult " + joinResult.name());
         }
         finishOuterRepeated(batch, joinResult, hashMapResults[0], someRowsFilteredOut,
@@ -258,7 +258,7 @@ public class VectorMapJoinOuterMultiKeyOperator extends VectorMapJoinOuterGenera
          * NOT Repeating.
          */
 
-        if (LOG.isDebugEnabled()) {
+        if (isLogDebugEnabled) {
           LOG.debug(CLASS_NAME + " batch #" + batchCounter + " non-repeated");
         }
 
@@ -294,9 +294,8 @@ public class VectorMapJoinOuterMultiKeyOperator extends VectorMapJoinOuterGenera
 
           // Generate binary sortable key for current row in vectorized row batch.
           keyVectorSerializeWrite.setOutput(currentKeyOutput);
-          boolean isNull = keyVectorSerializeWrite.serializeWrite(batch, batchIndex);
-
-          if (isNull) {
+          keyVectorSerializeWrite.serializeWrite(batch, batchIndex);
+          if (keyVectorSerializeWrite.getHasAnyNulls()) {
 
             // Have that the NULL does not interfere with the current equal key series, if there
             // is one. We do not set saveJoinResult.
@@ -428,7 +427,7 @@ public class VectorMapJoinOuterMultiKeyOperator extends VectorMapJoinOuterGenera
           }
         }
 
-        if (LOG.isDebugEnabled()) {
+        if (isLogDebugEnabled) {
           LOG.debug(CLASS_NAME + " batch #" + batchCounter +
               " allMatchs " + intArrayToRangesString(allMatchs,allMatchCount) +
               " equalKeySeriesHashMapResultIndices " + intArrayToRangesString(equalKeySeriesHashMapResultIndices, equalKeySeriesCount) +

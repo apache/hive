@@ -1,7 +1,7 @@
 drop table table_asc;
 drop table table_desc;
 
-set hive.enforce.sorting = true;
+
 
 create table table_asc(key string, value string) clustered by (key) sorted by (key ASC) into 1 BUCKETS;
 create table table_desc(key string, value string) clustered by (key) sorted by (key DESC) into 1 BUCKETS;

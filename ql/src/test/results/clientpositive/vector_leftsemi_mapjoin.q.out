@@ -102,6 +102,14 @@ POSTHOOK: Input: default@t3
 8	val_4
 8	val_8
 9	val_9
+PREHOOK: query: analyze table t3 compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+PREHOOK: Output: default@t3
+POSTHOOK: query: analyze table t3 compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+POSTHOOK: Output: default@t3
 PREHOOK: query: create table t4 (key int, value string) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -144,10 +152,10 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
@@ -240,10 +248,10 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
@@ -338,10 +346,10 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
@@ -426,15 +434,19 @@ STAGE PLANS:
             Filter Operator
               predicate: (key < 15) (type: boolean)
               Statistics: Num rows: 7 Data size: 651 Basic stats: COMPLETE Column stats: NONE
-              Group By Operator
-                keys: key (type: int), key (type: int)
-                mode: hash
-                outputColumnNames: _col0, _col1
+              Select Operator
+                expressions: key (type: int)
+                outputColumnNames: _col1
                 Statistics: Num rows: 7 Data size: 651 Basic stats: COMPLETE Column stats: NONE
-                HashTable Sink Operator
-                  keys:
-                    0 key (type: int)
-                    1 _col1 (type: int)
+                Group By Operator
+                  keys: _col1 (type: int), _col1 (type: int)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 7 Data size: 651 Basic stats: COMPLETE Column stats: NONE
+                  HashTable Sink Operator
+                    keys:
+                      0 key (type: int)
+                      1 _col1 (type: int)
 
   Stage: Stage-2
     Map Reduce
@@ -529,10 +541,10 @@ STAGE PLANS:
               Statistics: Num rows: 2 Data size: 186 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), value (type: string)
-                outputColumnNames: key, value
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 2 Data size: 186 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int), value (type: string)
+                  keys: _col0 (type: int), _col1 (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 2 Data size: 186 Basic stats: COMPLETE Column stats: NONE
@@ -908,10 +920,10 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
@@ -1017,10 +1029,10 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
@@ -1126,10 +1138,10 @@ STAGE PLANS:
               Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
@@ -1240,10 +1252,10 @@ STAGE PLANS:
               Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), value (type: string)
-                outputColumnNames: key, value
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int), value (type: string)
+                  keys: _col0 (type: int), _col1 (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: NONE
@@ -1347,10 +1359,10 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
@@ -1368,10 +1380,10 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
@@ -1486,10 +1498,10 @@ STAGE PLANS:
             Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int)
-              outputColumnNames: key
+              outputColumnNames: _col0
               Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: key (type: int)
+                keys: _col0 (type: int)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
@@ -1612,10 +1624,10 @@ STAGE PLANS:
             Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int)
-              outputColumnNames: key
+              outputColumnNames: _col0
               Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: key (type: int)
+                keys: _col0 (type: int)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
@@ -1736,10 +1748,10 @@ STAGE PLANS:
             Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int)
-              outputColumnNames: key
+              outputColumnNames: _col0
               Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: key (type: int)
+                keys: _col0 (type: int)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
@@ -1875,10 +1887,10 @@ STAGE PLANS:
             Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int)
-              outputColumnNames: key
+              outputColumnNames: _col0
               Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: key (type: int)
+                keys: _col0 (type: int)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
@@ -1998,10 +2010,10 @@ STAGE PLANS:
             Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int)
-              outputColumnNames: key
+              outputColumnNames: _col0
               Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: key (type: int)
+                keys: _col0 (type: int)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
@@ -2146,10 +2158,10 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
@@ -2374,10 +2386,10 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
@@ -2470,10 +2482,10 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
@@ -2568,10 +2580,10 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
@@ -2656,15 +2668,19 @@ STAGE PLANS:
             Filter Operator
               predicate: (key < 15) (type: boolean)
               Statistics: Num rows: 7 Data size: 651 Basic stats: COMPLETE Column stats: NONE
-              Group By Operator
-                keys: key (type: int), key (type: int)
-                mode: hash
-                outputColumnNames: _col0, _col1
+              Select Operator
+                expressions: key (type: int)
+                outputColumnNames: _col1
                 Statistics: Num rows: 7 Data size: 651 Basic stats: COMPLETE Column stats: NONE
-                HashTable Sink Operator
-                  keys:
-                    0 key (type: int)
-                    1 _col1 (type: int)
+                Group By Operator
+                  keys: _col1 (type: int), _col1 (type: int)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 7 Data size: 651 Basic stats: COMPLETE Column stats: NONE
+                  HashTable Sink Operator
+                    keys:
+                      0 key (type: int)
+                      1 _col1 (type: int)
 
   Stage: Stage-2
     Map Reduce
@@ -2759,10 +2775,10 @@ STAGE PLANS:
               Statistics: Num rows: 2 Data size: 186 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), value (type: string)
-                outputColumnNames: key, value
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 2 Data size: 186 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int), value (type: string)
+                  keys: _col0 (type: int), _col1 (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 2 Data size: 186 Basic stats: COMPLETE Column stats: NONE
@@ -3138,10 +3154,10 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
@@ -3247,10 +3263,10 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
@@ -3356,10 +3372,10 @@ STAGE PLANS:
               Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
@@ -3470,10 +3486,10 @@ STAGE PLANS:
               Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), value (type: string)
-                outputColumnNames: key, value
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int), value (type: string)
+                  keys: _col0 (type: int), _col1 (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: NONE
@@ -3577,10 +3593,10 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
@@ -3598,10 +3614,10 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
@@ -3716,10 +3732,10 @@ STAGE PLANS:
             Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int)
-              outputColumnNames: key
+              outputColumnNames: _col0
               Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: key (type: int)
+                keys: _col0 (type: int)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
@@ -3842,10 +3858,10 @@ STAGE PLANS:
             Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int)
-              outputColumnNames: key
+              outputColumnNames: _col0
               Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: key (type: int)
+                keys: _col0 (type: int)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
@@ -3966,10 +3982,10 @@ STAGE PLANS:
             Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int)
-              outputColumnNames: key
+              outputColumnNames: _col0
               Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: key (type: int)
+                keys: _col0 (type: int)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
@@ -4105,10 +4121,10 @@ STAGE PLANS:
             Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int)
-              outputColumnNames: key
+              outputColumnNames: _col0
               Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: key (type: int)
+                keys: _col0 (type: int)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
@@ -4228,10 +4244,10 @@ STAGE PLANS:
             Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int)
-              outputColumnNames: key
+              outputColumnNames: _col0
               Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: key (type: int)
+                keys: _col0 (type: int)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
@@ -4376,10 +4392,10 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
@@ -4604,10 +4620,10 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
@@ -4637,9 +4653,9 @@ STAGE PLANS:
                   key expressions: _col0 (type: int), _col1 (type: string)
                   sort order: ++
                   Statistics: Num rows: 6 Data size: 613 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string)
@@ -4701,10 +4717,10 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
@@ -4734,9 +4750,9 @@ STAGE PLANS:
                   key expressions: _col0 (type: int), _col1 (type: string)
                   sort order: ++
                   Statistics: Num rows: 6 Data size: 613 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string)
@@ -4800,10 +4816,10 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
@@ -4833,9 +4849,9 @@ STAGE PLANS:
                   key expressions: _col0 (type: int), _col1 (type: string)
                   sort order: ++
                   Statistics: Num rows: 6 Data size: 613 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string)
@@ -4889,15 +4905,19 @@ STAGE PLANS:
             Filter Operator
               predicate: (key < 15) (type: boolean)
               Statistics: Num rows: 7 Data size: 651 Basic stats: COMPLETE Column stats: NONE
-              Group By Operator
-                keys: key (type: int), key (type: int)
-                mode: hash
-                outputColumnNames: _col0, _col1
+              Select Operator
+                expressions: key (type: int)
+                outputColumnNames: _col1
                 Statistics: Num rows: 7 Data size: 651 Basic stats: COMPLETE Column stats: NONE
-                HashTable Sink Operator
-                  keys:
-                    0 key (type: int)
-                    1 _col1 (type: int)
+                Group By Operator
+                  keys: _col1 (type: int), _col1 (type: int)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 7 Data size: 651 Basic stats: COMPLETE Column stats: NONE
+                  HashTable Sink Operator
+                    keys:
+                      0 key (type: int)
+                      1 _col1 (type: int)
 
   Stage: Stage-2
     Map Reduce
@@ -4924,9 +4944,9 @@ STAGE PLANS:
                     key expressions: _col0 (type: string)
                     sort order: +
                     Statistics: Num rows: 7 Data size: 716 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string)
@@ -4993,10 +5013,10 @@ STAGE PLANS:
               Statistics: Num rows: 2 Data size: 186 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), value (type: string)
-                outputColumnNames: key, value
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 2 Data size: 186 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int), value (type: string)
+                  keys: _col0 (type: int), _col1 (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 2 Data size: 186 Basic stats: COMPLETE Column stats: NONE
@@ -5026,9 +5046,9 @@ STAGE PLANS:
                   key expressions: _col0 (type: int), _col1 (type: string)
                   sort order: ++
                   Statistics: Num rows: 6 Data size: 613 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string)
@@ -5124,9 +5144,9 @@ STAGE PLANS:
                     key expressions: _col0 (type: string)
                     sort order: +
                     Statistics: Num rows: 7 Data size: 716 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string)
@@ -5222,9 +5242,9 @@ STAGE PLANS:
                     key expressions: _col0 (type: string)
                     sort order: +
                     Statistics: Num rows: 6 Data size: 613 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string)
@@ -5313,9 +5333,9 @@ STAGE PLANS:
                   key expressions: _col0 (type: int), _col1 (type: string)
                   sort order: ++
                   Statistics: Num rows: 6 Data size: 613 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string)
@@ -5376,10 +5396,10 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
@@ -5409,9 +5429,9 @@ STAGE PLANS:
                   key expressions: _col0 (type: int)
                   sort order: +
                   Statistics: Num rows: 12 Data size: 1125 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int)
@@ -5486,10 +5506,10 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
@@ -5519,9 +5539,9 @@ STAGE PLANS:
                   key expressions: _col0 (type: int), _col1 (type: string)
                   sort order: ++
                   Statistics: Num rows: 6 Data size: 613 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string)
@@ -5596,10 +5616,10 @@ STAGE PLANS:
               Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
@@ -5637,9 +5657,9 @@ STAGE PLANS:
                     sort order: ++
                     Statistics: Num rows: 24 Data size: 2250 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col2 (type: int), _col3 (type: string)
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string), VALUE._col0 (type: int), VALUE._col1 (type: string)
@@ -5711,10 +5731,10 @@ STAGE PLANS:
               Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), value (type: string)
-                outputColumnNames: key, value
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int), value (type: string)
+                  keys: _col0 (type: int), _col1 (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: NONE
@@ -5744,9 +5764,9 @@ STAGE PLANS:
                   key expressions: _col0 (type: int), _col1 (type: string)
                   sort order: ++
                   Statistics: Num rows: 6 Data size: 613 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string)
@@ -5819,10 +5839,10 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
@@ -5840,10 +5860,10 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
@@ -5876,9 +5896,9 @@ STAGE PLANS:
                   key expressions: _col0 (type: int)
                   sort order: +
                   Statistics: Num rows: 24 Data size: 2250 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int)
@@ -5959,10 +5979,10 @@ STAGE PLANS:
             Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int)
-              outputColumnNames: key
+              outputColumnNames: _col0
               Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: key (type: int)
+                keys: _col0 (type: int)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
@@ -5992,9 +6012,9 @@ STAGE PLANS:
                 key expressions: _col0 (type: int)
                 sort order: +
                 Statistics: Num rows: 48 Data size: 4501 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int)
@@ -6086,10 +6106,10 @@ STAGE PLANS:
             Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int)
-              outputColumnNames: key
+              outputColumnNames: _col0
               Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: key (type: int)
+                keys: _col0 (type: int)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
@@ -6210,10 +6230,10 @@ STAGE PLANS:
             Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int)
-              outputColumnNames: key
+              outputColumnNames: _col0
               Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: key (type: int)
+                keys: _col0 (type: int)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
@@ -6252,9 +6272,9 @@ STAGE PLANS:
                 key expressions: _col0 (type: int)
                 sort order: +
                 Statistics: Num rows: 48 Data size: 4501 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int)
@@ -6350,10 +6370,10 @@ STAGE PLANS:
             Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int)
-              outputColumnNames: key
+              outputColumnNames: _col0
               Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: key (type: int)
+                keys: _col0 (type: int)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
@@ -6383,9 +6403,9 @@ STAGE PLANS:
                 key expressions: _col0 (type: int)
                 sort order: +
                 Statistics: Num rows: 48 Data size: 4501 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int)
@@ -6474,10 +6494,10 @@ STAGE PLANS:
             Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int)
-              outputColumnNames: key
+              outputColumnNames: _col0
               Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: key (type: int)
+                keys: _col0 (type: int)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
@@ -6622,10 +6642,10 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
@@ -6671,9 +6691,9 @@ STAGE PLANS:
                     key expressions: _col0 (type: int)
                     sort order: +
                     Statistics: Num rows: 13 Data size: 1237 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int)
@@ -6806,9 +6826,9 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -6852,10 +6872,10 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
@@ -6885,9 +6905,9 @@ STAGE PLANS:
                   key expressions: _col0 (type: int), _col1 (type: string)
                   sort order: ++
                   Statistics: Num rows: 6 Data size: 613 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string)
@@ -6949,10 +6969,10 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
@@ -6982,9 +7002,9 @@ STAGE PLANS:
                   key expressions: _col0 (type: int), _col1 (type: string)
                   sort order: ++
                   Statistics: Num rows: 6 Data size: 613 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string)
@@ -7048,10 +7068,10 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
@@ -7081,9 +7101,9 @@ STAGE PLANS:
                   key expressions: _col0 (type: int), _col1 (type: string)
                   sort order: ++
                   Statistics: Num rows: 6 Data size: 613 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string)
@@ -7137,15 +7157,19 @@ STAGE PLANS:
             Filter Operator
               predicate: (key < 15) (type: boolean)
               Statistics: Num rows: 7 Data size: 651 Basic stats: COMPLETE Column stats: NONE
-              Group By Operator
-                keys: key (type: int), key (type: int)
-                mode: hash
-                outputColumnNames: _col0, _col1
+              Select Operator
+                expressions: key (type: int)
+                outputColumnNames: _col1
                 Statistics: Num rows: 7 Data size: 651 Basic stats: COMPLETE Column stats: NONE
-                HashTable Sink Operator
-                  keys:
-                    0 key (type: int)
-                    1 _col1 (type: int)
+                Group By Operator
+                  keys: _col1 (type: int), _col1 (type: int)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 7 Data size: 651 Basic stats: COMPLETE Column stats: NONE
+                  HashTable Sink Operator
+                    keys:
+                      0 key (type: int)
+                      1 _col1 (type: int)
 
   Stage: Stage-2
     Map Reduce
@@ -7172,9 +7196,9 @@ STAGE PLANS:
                     key expressions: _col0 (type: string)
                     sort order: +
                     Statistics: Num rows: 7 Data size: 716 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string)
@@ -7241,10 +7265,10 @@ STAGE PLANS:
               Statistics: Num rows: 2 Data size: 186 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), value (type: string)
-                outputColumnNames: key, value
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 2 Data size: 186 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int), value (type: string)
+                  keys: _col0 (type: int), _col1 (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 2 Data size: 186 Basic stats: COMPLETE Column stats: NONE
@@ -7274,9 +7298,9 @@ STAGE PLANS:
                   key expressions: _col0 (type: int), _col1 (type: string)
                   sort order: ++
                   Statistics: Num rows: 6 Data size: 613 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string)
@@ -7372,9 +7396,9 @@ STAGE PLANS:
                     key expressions: _col0 (type: string)
                     sort order: +
                     Statistics: Num rows: 7 Data size: 716 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string)
@@ -7470,9 +7494,9 @@ STAGE PLANS:
                     key expressions: _col0 (type: string)
                     sort order: +
                     Statistics: Num rows: 6 Data size: 613 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string)
@@ -7561,9 +7585,9 @@ STAGE PLANS:
                   key expressions: _col0 (type: int), _col1 (type: string)
                   sort order: ++
                   Statistics: Num rows: 6 Data size: 613 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string)
@@ -7624,10 +7648,10 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
@@ -7657,9 +7681,9 @@ STAGE PLANS:
                   key expressions: _col0 (type: int)
                   sort order: +
                   Statistics: Num rows: 12 Data size: 1125 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int)
@@ -7734,10 +7758,10 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
@@ -7767,9 +7791,9 @@ STAGE PLANS:
                   key expressions: _col0 (type: int), _col1 (type: string)
                   sort order: ++
                   Statistics: Num rows: 6 Data size: 613 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string)
@@ -7844,10 +7868,10 @@ STAGE PLANS:
               Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
@@ -7885,9 +7909,9 @@ STAGE PLANS:
                     sort order: ++
                     Statistics: Num rows: 24 Data size: 2250 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col2 (type: int), _col3 (type: string)
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string), VALUE._col0 (type: int), VALUE._col1 (type: string)
@@ -7959,10 +7983,10 @@ STAGE PLANS:
               Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), value (type: string)
-                outputColumnNames: key, value
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int), value (type: string)
+                  keys: _col0 (type: int), _col1 (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: NONE
@@ -7992,9 +8016,9 @@ STAGE PLANS:
                   key expressions: _col0 (type: int), _col1 (type: string)
                   sort order: ++
                   Statistics: Num rows: 6 Data size: 613 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string)
@@ -8067,10 +8091,10 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
@@ -8088,10 +8112,10 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
@@ -8124,9 +8148,9 @@ STAGE PLANS:
                   key expressions: _col0 (type: int)
                   sort order: +
                   Statistics: Num rows: 24 Data size: 2250 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int)
@@ -8207,10 +8231,10 @@ STAGE PLANS:
             Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int)
-              outputColumnNames: key
+              outputColumnNames: _col0
               Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: key (type: int)
+                keys: _col0 (type: int)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
@@ -8240,9 +8264,9 @@ STAGE PLANS:
                 key expressions: _col0 (type: int)
                 sort order: +
                 Statistics: Num rows: 48 Data size: 4501 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int)
@@ -8334,10 +8358,10 @@ STAGE PLANS:
             Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int)
-              outputColumnNames: key
+              outputColumnNames: _col0
               Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: key (type: int)
+                keys: _col0 (type: int)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
@@ -8458,10 +8482,10 @@ STAGE PLANS:
             Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int)
-              outputColumnNames: key
+              outputColumnNames: _col0
               Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: key (type: int)
+                keys: _col0 (type: int)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
@@ -8500,9 +8524,9 @@ STAGE PLANS:
                 key expressions: _col0 (type: int)
                 sort order: +
                 Statistics: Num rows: 48 Data size: 4501 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int)
@@ -8598,10 +8622,10 @@ STAGE PLANS:
             Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int)
-              outputColumnNames: key
+              outputColumnNames: _col0
               Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: key (type: int)
+                keys: _col0 (type: int)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
@@ -8631,9 +8655,9 @@ STAGE PLANS:
                 key expressions: _col0 (type: int)
                 sort order: +
                 Statistics: Num rows: 48 Data size: 4501 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int)
@@ -8722,10 +8746,10 @@ STAGE PLANS:
             Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int)
-              outputColumnNames: key
+              outputColumnNames: _col0
               Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: key (type: int)
+                keys: _col0 (type: int)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
@@ -8870,10 +8894,10 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
@@ -8919,9 +8943,9 @@ STAGE PLANS:
                     key expressions: _col0 (type: int)
                     sort order: +
                     Statistics: Num rows: 13 Data size: 1237 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int)
@@ -9054,9 +9078,9 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -9100,10 +9124,10 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
@@ -9133,9 +9157,9 @@ STAGE PLANS:
                   key expressions: _col0 (type: int), _col1 (type: string)
                   sort order: ++
                   Statistics: Num rows: 6 Data size: 613 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string)
@@ -9197,10 +9221,10 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
@@ -9230,9 +9254,9 @@ STAGE PLANS:
                   key expressions: _col0 (type: int), _col1 (type: string)
                   sort order: ++
                   Statistics: Num rows: 6 Data size: 613 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string)
@@ -9296,10 +9320,10 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
@@ -9329,9 +9353,9 @@ STAGE PLANS:
                   key expressions: _col0 (type: int), _col1 (type: string)
                   sort order: ++
                   Statistics: Num rows: 6 Data size: 613 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string)
@@ -9385,15 +9409,19 @@ STAGE PLANS:
             Filter Operator
               predicate: (key < 15) (type: boolean)
               Statistics: Num rows: 7 Data size: 651 Basic stats: COMPLETE Column stats: NONE
-              Group By Operator
-                keys: key (type: int), key (type: int)
-                mode: hash
-                outputColumnNames: _col0, _col1
+              Select Operator
+                expressions: key (type: int)
+                outputColumnNames: _col1
                 Statistics: Num rows: 7 Data size: 651 Basic stats: COMPLETE Column stats: NONE
-                HashTable Sink Operator
-                  keys:
-                    0 key (type: int)
-                    1 _col1 (type: int)
+                Group By Operator
+                  keys: _col1 (type: int), _col1 (type: int)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 7 Data size: 651 Basic stats: COMPLETE Column stats: NONE
+                  HashTable Sink Operator
+                    keys:
+                      0 key (type: int)
+                      1 _col1 (type: int)
 
   Stage: Stage-2
     Map Reduce
@@ -9420,9 +9448,9 @@ STAGE PLANS:
                     key expressions: _col0 (type: string)
                     sort order: +
                     Statistics: Num rows: 7 Data size: 716 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string)
@@ -9489,10 +9517,10 @@ STAGE PLANS:
               Statistics: Num rows: 2 Data size: 186 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), value (type: string)
-                outputColumnNames: key, value
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 2 Data size: 186 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int), value (type: string)
+                  keys: _col0 (type: int), _col1 (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 2 Data size: 186 Basic stats: COMPLETE Column stats: NONE
@@ -9522,9 +9550,9 @@ STAGE PLANS:
                   key expressions: _col0 (type: int), _col1 (type: string)
                   sort order: ++
                   Statistics: Num rows: 6 Data size: 613 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string)
@@ -9620,9 +9648,9 @@ STAGE PLANS:
                     key expressions: _col0 (type: string)
                     sort order: +
                     Statistics: Num rows: 7 Data size: 716 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string)
@@ -9718,9 +9746,9 @@ STAGE PLANS:
                     key expressions: _col0 (type: string)
                     sort order: +
                     Statistics: Num rows: 6 Data size: 613 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string)
@@ -9809,9 +9837,9 @@ STAGE PLANS:
                   key expressions: _col0 (type: int), _col1 (type: string)
                   sort order: ++
                   Statistics: Num rows: 6 Data size: 613 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string)
@@ -9872,10 +9900,10 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
@@ -9905,9 +9933,9 @@ STAGE PLANS:
                   key expressions: _col0 (type: int)
                   sort order: +
                   Statistics: Num rows: 12 Data size: 1125 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int)
@@ -9982,10 +10010,10 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
@@ -10015,9 +10043,9 @@ STAGE PLANS:
                   key expressions: _col0 (type: int), _col1 (type: string)
                   sort order: ++
                   Statistics: Num rows: 6 Data size: 613 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string)
@@ -10092,10 +10120,10 @@ STAGE PLANS:
               Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
@@ -10133,9 +10161,9 @@ STAGE PLANS:
                     sort order: ++
                     Statistics: Num rows: 24 Data size: 2250 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col2 (type: int), _col3 (type: string)
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string), VALUE._col0 (type: int), VALUE._col1 (type: string)
@@ -10207,10 +10235,10 @@ STAGE PLANS:
               Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), value (type: string)
-                outputColumnNames: key, value
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int), value (type: string)
+                  keys: _col0 (type: int), _col1 (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: NONE
@@ -10240,9 +10268,9 @@ STAGE PLANS:
                   key expressions: _col0 (type: int), _col1 (type: string)
                   sort order: ++
                   Statistics: Num rows: 6 Data size: 613 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string)
@@ -10315,10 +10343,10 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
@@ -10336,10 +10364,10 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
@@ -10372,9 +10400,9 @@ STAGE PLANS:
                   key expressions: _col0 (type: int)
                   sort order: +
                   Statistics: Num rows: 24 Data size: 2250 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int)
@@ -10455,10 +10483,10 @@ STAGE PLANS:
             Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int)
-              outputColumnNames: key
+              outputColumnNames: _col0
               Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: key (type: int)
+                keys: _col0 (type: int)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
@@ -10488,9 +10516,9 @@ STAGE PLANS:
                 key expressions: _col0 (type: int)
                 sort order: +
                 Statistics: Num rows: 48 Data size: 4501 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int)
@@ -10582,10 +10610,10 @@ STAGE PLANS:
             Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int)
-              outputColumnNames: key
+              outputColumnNames: _col0
               Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: key (type: int)
+                keys: _col0 (type: int)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
@@ -10706,10 +10734,10 @@ STAGE PLANS:
             Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int)
-              outputColumnNames: key
+              outputColumnNames: _col0
               Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: key (type: int)
+                keys: _col0 (type: int)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
@@ -10748,9 +10776,9 @@ STAGE PLANS:
                 key expressions: _col0 (type: int)
                 sort order: +
                 Statistics: Num rows: 48 Data size: 4501 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int)
@@ -10846,10 +10874,10 @@ STAGE PLANS:
             Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int)
-              outputColumnNames: key
+              outputColumnNames: _col0
               Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: key (type: int)
+                keys: _col0 (type: int)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
@@ -10879,9 +10907,9 @@ STAGE PLANS:
                 key expressions: _col0 (type: int)
                 sort order: +
                 Statistics: Num rows: 48 Data size: 4501 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int)
@@ -10970,10 +10998,10 @@ STAGE PLANS:
             Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int)
-              outputColumnNames: key
+              outputColumnNames: _col0
               Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: key (type: int)
+                keys: _col0 (type: int)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
@@ -11118,10 +11146,10 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
@@ -11167,9 +11195,9 @@ STAGE PLANS:
                     key expressions: _col0 (type: int)
                     sort order: +
                     Statistics: Num rows: 13 Data size: 1237 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int)
@@ -11302,9 +11330,9 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -11348,10 +11376,10 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
@@ -11381,9 +11409,9 @@ STAGE PLANS:
                   key expressions: _col0 (type: int), _col1 (type: string)
                   sort order: ++
                   Statistics: Num rows: 6 Data size: 613 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string)
@@ -11445,10 +11473,10 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
@@ -11478,9 +11506,9 @@ STAGE PLANS:
                   key expressions: _col0 (type: int), _col1 (type: string)
                   sort order: ++
                   Statistics: Num rows: 6 Data size: 613 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string)
@@ -11544,10 +11572,10 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
@@ -11577,9 +11605,9 @@ STAGE PLANS:
                   key expressions: _col0 (type: int), _col1 (type: string)
                   sort order: ++
                   Statistics: Num rows: 6 Data size: 613 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string)
@@ -11633,15 +11661,19 @@ STAGE PLANS:
             Filter Operator
               predicate: (key < 15) (type: boolean)
               Statistics: Num rows: 7 Data size: 651 Basic stats: COMPLETE Column stats: NONE
-              Group By Operator
-                keys: key (type: int), key (type: int)
-                mode: hash
-                outputColumnNames: _col0, _col1
+              Select Operator
+                expressions: key (type: int)
+                outputColumnNames: _col1
                 Statistics: Num rows: 7 Data size: 651 Basic stats: COMPLETE Column stats: NONE
-                HashTable Sink Operator
-                  keys:
-                    0 key (type: int)
-                    1 _col1 (type: int)
+                Group By Operator
+                  keys: _col1 (type: int), _col1 (type: int)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 7 Data size: 651 Basic stats: COMPLETE Column stats: NONE
+                  HashTable Sink Operator
+                    keys:
+                      0 key (type: int)
+                      1 _col1 (type: int)
 
   Stage: Stage-2
     Map Reduce
@@ -11668,9 +11700,9 @@ STAGE PLANS:
                     key expressions: _col0 (type: string)
                     sort order: +
                     Statistics: Num rows: 7 Data size: 716 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string)
@@ -11737,10 +11769,10 @@ STAGE PLANS:
               Statistics: Num rows: 2 Data size: 186 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), value (type: string)
-                outputColumnNames: key, value
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 2 Data size: 186 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int), value (type: string)
+                  keys: _col0 (type: int), _col1 (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 2 Data size: 186 Basic stats: COMPLETE Column stats: NONE
@@ -11770,9 +11802,9 @@ STAGE PLANS:
                   key expressions: _col0 (type: int), _col1 (type: string)
                   sort order: ++
                   Statistics: Num rows: 6 Data size: 613 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string)
@@ -11868,9 +11900,9 @@ STAGE PLANS:
                     key expressions: _col0 (type: string)
                     sort order: +
                     Statistics: Num rows: 7 Data size: 716 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string)
@@ -11966,9 +11998,9 @@ STAGE PLANS:
                     key expressions: _col0 (type: string)
                     sort order: +
                     Statistics: Num rows: 6 Data size: 613 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string)
@@ -12057,9 +12089,9 @@ STAGE PLANS:
                   key expressions: _col0 (type: int), _col1 (type: string)
                   sort order: ++
                   Statistics: Num rows: 6 Data size: 613 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string)
@@ -12120,10 +12152,10 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
@@ -12153,9 +12185,9 @@ STAGE PLANS:
                   key expressions: _col0 (type: int)
                   sort order: +
                   Statistics: Num rows: 12 Data size: 1125 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int)
@@ -12230,10 +12262,10 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
@@ -12263,9 +12295,9 @@ STAGE PLANS:
                   key expressions: _col0 (type: int), _col1 (type: string)
                   sort order: ++
                   Statistics: Num rows: 6 Data size: 613 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string)
@@ -12340,10 +12372,10 @@ STAGE PLANS:
               Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
@@ -12381,9 +12413,9 @@ STAGE PLANS:
                     sort order: ++
                     Statistics: Num rows: 24 Data size: 2250 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col2 (type: int), _col3 (type: string)
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string), VALUE._col0 (type: int), VALUE._col1 (type: string)
@@ -12455,10 +12487,10 @@ STAGE PLANS:
               Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), value (type: string)
-                outputColumnNames: key, value
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int), value (type: string)
+                  keys: _col0 (type: int), _col1 (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: NONE
@@ -12488,9 +12520,9 @@ STAGE PLANS:
                   key expressions: _col0 (type: int), _col1 (type: string)
                   sort order: ++
                   Statistics: Num rows: 6 Data size: 613 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string)
@@ -12563,10 +12595,10 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
@@ -12584,10 +12616,10 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
@@ -12620,9 +12652,9 @@ STAGE PLANS:
                   key expressions: _col0 (type: int)
                   sort order: +
                   Statistics: Num rows: 24 Data size: 2250 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int)
@@ -12703,10 +12735,10 @@ STAGE PLANS:
             Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int)
-              outputColumnNames: key
+              outputColumnNames: _col0
               Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: key (type: int)
+                keys: _col0 (type: int)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
@@ -12736,9 +12768,9 @@ STAGE PLANS:
                 key expressions: _col0 (type: int)
                 sort order: +
                 Statistics: Num rows: 48 Data size: 4501 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int)
@@ -12830,10 +12862,10 @@ STAGE PLANS:
             Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int)
-              outputColumnNames: key
+              outputColumnNames: _col0
               Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: key (type: int)
+                keys: _col0 (type: int)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
@@ -12954,10 +12986,10 @@ STAGE PLANS:
             Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int)
-              outputColumnNames: key
+              outputColumnNames: _col0
               Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: key (type: int)
+                keys: _col0 (type: int)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
@@ -12996,9 +13028,9 @@ STAGE PLANS:
                 key expressions: _col0 (type: int)
                 sort order: +
                 Statistics: Num rows: 48 Data size: 4501 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int)
@@ -13094,10 +13126,10 @@ STAGE PLANS:
             Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int)
-              outputColumnNames: key
+              outputColumnNames: _col0
               Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: key (type: int)
+                keys: _col0 (type: int)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
@@ -13127,9 +13159,9 @@ STAGE PLANS:
                 key expressions: _col0 (type: int)
                 sort order: +
                 Statistics: Num rows: 48 Data size: 4501 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int)
@@ -13218,10 +13250,10 @@ STAGE PLANS:
             Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int)
-              outputColumnNames: key
+              outputColumnNames: _col0
               Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: key (type: int)
+                keys: _col0 (type: int)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
@@ -13366,10 +13398,10 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: NONE
@@ -13415,9 +13447,9 @@ STAGE PLANS:
                     key expressions: _col0 (type: int)
                     sort order: +
                     Statistics: Num rows: 13 Data size: 1237 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int)
@@ -13550,9 +13582,9 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
-      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator

@@ -18,6 +18,9 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -26,6 +29,13 @@ import java.util.List;
  * The interface for writing ORC files.
  */
 public interface Writer {
+
+  /**
+   * Get the schema for this writer
+   * @return the file schema
+   */
+  TypeDescription getSchema();
+
   /**
    * Add arbitrary meta-data to the ORC file. This may be called at any point
    * until the Writer is closed. If the same key is passed a second time, the
@@ -41,6 +51,12 @@ public interface Writer {
    * @throws IOException
    */
   void addRow(Object row) throws IOException;
+
+  /**
+   * Add a row batch to the ORC file.
+   * @param batch the rows to add
+   */
+  void addRowBatch(VectorizedRowBatch batch) throws IOException;
 
   /**
    * Flush all of the buffers and close the file. No methods on this writer

@@ -24,17 +24,17 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.compress.archivers.jar.JarArchiveEntry;
 import org.apache.commons.compress.archivers.jar.JarArchiveOutputStream;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.conf.HiveVariableSource;
+import org.apache.hadoop.hive.conf.VariableSubstitution;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.parse.VariableSubstitution;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
@@ -43,6 +43,8 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.Path;
 import org.codehaus.groovy.ant.Groovyc;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.io.Files;
@@ -58,7 +60,7 @@ import com.google.common.io.Files;
  */
 public class CompileProcessor implements CommandProcessor {
 
-  public static final Log LOG = LogFactory.getLog(CompileProcessor.class.getName());
+  public static final Logger LOG = LoggerFactory.getLogger(CompileProcessor.class.getName());
   public static final LogHelper console = new LogHelper(LOG);
   public static final String IO_TMP_DIR = "java.io.tmpdir";
   public static final String GROOVY = "GROOVY";
@@ -142,7 +144,12 @@ public class CompileProcessor implements CommandProcessor {
   @VisibleForTesting
   void parse(SessionState ss) throws CompileProcessorException {
     if (ss != null){
-      command = new VariableSubstitution().substitute(ss.getConf(), command);
+      command = new VariableSubstitution(new HiveVariableSource() {
+        @Override
+        public Map<String, String> getHiveVariable() {
+          return SessionState.get().getHiveVariables();
+        }
+      }).substitute(ss.getConf(), command);
     }
     if (command == null || command.length() == 0) {
       throw new CompileProcessorException("Command was empty");

@@ -17,8 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
@@ -48,7 +48,7 @@ import org.apache.hadoop.util.StringUtils;
 @Description(name = "sum", value = "_FUNC_(x) - Returns the sum of a set of numbers")
 public class GenericUDAFSum extends AbstractGenericUDAFResolver {
 
-  static final Log LOG = LogFactory.getLog(GenericUDAFSum.class.getName());
+  static final Logger LOG = LoggerFactory.getLogger(GenericUDAFSum.class.getName());
 
   @Override
   public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters)
@@ -356,7 +356,7 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
    */
   public static class GenericUDAFSumLong extends GenericUDAFEvaluator {
     private PrimitiveObjectInspector inputOI;
-    private LongWritable result;
+    protected LongWritable result;
 
     @Override
     public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {

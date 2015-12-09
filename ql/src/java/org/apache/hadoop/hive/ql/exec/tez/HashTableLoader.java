@@ -21,10 +21,11 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
@@ -38,6 +39,7 @@ import org.apache.hadoop.hive.ql.exec.persistence.MapJoinObjectSerDeContext;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainerSerDe;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
@@ -55,7 +57,7 @@ import org.apache.tez.runtime.library.api.KeyValueReader;
  */
 public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTableLoader {
 
-  private static final Log LOG = LogFactory.getLog(HashTableLoader.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(HashTableLoader.class.getName());
 
   private Configuration hconf;
   private MapJoinDesc desc;
@@ -76,6 +78,12 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
 
     Map<Integer, String> parentToInput = desc.getParentToInput();
     Map<Integer, Long> parentKeyCounts = desc.getParentKeyCounts();
+
+    boolean isCrossProduct = false;
+    List<ExprNodeDesc> joinExprs = desc.getKeys().values().iterator().next();
+    if (joinExprs.size() == 0) {
+      isCrossProduct = true;
+    }
 
     boolean useOptimizedTables = HiveConf.getBoolVar(
         hconf, HiveConf.ConfVars.HIVEMAPJOINUSEOPTIMIZEDTABLE);
@@ -184,11 +192,18 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
           }
         }
 
-        MapJoinTableContainer tableContainer = useOptimizedTables
-            ? (useHybridGraceHashJoin ? new HybridHashTableContainer(hconf, keyCount,
-                                            memory, desc.getParentDataSizes().get(pos), nwayConf)
-                                      : new MapJoinBytesTableContainer(hconf, valCtx, keyCount, 0))
-            : new HashMapWrapper(hconf, keyCount);
+        MapJoinTableContainer tableContainer;
+        if (useOptimizedTables) {
+          if (!useHybridGraceHashJoin || isCrossProduct) {
+            tableContainer = new MapJoinBytesTableContainer(hconf, valCtx, keyCount, 0);
+          } else {
+            tableContainer = new HybridHashTableContainer(hconf, keyCount, memory,
+                desc.getParentDataSizes().get(pos), nwayConf);
+          }
+        } else {
+          tableContainer = new HashMapWrapper(hconf, keyCount);
+        }
+
         LOG.info("Using tableContainer " + tableContainer.getClass().getSimpleName());
 
         while (kvReader.next()) {

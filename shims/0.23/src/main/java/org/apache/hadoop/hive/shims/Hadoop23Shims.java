@@ -31,7 +31,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -65,12 +64,11 @@ import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.DFSClient;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
+import org.apache.hadoop.hdfs.client.HdfsAdmin;
 import org.apache.hadoop.hdfs.protocol.DirectoryListing;
+import org.apache.hadoop.hdfs.protocol.EncryptionZone;
 import org.apache.hadoop.hdfs.protocol.HdfsConstants;
 import org.apache.hadoop.hdfs.protocol.HdfsLocatedFileStatus;
-import org.apache.hadoop.hdfs.client.HdfsAdmin;
-import org.apache.hadoop.hdfs.protocol.EncryptionZone;
-import org.apache.hadoop.hive.shims.HadoopShims.TextReaderShim;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.ClusterStatus;
@@ -92,11 +90,12 @@ import org.apache.hadoop.mapreduce.TaskType;
 import org.apache.hadoop.mapreduce.task.JobContextImpl;
 import org.apache.hadoop.mapreduce.task.TaskAttemptContextImpl;
 import org.apache.hadoop.net.NetUtils;
-import org.apache.hadoop.security.authentication.util.KerberosName;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.authentication.util.KerberosName;
 import org.apache.hadoop.tools.DistCp;
 import org.apache.hadoop.tools.DistCpOptions;
+import org.apache.hadoop.tools.DistCpOptions.FileAttribute;
 import org.apache.hadoop.util.Progressable;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.tez.test.MiniTezCluster;
@@ -371,8 +370,8 @@ public class Hadoop23Shims extends HadoopShimsSecure {
    */
   @Override
   public MiniMrShim getMiniTezCluster(Configuration conf, int numberOfTaskTrackers,
-                                     String nameNode, int numDir) throws IOException {
-    return new MiniTezShim(conf, numberOfTaskTrackers, nameNode, numDir);
+      String nameNode, boolean isLlap) throws IOException {
+    return new MiniTezShim(conf, numberOfTaskTrackers, nameNode, isLlap);
   }
 
   /**
@@ -382,10 +381,11 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
     private final MiniTezCluster mr;
     private final Configuration conf;
+    private Class<?> miniLlapKlass;
+    private Object miniLlapCluster;
 
-    public MiniTezShim(Configuration conf, int numberOfTaskTrackers,
-                      String nameNode, int numDir) throws IOException {
-
+    public MiniTezShim(Configuration conf, int numberOfTaskTrackers, String nameNode,
+        boolean isLlap) throws IOException {
       mr = new MiniTezCluster("hive", numberOfTaskTrackers);
       conf.set("fs.defaultFS", nameNode);
       conf.set("tez.am.log.level", "DEBUG");
@@ -393,6 +393,54 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       mr.init(conf);
       mr.start();
       this.conf = mr.getConfig();
+      if (isLlap) {
+        createAndLaunchLlapDaemon(this.conf);
+      } else {
+        miniLlapCluster = null;
+      }
+    }
+
+    private void createAndLaunchLlapDaemon(final Configuration conf)
+        throws IOException {
+      try {
+        final String clusterName = "llap";
+        Class<?> llapDaemonKlass =
+            Class.forName("org.apache.hadoop.hive.llap.daemon.impl.LlapDaemon",
+                false, ShimLoader.class.getClassLoader());
+        Method totalMemMethod = llapDaemonKlass.getMethod("getTotalHeapSize");
+        final long maxMemory = (long) totalMemMethod.invoke(null);
+        // 15% for io cache
+        final long memoryForCache = (long) (0.15f * maxMemory);
+        // 75% for executors
+        final long totalExecutorMemory = (long) (0.75f * maxMemory);
+        final int numExecutors = conf.getInt("llap.daemon.num.executors", 4);
+        final boolean asyncIOEnabled = true;
+        // enabling this will cause test failures in Mac OS X
+        final boolean directMemoryEnabled = false;
+        final int numLocalDirs = 1;
+        LOG.info("MiniLlap Configs - maxMemory: " + maxMemory + " memoryForCache: " + memoryForCache
+            + " totalExecutorMemory: " + totalExecutorMemory + " numExecutors: " + numExecutors
+            + " asyncIOEnabled: " + asyncIOEnabled + " directMemoryEnabled: " + directMemoryEnabled
+            + " numLocalDirs: " + numLocalDirs);
+
+        miniLlapKlass = Class.forName("org.apache.hadoop.hive.llap.daemon.MiniLlapCluster",
+            false, ShimLoader.class.getClassLoader());
+        Method create = miniLlapKlass.getMethod("createAndLaunch", new Class[]{Configuration.class,
+            String.class, Integer.TYPE, Long.TYPE, Boolean.TYPE, Boolean.TYPE,
+            Long.TYPE, Integer.TYPE});
+        miniLlapCluster = create.invoke(null,
+            conf,
+            clusterName,
+            numExecutors,
+            totalExecutorMemory,
+            asyncIOEnabled,
+            directMemoryEnabled,
+            memoryForCache,
+            numLocalDirs);
+      } catch (Exception e) {
+        LOG.error("Unable to create MiniLlapCluster. Exception: " + e.getMessage());
+        throw new IOException(e);
+      }
     }
 
     @Override
@@ -410,6 +458,15 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     @Override
     public void shutdown() throws IOException {
       mr.stop();
+
+      if (miniLlapKlass != null && miniLlapCluster != null) {
+        try {
+          Method stop = miniLlapKlass.getMethod("stop", new Class[]{});
+          stop.invoke(miniLlapCluster);
+        } catch (Exception e) {
+          LOG.error("Unable to stop llap daemon. Exception: " + e.getMessage());
+        }
+      }
     }
 
     @Override
@@ -531,11 +588,32 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     // else the updates do not get flushed properly
     KeyProviderCryptoExtension keyProvider =  miniDFSCluster.getNameNode().getNamesystem().getProvider();
     if (keyProvider != null) {
-      miniDFSCluster.getFileSystem().getClient().setKeyProvider(keyProvider);
+      try {
+        setKeyProvider(miniDFSCluster.getFileSystem().getClient(), keyProvider);
+      } catch (Exception err) {
+        throw new IOException(err);
+      }
     }
 
     cluster = new MiniDFSShim(miniDFSCluster);
     return cluster;
+  }
+
+  private static void setKeyProvider(DFSClient dfsClient, KeyProviderCryptoExtension provider)
+      throws Exception {
+    Method setKeyProviderHadoop27Method = null;
+    try {
+      setKeyProviderHadoop27Method = DFSClient.class.getMethod("setKeyProvider", KeyProvider.class);
+    } catch (NoSuchMethodException err) {
+      // We can just use setKeyProvider() as it is
+    }
+
+    if (setKeyProviderHadoop27Method != null) {
+      // Method signature changed in Hadoop 2.7. Cast provider to KeyProvider
+      setKeyProviderHadoop27Method.invoke(dfsClient, (KeyProvider) provider);
+    } else {
+      dfsClient.setKeyProvider(provider);
+    }
   }
 
   /**
@@ -958,25 +1036,6 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   }
 
   @Override
-  public Map<String, String> getHadoopConfNames() {
-    Map<String, String> ret = new HashMap<String, String>();
-    ret.put("HADOOPFS", "fs.defaultFS");
-    ret.put("HADOOPMAPFILENAME", "mapreduce.map.input.file");
-    ret.put("HADOOPMAPREDINPUTDIR", "mapreduce.input.fileinputformat.inputdir");
-    ret.put("HADOOPMAPREDINPUTDIRRECURSIVE", "mapreduce.input.fileinputformat.input.dir.recursive");
-    ret.put("MAPREDMAXSPLITSIZE", "mapreduce.input.fileinputformat.split.maxsize");
-    ret.put("MAPREDMINSPLITSIZE", "mapreduce.input.fileinputformat.split.minsize");
-    ret.put("MAPREDMINSPLITSIZEPERNODE", "mapreduce.input.fileinputformat.split.minsize.per.node");
-    ret.put("MAPREDMINSPLITSIZEPERRACK", "mapreduce.input.fileinputformat.split.minsize.per.rack");
-    ret.put("HADOOPNUMREDUCERS", "mapreduce.job.reduces");
-    ret.put("HADOOPJOBNAME", "mapreduce.job.name");
-    ret.put("HADOOPSPECULATIVEEXECREDUCERS", "mapreduce.reduce.speculative");
-    ret.put("MAPREDSETUPCLEANUPNEEDED", "mapreduce.job.committer.setup.cleanup.needed");
-    ret.put("MAPREDTASKCLEANUPNEEDED", "mapreduce.job.committer.task.cleanup.needed");
-    return ret;
- }
-
-  @Override
   public ZeroCopyReaderShim getZeroCopyReader(FSDataInputStream in, ByteBufferPoolShim pool) throws IOException {
     if(zeroCopy) {
       return ZeroCopyShims.getZeroCopyReader(in, pool);
@@ -1213,14 +1272,18 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   public boolean runDistCp(Path src, Path dst, Configuration conf) throws IOException {
 
     DistCpOptions options = new DistCpOptions(Collections.singletonList(src), dst);
-    options.setSkipCRC(true);
     options.setSyncFolder(true);
+    options.setSkipCRC(true);
+    options.preserve(FileAttribute.BLOCKSIZE);
     try {
+      conf.setBoolean("mapred.mapper.new-api", true);
       DistCp distcp = new DistCp(conf, options);
       distcp.execute();
       return true;
     } catch (Exception e) {
       throw new IOException("Cannot execute DistCp process: " + e, e);
+    } finally {
+      conf.setBoolean("mapred.mapper.new-api", false);
     }
   }
 

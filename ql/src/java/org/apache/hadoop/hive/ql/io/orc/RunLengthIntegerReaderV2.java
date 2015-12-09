@@ -19,7 +19,11 @@ package org.apache.hadoop.hive.ql.io.orc;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.util.Arrays;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.io.orc.RunLengthIntegerWriterV2.EncodingType;
 
@@ -28,16 +32,20 @@ import org.apache.hadoop.hive.ql.io.orc.RunLengthIntegerWriterV2.EncodingType;
  * {@link RunLengthIntegerWriterV2} for description of various lightweight
  * compression techniques.
  */
-class RunLengthIntegerReaderV2 implements IntegerReader {
-  private final InStream input;
+public class RunLengthIntegerReaderV2 implements IntegerReader {
+  public static final Logger LOG = LoggerFactory.getLogger(RunLengthIntegerReaderV2.class);
+
+  private InStream input;
   private final boolean signed;
   private final long[] literals = new long[RunLengthIntegerWriterV2.MAX_SCOPE];
+  private boolean isRepeating = false;
   private int numLiterals = 0;
   private int used = 0;
   private final boolean skipCorrupt;
   private final SerializationUtils utils;
+  private EncodingType currentEncoding;
 
-  RunLengthIntegerReaderV2(InStream input, boolean signed,
+  public RunLengthIntegerReaderV2(InStream input, boolean signed,
       boolean skipCorrupt) throws IOException {
     this.input = input;
     this.signed = signed;
@@ -45,22 +53,25 @@ class RunLengthIntegerReaderV2 implements IntegerReader {
     this.utils = new SerializationUtils();
   }
 
-  private void readValues() throws IOException {
+  private final static EncodingType[] encodings = EncodingType.values();
+  private void readValues(boolean ignoreEof) throws IOException {
     // read the first 2 bits and determine the encoding type
+    isRepeating = false;
     int firstByte = input.read();
     if (firstByte < 0) {
-      throw new EOFException("Read past end of RLE integer from " + input);
-    } else {
-      int enc = (firstByte >>> 6) & 0x03;
-      if (EncodingType.SHORT_REPEAT.ordinal() == enc) {
-        readShortRepeatValues(firstByte);
-      } else if (EncodingType.DIRECT.ordinal() == enc) {
-        readDirectValues(firstByte);
-      } else if (EncodingType.PATCHED_BASE.ordinal() == enc) {
-        readPatchedBaseValues(firstByte);
-      } else {
-        readDeltaValues(firstByte);
+      if (!ignoreEof) {
+        throw new EOFException("Read past end of RLE integer from " + input);
       }
+      used = numLiterals = 0;
+      return;
+    }
+    currentEncoding = encodings[(firstByte >>> 6) & 0x03];
+    switch (currentEncoding) {
+    case SHORT_REPEAT: readShortRepeatValues(firstByte); break;
+    case DIRECT: readDirectValues(firstByte); break;
+    case PATCHED_BASE: readPatchedBaseValues(firstByte); break;
+    case DELTA: readDeltaValues(firstByte); break;
+    default: throw new IOException("Unknown encoding " + currentEncoding);
     }
   }
 
@@ -93,10 +104,16 @@ class RunLengthIntegerReaderV2 implements IntegerReader {
       // read the fixed delta value stored as vint (deltas can be negative even
       // if all number are positive)
       long fd = utils.readVslong(input);
-
-      // add fixed deltas to adjacent values
-      for(int i = 0; i < len; i++) {
-        literals[numLiterals++] = literals[numLiterals - 2] + fd;
+      if (fd == 0) {
+        isRepeating = true;
+        assert numLiterals == 1;
+        Arrays.fill(literals, numLiterals, numLiterals + len, literals[0]);
+        numLiterals += len;
+      } else {
+        // add fixed deltas to adjacent values
+        for(int i = 0; i < len; i++) {
+          literals[numLiterals++] = literals[numLiterals - 2] + fd;
+        }
       }
     } else {
       long deltaBase = utils.readVslong(input);
@@ -280,10 +297,18 @@ class RunLengthIntegerReaderV2 implements IntegerReader {
       val = utils.zigzagDecode(val);
     }
 
-    // repeat the value for length times
-    for(int i = 0; i < len; i++) {
-      literals[numLiterals++] = val;
+    if (numLiterals != 0) {
+      // Currently this always holds, which makes peekNextAvailLength simpler.
+      // If this changes, peekNextAvailLength should be adjusted accordingly.
+      throw new AssertionError("readValues called with existing values present");
     }
+    // repeat the value for length times
+    isRepeating = true;
+    // TODO: this is not so useful and V1 reader doesn't do that. Fix? Same if delta == 0
+    for(int i = 0; i < len; i++) {
+      literals[i] = val;
+    }
+    numLiterals = len;
   }
 
   @Override
@@ -297,7 +322,7 @@ class RunLengthIntegerReaderV2 implements IntegerReader {
     if (used == numLiterals) {
       numLiterals = 0;
       used = 0;
-      readValues();
+      readValues(false);
     }
     result = literals[used++];
     return result;
@@ -312,7 +337,7 @@ class RunLengthIntegerReaderV2 implements IntegerReader {
       // parts
       while (consumed > 0) {
         numLiterals = 0;
-        readValues();
+        readValues(false);
         used = consumed;
         consumed -= numLiterals;
       }
@@ -328,7 +353,7 @@ class RunLengthIntegerReaderV2 implements IntegerReader {
       if (used == numLiterals) {
         numLiterals = 0;
         used = 0;
-        readValues();
+        readValues(false);
       }
       long consume = Math.min(numValues, numLiterals - used);
       used += consume;
@@ -358,5 +383,10 @@ class RunLengthIntegerReaderV2 implements IntegerReader {
         previous.isRepeating = false;
       }
     }
+  }
+
+  @Override
+  public void setInStream(InStream data) {
+    input = data;
   }
 }

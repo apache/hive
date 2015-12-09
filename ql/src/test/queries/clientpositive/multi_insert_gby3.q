@@ -1,8 +1,9 @@
+set hive.mapred.mode=nonstrict;
 -- SORT_QUERY_RESULTS
 create table e1 (key string, keyD double);
 create table e2 (key string, keyD double, value string);
 create table e3 (key string, keyD double);
-
+set hive.stats.dbclass=fs;
 explain
 FROM (select key, cast(key as double) as keyD, value from src order by key) a
 INSERT OVERWRITE TABLE e1

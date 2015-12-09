@@ -22,6 +22,9 @@ import com.google.common.base.Preconditions;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.parquet.io.api.Converter;
@@ -37,21 +40,21 @@ public class HiveCollectionConverter extends HiveGroupConverter {
 
   public static HiveGroupConverter forMap(GroupType mapType,
                                           ConverterParent parent,
-                                          int index) {
+                                          int index, TypeInfo hiveTypeInfo) {
     return new HiveCollectionConverter(
-        mapType, parent, index, true /* its a map */ );
+        mapType, parent, index, true /* its a map */, hiveTypeInfo );
   }
 
   public static HiveGroupConverter forList(GroupType listType,
                                            ConverterParent parent,
-                                           int index) {
+                                           int index, TypeInfo hiveTypeInfo) {
     return new HiveCollectionConverter(
-      listType, parent, index, false /* not a map */);
+      listType, parent, index, false /* nUnknown hive type infoot a map */, hiveTypeInfo);
   }
 
   private HiveCollectionConverter(GroupType collectionType,
                                   ConverterParent parent,
-                                  int index, boolean isMap) {
+                                  int index, boolean isMap, TypeInfo hiveTypeInfo) {
     setMetadata(parent.getMetadata());
     this.collectionType = collectionType;
     this.parent = parent;
@@ -59,12 +62,21 @@ public class HiveCollectionConverter extends HiveGroupConverter {
     Type repeatedType = collectionType.getType(0);
     if (isMap) {
       this.innerConverter = new KeyValueConverter(
-          repeatedType.asGroupType(), this);
+          repeatedType.asGroupType(), this, hiveTypeInfo);
     } else if (isElementType(repeatedType, collectionType.getName())) {
-      this.innerConverter = getConverterFromDescription(repeatedType, 0, this);
+      this.innerConverter = getConverterFromDescription(repeatedType, 0, this, extractListCompatibleType(hiveTypeInfo));
     } else {
       this.innerConverter = new ElementConverter(
-          repeatedType.asGroupType(), this);
+          repeatedType.asGroupType(), this,  extractListCompatibleType(hiveTypeInfo));
+    }
+  }
+
+  private TypeInfo extractListCompatibleType(TypeInfo hiveTypeInfo) {
+    if (hiveTypeInfo !=  null && hiveTypeInfo instanceof ListTypeInfo) {
+      return ((ListTypeInfo) hiveTypeInfo).getListElementTypeInfo();
+    } else {
+      return hiveTypeInfo; //to handle map can read list of struct data (i.e. list<struct<key, value>> --> map<key,
+      // value>)
     }
   }
 
@@ -97,13 +109,13 @@ public class HiveCollectionConverter extends HiveGroupConverter {
     private final Converter valueConverter;
     private Writable[] keyValue = null;
 
-    public KeyValueConverter(GroupType keyValueType, HiveGroupConverter parent) {
+    public KeyValueConverter(GroupType keyValueType, HiveGroupConverter parent, TypeInfo hiveTypeInfo) {
       setMetadata(parent.getMetadata());
       this.parent = parent;
       this.keyConverter = getConverterFromDescription(
-          keyValueType.getType(0), 0, this);
+          keyValueType.getType(0), 0, this, hiveTypeInfo == null ? null : ((MapTypeInfo) hiveTypeInfo).getMapKeyTypeInfo());
       this.valueConverter = getConverterFromDescription(
-          keyValueType.getType(1), 1, this);
+          keyValueType.getType(1), 1, this, hiveTypeInfo == null ? null : ((MapTypeInfo) hiveTypeInfo).getMapValueTypeInfo());
     }
 
     @Override
@@ -140,11 +152,11 @@ public class HiveCollectionConverter extends HiveGroupConverter {
     private final Converter elementConverter;
     private Writable element = null;
 
-    public ElementConverter(GroupType repeatedType, HiveGroupConverter parent) {
+    public ElementConverter(GroupType repeatedType, HiveGroupConverter parent, TypeInfo hiveTypeInfo) {
       setMetadata(parent.getMetadata());
       this.parent = parent;
       this.elementConverter = getConverterFromDescription(
-          repeatedType.getType(0), 0, this);
+          repeatedType.getType(0), 0, this, hiveTypeInfo);
     }
 
     @Override

@@ -48,22 +48,20 @@ public class TestColumnStatistics {
 
   @Test
   public void testLongMerge() throws Exception {
-    ObjectInspector inspector =
-        PrimitiveObjectInspectorFactory.javaIntObjectInspector;
+    TypeDescription schema = TypeDescription.createInt();
 
-    ColumnStatisticsImpl stats1 = ColumnStatisticsImpl.create(inspector);
-    ColumnStatisticsImpl stats2 = ColumnStatisticsImpl.create(inspector);
-    stats1.updateInteger(10);
-    stats1.updateInteger(10);
-    stats2.updateInteger(1);
-    stats2.updateInteger(1000);
+    ColumnStatisticsImpl stats1 = ColumnStatisticsImpl.create(schema);
+    ColumnStatisticsImpl stats2 = ColumnStatisticsImpl.create(schema);
+    stats1.updateInteger(10, 2);
+    stats2.updateInteger(1, 1);
+    stats2.updateInteger(1000, 1);
     stats1.merge(stats2);
     IntegerColumnStatistics typed = (IntegerColumnStatistics) stats1;
     assertEquals(1, typed.getMinimum());
     assertEquals(1000, typed.getMaximum());
     stats1.reset();
-    stats1.updateInteger(-10);
-    stats1.updateInteger(10000);
+    stats1.updateInteger(-10, 1);
+    stats1.updateInteger(10000, 1);
     stats1.merge(stats2);
     assertEquals(-10, typed.getMinimum());
     assertEquals(10000, typed.getMaximum());
@@ -71,11 +69,10 @@ public class TestColumnStatistics {
 
   @Test
   public void testDoubleMerge() throws Exception {
-    ObjectInspector inspector =
-        PrimitiveObjectInspectorFactory.javaDoubleObjectInspector;
+    TypeDescription schema = TypeDescription.createDouble();
 
-    ColumnStatisticsImpl stats1 = ColumnStatisticsImpl.create(inspector);
-    ColumnStatisticsImpl stats2 = ColumnStatisticsImpl.create(inspector);
+    ColumnStatisticsImpl stats1 = ColumnStatisticsImpl.create(schema);
+    ColumnStatisticsImpl stats2 = ColumnStatisticsImpl.create(schema);
     stats1.updateDouble(10.0);
     stats1.updateDouble(100.0);
     stats2.updateDouble(1.0);
@@ -95,20 +92,22 @@ public class TestColumnStatistics {
 
   @Test
   public void testStringMerge() throws Exception {
-    ObjectInspector inspector =
-        PrimitiveObjectInspectorFactory.javaStringObjectInspector;
+    TypeDescription schema = TypeDescription.createString();
 
-    ColumnStatisticsImpl stats1 = ColumnStatisticsImpl.create(inspector);
-    ColumnStatisticsImpl stats2 = ColumnStatisticsImpl.create(inspector);
+    ColumnStatisticsImpl stats1 = ColumnStatisticsImpl.create(schema);
+    ColumnStatisticsImpl stats2 = ColumnStatisticsImpl.create(schema);
     stats1.updateString(new Text("bob"));
     stats1.updateString(new Text("david"));
     stats1.updateString(new Text("charles"));
     stats2.updateString(new Text("anne"));
-    stats2.updateString(new Text("erin"));
+    byte[] erin = new byte[]{0, 1, 2, 3, 4, 5, 101, 114, 105, 110};
+    stats2.updateString(erin, 6, 4, 5);
+    assertEquals(24, ((StringColumnStatistics)stats2).getSum());
     stats1.merge(stats2);
     StringColumnStatistics typed = (StringColumnStatistics) stats1;
     assertEquals("anne", typed.getMinimum());
     assertEquals("erin", typed.getMaximum());
+    assertEquals(39, typed.getSum());
     stats1.reset();
     stats1.updateString(new Text("aaa"));
     stats1.updateString(new Text("zzz"));
@@ -119,11 +118,10 @@ public class TestColumnStatistics {
 
   @Test
   public void testDateMerge() throws Exception {
-    ObjectInspector inspector =
-        PrimitiveObjectInspectorFactory.javaDateObjectInspector;
+    TypeDescription schema = TypeDescription.createDate();
 
-    ColumnStatisticsImpl stats1 = ColumnStatisticsImpl.create(inspector);
-    ColumnStatisticsImpl stats2 = ColumnStatisticsImpl.create(inspector);
+    ColumnStatisticsImpl stats1 = ColumnStatisticsImpl.create(schema);
+    ColumnStatisticsImpl stats2 = ColumnStatisticsImpl.create(schema);
     stats1.updateDate(new DateWritable(1000));
     stats1.updateDate(new DateWritable(100));
     stats2.updateDate(new DateWritable(10));
@@ -142,11 +140,10 @@ public class TestColumnStatistics {
 
   @Test
   public void testTimestampMerge() throws Exception {
-    ObjectInspector inspector =
-        PrimitiveObjectInspectorFactory.javaTimestampObjectInspector;
+    TypeDescription schema = TypeDescription.createTimestamp();
 
-    ColumnStatisticsImpl stats1 = ColumnStatisticsImpl.create(inspector);
-    ColumnStatisticsImpl stats2 = ColumnStatisticsImpl.create(inspector);
+    ColumnStatisticsImpl stats1 = ColumnStatisticsImpl.create(schema);
+    ColumnStatisticsImpl stats2 = ColumnStatisticsImpl.create(schema);
     stats1.updateTimestamp(new Timestamp(10));
     stats1.updateTimestamp(new Timestamp(100));
     stats2.updateTimestamp(new Timestamp(1));
@@ -165,11 +162,11 @@ public class TestColumnStatistics {
 
   @Test
   public void testDecimalMerge() throws Exception {
-    ObjectInspector inspector =
-        PrimitiveObjectInspectorFactory.javaHiveDecimalObjectInspector;
+    TypeDescription schema = TypeDescription.createDecimal()
+        .withPrecision(38).withScale(16);
 
-    ColumnStatisticsImpl stats1 = ColumnStatisticsImpl.create(inspector);
-    ColumnStatisticsImpl stats2 = ColumnStatisticsImpl.create(inspector);
+    ColumnStatisticsImpl stats1 = ColumnStatisticsImpl.create(schema);
+    ColumnStatisticsImpl stats2 = ColumnStatisticsImpl.create(schema);
     stats1.updateDecimal(HiveDecimal.create(10));
     stats1.updateDecimal(HiveDecimal.create(100));
     stats2.updateDecimal(HiveDecimal.create(1));
@@ -290,7 +287,7 @@ public class TestColumnStatistics {
     assertEquals(true, stats[2].hasNull());
 
     // check the stripe level stats
-    List<StripeStatistics> stripeStats = reader.getMetadata().getStripeStatistics();
+    List<StripeStatistics> stripeStats = reader.getStripeStatistics();
     // stripe 1 stats
     StripeStatistics ss1 = stripeStats.get(0);
     ColumnStatistics ss1_cs1 = ss1.getColumnStatistics()[0];

@@ -24,8 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
@@ -48,7 +48,7 @@ public class VectorMapJoinOperator extends VectorMapJoinBaseOperator {
 
   private static final long serialVersionUID = 1L;
 
-  private static final Log LOG = LogFactory.getLog(
+  private static final Logger LOG = LoggerFactory.getLogger(
       VectorMapJoinOperator.class.getName());
 
   protected VectorExpression[] keyExpressions;
@@ -99,7 +99,7 @@ public class VectorMapJoinOperator extends VectorMapJoinBaseOperator {
   }
 
   @Override
-  public Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
+  public void initializeOp(Configuration hconf) throws HiveException {
     // Use a final variable to properly parameterize the processVectorInspector closure.
     // Using a member variable in the closure will not do the right thing...
     final int parameterizePosBigTable = conf.getPosBigTable();
@@ -117,7 +117,7 @@ public class VectorMapJoinOperator extends VectorMapJoinBaseOperator {
         });
     singleRow = new Object[rowWriters.length];
 
-    Collection<Future<?>> result = super.initializeOp(hconf);
+    super.initializeOp(hconf);
 
     List<ExprNodeDesc> keyDesc = conf.getKeys().get(posBigTable);
     keyOutputWriters = VectorExpressionWriterFactory.getExpressionWriters(keyDesc);
@@ -175,8 +175,6 @@ public class VectorMapJoinOperator extends VectorMapJoinBaseOperator {
 
     // Filtering is handled in the input batch processing
     filterMaps[posBigTable] = null;
-
-    return result;
   }
 
   @Override

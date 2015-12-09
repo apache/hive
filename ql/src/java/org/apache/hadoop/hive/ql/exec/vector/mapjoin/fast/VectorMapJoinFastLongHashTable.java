@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast;
 
 import java.io.IOException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashMap;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinLongHashMap;
@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableDeseriali
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.BytesWritable;
+import org.apache.hive.common.util.HashCodeUtil;
 import org.apache.tez.runtime.library.api.KeyValueReader;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -43,7 +44,9 @@ public abstract class VectorMapJoinFastLongHashTable
              extends VectorMapJoinFastHashTable
              implements VectorMapJoinLongHashTable {
 
-  public static final Log LOG = LogFactory.getLog(VectorMapJoinFastLongHashTable.class);
+  public static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinFastLongHashTable.class);
+
+  private transient final boolean isLogDebugEnabled = LOG.isDebugEnabled();
 
   private HashTableKeyType hashTableKeyType;
 
@@ -78,12 +81,7 @@ public abstract class VectorMapJoinFastLongHashTable
     int keyLength = currentKey.getLength();
     keyBinarySortableDeserializeRead.set(keyBytes, 0, keyLength);
     if (keyBinarySortableDeserializeRead.readCheckNull()) {
-      if (isOuterJoin) {
-        return;
-      } else {
-        // For inner join, we expect all NULL values to have been filtered out before now.
-        throw new HiveException("Unexpected NULL in map join small table");
-      }
+      return;
     }
 
     long key = VectorMapJoinFastLongHashUtil.deserializeLongKey(
@@ -111,7 +109,7 @@ public abstract class VectorMapJoinFastLongHashTable
       expandAndRehash();
     }
 
-    long hashCode = VectorMapJoinFastLongHashUtil.hashKey(key);
+    long hashCode = HashCodeUtil.calculateLongHashCode(key);
     int intHashCode = (int) hashCode;
     int slot = (intHashCode & logicalHashBucketMask);
     long probeSlot = slot;
@@ -138,7 +136,7 @@ public abstract class VectorMapJoinFastLongHashTable
     }
 
     if (largestNumberOfSteps < i) {
-      if (LOG.isDebugEnabled()) {
+      if (isLogDebugEnabled) {
         LOG.debug("Probed " + i + " slots (the longest so far) to find space");
       }
       largestNumberOfSteps = i;
@@ -179,7 +177,7 @@ public abstract class VectorMapJoinFastLongHashTable
         long tableKey = slotPairs[pairIndex + 1];
 
         // Copy to new slot table.
-        long hashCode = VectorMapJoinFastLongHashUtil.hashKey(tableKey);
+        long hashCode = HashCodeUtil.calculateLongHashCode(tableKey);
         int intHashCode = (int) hashCode;
         int newSlot = intHashCode & newLogicalHashBucketMask;
         long newProbeSlot = newSlot;
@@ -198,7 +196,7 @@ public abstract class VectorMapJoinFastLongHashTable
         }
 
         if (newLargestNumberOfSteps < i) {
-          if (LOG.isDebugEnabled()) {
+          if (isLogDebugEnabled) {
             LOG.debug("Probed " + i + " slots (the longest so far) to find space");
           }
           newLargestNumberOfSteps = i;

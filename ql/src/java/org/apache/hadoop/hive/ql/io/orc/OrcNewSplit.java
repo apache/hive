@@ -34,7 +34,7 @@ import org.apache.hadoop.mapreduce.lib.input.FileSplit;
  *
  */
 public class OrcNewSplit extends FileSplit {
-  private ReaderImpl.FileMetaInfo fileMetaInfo;
+  private FileMetaInfo fileMetaInfo;
   private boolean hasFooter;
   private boolean isOriginal;
   private boolean hasBase;
@@ -119,12 +119,12 @@ public class OrcNewSplit extends FileSplit {
       OrcFile.WriterVersion writerVersion =
           ReaderImpl.getWriterVersion(WritableUtils.readVInt(in));
 
-      fileMetaInfo = new ReaderImpl.FileMetaInfo(compressionType, bufferSize,
+      fileMetaInfo = new FileMetaInfo(compressionType, bufferSize,
           metadataSize, footerBuff, writerVersion);
     }
   }
 
-  ReaderImpl.FileMetaInfo getFileMetaInfo(){
+  FileMetaInfo getFileMetaInfo(){
     return fileMetaInfo;
   }
 

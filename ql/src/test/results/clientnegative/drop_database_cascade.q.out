@@ -1,0 +1,85 @@
+PREHOOK: query: -- This test verifies that if the functions and tables unregistered when the database is dropped
+-- and other databases are not affected
+
+CREATE DATABASE TEST_database
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:TEST_database
+POSTHOOK: query: -- This test verifies that if the functions and tables unregistered when the database is dropped
+-- and other databases are not affected
+
+CREATE DATABASE TEST_database
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:TEST_database
+PREHOOK: query: USE TEST_database
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:test_database
+POSTHOOK: query: USE TEST_database
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:test_database
+PREHOOK: query: CREATE TABLE test_table (key STRING, value STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: TEST_database@test_table
+PREHOOK: Output: database:test_database
+POSTHOOK: query: CREATE TABLE test_table (key STRING, value STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: TEST_database@test_table
+POSTHOOK: Output: database:test_database
+PREHOOK: query: CREATE FUNCTION test_func as 'org.apache.hadoop.hive.ql.udf.UDFAscii'
+PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: database:test_database
+PREHOOK: Output: test_database.test_func
+POSTHOOK: query: CREATE FUNCTION test_func as 'org.apache.hadoop.hive.ql.udf.UDFAscii'
+POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: database:test_database
+POSTHOOK: Output: test_database.test_func
+PREHOOK: query: USE default
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
+POSTHOOK: query: USE default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
+PREHOOK: query: CREATE TABLE test_table (key STRING, value STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_table
+POSTHOOK: query: CREATE TABLE test_table (key STRING, value STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_table
+PREHOOK: query: CREATE FUNCTION test_func as 'org.apache.hadoop.hive.ql.udf.UDFAscii'
+PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: database:default
+PREHOOK: Output: default.test_func
+POSTHOOK: query: CREATE FUNCTION test_func as 'org.apache.hadoop.hive.ql.udf.UDFAscii'
+POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default.test_func
+PREHOOK: query: DROP DATABASE TEST_database CASCADE
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:test_database
+PREHOOK: Output: database:test_database
+PREHOOK: Output: test_database@test_table
+POSTHOOK: query: DROP DATABASE TEST_database CASCADE
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:test_database
+POSTHOOK: Output: database:test_database
+POSTHOOK: Output: test_database@test_table
+PREHOOK: query: describe test_table
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table
+POSTHOOK: query: describe test_table
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_table
+key                 	string              	                    
+value               	string              	                    
+PREHOOK: query: describe function test_func
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: describe function test_func
+POSTHOOK: type: DESCFUNCTION
+test_func(str) - returns the numeric value of the first character of str
+PREHOOK: query: describe function TEST_database.test_func
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: describe function TEST_database.test_func
+POSTHOOK: type: DESCFUNCTION
+Function 'TEST_database.test_func' does not exist.
+FAILED: SemanticException [Error 10072]: Database does not exist: TEST_database

@@ -72,37 +72,37 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partcolstats
 POSTHOOK: Input: default@partcolstats@ds=2015-04-02/hr=2/part=partA
 #### A masked pattern was here ####
-PREHOOK: query: describe formatted partcolstats.key partition (ds=date '2015-04-02', hr=2, part='partA')
+PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=2, part='partA') key
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@partcolstats
-POSTHOOK: query: describe formatted partcolstats.key partition (ds=date '2015-04-02', hr=2, part='partA')
+POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=2, part='partA') key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcolstats
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 key                 	int                 	27                  	484                 	0                   	18                  	                    	                    	                    	                    	from deserializer   
-PREHOOK: query: describe formatted partcolstats.value partition (ds=date '2015-04-02', hr=2, part='partA')
+PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=2, part='partA') value
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@partcolstats
-POSTHOOK: query: describe formatted partcolstats.value partition (ds=date '2015-04-02', hr=2, part='partA')
+POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=2, part='partA') value
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcolstats
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 value               	string              	                    	                    	0                   	18                  	6.8                 	7                   	                    	                    	from deserializer   
-PREHOOK: query: describe formatted partcolstats.key partition (ds=date '2015-04-02', hr=2, part='partB')
+PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=2, part='partB') key
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@partcolstats
-POSTHOOK: query: describe formatted partcolstats.key partition (ds=date '2015-04-02', hr=2, part='partB')
+POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=2, part='partB') key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcolstats
 # col_name            	data_type           	comment             		 	 	 	 	 	 	 
 	 	 	 	 	 	 	 	 	 	 
 key                 	int                 	from deserializer   	 	 	 	 	 	 	 	 
-PREHOOK: query: describe formatted partcolstats.value partition (ds=date '2015-04-02', hr=2, part='partB')
+PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=2, part='partB') value
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@partcolstats
-POSTHOOK: query: describe formatted partcolstats.value partition (ds=date '2015-04-02', hr=2, part='partB')
+POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=2, part='partB') value
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcolstats
 # col_name            	data_type           	comment             		 	 	 	 	 	 	 
@@ -120,37 +120,37 @@ POSTHOOK: Input: default@partcolstats
 POSTHOOK: Input: default@partcolstats@ds=2015-04-02/hr=2/part=partA
 POSTHOOK: Input: default@partcolstats@ds=2015-04-02/hr=2/part=partB
 #### A masked pattern was here ####
-PREHOOK: query: describe formatted partcolstats.key partition (ds=date '2015-04-02', hr=2, part='partB')
+PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=2, part='partB') key
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@partcolstats
-POSTHOOK: query: describe formatted partcolstats.key partition (ds=date '2015-04-02', hr=2, part='partB')
+POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=2, part='partB') key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcolstats
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 key                 	int                 	27                  	484                 	0                   	18                  	                    	                    	                    	                    	from deserializer   
-PREHOOK: query: describe formatted partcolstats.value partition (ds=date '2015-04-02', hr=2, part='partB')
+PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=2, part='partB') value
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@partcolstats
-POSTHOOK: query: describe formatted partcolstats.value partition (ds=date '2015-04-02', hr=2, part='partB')
+POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=2, part='partB') value
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcolstats
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 value               	string              	                    	                    	0                   	18                  	6.8                 	7                   	                    	                    	from deserializer   
-PREHOOK: query: describe formatted partcolstats.key partition (ds=date '2015-04-02', hr=3, part='partA')
+PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=3, part='partA') key
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@partcolstats
-POSTHOOK: query: describe formatted partcolstats.key partition (ds=date '2015-04-02', hr=3, part='partA')
+POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=3, part='partA') key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcolstats
 # col_name            	data_type           	comment             		 	 	 	 	 	 	 
 	 	 	 	 	 	 	 	 	 	 
 key                 	int                 	from deserializer   	 	 	 	 	 	 	 	 
-PREHOOK: query: describe formatted partcolstats.value partition (ds=date '2015-04-02', hr=3, part='partA')
+PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=3, part='partA') value
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@partcolstats
-POSTHOOK: query: describe formatted partcolstats.value partition (ds=date '2015-04-02', hr=3, part='partA')
+POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=3, part='partA') value
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcolstats
 # col_name            	data_type           	comment             		 	 	 	 	 	 	 
@@ -170,55 +170,55 @@ POSTHOOK: Input: default@partcolstats@ds=2015-04-02/hr=2/part=partA
 POSTHOOK: Input: default@partcolstats@ds=2015-04-02/hr=2/part=partB
 POSTHOOK: Input: default@partcolstats@ds=2015-04-02/hr=3/part=partA
 #### A masked pattern was here ####
-PREHOOK: query: describe formatted partcolstats.key partition (ds=date '2015-04-02', hr=3, part='partA')
+PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=3, part='partA') key
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@partcolstats
-POSTHOOK: query: describe formatted partcolstats.key partition (ds=date '2015-04-02', hr=3, part='partA')
+POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=3, part='partA') key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcolstats
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 key                 	int                 	27                  	495                 	0                   	28                  	                    	                    	                    	                    	from deserializer   
-PREHOOK: query: describe formatted partcolstats.value partition (ds=date '2015-04-02', hr=3, part='partA')
+PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=3, part='partA') value
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@partcolstats
-POSTHOOK: query: describe formatted partcolstats.value partition (ds=date '2015-04-02', hr=3, part='partA')
+POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=3, part='partA') value
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcolstats
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 value               	string              	                    	                    	0                   	18                  	6.833333333333333   	7                   	                    	                    	from deserializer   
-PREHOOK: query: describe formatted partcolstats.key partition (ds=date '2015-04-03', hr=3, part='partA')
+PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partA') key
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@partcolstats
-POSTHOOK: query: describe formatted partcolstats.key partition (ds=date '2015-04-03', hr=3, part='partA')
+POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partA') key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcolstats
 # col_name            	data_type           	comment             		 	 	 	 	 	 	 
 	 	 	 	 	 	 	 	 	 	 
 key                 	int                 	from deserializer   	 	 	 	 	 	 	 	 
-PREHOOK: query: describe formatted partcolstats.value partition (ds=date '2015-04-03', hr=3, part='partA')
+PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partA') value
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@partcolstats
-POSTHOOK: query: describe formatted partcolstats.value partition (ds=date '2015-04-03', hr=3, part='partA')
+POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partA') value
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcolstats
 # col_name            	data_type           	comment             		 	 	 	 	 	 	 
 	 	 	 	 	 	 	 	 	 	 
 value               	string              	from deserializer   	 	 	 	 	 	 	 	 
-PREHOOK: query: describe formatted partcolstats.key partition (ds=date '2015-04-03', hr=3, part='partB')
+PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partB') key
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@partcolstats
-POSTHOOK: query: describe formatted partcolstats.key partition (ds=date '2015-04-03', hr=3, part='partB')
+POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partB') key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcolstats
 # col_name            	data_type           	comment             		 	 	 	 	 	 	 
 	 	 	 	 	 	 	 	 	 	 
 key                 	int                 	from deserializer   	 	 	 	 	 	 	 	 
-PREHOOK: query: describe formatted partcolstats.value partition (ds=date '2015-04-03', hr=3, part='partB')
+PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partB') value
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@partcolstats
-POSTHOOK: query: describe formatted partcolstats.value partition (ds=date '2015-04-03', hr=3, part='partB')
+POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partB') value
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcolstats
 # col_name            	data_type           	comment             		 	 	 	 	 	 	 
@@ -242,37 +242,37 @@ POSTHOOK: Input: default@partcolstats@ds=2015-04-02/hr=3/part=partA
 POSTHOOK: Input: default@partcolstats@ds=2015-04-03/hr=3/part=partA
 POSTHOOK: Input: default@partcolstats@ds=2015-04-03/hr=3/part=partB
 #### A masked pattern was here ####
-PREHOOK: query: describe formatted partcolstats.key partition (ds=date '2015-04-03', hr=3, part='partA')
+PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partA') key
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@partcolstats
-POSTHOOK: query: describe formatted partcolstats.key partition (ds=date '2015-04-03', hr=3, part='partA')
+POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partA') key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcolstats
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 key                 	int                 	15                  	495                 	0                   	43                  	                    	                    	                    	                    	from deserializer   
-PREHOOK: query: describe formatted partcolstats.value partition (ds=date '2015-04-03', hr=3, part='partA')
+PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partA') value
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@partcolstats
-POSTHOOK: query: describe formatted partcolstats.value partition (ds=date '2015-04-03', hr=3, part='partA')
+POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partA') value
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcolstats
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 value               	string              	                    	                    	0                   	34                  	6.825               	7                   	                    	                    	from deserializer   
-PREHOOK: query: describe formatted partcolstats.key partition (ds=date '2015-04-03', hr=3, part='partB')
+PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partB') key
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@partcolstats
-POSTHOOK: query: describe formatted partcolstats.key partition (ds=date '2015-04-03', hr=3, part='partB')
+POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partB') key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcolstats
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 key                 	int                 	15                  	495                 	0                   	51                  	                    	                    	                    	                    	from deserializer   
-PREHOOK: query: describe formatted partcolstats.value partition (ds=date '2015-04-03', hr=3, part='partB')
+PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partB') value
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@partcolstats
-POSTHOOK: query: describe formatted partcolstats.value partition (ds=date '2015-04-03', hr=3, part='partB')
+POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partB') value
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcolstats
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
@@ -320,10 +320,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partcolstatsnum
 POSTHOOK: Input: default@partcolstatsnum@tint=100/sint=1000/bint=1000000
 #### A masked pattern was here ####
-PREHOOK: query: describe formatted partcolstatsnum.value partition (tint=100, sint=1000, bint=1000000)
+PREHOOK: query: describe formatted partcolstatsnum partition (tint=100, sint=1000, bint=1000000) value
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@partcolstatsnum
-POSTHOOK: query: describe formatted partcolstatsnum.value partition (tint=100, sint=1000, bint=1000000)
+POSTHOOK: query: describe formatted partcolstatsnum partition (tint=100, sint=1000, bint=1000000) value
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcolstatsnum
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
@@ -371,10 +371,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partcolstatsdec
 POSTHOOK: Input: default@partcolstatsdec@decpart=1000.0001
 #### A masked pattern was here ####
-PREHOOK: query: describe formatted partcolstatsdec.value partition (decpart='1000.0001')
+PREHOOK: query: describe formatted partcolstatsdec partition (decpart='1000.0001') value
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@partcolstatsdec
-POSTHOOK: query: describe formatted partcolstatsdec.value partition (decpart='1000.0001')
+POSTHOOK: query: describe formatted partcolstatsdec partition (decpart='1000.0001') value
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcolstatsdec
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
@@ -422,10 +422,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partcolstatschar
 POSTHOOK: Input: default@partcolstatschar@varpart=part1/charpart=aaa
 #### A masked pattern was here ####
-PREHOOK: query: describe formatted partcolstatschar.value partition (varpart='part1', charpart='aaa')
+PREHOOK: query: describe formatted partcolstatschar partition (varpart='part1', charpart='aaa') value
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@partcolstatschar
-POSTHOOK: query: describe formatted partcolstatschar.value partition (varpart='part1', charpart='aaa')
+POSTHOOK: query: describe formatted partcolstatschar partition (varpart='part1', charpart='aaa') value
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcolstatschar
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             

@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 -- HIVE-5122 locations for 2nd, 3rd... partition are ignored
 
 CREATE TABLE add_part_test (key STRING, value STRING) PARTITIONED BY (ds STRING);

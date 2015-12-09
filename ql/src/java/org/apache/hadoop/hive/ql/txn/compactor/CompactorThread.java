@@ -17,8 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -47,7 +47,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 abstract class CompactorThread extends Thread implements MetaStoreThread {
   static final private String CLASS_NAME = CompactorThread.class.getName();
-  static final private Log LOG = LogFactory.getLog(CLASS_NAME);
+  static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
   protected HiveConf conf;
   protected CompactionTxnHandler txnHandler;
@@ -119,8 +119,8 @@ abstract class CompactorThread extends Thread implements MetaStoreThread {
         throw e;
       }
       if (parts.size() != 1) {
-        LOG.error(ci.getFullPartitionName() + " does not refer to a single partition");
-        throw new MetaException("Too many partitions");
+        LOG.error(ci.getFullPartitionName() + " does not refer to a single partition. " + parts);
+        throw new MetaException("Too many partitions for : " + ci.getFullPartitionName());
       }
       return parts.get(0);
     } else {
@@ -179,8 +179,9 @@ abstract class CompactorThread extends Thread implements MetaStoreThread {
         return wrapper.get(0);
       }
     }
-    LOG.error("Unable to stat file as either current user or table owner, giving up");
-    throw new IOException("Unable to stat file");
+    LOG.error("Unable to stat file " + p + " as either current user(" + UserGroupInformation.getLoginUser() +
+      ") or table owner(" + t.getOwner() + "), giving up");
+    throw new IOException("Unable to stat file: " + p);
   }
 
   /**

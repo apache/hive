@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import java.sql.Timestamp;
 import java.util.TimeZone;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
@@ -38,7 +38,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
                      + "Assumes given timestamp is UTC and converts to given timezone (as of Hive 0.8.0)")
 public class GenericUDFFromUtcTimestamp extends GenericUDF {
 
-  static final Log LOG = LogFactory.getLog(GenericUDFFromUtcTimestamp.class);
+  static final Logger LOG = LoggerFactory.getLogger(GenericUDFFromUtcTimestamp.class);
 
   private transient PrimitiveObjectInspector[] argumentOIs;
   private transient TimestampConverter timestampConverter;
@@ -77,12 +77,15 @@ public class GenericUDFFromUtcTimestamp extends GenericUDF {
       return null;
     }
 
+    Object converted_o0 = timestampConverter.convert(o0);
+    if (converted_o0 == null) {
+      return null;
+    }
+
+    Timestamp timestamp = ((TimestampWritable) converted_o0).getTimestamp();
+
     String tzStr = textConverter.convert(o1).toString();
     TimeZone timezone = TimeZone.getTimeZone(tzStr);
-
-    Timestamp timestamp = ((TimestampWritable) timestampConverter.convert(o0))
-        .getTimestamp();
-
     int offset = timezone.getOffset(timestamp.getTime());
     if (invert()) {
       offset = -offset;

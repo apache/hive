@@ -588,6 +588,12 @@ public class BucketingSortingReduceSinkOptimizer implements Transform {
             }
             // Only columns can be selected for both sorted and bucketed positions
             for (int pos : bucketPositions) {
+              if (pos >= selectDesc.getColList().size()) {
+                // e.g., INSERT OVERWRITE TABLE temp1 SELECT  c0,  c0 FROM temp2;
+                // In such a case Select Op will only have one instance of c0 and RS would have two.
+                // So, locating bucketCol in such cases will generate error. So, bail out.
+                return null;
+              }
               ExprNodeDesc selectColList = selectDesc.getColList().get(pos);
               if (!(selectColList instanceof ExprNodeColumnDesc)) {
                 return null;
@@ -596,6 +602,9 @@ public class BucketingSortingReduceSinkOptimizer implements Transform {
             }
 
             for (int pos : sortPositions) {
+              if (pos >= selectDesc.getColList().size()) {
+                return null;
+              }
               ExprNodeDesc selectColList = selectDesc.getColList().get(pos);
               if (!(selectColList instanceof ExprNodeColumnDesc)) {
                 return null;

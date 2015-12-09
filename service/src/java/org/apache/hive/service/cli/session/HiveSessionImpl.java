@@ -24,6 +24,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -31,14 +32,15 @@ import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.cli.HiveFileProcessor;
 import org.apache.hadoop.hive.common.cli.IHiveFileProcessor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.FetchFormatter;
 import org.apache.hadoop.hive.ql.exec.ListSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -77,15 +79,13 @@ import org.apache.hive.service.server.ThreadWithGarbageCleanup;
  *
  */
 public class HiveSessionImpl implements HiveSession {
-  private static final String FETCH_WORK_SERDE_CLASS =
-      "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe";
-  private static final Log LOG = LogFactory.getLog(HiveSessionImpl.class);
 
   // Shared between threads (including SessionState!)
   private final SessionHandle sessionHandle;
   private String username;
   private final String password;
   private final HiveConf hiveConf;
+  private final long creationTime;
   // TODO: some SessionState internals are not thread safe. The compile-time internals are synced
   //       via session-scope or global compile lock. The run-time internals work by magic!
   //       They probably work because races are relatively unlikely and few tools run parallel
@@ -94,6 +94,11 @@ public class HiveSessionImpl implements HiveSession {
   //       2) Some parts of session state, like mrStats and vars, need proper synchronization.
   private SessionState sessionState;
   private String ipAddress;
+
+  private static final String FETCH_WORK_SERDE_CLASS =
+      "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe";
+  private static final Logger LOG = LoggerFactory.getLogger(HiveSessionImpl.class);
+
   private SessionManager sessionManager;
   private OperationManager operationManager;
   // Synchronized by locking on itself.
@@ -110,6 +115,7 @@ public class HiveSessionImpl implements HiveSession {
       HiveConf serverhiveConf, String ipAddress) {
     this.username = username;
     this.password = password;
+    creationTime = System.currentTimeMillis();
     this.sessionHandle = new SessionHandle(protocol);
     this.hiveConf = new HiveConf(serverhiveConf);
     this.ipAddress = ipAddress;
@@ -241,6 +247,18 @@ public class HiveSessionImpl implements HiveSession {
 
   @Override
   public void setOperationLogSessionDir(File operationLogRootDir) {
+    if (!operationLogRootDir.exists()) {
+      LOG.warn("The operation log root directory is removed, recreating:" +
+          operationLogRootDir.getAbsolutePath());
+      if (!operationLogRootDir.mkdirs()) {
+        LOG.warn("Unable to create operation log root directory: " +
+            operationLogRootDir.getAbsolutePath());
+      }
+    }
+    if (!operationLogRootDir.canWrite()) {
+      LOG.warn("The operation log root directory is not writable: " +
+          operationLogRootDir.getAbsolutePath());
+    }
     sessionLogDir = new File(operationLogRootDir, sessionHandle.getHandleIdentifier().toString());
     isOperationLogEnabled = true;
     if (!sessionLogDir.exists()) {
@@ -296,6 +314,11 @@ public class HiveSessionImpl implements HiveSession {
     if (userAccess) {
       lastAccessTime = System.currentTimeMillis();
     }
+    // set the thread name with the logging prefix.
+    String logPrefix = getHiveConf().getLogIdVar(sessionState.getSessionId());
+    LOG.info(
+        "Prefixing the thread name (" + Thread.currentThread().getName() + ") with " + logPrefix);
+    Thread.currentThread().setName(logPrefix + Thread.currentThread().getName());
     Hive.set(sessionHive);
   }
 
@@ -307,6 +330,22 @@ public class HiveSessionImpl implements HiveSession {
    * @see org.apache.hive.service.server.ThreadWithGarbageCleanup#finalize()
    */
   protected synchronized void release(boolean userAccess) {
+    if (sessionState != null) {
+      // can be null in-case of junit tests. skip reset.
+      // reset thread name at release time.
+      String[] names = Thread.currentThread().getName()
+          .split(getHiveConf().getLogIdVar(sessionState.getSessionId()));
+      String threadName = null;
+      if (names.length > 1) {
+        threadName = names[names.length - 1];
+      } else if (names.length == 1) {
+        threadName = names[0];
+      } else {
+        threadName = "";
+      }
+      Thread.currentThread().setName(threadName);
+    }
+
     SessionState.detachSession();
     if (ThreadWithGarbageCleanup.currentThread() instanceof ThreadWithGarbageCleanup) {
       ThreadWithGarbageCleanup currentThread =
@@ -396,6 +435,17 @@ public class HiveSessionImpl implements HiveSession {
       boolean runAsync)
           throws HiveSQLException {
     acquire(true);
+
+    // Create the queryId if the client doesn't pass in.
+    // Reuse the client's queryId if exists.
+    if (confOverlay == null) {
+      confOverlay = new HashMap<String, String>();
+    }
+    String queryId = confOverlay.get(HiveConf.ConfVars.HIVEQUERYID.varname);
+    if (queryId == null || queryId.isEmpty()) {
+      queryId = QueryPlan.makeQueryId();
+      confOverlay.put(HiveConf.ConfVars.HIVEQUERYID.varname, queryId);
+    }
 
     OperationManager operationManager = getOperationManager();
     ExecuteStatementOperation operation = operationManager
@@ -649,6 +699,11 @@ public class HiveSessionImpl implements HiveSession {
   }
 
   @Override
+  public long getCreationTime() {
+    return creationTime;
+  }
+
+  @Override
   public void closeExpiredOperations() {
     OperationHandle[] handles;
     synchronized (opHandleSet) {
@@ -734,6 +789,11 @@ public class HiveSessionImpl implements HiveSession {
 
   protected HiveSession getSession() {
     return this;
+  }
+
+  @Override
+  public int getOpenOperationCount() {
+    return opHandleSet.size();
   }
 
   @Override

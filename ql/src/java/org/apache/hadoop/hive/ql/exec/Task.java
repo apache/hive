@@ -27,8 +27,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
@@ -68,7 +68,7 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   protected transient String jobID;
   protected Task<? extends Serializable> backupTask;
   protected List<Task<? extends Serializable>> backupChildrenTasks = new ArrayList<Task<? extends Serializable>>();
-  protected static transient Log LOG = LogFactory.getLog(Task.class);
+  protected static transient Logger LOG = LoggerFactory.getLogger(Task.class);
   protected int taskTag;
   private boolean isLocalMode =false;
   private boolean retryCmdWhenFail = false;
@@ -505,6 +505,14 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
 
   public QueryPlan getQueryPlan() {
     return queryPlan;
+  }
+
+  public DriverContext getDriverContext() {
+    return driverContext;
+  }
+
+  public void setDriverContext(DriverContext driverContext) {
+    this.driverContext = driverContext;
   }
 
   public void setQueryPlan(QueryPlan queryPlan) {

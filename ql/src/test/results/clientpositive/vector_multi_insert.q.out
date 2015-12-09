@@ -56,6 +56,14 @@ POSTHOOK: query: create table orc_rn3 (rn int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_rn3
+PREHOOK: query: analyze table orc1 compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc1
+PREHOOK: Output: default@orc1
+POSTHOOK: query: analyze table orc1 compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc1
+POSTHOOK: Output: default@orc1
 PREHOOK: query: explain from orc1 a
 insert overwrite table orc_rn1 select a.* where a.rn < 100
 insert overwrite table orc_rn2 select a.* where a.rn >= 100 and a.rn < 1000

@@ -47,30 +47,86 @@ import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.HadoopShims.TextReaderShim;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Factory for creating ORC tree readers.
  */
 public class TreeReaderFactory {
 
-  protected abstract static class TreeReader {
+  public static final Logger LOG = LoggerFactory.getLogger(TreeReaderFactory.class);
+
+  public static class TreeReaderSchema {
+
+    /**
+     * The types in the ORC file.
+     */
+    List<OrcProto.Type> fileTypes;
+
+    /**
+     * The treeReaderSchema that the reader should read as.
+     */
+    List<OrcProto.Type> schemaTypes;
+
+    /**
+     * The subtype of the row STRUCT.  Different than 0 for ACID.
+     */
+    int innerStructSubtype;
+
+    public TreeReaderSchema() {
+      fileTypes = null;
+      schemaTypes = null;
+      innerStructSubtype = -1;
+    }
+
+    public TreeReaderSchema fileTypes(List<OrcProto.Type> fileTypes) {
+      this.fileTypes = fileTypes;
+      return this;
+    }
+
+    public TreeReaderSchema schemaTypes(List<OrcProto.Type> schemaTypes) {
+      this.schemaTypes = schemaTypes;
+      return this;
+    }
+
+    public TreeReaderSchema innerStructSubtype(int innerStructSubtype) {
+      this.innerStructSubtype = innerStructSubtype;
+      return this;
+    }
+
+    public List<OrcProto.Type> getFileTypes() {
+      return fileTypes;
+    }
+
+    public List<OrcProto.Type> getSchemaTypes() {
+      return schemaTypes;
+    }
+
+    public int getInnerStructSubtype() {
+      return innerStructSubtype;
+    }
+  }
+
+  public abstract static class TreeReader {
     protected final int columnId;
     protected BitFieldReader present = null;
     protected boolean valuePresent = false;
+    protected int vectorColumnCount;
 
     TreeReader(int columnId) throws IOException {
       this(columnId, null);
     }
 
-    TreeReader(int columnId, InStream in) throws IOException {
+    protected TreeReader(int columnId, InStream in) throws IOException {
       this.columnId = columnId;
       if (in == null) {
         present = null;
@@ -78,6 +134,11 @@ public class TreeReaderFactory {
       } else {
         present = new BitFieldReader(in, 1);
       }
+      vectorColumnCount = -1;
+    }
+
+    void setVectorColumnCount(int vectorColumnCount) {
+      this.vectorColumnCount = vectorColumnCount;
     }
 
     void checkEncoding(OrcProto.ColumnEncoding encoding) throws IOException {
@@ -87,7 +148,7 @@ public class TreeReaderFactory {
       }
     }
 
-    IntegerReader createIntegerReader(OrcProto.ColumnEncoding.Kind kind,
+    static IntegerReader createIntegerReader(OrcProto.ColumnEncoding.Kind kind,
         InStream in,
         boolean signed, boolean skipCorrupt) throws IOException {
       switch (kind) {
@@ -187,16 +248,20 @@ public class TreeReaderFactory {
       }
       return previousVector;
     }
+
+    public BitFieldReader getPresent() {
+      return present;
+    }
   }
 
-  protected static class BooleanTreeReader extends TreeReader {
+  public static class BooleanTreeReader extends TreeReader {
     protected BitFieldReader reader = null;
 
     BooleanTreeReader(int columnId) throws IOException {
       this(columnId, null, null);
     }
 
-    BooleanTreeReader(int columnId, InStream present, InStream data) throws IOException {
+    protected BooleanTreeReader(int columnId, InStream present, InStream data) throws IOException {
       super(columnId, present);
       if (data != null) {
         reader = new BitFieldReader(data, 1);
@@ -261,14 +326,14 @@ public class TreeReaderFactory {
     }
   }
 
-  protected static class ByteTreeReader extends TreeReader {
+  public static class ByteTreeReader extends TreeReader {
     protected RunLengthByteReader reader = null;
 
     ByteTreeReader(int columnId) throws IOException {
       this(columnId, null, null);
     }
 
-    ByteTreeReader(int columnId, InStream present, InStream data) throws IOException {
+    protected ByteTreeReader(int columnId, InStream present, InStream data) throws IOException {
       super(columnId, present);
       this.reader = new RunLengthByteReader(data);
     }
@@ -331,14 +396,14 @@ public class TreeReaderFactory {
     }
   }
 
-  protected static class ShortTreeReader extends TreeReader {
+  public static class ShortTreeReader extends TreeReader {
     protected IntegerReader reader = null;
 
     ShortTreeReader(int columnId) throws IOException {
       this(columnId, null, null, null);
     }
 
-    ShortTreeReader(int columnId, InStream present, InStream data,
+    protected ShortTreeReader(int columnId, InStream present, InStream data,
         OrcProto.ColumnEncoding encoding)
         throws IOException {
       super(columnId, present);
@@ -417,14 +482,14 @@ public class TreeReaderFactory {
     }
   }
 
-  protected static class IntTreeReader extends TreeReader {
+  public static class IntTreeReader extends TreeReader {
     protected IntegerReader reader = null;
 
     IntTreeReader(int columnId) throws IOException {
       this(columnId, null, null, null);
     }
 
-    IntTreeReader(int columnId, InStream present, InStream data,
+    protected IntTreeReader(int columnId, InStream present, InStream data,
         OrcProto.ColumnEncoding encoding)
         throws IOException {
       super(columnId, present);
@@ -503,14 +568,14 @@ public class TreeReaderFactory {
     }
   }
 
-  protected static class LongTreeReader extends TreeReader {
+  public static class LongTreeReader extends TreeReader {
     protected IntegerReader reader = null;
 
     LongTreeReader(int columnId, boolean skipCorrupt) throws IOException {
       this(columnId, null, null, null, skipCorrupt);
     }
 
-    LongTreeReader(int columnId, InStream present, InStream data,
+    protected LongTreeReader(int columnId, InStream present, InStream data,
         OrcProto.ColumnEncoding encoding,
         boolean skipCorrupt)
         throws IOException {
@@ -590,7 +655,7 @@ public class TreeReaderFactory {
     }
   }
 
-  protected static class FloatTreeReader extends TreeReader {
+  public static class FloatTreeReader extends TreeReader {
     protected InStream stream;
     private final SerializationUtils utils;
 
@@ -598,7 +663,7 @@ public class TreeReaderFactory {
       this(columnId, null, null);
     }
 
-    FloatTreeReader(int columnId, InStream present, InStream data) throws IOException {
+    protected FloatTreeReader(int columnId, InStream present, InStream data) throws IOException {
       super(columnId, present);
       this.utils = new SerializationUtils();
       this.stream = data;
@@ -702,7 +767,7 @@ public class TreeReaderFactory {
     }
   }
 
-  protected static class DoubleTreeReader extends TreeReader {
+  public static class DoubleTreeReader extends TreeReader {
     protected InStream stream;
     private final SerializationUtils utils;
 
@@ -710,7 +775,7 @@ public class TreeReaderFactory {
       this(columnId, null, null);
     }
 
-    DoubleTreeReader(int columnId, InStream present, InStream data) throws IOException {
+    protected DoubleTreeReader(int columnId, InStream present, InStream data) throws IOException {
       super(columnId, present);
       this.utils = new SerializationUtils();
       this.stream = data;
@@ -817,7 +882,7 @@ public class TreeReaderFactory {
     }
   }
 
-  protected static class BinaryTreeReader extends TreeReader {
+  public static class BinaryTreeReader extends TreeReader {
     protected InStream stream;
     protected IntegerReader lengths = null;
     protected final LongColumnVector scratchlcv;
@@ -826,7 +891,7 @@ public class TreeReaderFactory {
       this(columnId, null, null, null, null);
     }
 
-    BinaryTreeReader(int columnId, InStream present, InStream data, InStream length,
+    protected BinaryTreeReader(int columnId, InStream present, InStream data, InStream length,
         OrcProto.ColumnEncoding encoding) throws IOException {
       super(columnId, present);
       scratchlcv = new LongColumnVector();
@@ -924,7 +989,7 @@ public class TreeReaderFactory {
     }
   }
 
-  protected static class TimestampTreeReader extends TreeReader {
+  public static class TimestampTreeReader extends TreeReader {
     protected IntegerReader data = null;
     protected IntegerReader nanos = null;
     private final boolean skipCorrupt;
@@ -938,7 +1003,7 @@ public class TreeReaderFactory {
       this(columnId, null, null, null, null, skipCorrupt);
     }
 
-    TimestampTreeReader(int columnId, InStream presentStream, InStream dataStream,
+    protected TimestampTreeReader(int columnId, InStream presentStream, InStream dataStream,
         InStream nanosStream, OrcProto.ColumnEncoding encoding, boolean skipCorrupt)
         throws IOException {
       super(columnId, presentStream);
@@ -1109,14 +1174,14 @@ public class TreeReaderFactory {
     }
   }
 
-  protected static class DateTreeReader extends TreeReader {
+  public static class DateTreeReader extends TreeReader {
     protected IntegerReader reader = null;
 
     DateTreeReader(int columnId) throws IOException {
       this(columnId, null, null, null);
     }
 
-    DateTreeReader(int columnId, InStream present, InStream data,
+    protected DateTreeReader(int columnId, InStream present, InStream data,
         OrcProto.ColumnEncoding encoding) throws IOException {
       super(columnId, present);
       if (data != null && encoding != null) {
@@ -1194,7 +1259,7 @@ public class TreeReaderFactory {
     }
   }
 
-  protected static class DecimalTreeReader extends TreeReader {
+  public static class DecimalTreeReader extends TreeReader {
     protected InStream valueStream;
     protected IntegerReader scaleReader = null;
     private LongColumnVector scratchScaleVector;
@@ -1206,7 +1271,7 @@ public class TreeReaderFactory {
       this(columnId, precision, scale, null, null, null, null);
     }
 
-    DecimalTreeReader(int columnId, int precision, int scale, InStream present,
+    protected DecimalTreeReader(int columnId, int precision, int scale, InStream present,
         InStream valueStream, InStream scaleStream, OrcProto.ColumnEncoding encoding)
         throws IOException {
       super(columnId, present);
@@ -1328,14 +1393,14 @@ public class TreeReaderFactory {
    * stripe, it creates an internal reader based on whether a direct or
    * dictionary encoding was used.
    */
-  protected static class StringTreeReader extends TreeReader {
+  public static class StringTreeReader extends TreeReader {
     protected TreeReader reader;
 
     StringTreeReader(int columnId) throws IOException {
       super(columnId);
     }
 
-    StringTreeReader(int columnId, InStream present, InStream data, InStream length,
+    protected StringTreeReader(int columnId, InStream present, InStream data, InStream length,
         InStream dictionary, OrcProto.ColumnEncoding encoding) throws IOException {
       super(columnId, present);
       if (encoding != null) {
@@ -1486,7 +1551,7 @@ public class TreeReaderFactory {
    * A reader for string columns that are direct encoded in the current
    * stripe.
    */
-  protected static class StringDirectTreeReader extends TreeReader {
+  public static class StringDirectTreeReader extends TreeReader {
     protected InStream stream;
     protected TextReaderShim data;
     protected IntegerReader lengths;
@@ -1496,8 +1561,8 @@ public class TreeReaderFactory {
       this(columnId, null, null, null, null);
     }
 
-    StringDirectTreeReader(int columnId, InStream present, InStream data, InStream length,
-        OrcProto.ColumnEncoding.Kind encoding) throws IOException {
+    protected StringDirectTreeReader(int columnId, InStream present, InStream data,
+        InStream length, OrcProto.ColumnEncoding.Kind encoding) throws IOException {
       super(columnId, present);
       this.scratchlcv = new LongColumnVector();
       this.stream = data;
@@ -1587,13 +1652,21 @@ public class TreeReaderFactory {
         lengthToSkip -= stream.skip(lengthToSkip);
       }
     }
+
+    public IntegerReader getLengths() {
+      return lengths;
+    }
+
+    public InStream getStream() {
+      return stream;
+    }
   }
 
   /**
    * A reader for string columns that are dictionary encoded in the current
    * stripe.
    */
-  protected static class StringDictionaryTreeReader extends TreeReader {
+  public static class StringDictionaryTreeReader extends TreeReader {
     private DynamicByteArray dictionaryBuffer;
     private int[] dictionaryOffsets;
     protected IntegerReader reader;
@@ -1605,7 +1678,7 @@ public class TreeReaderFactory {
       this(columnId, null, null, null, null, null);
     }
 
-    StringDictionaryTreeReader(int columnId, InStream present, InStream data,
+    protected StringDictionaryTreeReader(int columnId, InStream present, InStream data,
         InStream length, InStream dictionary, OrcProto.ColumnEncoding encoding)
         throws IOException {
       super(columnId, present);
@@ -1798,16 +1871,20 @@ public class TreeReaderFactory {
     void skipRows(long items) throws IOException {
       reader.skip(countNonNulls(items));
     }
+
+    public IntegerReader getReader() {
+      return reader;
+    }
   }
 
-  protected static class CharTreeReader extends StringTreeReader {
+  public static class CharTreeReader extends StringTreeReader {
     int maxLength;
 
     CharTreeReader(int columnId, int maxLength) throws IOException {
       this(columnId, maxLength, null, null, null, null, null);
     }
 
-    CharTreeReader(int columnId, int maxLength, InStream present, InStream data,
+    protected CharTreeReader(int columnId, int maxLength, InStream present, InStream data,
         InStream length, InStream dictionary, OrcProto.ColumnEncoding encoding) throws IOException {
       super(columnId, present, data, length, dictionary, encoding);
       this.maxLength = maxLength;
@@ -1874,14 +1951,14 @@ public class TreeReaderFactory {
     }
   }
 
-  protected static class VarcharTreeReader extends StringTreeReader {
+  public static class VarcharTreeReader extends StringTreeReader {
     int maxLength;
 
     VarcharTreeReader(int columnId, int maxLength) throws IOException {
       this(columnId, maxLength, null, null, null, null, null);
     }
 
-    VarcharTreeReader(int columnId, int maxLength, InStream present, InStream data,
+    protected VarcharTreeReader(int columnId, int maxLength, InStream present, InStream data,
         InStream length, InStream dictionary, OrcProto.ColumnEncoding encoding) throws IOException {
       super(columnId, present, data, length, dictionary, encoding);
       this.maxLength = maxLength;
@@ -1947,24 +2024,56 @@ public class TreeReaderFactory {
   }
 
   protected static class StructTreeReader extends TreeReader {
+    private final int fileColumnCount;
+    private final int resultColumnCount;
     protected final TreeReader[] fields;
     private final String[] fieldNames;
 
-    StructTreeReader(int columnId,
-        List<OrcProto.Type> types,
+    protected StructTreeReader(
+        int columnId,
+        TreeReaderSchema treeReaderSchema,
         boolean[] included,
         boolean skipCorrupt) throws IOException {
       super(columnId);
-      OrcProto.Type type = types.get(columnId);
-      int fieldCount = type.getFieldNamesCount();
-      this.fields = new TreeReader[fieldCount];
-      this.fieldNames = new String[fieldCount];
-      for (int i = 0; i < fieldCount; ++i) {
-        int subtype = type.getSubtypes(i);
-        if (included == null || included[subtype]) {
-          this.fields[i] = createTreeReader(subtype, types, included, skipCorrupt);
+
+      OrcProto.Type fileStructType = treeReaderSchema.getFileTypes().get(columnId);
+      fileColumnCount = fileStructType.getFieldNamesCount();
+
+      OrcProto.Type schemaStructType = treeReaderSchema.getSchemaTypes().get(columnId);
+
+      if (columnId == treeReaderSchema.getInnerStructSubtype()) {
+        // If there are more result columns than reader columns, we will default those additional
+        // columns to NULL.
+        resultColumnCount = schemaStructType.getFieldNamesCount();
+      } else {
+        resultColumnCount = fileColumnCount;
+      }
+
+      this.fields = new TreeReader[fileColumnCount];
+      this.fieldNames = new String[fileColumnCount];
+
+      if (included == null) {
+        for (int i = 0; i < fileColumnCount; ++i) {
+          int subtype = schemaStructType.getSubtypes(i);
+          this.fields[i] = createTreeReader(subtype, treeReaderSchema, included, skipCorrupt);
+          // Use the treeReaderSchema evolution name since file/reader types may not have the real column name.
+          this.fieldNames[i] = schemaStructType.getFieldNames(i);
         }
-        this.fieldNames[i] = type.getFieldNames(i);
+      } else {
+        for (int i = 0; i < fileColumnCount; ++i) {
+          int subtype = schemaStructType.getSubtypes(i);
+          if (subtype >= included.length) {
+            throw new IOException("subtype " + subtype + " exceeds the included array size " +
+                included.length + " fileTypes " + treeReaderSchema.getFileTypes().toString() +
+                " schemaTypes " + treeReaderSchema.getSchemaTypes().toString() +
+                " innerStructSubtype " + treeReaderSchema.getInnerStructSubtype());
+          }
+          if (included[subtype]) {
+            this.fields[i] = createTreeReader(subtype, treeReaderSchema, included, skipCorrupt);
+          }
+          // Use the treeReaderSchema evolution name since file/reader types may not have the real column name.
+          this.fieldNames[i] = schemaStructType.getFieldNames(i);
+        }
       }
     }
 
@@ -1984,20 +2093,26 @@ public class TreeReaderFactory {
       OrcStruct result = null;
       if (valuePresent) {
         if (previous == null) {
-          result = new OrcStruct(fields.length);
+          result = new OrcStruct(resultColumnCount);
         } else {
           result = (OrcStruct) previous;
 
           // If the input format was initialized with a file with a
           // different number of fields, the number of fields needs to
           // be updated to the correct number
-          if (result.getNumFields() != fields.length) {
-            result.setNumFields(fields.length);
+          if (result.getNumFields() != resultColumnCount) {
+            result.setNumFields(resultColumnCount);
           }
         }
-        for (int i = 0; i < fields.length; ++i) {
+        for (int i = 0; i < fileColumnCount; ++i) {
           if (fields[i] != null) {
             result.setFieldValue(i, fields[i].next(result.getFieldValue(i)));
+          }
+        }
+        if (resultColumnCount > fileColumnCount) {
+          for (int i = fileColumnCount; i < resultColumnCount; ++i) {
+            // Default new treeReaderSchema evolution fields to NULL.
+            result.setFieldValue(i, null);
           }
         }
       }
@@ -2008,13 +2123,13 @@ public class TreeReaderFactory {
     public Object nextVector(Object previousVector, long batchSize) throws IOException {
       final ColumnVector[] result;
       if (previousVector == null) {
-        result = new ColumnVector[fields.length];
+        result = new ColumnVector[fileColumnCount];
       } else {
         result = (ColumnVector[]) previousVector;
       }
 
       // Read all the members of struct as column vectors
-      for (int i = 0; i < fields.length; i++) {
+      for (int i = 0; i < fileColumnCount; i++) {
         if (fields[i] != null) {
           if (result[i] == null) {
             result[i] = (ColumnVector) fields[i].nextVector(null, batchSize);
@@ -2023,6 +2138,19 @@ public class TreeReaderFactory {
           }
         }
       }
+
+      // Default additional treeReaderSchema evolution fields to NULL.
+      if (vectorColumnCount != -1 && vectorColumnCount > fileColumnCount) {
+        for (int i = fileColumnCount; i < vectorColumnCount; ++i) {
+          ColumnVector colVector = result[i];
+          if (colVector != null) {
+            colVector.isRepeating = true;
+            colVector.noNulls = false;
+            colVector.isNull[0] = true;
+          }
+        }
+      }
+
       return result;
     }
 
@@ -2049,22 +2177,22 @@ public class TreeReaderFactory {
     }
   }
 
-  protected static class UnionTreeReader extends TreeReader {
+  public static class UnionTreeReader extends TreeReader {
     protected final TreeReader[] fields;
     protected RunLengthByteReader tags;
 
-    UnionTreeReader(int columnId,
-        List<OrcProto.Type> types,
+    protected UnionTreeReader(int columnId,
+        TreeReaderSchema treeReaderSchema,
         boolean[] included,
         boolean skipCorrupt) throws IOException {
       super(columnId);
-      OrcProto.Type type = types.get(columnId);
+      OrcProto.Type type = treeReaderSchema.getSchemaTypes().get(columnId);
       int fieldCount = type.getSubtypesCount();
       this.fields = new TreeReader[fieldCount];
       for (int i = 0; i < fieldCount; ++i) {
         int subtype = type.getSubtypes(i);
         if (included == null || included[subtype]) {
-          this.fields[i] = createTreeReader(subtype, types, included, skipCorrupt);
+          this.fields[i] = createTreeReader(subtype, treeReaderSchema, included, skipCorrupt);
         }
       }
     }
@@ -2129,17 +2257,17 @@ public class TreeReaderFactory {
     }
   }
 
-  protected static class ListTreeReader extends TreeReader {
+  public static class ListTreeReader extends TreeReader {
     protected final TreeReader elementReader;
     protected IntegerReader lengths = null;
 
-    ListTreeReader(int columnId,
-        List<OrcProto.Type> types,
+    protected ListTreeReader(int columnId,
+        TreeReaderSchema treeReaderSchema,
         boolean[] included,
         boolean skipCorrupt) throws IOException {
       super(columnId);
-      OrcProto.Type type = types.get(columnId);
-      elementReader = createTreeReader(type.getSubtypes(0), types, included, skipCorrupt);
+      OrcProto.Type type = treeReaderSchema.getSchemaTypes().get(columnId);
+      elementReader = createTreeReader(type.getSubtypes(0), treeReaderSchema, included, skipCorrupt);
     }
 
     @Override
@@ -2218,26 +2346,26 @@ public class TreeReaderFactory {
     }
   }
 
-  protected static class MapTreeReader extends TreeReader {
+  public static class MapTreeReader extends TreeReader {
     protected final TreeReader keyReader;
     protected final TreeReader valueReader;
     protected IntegerReader lengths = null;
 
-    MapTreeReader(int columnId,
-        List<OrcProto.Type> types,
+    protected MapTreeReader(int columnId,
+        TreeReaderSchema treeReaderSchema,
         boolean[] included,
         boolean skipCorrupt) throws IOException {
       super(columnId);
-      OrcProto.Type type = types.get(columnId);
+      OrcProto.Type type = treeReaderSchema.getSchemaTypes().get(columnId);
       int keyColumn = type.getSubtypes(0);
       int valueColumn = type.getSubtypes(1);
       if (included == null || included[keyColumn]) {
-        keyReader = createTreeReader(keyColumn, types, included, skipCorrupt);
+        keyReader = createTreeReader(keyColumn, treeReaderSchema, included, skipCorrupt);
       } else {
         keyReader = null;
       }
       if (included == null || included[valueColumn]) {
-        valueReader = createTreeReader(valueColumn, types, included, skipCorrupt);
+        valueReader = createTreeReader(valueColumn, treeReaderSchema, included, skipCorrupt);
       } else {
         valueReader = null;
       }
@@ -2317,11 +2445,11 @@ public class TreeReaderFactory {
   }
 
   public static TreeReader createTreeReader(int columnId,
-      List<OrcProto.Type> types,
+      TreeReaderSchema treeReaderSchema,
       boolean[] included,
       boolean skipCorrupt
   ) throws IOException {
-    OrcProto.Type type = types.get(columnId);
+    OrcProto.Type type = treeReaderSchema.getSchemaTypes().get(columnId);
     switch (type.getKind()) {
       case BOOLEAN:
         return new BooleanTreeReader(columnId);
@@ -2361,13 +2489,13 @@ public class TreeReaderFactory {
         int scale = type.hasScale() ? type.getScale() : HiveDecimal.SYSTEM_DEFAULT_SCALE;
         return new DecimalTreeReader(columnId, precision, scale);
       case STRUCT:
-        return new StructTreeReader(columnId, types, included, skipCorrupt);
+        return new StructTreeReader(columnId, treeReaderSchema, included, skipCorrupt);
       case LIST:
-        return new ListTreeReader(columnId, types, included, skipCorrupt);
+        return new ListTreeReader(columnId, treeReaderSchema, included, skipCorrupt);
       case MAP:
-        return new MapTreeReader(columnId, types, included, skipCorrupt);
+        return new MapTreeReader(columnId, treeReaderSchema, included, skipCorrupt);
       case UNION:
-        return new UnionTreeReader(columnId, types, included, skipCorrupt);
+        return new UnionTreeReader(columnId, treeReaderSchema, included, skipCorrupt);
       default:
         throw new IllegalArgumentException("Unsupported type " +
             type.getKind());

@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 -- union10.q
 
@@ -994,6 +995,11 @@ insert overwrite table src10_1 select *
 insert overwrite table src10_2 select *
 insert overwrite table src10_3 select *
 insert overwrite table src10_4 select *;
+
+analyze table src10_1 compute statistics;
+analyze table src10_2 compute statistics;
+analyze table src10_3 compute statistics;
+analyze table src10_4 compute statistics;
 
 set hive.auto.convert.join=true;
 -- When we convert the Join of sub1 and sub0 into a MapJoin,

@@ -32,8 +32,8 @@ import java.util.Set;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
@@ -65,7 +65,7 @@ public class TezWork extends AbstractOperatorDesc {
     }
   }
 
-  private static transient final Log LOG = LogFactory.getLog(TezWork.class);
+  private static transient final Logger LOG = LoggerFactory.getLogger(TezWork.class);
 
   private static int counter;
   private final String name;
@@ -263,7 +263,7 @@ public class TezWork extends AbstractOperatorDesc {
 
   /*
    * Dependency is a class used for explain
-   */ 
+   */
   public class Dependency implements Serializable, Comparable<Dependency> {
     public BaseWork w;
     public EdgeType type;
@@ -272,7 +272,7 @@ public class TezWork extends AbstractOperatorDesc {
     public String getName() {
       return w.getName();
     }
-    
+
     @Explain(displayName = "Type")
     public String getType() {
       return type.toString();
@@ -306,7 +306,7 @@ public class TezWork extends AbstractOperatorDesc {
     }
     return result;
   }
-  
+
   private static final String MR_JAR_PROPERTY = "tmpjars";
   /**
    * Calls configureJobConf on instances of work that are part of this TezWork.
@@ -349,7 +349,7 @@ public class TezWork extends AbstractOperatorDesc {
   /**
    * connect adds an edge between a and b. Both nodes have
    * to be added prior to calling connect.
-   * @param  
+   * @param
    */
   public void connect(BaseWork a, BaseWork b,
       TezEdgeProperty edgeProp) {
@@ -395,5 +395,14 @@ public class TezWork extends AbstractOperatorDesc {
 
   public VertexType getVertexType(BaseWork w) {
     return workVertexTypeMap.get(w);
+  }
+
+  public boolean getLlapMode() {
+    for (BaseWork work : getAllWork()) {
+      if (work.getLlapMode()) {
+        return true;
+      }
+    }
+    return false;
   }
 }

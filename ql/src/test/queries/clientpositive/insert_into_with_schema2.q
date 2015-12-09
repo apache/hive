@@ -1,6 +1,7 @@
+set hive.mapred.mode=nonstrict;
 -- SORT_QUERY_RESULTS;
 
-set hive.enforce.bucketing=true;
+
 
 create table studenttab10k (age2 int);
 insert into studenttab10k values(1);

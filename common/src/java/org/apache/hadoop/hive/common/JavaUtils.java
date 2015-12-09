@@ -27,8 +27,8 @@ import java.lang.reflect.Method;
 import java.net.URLClassLoader;
 import java.util.Arrays;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Collection of Java class loading/reflection related utilities common across
@@ -36,7 +36,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public final class JavaUtils {
 
-  private static final Log LOG = LogFactory.getLog(JavaUtils.class);
+  private static final Logger LOG = LoggerFactory.getLogger(JavaUtils.class);
   private static final Method SUN_MISC_UTIL_RELEASE;
 
   static {
@@ -56,10 +56,10 @@ public final class JavaUtils {
 
   /**
    * Standard way of getting classloader in Hive code (outside of Hadoop).
-   * 
+   *
    * Uses the context loader to get access to classpaths to auxiliary and jars
    * added with 'add jar' command. Falls back to current classloader.
-   * 
+   *
    * In Hadoop-related code, we use Configuration.getClassLoader().
    */
   public static ClassLoader getClassLoader() {
@@ -133,7 +133,6 @@ public final class JavaUtils {
         newOutputStream.close();
       }
     }
-    LogFactory.release(loader);
   }
 
   /**

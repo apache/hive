@@ -156,8 +156,8 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
   private final transient LongWritable recordCounter = new LongWritable();
 
   @Override
-  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
-    Collection<Future<?>> result = super.initializeOp(hconf);
+  protected void initializeOp(Configuration hconf) throws HiveException {
+    super.initializeOp(hconf);
     try {
 
       numRows = 0;
@@ -248,7 +248,6 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
       LOG.error(msg, e);
       throw new RuntimeException(e);
     }
-    return result;
   }
 
 
@@ -405,27 +404,24 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
   }
 
   private int computeBucketNumber(Object row, int numBuckets) throws HiveException {
-    int buckNum = 0;
-
     if (conf.getWriteType() == AcidUtils.Operation.UPDATE ||
         conf.getWriteType() == AcidUtils.Operation.DELETE) {
-      // We don't need to evalute the hash code.  Instead read the bucket number directly from
+      // We don't need to evaluate the hash code.  Instead read the bucket number directly from
       // the row.  I don't need to evaluate any expressions as I know I am reading the ROW__ID
       // column directly.
       Object recIdValue = acidRowInspector.getStructFieldData(row, recIdField);
-      buckNum = bucketInspector.get(recIdInspector.getStructFieldData(recIdValue, bucketField));
+      int buckNum = bucketInspector.get(recIdInspector.getStructFieldData(recIdValue, bucketField));
       if (isLogTraceEnabled) {
         LOG.trace("Acid choosing bucket number " + buckNum);
       }
+      return buckNum;
     } else {
+      Object[] bucketFieldValues = new Object[bucketEval.length];
       for (int i = 0; i < bucketEval.length; i++) {
-        Object o = bucketEval[i].evaluate(row);
-        buckNum = buckNum * 31 + ObjectInspectorUtils.hashCode(o, bucketObjectInspectors[i]);
+        bucketFieldValues[i] = bucketEval[i].evaluate(row);
       }
+      return ObjectInspectorUtils.getBucketNumber(bucketFieldValues, bucketObjectInspectors, numBuckets);
     }
-
-    // similar to hive's default partitioner, refer DefaultHivePartitioner
-    return (buckNum & Integer.MAX_VALUE) % numBuckets;
   }
 
   private void populateCachedDistributionKeys(Object row, int index) throws HiveException {
@@ -476,11 +472,11 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
         keyHashCode = 1;
       }
     } else {
-      for (int i = 0; i < partitionEval.length; i++) {
-        Object o = partitionEval[i].evaluate(row);
-        keyHashCode = keyHashCode * 31
-            + ObjectInspectorUtils.hashCode(o, partitionObjectInspectors[i]);
+      Object[] bucketFieldValues = new Object[partitionEval.length];
+      for(int i = 0; i < partitionEval.length; i++) {
+        bucketFieldValues[i] = partitionEval[i].evaluate(row);
       }
+      keyHashCode = ObjectInspectorUtils.getBucketHashCode(bucketFieldValues, partitionObjectInspectors);
     }
     int hashCode = buckNum < 0 ? keyHashCode : keyHashCode * 31 + buckNum;
     if (isLogTraceEnabled) {
@@ -615,6 +611,16 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
 
   public String[] getInputAliases() {
     return inputAliases;
+  }
+
+  @Override
+  public boolean getIsReduceSink() {
+    return true;
+  }
+
+  @Override
+  public String getReduceOutputName() {
+    return conf.getOutputName();
   }
 
   @Override

@@ -35,7 +35,8 @@ import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazyMapObjectInspector
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazySimpleStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.io.Text;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -43,7 +44,7 @@ import org.apache.log4j.Logger;
  *
  */
 public class LazyAccumuloRow extends LazyStruct {
-  private static final Logger log = Logger.getLogger(LazyAccumuloRow.class);
+  private static final Logger log = LoggerFactory.getLogger(LazyAccumuloRow.class);
 
   private AccumuloHiveRow row;
   private List<ColumnMapping> columnMappings;

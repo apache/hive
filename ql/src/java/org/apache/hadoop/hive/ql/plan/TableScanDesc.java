@@ -20,13 +20,14 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.ql.exec.PTFUtils;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
+import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.TableSample;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -69,7 +70,7 @@ public class TableScanDesc extends AbstractOperatorDesc {
    */
   private boolean gatherStats;
   private boolean statsReliable;
-  private int maxStatsKeyPrefixLength = -1;
+  private String tmpStatsDir;
 
   private ExprNodeGenericFuncDesc filterExpr;
   private transient Serializable filterObject;
@@ -105,6 +106,10 @@ public class TableScanDesc extends AbstractOperatorDesc {
 
   private transient Table tableMetadata;
 
+  private BitSet includedBuckets;
+
+  private int numBuckets = -1;
+
   public TableScanDesc() {
     this(null, null);
   }
@@ -133,6 +138,11 @@ public class TableScanDesc extends AbstractOperatorDesc {
   @Explain(displayName = "alias", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getAlias() {
     return alias;
+  }
+
+  @Explain(displayName = "ACID table", explainLevels = { Level.USER }, displayOnlyOnTrue = true)
+  public boolean isAcidTable() {
+    return SemanticAnalyzer.isAcidTable(this.tableMetadata);
   }
 
   @Explain(displayName = "filterExpr")
@@ -203,6 +213,14 @@ public class TableScanDesc extends AbstractOperatorDesc {
     return gatherStats;
   }
 
+  public String getTmpStatsDir() {
+    return tmpStatsDir;
+  }
+
+  public void setTmpStatsDir(String tmpStatsDir) {
+    this.tmpStatsDir = tmpStatsDir;
+  }
+
   public List<VirtualColumn> getVirtualCols() {
     return virtualCols;
   }
@@ -236,14 +254,6 @@ public class TableScanDesc extends AbstractOperatorDesc {
     this.statsReliable = statsReliable;
   }
 
-  public int getMaxStatsKeyPrefixLength() {
-    return maxStatsKeyPrefixLength;
-  }
-
-  public void setMaxStatsKeyPrefixLength(int maxStatsKeyPrefixLength) {
-    this.maxStatsKeyPrefixLength = maxStatsKeyPrefixLength;
-  }
-
   public void setRowLimit(int rowLimit) {
     this.rowLimit = rowLimit;
   }
@@ -264,7 +274,7 @@ public class TableScanDesc extends AbstractOperatorDesc {
   public void setBucketFileNameMapping(Map<String, Integer> bucketFileNameMapping) {
     this.bucketFileNameMapping = bucketFileNameMapping;
   }
-  
+
   public void setIsMetadataOnly(boolean metadata_only) {
     isMetadataOnly = metadata_only;
   }
@@ -303,5 +313,39 @@ public class TableScanDesc extends AbstractOperatorDesc {
 
   public void setSerializedFilterObject(String serializedFilterObject) {
     this.serializedFilterObject = serializedFilterObject;
+  }
+
+  public void setIncludedBuckets(BitSet bitset) {
+    this.includedBuckets = bitset;
+  }
+
+  public BitSet getIncludedBuckets() {
+    return this.includedBuckets;
+  }
+
+  @Explain(displayName = "buckets included", explainLevels = { Level.EXTENDED })
+  public String getIncludedBucketExplain() {
+    if (this.includedBuckets == null) {
+      return null;
+    }
+
+    StringBuilder sb = new StringBuilder();
+    sb.append("[");
+    for (int i = 0; i < this.includedBuckets.size(); i++) {
+      if (this.includedBuckets.get(i)) {
+        sb.append(i);
+        sb.append(',');
+      }
+    }
+    sb.append(String.format("] of %d", numBuckets));
+    return sb.toString();
+  }
+
+  public int getNumBuckets() {
+    return numBuckets;
+  }
+
+  public void setNumBuckets(int numBuckets) {
+    this.numBuckets = numBuckets;
   }
 }

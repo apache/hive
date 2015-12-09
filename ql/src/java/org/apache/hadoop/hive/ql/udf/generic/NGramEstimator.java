@@ -27,8 +27,8 @@ import java.util.Comparator;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A generic, re-usable n-gram estimation class that supports partial aggregations.

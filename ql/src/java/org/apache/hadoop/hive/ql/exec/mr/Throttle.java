@@ -23,7 +23,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.regex.Pattern;
 
-import org.apache.commons.logging.Log;
+import org.slf4j.Logger;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.mapred.JobConf;
 
@@ -44,7 +44,7 @@ public final class Throttle {
   /**
    * Fetch http://tracker.om:/gc.jsp?threshold=period.
    */
-  public static void checkJobTracker(JobConf conf, Log LOG) {
+  public static void checkJobTracker(JobConf conf, Logger LOG) {
 
     try {
       byte[] buffer = new byte[1024];

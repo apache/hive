@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 DESCRIBE FUNCTION parse_url;
 DESCRIBE FUNCTION EXTENDED parse_url;
 

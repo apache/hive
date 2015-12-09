@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 CREATE TABLE npe_test (key STRING, value STRING) PARTITIONED BY (ds STRING);
 
 INSERT OVERWRITE TABLE npe_test PARTITION(ds='2012-12-11')

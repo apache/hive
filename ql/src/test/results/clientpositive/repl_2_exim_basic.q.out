@@ -136,9 +136,11 @@ POSTHOOK: Output: default@managed_t
 PREHOOK: query: import table managed_t_imported from 'ql/test/data/exports/managed_t'
 PREHOOK: type: IMPORT
 #### A masked pattern was here ####
+PREHOOK: Output: database:default
 POSTHOOK: query: import table managed_t_imported from 'ql/test/data/exports/managed_t'
 POSTHOOK: type: IMPORT
 #### A masked pattern was here ####
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@managed_t_imported
 POSTHOOK: Output: default@managed_t_imported@emp_country=us/emp_state=ca
 PREHOOK: query: describe extended managed_t_imported
@@ -298,9 +300,11 @@ POSTHOOK: Input: default@managed_t_r_imported@emp_country=us/emp_state=ca
 PREHOOK: query: import table ext_t_imported from 'ql/test/data/exports/ext_t'
 PREHOOK: type: IMPORT
 #### A masked pattern was here ####
+PREHOOK: Output: database:default
 POSTHOOK: query: import table ext_t_imported from 'ql/test/data/exports/ext_t'
 POSTHOOK: type: IMPORT
 #### A masked pattern was here ####
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ext_t_imported
 POSTHOOK: Output: default@ext_t_imported@emp_country=us/emp_state=ca
 PREHOOK: query: describe extended ext_t_imported

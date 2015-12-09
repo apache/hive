@@ -1,6 +1,7 @@
+set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
-set hive.enforce.bucketing=true;
-set hive.enforce.sorting = true;
+
+
 set hive.optimize.bucketingsorting=false;
 set hive.auto.convert.join.noconditionaltask.size=10000;
 

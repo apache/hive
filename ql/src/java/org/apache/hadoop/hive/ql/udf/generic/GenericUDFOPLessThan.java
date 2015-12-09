@@ -20,6 +20,9 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColLessLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColLessLongScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.LongScalarLessLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.*;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -64,6 +67,7 @@ import org.apache.hadoop.io.Text;
     DateColLessDateScalar.class,FilterDateColLessDateScalar.class,
     DateScalarLessDateColumn.class,FilterDateScalarLessDateColumn.class,
     })
+@NDV(maxNdv = 2)
 public class GenericUDFOPLessThan extends GenericUDFBaseCompare {
   public GenericUDFOPLessThan(){
     this.opName = "LESS THAN";

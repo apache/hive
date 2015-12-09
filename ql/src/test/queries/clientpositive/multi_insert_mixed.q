@@ -1,7 +1,8 @@
+set hive.mapred.mode=nonstrict;
 create table src_multi1 like src;
 create table src_multi2 like src;
 create table src_multi3 like src;
-
+set hive.stats.dbclass=fs;
 -- Testing the case where a map work contains both shuffling (ReduceSinkOperator)
 -- and inserting to output table (FileSinkOperator).
 

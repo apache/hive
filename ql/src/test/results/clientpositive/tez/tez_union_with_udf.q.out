@@ -1,0 +1,36 @@
+PREHOOK: query: select * from (select key + key from src limit 1) a
+union all
+select * from (select key + key from src limit 1) b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select * from (select key + key from src limit 1) a
+union all
+select * from (select key + key from src limit 1) b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+476.0
+476.0
+PREHOOK: query: create temporary function example_add as 'org.apache.hadoop.hive.udf.example.GenericUDFExampleAdd'
+PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: example_add
+POSTHOOK: query: create temporary function example_add as 'org.apache.hadoop.hive.udf.example.GenericUDFExampleAdd'
+POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: example_add
+PREHOOK: query: -- Now try the query with the UDF
+select example_add(key, key)from (select key from src limit 1) a
+union all
+select example_add(key, key)from (select key from src limit 1) b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: -- Now try the query with the UDF
+select example_add(key, key)from (select key from src limit 1) a
+union all
+select example_add(key, key)from (select key from src limit 1) b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+476.0
+476.0

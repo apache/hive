@@ -718,6 +718,10 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       table = new Table(tblDesc.getDatabaseName(), tblDesc.getTableName());
       Database parentDb = db.getDatabase(tblDesc.getDatabaseName());
 
+      // Since we are going to be creating a new table in a db, we should mark that db as a write entity
+      // so that the auth framework can go to work there.
+      outputs.add(new WriteEntity(parentDb, WriteEntity.WriteType.DDL_SHARED));
+
       if (isPartitioned(tblDesc)) {
         for (AddPartitionDesc addPartitionDesc : partitionDescs) {
           t.addDependentTask(

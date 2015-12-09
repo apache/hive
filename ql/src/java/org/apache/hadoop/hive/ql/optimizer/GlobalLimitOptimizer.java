@@ -22,8 +22,8 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
@@ -63,7 +63,7 @@ import com.google.common.collect.Multimap;
  */
 public class GlobalLimitOptimizer implements Transform {
 
-  private final Log LOG = LogFactory.getLog(GlobalLimitOptimizer.class.getName());
+  private final Logger LOG = LoggerFactory.getLogger(GlobalLimitOptimizer.class.getName());
 
   public ParseContext transform(ParseContext pctx) throws SemanticException {
     Context ctx = pctx.getContext();

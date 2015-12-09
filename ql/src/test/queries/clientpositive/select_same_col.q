@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.cbo.enable=true;
 
 -- SORT_BEFORE_DIFF

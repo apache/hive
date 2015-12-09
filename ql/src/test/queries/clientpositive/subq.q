@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 EXPLAIN
 FROM (
   FROM src select src.* WHERE src.key < 100

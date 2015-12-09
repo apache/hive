@@ -1,7 +1,7 @@
+set hive.mapred.mode=nonstrict;
 set hive.optimize.listbucketing=true;
 set mapred.input.dir.recursive=true;	
 set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
-set hive.mapred.supports.subdirectories=true;
 
 -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)	
 -- SORT_QUERY_RESULTS

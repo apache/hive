@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 DROP TABLE covar_tab;
 CREATE TABLE covar_tab (a INT, b INT, c INT)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'

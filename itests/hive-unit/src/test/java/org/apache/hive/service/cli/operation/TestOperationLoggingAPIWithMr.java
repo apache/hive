@@ -36,7 +36,7 @@ import org.junit.Test;
  * TestOperationLoggingAPIWithMr
  * Test the FetchResults of TFetchType.LOG in thrift level in MR mode.
  */
-public class TestOperationLoggingAPIWithMr extends OperationLoggingAPITestBase{
+public class TestOperationLoggingAPIWithMr extends OperationLoggingAPITestBase {
 
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
@@ -45,10 +45,11 @@ public class TestOperationLoggingAPIWithMr extends OperationLoggingAPITestBase{
       "Parsing command",
       "Parse Completed",
       "Starting Semantic Analysis",
-      "Semantic Analysis Completed",
-      "Starting command"
     };
     expectedLogsExecution = new String[]{
+      "Total jobs",
+      "Starting command",
+      "Semantic Analysis Completed",
       "Number of reduce tasks determined at compile time",
       "number of splits",
       "Submitting tokens for job",

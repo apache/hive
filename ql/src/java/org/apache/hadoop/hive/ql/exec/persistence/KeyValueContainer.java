@@ -21,8 +21,8 @@ import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.ql.io.HiveKey;
@@ -41,7 +41,7 @@ import java.io.IOException;
  */
 @SuppressWarnings("unchecked")
 public class KeyValueContainer {
-  private static final Log LOG = LogFactory.getLog(KeyValueContainer.class);
+  private static final Logger LOG = LoggerFactory.getLogger(KeyValueContainer.class);
 
   @VisibleForTesting
   static final int IN_MEMORY_NUM_ROWS = 1024;

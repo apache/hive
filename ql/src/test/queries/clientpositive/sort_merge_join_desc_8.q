@@ -3,7 +3,7 @@ drop table table_desc2;
 drop table table_desc3;
 drop table table_desc4;
 
-set hive.enforce.sorting = true;
+
 
 create table table_desc1(key string, value string) clustered by (key)
 sorted by (key DESC) into 1 BUCKETS;

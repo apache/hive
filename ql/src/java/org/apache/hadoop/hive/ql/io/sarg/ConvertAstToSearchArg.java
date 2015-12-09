@@ -23,11 +23,9 @@ import java.sql.Timestamp;
 import java.util.List;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveChar;
-import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -51,12 +49,14 @@ import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 
 public class ConvertAstToSearchArg {
-  private static final Log LOG = LogFactory.getLog(ConvertAstToSearchArg.class);
+  private static final Logger LOG = LoggerFactory.getLogger(ConvertAstToSearchArg.class);
   private final SearchArgument.Builder builder =
       SearchArgumentFactory.newBuilder();
 
@@ -418,15 +418,22 @@ public class ConvertAstToSearchArg {
   }
 
 
+  private final static ThreadLocal<Kryo> kryo = new ThreadLocal<Kryo>() {
+    protected Kryo initialValue() { return new Kryo(); }
+  };
+
   public static SearchArgument create(String kryo) {
-    Input input = new Input(Base64.decodeBase64(kryo));
-    return new Kryo().readObject(input, SearchArgumentImpl.class);
+    return create(Base64.decodeBase64(kryo));
+  }
+
+  public static SearchArgument create(byte[] kryoBytes) {
+    return kryo.get().readObject(new Input(kryoBytes), SearchArgumentImpl.class);
   }
 
   public static SearchArgument createFromConf(Configuration conf) {
     String sargString;
     if ((sargString = conf.get(TableScanDesc.FILTER_EXPR_CONF_STR)) != null) {
-      return create(Utilities.deserializeExpression(sargString));
+      return create(SerializationUtilities.deserializeExpression(sargString));
     } else if ((sargString = conf.get(SARG_PUSHDOWN)) != null) {
       return create(sargString);
     }

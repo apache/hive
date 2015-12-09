@@ -20,18 +20,15 @@ package org.apache.hadoop.hive.ql.stats;
 
 import java.io.Serializable;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst.StatDB;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.util.ReflectionUtils;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVESTATSDBCLASS;
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_STATS_KEY_PREFIX_MAX_LENGTH;
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_STATS_KEY_PREFIX_RESERVE_LENGTH;
 
 /**
  * A factory of stats publisher and aggregator implementations of the
@@ -39,31 +36,11 @@ import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_STATS_KEY_PREFI
  */
 public final class StatsFactory {
 
-  static final private Log LOG = LogFactory.getLog(StatsFactory.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(StatsFactory.class.getName());
 
   private Class <? extends Serializable> publisherImplementation;
   private Class <? extends Serializable> aggregatorImplementation;
   private final Configuration jobConf;
-
-  public static int getMaxPrefixLength(Configuration conf) {
-
-    if (HiveConf.getVar(conf, HIVESTATSDBCLASS).equalsIgnoreCase(StatDB.fs.name())) {
-      // no limit on prefix for fs.
-      return -1;
-    }
-    int maxPrefixLength = HiveConf.getIntVar(conf, HIVE_STATS_KEY_PREFIX_MAX_LENGTH);
-    if (HiveConf.getVar(conf, HIVESTATSDBCLASS).equalsIgnoreCase(StatDB.counter.name())) {
-      // see org.apache.hadoop.mapred.Counter or org.apache.hadoop.mapreduce.MRJobConfig
-      int groupNameMax = conf.getInt("mapreduce.job.counters.group.name.max", 128);
-      maxPrefixLength = maxPrefixLength < 0 ? groupNameMax :
-          Math.min(maxPrefixLength, groupNameMax);
-    }
-    if (maxPrefixLength > 0) {
-      int reserve = HiveConf.getIntVar(conf, HIVE_STATS_KEY_PREFIX_RESERVE_LENGTH);
-      return reserve < 0 ? maxPrefixLength : maxPrefixLength - reserve;
-    }
-    return maxPrefixLength;
-  }
 
   public static StatsFactory newFactory(Configuration conf) {
     return newFactory(HiveConf.getVar(conf, HIVESTATSDBCLASS), conf);
@@ -90,7 +67,7 @@ public final class StatsFactory {
   private boolean initialize(String type) {
     ClassLoader classLoader = Utilities.getSessionSpecifiedClassLoader();
     try {
-      StatDB statDB = type.startsWith("jdbc") ? StatDB.jdbc : StatDB.valueOf(type);
+      StatDB statDB = StatDB.valueOf(type);
       publisherImplementation = (Class<? extends Serializable>)
           Class.forName(statDB.getPublisher(jobConf), true, classLoader);
       aggregatorImplementation = (Class<? extends Serializable>)

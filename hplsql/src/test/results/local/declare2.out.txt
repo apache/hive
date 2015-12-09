@@ -1,0 +1,7 @@
+Ln:2 DECLARE code char = 'a'
+Ln:3 DECLARE status int = 1
+Ln:5 PRINT
+a
+Ln:6 PRINT
+1
+Ln:10 DECLARE code char = 'a'

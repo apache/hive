@@ -30,8 +30,8 @@ import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.DatumReader;
 import org.apache.commons.lang.ClassUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.lazy.LazyArray;
@@ -70,7 +70,7 @@ public class AvroLazyObjectInspector extends LazySimpleStructObjectInspector {
   /**
    * LOGGER
    * */
-  public static final Log LOG = LogFactory.getLog(AvroLazyObjectInspector.class);
+  public static final Logger LOG = LoggerFactory.getLogger(AvroLazyObjectInspector.class);
 
   /**
    * Constructor

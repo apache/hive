@@ -25,8 +25,8 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 /**
  * A reader that reads a sequence of integers.
  * */
-class RunLengthIntegerReader implements IntegerReader {
-  private final InStream input;
+public class RunLengthIntegerReader implements IntegerReader {
+  private InStream input;
   private final boolean signed;
   private final long[] literals =
     new long[RunLengthIntegerWriter.MAX_LITERAL_SIZE];
@@ -36,16 +36,20 @@ class RunLengthIntegerReader implements IntegerReader {
   private boolean repeat = false;
   private SerializationUtils utils;
 
-  RunLengthIntegerReader(InStream input, boolean signed) throws IOException {
+  public RunLengthIntegerReader(InStream input, boolean signed) throws IOException {
     this.input = input;
     this.signed = signed;
     this.utils = new SerializationUtils();
   }
 
-  private void readValues() throws IOException {
+  private void readValues(boolean ignoreEof) throws IOException {
     int control = input.read();
     if (control == -1) {
-      throw new EOFException("Read past end of RLE integer from " + input);
+      if (!ignoreEof) {
+        throw new EOFException("Read past end of RLE integer from " + input);
+      }
+      used = numLiterals = 0;
+      return;
     } else if (control < 0x80) {
       numLiterals = control + RunLengthIntegerWriter.MIN_REPEAT_SIZE;
       used = 0;
@@ -84,7 +88,7 @@ class RunLengthIntegerReader implements IntegerReader {
   public long next() throws IOException {
     long result;
     if (used == numLiterals) {
-      readValues();
+      readValues(false);
     }
     if (repeat) {
       result = literals[0] + (used++) * delta;
@@ -95,8 +99,7 @@ class RunLengthIntegerReader implements IntegerReader {
   }
 
   @Override
-  public void nextVector(LongColumnVector previous, long previousLen)
-      throws IOException {
+  public void nextVector(LongColumnVector previous, long previousLen) throws IOException {
     previous.isRepeating = true;
     for (int i = 0; i < previousLen; i++) {
       if (!previous.isNull[i]) {
@@ -119,13 +122,18 @@ class RunLengthIntegerReader implements IntegerReader {
   }
 
   @Override
+  public void setInStream(InStream data) {
+    input = data;
+  }
+
+  @Override
   public void seek(PositionProvider index) throws IOException {
     input.seek(index);
     int consumed = (int) index.getNext();
     if (consumed != 0) {
       // a loop is required for cases where we break the run into two parts
       while (consumed > 0) {
-        readValues();
+        readValues(false);
         used = consumed;
         consumed -= numLiterals;
       }
@@ -139,7 +147,7 @@ class RunLengthIntegerReader implements IntegerReader {
   public void skip(long numValues) throws IOException {
     while (numValues > 0) {
       if (used == numLiterals) {
-        readValues();
+        readValues(false);
       }
       long consume = Math.min(numValues, numLiterals - used);
       used += consume;

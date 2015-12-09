@@ -22,8 +22,8 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
@@ -48,7 +48,7 @@ import static org.apache.hadoop.hive.ql.plan.ReduceSinkDesc.ReducerTraits.UNIFOR
  */
 public class SetReducerParallelism implements NodeProcessor {
 
-  static final private Log LOG = LogFactory.getLog(SetReducerParallelism.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(SetReducerParallelism.class.getName());
 
   @SuppressWarnings("unchecked")
   @Override

@@ -57,20 +57,11 @@ import org.apache.hadoop.hive.serde2.lazy.fast.LazySimpleSerializeWrite;
 import org.apache.hadoop.hive.serde2.lazybinary.fast.LazyBinaryDeserializeRead;
 import org.apache.hadoop.hive.serde2.lazybinary.fast.LazyBinarySerializeWrite;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableByteObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableDateObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableDoubleObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableFloatObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableIntObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableLongObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableShortObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableStringObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.hive.serde2.fast.SerializeWrite;
 import org.apache.hadoop.io.BooleanWritable;
@@ -331,13 +322,13 @@ public class TestVectorSerDeRow extends TestCase {
 
   void testVectorSerializeRow(int caseNum, Random r, SerializationType serializationType) throws HiveException, IOException, SerDeException {
 
-    Map<Integer, String> emptyScratchMap = new HashMap<Integer, String>();
+    String[] emptyScratchTypeNames = new String[0];
 
     RandomRowObjectSource source = new RandomRowObjectSource();
     source.init(r);
 
     VectorizedRowBatchCtx batchContext = new VectorizedRowBatchCtx();
-    batchContext.init(emptyScratchMap, source.rowStructObjectInspector());
+    batchContext.init(source.rowStructObjectInspector(), emptyScratchTypeNames);
     VectorizedRowBatch batch = batchContext.createVectorizedRowBatch();
 
     VectorAssignRowSameBatch vectorAssignRow = new VectorAssignRowSameBatch();
@@ -415,10 +406,10 @@ public class TestVectorSerDeRow extends TestCase {
   private Output serializeRow(Object[] row, RandomRowObjectSource source, SerializeWrite serializeWrite) throws HiveException, IOException {
     Output output = new Output();
     serializeWrite.set(output);
-    PrimitiveCategory[] primitiveCategories = source.primitiveCategories();
-    for (int i = 0; i < primitiveCategories.length; i++) {
+    PrimitiveTypeInfo[] primitiveTypeInfos = source.primitiveTypeInfos();
+    for (int i = 0; i < primitiveTypeInfos.length; i++) {
       Object object = row[i];
-      PrimitiveCategory primitiveCategory = primitiveCategories[i];
+      PrimitiveCategory primitiveCategory = primitiveTypeInfos[i].getPrimitiveCategory();
       switch (primitiveCategory) {
       case BOOLEAN:
         {
@@ -529,7 +520,7 @@ public class TestVectorSerDeRow extends TestCase {
         {
           HiveDecimalWritable expectedWritable = (HiveDecimalWritable) object;
           HiveDecimal value = expectedWritable.getHiveDecimal();
-          serializeWrite.writeHiveDecimal(value);
+          serializeWrite.writeHiveDecimal(value, ((DecimalTypeInfo)primitiveTypeInfos[i]).scale());
         }
         break;
       default:
@@ -563,13 +554,13 @@ public class TestVectorSerDeRow extends TestCase {
 
   void testVectorDeserializeRow(int caseNum, Random r, SerializationType serializationType) throws HiveException, IOException, SerDeException {
 
-    Map<Integer, String> emptyScratchMap = new HashMap<Integer, String>();
+    String[] emptyScratchTypeNames = new String[0];
 
     RandomRowObjectSource source = new RandomRowObjectSource();
     source.init(r);
 
     VectorizedRowBatchCtx batchContext = new VectorizedRowBatchCtx();
-    batchContext.init(emptyScratchMap, source.rowStructObjectInspector());
+    batchContext.init(source.rowStructObjectInspector(), emptyScratchTypeNames);
     VectorizedRowBatch batch = batchContext.createVectorizedRowBatch();
 
     int fieldCount = source.typeNames().size();

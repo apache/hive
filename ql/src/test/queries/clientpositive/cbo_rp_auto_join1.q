@@ -1,9 +1,9 @@
 set hive.cbo.returnpath.hiveop=true;
 set hive.stats.fetch.column.stats=true;
-set hive.enforce.bucketing = true;
-set hive.enforce.sorting = true;
-set hive.exec.reducers.max = 1;
+;
 
+set hive.exec.reducers.max = 1;
+set hive.transpose.aggr.join=true;
 -- SORT_QUERY_RESULTS
 
 CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS;

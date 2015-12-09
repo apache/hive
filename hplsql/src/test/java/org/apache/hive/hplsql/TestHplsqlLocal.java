@@ -44,6 +44,11 @@ public class TestHplsqlLocal {
   }
 
   @Test
+  public void testBool() throws Exception {
+    run("bool");
+  }
+  
+  @Test
   public void testBoolExpr() throws Exception {
     run("bool_expr");
   }
@@ -89,15 +94,34 @@ public class TestHplsqlLocal {
   }
 
   @Test
+  public void testCreatePackage() throws Exception {
+    run("create_package");
+  }
+  
+  @Test
+  public void testCreatePackage2() throws Exception {
+    run("create_package2");
+  }
+
+  @Test
   public void testCreateProcedure() throws Exception {
     run("create_procedure");
   }
   
   @Test
+  public void testCreateProcedure2() throws Exception {
+    run("create_procedure2");
+  }
+  @Test
   public void testCreateProcedureNoParams() throws Exception {
     run("create_procedure_no_params");
   }
 
+  @Test
+  public void testDatatypes() throws Exception {
+    run("datatypes");
+  }
+  
   @Test
   public void testDate() throws Exception {
     run("date");
@@ -113,6 +137,11 @@ public class TestHplsqlLocal {
     run("declare");
   }
 
+  @Test
+  public void testDeclare2() throws Exception {
+    run("declare2");
+  }
+  
   @Test
   public void testDeclareCondition() throws Exception {
     run("declare_condition");
@@ -154,6 +183,11 @@ public class TestHplsqlLocal {
   }
 
   @Test
+  public void testFloat() throws Exception {
+    run("float");
+  }
+
+  @Test
   public void testForRange() throws Exception {
     run("for_range");
   }
@@ -162,7 +196,16 @@ public class TestHplsqlLocal {
   public void testIf() throws Exception {
     run("if");
   }
+  
+  @Test
+  public void testIf2() throws Exception {
+    run("if2");
+  }
 
+  @Test
+  public void testInclude() throws Exception {
+    run("include");
+  }
   @Test
   public void testInstr() throws Exception {
     run("instr");
@@ -196,6 +239,11 @@ public class TestHplsqlLocal {
   @Test
   public void testLower() throws Exception {
     run("lower");
+  }
+
+  @Test
+  public void testMultDiv() throws Exception {
+    run("mult_div");
   }
 
   @Test
@@ -276,6 +324,16 @@ public class TestHplsqlLocal {
   @Test
   public void testValuesInto() throws Exception {
     run("values_into");
+  }
+  
+  @Test
+  public void testVarScope() throws Exception {
+    run("var_scope");
+  }
+  
+  @Test
+  public void testVarScope2() throws Exception {
+    run("var_scope2");
   }
 
   @Test

@@ -23,21 +23,15 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.StructField;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hive.common.util.ReflectionUtil;
 
@@ -62,8 +56,6 @@ public class ReduceWork extends BaseWork {
   public ReduceWork(String name) {
     super(name);
   }
-
-  private static transient final Log LOG = LogFactory.getLog(ReduceWork.class);
 
   // schema of the map-reduce 'key' object - this is homogeneous
   private TableDesc keyDesc;
@@ -149,9 +141,22 @@ public class ReduceWork extends BaseWork {
     this.tagToValueDesc = tagToValueDesc;
   }
 
-  @Explain(displayName = "Execution mode")
-  public String getVectorModeOn() {
-    return vectorMode ? "vectorized" : null;
+  @Explain(displayName = "Execution mode", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public String getExecutionMode() {
+    if (vectorMode) {
+      if (llapMode) {
+	if (uberMode) {
+	  return "vectorized, uber";
+	} else {
+	  return "vectorized, llap";
+	}
+      } else {
+	return "vectorized";
+      }
+    } else if (llapMode) {
+      return uberMode? "uber" : "llap";
+    }
+    return null;
   }
 
   @Explain(displayName = "Reduce Operator Tree", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })

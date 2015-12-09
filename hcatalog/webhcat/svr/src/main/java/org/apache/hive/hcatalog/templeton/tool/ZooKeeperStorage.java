@@ -22,8 +22,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
@@ -55,7 +55,7 @@ public class ZooKeeperStorage implements TempletonStorage {
 
   public static final String ENCODING = "UTF-8";
 
-  private static final Log LOG = LogFactory.getLog(ZooKeeperStorage.class);
+  private static final Logger LOG = LoggerFactory.getLogger(ZooKeeperStorage.class);
 
   private CuratorFramework zk;
 

@@ -39,11 +39,6 @@
 </property>
 
 <property>
-  <name>mapred.tez.java.opts</name>
-  <value>-Xmx128m</value>
-</property>
-
-<property>
   <name>hive.tez.container.size</name>
   <value>128</value>
   <description></description>
@@ -68,6 +63,21 @@
 </property>
 
 <property>
+  <name>datanucleus.autoCreateSchema</name>
+  <value>true</value>
+</property>
+
+<property>
+  <name>datanucleus.fixedDatastore</name>
+  <value>false</value>
+</property>
+
+<property>
+  <name>hive.metastore.schema.verification</name>
+  <value>false</value>
+</property>
+
+<property>
   <name>hive.exec.local.scratchdir</name>
   <value>${test.tmp.dir}/localscratchdir/</value>
   <description>Local scratch space for Hive jobs</description>
@@ -77,12 +87,6 @@
   <name>javax.jdo.option.ConnectionURL</name>
   <value>jdbc:derby:;databaseName=${test.tmp.dir}/junit_metastore_db;create=true</value>
 </property>
-
-<property>
-  <name>hive.stats.dbconnectionstring</name>
-  <value>jdbc:derby:;databaseName=${test.tmp.dir}/TempStatsStore;create=true</value>
-</property>
-
 
 <property>
   <name>javax.jdo.option.ConnectionDriverName</name>
@@ -214,8 +218,8 @@
 
 <property>
   <name>hive.stats.dbclass</name>
-  <value>counter</value>
-  <description>The default storatge that stores temporary hive statistics. Currently, jdbc, hbase and counter type is supported</description>
+  <value>fs</value>
+  <description>The default storatge that stores temporary hive statistics. Currently, fs type is supported</description>
 </property>
 
 <property>
@@ -255,12 +259,27 @@
 
 <property>
   <name>hive.tez.java.opts</name>
-  <value> -Dlog4j.configurationFile=tez-container-log4j2.xml -Dtez.container.log.level=INFO -Dtez.container.root.logger=CLA </value>
+  <value> -Dlog4j.configurationFile=tez-container-log4j2.properties -Dtez.container.log.level=INFO -Dtez.container.root.logger=CLA </value>
 </property>
 
 <property>
   <name>tez.am.launch.cmd-opts</name>
-  <value> -Dlog4j.configurationFile=tez-container-log4j2.xml -Dtez.container.log.level=INFO -Dtez.container.root.logger=CLA </value>
+  <value> -Dlog4j.configurationFile=tez-container-log4j2.properties -Dtez.container.log.level=INFO -Dtez.container.root.logger=CLA </value>
+</property>
+
+<property>
+  <name>hive.metastore.fastpath</name>
+  <value>true</value>
+</property>
+
+<property>
+  <name>hive.metastore.rawstore.impl</name>
+  <value>org.apache.hadoop.hive.metastore.hbase.HBaseStore</value>
+</property>
+
+<property>
+  <name>hive.orc.splits.ms.footer.cache.enabled</name>
+  <value>true</value>
 </property>
 
 </configuration>

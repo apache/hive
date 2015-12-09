@@ -1,5 +1,5 @@
 set hive.explain.user=false;
-set hive.enforce.bucketing = true;
+;
 set hive.exec.reducers.max = 1;
 
 -- SORT_QUERY_RESULTS

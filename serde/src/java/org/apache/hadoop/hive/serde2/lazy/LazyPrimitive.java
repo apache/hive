@@ -19,8 +19,8 @@ package org.apache.hadoop.hive.serde2.lazy;
 
 import java.nio.charset.CharacterCodingException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
@@ -31,7 +31,7 @@ import org.apache.hadoop.io.Writable;
 public abstract class LazyPrimitive<OI extends ObjectInspector, T extends Writable>
     extends LazyObject<OI> {
 
-  private static final Log LOG = LogFactory.getLog(LazyPrimitive.class);
+  private static final Logger LOG = LoggerFactory.getLogger(LazyPrimitive.class);
   protected LazyPrimitive(OI oi) {
     super(oi);
   }

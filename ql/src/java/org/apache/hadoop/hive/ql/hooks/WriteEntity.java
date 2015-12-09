@@ -18,8 +18,8 @@
 
 package org.apache.hadoop.hive.ql.hooks;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
@@ -35,7 +35,7 @@ import java.io.Serializable;
  */
 public class WriteEntity extends Entity implements Serializable {
 
-  private static final Log LOG = LogFactory.getLog(WriteEntity.class);
+  private static final Logger LOG = LoggerFactory.getLogger(WriteEntity.class);
 
   private boolean isTempURI = false;
 

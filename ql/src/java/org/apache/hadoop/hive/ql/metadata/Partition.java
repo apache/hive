@@ -27,8 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -38,7 +38,6 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
-import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
@@ -46,9 +45,6 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.OutputFormat;
-import org.apache.thrift.TException;
-import org.apache.thrift.protocol.TBinaryProtocol;
-import org.apache.thrift.transport.TMemoryBuffer;
 
 /**
  * A Hive Table Partition: is a fundamental storage unit within a Table.
@@ -60,8 +56,8 @@ import org.apache.thrift.transport.TMemoryBuffer;
 public class Partition implements Serializable {
 
   @SuppressWarnings("nls")
-  static final private Log LOG = LogFactory
-      .getLog("hive.ql.metadata.Partition");
+  private static final Logger LOG = LoggerFactory
+      .getLogger("hive.ql.metadata.Partition");
 
   private Table table;
   private org.apache.hadoop.hive.metastore.api.Partition tPartition;
@@ -95,7 +91,7 @@ public class Partition implements Serializable {
     org.apache.hadoop.hive.metastore.api.Partition tPart =
         new org.apache.hadoop.hive.metastore.api.Partition();
     if (!tbl.isView()) {
-      tPart.setSd(tbl.getTTable().getSd()); // TODO: get a copy
+      tPart.setSd(tbl.getTTable().getSd().deepCopy());
     }
     initialize(tbl, tPart);
   }
@@ -140,30 +136,10 @@ public class Partition implements Serializable {
     tpart.setValues(pvals);
 
     if (!tbl.isView()) {
-      tpart.setSd(cloneSd(tbl));
+      tpart.setSd(tbl.getSd().deepCopy());
       tpart.getSd().setLocation((location != null) ? location.toString() : null);
     }
     return tpart;
-  }
-
-  /**
-   * We already have methods that clone stuff using XML or Kryo.
-   * And now for something completely different - let's clone SD using Thrift!
-   * Refactored into a method.
-   */
-  public static StorageDescriptor cloneSd(Table tbl) throws HiveException {
-    StorageDescriptor sd = new StorageDescriptor();
-    try {
-      // replace with THRIFT-138
-      TMemoryBuffer buffer = new TMemoryBuffer(1024);
-      TBinaryProtocol prot = new TBinaryProtocol(buffer);
-      tbl.getTTable().getSd().write(prot);
-      sd.read(prot);
-    } catch (TException e) {
-      LOG.error("Could not create a copy of StorageDescription");
-      throw new HiveException("Could not create a copy of StorageDescription",e);
-    }
-    return sd;
   }
 
   /**
@@ -491,10 +467,23 @@ public class Partition implements Serializable {
   }
 
   public List<FieldSchema> getCols() {
+    return getColsInternal(false);
+  }
+
+  public List<FieldSchema> getColsForMetastore() {
+    return getColsInternal(true);
+  }
+
+  private List<FieldSchema> getColsInternal(boolean forMs) {
 
     try {
-      if (Table.hasMetastoreBasedSchema(SessionState.getSessionConf(), tPartition.getSd())) {
+      String serializationLib = tPartition.getSd().getSerdeInfo().getSerializationLib();
+      // Do the lightweight check for general case.
+      if (Table.hasMetastoreBasedSchema(SessionState.getSessionConf(), serializationLib)) {
         return tPartition.getSd().getCols();
+      } else if (forMs && !Table.shouldStoreFieldsInMetastore(
+          SessionState.getSessionConf(), serializationLib, table.getParameters())) {
+        return Hive.getFieldsFromDeserializerForMsStorage(table, getDeserializer());
       }
       return MetaStoreUtils.getFieldsFromDeserializer(table.getTableName(), getDeserializer());
     } catch (Exception e) {
@@ -563,6 +552,7 @@ public class Partition implements Serializable {
   }
 
   public List<String> getSkewedColNames() {
+    LOG.debug("sd is " + tPartition.getSd().getClass().getName());
     return tPartition.getSd().getSkewedInfo().getSkewedColNames();
   }
 

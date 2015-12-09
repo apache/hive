@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.LineageLogger;
 
 drop table if exists src2;
@@ -113,4 +114,22 @@ SELECT substr(src1.key,1,1), count(DISTINCT substr(src1.value,5)),
 concat(substr(src1.key,1,1),sum(substr(src1.value,5)))
 from src1
 GROUP BY substr(src1.key,1,1);
+
+drop table if exists relations;
+create table relations (identity char(32), type string,
+  ep1_src_type string, ep1_type string, ep2_src_type string, ep2_type string,
+  ep1_ids array<string>, ep2_ids array<string>);
+
+drop table if exists rels_exploded;
+create table rels_exploded (identity char(32), type string,
+  ep1_src_type string, ep1_type string, ep2_src_type string, ep2_type string,
+  ep1_id char(32), ep2_id char(32));
+
+select identity, ep1_id from relations
+  lateral view explode(ep1_ids) nav_rel as ep1_id;
+
+insert into rels_exploded select identity, type,
+  ep1_src_type, ep1_type, ep2_src_type, ep2_type, ep1_id, ep2_id
+from relations lateral view explode(ep1_ids) rel1 as ep1_id
+  lateral view explode (ep2_ids) rel2 as ep2_id;
 

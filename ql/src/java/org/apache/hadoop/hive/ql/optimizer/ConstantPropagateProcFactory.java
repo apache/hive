@@ -29,8 +29,8 @@ import java.util.Set;
 import java.util.Stack;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
@@ -107,7 +107,7 @@ import com.google.common.collect.Lists;
  * Factory for generating the different node processors used by ConstantPropagate.
  */
 public final class ConstantPropagateProcFactory {
-  protected static final Log LOG = LogFactory.getLog(ConstantPropagateProcFactory.class.getName());
+  protected static final Logger LOG = LoggerFactory.getLogger(ConstantPropagateProcFactory.class.getName());
   protected static Set<Class<?>> propagatableUdfs = new HashSet<Class<?>>();
 
   static {
@@ -843,7 +843,7 @@ public final class ConstantPropagateProcFactory {
           }
         }
         if (constant.getTypeInfo().getCategory() != Category.PRIMITIVE) {
-          // nested complex types cannot be folded cleanly 
+          // nested complex types cannot be folded cleanly
           return null;
         }
         Object value = constant.getValue();
@@ -1163,16 +1163,15 @@ public final class ConstantPropagateProcFactory {
       DynamicPartitionCtx dpCtx = fsdesc.getDynPartCtx();
       if (dpCtx != null) {
 
-        // If all dynamic partitions are propagated as constant, remove DP.
-        Set<String> inputs = dpCtx.getInputToDPCols().keySet();
-
         // Assume only 1 parent for FS operator
         Operator<? extends Serializable> parent = op.getParentOperators().get(0);
         Map<ColumnInfo, ExprNodeDesc> parentConstants = cppCtx.getPropagatedConstants(parent);
         RowSchema rs = parent.getSchema();
         boolean allConstant = true;
-        for (String input : inputs) {
-          ColumnInfo ci = rs.getColumnInfo(input);
+        int dpColStartIdx = Utilities.getDPColOffset(fsdesc);
+        List<ColumnInfo> colInfos = rs.getSignature();
+        for (int i = dpColStartIdx; i < colInfos.size(); i++) {
+          ColumnInfo ci = colInfos.get(i);
           if (parentConstants.get(ci) == null) {
             allConstant = false;
             break;

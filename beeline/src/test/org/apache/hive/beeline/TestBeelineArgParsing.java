@@ -23,12 +23,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.PrintStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hive.common.util.HiveTestUtils;
 import org.junit.Assert;
 import org.junit.Before;
@@ -42,7 +44,7 @@ import org.junit.runners.Parameterized.Parameters;
  */
 @RunWith(Parameterized.class)
 public class TestBeelineArgParsing {
-  private static final Log LOG = LogFactory.getLog(TestBeelineArgParsing.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(TestBeelineArgParsing.class.getName());
 
   private static final String dummyDriverClazzName = "DummyDriver";
 
@@ -206,6 +208,7 @@ public class TestBeelineArgParsing {
     TestBeeline bl = new TestBeeline();
     String args[] = new String[] {"--help"};
     Assert.assertEquals(0, bl.initArgs(args));
+    Assert.assertEquals(true, bl.getOpts().isHelpAsked());
   }
 
   /**
@@ -242,5 +245,19 @@ public class TestBeelineArgParsing {
       // no need to add for the default supported local jar driver
       Assert.assertEquals(bl.findLocalDriver(connectionString).getClass().getName(), driverClazzName);
     }
+  }
+
+  @Test
+  public void testBeelinePasswordMask() throws Exception {
+    TestBeeline bl = new TestBeeline();
+    File errFile = File.createTempFile("test", "tmp");
+    bl.setErrorStream(new PrintStream(new FileOutputStream(errFile)));
+    String args[] =
+        new String[] { "-u", "url", "-n", "name", "-p", "password", "-d", "driver",
+            "--autoCommit=true", "--verbose", "--truncateTable" };
+    bl.initArgs(args);
+    bl.close();
+    String errContents = new String(Files.readAllBytes(Paths.get(errFile.toString())));
+    Assert.assertTrue(errContents.contains(BeeLine.PASSWD_MASK));
   }
 }

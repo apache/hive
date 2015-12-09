@@ -23,8 +23,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.tez.runtime.api.ObjectRegistry;
 
@@ -36,7 +36,7 @@ import com.google.common.base.Preconditions;
  */
 public class ObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCache {
 
-  private static final Log LOG = LogFactory.getLog(ObjectCache.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(ObjectCache.class.getName());
 
   // ObjectRegistry is available via the Input/Output/ProcessorContext.
   // This is setup as part of the Tez Processor construction, so that it is available whenever an

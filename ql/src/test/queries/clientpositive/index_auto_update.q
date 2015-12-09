@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 -- Test if index is actually being used.
 
 -- Create temp, and populate it with some values in src.
@@ -23,4 +24,6 @@ SELECT * FROM temp WHERE key  = 86;
 
 SET hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 SET hive.optimize.index.filter=false;
+drop index temp_index on temp;
 DROP table temp;
+

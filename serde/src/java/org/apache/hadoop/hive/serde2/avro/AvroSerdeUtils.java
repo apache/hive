@@ -19,14 +19,17 @@ package org.apache.hadoop.hive.serde2.avro;
 
 
 import org.apache.avro.Schema;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.mapred.JobConf;
 
 import java.io.File;
@@ -38,6 +41,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
@@ -46,7 +50,7 @@ import java.util.Properties;
  * end-users but public for interop to the ql package.
  */
 public class AvroSerdeUtils {
-  private static final Log LOG = LogFactory.getLog(AvroSerdeUtils.class);
+  private static final Logger LOG = LoggerFactory.getLogger(AvroSerdeUtils.class);
 
   /**
    * Enum container for all avro table properties.
@@ -105,8 +109,26 @@ public class AvroSerdeUtils {
 
     // Try pulling directly from URL
     schemaString = properties.getProperty(AvroTableProperties.SCHEMA_URL.getPropName());
-    if(schemaString == null || schemaString.equals(SCHEMA_NONE))
+    if (schemaString == null) {
+      final String columnNameProperty = properties.getProperty(serdeConstants.LIST_COLUMNS);
+      final String columnTypeProperty = properties.getProperty(serdeConstants.LIST_COLUMN_TYPES);
+      final String columnCommentProperty = properties.getProperty(AvroSerDe.LIST_COLUMN_COMMENTS);
+      if (columnNameProperty == null || columnNameProperty.isEmpty()
+        || columnTypeProperty == null || columnTypeProperty.isEmpty() ) {
+        throw new AvroSerdeException(EXCEPTION_MESSAGE);
+      }
+      // Get column names and types
+      List<String> columnNames = Arrays.asList(columnNameProperty.split(","));
+      List<TypeInfo> columnTypes = TypeInfoUtils.getTypeInfosFromTypeString(columnTypeProperty);
+
+      Schema schema = AvroSerDe.getSchemaFromCols(properties, columnNames, columnTypes, columnCommentProperty);
+      properties.setProperty(AvroTableProperties.SCHEMA_LITERAL.getPropName(), schema.toString());
+      if (conf != null)
+        conf.set(AvroTableProperties.AVRO_SERDE_SCHEMA.getPropName(), schema.toString(false));
+      return schema;
+    } else if(schemaString.equals(SCHEMA_NONE)) {
       throw new AvroSerdeException(EXCEPTION_MESSAGE);
+    }
 
     try {
       Schema s = getSchemaFromFS(schemaString, conf);
@@ -131,8 +153,11 @@ public class AvroSerdeUtils {
       fs = FileSystem.get(new URI(schemaFSUrl), conf);
     } catch (IOException ioe) {
       //return null only if the file system in schema is not recognized
-      String msg = "Failed to open file system for uri " + schemaFSUrl + " assuming it is not a FileSystem url";
-      LOG.debug(msg, ioe);
+      if (LOG.isDebugEnabled()) {
+        String msg = "Failed to open file system for uri " + schemaFSUrl + " assuming it is not a FileSystem url";
+        LOG.debug(msg, ioe);
+      }
+
       return null;
     }
     try {

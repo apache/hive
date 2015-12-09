@@ -31,35 +31,6 @@ import java.util.Map;
 public class StatsSetupConst {
 
   public enum StatDB {
-    hbase {
-      @Override
-      public String getPublisher(Configuration conf) {
-        return "org.apache.hadoop.hive.hbase.HBaseStatsPublisher"; }
-      @Override
-      public String getAggregator(Configuration conf) {
-        return "org.apache.hadoop.hive.hbase.HBaseStatsAggregator"; }
-    },
-    jdbc {
-      @Override
-      public String getPublisher(Configuration conf) {
-        return "org.apache.hadoop.hive.ql.stats.jdbc.JDBCStatsPublisher"; }
-      @Override
-      public String getAggregator(Configuration conf) {
-        return "org.apache.hadoop.hive.ql.stats.jdbc.JDBCStatsAggregator"; }
-    },
-    counter {
-      @Override
-      public String getPublisher(Configuration conf) {
-        return "org.apache.hadoop.hive.ql.stats.CounterStatsPublisher"; }
-      @Override
-      public String getAggregator(Configuration conf) {
-        if (HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
-          return "org.apache.hadoop.hive.ql.stats.CounterStatsAggregatorTez";
-        } else if (HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
-          return "org.apache.hadoop.hive.ql.stats.CounterStatsAggregatorSpark";
-        }
-        return "org.apache.hadoop.hive.ql.stats.CounterStatsAggregator"; }
-    },
     fs {
       @Override
       public String getPublisher(Configuration conf) {

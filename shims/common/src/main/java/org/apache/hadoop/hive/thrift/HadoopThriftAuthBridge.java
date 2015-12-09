@@ -40,8 +40,8 @@ import javax.security.sasl.SaslServer;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -71,9 +71,12 @@ import org.apache.thrift.transport.TTransportFactory;
 /**
  * Functions that bridge Thrift's SASL transports to Hadoop's
  * SASL callback handlers and authentication classes.
+ * HIVE-11378 This class is not directly used anymore.  It now exists only as a shell to be
+ * extended by HadoopThriftAuthBridge23 in 0.23 shims.  I have made it abstract
+ * to avoid maintenance errors.
  */
-public class HadoopThriftAuthBridge {
-  private static final Log LOG = LogFactory.getLog(HadoopThriftAuthBridge.class);
+public abstract class HadoopThriftAuthBridge {
+  private static final Logger LOG = LoggerFactory.getLogger(HadoopThriftAuthBridge.class);
 
   public Client createClient() {
     return new Client();
@@ -164,11 +167,7 @@ public class HadoopThriftAuthBridge {
    * @return Hadoop SASL configuration
    */
 
-  public Map<String, String> getHadoopSaslProperties(Configuration conf) {
-    // Initialize the SaslRpcServer to ensure QOP parameters are read from conf
-    SaslRpcServer.init(conf);
-    return SaslRpcServer.SASL_PROPS;
-  }
+  public abstract Map<String, String> getHadoopSaslProperties(Configuration conf);
 
   public static class Client {
     /**
@@ -426,8 +425,8 @@ public class HadoopThriftAuthBridge {
     }
 
 
-    public void startDelegationTokenSecretManager(Configuration conf, Object rawStore, ServerMode smode)
-        throws IOException{
+    public void startDelegationTokenSecretManager(Configuration conf, Object hms, ServerMode smode)
+        throws IOException {
       long secretKeyInterval =
           conf.getLong(DELEGATION_KEY_UPDATE_INTERVAL_KEY,
               DELEGATION_KEY_UPDATE_INTERVAL_DEFAULT);
@@ -441,7 +440,7 @@ public class HadoopThriftAuthBridge {
           DELEGATION_TOKEN_GC_INTERVAL_DEFAULT);
 
       DelegationTokenStore dts = getTokenStore(conf);
-      dts.init(rawStore, smode);
+      dts.init(hms, smode);
       secretManager = new TokenStoreDelegationTokenSecretManager(secretKeyInterval,
           tokenMaxLifetime,
           tokenRenewInterval,
@@ -671,6 +670,9 @@ public class HadoopThriftAuthBridge {
           if (useProxy) {
             clientUgi = UserGroupInformation.createProxyUser(
                 endUser, UserGroupInformation.getLoginUser());
+
+            ProxyUsers.authorize(clientUgi, getRemoteAddress().getHostAddress(), null);
+
             remoteUser.set(clientUgi.getShortUserName());
             LOG.debug("Set remoteUser :" + remoteUser.get());
             return clientUgi.doAs(new PrivilegedExceptionAction<Boolean>() {

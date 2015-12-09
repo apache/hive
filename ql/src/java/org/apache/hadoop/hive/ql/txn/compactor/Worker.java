@@ -17,8 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -50,7 +50,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class Worker extends CompactorThread {
   static final private String CLASS_NAME = Worker.class.getName();
-  static final private Log LOG = LogFactory.getLog(CLASS_NAME);
+  static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   static final private long SLEEP_TIME = 5000;
   static final private int baseThreadNum = 10002;
 
@@ -77,7 +77,7 @@ public class Worker extends CompactorThread {
       // Make sure nothing escapes this run method and kills the metastore at large,
       // so wrap it in a big catch Throwable statement.
       try {
-        CompactionInfo ci = txnHandler.findNextToCompact(name);
+        final CompactionInfo ci = txnHandler.findNextToCompact(name);
 
         if (ci == null && !stop.get()) {
           try {
@@ -158,14 +158,14 @@ public class Worker extends CompactorThread {
         launchedJob = true;
         try {
           if (runJobAsSelf(runAs)) {
-            mr.run(conf, jobName.toString(), t, sd, txns, isMajor, su);
+            mr.run(conf, jobName.toString(), t, sd, txns, ci, su);
           } else {
             UserGroupInformation ugi = UserGroupInformation.createProxyUser(t.getOwner(),
               UserGroupInformation.getLoginUser());
             ugi.doAs(new PrivilegedExceptionAction<Object>() {
               @Override
               public Object run() throws Exception {
-                mr.run(conf, jobName.toString(), t, sd, txns, isMajor, su);
+                mr.run(conf, jobName.toString(), t, sd, txns, ci, su);
                 return null;
               }
             });
@@ -205,7 +205,7 @@ public class Worker extends CompactorThread {
   }
 
   static final class StatsUpdater {
-    static final private Log LOG = LogFactory.getLog(StatsUpdater.class);
+    static final private Logger LOG = LoggerFactory.getLogger(StatsUpdater.class);
 
     public static StatsUpdater init(CompactionInfo ci, List<String> columnListForStats,
                                      HiveConf conf, String userName) {

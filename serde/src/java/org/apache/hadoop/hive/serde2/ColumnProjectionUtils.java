@@ -19,24 +19,22 @@
 package org.apache.hadoop.hive.serde2;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
 
 /**
  * ColumnProjectionUtils.
  *
  */
 public final class ColumnProjectionUtils {
-  public static final Log LOG = LogFactory.getLog(ColumnProjectionUtils.class);
+  public static final Logger LOG = LoggerFactory.getLogger(ColumnProjectionUtils.class);
 
   public static final String READ_COLUMN_IDS_CONF_STR = "hive.io.file.readcolumn.ids";
   public static final String READ_ALL_COLUMNS = "hive.io.file.read.all.columns";
@@ -72,8 +70,6 @@ public final class ColumnProjectionUtils {
     appendReadColumns(conf, ids);
   }
 
-
-
   /**
    * Sets the <em>READ_ALL_COLUMNS</em> flag and removes any previously
    * set column ids.
@@ -91,6 +87,15 @@ public final class ColumnProjectionUtils {
   }
 
   /**
+   * Sets the <em>READ_ALL_COLUMNS</em> flag to false and overwrites column ids
+   * with the provided list.
+   */
+  public static void setReadColumns(Configuration conf, List<Integer> ids) {
+    setReadColumnIDConf(conf, READ_COLUMN_IDS_CONF_STR_DEFAULT);
+    appendReadColumns(conf, ids);
+  }
+
+  /**
    * Appends read columns' ids (start from zero). Once a column
    * is included in the list, a underlying record reader of a columnar file format
    * (e.g. RCFile and ORC) can know what columns are needed.
@@ -99,7 +104,7 @@ public final class ColumnProjectionUtils {
     String id = toReadColumnIDString(ids);
     String old = conf.get(READ_COLUMN_IDS_CONF_STR, null);
     String newConfStr = id;
-    if (old != null) {
+    if (old != null && !old.isEmpty()) {
       newConfStr = newConfStr + StringUtils.COMMA_STR + old;
     }
     setReadColumnIDConf(conf, newConfStr);
@@ -143,24 +148,24 @@ public final class ColumnProjectionUtils {
     List<Integer> result = new ArrayList<Integer>(list.length);
     for (String element : list) {
       // it may contain duplicates, remove duplicates
-      // TODO: WTF? This would break many assumptions elsewhere if it did.
-      //       Column names' and column ids' lists are supposed to be correlated.
       Integer toAdd = Integer.parseInt(element);
       if (!result.contains(toAdd)) {
         result.add(toAdd);
-      } else if (LOG.isInfoEnabled()) {
-        LOG.info("Duplicate ID " + toAdd + " in column ID list");
       }
+      // NOTE: some code uses this list to correlate with column names, and yet these lists may
+      //       contain duplicates, which this call will remove and the other won't. As far as I can
+      //       tell, no code will actually use these two methods together; all is good if the code
+      //       gets the ID list without relying on this method. Or maybe it just works by magic.
     }
     return result;
   }
 
-  public static List<String> getReadColumnNames(Configuration conf) {
+  public static String[] getReadColumnNames(Configuration conf) {
     String colNames = conf.get(READ_COLUMN_NAMES_CONF_STR, READ_COLUMN_IDS_CONF_STR_DEFAULT);
     if (colNames != null && !colNames.isEmpty()) {
-      return Arrays.asList(colNames.split(","));
+      return colNames.split(",");
     }
-    return Lists.newArrayList();
+    return new String[] {};
   }
 
   private static void setReadColumnIDConf(Configuration conf, String id) {

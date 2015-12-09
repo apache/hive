@@ -23,12 +23,10 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptUtil;
-import org.apache.calcite.rel.RelCollation;
-import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.RelFactories;
-import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexNode;
@@ -36,23 +34,23 @@ import org.apache.calcite.rex.RexPermuteInputsShuttle;
 import org.apache.calcite.rex.RexVisitor;
 import org.apache.calcite.sql.validate.SqlValidator;
 import org.apache.calcite.sql2rel.RelFieldTrimmer;
+import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.ImmutableBitSet;
-import org.apache.calcite.util.Util;
 import org.apache.calcite.util.mapping.IntPair;
 import org.apache.calcite.util.mapping.Mapping;
 import org.apache.calcite.util.mapping.MappingType;
 import org.apache.calcite.util.mapping.Mappings;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveMultiJoin;
-
-import com.google.common.collect.ImmutableList;
 
 public class HiveRelFieldTrimmer extends RelFieldTrimmer {
 
-  public HiveRelFieldTrimmer(SqlValidator validator) {
-    super(validator);
-  }
+  protected static final Log LOG = LogFactory.getLog(HiveRelFieldTrimmer.class);
+
 
   public HiveRelFieldTrimmer(SqlValidator validator,
+      RelOptCluster cluster,
       RelFactories.ProjectFactory projectFactory,
       RelFactories.FilterFactory filterFactory,
       RelFactories.JoinFactory joinFactory,
@@ -60,8 +58,10 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
       RelFactories.SortFactory sortFactory,
       RelFactories.AggregateFactory aggregateFactory,
       RelFactories.SetOpFactory setOpFactory) {
-    super(validator, projectFactory, filterFactory, joinFactory,
-            semiJoinFactory, sortFactory, aggregateFactory, setOpFactory);
+    super(validator,
+            RelBuilder.proto(projectFactory, filterFactory, joinFactory,
+                semiJoinFactory, sortFactory, aggregateFactory, setOpFactory)
+            .create(cluster, null));
   }
 
   /**
@@ -155,28 +155,6 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
             join.getJoinFilters());
 
     return new TrimResult(newJoin, mapping);
-  }
-
-  protected TrimResult trimChild(
-      RelNode rel,
-      RelNode input,
-      ImmutableBitSet fieldsUsed,
-      Set<RelDataTypeField> extraFields) {
-    Util.discard(rel);
-    if (input.getClass().getName().endsWith("MedMdrClassExtentRel")) {
-      // MedMdrJoinRule cannot handle Join of Project of
-      // MedMdrClassExtentRel, only naked MedMdrClassExtentRel.
-      // So, disable trimming.
-      fieldsUsed = ImmutableBitSet.range(input.getRowType().getFieldCount());
-    }
-    final ImmutableList<RelCollation> collations =
-        RelMetadataQuery.collations(input);
-    for (RelCollation collation : collations) {
-      for (RelFieldCollation fieldCollation : collation.getFieldCollations()) {
-        fieldsUsed = fieldsUsed.set(fieldCollation.getFieldIndex());
-      }
-    }
-    return dispatchTrimFields(input, fieldsUsed, extraFields);
   }
 
 }

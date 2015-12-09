@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 -- Test to ensure that an empty index result is propagated correctly
 
 CREATE DATABASE it;

@@ -25,8 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.NodeUtils.Function;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.mapred.OutputCollector;
@@ -36,7 +36,7 @@ import com.google.common.collect.Multimap;
 
 public class OperatorUtils {
 
-  private static final Log LOG = LogFactory.getLog(OperatorUtils.class);
+  private static final Logger LOG = LoggerFactory.getLogger(OperatorUtils.class);
 
   public static <T> Set<T> findOperators(Operator<?> start, Class<T> clazz) {
     return findOperators(start, clazz, new HashSet<T>());
@@ -119,12 +119,11 @@ public class OperatorUtils {
       return;
     }
     for (Operator<? extends OperatorDesc> op : childOperators) {
-      if(op.getName().equals(ReduceSinkOperator.getOperatorName())) {
-        ReduceSinkOperator rs = ((ReduceSinkOperator)op);
-        if (outMap.containsKey(rs.getConf().getOutputName())) {
-          LOG.info("Setting output collector: " + rs + " --> "
-            + rs.getConf().getOutputName());
-          rs.setOutputCollector(outMap.get(rs.getConf().getOutputName()));
+      if (op.getIsReduceSink()) {
+        String outputName = op.getReduceOutputName();
+        if (outMap.containsKey(outputName)) {
+          LOG.info("Setting output collector: " + op + " --> " + outputName);
+          op.setOutputCollector(outMap.get(outputName));
         }
       } else {
         setChildrenCollector(op.getChildOperators(), outMap);
@@ -277,4 +276,25 @@ public class OperatorUtils {
     }
     return resultMap.build();
   }
+
+  /**
+   * Given an operator and a set of classes, it returns the number of operators it finds
+   * upstream that instantiate any of the given classes.
+   *
+   * @param start the start operator
+   * @param classes the set of classes
+   * @return the number of operators
+   */
+  public static int countOperatorsUpstream(Operator<?> start, Set<Class<? extends Operator<?>>> classes) {
+    Multimap<Class<? extends Operator<?>>, Operator<?>> ops = classifyOperatorsUpstream(start, classes);
+    int numberOperators = 0;
+    Set<Operator<?>> uniqueOperators = new HashSet<Operator<?>>();
+    for (Operator<?> op : ops.values()) {
+      if (uniqueOperators.add(op)) {
+        numberOperators++;
+      }
+    }
+    return numberOperators;
+  }
+
 }

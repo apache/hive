@@ -42,6 +42,8 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.FuncLogWithBaseDoubleTo
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FuncLogWithBaseLongToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FuncPowerDoubleToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprCharScalarStringGroupColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprDoubleColumnDoubleColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprLongColumnLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprStringGroupColumnCharScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprStringGroupColumnStringGroupColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprStringGroupColumnStringScalar;
@@ -52,6 +54,8 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprVarCharScalarStri
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IsNotNull;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IsNull;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColumnInList;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColEqualLongScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColGreaterLongScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.NotCol;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.RoundWithNumDigitsDoubleToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.SelectColumnIsFalse;
@@ -68,11 +72,9 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFYearLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterStringColumnInList;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterLongColumnInList;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterDoubleColumnInList;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprLongColumnLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprLongColumnLongScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprLongScalarLongScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprLongScalarLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprDoubleColumnDoubleColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprDoubleColumnDoubleScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprDoubleScalarDoubleColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprDoubleScalarDoubleScalar;
@@ -100,8 +102,6 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncLnDoubleToDoubl
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncRoundDoubleToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncSinDoubleToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColAddLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColEqualLongScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColGreaterLongScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColModuloLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColMultiplyLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColSubtractLongColumn;
@@ -1012,7 +1012,7 @@ public class TestVectorizationContext {
     Assert.assertEquals(BRoundWithNumDigitsDoubleToDouble.class, ve.getClass());
     Assert.assertEquals(4, ((BRoundWithNumDigitsDoubleToDouble) ve).getDecimalPlaces().get());
 
-    // Log with int base
+    // Logger with int base
     gudfBridge = new GenericUDFBridge("log", false, UDFLog.class.getName());
     mathFuncExpr.setGenericUDF(gudfBridge);
     children2.clear();
@@ -1023,7 +1023,7 @@ public class TestVectorizationContext {
     Assert.assertEquals(FuncLogWithBaseDoubleToDouble.class, ve.getClass());
     Assert.assertTrue(4 == ((FuncLogWithBaseDoubleToDouble) ve).getBase());
 
-    // Log with default base
+    // Logger with default base
     children2.clear();
     children2.add(colDesc2);
     mathFuncExpr.setChildren(children2);
@@ -1490,5 +1490,97 @@ public class TestVectorizationContext {
     children1.set(2,  col3Expr);
     ve = vc.getVectorExpression(exprDesc);
     assertTrue(ve instanceof IfExprVarCharScalarStringGroupColumn);
+  }
+
+  @Test
+  public void testSIMDEqual() {
+    long a;
+    long b;
+
+    a = 0; b = 0; assertEquals(a == b ? 1 : 0, (((a - b) ^ (b - a)) >>> 63) ^ 1);
+    a = 1; b = 0; assertEquals(a == b ? 1 : 0, (((a - b) ^ (b - a)) >>> 63) ^ 1);
+    a = 0; b = 1; assertEquals(a == b ? 1 : 0, (((a - b) ^ (b - a)) >>> 63) ^ 1);
+  }
+
+  @Test
+  public void testSIMDGreaterThan() {
+    long a;
+    long b;
+
+    a = 0; b = 0; assertEquals(a > b ? 1 : 0, (b - a) >>> 63);
+    a = 1; b = 0; assertEquals(a > b ? 1 : 0, (b - a) >>> 63);
+    a = 0; b = 1; assertEquals(a > b ? 1 : 0, (b - a) >>> 63);
+  }
+
+  @Test
+  public void testSIMDGreaterEqual() {
+    long a;
+    long b;
+
+    a = 0;
+    b = 0;
+    assertEquals(a >= b ? 1 : 0, ((a - b) >>> 63) ^ 1);
+
+    a = 1;
+    b = 0;
+    assertEquals(a >= b ? 1 : 0, ((a - b) >>> 63) ^ 1);
+
+    a = 0;
+    b = 1;
+    assertEquals(a >= b ? 1 : 0, ((a - b) >>> 63) ^ 1);
+  }
+
+  @Test
+  public void testSIMDLessEqual() {
+    long a;
+    long b;
+
+    a = 0;
+    b = 0;
+    assertEquals(a <= b ? 1 : 0, ((b - a) >>> 63) ^ 1);
+
+    a = 1;
+    b = 0;
+    assertEquals(a <= b ? 1 : 0, ((b - a) >>> 63) ^ 1);
+
+    a = 0;
+    b = 1;
+    assertEquals(a <= b ? 1 : 0, ((b - a) >>> 63) ^ 1);
+  }
+
+  @Test
+  public void testSIMDLessThan() {
+    long a;
+    long b;
+
+    a = 0;
+    b = 0;
+    assertEquals(a < b ? 1 : 0, (a - b) >>> 63);
+
+    a = 1;
+    b = 0;
+    assertEquals(a < b ? 1 : 0, (a - b) >>> 63);
+
+    a = 0;
+    b = 1;
+    assertEquals(a < b ? 1 : 0, (a - b) >>> 63);
+  }
+
+  @Test
+  public void testSIMDNotEqual() {
+    long a;
+    long b;
+
+    a = 0;
+    b = 0;
+    assertEquals(a != b ? 1 : 0, ((a - b) ^ (b - a)) >>> 63);
+
+    a = 1;
+    b = 0;
+    assertEquals(a != b ? 1 : 0, ((a - b) ^ (b - a)) >>> 63);
+
+    a = 0;
+    b = 1;
+    assertEquals(a != b ? 1 : 0, ((a - b) ^ (b - a)) >>> 63);
   }
 }

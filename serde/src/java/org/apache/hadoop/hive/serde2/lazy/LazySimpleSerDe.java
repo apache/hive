@@ -19,18 +19,14 @@
 package org.apache.hadoop.hive.serde2.lazy;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience.Public;
+import org.apache.hadoop.hive.common.classification.InterfaceStability.Stable;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractEncodingAwareSerDe;
 import org.apache.hadoop.hive.serde2.ByteStream;
@@ -38,7 +34,6 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
-import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyObjectInspectorParameters;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyObjectInspectorParametersImpl;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
@@ -50,14 +45,10 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.BinaryComparable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
-import org.apache.hive.common.util.HiveStringUtils;
-
 
 /**
  * LazySimpleSerDe can be used to read the same data format as
@@ -69,10 +60,13 @@ import org.apache.hive.common.util.HiveStringUtils;
  * Also LazySimpleSerDe outputs typed columns instead of treating all columns as
  * String like MetadataTypedColumnsetSerDe.
  */
+@Public
+@Stable
 @SerDeSpec(schemaProps = {
     serdeConstants.LIST_COLUMNS, serdeConstants.LIST_COLUMN_TYPES,
     serdeConstants.FIELD_DELIM, serdeConstants.COLLECTION_DELIM, serdeConstants.MAPKEY_DELIM,
     serdeConstants.SERIALIZATION_FORMAT, serdeConstants.SERIALIZATION_NULL_FORMAT,
+    serdeConstants.SERIALIZATION_ESCAPE_CRLF,
     serdeConstants.SERIALIZATION_LAST_COLUMN_TAKES_REST,
     serdeConstants.ESCAPE_CHAR,
     serdeConstants.SERIALIZATION_ENCODING,
@@ -80,9 +74,6 @@ import org.apache.hive.common.util.HiveStringUtils;
     LazySerDeParameters.SERIALIZATION_EXTEND_ADDITIONAL_NESTING_LEVELS
     })
 public class LazySimpleSerDe extends AbstractEncodingAwareSerDe {
-
-  public static final Log LOG = LogFactory.getLog(LazySimpleSerDe.class
-      .getName());
 
   private LazySerDeParameters serdeParams = null;
 
@@ -131,12 +122,6 @@ public class LazySimpleSerDe extends AbstractEncodingAwareSerDe {
 
     cachedLazyStruct = (LazyStruct) LazyFactory
         .createLazyObject(cachedObjectInspector);
-
-    LOG.debug(getClass().getName() + " initialized with: columnNames="
-        + serdeParams.getColumnNames() + " columnTypes=" + serdeParams.getColumnTypes()
-        + " separator=" + Arrays.asList(serdeParams.getSeparators())
-        + " nullstring=" + serdeParams.getNullString() + " lastColumnTakesRest="
-        + serdeParams.isLastColumnTakesRest() + " timestampFormats=" + serdeParams.getTimestampFormats());
 
     serializedSize = 0;
     stats = new SerDeStats();
@@ -422,5 +407,30 @@ public class LazySimpleSerDe extends AbstractEncodingAwareSerDe {
   protected Writable transformToUTF8(Writable blob) {
     Text text = (Text)blob;
     return SerDeUtils.transformTextToUTF8(text, this.charset);
+  }
+
+  /**
+   * This method is deprecated and is only used for backward compatibility.
+   * Replaced by @see org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters#LazySerDeParameters(Configuration, Properties, String)
+   */
+  @Deprecated
+  public static SerDeParameters initSerdeParams(Configuration job,
+      Properties tbl,
+      String serdeName) throws SerDeException {
+    return new SerDeParameters(job, tbl, serdeName);
+  }
+
+  /**
+   * This class is deprecated and is only used for backward compatibility. Replace by
+   * @see org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters.
+   */
+  @Deprecated
+  public static class SerDeParameters extends org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters {
+
+    public SerDeParameters(Configuration job,
+        Properties tbl,
+        String serdeName) throws SerDeException {
+      super(job, tbl, serdeName);
+    }
   }
 }

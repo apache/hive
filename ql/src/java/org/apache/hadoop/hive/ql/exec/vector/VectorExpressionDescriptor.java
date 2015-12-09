@@ -18,8 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -31,7 +31,7 @@ import org.apache.hive.common.util.AnnotationUtils;
  */
 public class VectorExpressionDescriptor {
 
-  private static final Log LOG = LogFactory.getLog(
+  private static final Logger LOG = LoggerFactory.getLogger(
             VectorExpressionDescriptor.class.getName());
 
   final static int MAX_NUM_ARGUMENTS = 3;

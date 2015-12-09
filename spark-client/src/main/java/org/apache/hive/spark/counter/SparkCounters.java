@@ -21,8 +21,8 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.spark.api.java.JavaSparkContext;
 
 /**
@@ -40,7 +40,7 @@ import org.apache.spark.api.java.JavaSparkContext;
 public class SparkCounters implements Serializable {
   private static final long serialVersionUID = 1L;
 
-  private static final Log LOG = LogFactory.getLog(SparkCounters.class);
+  private static final Logger LOG = LoggerFactory.getLogger(SparkCounters.class);
 
   private Map<String, SparkCounterGroup> sparkCounterGroups;
 

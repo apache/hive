@@ -22,8 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hive.hbase.ColumnMappings.ColumnMapping;
@@ -48,6 +48,7 @@ import org.apache.hadoop.mapred.JobConf;
     serdeConstants.LIST_COLUMNS, serdeConstants.LIST_COLUMN_TYPES,
     serdeConstants.FIELD_DELIM, serdeConstants.COLLECTION_DELIM, serdeConstants.MAPKEY_DELIM,
     serdeConstants.SERIALIZATION_FORMAT, serdeConstants.SERIALIZATION_NULL_FORMAT,
+    serdeConstants.SERIALIZATION_ESCAPE_CRLF,
     serdeConstants.SERIALIZATION_LAST_COLUMN_TAKES_REST,
     serdeConstants.ESCAPE_CHAR,
     serdeConstants.SERIALIZATION_ENCODING,
@@ -67,7 +68,7 @@ import org.apache.hadoop.mapred.JobConf;
     HBaseSerDe.HBASE_SCAN_BATCH,
     HBaseSerDe.HBASE_AUTOGENERATE_STRUCT})
 public class HBaseSerDe extends AbstractSerDe {
-  public static final Log LOG = LogFactory.getLog(HBaseSerDe.class);
+  public static final Logger LOG = LoggerFactory.getLogger(HBaseSerDe.class);
 
   public static final String HBASE_COLUMNS_MAPPING = "hbase.columns.mapping";
   public static final String HBASE_TABLE_NAME = "hbase.table.name";
@@ -124,10 +125,7 @@ public class HBaseSerDe extends AbstractSerDe {
     serdeParams = new HBaseSerDeParameters(conf, tbl, getClass().getName());
 
     cachedObjectInspector =
-        HBaseLazyObjectFactory
-            .createLazyHBaseStructInspector(serdeParams.getSerdeParams(),
-                serdeParams.getKeyIndex(), serdeParams.getKeyFactory(),
-                serdeParams.getValueFactories());
+        HBaseLazyObjectFactory.createLazyHBaseStructInspector(serdeParams, tbl);
 
     cachedHBaseRow = new LazyHBaseRow(
         (LazySimpleStructObjectInspector) cachedObjectInspector, serdeParams);

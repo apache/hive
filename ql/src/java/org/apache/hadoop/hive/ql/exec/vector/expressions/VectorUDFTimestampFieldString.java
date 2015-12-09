@@ -87,6 +87,7 @@ public abstract class VectorUDFTimestampFieldString extends VectorExpression {
 
     final int n = inputCol.isRepeating ? 1 : batch.size;
     int[] sel = batch.selected;
+    final boolean selectedInUse = (inputCol.isRepeating == false) && batch.selectedInUse;
 
     if (batch.size == 0) {
 
@@ -99,7 +100,7 @@ public abstract class VectorUDFTimestampFieldString extends VectorExpression {
 
     if (inputCol.noNulls) {
       outV.noNulls = true;
-      if (batch.selectedInUse) {
+      if (selectedInUse) {
         for (int j = 0; j < n; j++) {
           int i = sel[j];
           try {
@@ -126,7 +127,7 @@ public abstract class VectorUDFTimestampFieldString extends VectorExpression {
       // Handle case with nulls. Don't do function if the value is null, to save time,
       // because calling the function can be expensive.
       outV.noNulls = false;
-      if (batch.selectedInUse) {
+      if (selectedInUse) {
         for (int j = 0; j < n; j++) {
           int i = sel[j];
           outV.isNull[i] = inputCol.isNull[i];

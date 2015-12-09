@@ -360,7 +360,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -mr-10003
+            base file name: -mr-10004
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
@@ -401,6 +401,7 @@ STAGE PLANS:
                   columns.types string:bigint
                   escape.delim \
                   hive.serialization.extend.additional.nesting.levels true
+                  serialization.escape.crlf true
                   serialization.format 1
                   serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe

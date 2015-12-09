@@ -17,8 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -28,7 +28,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
@@ -57,7 +56,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class Initiator extends CompactorThread {
   static final private String CLASS_NAME = Initiator.class.getName();
-  static final private Log LOG = LogFactory.getLog(CLASS_NAME);
+  static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
   private long checkInterval;
 
@@ -99,7 +98,7 @@ public class Initiator extends CompactorThread {
 
               // check if no compaction set for this table
               if (noAutoCompactSet(t)) {
-                LOG.info("Table " + tableName(t) + " marked true so we will not compact it.");
+                LOG.info("Table " + tableName(t) + " marked " + hive_metastoreConstants.TABLE_NO_AUTO_COMPACT + "=true so we will not compact it.");
                 continue;
               }
 
@@ -269,7 +268,7 @@ public class Initiator extends CompactorThread {
         msg.append(deltaPctThreshold);
         msg.append(" will major compact: ");
         msg.append(bigEnough);
-        LOG.debug(msg);
+        LOG.debug(msg.toString());
       }
       if (bigEnough) return CompactionType.MAJOR;
     }
@@ -297,11 +296,10 @@ public class Initiator extends CompactorThread {
   }
 
   private void requestCompaction(CompactionInfo ci, String runAs, CompactionType type) throws MetaException {
-    String s = "Requesting " + type.toString() + " compaction for " + ci.getFullPartitionName();
-    LOG.info(s);
     CompactionRequest rqst = new CompactionRequest(ci.dbname, ci.tableName, type);
     if (ci.partName != null) rqst.setPartitionname(ci.partName);
     rqst.setRunas(runAs);
+    LOG.info("Requesting compaction: " + rqst);
     txnHandler.compact(rqst);
   }
 

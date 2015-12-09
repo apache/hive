@@ -20,6 +20,9 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColNotEqualLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColNotEqualLongScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.LongScalarNotEqualLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.*;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -38,7 +41,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
   StringGroupColNotEqualStringScalar.class,
   StringGroupColNotEqualVarCharScalar.class, StringGroupColNotEqualCharScalar.class,
   StringScalarNotEqualStringGroupColumn.class,
-  VarCharScalarNotEqualStringGroupColumn.class, CharScalarNotEqualStringGroupColumn.class, 
+  VarCharScalarNotEqualStringGroupColumn.class, CharScalarNotEqualStringGroupColumn.class,
   FilterStringGroupColNotEqualStringScalar.class, FilterStringScalarNotEqualStringGroupColumn.class,
   FilterStringGroupColNotEqualVarCharScalar.class, FilterVarCharScalarNotEqualStringGroupColumn.class,
   FilterStringGroupColNotEqualCharScalar.class, FilterCharScalarNotEqualStringGroupColumn.class,
@@ -63,6 +66,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
   DateColNotEqualDateScalar.class,FilterDateColNotEqualDateScalar.class,
   DateScalarNotEqualDateColumn.class,FilterDateScalarNotEqualDateColumn.class,
   })
+@NDV(maxNdv = 2)
 public class GenericUDFOPNotEqual extends GenericUDFBaseCompare {
   public GenericUDFOPNotEqual(){
     this.opName = "NOT EQUAL";

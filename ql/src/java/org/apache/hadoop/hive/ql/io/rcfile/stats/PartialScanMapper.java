@@ -22,8 +22,9 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -33,7 +34,7 @@ import org.apache.hadoop.hive.ql.io.RCFile.KeyBuffer;
 import org.apache.hadoop.hive.ql.io.rcfile.merge.RCFileKeyBufferWrapper;
 import org.apache.hadoop.hive.ql.io.rcfile.merge.RCFileValueBufferWrapper;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.stats.CounterStatsPublisher;
+import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.apache.hadoop.hive.shims.CombineHiveKey;
@@ -62,7 +63,7 @@ public class PartialScanMapper extends MapReduceBase implements
   private boolean exception = false;
   private Reporter rp = null;
 
-  public final static Log LOG = LogFactory.getLog("PartialScanMapper");
+  private static final Logger LOG = LoggerFactory.getLogger("PartialScanMapper");
 
   public PartialScanMapper() {
   }
@@ -145,19 +146,17 @@ public class PartialScanMapper extends MapReduceBase implements
       throw new HiveException(ErrorMsg.STATSPUBLISHER_NOT_OBTAINED.getErrorCodedMsg());
     }
 
-    if (!statsPublisher.connect(jc)) {
+    StatsCollectionContext sc = new StatsCollectionContext(jc);
+    sc.setStatsTmpDir(jc.get(StatsSetupConst.STATS_TMP_LOC, ""));
+    if (!statsPublisher.connect(sc)) {
       // should fail since stats gathering is main purpose of the job
       LOG.error("StatsPublishing error: cannot connect to database");
       throw new HiveException(ErrorMsg.STATSPUBLISHER_CONNECTION_ERROR.getErrorCodedMsg());
     }
 
-    int maxPrefixLength = StatsFactory.getMaxPrefixLength(jc);
     // construct key used to store stats in intermediate db
-    String key = Utilities.getHashedStatsPrefix(statsAggKeyPrefix, maxPrefixLength);
-    if (!(statsPublisher instanceof CounterStatsPublisher)) {
-      String taskID = Utilities.getTaskIdFromFilename(Utilities.getTaskId(jc));
-      key = Utilities.join(key, taskID);
-    }
+    String key = statsAggKeyPrefix.endsWith(Path.SEPARATOR) ? statsAggKeyPrefix : statsAggKeyPrefix
+        + Path.SEPARATOR;
 
     // construct statistics to be stored
     Map<String, String> statsToPublish = new HashMap<String, String>();
@@ -170,7 +169,7 @@ public class PartialScanMapper extends MapReduceBase implements
       throw new HiveException(ErrorMsg.STATSPUBLISHER_PUBLISHING_ERROR.getErrorCodedMsg());
     }
 
-    if (!statsPublisher.closeConnection()) {
+    if (!statsPublisher.closeConnection(sc)) {
       // The original exception is lost.
       // Not changing the interface to maintain backward compatibility
       throw new HiveException(ErrorMsg.STATSPUBLISHER_CLOSING_ERROR.getErrorCodedMsg());

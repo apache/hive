@@ -23,6 +23,7 @@ import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.util.regex.Pattern;
 
+import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.session.OperationLog;
@@ -39,6 +40,7 @@ import org.apache.logging.log4j.core.appender.OutputStreamManager;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.filter.AbstractFilter;
 import org.apache.logging.log4j.core.layout.PatternLayout;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Joiner;
 
@@ -47,16 +49,16 @@ import com.google.common.base.Joiner;
  */
 public class LogDivertAppender
     extends AbstractOutputStreamAppender<LogDivertAppender.StringOutputStreamManager> {
-  private static final Logger LOG = LogManager.getLogger(LogDivertAppender.class.getName());
+  private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(LogDivertAppender.class.getName());
   private static LoggerContext context = (LoggerContext) LogManager.getContext(false);
   private static Configuration configuration = context.getConfiguration();
   public static final Layout<? extends Serializable> verboseLayout = PatternLayout.createLayout(
-      "%d{yy/MM/dd HH:mm:ss} %p %c{2}: %m%n", configuration, null, null, true, false, null, null);
+      "%d{yy/MM/dd HH:mm:ss} %p %c{2}: %m%n", null, configuration, null, null, true, false, null, null);
   public static final Layout<? extends Serializable> nonVerboseLayout = PatternLayout.createLayout(
-      "%-5p : %m%n", configuration, null, null, true, false, null, null);
+      "%-5p : %m%n", null, configuration, null, null, true, false, null, null);
 
   private final OperationManager operationManager;
-  private StringOutputStreamManager manager;
+  private final StringOutputStreamManager manager;
   private boolean isVerbose;
   private final Layout<? extends Serializable> layout;
 
@@ -105,7 +107,7 @@ public class LogDivertAppender
   private static class NameFilter extends AbstractFilter {
     private Pattern namePattern;
     private OperationLog.LoggingLevel loggingMode;
-    private OperationManager operationManager;
+    private final OperationManager operationManager;
 
     /* Patterns that are excluded in verbose logging level.
      * Filter out messages coming from log processing classes, or we'll run an infinite loop.
@@ -120,7 +122,7 @@ public class LogDivertAppender
     private static final Pattern executionIncludeNamePattern = Pattern.compile(Joiner.on("|").
         join(new String[]{"org.apache.hadoop.mapreduce.JobSubmitter",
             "org.apache.hadoop.mapreduce.Job", "SessionState", Task.class.getName(),
-            "org.apache.hadoop.hive.ql.exec.spark.status.SparkJobMonitor"}));
+            Driver.class.getName(), "org.apache.hadoop.hive.ql.exec.spark.status.SparkJobMonitor"}));
 
     /* Patterns that are included in performance logging level.
      * In performance mode, show execution and performance logger messages.
@@ -231,7 +233,7 @@ public class LogDivertAppender
 
     protected StringOutputStreamManager(ByteArrayOutputStream os, String streamName,
         Layout<?> layout) {
-      super(os, streamName, layout);
+      super(os, streamName, layout, true);
       stream = os;
     }
 

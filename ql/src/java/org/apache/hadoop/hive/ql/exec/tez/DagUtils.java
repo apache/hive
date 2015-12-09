@@ -39,8 +39,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -74,6 +74,7 @@ import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.TezWork.VertexType;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.apache.hadoop.hive.shims.Utils;
@@ -108,6 +109,7 @@ import org.apache.tez.dag.api.TezConfiguration;
 import org.apache.tez.dag.api.TezException;
 import org.apache.tez.dag.api.UserPayload;
 import org.apache.tez.dag.api.Vertex;
+import org.apache.tez.dag.api.Vertex.VertexExecutionContext;
 import org.apache.tez.dag.api.VertexGroup;
 import org.apache.tez.dag.api.VertexManagerPluginDescriptor;
 import org.apache.tez.dag.library.vertexmanager.ShuffleVertexManager;
@@ -134,7 +136,7 @@ import org.apache.tez.runtime.library.input.ConcatenatedMergedKeyValueInput;
 public class DagUtils {
 
   public static final String TEZ_TMP_DIR_KEY = "_hive_tez_tmp_dir";
-  private static final Log LOG = LogFactory.getLog(DagUtils.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(DagUtils.class.getName());
   private static final String TEZ_DIR = "_tez_scratch_dir";
   private static DagUtils instance;
   // The merge file being currently processed.
@@ -574,8 +576,9 @@ public class DagUtils {
       // exist before jobClose (before renaming after job completion)
       Path tempOutPath = Utilities.toTempPath(outputPath);
       try {
-        if (!fs.exists(tempOutPath)) {
-          fs.mkdirs(tempOutPath);
+        FileSystem tmpOutFS = tempOutPath.getFileSystem(conf);
+        if (!tmpOutFS.exists(tempOutPath)) {
+          tmpOutFS.mkdirs(tempOutPath);
         }
       } catch (IOException e) {
         throw new RuntimeException(
@@ -624,10 +627,14 @@ public class DagUtils {
     if (mapWork instanceof MergeFileWork) {
       procClassName = MergeFileTezProcessor.class.getName();
     }
+
+    VertexExecutionContext executionContext = createVertexExecutionContext(mapWork);
+
     map = Vertex.create(mapWork.getName(), ProcessorDescriptor.create(procClassName)
         .setUserPayload(serializedConf), numTasks, getContainerResource(conf));
 
     map.setTaskEnvironment(getContainerEnvironment(conf, true));
+    map.setExecutionContext(executionContext);
     map.setTaskLaunchCmdOpts(getContainerJavaOpts(conf));
 
     assert mapWork.getAliasToWork().keySet().size() == 1;
@@ -659,10 +666,23 @@ public class DagUtils {
 
     boolean useSpeculativeExecReducers = HiveConf.getBoolVar(conf,
         HiveConf.ConfVars.HIVESPECULATIVEEXECREDUCERS);
-    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HADOOPSPECULATIVEEXECREDUCERS,
+    conf.setBoolean(org.apache.hadoop.mapreduce.MRJobConfig.REDUCE_SPECULATIVE,
         useSpeculativeExecReducers);
 
     return conf;
+  }
+
+  private VertexExecutionContext createVertexExecutionContext(BaseWork work) {
+    VertexExecutionContext vertexExecutionContext = VertexExecutionContext.createExecuteInContainers(true);
+    if (work.getLlapMode()) {
+      vertexExecutionContext = VertexExecutionContext
+          .create(TezSessionState.LLAP_SERVICE, TezSessionState.LLAP_SERVICE,
+              TezSessionState.LLAP_SERVICE);
+    }
+    if (work.getUberMode()) {
+      vertexExecutionContext = VertexExecutionContext.createExecuteInAm(true);
+    }
+    return vertexExecutionContext;
   }
 
   /*
@@ -679,14 +699,18 @@ public class DagUtils {
     // create the directories FileSinkOperators need
     Utilities.createTmpDirs(conf, reduceWork);
 
+    VertexExecutionContext vertexExecutionContext = createVertexExecutionContext(reduceWork);
+
     // create the vertex
     Vertex reducer = Vertex.create(reduceWork.getName(),
         ProcessorDescriptor.create(ReduceTezProcessor.class.getName()).
-        setUserPayload(TezUtils.createUserPayloadFromConf(conf)),
-            reduceWork.isAutoReduceParallelism() ? reduceWork.getMaxReduceTasks() : reduceWork
-                .getNumReduceTasks(), getContainerResource(conf));
+            setUserPayload(TezUtils.createUserPayloadFromConf(conf)),
+        reduceWork.isAutoReduceParallelism() ?
+            reduceWork.getMaxReduceTasks() :
+            reduceWork.getNumReduceTasks(), getContainerResource(conf));
 
     reducer.setTaskEnvironment(getContainerEnvironment(conf, false));
+    reducer.setExecutionContext(vertexExecutionContext);
     reducer.setTaskLaunchCmdOpts(getContainerJavaOpts(conf));
 
     Map<String, LocalResource> localResources = new HashMap<String, LocalResource>();
@@ -1018,7 +1042,7 @@ public class DagUtils {
     // Removing job credential entry/ cannot be set on the tasks
     conf.unset("mapreduce.job.credentials.binary");
 
-    Utilities.stripHivePasswordDetails(conf);
+    hiveConf.stripHiddenConfigurations(conf);
     return conf;
   }
 
@@ -1094,8 +1118,10 @@ public class DagUtils {
       StatsPublisher statsPublisher;
       StatsFactory factory = StatsFactory.newFactory(conf);
       if (factory != null) {
+        StatsCollectionContext sCntxt = new StatsCollectionContext(conf);
+        sCntxt.setStatsTmpDirs(Utilities.getStatsTmpDirs(work, conf));
         statsPublisher = factory.getStatsPublisher();
-        if (!statsPublisher.init(conf)) { // creating stats table if not exists
+        if (!statsPublisher.init(sCntxt)) { // creating stats table if not exists
           if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_RELIABLE)) {
             throw
               new HiveException(ErrorMsg.STATSPUBLISHER_INITIALIZATION_ERROR.getErrorCodedMsg());

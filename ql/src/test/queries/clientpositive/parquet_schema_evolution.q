@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 -- Some tables might have extra columns and struct elements on the schema than the on Parquet schema;
 -- This is called 'schema evolution' as the Parquet file is not ready yet for such new columns;
 -- Hive should support this schema, and return NULL values instead;
@@ -11,10 +12,10 @@ INSERT OVERWRITE TABLE NewStructField SELECT named_struct('a1', map('k1','v1'), 
 
 DESCRIBE NewStructField;
 SELECT * FROM NewStructField;
-
+set hive.metastore.disallow.incompatible.col.type.changes=false;
 -- Adds new fields to the struct types
 ALTER TABLE NewStructField REPLACE COLUMNS (a struct<a1:map<string,string>, a2:struct<e1:int,e2:string>, a3:int>, b int);
-
+reset hive.metastore.disallow.incompatible.col.type.changes;
 DESCRIBE NewStructField;
 SELECT * FROM NewStructField;
 

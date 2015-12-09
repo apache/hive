@@ -57,16 +57,13 @@ public class VectorSparkPartitionPruningSinkOperator extends SparkPartitionPruni
   }
 
   @Override
-  public Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
+  public void initializeOp(Configuration hconf) throws HiveException {
     inputObjInspectors[0] =
         VectorizedBatchUtil.convertToStandardStructObjectInspector(
             (StructObjectInspector) inputObjInspectors[0]);
-    Collection<Future<?>> result = super.initializeOp(hconf);
-    assert result.isEmpty();
+    super.initializeOp(hconf);
 
     firstBatch = true;
-
-    return result;
   }
 
   @Override

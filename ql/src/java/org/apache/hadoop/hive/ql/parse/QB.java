@@ -26,8 +26,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
@@ -39,7 +39,7 @@ import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
 
 public class QB {
 
-  private static final Log LOG = LogFactory.getLog("hive.ql.parse.QB");
+  private static final Logger LOG = LoggerFactory.getLogger("hive.ql.parse.QB");
 
   private final int numJoins = 0;
   private final int numGbys = 0;

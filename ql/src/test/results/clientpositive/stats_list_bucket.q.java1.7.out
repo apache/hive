@@ -32,8 +32,7 @@ stored as rcfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stats_list_bucket
-PREHOOK: query: -- Make sure we use hashed IDs during stats publishing.
--- Try partitioned table with list bucketing.
+PREHOOK: query: -- Try partitioned table with list bucketing.
 -- The stats should show 500 rows loaded, as many rows as the src table has.
 
 insert overwrite table stats_list_bucket partition (ds = '2008-04-08',  hr = '11')
@@ -41,8 +40,7 @@ insert overwrite table stats_list_bucket partition (ds = '2008-04-08',  hr = '11
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@stats_list_bucket@ds=2008-04-08/hr=11
-POSTHOOK: query: -- Make sure we use hashed IDs during stats publishing.
--- Try partitioned table with list bucketing.
+POSTHOOK: query: -- Try partitioned table with list bucketing.
 -- The stats should show 500 rows loaded, as many rows as the src table has.
 
 insert overwrite table stats_list_bucket partition (ds = '2008-04-08',  hr = '11')

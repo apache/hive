@@ -29,8 +29,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.KeyWrapper;
@@ -59,7 +59,7 @@ import org.apache.hadoop.io.DataOutputBuffer;
 public class VectorGroupByOperator extends Operator<GroupByDesc> implements
     VectorizationContextRegion {
 
-  private static final Log LOG = LogFactory.getLog(
+  private static final Logger LOG = LoggerFactory.getLogger(
       VectorGroupByOperator.class.getName());
 
   /**
@@ -318,7 +318,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
 
       mapKeysAggregationBuffers = new HashMap<KeyWrapper, VectorAggregationBufferRow>();
       computeMemoryLimits();
-      LOG.info("using hash aggregation processing mode");
+      LOG.debug("using hash aggregation processing mode");
     }
 
     @Override
@@ -625,8 +625,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
           rowsToFlush[flushMark] = currentStreamingAggregators;
           if (keysToFlush[flushMark] == null) {
             keysToFlush[flushMark] = (VectorHashKeyWrapper) streamingKey.copyKey();
-          }
-          else {
+          } else {
             streamingKey.duplicateTo(keysToFlush[flushMark]);
           }
 
@@ -775,9 +774,8 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
   }
 
   @Override
-  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
-    Collection<Future<?>> result = super.initializeOp(hconf);
-    assert result.isEmpty();
+  protected void initializeOp(Configuration hconf) throws HiveException {
+    super.initializeOp(hconf);
 
     List<ObjectInspector> objectInspectors = new ArrayList<ObjectInspector>();
 
@@ -815,7 +813,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
           outputFieldNames, objectInspectors);
       if (isVectorOutput) {
         vrbCtx = new VectorizedRowBatchCtx();
-        vrbCtx.init(vOutContext.getScratchColumnTypeMap(), (StructObjectInspector) outputObjInspector);
+        vrbCtx.init((StructObjectInspector) outputObjInspector, vOutContext.getScratchColumnTypeNames());
         outputBatch = vrbCtx.createVectorizedRowBatch();
         vectorAssignRowSameBatch = new VectorAssignRowSameBatch();
         vectorAssignRowSameBatch.init((StructObjectInspector) outputObjInspector, vOutContext.getProjectedColumns());
@@ -836,12 +834,13 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
     } else if (conf.getVectorDesc().isReduceMergePartial()) {
       // Sorted GroupBy of vector batches where an individual batch has the same group key (e.g. reduce).
       processingMode = this.new ProcessingModeReduceMergePartialKeys();
+    } else if (conf.getVectorDesc().isReduceStreaming()) {
+      processingMode = this.new ProcessingModeUnsortedStreaming();
     } else {
       // We start in hash mode and may dynamically switch to unsorted stream mode.
       processingMode = this.new ProcessingModeHashAggregate();
     }
     processingMode.initialize(hconf);
-    return result;
   }
 
   /**

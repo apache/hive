@@ -17,8 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -52,7 +52,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class Cleaner extends CompactorThread {
   static final private String CLASS_NAME = Cleaner.class.getName();
-  static final private Log LOG = LogFactory.getLog(CLASS_NAME);
+  static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
   private long cleanerCheckInterval = 0;
 
@@ -212,7 +212,7 @@ public class Cleaner extends CompactorThread {
       if (runJobAsSelf(ci.runAs)) {
         removeFiles(location, txnList);
       } else {
-        LOG.info("Cleaning as user " + ci.runAs);
+        LOG.info("Cleaning as user " + ci.runAs + " for " + ci.getFullPartitionName());
         UserGroupInformation ugi = UserGroupInformation.createProxyUser(ci.runAs,
             UserGroupInformation.getLoginUser());
         ugi.doAs(new PrivilegedExceptionAction<Object>() {
@@ -245,6 +245,7 @@ public class Cleaner extends CompactorThread {
           ", that hardly seems right.");
       return;
     }
+    LOG.info("About to remove " + filesToDelete.size() + " obsolete directories from " + location);
     FileSystem fs = filesToDelete.get(0).getFileSystem(conf);
 
     for (Path dead : filesToDelete) {

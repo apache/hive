@@ -18,8 +18,7 @@ WHERE
 
 
 set hive.optimize.point.lookup.min=3;
-set hive.optimize.point.lookup.extract=false;
-
+set hive.optimize.partition.columns.separate=false;
 explain
 SELECT key
 FROM src
@@ -38,8 +37,7 @@ WHERE
    AND value = '3'))
 ;
 
-set hive.optimize.point.lookup.extract=true;
-
+set hive.optimize.partition.columns.separate=true;
 explain
 SELECT key
 FROM src

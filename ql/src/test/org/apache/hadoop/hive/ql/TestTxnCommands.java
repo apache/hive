@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.hadoop.hive.ql;
 
 import org.apache.commons.io.FileUtils;
@@ -28,9 +45,9 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
- * The LockManager is not ready, but for no-concurrency straight-line path we can 
+ * The LockManager is not ready, but for no-concurrency straight-line path we can
  * test AC=true, and AC=false with commit/rollback/exception and test resulting data.
- * 
+ *
  * Can also test, calling commit in AC=true mode, etc, toggling AC...
  */
 public class TestTxnCommands {
@@ -50,7 +67,7 @@ public class TestTxnCommands {
     ACIDTBL2("acidTbl2"),
     NONACIDORCTBL("nonAcidOrcTbl"),
     NONACIDORCTBL2("nonAcidOrcTbl2");
-    
+
     private final String name;
     @Override
     public String toString() {
@@ -69,8 +86,8 @@ public class TestTxnCommands {
     hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
     hiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname, TEST_WAREHOUSE_DIR);
+    hiveConf.setVar(HiveConf.ConfVars.HIVEMAPREDMODE, "nonstrict");
     TxnDbUtil.setConfValues(hiveConf);
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVEENFORCEBUCKETING, true);
     TxnDbUtil.prepDb();
     File f = new File(TEST_WAREHOUSE_DIR);
     if (f.exists()) {
@@ -107,7 +124,7 @@ public class TestTxnCommands {
       FileUtils.deleteDirectory(new File(TEST_DATA_DIR));
     }
   }
-  @Test 
+  @Test
   public void testInsertOverwrite() throws Exception {
     runStatementOnDriver("insert overwrite table " + Table.NONACIDORCTBL + " select a,b from " + Table.NONACIDORCTBL2);
     runStatementOnDriver("create table " + Table.NONACIDORCTBL2 + "3(a int, b int) clustered by (a) into " + BUCKET_COUNT + " buckets stored as orc TBLPROPERTIES ('transactional'='false')");
@@ -211,7 +228,7 @@ public class TestTxnCommands {
     rs0 = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
     Assert.assertEquals("Can't see my own write", 1, rs0.size());
   }
-  @Test 
+  @Test
   public void testReadMyOwnInsert() throws Exception {
     runStatementOnDriver("set autocommit false");
     runStatementOnDriver("START TRANSACTION");
@@ -431,6 +448,7 @@ public class TestTxnCommands {
     return rs;
   }
   private static final class RowComp implements Comparator<int[]> {
+    @Override
     public int compare(int[] row1, int[] row2) {
       assert row1 != null && row2 != null && row1.length == row2.length;
       for(int i = 0; i < row1.length; i++) {
@@ -462,7 +480,7 @@ public class TestTxnCommands {
     sb.setLength(sb.length() - 1);//remove trailing comma
     return sb.toString();
   }
-  
+
   private List<String> runStatementOnDriver(String stmt) throws Exception {
     CommandProcessorResponse cpr = d.run(stmt);
     if(cpr.getResponseCode() != 0) {

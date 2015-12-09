@@ -23,8 +23,8 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * HiveSessionManager is a Runnable started inside a web application context.
@@ -36,7 +36,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class HWISessionManager implements Runnable {
 
-  protected static final Log l4j = LogFactory.getLog(HWISessionManager.class
+  protected static final Logger l4j = LoggerFactory.getLogger(HWISessionManager.class
       .getName());
 
   private boolean goOn;

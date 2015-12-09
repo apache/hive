@@ -25,8 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
@@ -38,7 +38,9 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.SMBJoinDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 
 /**
  * VectorSMBJoinOperator.
@@ -48,7 +50,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
  */
 public class VectorSMBMapJoinOperator extends SMBMapJoinOperator implements VectorizationContextRegion {
 
-  private static final Log LOG = LogFactory.getLog(
+  private static final Logger LOG = LoggerFactory.getLogger(
       VectorSMBMapJoinOperator.class.getName());
 
   private static final long serialVersionUID = 1L;
@@ -123,19 +125,28 @@ public class VectorSMBMapJoinOperator extends SMBMapJoinOperator implements Vect
   @Override
   protected List<Object> smbJoinComputeKeys(Object row, byte alias) throws HiveException {
     if (alias == this.posBigTable) {
-      VectorizedRowBatch inBatch = (VectorizedRowBatch) row;
-      return keyEvaluator.evaluate(keyValues[batchIndex]);
+
+      // The keyEvaluate reuses storage.  That doesn't work with SMB MapJoin because it
+      // holds references to keys as it is merging.
+      List<Object> singletonListAndObjects = keyEvaluator.evaluate(keyValues[batchIndex]);
+      ArrayList<Object> result = new ArrayList<Object>(singletonListAndObjects.size());
+      for (int i = 0; i < singletonListAndObjects.size(); i++) {
+        result.add(ObjectInspectorUtils.copyToStandardObject(singletonListAndObjects.get(i),
+            joinKeysObjectInspectors[alias].get(i),
+            ObjectInspectorCopyOption.WRITABLE));
+      }
+      return result;
     } else {
       return super.smbJoinComputeKeys(row, alias);
     }
   }
 
   @Override
-  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
-    Collection<Future<?>> result = super.initializeOp(hconf);
+  protected void initializeOp(Configuration hconf) throws HiveException {
+    super.initializeOp(hconf);
 
     vrbCtx = new VectorizedRowBatchCtx();
-    vrbCtx.init(vOutContext.getScratchColumnTypeMap(), (StructObjectInspector) this.outputObjInspector);
+    vrbCtx.init((StructObjectInspector) this.outputObjInspector, vOutContext.getScratchColumnTypeNames());
 
     outputBatch = vrbCtx.createVectorizedRowBatch();
 
@@ -214,7 +225,6 @@ public class VectorSMBMapJoinOperator extends SMBMapJoinOperator implements Vect
     }
     // Now replace the old evaluators with our own
     joinValues[posBigTable] = vectorNodeEvaluators;
-    return result;
   }
 
   @Override

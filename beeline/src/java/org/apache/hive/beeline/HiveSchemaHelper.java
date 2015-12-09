@@ -86,7 +86,7 @@ public class HiveSchemaHelper {
     if (confVarStr == null || confVarStr.isEmpty()) {
       throw new IOException("Empty " + confVar.varname);
     }
-    return confVarStr;
+    return confVarStr.trim();
   }
 
   public interface NestedScriptParser {
@@ -165,7 +165,7 @@ public class HiveSchemaHelper {
   }
 
   /***
-   * Base implemenation of NestedScriptParser
+   * Base implementation of NestedScriptParser
    * abstractCommandParser.
    *
    */

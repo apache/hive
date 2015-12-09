@@ -1,5 +1,6 @@
-set hive.enforce.bucketing = true;
-set hive.enforce.sorting = true;
+set hive.mapred.mode=nonstrict;
+;
+
 set hive.exec.reducers.max = 1;
 
 -- SORT_QUERY_RESULTS
@@ -17,8 +18,8 @@ select * from src where key < 10;
 insert overwrite table tbl3
 select * from src where key < 10;
 
-set hive.enforce.bucketing = false;
-set hive.enforce.sorting = false;
+;
+
 set hive.exec.reducers.max = 100;
 
 set hive.auto.convert.join=true;

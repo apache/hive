@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 SET hive.metastore.partition.name.whitelist.pattern=[^9]*;
 set hive.exec.failure.hooks=org.apache.hadoop.hive.ql.hooks.VerifyTableDirectoryIsEmptyHook;
 

@@ -8,7 +8,7 @@ create table if not exists nzhang_part_bucket (key string, value string)
 describe extended nzhang_part_bucket;
 
 set hive.merge.mapfiles=false;
-set hive.enforce.bucketing=true;
+
 set hive.exec.dynamic.partition=true;
 
 explain

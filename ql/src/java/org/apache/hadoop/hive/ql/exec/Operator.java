@@ -27,11 +27,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.lib.Node;
@@ -68,8 +70,10 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   protected List<Operator<? extends OperatorDesc>> childOperators;
   protected List<Operator<? extends OperatorDesc>> parentOperators;
   protected String operatorId;
+  protected AtomicBoolean abortOp;
   private transient ExecMapperContext execContext;
   private transient boolean rootInitializeCalled = false;
+  protected final transient Collection<Future<?>> asyncInitOperations = new HashSet<>();
 
   private static AtomicInteger seqId;
 
@@ -106,6 +110,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     initOperatorId();
     childOperators = new ArrayList<Operator<? extends OperatorDesc>>();
     parentOperators = new ArrayList<Operator<? extends OperatorDesc>>();
+    abortOp = new AtomicBoolean(false);
   }
 
   public Operator() {
@@ -216,8 +221,8 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   protected transient Map<String, LongWritable> statsMap = new HashMap<String, LongWritable>();
   @SuppressWarnings("rawtypes")
   protected transient OutputCollector out;
-  protected transient final Log LOG = LogFactory.getLog(getClass().getName());
-  protected transient final Log PLOG = LogFactory.getLog(Operator.class.getName()); // for simple disabling logs from all operators
+  protected transient final Logger LOG = LoggerFactory.getLogger(getClass().getName());
+  protected transient final Logger PLOG = LoggerFactory.getLogger(Operator.class.getName()); // for simple disabling logs from all operators
   protected transient final boolean isLogInfoEnabled = LOG.isInfoEnabled() && PLOG.isInfoEnabled();
   protected transient final boolean isLogDebugEnabled = LOG.isDebugEnabled() && PLOG.isDebugEnabled();
   protected transient final boolean isLogTraceEnabled = LOG.isTraceEnabled() && PLOG.isTraceEnabled();
@@ -360,34 +365,63 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     // derived classes can set this to different object if needed
     outputObjInspector = inputObjInspectors[0];
 
-    Collection<Future<?>> asyncInitOperations = initializeOp(hconf);
+    boolean isInitOk = false;
+    try {
+      initializeOp(hconf);
+      // sanity checks
+      if (!rootInitializeCalled
+          || childOperatorsArray.length != childOperators.size()) {
+        throw new AssertionError("Internal error during operator initialization");
+      }
+      if (isLogDebugEnabled) {
+        LOG.debug("Initialization Done " + id + " " + getName());
+      }
 
-    // sanity checks
-    if (!rootInitializeCalled
-	|| asyncInitOperations == null
-	|| childOperatorsArray.length != childOperators.size()) {
-      throw new AssertionError("Internal error during operator initialization");
+      initializeChildren(hconf);
+      isInitOk = true;
+    } finally {
+      // TODO: ugly hack because Java doesn't have dtors and Tez input hangs on shutdown.
+      if (!isInitOk) {
+        cancelAsyncInitOps();
+      }
     }
 
-    if (isLogInfoEnabled) {
-      LOG.info("Initialization Done " + id + " " + getName() + " done is reset.");
+    if (isLogDebugEnabled) {
+      LOG.debug("Initialization Done " + id + " " + getName() + " done is reset.");
     }
-
-    initializeChildren(hconf);
 
     // let's wait on the async ops before continuing
     completeInitialization(asyncInitOperations);
   }
 
+  private void cancelAsyncInitOps() {
+    for (Future<?> f : asyncInitOperations) {
+      f.cancel(true);
+    }
+    asyncInitOperations.clear();
+  }
+
   private void completeInitialization(Collection<Future<?>> fs) throws HiveException {
     Object[] os = new Object[fs.size()];
     int i = 0;
+    Throwable asyncEx = null;
     for (Future<?> f : fs) {
-      try {
-        os[i++] = f.get();
-      } catch (Exception e) {
-        throw new HiveException(e);
+      if (abortOp.get() || asyncEx != null) {
+        // We were aborted, interrupted or one of the operations failed; terminate all.
+        f.cancel(true);
+      } else {
+        try {
+          os[i++] = f.get();
+        } catch (CancellationException ex) {
+          asyncEx = new InterruptedException("Future was canceled");
+        } catch (Throwable t) {
+          f.cancel(true);
+          asyncEx = t;
+        }
       }
+    }
+    if (asyncEx != null) {
+      throw new HiveException("Async initialization failed", asyncEx);
     }
     completeInitializationOp(os);
   }
@@ -415,9 +449,8 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   /**
    * Operator specific initialization.
    */
-  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
+  protected void initializeOp(Configuration hconf) throws HiveException {
     rootInitializeCalled = true;
-    return new ArrayList<Future<?>>();
   }
 
   /**
@@ -426,14 +459,14 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
    */
   protected void initializeChildren(Configuration hconf) throws HiveException {
     state = State.INIT;
-    if (isLogInfoEnabled) {
-      LOG.info("Operator " + id + " " + getName() + " initialized");
+    if (isLogDebugEnabled) {
+      LOG.debug("Operator " + id + " " + getName() + " initialized");
     }
     if (childOperators == null || childOperators.isEmpty()) {
       return;
     }
-    if (isLogInfoEnabled) {
-      LOG.info("Initializing children of " + id + " " + getName());
+    if (isLogDebugEnabled) {
+      LOG.debug("Initializing children of " + id + " " + getName());
     }
     for (int i = 0; i < childOperatorsArray.length; i++) {
       childOperatorsArray[i].initialize(hconf, outputObjInspector, childOperatorsTag[i]);
@@ -441,6 +474,10 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
         childOperatorsArray[i].setReporter(reporter);
       }
     }
+  }
+
+  public void abort() {
+    abortOp.set(true);
   }
 
   /**
@@ -466,8 +503,8 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
    */
   protected void initialize(Configuration hconf, ObjectInspector inputOI,
       int parentId) throws HiveException {
-    if (isLogInfoEnabled) {
-      LOG.info("Initializing child " + id + " " + getName());
+    if (isLogDebugEnabled) {
+      LOG.debug("Initializing child " + id + " " + getName());
     }
     // Double the size of the array if needed
     if (parentId >= inputObjInspectors.length) {
@@ -609,9 +646,11 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     // set state as CLOSE as long as all parents are closed
     // state == CLOSE doesn't mean all children are also in state CLOSE
     state = State.CLOSE;
-    if (isLogInfoEnabled) {
-      LOG.info(id + " finished. closing... ");
+    if (isLogDebugEnabled) {
+      LOG.debug(id + " finished. closing... ");
     }
+
+    abort |= abortOp.get();
 
     // call the operator specific close routine
     closeOp(abort);
@@ -625,14 +664,14 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
       }
 
       for (Operator<? extends OperatorDesc> op : childOperators) {
-	if (isLogDebugEnabled) {
-	  LOG.debug("Closing child = " + op);
-	}
+        if (isLogDebugEnabled) {
+          LOG.debug("Closing child = " + op);
+        }
         op.close(abort);
       }
 
-      if (isLogInfoEnabled) {
-	LOG.info(id + " Close done");
+      if (isLogDebugEnabled) {
+        LOG.debug(id + " Close done");
       }
     } catch (HiveException e) {
       e.printStackTrace();
@@ -854,10 +893,12 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   }
 
   public void logStats() {
-    if (isLogInfoEnabled) {
-      for (String e : statsMap.keySet()) {
-        LOG.info(e.toString() + ":" + statsMap.get(e).toString());
+    if (isLogInfoEnabled && !statsMap.isEmpty()) {
+      StringBuilder sb = new StringBuilder();
+      for (Map.Entry<String, LongWritable> e : statsMap.entrySet()) {
+        sb.append(e.getKey()).append(":").append(e.getValue()).append(", ");
       }
+      LOG.info(sb.toString());
     }
   }
 
@@ -1326,8 +1367,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     }
 
     @Override
-    protected Collection<Future<?>> initializeOp(Configuration conf) {
-      return childOperators;
+    protected void initializeOp(Configuration conf) {
     }
   }
 
@@ -1335,5 +1375,13 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     for (Operator<?> parent : new ArrayList<Operator<?>>(getParentOperators())) {
       removeParent(parent);
     }
+  }
+
+  public boolean getIsReduceSink() {
+    return false;
+  }
+
+  public String getReduceOutputName() {
+    return null;
   }
 }

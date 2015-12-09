@@ -307,19 +307,19 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partcoltypenum
 POSTHOOK: Input: default@partcoltypenum@tint=110/sint=22000/bint=330000000000
 #### A masked pattern was here ####
-PREHOOK: query: describe formatted partcoltypenum.key partition (tint=110Y, sint=22000S, bint=330000000000L)
+PREHOOK: query: describe formatted partcoltypenum partition (tint=110Y, sint=22000S, bint=330000000000L) key
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@partcoltypenum
-POSTHOOK: query: describe formatted partcoltypenum.key partition (tint=110Y, sint=22000S, bint=330000000000L)
+POSTHOOK: query: describe formatted partcoltypenum partition (tint=110Y, sint=22000S, bint=330000000000L) key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcoltypenum
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 key                 	int                 	27                  	484                 	0                   	18                  	                    	                    	                    	                    	from deserializer   
-PREHOOK: query: describe formatted partcoltypenum.value partition (tint=110Y, sint=22000S, bint=330000000000L)
+PREHOOK: query: describe formatted partcoltypenum partition (tint=110Y, sint=22000S, bint=330000000000L) value
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@partcoltypenum
-POSTHOOK: query: describe formatted partcoltypenum.value partition (tint=110Y, sint=22000S, bint=330000000000L)
+POSTHOOK: query: describe formatted partcoltypenum partition (tint=110Y, sint=22000S, bint=330000000000L) value
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcoltypenum
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             

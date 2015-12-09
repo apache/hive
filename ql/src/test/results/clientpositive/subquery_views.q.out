@@ -26,6 +26,26 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cv1
+PREHOOK: query: describe extended cv1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@cv1
+POSTHOOK: query: describe extended cv1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@cv1
+key                 	string              	                    
+value               	string              	                    
+	 	 
+#### A masked pattern was here ####
+from src b 	 	 
+where exists	 	 
+  (select a.key 	 	 
+  from src a 	 	 
+  where b.value = a.value  and a.key = b.key and a.value > 'val_9'), viewExpandedText:select `b`.`key`, `b`.`value` 	 	 
+from `default`.`src` `b` 	 	 
+where exists	 	 
+  (select `a`.`key` 	 	 
+  from `default`.`src` `a` 	 	 
+  where `b`.`value` = `a`.`value`  and `a`.`key` = `b`.`key` and `a`.`value` > 'val_9'), tableType:VIRTUAL_VIEW)		 
 PREHOOK: query: select * 
 from cv1 where cv1.key in (select key from cv1 c where c.key > '95')
 PREHOOK: type: QUERY
@@ -69,8 +89,30 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cv2
-Warning: Shuffle Join JOIN[21][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
-Warning: Shuffle Join JOIN[52][tables = [$hdt$_1, $hdt$_2]] in Stage 'Stage-6:MAPRED' is a cross product
+PREHOOK: query: describe extended cv2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@cv2
+POSTHOOK: query: describe extended cv2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@cv2
+key                 	string              	                    
+value               	string              	                    
+	 	 
+#### A masked pattern was here ####
+from src b 	 	 
+where b.key not in	 	 
+  (select a.key 	 	 
+  from src a 	 	 
+  where b.value = a.value  and a.key = b.key and a.value > 'val_11'	 	 
+  ), viewExpandedText:select `b`.`key`, `b`.`value` 	 	 
+from `default`.`src` `b` 	 	 
+where `b`.`key` not in	 	 
+  (select `a`.`key` 	 	 
+  from `default`.`src` `a` 	 	 
+  where `b`.`value` = `a`.`value`  and `a`.`key` = `b`.`key` and `a`.`value` > 'val_11'	 	 
+  ), tableType:VIRTUAL_VIEW)		 
+Warning: Shuffle Join JOIN[20][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[50][tables = [$hdt$_1, $hdt$_2]] in Stage 'Stage-6:MAPRED' is a cross product
 PREHOOK: query: explain
 select * 
 from cv2 where cv2.key in (select key from cv2 c where c.key < '11')
@@ -378,8 +420,8 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join JOIN[21][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
-Warning: Shuffle Join JOIN[52][tables = [$hdt$_1, $hdt$_2]] in Stage 'Stage-6:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[20][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[50][tables = [$hdt$_1, $hdt$_2]] in Stage 'Stage-6:MAPRED' is a cross product
 PREHOOK: query: select * 
 from cv2 where cv2.key in (select key from cv2 c where c.key < '11')
 PREHOOK: type: QUERY
@@ -425,6 +467,25 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cv3
+PREHOOK: query: describe extended cv3
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@cv3
+POSTHOOK: query: describe extended cv3
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@cv3
+key                 	string              	                    
+value               	string              	                    
+_c2                 	bigint              	                    
+	 	 
+#### A masked pattern was here ####
+from src b	 	 
+where b.key in (select key from src where src.key > '8')	 	 
+group by key, value	 	 
+having count(*) in (select count(*) from src s1 where s1.key > '9' group by s1.key ), viewExpandedText:select `b`.`key`, `b`.`value`, count(*) 	 	 
+from `default`.`src` `b`	 	 
+where `b`.`key` in (select `src`.`key` from `default`.`src` where `src`.`key` > '8')	 	 
+group by `b`.`key`, `b`.`value`	 	 
+having count(*) in (select count(*) from `default`.`src` `s1` where `s1`.`key` > '9' group by `s1`.`key` ), tableType:VIRTUAL_VIEW)		 
 PREHOOK: query: select * from cv3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cv3
@@ -473,3 +534,58 @@ POSTHOOK: Input: default@src
 96	val_96	1
 97	val_97	2
 98	val_98	2
+PREHOOK: query: drop table tc
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table tc
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table tc (`@d` int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tc
+POSTHOOK: query: create table tc (`@d` int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tc
+PREHOOK: query: insert overwrite table tc select 1 from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@tc
+POSTHOOK: query: insert overwrite table tc select 1 from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@tc
+POSTHOOK: Lineage: tc.@d SIMPLE []
+PREHOOK: query: drop view tcv
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: drop view tcv
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: create view tcv as select * from tc b where exists (select a.`@d` from tc a where b.`@d`=a.`@d`)
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@tc
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tcv
+POSTHOOK: query: create view tcv as select * from tc b where exists (select a.`@d` from tc a where b.`@d`=a.`@d`)
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@tc
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tcv
+PREHOOK: query: describe extended tcv
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tcv
+POSTHOOK: query: describe extended tcv
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tcv
+@d                  	int                 	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: select * from tcv
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tc
+PREHOOK: Input: default@tcv
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tcv
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tc
+POSTHOOK: Input: default@tcv
+#### A masked pattern was here ####
+1

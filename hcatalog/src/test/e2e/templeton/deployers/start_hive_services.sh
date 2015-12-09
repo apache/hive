@@ -31,7 +31,7 @@ cp ${PROJ_HOME}/hcatalog/src/test/e2e/templeton/deployers/config/hive/hive-site.
 #cp ${PROJ_HOME}/hcatalog/src/test/e2e/templeton/deployers/config/hive/hive-site.mssql.xml ${HIVE_HOME}/conf/hive-site.xml
 
 cp ${PROJ_HOME}/hcatalog/src/test/e2e/templeton/deployers/config/webhcat/webhcat-site.xml ${HIVE_HOME}/hcatalog/etc/webhcat/webhcat-site.xml
-cp ${PROJ_HOME}/hcatalog/src/test/e2e/templeton/deployers/config/hive/hive-log4j2.xml ${HIVE_HOME}/conf/hive-log4j2.xml
+cp ${PROJ_HOME}/hcatalog/src/test/e2e/templeton/deployers/config/hive/hive-log4j2.properties ${HIVE_HOME}/conf/hive-log4j2.properties
 
 if [ -f ${MYSQL_CLIENT_JAR} ]; then
   cp ${MYSQL_CLIENT_JAR} ${HIVE_HOME}/lib

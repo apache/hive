@@ -1,5 +1,6 @@
+set hive.mapred.mode=nonstrict;
 set hive.archive.enabled = true;
-set hive.enforce.bucketing = true;
+;
 set hive.exec.submitviachild=true;
 set hive.exec.submit.local.task.via.child=true;
 

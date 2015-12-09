@@ -178,6 +178,7 @@ TOK_SHOWTABLES;
 TOK_SHOWCOLUMNS;
 TOK_SHOWFUNCTIONS;
 TOK_SHOWPARTITIONS;
+TOK_SHOW_CREATEDATABASE;
 TOK_SHOW_CREATETABLE;
 TOK_SHOW_TABLESTATUS;
 TOK_SHOW_TBLPROPERTIES;
@@ -256,7 +257,6 @@ TOK_HINTLIST;
 TOK_HINT;
 TOK_MAPJOIN;
 TOK_STREAMTABLE;
-TOK_HOLD_DDLTIME;
 TOK_HINTARGLIST;
 TOK_USERSCRIPTCOLNAMES;
 TOK_USERSCRIPTCOLSCHEMA;
@@ -629,7 +629,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 
   public void popMsg(RecognizerSharedState state) {
     if (state.backtracking == 0) {
-      msgs.pop();
+      Object o = msgs.pop();
     }
   }
 
@@ -1324,7 +1324,8 @@ fileFormat
 tabTypeExpr
 @init { pushMsg("specifying table types", state); }
 @after { popMsg(state); }
-   : identifier (DOT^ 
+   : identifier (DOT^ identifier)?
+   (identifier (DOT^
    (
    (KW_ELEM_TYPE) => KW_ELEM_TYPE
    | 
@@ -1332,13 +1333,20 @@ tabTypeExpr
    | 
    (KW_VALUE_TYPE) => KW_VALUE_TYPE 
    | identifier
-   ))* identifier?
+   ))*
+   )?
    ;
 
 partTypeExpr
 @init { pushMsg("specifying table partitions", state); }
 @after { popMsg(state); }
     :  tabTypeExpr partitionSpec? -> ^(TOK_TABTYPE tabTypeExpr partitionSpec?)
+    ;
+
+tabPartColTypeExpr
+@init { pushMsg("specifying table partitions columnName", state); }
+@after { popMsg(state); }
+    :  tableName partitionSpec? extColumnName? -> ^(TOK_TABTYPE tableName partitionSpec? extColumnName?)
     ;
 
 descStatement
@@ -1351,9 +1359,9 @@ descStatement
     |
     (KW_FUNCTION) => KW_FUNCTION KW_EXTENDED? (name=descFuncNames) -> ^(TOK_DESCFUNCTION $name KW_EXTENDED?)
     |
-    (KW_FORMATTED|KW_EXTENDED|KW_PRETTY) => ((descOptions=KW_FORMATTED|descOptions=KW_EXTENDED|descOptions=KW_PRETTY) parttype=partTypeExpr) -> ^(TOK_DESCTABLE $parttype $descOptions)
+    (KW_FORMATTED|KW_EXTENDED|KW_PRETTY) => ((descOptions=KW_FORMATTED|descOptions=KW_EXTENDED|descOptions=KW_PRETTY) parttype=tabPartColTypeExpr) -> ^(TOK_DESCTABLE $parttype $descOptions)
     |
-    parttype=partTypeExpr -> ^(TOK_DESCTABLE $parttype)
+    parttype=tabPartColTypeExpr -> ^(TOK_DESCTABLE $parttype)
     )
     ;
 
@@ -1374,7 +1382,11 @@ showStatement
     -> ^(TOK_SHOWCOLUMNS tableName $db_name?)
     | KW_SHOW KW_FUNCTIONS (KW_LIKE showFunctionIdentifier|showFunctionIdentifier)?  -> ^(TOK_SHOWFUNCTIONS KW_LIKE? showFunctionIdentifier?)
     | KW_SHOW KW_PARTITIONS tabName=tableName partitionSpec? -> ^(TOK_SHOWPARTITIONS $tabName partitionSpec?) 
-    | KW_SHOW KW_CREATE KW_TABLE tabName=tableName -> ^(TOK_SHOW_CREATETABLE $tabName)
+    | KW_SHOW KW_CREATE (
+        (KW_DATABASE|KW_SCHEMA) => (KW_DATABASE|KW_SCHEMA) db_name=identifier -> ^(TOK_SHOW_CREATEDATABASE $db_name)
+        |
+        KW_TABLE tabName=tableName -> ^(TOK_SHOW_CREATETABLE $tabName)
+      )
     | KW_SHOW KW_TABLE KW_EXTENDED ((KW_FROM|KW_IN) db_name=identifier)? KW_LIKE showStmtIdentifier partitionSpec?
     -> ^(TOK_SHOW_TABLESTATUS showStmtIdentifier $db_name? partitionSpec?)
     | KW_SHOW KW_TBLPROPERTIES tableName (LPAREN prptyName=StringLiteral RPAREN)? -> ^(TOK_SHOW_TBLPROPERTIES tableName $prptyName?)
@@ -1930,6 +1942,13 @@ columnName
       identifier
     ;
 
+extColumnName
+@init { pushMsg("column name for complex types", state); }
+@after { popMsg(state); }
+    :
+      identifier (DOT^ ((KW_ELEM_TYPE) => KW_ELEM_TYPE | (KW_KEY_TYPE) => KW_KEY_TYPE | (KW_VALUE_TYPE) => KW_VALUE_TYPE | identifier))*
+    ;
+
 columnNameOrderList
 @init { pushMsg("column name order list", state); }
 @after { popMsg(state); }
@@ -2170,7 +2189,7 @@ regularBody[boolean topLevel]
    i=insertClause
    (
    s=selectStatement[topLevel]
-     {$s.tree.getChild(1) !=null}? {$s.tree.getChild(1).replaceChildren(0, 0, $i.tree);} -> {$s.tree}
+     {$s.tree.getFirstChildWithType(TOK_INSERT).replaceChildren(0, 0, $i.tree);} -> {$s.tree}
      |
      valuesClause
       -> ^(TOK_QUERY

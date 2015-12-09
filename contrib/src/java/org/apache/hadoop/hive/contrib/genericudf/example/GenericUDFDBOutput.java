@@ -22,8 +22,8 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -61,8 +61,8 @@ import org.apache.hadoop.io.IntWritable;
     + "passed to the PreparedStatement object\n")
 @UDFType(deterministic = false)
 public class GenericUDFDBOutput extends GenericUDF {
-  private static final Log LOG = LogFactory
-      .getLog(GenericUDFDBOutput.class.getName());
+  private static final Logger LOG = LoggerFactory
+      .getLogger(GenericUDFDBOutput.class.getName());
 
   private transient ObjectInspector[] argumentOI;
   private transient Connection connection = null;

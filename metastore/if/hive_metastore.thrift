@@ -714,9 +714,69 @@ struct FireEventResponse {
     // NOP for now, this is just a place holder for future responses
 }
     
+struct MetadataPpdResult {
+  1: optional binary metadata,
+  2: optional binary includeBitset
+}
+
+// Return type for get_file_metadata_by_expr
+struct GetFileMetadataByExprResult {
+  1: required map<i64, MetadataPpdResult> metadata,
+  2: required bool isSupported
+}
+
+enum FileMetadataExprType {
+  ORC_SARG = 1
+}
+
+
+// Request type for get_file_metadata_by_expr
+struct GetFileMetadataByExprRequest {
+  1: required list<i64> fileIds,
+  2: required binary expr,
+  3: optional bool doGetFooters,
+  4: optional FileMetadataExprType type
+}
+
+// Return type for get_file_metadata
+struct GetFileMetadataResult {
+  1: required map<i64, binary> metadata,
+  2: required bool isSupported
+}
+
+// Request type for get_file_metadata
+struct GetFileMetadataRequest {
+  1: required list<i64> fileIds
+}
+
+// Return type for put_file_metadata
+struct PutFileMetadataResult {
+}
+
+// Request type for put_file_metadata
+struct PutFileMetadataRequest {
+  1: required list<i64> fileIds,
+  2: required list<binary> metadata
+}
+
+// Return type for clear_file_metadata
+struct ClearFileMetadataResult {
+}
+
+// Request type for clear_file_metadata
+struct ClearFileMetadataRequest {
+  1: required list<i64> fileIds
+}
 
 struct GetAllFunctionsResponse {
   1: optional list<Function> functions
+}
+
+struct TableMeta {
+  1: required string dbName;
+  2: required string tableName;
+  3: required string tableType;
+  4: optional string comments;
 }
 
 exception MetaException {
@@ -837,6 +897,8 @@ service ThriftHiveMetastore extends fb303.FacebookService
       4:EnvironmentContext environment_context)
                        throws(1:NoSuchObjectException o1, 2:MetaException o3)
   list<string> get_tables(1: string db_name, 2: string pattern) throws (1: MetaException o1)
+  list<TableMeta> get_table_meta(1: string db_patterns, 2: string tbl_patterns, 3: list<string> tbl_types)
+                       throws (1: MetaException o1)
   list<string> get_all_tables(1: string db_name) throws (1: MetaException o1)
 
   Table get_table(1:string dbname, 2:string tbl_name)
@@ -931,6 +993,11 @@ service ThriftHiveMetastore extends fb303.FacebookService
   Partition get_partition(1:string db_name, 2:string tbl_name, 3:list<string> part_vals)
                        throws(1:MetaException o1, 2:NoSuchObjectException o2)
   Partition exchange_partition(1:map<string, string> partitionSpecs, 2:string source_db,
+      3:string source_table_name, 4:string dest_db, 5:string dest_table_name)
+      throws(1:MetaException o1, 2:NoSuchObjectException o2, 3:InvalidObjectException o3,
+      4:InvalidInputException o4)
+
+  list<Partition> exchange_partitions(1:map<string, string> partitionSpecs, 2:string source_db,
       3:string source_table_name, 4:string dest_db, 5:string dest_table_name)
       throws(1:MetaException o1, 2:NoSuchObjectException o2, 3:InvalidObjectException o3,
       4:InvalidInputException o4)
@@ -1194,6 +1261,13 @@ service ThriftHiveMetastore extends fb303.FacebookService
   NotificationEventResponse get_next_notification(1:NotificationEventRequest rqst) 
   CurrentNotificationEventId get_current_notificationEventId()
   FireEventResponse fire_listener_event(1:FireEventRequest rqst)
+  void flushCache()
+
+  GetFileMetadataByExprResult get_file_metadata_by_expr(1:GetFileMetadataByExprRequest req)
+  GetFileMetadataResult get_file_metadata(1:GetFileMetadataRequest req)
+  PutFileMetadataResult put_file_metadata(1:PutFileMetadataRequest req)
+  ClearFileMetadataResult clear_file_metadata(1:ClearFileMetadataRequest req)
+
 }
 
 // * Note about the DDL_TIME: When creating or altering a table or a partition,

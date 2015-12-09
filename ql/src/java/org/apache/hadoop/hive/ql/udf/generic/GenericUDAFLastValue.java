@@ -18,8 +18,8 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.exec.WindowFunctionDescription;
@@ -41,7 +41,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
   supportsWindow = true, pivotResult = false, impliesOrder = true)
 public class GenericUDAFLastValue extends AbstractGenericUDAFResolver {
 
-  static final Log LOG = LogFactory.getLog(GenericUDAFLastValue.class.getName());
+  static final Logger LOG = LoggerFactory.getLogger(GenericUDAFLastValue.class.getName());
 
   @Override
   public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException {
@@ -251,10 +251,15 @@ public class GenericUDAFLastValue extends AbstractGenericUDAFResolver {
       // For the case: X following and Y following, process first Y-X results and then insert X nulls.
       // For the case X preceding and Y following, process Y results.
       for (int i = Math.max(0, wFrameDef.getStart().getRelativeOffset()); i < wFrameDef.getEnd().getRelativeOffset(); i++) {
-        s.results.add(s.lastValue);
+        if (s.hasResultReady()) {
+          s.results.add(s.lastValue);
+        }
+        s.numRows++;
       }
       for (int i = 0; i < wFrameDef.getStart().getRelativeOffset(); i++) {
-        s.results.add(null);
+        if (s.hasResultReady()) {
+          s.results.add(null);
+        }
         s.numRows++;
       }
 

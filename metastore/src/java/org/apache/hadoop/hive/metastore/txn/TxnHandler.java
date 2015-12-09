@@ -17,13 +17,16 @@
  */
 package org.apache.hadoop.hive.metastore.txn;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.jolbox.bonecp.BoneCPConfig;
 import com.jolbox.bonecp.BoneCPDataSource;
 import org.apache.commons.dbcp.ConnectionFactory;
 import org.apache.commons.dbcp.DriverManagerConnectionFactory;
 import org.apache.commons.dbcp.PoolableConnectionFactory;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.commons.dbcp.PoolingDataSource;
 
 import org.apache.commons.pool.ObjectPool;
@@ -47,11 +50,19 @@ import java.util.concurrent.TimeUnit;
  * A handler to answer transaction related calls that come into the metastore
  * server.
  *
- * Note on log messages:  Please include txnid:X and lockid info
- * {@link org.apache.hadoop.hive.common.JavaUtils#lockIdToString(long)} in all messages.
+ * Note on log messages:  Please include txnid:X and lockid info using
+ * {@link org.apache.hadoop.hive.common.JavaUtils#txnIdToString(long)}
+ * and {@link org.apache.hadoop.hive.common.JavaUtils#lockIdToString(long)} in all messages.
  * The txnid:X and lockid:Y matches how Thrift object toString() methods are generated,
  * so keeping the format consistent makes grep'ing the logs much easier.
+ *
+ * Note on HIVE_LOCKS.hl_last_heartbeat.
+ * For locks that are part of transaction, we set this 0 (would rather set it to NULL but
+ * Currently the DB schema has this NOT NULL) and only update/read heartbeat from corresponding
+ * transaction in TXNS.
  */
+@InterfaceAudience.Private
+@InterfaceStability.Evolving
 public class TxnHandler {
   // Compactor states
   static final public String INITIATED_RESPONSE = "initiated";
@@ -80,18 +91,19 @@ public class TxnHandler {
   static final protected char LOCK_SEMI_SHARED = 'w';
 
   static final private int ALLOWED_REPEATED_DEADLOCKS = 10;
-  static final private int TIMED_OUT_TXN_ABORT_BATCH_SIZE = 100;
-  static final private Log LOG = LogFactory.getLog(TxnHandler.class.getName());
+  public static final int TIMED_OUT_TXN_ABORT_BATCH_SIZE = 1000;
+  static final private Logger LOG = LoggerFactory.getLogger(TxnHandler.class.getName());
 
   static private DataSource connPool;
+  static private boolean doRetryOnConnPool = false;
   private final static Object lockLock = new Object(); // Random object to lock on for the lock
   // method
 
   /**
    * Number of consecutive deadlocks we have seen
    */
-  protected int deadlockCnt;
-  private long deadlockRetryInterval;
+  private int deadlockCnt;
+  private final long deadlockRetryInterval;
   protected HiveConf conf;
   protected DatabaseProduct dbProduct;
 
@@ -114,10 +126,8 @@ public class TxnHandler {
   //
   // All public methods that write to the database have to check for deadlocks when a SQLException
   // comes back and handle it if they see one.  This has to be done with the connection pooling
-  // in mind.  To do this they should call detectDeadlock AFTER rolling back the db transaction,
-  // and then in an outer loop they should catch DeadlockException.  In the catch for this they
-  // should increment the deadlock counter and recall themselves.  See commitTxn for an example.
-  // the connection has been closed and returned to the pool.
+  // in mind.  To do this they should call checkRetryable() AFTER rolling back the db transaction,
+  // and then they should catch RetryException and call themselves recursively. See commitTxn for an example.
 
   public TxnHandler(HiveConf conf) {
     this.conf = conf;
@@ -134,7 +144,6 @@ public class TxnHandler {
     }
 
     timeout = HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_TIMEOUT, TimeUnit.MILLISECONDS);
-    deadlockCnt = 0;
     buildJumpTable();
     retryInterval = HiveConf.getTimeVar(conf, HiveConf.ConfVars.HMSHANDLERINTERVAL,
         TimeUnit.MILLISECONDS);
@@ -151,12 +160,20 @@ public class TxnHandler {
       // subsequently shows up in the open list that's ok.
       Connection dbConn = null;
       Statement stmt = null;
+      ResultSet rs = null;
       try {
+        /**
+         * This method can run at READ_COMMITTED as long as long as
+         * {@link #openTxns(org.apache.hadoop.hive.metastore.api.OpenTxnRequest)} is atomic.
+         * More specifically, as long as advancing TransactionID in NEXT_TXN_ID is atomic with
+         * adding corresponding entries into TXNS.  The reason is that any txnid below HWM
+         * is either in TXNS and thus considered open (Open/Aborted) or it's considered Committed.
+         */
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
         String s = "select ntxn_next - 1 from NEXT_TXN_ID";
         LOG.debug("Going to execute query <" + s + ">");
-        ResultSet rs = stmt.executeQuery(s);
+        rs = stmt.executeQuery(s);
         if (!rs.next()) {
           throw new MetaException("Transaction tables not properly " +
             "initialized, no record found in next_txn_id");
@@ -166,9 +183,10 @@ public class TxnHandler {
           throw new MetaException("Transaction tables not properly " +
             "initialized, null record found in next_txn_id");
         }
-
+        close(rs);
         List<TxnInfo> txnInfo = new ArrayList<TxnInfo>();
-        s = "select txn_id, txn_state, txn_user, txn_host from TXNS";
+        //need the WHERE clause below to ensure consistent results with READ_COMMITTED
+        s = "select txn_id, txn_state, txn_user, txn_host from TXNS where txn_id <= " + hwm;
         LOG.debug("Going to execute query<" + s + ">");
         rs = stmt.executeQuery(s);
         while (rs.next()) {
@@ -199,8 +217,7 @@ public class TxnHandler {
         throw new MetaException("Unable to select from transaction database: " + getMessage(e)
           + StringUtils.stringifyException(e));
       } finally {
-        closeStmt(stmt);
-        closeDbConn(dbConn);
+        close(rs, stmt, dbConn);
       }
     } catch (RetryException e) {
       return getOpenTxnsInfo();
@@ -215,12 +232,16 @@ public class TxnHandler {
       // subsequently shows up in the open list that's ok.
       Connection dbConn = null;
       Statement stmt = null;
+      ResultSet rs = null;
       try {
+        /**
+         * This runs at READ_COMMITTED for exactly the same reason as {@link #getOpenTxnsInfo()}
+\         */
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
         String s = "select ntxn_next - 1 from NEXT_TXN_ID";
         LOG.debug("Going to execute query <" + s + ">");
-        ResultSet rs = stmt.executeQuery(s);
+        rs = stmt.executeQuery(s);
         if (!rs.next()) {
           throw new MetaException("Transaction tables not properly " +
             "initialized, no record found in next_txn_id");
@@ -230,9 +251,10 @@ public class TxnHandler {
           throw new MetaException("Transaction tables not properly " +
             "initialized, null record found in next_txn_id");
         }
-
+        close(rs);
         Set<Long> openList = new HashSet<Long>();
-        s = "select txn_id from TXNS";
+        //need the WHERE clause below to ensure consistent results with READ_COMMITTED
+        s = "select txn_id from TXNS where txn_id <= " + hwm;
         LOG.debug("Going to execute query<" + s + ">");
         rs = stmt.executeQuery(s);
         while (rs.next()) {
@@ -248,8 +270,7 @@ public class TxnHandler {
         throw new MetaException("Unable to select from transaction database, "
           + StringUtils.stringifyException(e));
       } finally {
-        closeStmt(stmt);
-        closeDbConn(dbConn);
+        close(rs, stmt, dbConn);
       }
     } catch (RetryException e) {
       return getOpenTxns();
@@ -279,22 +300,39 @@ public class TxnHandler {
   }
 
   public OpenTxnsResponse openTxns(OpenTxnRequest rqst) throws MetaException {
-    deadlockCnt = 0;  // Reset deadlock count since this is a new transaction
     int numTxns = rqst.getNum_txns();
     try {
       Connection dbConn = null;
       Statement stmt = null;
+      ResultSet rs = null;
       try {
-        dbConn = getDbConn(Connection.TRANSACTION_SERIALIZABLE);
+        /**
+         * To make {@link #getOpenTxns()}/{@link #getOpenTxnsInfo()} work correctly, this operation must ensure
+         * that advancing the counter in NEXT_TXN_ID and adding appropriate entries to TXNS is atomic.
+         * Also, advancing the counter must work when multiple metastores are running, thus either
+         * SELECT ... FOR UPDATE is used or SERIALIZABLE isolation.  The former is preferred since it prevents
+         * concurrent DB transactions being rolled back due to Write-Write conflict on NEXT_TXN_ID.
+         *
+         * In the current design, there can be several metastore instances running in a given Warehouse.
+         * This makes ideas like reserving a range of IDs to save trips to DB impossible.  For example,
+         * a client may go to MS1 and start a transaction with ID 500 to update a particular row.
+         * Now the same client will start another transaction, except it ends up on MS2 and may get
+         * transaction ID 400 and update the same row.  Now the merge that happens to materialize the snapshot
+         * on read will thing the version of the row from transaction ID 500 is the latest one.
+         *
+         * Longer term we can consider running Active-Passive MS (at least wrt to ACID operations).  This
+         * set could support a write-through cache for added performance.
+         */
+        dbConn = getDbConn(getRequiredIsolationLevel());
         // Make sure the user has not requested an insane amount of txns.
         int maxTxns = HiveConf.getIntVar(conf,
           HiveConf.ConfVars.HIVE_TXN_MAX_OPEN_BATCH);
         if (numTxns > maxTxns) numTxns = maxTxns;
 
         stmt = dbConn.createStatement();
-        String s = "select ntxn_next from NEXT_TXN_ID";
+        String s = addForUpdateClause(dbConn, "select ntxn_next from NEXT_TXN_ID");
         LOG.debug("Going to execute query <" + s + ">");
-        ResultSet rs = stmt.executeQuery(s);
+        rs = stmt.executeQuery(s);
         if (!rs.next()) {
           throw new MetaException("Transaction database not properly " +
             "configured, can't find next transaction id.");
@@ -312,10 +350,11 @@ public class TxnHandler {
         List<Long> txnIds = new ArrayList<Long>(numTxns);
         for (long i = first; i < first + numTxns; i++) {
           ps.setLong(1, i);
+          //todo: this would be more efficient with a single insert with multiple rows in values()
+          //need add a safeguard to not exceed the DB capabilities.
           ps.executeUpdate();
           txnIds.add(i);
         }
-
         LOG.debug("Going to commit");
         dbConn.commit();
         return new OpenTxnsResponse(txnIds);
@@ -326,8 +365,7 @@ public class TxnHandler {
         throw new MetaException("Unable to select from transaction database "
           + StringUtils.stringifyException(e));
       } finally {
-        closeStmt(stmt);
-        closeDbConn(dbConn);
+        close(rs, stmt, dbConn);
       }
     } catch (RetryException e) {
       return openTxns(rqst);
@@ -369,6 +407,24 @@ public class TxnHandler {
       Connection dbConn = null;
       Statement stmt = null;
       try {
+        /**
+         * This has to run at SERIALIZABLE to make no concurrent attempt to acquire locks (insert into HIVE_LOCKS)
+         * can happen.  Otherwise we may end up with orphaned locks.  While lock() and commitTxn() should not
+         * normally run concurrently (for same txn) but could due to bugs in the client which could then
+         * (w/o SERIALIZABLE) corrupt internal transaction manager state.  Also competes with abortTxn()
+         *
+         * Sketch of an improvement:
+         * Introduce a new transaction state in TXNS, state 'c'.  This is a transient Committed state.
+         * commitTxn() would mark the txn 'c' in TXNS in an independent txn.  Other operation like
+         * lock(), heartbeat(), etc would raise errors for txn in 'c' state and getOpenTxns(), etc would
+         * treat 'c' txn as 'open'.  Then this method could run in READ COMMITTED since the
+         * entry for this txn in TXNS in 'c' acts like a monitor.
+         * Since the move to 'c' state is in one txn (to make it visible) and the rest of the
+         * operations in another (could even be made separate txns), there is a possibility of failure
+         * between the 2.  Thus the AcidHouseKeeper logic to timeout txns should apply 'c' state txns.
+         *
+         * Or perhaps Select * TXNS where txn_id = " + txnid; for update
+         */
         dbConn = getDbConn(Connection.TRANSACTION_SERIALIZABLE);
         stmt = dbConn.createStatement();
         // Before we do the commit heartbeat the txn.  This is slightly odd in that we're going to
@@ -419,12 +475,11 @@ public class TxnHandler {
 
   public LockResponse lock(LockRequest rqst)
     throws NoSuchTxnException, TxnAbortedException, MetaException {
-    deadlockCnt = 0;
     try {
       Connection dbConn = null;
       try {
         dbConn = getDbConn(Connection.TRANSACTION_SERIALIZABLE);
-        return lock(dbConn, rqst, true);
+        return lock(dbConn, rqst);
       } catch (SQLException e) {
         LOG.debug("Going to rollback");
         rollbackDBConn(dbConn);
@@ -439,48 +494,50 @@ public class TxnHandler {
     }
   }
 
-  public LockResponse lockNoWait(LockRequest rqst)
-    throws NoSuchTxnException,  TxnAbortedException, MetaException {
-    try {
-      Connection dbConn = null;
-      try {
-        dbConn = getDbConn(Connection.TRANSACTION_SERIALIZABLE);
-        return lock(dbConn, rqst, false);
-      } catch (SQLException e) {
-        LOG.debug("Going to rollback");
-        rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "lockNoWait(" + rqst + ")");
-        throw new MetaException("Unable to update transaction database " +
-          StringUtils.stringifyException(e));
-      } finally {
-        closeDbConn(dbConn);
-      }
-    } catch (RetryException e) {
-      return lockNoWait(rqst);
-    }
-  }
-
+  /**
+   * Why doesn't this get a txnid as parameter?  The caller should either know the txnid or know there isn't one.
+   * Either way getTxnIdFromLockId() will not be needed.  This would be a Thrift change.
+   *
+   * Also, when lock acquisition returns WAITING, it's retried every 15 seconds (best case, see DbLockManager.backoff(),
+   * in practice more often)
+   * which means this is heartbeating way more often than hive.txn.timeout and creating extra load on DB.
+   *
+   * The clients that operate in blocking mode, can't heartbeat a lock until the lock is acquired.
+   * We should make CheckLockRequest include timestamp or last request to skip unnecessary heartbeats. Thrift change.
+   *
+   * {@link #checkLock(java.sql.Connection, long)}  must run at SERIALIZABLE (make sure some lock we are checking
+   * against doesn't move from W to A in another txn) but this method can heartbeat in
+   * separate txn at READ_COMMITTED.
+   */
   public LockResponse checkLock(CheckLockRequest rqst)
     throws NoSuchTxnException, NoSuchLockException, TxnAbortedException, MetaException {
     try {
       Connection dbConn = null;
+      long extLockId = rqst.getLockid();
       try {
-        dbConn = getDbConn(Connection.TRANSACTION_SERIALIZABLE);
-        long extLockId = rqst.getLockid();
-
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         // Heartbeat on the lockid first, to assure that our lock is still valid.
         // Then look up the lock info (hopefully in the cache).  If these locks
         // are associated with a transaction then heartbeat on that as well.
-        heartbeatLock(dbConn, extLockId);
-        long txnid = getTxnIdFromLockId(dbConn, extLockId);
-        if (txnid > 0)  heartbeatTxn(dbConn, txnid);
-        return checkLock(dbConn, extLockId, true);
+        LockInfo info = getTxnIdFromLockId(dbConn, extLockId);
+        if(info == null) {
+          throw new NoSuchLockException("No such lock " + JavaUtils.lockIdToString(extLockId));
+        }
+        if (info.txnId > 0) {
+          heartbeatTxn(dbConn, info.txnId);
+        }
+        else {
+          heartbeatLock(dbConn, extLockId);
+        }
+        closeDbConn(dbConn);
+        dbConn = getDbConn(Connection.TRANSACTION_SERIALIZABLE);
+        return checkLock(dbConn, extLockId);
       } catch (SQLException e) {
         LOG.debug("Going to rollback");
         rollbackDBConn(dbConn);
         checkRetryable(dbConn, e, "checkLock(" + rqst + " )");
         throw new MetaException("Unable to update transaction database " +
-          StringUtils.stringifyException(e));
+          JavaUtils.lockIdToString(extLockId) + " " + StringUtils.stringifyException(e));
       } finally {
         closeDbConn(dbConn);
       }
@@ -490,39 +547,57 @@ public class TxnHandler {
 
   }
 
+  /**
+   * This would have been made simpler if all locks were associated with a txn.  Then only txn needs to
+   * be heartbeated, committed, etc.  no need for client to track individual locks.
+   */
   public void unlock(UnlockRequest rqst)
     throws NoSuchLockException, TxnOpenException, MetaException {
     try {
       Connection dbConn = null;
       Statement stmt = null;
+      long extLockId = rqst.getLockid();
       try {
-        dbConn = getDbConn(Connection.TRANSACTION_SERIALIZABLE);
-        // Odd as it seems, we need to heartbeat first because this touches the
-        // lock table and assures that our locks our still valid.  If they are
-        // not, this will throw an exception and the heartbeat will fail.
-        long extLockId = rqst.getLockid();
-        heartbeatLock(dbConn, extLockId);
-        long txnid = getTxnIdFromLockId(dbConn, extLockId);
-        // If there is a valid txnid, throw an exception,
-        // as locks associated with transactions should be unlocked only when the
-        // transaction is committed or aborted.
-        if (txnid > 0) {
-          LOG.debug("Going to rollback");
-          dbConn.rollback();
-          String msg = "Unlocking locks associated with transaction" +
-            " not permitted.  Lockid " + JavaUtils.lockIdToString(extLockId) + " is associated with " +
-            "transaction " + JavaUtils.txnIdToString(txnid);
-          LOG.error(msg);
-          throw new TxnOpenException(msg);
-        }
+        /**
+         * This method is logically like commit for read-only auto commit queries.
+         * READ_COMMITTED since this only has 1 delete statement and no new entries with the
+         * same hl_lock_ext_id can be added, i.e. all rows with a given hl_lock_ext_id are
+         * created in a single atomic operation.
+         * Theoretically, this competes with {@link #lock(org.apache.hadoop.hive.metastore.api.LockRequest)}
+         * but hl_lock_ext_id is not known until that method returns.
+         * Also competes with {@link #checkLock(org.apache.hadoop.hive.metastore.api.CheckLockRequest)}
+         * but using SERIALIZABLE doesn't materially change the interaction.
+         * If "delete" stmt misses, additional logic is best effort to produce meaningful error msg.
+         */
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
-        String s = "delete from HIVE_LOCKS where hl_lock_ext_id = " + extLockId;
+        //hl_txnid <> 0 means it's associated with a transaction
+        String s = "delete from HIVE_LOCKS where hl_lock_ext_id = " + extLockId + " AND (hl_txnid = 0 OR" +
+          " (hl_txnid <> 0 AND hl_lock_state = '" + LOCK_WAITING + "'))";
         LOG.debug("Going to execute update <" + s + ">");
         int rc = stmt.executeUpdate(s);
         if (rc < 1) {
           LOG.debug("Going to rollback");
           dbConn.rollback();
-          throw new NoSuchLockException("No such lock " + JavaUtils.lockIdToString(extLockId));
+          LockInfo info = getTxnIdFromLockId(dbConn, extLockId);
+          if(info == null) {
+            //didn't find any lock with extLockId but at ReadCommitted there is a possibility that
+            //it existed when above delete ran but it didn't have the expected state.
+            LOG.error("No lock in " + LOCK_WAITING + " mode found for unlock(" + rqst + ")");
+            throw new NoSuchLockException("No such lock " + JavaUtils.lockIdToString(extLockId));
+          }
+          if(info.txnId != 0) {
+            String msg = "Unlocking locks associated with transaction not permitted.  " + info;
+            LOG.error(msg);
+            throw new TxnOpenException(msg);
+          }
+          if(info.txnId == 0) {
+            //we didn't see this lock when running DELETE stmt above but now it showed up
+            //so should "should never happen" happened...
+            String msg = "Found lock in unexpected state " + info;
+            LOG.error(msg);
+            throw new MetaException(msg);
+          }
         }
         LOG.debug("Going to commit");
         dbConn.commit();
@@ -531,7 +606,7 @@ public class TxnHandler {
         rollbackDBConn(dbConn);
         checkRetryable(dbConn, e, "unlock(" + rqst + ")");
         throw new MetaException("Unable to update transaction database " +
-          StringUtils.stringifyException(e));
+          JavaUtils.lockIdToString(extLockId) + " " + StringUtils.stringifyException(e));
       } finally {
         closeStmt(stmt);
         closeDbConn(dbConn);
@@ -616,12 +691,16 @@ public class TxnHandler {
     }
   }
 
+  /**
+   * {@code ids} should only have txnid or lockid but not both, ideally.
+   * Currently DBTxnManager.heartbeat() enforces this.
+   */
   public void heartbeat(HeartbeatRequest ids)
     throws NoSuchTxnException,  NoSuchLockException, TxnAbortedException, MetaException {
     try {
       Connection dbConn = null;
       try {
-        dbConn = getDbConn(Connection.TRANSACTION_SERIALIZABLE);
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         heartbeatLock(dbConn, ids.getLockid());
         heartbeatTxn(dbConn, ids.getTxnid());
       } catch (SQLException e) {
@@ -635,8 +714,6 @@ public class TxnHandler {
       }
     } catch (RetryException e) {
       heartbeat(ids);
-    } finally {
-      deadlockCnt = 0;
     }
   }
 
@@ -650,9 +727,17 @@ public class TxnHandler {
       rsp.setNosuch(nosuch);
       rsp.setAborted(aborted);
       try {
-        dbConn = getDbConn(Connection.TRANSACTION_SERIALIZABLE);
+        /**
+         * READ_COMMITTED is sufficient since {@link #heartbeatTxn(java.sql.Connection, long)}
+         * only has 1 update statement in it and
+         * we only update existing txns, i.e. nothing can add additional txns that this operation
+         * would care about (which would have required SERIALIZABLE)
+         */
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         for (long txn = rqst.getMin(); txn <= rqst.getMax(); txn++) {
           try {
+            //todo: this is expensive call: at least 2 update queries per txn
+            //is this really worth it?
             heartbeatTxn(dbConn, txn);
           } catch (NoSuchTxnException e) {
             nosuch.add(txn);
@@ -681,11 +766,11 @@ public class TxnHandler {
       Connection dbConn = null;
       Statement stmt = null;
       try {
-        dbConn = getDbConn(Connection.TRANSACTION_SERIALIZABLE);
+        dbConn = getDbConn(getRequiredIsolationLevel());
         stmt = dbConn.createStatement();
 
         // Get the id for the next entry in the queue
-        String s = "select ncq_next from NEXT_COMPACTION_QUEUE_ID";
+        String s = addForUpdateClause(dbConn, "select ncq_next from NEXT_COMPACTION_QUEUE_ID");
         LOG.debug("going to execute query <" + s + ">");
         ResultSet rs = stmt.executeQuery(s);
         if (!rs.next()) {
@@ -853,22 +938,24 @@ public class TxnHandler {
   /**
    * For testing only, do not use.
    */
+  @VisibleForTesting
   int numLocksInLockTable() throws SQLException, MetaException {
-    Connection dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+    Connection dbConn = null;
     Statement stmt = null;
+    ResultSet rs = null;
     try {
+      dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
       stmt = dbConn.createStatement();
       String s = "select count(*) from HIVE_LOCKS";
       LOG.debug("Going to execute query <" + s + ">");
-      ResultSet rs = stmt.executeQuery(s);
+      rs = stmt.executeQuery(s);
       rs.next();
       int rc = rs.getInt(1);
       // Necessary to clean up the transaction in the db.
       dbConn.rollback();
       return rc;
     } finally {
-      closeDbConn(dbConn);
-      closeStmt(stmt);
+      close(rs, stmt, dbConn);
     }
   }
 
@@ -885,30 +972,32 @@ public class TxnHandler {
 
   }
 
-  /**
-   * Get a connection to the database
-   * @param isolationLevel desired isolation level.  If you are doing _any_ data modifications
-   *                       you should request serializable, else read committed should be fine.
-   * @return db connection
-   * @throws MetaException if the connection cannot be obtained
-   */
   protected Connection getDbConn(int isolationLevel) throws SQLException {
-    Connection dbConn = connPool.getConnection();
-    dbConn.setAutoCommit(false);
-    dbConn.setTransactionIsolation(isolationLevel);
-    return dbConn;
+    int rc = doRetryOnConnPool ? 10 : 1;
+    while (true) {
+      try {
+        Connection dbConn = connPool.getConnection();
+        dbConn.setAutoCommit(false);
+        dbConn.setTransactionIsolation(isolationLevel);
+        return dbConn;
+      } catch (SQLException e){
+        if ((--rc) <= 0) throw e;
+        LOG.error("There is a problem with a connection from the pool, retrying(rc=" + rc + "): " +
+          getMessage(e), e);
+      }
+    }
   }
 
   void rollbackDBConn(Connection dbConn) {
     try {
-      if (dbConn != null) dbConn.rollback();
+      if (dbConn != null && !dbConn.isClosed()) dbConn.rollback();
     } catch (SQLException e) {
       LOG.warn("Failed to rollback db connection " + getMessage(e));
     }
   }
   protected void closeDbConn(Connection dbConn) {
     try {
-      if (dbConn != null) dbConn.close();
+      if (dbConn != null && !dbConn.isClosed()) dbConn.close();
     } catch (SQLException e) {
       LOG.warn("Failed to close db connection " + getMessage(e));
     }
@@ -920,7 +1009,7 @@ public class TxnHandler {
    */
   protected void closeStmt(Statement stmt) {
     try {
-      if (stmt != null) stmt.close();
+      if (stmt != null && !stmt.isClosed()) stmt.close();
     } catch (SQLException e) {
       LOG.warn("Failed to close statement " + getMessage(e));
     }
@@ -950,15 +1039,14 @@ public class TxnHandler {
     closeDbConn(dbConn);
   }
   /**
-   * Determine if an exception was such that it makse sense to retry.  Unfortunately there is no standard way to do
+   * Determine if an exception was such that it makes sense to retry.  Unfortunately there is no standard way to do
    * this, so we have to inspect the error messages and catch the telltale signs for each
-   * different database.
+   * different database.  This method will throw {@code RetryException}
+   * if the error is retry-able.
    * @param conn database connection
    * @param e exception that was thrown.
-   * @param caller name of the method calling this
-   * @throws org.apache.hadoop.hive.metastore.txn.TxnHandler.RetryException when deadlock
-   * detected and retry count has not been exceeded.
-   * TODO: make "caller" more elaborate like include lockId for example
+   * @param caller name of the method calling this (and other info useful to log)
+   * @throws org.apache.hadoop.hive.metastore.txn.TxnHandler.RetryException when the operation should be retried
    */
   protected void checkRetryable(Connection conn,
                                 SQLException e,
@@ -971,53 +1059,57 @@ public class TxnHandler {
     // so I've tried to capture the different error messages (there appear to be fewer different
     // error messages than SQL states).
     // Derby and newer MySQL driver use the new SQLTransactionRollbackException
-    if (dbProduct == null && conn != null) {
-      determineDatabaseProduct(conn);
-    }
-    if (e instanceof SQLTransactionRollbackException ||
-      ((dbProduct == DatabaseProduct.MYSQL || dbProduct == DatabaseProduct.POSTGRES ||
-        dbProduct == DatabaseProduct.SQLSERVER) && e.getSQLState().equals("40001")) ||
-      (dbProduct == DatabaseProduct.POSTGRES && e.getSQLState().equals("40P01")) ||
-      (dbProduct == DatabaseProduct.ORACLE && (e.getMessage().contains("deadlock detected")
-        || e.getMessage().contains("can't serialize access for this transaction")))) {
-      if (deadlockCnt++ < ALLOWED_REPEATED_DEADLOCKS) {
-        long waitInterval = deadlockRetryInterval * deadlockCnt;
-        LOG.warn("Deadlock detected in " + caller + ". Will wait " + waitInterval +
-          "ms try again up to " + (ALLOWED_REPEATED_DEADLOCKS - deadlockCnt + 1) + " times.");
-        // Pause for a just a bit for retrying to avoid immediately jumping back into the deadlock.
-        try {
-          Thread.sleep(waitInterval);
-        } catch (InterruptedException ie) {
-          // NOP
+    boolean sendRetrySignal = false;
+    try {
+      if (dbProduct == null && conn != null) {
+        determineDatabaseProduct(conn);
+      }
+      if (e instanceof SQLTransactionRollbackException ||
+        ((dbProduct == DatabaseProduct.MYSQL || dbProduct == DatabaseProduct.POSTGRES ||
+          dbProduct == DatabaseProduct.SQLSERVER) && e.getSQLState().equals("40001")) ||
+        (dbProduct == DatabaseProduct.POSTGRES && e.getSQLState().equals("40P01")) ||
+        (dbProduct == DatabaseProduct.ORACLE && (e.getMessage().contains("deadlock detected")
+          || e.getMessage().contains("can't serialize access for this transaction")))) {
+        if (deadlockCnt++ < ALLOWED_REPEATED_DEADLOCKS) {
+          long waitInterval = deadlockRetryInterval * deadlockCnt;
+          LOG.warn("Deadlock detected in " + caller + ". Will wait " + waitInterval +
+            "ms try again up to " + (ALLOWED_REPEATED_DEADLOCKS - deadlockCnt + 1) + " times.");
+          // Pause for a just a bit for retrying to avoid immediately jumping back into the deadlock.
+          try {
+            Thread.sleep(waitInterval);
+          } catch (InterruptedException ie) {
+            // NOP
+          }
+          sendRetrySignal = true;
+        } else {
+          LOG.error("Too many repeated deadlocks in " + caller + ", giving up.");
         }
-        throw new RetryException();
-      } else {
-        LOG.error("Too many repeated deadlocks in " + caller + ", giving up.");
+      } else if (isRetryable(e)) {
+        //in MSSQL this means Communication Link Failure
+        if (retryNum++ < retryLimit) {
+          LOG.warn("Retryable error detected in " + caller + ".  Will wait " + retryInterval +
+            "ms and retry up to " + (retryLimit - retryNum + 1) + " times.  Error: " + getMessage(e));
+          try {
+            Thread.sleep(retryInterval);
+          } catch (InterruptedException ex) {
+            //
+          }
+          sendRetrySignal = true;
+        } else {
+          LOG.error("Fatal error. Retry limit (" + retryLimit + ") reached. Last error: " + getMessage(e));
+        }
+      }
+    }
+    finally {
+      /*if this method ends with anything except a retry signal, the caller should fail the operation
+      and propagate the error up to the its caller (Metastore client); thus must reset retry counters*/
+      if(!sendRetrySignal) {
         deadlockCnt = 0;
-      }
-    }
-    else if(isRetryable(e)) {
-      //in MSSQL this means Communication Link Failure
-      if(retryNum++ < retryLimit) {
-        LOG.warn("Retryable error detected in " + caller + ".  Will wait " + retryInterval +
-          "ms and retry up to " + (retryLimit - retryNum + 1) + " times.  Error: " + getMessage(e));
-        try {
-          Thread.sleep(retryInterval);
-        }
-        catch(InterruptedException ex) {
-          //
-        }
-        throw new RetryException();
-      }
-      else {
-        LOG.error("Fatal error. Retry limit (" + retryLimit + ") reached. Last error: " + getMessage(e));
         retryNum = 0;
       }
     }
-    else {
-      //if here, we got something that will propagate the error (rather than retry), so reset counters
-      deadlockCnt = 0;
-      retryNum = 0;
+    if(sendRetrySignal) {
+      throw new RetryException();
     }
   }
 
@@ -1089,7 +1181,7 @@ public class TxnHandler {
    */
   protected DatabaseProduct determineDatabaseProduct(Connection conn) throws MetaException {
     if (dbProduct == null) {
-      try {
+      try {//todo: make this work when conn == null
         String s = conn.getMetaData().getDatabaseProductName();
         if (s == null) {
           String msg = "getDatabaseProductName returns null, can't determine database product";
@@ -1292,16 +1384,31 @@ public class TxnHandler {
     }
   }
 
+  private int abortTxns(Connection dbConn, List<Long> txnids) throws SQLException {
+    return abortTxns(dbConn, txnids, -1);
+  }
   /**
-   * Abort a group of txns
+   * TODO: expose this as an operation to client.  Useful for streaming API to abort all remaining
+   * trasnactions in a batch on IOExceptions.
    * @param dbConn An active connection
    * @param txnids list of transactions to abort
+   * @param max_heartbeat value used by {@link #performTimeOuts()} to ensure this doesn't Abort txn which were
+   *                      hearbetated after #performTimeOuts() select and this operation.
    * @return Number of aborted transactions
    * @throws SQLException
    */
-  private int abortTxns(Connection dbConn, List<Long> txnids) throws SQLException {
+  private int abortTxns(Connection dbConn, List<Long> txnids, long max_heartbeat) throws SQLException {
     Statement stmt = null;
     int updateCnt = 0;
+    if (txnids.isEmpty()) {
+      return 0;
+    }
+    if(Connection.TRANSACTION_SERIALIZABLE != dbConn.getTransactionIsolation()) {
+      /** Running this at SERIALIZABLE prevents new locks being added for this txnid(s) concurrently
+        * which would cause them to become orphaned.
+        */
+      throw new IllegalStateException("Expected SERIALIZABLE isolation. Found " + dbConn.getTransactionIsolation());
+    }
     try {
       stmt = dbConn.createStatement();
 
@@ -1317,6 +1424,8 @@ public class TxnHandler {
       LOG.debug("Going to execute update <" + buf.toString() + ">");
       stmt.executeUpdate(buf.toString());
 
+      //todo: seems like we should do this first and if it misses, don't bother with
+      //delete from HIVE_LOCKS since it will be rolled back
       buf = new StringBuilder("update TXNS set txn_state = '" + TXN_ABORTED +
         "' where txn_state = '" + TXN_OPEN + "' and txn_id in (");
       first = true;
@@ -1326,6 +1435,9 @@ public class TxnHandler {
         buf.append(id);
       }
       buf.append(')');
+      if(max_heartbeat > 0) {
+        buf.append(" and txn_last_heartbeat < ").append(max_heartbeat);
+      }
       LOG.debug("Going to execute update <" + buf.toString() + ">");
       updateCnt = stmt.executeUpdate(buf.toString());
 
@@ -1336,22 +1448,33 @@ public class TxnHandler {
   }
 
   /**
+   * Isolation Level Notes:
+   * Run at SERIALIZABLE to make sure no one is adding new locks while we are checking conflicts here.
+   * 
+   * Ramblings:
+   * We could perhaps get away with writing to TXN_COMPONENTS + HIVE_LOCKS in 1 txn@RC
+   * since this is just in Wait state.
+   * (Then we'd need to ensure that in !wait case we don't rely on rollback and again in case of
+   * failure, the W locks will timeout if failure does not propagate to client in some way, or it
+   * will and client will Abort).
+   * Actually, whether we can do this depends on what happens when you try to get a lock and notice
+   * a conflicting locks in W mode do we wait in this case?  if so it's a problem because while you
+   * are checking new locks someone may insert new  W locks that you don't see...
+   * On the other hand, this attempts to be 'fair', i.e. process locks in order so could we assume
+   * that additional W locks will have higher IDs????
+   *
+   * We can use Select for Update to generate the next LockID.  In fact we can easily do this in a separate txn.
+   * This avoids contention on NEXT_LOCK_ID.  The rest of the logic will be still need to be done at Serializable, I think,
+   * but it will not be updating the same row from 2 DB.
+   *
    * Request a lock
    * @param dbConn database connection
    * @param rqst lock information
-   * @param wait whether to wait for this lock.  The function will return immediately one way or
-   *             another.  If true and the lock could not be acquired the response will have a
-   *             state of  WAITING.  The caller will then need to poll using
-   *             {@link #checkLock(org.apache.hadoop.hive.metastore.api.CheckLockRequest)}. If
-   *             false and the  lock could not be acquired, then the response will have a state
-   *             of NOT_ACQUIRED.  The caller will need to call
-   *             {@link #lockNoWait(org.apache.hadoop.hive.metastore.api.LockRequest)} again to
-   *             attempt another lock.
    * @return information on whether the lock was acquired.
    * @throws NoSuchTxnException
    * @throws TxnAbortedException
    */
-  private LockResponse lock(Connection dbConn, LockRequest rqst, boolean wait)
+  private LockResponse lock(Connection dbConn, LockRequest rqst)
     throws NoSuchTxnException,  TxnAbortedException, MetaException, SQLException {
     // We want to minimize the number of concurrent lock requests being issued.  If we do not we
     // get a large number of deadlocks in the database, since this method has to both clean
@@ -1364,13 +1487,25 @@ public class TxnHandler {
     // etc.) that should not interfere with this one.
     synchronized (lockLock) {
       Statement stmt = null;
+      ResultSet rs = null;
       try {
+        long txnid = rqst.getTxnid();
+        if (txnid > 0) {
+          // Heartbeat the transaction so we know it is valid and we avoid it timing out while we
+          // are locking.
+          heartbeatTxn(dbConn, txnid);
+        }
         stmt = dbConn.createStatement();
 
-        // Get the next lock id.
-        String s = "select nl_next from NEXT_LOCK_ID";
+       /** Get the next lock id.
+        * This has to be atomic with adding entries to HIVE_LOCK entries (1st add in W state) to prevent a race.
+        * Suppose ID gen is a separate txn and 2 concurrent lock() methods are running.  1st one generates nl_next=7,
+        * 2nd nl_next=8.  Then 8 goes first to insert into HIVE_LOCKS and aquires the locks.  Then 7 unblocks,
+        * and add it's W locks but it won't see locks from 8 since to be 'fair' {@link #checkLock(java.sql.Connection, long)}
+        * doesn't block on locks acquired later than one it's checking*/
+        String s = addForUpdateClause(dbConn, "select nl_next from NEXT_LOCK_ID");
         LOG.debug("Going to execute query <" + s + ">");
-        ResultSet rs = stmt.executeQuery(s);
+        rs = stmt.executeQuery(s);
         if (!rs.next()) {
           LOG.debug("Going to rollback");
           dbConn.rollback();
@@ -1381,18 +1516,19 @@ public class TxnHandler {
         s = "update NEXT_LOCK_ID set nl_next = " + (extLockId + 1);
         LOG.debug("Going to execute update <" + s + ">");
         stmt.executeUpdate(s);
-        LOG.debug("Going to commit.");
-        dbConn.commit();
 
-        long txnid = rqst.getTxnid();
         if (txnid > 0) {
-          // Heartbeat the transaction so we know it is valid and we avoid it timing out while we
-          // are locking.
-          heartbeatTxn(dbConn, txnid);
-
           // For each component in this lock request,
           // add an entry to the txn_components table
           // This must be done before HIVE_LOCKS is accessed
+          
+          //Isolation note:
+          //the !wait option is not actually used anywhere.  W/o that,
+          // if we make CompactionTxnHandler.markCleaned() not delete anything above certain txn_id
+          //then there is not reason why this insert into TXN_COMPONENTS needs to run at Serializable.
+          //
+          // Again, w/o the !wait option, insert into HIVE_LOCKS should be OK at READ_COMMITTED as long
+          //as check lock is at serializable (or any other way to make sure it's exclusive)
           for (LockComponent lc : rqst.getComponent()) {
             String dbName = lc.getDbname();
             String tblName = lc.getTablename();
@@ -1425,40 +1561,48 @@ public class TxnHandler {
             " (hl_lock_ext_id, hl_lock_int_id, hl_txnid, hl_db, hl_table, " +
             "hl_partition, hl_lock_state, hl_lock_type, hl_last_heartbeat, hl_user, hl_host)" +
             " values (" + extLockId + ", " +
-            + intLockId + "," + (txnid >= 0 ? txnid : "null") + ", '" +
+            + intLockId + "," + txnid + ", '" +
             dbName + "', " + (tblName == null ? "null" : "'" + tblName + "'" )
             + ", " + (partName == null ? "null" : "'" + partName + "'") +
-            ", '" + LOCK_WAITING + "', " +  "'" + lockChar + "', " + now + ", '" +
+            ", '" + LOCK_WAITING + "', " +  "'" + lockChar + "', " +
+            //for locks associated with a txn, we always heartbeat txn and timeout based on that
+            (isValidTxn(txnid) ? 0 : now) + ", '" +
             rqst.getUser() + "', '" + rqst.getHostname() + "')";
           LOG.debug("Going to execute update <" + s + ">");
           stmt.executeUpdate(s);
         }
-        LockResponse rsp = checkLock(dbConn, extLockId, wait);
-        if (!wait && rsp.getState() != LockState.ACQUIRED) {
-          LOG.debug("Lock not acquired, going to rollback");
-          dbConn.rollback();
-          rsp = new LockResponse();
-          rsp.setState(LockState.NOT_ACQUIRED);
-        }
-        return rsp;
+        /**to make txns shorter we could commit here and start a new txn for checkLock.  This would
+         * require moving checkRetryable() down into here.  Could we then run the part before this
+         * commit are READ_COMMITTED?*/
+        return checkLock(dbConn, extLockId);
       } catch (NoSuchLockException e) {
         // This should never happen, as we just added the lock id
         throw new MetaException("Couldn't find a lock we just created!");
       } finally {
+        close(rs);
         closeStmt(stmt);
       }
     }
   }
-
+  private static boolean isValidTxn(long txnId) {
+    return txnId != 0;
+  }
+  /**
+   * Note: this calls acquire() for (extLockId,intLockId) but extLockId is the same and we either take
+   * all locks for given extLockId or none.  Would be more efficient to update state on all locks
+   * at once.  Semantics are the same since this is all part of the same txn@serializable.
+   *
+   * Lock acquisition is meant to be fair, so every lock can only block on some lock with smaller
+   * hl_lock_ext_id by only checking earlier locks.
+   */
   private LockResponse checkLock(Connection dbConn,
-                                 long extLockId,
-                                 boolean alwaysCommit)
+                                 long extLockId)
     throws NoSuchLockException, NoSuchTxnException, TxnAbortedException, MetaException, SQLException {
     List<LockInfo> locksBeingChecked = getLockInfoFromLockId(dbConn, extLockId);//being acquired now
     LockResponse response = new LockResponse();
     response.setLockid(extLockId);
 
-    LOG.debug("checkLock(): Setting savepoint. extLockId=" + extLockId);
+    LOG.debug("checkLock(): Setting savepoint. extLockId=" + JavaUtils.lockIdToString(extLockId));
     Savepoint save = dbConn.setSavepoint();
     StringBuilder query = new StringBuilder("select hl_lock_ext_id, " +
       "hl_lock_int_id, hl_db, hl_table, hl_partition, hl_lock_state, " +
@@ -1605,19 +1749,15 @@ public class TxnHandler {
             case WAIT:
               if(!ignoreConflict(info, locks[i])) {
                 wait(dbConn, save);
-                if (alwaysCommit) {
-                  // In the case where lockNoWait has been called we don't want to commit because
-                  // it's going to roll everything back. In every other case we want to commit here.
-                  LOG.debug("Going to commit");
-                  dbConn.commit();
-                }
+                LOG.debug("Going to commit");
+                dbConn.commit();
                 response.setState(LockState.WAITING);
                 LOG.debug("Lock(" + info + ") waiting for Lock(" + locks[i] + ")");
                 return response;
               }
               //fall through to ACQUIRE
             case ACQUIRE:
-              acquire(dbConn, stmt, extLockId, info.intLockId);
+              acquire(dbConn, stmt, extLockId, info);
               acquired = true;
               break;
             case KEEP_LOOKING:
@@ -1629,7 +1769,7 @@ public class TxnHandler {
 
         // If we've arrived here and we have not already acquired, it means there's nothing in the
         // way of the lock, so acquire the lock.
-        if (!acquired) acquire(dbConn, stmt, extLockId, info.intLockId);
+        if (!acquired) acquire(dbConn, stmt, extLockId, info);
       }
 
       // We acquired all of the locks, so commit and return acquired.
@@ -1673,26 +1813,31 @@ public class TxnHandler {
     dbConn.rollback(save);
   }
 
-  private void acquire(Connection dbConn, Statement stmt, long extLockId, long intLockId)
+  private void acquire(Connection dbConn, Statement stmt, long extLockId, LockInfo lockInfo)
     throws SQLException, NoSuchLockException, MetaException {
     long now = getDbTime(dbConn);
     String s = "update HIVE_LOCKS set hl_lock_state = '" + LOCK_ACQUIRED + "', " +
-      "hl_last_heartbeat = " + now + ", hl_acquired_at = " + now + " where hl_lock_ext_id = " +
-      extLockId + " and hl_lock_int_id = " + intLockId;
+      //if lock is part of txn, heartbeat info is in txn record
+      "hl_last_heartbeat = " + (isValidTxn(lockInfo.txnId) ? 0 : now) +
+    ", hl_acquired_at = " + now + " where hl_lock_ext_id = " +
+      extLockId + " and hl_lock_int_id = " + lockInfo.intLockId;
     LOG.debug("Going to execute update <" + s + ">");
     int rc = stmt.executeUpdate(s);
     if (rc < 1) {
       LOG.debug("Going to rollback");
       dbConn.rollback();
-      throw new NoSuchLockException("No such lock: (" + extLockId + "," +
-        + intLockId + ")");
+      throw new NoSuchLockException("No such lock: (" + JavaUtils.lockIdToString(extLockId) + "," +
+        + lockInfo.intLockId + ") " + JavaUtils.txnIdToString(lockInfo.txnId));
     }
     // We update the database, but we don't commit because there may be other
     // locks together with this, and we only want to acquire one if we can
     // acquire all.
   }
 
-  // Heartbeats on the lock table.  This commits, so do not enter it with any state
+  /**
+   * Heartbeats on the lock table.  This commits, so do not enter it with any state.
+   * Should not be called on a lock that belongs to transaction.
+   */
   private void heartbeatLock(Connection dbConn, long extLockId)
     throws NoSuchLockException, SQLException, MetaException {
     // If the lock id is 0, then there are no locks in this heartbeat
@@ -1709,7 +1854,7 @@ public class TxnHandler {
       if (rc < 1) {
         LOG.debug("Going to rollback");
         dbConn.rollback();
-        throw new NoSuchLockException("No such lock: " + extLockId);
+        throw new NoSuchLockException("No such lock: " + JavaUtils.lockIdToString(extLockId));
       }
       LOG.debug("Going to commit");
       dbConn.commit();
@@ -1727,32 +1872,16 @@ public class TxnHandler {
     try {
       stmt = dbConn.createStatement();
       long now = getDbTime(dbConn);
-      // We need to check whether this transaction is valid and open
-      String s = "select txn_state from TXNS where txn_id = " + txnid;
-      LOG.debug("Going to execute query <" + s + ">");
-      ResultSet rs = stmt.executeQuery(s);
-      if (!rs.next()) {
-        s = "select count(*) from COMPLETED_TXN_COMPONENTS where CTC_TXNID = " + txnid;
-        ResultSet rs2 = stmt.executeQuery(s);
-        boolean alreadyCommitted = rs2.next() && rs2.getInt(1) > 0;
-        LOG.debug("Going to rollback");
-        dbConn.rollback();
-        if(alreadyCommitted) {
-          //makes the message more informative - helps to find bugs in client code
-          throw new NoSuchTxnException("Transaction " + JavaUtils.txnIdToString(txnid) + " is already committed.");
-        }
-        throw new NoSuchTxnException("No such transaction " + JavaUtils.txnIdToString(txnid));
-      }
-      if (rs.getString(1).charAt(0) == TXN_ABORTED) {
-        LOG.debug("Going to rollback");
-        dbConn.rollback();
-        throw new TxnAbortedException("Transaction " + JavaUtils.txnIdToString(txnid) +
-          " already aborted");//todo: add time of abort, which is not currently tracked
-      }
-      s = "update TXNS set txn_last_heartbeat = " + now +
-        " where txn_id = " + txnid;
+      String s = "update TXNS set txn_last_heartbeat = " + now +
+        " where txn_id = " + txnid + " and txn_state = '" + TXN_OPEN + "'";
       LOG.debug("Going to execute update <" + s + ">");
-      stmt.executeUpdate(s);
+      int rc = stmt.executeUpdate(s);
+      if (rc < 1) {
+        ensureValidTxn(dbConn, txnid, stmt); // This should now throw some useful exception.
+        LOG.warn("Can neither heartbeat txn nor confirm it as invalid.");
+        dbConn.rollback();
+        throw new NoSuchTxnException("No such txn: " + txnid);
+      }
       LOG.debug("Going to commit");
       dbConn.commit();
     } finally {
@@ -1760,24 +1889,52 @@ public class TxnHandler {
     }
   }
 
-  // NEVER call this function without first calling heartbeat(long, long)
-  private long getTxnIdFromLockId(Connection dbConn, long extLockId)
+  private static void ensureValidTxn(Connection dbConn, long txnid, Statement stmt)
+      throws SQLException, NoSuchTxnException, TxnAbortedException {
+    // We need to check whether this transaction is valid and open
+    String s = "select txn_state from TXNS where txn_id = " + txnid;
+    LOG.debug("Going to execute query <" + s + ">");
+    ResultSet rs = stmt.executeQuery(s);
+    if (!rs.next()) {
+      //todo: add LIMIT 1 instead of count - should be more efficient
+      s = "select count(*) from COMPLETED_TXN_COMPONENTS where CTC_TXNID = " + txnid;
+      ResultSet rs2 = stmt.executeQuery(s);
+      boolean alreadyCommitted = rs2.next() && rs2.getInt(1) > 0;
+      LOG.debug("Going to rollback");
+      dbConn.rollback();
+      if(alreadyCommitted) {
+        //makes the message more informative - helps to find bugs in client code
+        throw new NoSuchTxnException("Transaction " + JavaUtils.txnIdToString(txnid) + " is already committed.");
+      }
+      throw new NoSuchTxnException("No such transaction " + JavaUtils.txnIdToString(txnid));
+    }
+    if (rs.getString(1).charAt(0) == TXN_ABORTED) {
+      LOG.debug("Going to rollback");
+      dbConn.rollback();
+      throw new TxnAbortedException("Transaction " + JavaUtils.txnIdToString(txnid) +
+        " already aborted");//todo: add time of abort, which is not currently tracked.  Requires schema change
+    }
+  }
+
+  private LockInfo getTxnIdFromLockId(Connection dbConn, long extLockId)
     throws NoSuchLockException, MetaException, SQLException {
     Statement stmt = null;
+    ResultSet rs = null;
     try {
       stmt = dbConn.createStatement();
-      String s = "select hl_txnid from HIVE_LOCKS where hl_lock_ext_id = " +
-        extLockId;
+      String s = "select hl_lock_ext_id, hl_lock_int_id, hl_db, hl_table, " +
+        "hl_partition, hl_lock_state, hl_lock_type, hl_txnid from HIVE_LOCKS where " +
+        "hl_lock_ext_id = " + extLockId;
       LOG.debug("Going to execute query <" + s + ">");
-      ResultSet rs = stmt.executeQuery(s);
+      rs = stmt.executeQuery(s);
       if (!rs.next()) {
-        throw new MetaException("This should never happen!  We already " +
-          "checked the lock existed but now we can't find it!");
+        return null;
       }
-      long txnid = rs.getLong(1);
-      LOG.debug("Return " + JavaUtils.txnIdToString(rs.wasNull() ? -1 : txnid));
-      return (rs.wasNull() ? -1 : txnid);
+      LockInfo info = new LockInfo(rs);
+      LOG.debug("getTxnIdFromLockId(" + extLockId + ") Return " + JavaUtils.txnIdToString(info.txnId));
+      return info;
     } finally {
+      close(rs);
       closeStmt(stmt);
     }
   }
@@ -1801,7 +1958,7 @@ public class TxnHandler {
       }
       if (!sawAtLeastOne) {
         throw new MetaException("This should never happen!  We already " +
-          "checked the lock existed but now we can't find it!");
+          "checked the lock(" + JavaUtils.lockIdToString(extLockId) + ") existed but now we can't find it!");
       }
       return ourLockInfo;
     } finally {
@@ -1813,14 +1970,13 @@ public class TxnHandler {
   // for read-only autoCommit=true statements.  This does a commit,
   // and thus should be done before any calls to heartbeat that will leave
   // open transactions.
-  private void timeOutLocks(Connection dbConn) {
+  private void timeOutLocks(Connection dbConn, long now) {
     Statement stmt = null;
     try {
-      long now = getDbTime(dbConn);
       stmt = dbConn.createStatement();
       // Remove any timed out locks from the table.
       String s = "delete from HIVE_LOCKS where hl_last_heartbeat < " +
-        (now - timeout) + " and (hl_txnid = 0 or hl_txnid is NULL)";//when txnid is > 0, the lock is
+        (now - timeout) + " and hl_txnid = 0";//when txnid is > 0, the lock is
       //associated with a txn and is handled by performTimeOuts()
       //want to avoid expiring locks for a txn w/o expiring the txn itself
       LOG.debug("Going to execute update <" + s + ">");
@@ -1872,6 +2028,8 @@ public class TxnHandler {
     }
   }
   /**
+   * Isolation Level Notes
+   * Plain: RC is OK
    * This will find transactions that have timed out and abort them.
    * Will also delete locks which are not associated with a transaction and have timed out
    * Tries to keep transactions (against metastore db) small to reduce lock contention.
@@ -1881,14 +2039,24 @@ public class TxnHandler {
     Statement stmt = null;
     ResultSet rs = null;
     try {
-      dbConn = getDbConn(Connection.TRANSACTION_SERIALIZABLE);
+      dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+      //We currently commit after selecting the TXNS to abort.  So whether SERIALIZABLE
+      //READ_COMMITTED, the effect is the same.  We could use FOR UPDATE on Select from TXNS
+      //and do the whole performTimeOuts() in a single huge transaction, but the only benefit
+      //would be to make sure someone cannot heartbeat one of these txns at the same time.
+      //The attempt to heartbeat would block and fail immediately after it's unblocked.
+      //With current (RC + multiple txns) implementation it is possible for someone to send
+      //heartbeat at the very end of the expire interval, and just after the Select from TXNS
+      //is made, in which case heartbeat will succeed but txn will still be Aborted.
+      //Solving this corner case is not worth the perf penalty.  The client should heartbeat in a
+      //timely way.
       long now = getDbTime(dbConn);
-      timeOutLocks(dbConn);
+      timeOutLocks(dbConn, now);
       while(true) {
         stmt = dbConn.createStatement();
         String s = " txn_id from TXNS where txn_state = '" + TXN_OPEN +
           "' and txn_last_heartbeat <  " + (now - timeout);
-        s = addLimitClause(dbConn, 2500, s);
+        s = addLimitClause(dbConn, 250 * TIMED_OUT_TXN_ABORT_BATCH_SIZE, s);
         LOG.debug("Going to execute query <" + s + ">");
         rs = stmt.executeQuery(s);
         if(!rs.next()) {
@@ -1904,16 +2072,26 @@ public class TxnHandler {
             timedOutTxns.add(currentBatch);
           }
         } while(rs.next());
-        close(rs, stmt, null);
         dbConn.commit();
+        close(rs, stmt, dbConn);
+        dbConn = getDbConn(Connection.TRANSACTION_SERIALIZABLE);
+        int numTxnsAborted = 0;
         for(List<Long> batchToAbort : timedOutTxns) {
-          abortTxns(dbConn, batchToAbort);
-          dbConn.commit();
-          //todo: add TXNS.COMMENT filed and set it to 'aborted by system due to timeout'
-          LOG.info("Aborted the following transactions due to timeout: " + timedOutTxns.toString());
+          if(abortTxns(dbConn, batchToAbort, now - timeout) == batchToAbort.size()) {
+            dbConn.commit();
+            numTxnsAborted += batchToAbort.size();
+            //todo: add TXNS.COMMENT filed and set it to 'aborted by system due to timeout'
+            LOG.info("Aborted the following transactions due to timeout: " + batchToAbort.toString());
+          }
+          else {
+            //could not abort all txns in this batch - this may happen because in parallel with this
+            //operation there was activity on one of the txns in this batch (commit/abort/heartbeat)
+            //This is not likely but may happen if client experiences long pause between heartbeats or
+            //unusually long/extreme pauses between heartbeat() calls and other logic in checkLock(),
+            //lock(), etc.
+            dbConn.rollback();
+          }
         }
-        int numTxnsAborted = (timedOutTxns.size() - 1) * TIMED_OUT_TXN_ABORT_BATCH_SIZE +
-          timedOutTxns.get(timedOutTxns.size() - 1).size();
         LOG.info("Aborted " + numTxnsAborted + " transactions due to timeout");
       }
     } catch (SQLException ex) {
@@ -1945,11 +2123,15 @@ public class TxnHandler {
     if ("bonecp".equals(connectionPooler)) {
       BoneCPConfig config = new BoneCPConfig();
       config.setJdbcUrl(driverUrl);
+      //if we are waiting for connection for 60s, something is really wrong
+      //better raise an error than hang forever
+      config.setConnectionTimeoutInMs(60000);
       config.setMaxConnectionsPerPartition(10);
       config.setPartitionCount(1);
       config.setUser(user);
       config.setPassword(passwd);
       connPool = new BoneCPDataSource(config);
+      doRetryOnConnPool = true;  // Enable retries to work around BONECP bug.
     } else if ("dbcp".equals(connectionPooler)) {
       ObjectPool objectPool = new GenericObjectPool();
       ConnectionFactory connFactory = new DriverManagerConnectionFactory(driverUrl, user, passwd);
@@ -2083,10 +2265,112 @@ public class TxnHandler {
         //in MSSQL this means Communication Link Failure
         return true;
       }
+      if("ORA-08176".equalsIgnoreCase(sqlException.getSQLState())) {
+        return true;
+      }
+      //see also https://issues.apache.org/jira/browse/HIVE-9938
     }
     return false;
   }
   private static String getMessage(SQLException ex) {
     return ex.getMessage() + "(SQLState=" + ex.getSQLState() + ",ErrorCode=" + ex.getErrorCode() + ")";
+  }
+  /**
+   * Returns one of {@link java.sql.Connection#TRANSACTION_SERIALIZABLE} TRANSACTION_READ_COMMITTED, etc.
+   * Different DBs support different concurrency management options.  This class relies on SELECT ... FOR UPDATE
+   * functionality.  Where that is not available, SERIALIZABLE isolation is used.
+   * This method must always agree with {@link #addForUpdateClause(java.sql.Connection, String)}, in that
+   * if FOR UPDATE is not available, must run operation at SERIALIZABLE.
+   */
+  private int getRequiredIsolationLevel() throws MetaException, SQLException {
+    if(dbProduct == null) {
+      Connection tmp = null;
+      try {
+        tmp = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        determineDatabaseProduct(tmp);
+      }
+      finally {
+        closeDbConn(tmp);
+      }
+    }
+    switch (dbProduct) {
+      case DERBY:
+        return Connection.TRANSACTION_SERIALIZABLE;
+      case MYSQL:
+      case ORACLE:
+      case POSTGRES:
+      case SQLSERVER:
+        return Connection.TRANSACTION_READ_COMMITTED;
+      default:
+        String msg = "Unrecognized database product name <" + dbProduct + ">";
+        LOG.error(msg);
+        throw new MetaException(msg);
+    }
+  }
+  /**
+   * Given a {@code selectStatement}, decorated it with FOR UPDATE or semantically equivalent
+   * construct.  If the DB doesn't support, return original select.  This method must always
+   * agree with {@link #getRequiredIsolationLevel()}
+   */
+  private String addForUpdateClause(Connection dbConn, String selectStatement) throws MetaException {
+    DatabaseProduct prod = determineDatabaseProduct(dbConn);
+    switch (prod) {
+      case DERBY:
+        //https://db.apache.org/derby/docs/10.1/ref/rrefsqlj31783.html
+        //sadly in Derby, FOR UPDATE doesn't meant what it should
+        return selectStatement;
+      case MYSQL:
+        //http://dev.mysql.com/doc/refman/5.7/en/select.html
+      case ORACLE:
+        //https://docs.oracle.com/cd/E17952_01/refman-5.6-en/select.html
+      case POSTGRES:
+        //http://www.postgresql.org/docs/9.0/static/sql-select.html
+        return selectStatement + " for update";
+      case SQLSERVER:
+        //https://msdn.microsoft.com/en-us/library/ms189499.aspx
+        //https://msdn.microsoft.com/en-us/library/ms187373.aspx
+        return selectStatement + " with(updlock)";
+      default:
+        String msg = "Unrecognized database product name <" + prod + ">";
+        LOG.error(msg);
+        throw new MetaException(msg);
+    }
+  }
+  /**
+   * the caller is expected to retry if this fails
+   *
+   * @return
+   * @throws SQLException
+   * @throws MetaException
+   */
+  private long generateNewExtLockId() throws SQLException, MetaException {
+    Connection dbConn = null;
+    Statement stmt = null;
+    ResultSet rs = null;
+    try {
+      dbConn = getDbConn(getRequiredIsolationLevel());
+      stmt = dbConn.createStatement();
+
+      // Get the next lock id.
+      String s = addForUpdateClause(dbConn, "select nl_next from NEXT_LOCK_ID");
+      LOG.debug("Going to execute query <" + s + ">");
+      rs = stmt.executeQuery(s);
+      if (!rs.next()) {
+        LOG.debug("Going to rollback");
+        dbConn.rollback();
+        throw new MetaException("Transaction tables not properly " +
+          "initialized, no record found in next_lock_id");
+      }
+      long extLockId = rs.getLong(1);
+      s = "update NEXT_LOCK_ID set nl_next = " + (extLockId + 1);
+      LOG.debug("Going to execute update <" + s + ">");
+      stmt.executeUpdate(s);
+      LOG.debug("Going to commit.");
+      dbConn.commit();
+      return extLockId;
+    }
+    finally {
+      close(rs, stmt, dbConn);
+    }
   }
 }

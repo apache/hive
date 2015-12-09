@@ -21,8 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
@@ -53,8 +53,8 @@ import com.google.common.collect.Lists;
  */
 public class MergeFileRecordProcessor extends RecordProcessor {
 
-  public static final Log LOG = LogFactory
-      .getLog(MergeFileRecordProcessor.class);
+  public static final Logger LOG = LoggerFactory
+      .getLogger(MergeFileRecordProcessor.class);
 
   protected Operator<? extends OperatorDesc> mergeOp;
   private ExecMapperContext execContext = null;
@@ -94,14 +94,14 @@ public class MergeFileRecordProcessor extends RecordProcessor {
           .initialize();
     }
 
+    String queryId = HiveConf.getVar(jconf, HiveConf.ConfVars.HIVEQUERYID);
     org.apache.hadoop.hive.ql.exec.ObjectCache cache = ObjectCacheFactory
-      .getCache(jconf);
+      .getCache(jconf, queryId);
 
     try {
       execContext.setJc(jconf);
 
-      String queryId = HiveConf.getVar(jconf, HiveConf.ConfVars.HIVEQUERYID);
-      cacheKey = queryId + MAP_PLAN_KEY;
+      cacheKey = MAP_PLAN_KEY;
 
       MapWork mapWork = (MapWork) cache.retrieve(cacheKey, new Callable<Object>() {
         @Override
@@ -150,10 +150,15 @@ public class MergeFileRecordProcessor extends RecordProcessor {
     while (reader.next()) {
       boolean needMore = processRow(reader.getCurrentKey(),
           reader.getCurrentValue());
-      if (!needMore) {
+      if (!needMore || abort) {
         break;
       }
     }
+  }
+
+  @Override
+  void abort() {
+    abort = true;
   }
 
   @Override
@@ -185,7 +190,7 @@ public class MergeFileRecordProcessor extends RecordProcessor {
             e);
       }
     } finally {
-      Utilities.clearWorkMap();
+      Utilities.clearWorkMap(jconf);
       MapredContext.close();
     }
   }
@@ -213,7 +218,7 @@ public class MergeFileRecordProcessor extends RecordProcessor {
         // Don't create a new object if we are already out of memory
         throw (OutOfMemoryError) e;
       } else {
-        l4j.fatal(StringUtils.stringifyException(e));
+        l4j.error(StringUtils.stringifyException(e));
         throw new RuntimeException(e);
       }
     }

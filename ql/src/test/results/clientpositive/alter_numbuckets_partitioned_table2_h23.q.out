@@ -1,13 +1,11 @@
-PREHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20S)
--- Tests that when overwriting a partition in a table after altering the bucketing/sorting metadata
+PREHOOK: query: -- Tests that when overwriting a partition in a table after altering the bucketing/sorting metadata
 -- the partition metadata is updated as well.
 
 CREATE TABLE tst1(key STRING, value STRING) PARTITIONED BY (ds STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tst1
-POSTHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20S)
--- Tests that when overwriting a partition in a table after altering the bucketing/sorting metadata
+POSTHOOK: query: -- Tests that when overwriting a partition in a table after altering the bucketing/sorting metadata
 -- the partition metadata is updated as well.
 
 CREATE TABLE tst1(key STRING, value STRING) PARTITIONED BY (ds STRING)
