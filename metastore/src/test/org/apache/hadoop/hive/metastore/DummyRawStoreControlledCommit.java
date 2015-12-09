@@ -765,5 +765,18 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
     return objectStore.getCurrentNotificationEventId();
   }
 
+  @Override
+  public int getTableCount() throws MetaException {
+    return objectStore.getTableCount();
+  }
 
+  @Override
+  public int getPartitionCount() throws MetaException {
+    return objectStore.getPartitionCount();
+  }
+
+  @Override
+  public int getDatabaseCount() throws MetaException {
+    return objectStore.getDatabaseCount();
+  }
 }

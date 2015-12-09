@@ -779,6 +779,20 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
 
+  @Override
+  public int getTableCount() throws MetaException {
+    return 0;
+  }
+
+  @Override
+  public int getPartitionCount() throws MetaException {
+    return 0;
+  }
+
+  @Override
+  public int getDatabaseCount() throws MetaException {
+    return 0;
+  }
 }
 
 

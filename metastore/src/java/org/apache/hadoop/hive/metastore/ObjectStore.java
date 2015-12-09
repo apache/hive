@@ -36,8 +36,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
@@ -217,7 +220,6 @@ public class ObjectStore implements RawStore, Configurable {
   private volatile int openTrasactionCalls = 0;
   private Transaction currentTransaction = null;
   private TXN_STATUS transactionStatus = TXN_STATUS.NO_STATE;
-
   private Pattern partitionValidationPattern;
 
   /**
@@ -1064,6 +1066,40 @@ public class ObjectStore implements RawStore, Configurable {
       }
     }
     return tbls;
+  }
+
+  public int getDatabaseCount() throws MetaException {
+    return getObjectCount("name", MDatabase.class.getName());
+  }
+
+  public int getPartitionCount() throws MetaException {
+    return getObjectCount("partitionName", MPartition.class.getName());
+  }
+
+  public int getTableCount() throws MetaException {
+    return getObjectCount("tableName", MTable.class.getName());
+  }
+
+  private int getObjectCount(String fieldName, String objName) {
+    Long result = 0L;
+    boolean commited = false;
+    Query query = null;
+    try {
+      openTransaction();
+      String queryStr =
+        "select count(" + fieldName + ") from " + objName;
+      query = pm.newQuery(queryStr);
+      result = (Long) query.execute();
+      commited = commitTransaction();
+    } finally {
+      if (!commited) {
+        rollbackTransaction();
+      }
+      if (query != null) {
+        query.closeAll();
+      }
+    }
+    return result.intValue();
   }
 
   @Override

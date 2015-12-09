@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.SortedSet;
 
 import org.apache.hadoop.conf.Configurable;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
@@ -600,5 +601,22 @@ public interface RawStore extends Configurable {
    * @return
    */
   public CurrentNotificationEventId getCurrentNotificationEventId();
-  
+
+  /**
+   * Gets total number of tables.
+   */
+  @InterfaceStability.Evolving
+  int getTableCount() throws MetaException;
+
+  /**
+   * Gets total number of partitions.
+   */
+  @InterfaceStability.Evolving
+  int getPartitionCount() throws MetaException;
+
+  /**
+   * Gets total number of databases.
+   */
+  @InterfaceStability.Evolving
+  int getDatabaseCount() throws MetaException;
 }
