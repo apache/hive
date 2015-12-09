@@ -22,10 +22,6 @@ import java.util.List;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.PrincipalDesc;
-import org.apache.hadoop.hive.ql.plan.PrivilegeDesc;
-import org.apache.hadoop.hive.ql.plan.PrivilegeObjectDesc;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 
 /**
@@ -214,12 +210,5 @@ public interface HiveAuthorizer {
    */
   public void applyAuthorizationConfigPolicy(HiveConf hiveConf) throws HiveAuthzPluginException;
 
-  public List<HivePrincipal> getHivePrincipals(List<PrincipalDesc> principals)
-      throws HiveException;
-
-  public List<HivePrivilege> getHivePrivileges(List<PrivilegeDesc> privileges);
-
-  public HivePrivilegeObject getHivePrivilegeObject(PrivilegeObjectDesc privSubjectDesc)
-      throws HiveException;
 }
 
