@@ -154,7 +154,11 @@ public class LazyHBaseRow extends LazyStruct {
       }
 
       if (colMap.hbaseTimestamp) {
+        // Get the latest timestamp of all the cells as the row timestamp
         long timestamp = result.rawCells()[0].getTimestamp(); // from hbase-0.96.0
+        for (int i = 1; i < result.rawCells().length; i++) {
+          timestamp = Math.max(timestamp, result.rawCells()[i].getTimestamp());
+        }
         LazyObjectBase lz = fields[fieldID];
         if (lz instanceof LazyTimestamp) {
           ((LazyTimestamp) lz).getWritableObject().setTime(timestamp);

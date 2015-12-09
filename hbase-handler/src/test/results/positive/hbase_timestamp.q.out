@@ -355,3 +355,75 @@ POSTHOOK: Input: default@hbase_table
 222	val_222	1976-05-03 12:33:20
 296	val_296	1976-05-03 12:33:20
 333	val_333	1976-05-03 12:33:20
+PREHOOK: query: DROP TABLE hbase_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@hbase_table
+PREHOOK: Output: default@hbase_table
+POSTHOOK: query: DROP TABLE hbase_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@hbase_table
+POSTHOOK: Output: default@hbase_table
+PREHOOK: query: CREATE TABLE hbase_table(key string, value map<string, string>, time timestamp)
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:,:timestamp")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hbase_table
+POSTHOOK: query: CREATE TABLE hbase_table(key string, value map<string, string>, time timestamp)
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:,:timestamp")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hbase_table
+PREHOOK: query: FROM src INSERT OVERWRITE TABLE hbase_table SELECT key, MAP("name", CONCAT(value, " Jr")), "2012-02-23 10:14:52" WHERE (key % 17) = 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@hbase_table
+POSTHOOK: query: FROM src INSERT OVERWRITE TABLE hbase_table SELECT key, MAP("name", CONCAT(value, " Jr")), "2012-02-23 10:14:52" WHERE (key % 17) = 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@hbase_table
+PREHOOK: query: FROM src INSERT INTO TABLE hbase_table SELECT key, MAP("age", '40'), "2015-12-12 12:12:12" WHERE (key % 17) = 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@hbase_table
+POSTHOOK: query: FROM src INSERT INTO TABLE hbase_table SELECT key, MAP("age", '40'), "2015-12-12 12:12:12" WHERE (key % 17) = 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@hbase_table
+PREHOOK: query: FROM src INSERT INTO TABLE hbase_table SELECT key, MAP("name", value), "2000-01-01 01:01:01" WHERE (key % 17) = 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@hbase_table
+POSTHOOK: query: FROM src INSERT INTO TABLE hbase_table SELECT key, MAP("name", value), "2000-01-01 01:01:01" WHERE (key % 17) = 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@hbase_table
+PREHOOK: query: SELECT * FROM hbase_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hbase_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM hbase_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hbase_table
+#### A masked pattern was here ####
+0	{"age":"40","name":"val_0 Jr"}	2015-12-12 12:12:12
+119	{"age":"40","name":"val_119 Jr"}	2015-12-12 12:12:12
+136	{"age":"40","name":"val_136 Jr"}	2015-12-12 12:12:12
+153	{"age":"40","name":"val_153 Jr"}	2015-12-12 12:12:12
+17	{"age":"40","name":"val_17 Jr"}	2015-12-12 12:12:12
+170	{"age":"40","name":"val_170 Jr"}	2015-12-12 12:12:12
+187	{"age":"40","name":"val_187 Jr"}	2015-12-12 12:12:12
+221	{"age":"40","name":"val_221 Jr"}	2015-12-12 12:12:12
+238	{"age":"40","name":"val_238 Jr"}	2015-12-12 12:12:12
+255	{"age":"40","name":"val_255 Jr"}	2015-12-12 12:12:12
+272	{"age":"40","name":"val_272 Jr"}	2015-12-12 12:12:12
+289	{"age":"40","name":"val_289 Jr"}	2015-12-12 12:12:12
+306	{"age":"40","name":"val_306 Jr"}	2015-12-12 12:12:12
+323	{"age":"40","name":"val_323 Jr"}	2015-12-12 12:12:12
+34	{"age":"40","name":"val_34 Jr"}	2015-12-12 12:12:12
+374	{"age":"40","name":"val_374 Jr"}	2015-12-12 12:12:12
+459	{"age":"40","name":"val_459 Jr"}	2015-12-12 12:12:12
+493	{"age":"40","name":"val_493 Jr"}	2015-12-12 12:12:12
+51	{"age":"40","name":"val_51 Jr"}	2015-12-12 12:12:12
+85	{"age":"40","name":"val_85 Jr"}	2015-12-12 12:12:12
