@@ -38,7 +38,9 @@ import org.junit.Test;
 import org.junit.internal.runners.statements.Fail;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.sun.tools.javac.resources.javac;
 
+import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -53,6 +55,7 @@ import java.util.concurrent.ThreadFactory;
 public class TestVectorDateExpressions {
 
   private ExecutorService runner;
+  private static final int MAX_SANE_DATE_VALUE = new DateWritable(Date.valueOf("3000-01-01")).getDays();
 
   /* copied over from VectorUDFTimestampFieldLong */
   private TimestampWritable toTimestampWritable(long daysSinceEpoch) {
@@ -78,11 +81,15 @@ public class TestVectorDateExpressions {
   }
 
   private VectorizedRowBatch getVectorizedRandomRowBatch(int seed, int size) {
+    return getVectorizedRandomRowBatch(seed, size, Integer.MAX_VALUE);
+  }
+
+  private VectorizedRowBatch getVectorizedRandomRowBatch(int seed, int size, int maxValue) {
     VectorizedRowBatch batch = new VectorizedRowBatch(2, size);
     LongColumnVector lcv = new LongColumnVector(size);
     Random rand = new Random(seed);
     for (int i = 0; i < size; i++) {
-      lcv.vector[i] = (rand.nextInt());
+      lcv.vector[i] = (rand.nextInt(maxValue));
     }
     batch.cols[0] = lcv;
     batch.cols[1] = new LongColumnVector(size);
@@ -159,7 +166,7 @@ public class TestVectorDateExpressions {
     batch.cols[0].isNull[0] = true;
     verifyUDFYear(batch);
 
-    batch = getVectorizedRandomRowBatch(200, VectorizedRowBatch.DEFAULT_SIZE);
+    batch = getVectorizedRandomRowBatch(200, VectorizedRowBatch.DEFAULT_SIZE, MAX_SANE_DATE_VALUE);
     verifyUDFYear(batch);
     TestVectorizedRowBatch.addRandomNulls(batch.cols[0]);
     verifyUDFYear(batch);
@@ -283,7 +290,7 @@ public class TestVectorDateExpressions {
     batch.cols[0].isNull[0] = true;
     verifyUDFMonth(batch);
 
-    batch = getVectorizedRandomRowBatch(200, VectorizedRowBatch.DEFAULT_SIZE);
+    batch = getVectorizedRandomRowBatch(200, VectorizedRowBatch.DEFAULT_SIZE, MAX_SANE_DATE_VALUE);
     verifyUDFMonth(batch);
     TestVectorizedRowBatch.addRandomNulls(batch.cols[0]);
     verifyUDFMonth(batch);
