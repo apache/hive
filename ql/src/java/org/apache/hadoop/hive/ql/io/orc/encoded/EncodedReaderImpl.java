@@ -386,12 +386,17 @@ class EncodedReaderImpl implements EncodedReader {
             cb = sctx.stripeLevelStream;
           } else {
             // This stream can be separated by RG using index. Let's do that.
+            // Offset to where this RG begins.
             long cOffset = sctx.offset + index.getPositions(sctx.streamIndexOffset);
+            // Offset relative to the beginning of the stream of where this RG ends.
             long nextCOffsetRel = isLastRg ? sctx.length
                 : nextIndex.getPositions(sctx.streamIndexOffset);
+            // Offset before which this RG is guaranteed to end. Can only be estimated.
             // We estimate the same way for compressed and uncompressed for now.
             long endCOffset = sctx.offset + RecordReaderUtils.estimateRgEndOffset(
                 isCompressed, isLastRg, nextCOffsetRel, sctx.length, bufferSize);
+            // As we read, we can unlock initial refcounts for the buffers that end before
+            // the data that we need for this RG.
             long unlockUntilCOffset = sctx.offset + nextCOffsetRel;
             cb = createRgColumnStreamData(
                 rgIx, isLastRg, ctx.colIx, sctx, cOffset, endCOffset, isCompressed);
@@ -540,6 +545,12 @@ class EncodedReaderImpl implements EncodedReader {
     public void reset() {
       super.reset();
       this.originalData = null;
+    }
+
+    @Override
+    public String toString() {
+      return super.toString() + ", original is set " + (this.originalData != null)
+          + ", buffer was replaced " + (originalCbIndex == -1);
     }
 
     @Override
@@ -1020,17 +1031,32 @@ class EncodedReaderImpl implements EncodedReader {
 
   private void ponderReleaseInitialRefcount(
       long unlockUntilCOffset, long streamStartOffset, CacheChunk cc) {
+    // Don't release if the buffer contains any data beyond the acceptable boundary.
     if (cc.getEnd() > unlockUntilCOffset) return;
     assert cc.getBuffer() != null;
-    releaseInitialRefcount(cc, false);
-    // Release all the previous buffers that we may not have been able to release due to reuse.
+    try {
+      releaseInitialRefcount(cc, false);
+    } catch (AssertionError e) {
+      LOG.error("BUG: releasing initial refcount; stream start " + streamStartOffset + ", "
+          + "unlocking until " + unlockUntilCOffset + " from [" + cc + "]: " + e.getMessage());
+      throw e;
+    }
+    // Release all the previous buffers that we may not have been able to release due to reuse,
+    // as long as they are still in the same stream and are not already released.
     DiskRangeList prev = cc.prev;
     while (true) {
       if ((prev == null) || (prev.getEnd() <= streamStartOffset)
           || !(prev instanceof CacheChunk)) break;
       CacheChunk prevCc = (CacheChunk)prev;
       if (prevCc.buffer == null) break;
-      releaseInitialRefcount(prevCc, true);
+      try {
+        releaseInitialRefcount(prevCc, true);
+      } catch (AssertionError e) {
+        LOG.error("BUG: releasing initial refcount; stream start " + streamStartOffset + ", "
+            + "unlocking until " + unlockUntilCOffset + " from [" + cc + "] and backtracked to ["
+            + prevCc + "]: " + e.getMessage());
+        throw e;
+      }
       prev = prev.prev;
     }
   }
