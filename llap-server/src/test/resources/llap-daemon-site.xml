@@ -54,6 +54,12 @@
     <description>Comma separate list of nodes running daemons</description>
   </property>
 
+  <property>
+    <name>hive.llap.cache.allow.synthetic.fileid</name>
+    <value>true</value>
+  </property>
+
+
   <!-- hadoop IPC options -->
   <property>
     <name>ipc.client.low-latency</name>

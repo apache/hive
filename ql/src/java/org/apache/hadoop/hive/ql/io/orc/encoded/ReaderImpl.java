@@ -35,7 +35,7 @@ class ReaderImpl extends org.apache.hadoop.hive.ql.io.orc.ReaderImpl implements 
 
   @Override
   public EncodedReader encodedReader(
-      long fileId, DataCache dataCache, DataReader dataReader, PoolFactory pf) throws IOException {
+      Long fileId, DataCache dataCache, DataReader dataReader, PoolFactory pf) throws IOException {
     return new EncodedReaderImpl(fileId, types,
         codec, bufferSize, rowIndexStride, dataCache, dataReader, pf);
   }

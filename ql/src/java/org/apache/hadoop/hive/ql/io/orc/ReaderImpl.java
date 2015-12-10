@@ -418,7 +418,7 @@ public class ReaderImpl implements Reader {
       int footerSize, CompressionCodec codec, int bufferSize) throws IOException {
     bb.position(footerAbsPos);
     bb.limit(footerAbsPos + footerSize);
-    return OrcProto.Footer.parseFrom(InStream.createCodedInputStream(null, "footer",
+    return OrcProto.Footer.parseFrom(InStream.createCodedInputStream("footer",
         Lists.<DiskRange>newArrayList(new BufferChunk(bb, 0)), footerSize, codec, bufferSize));
   }
 
@@ -426,7 +426,7 @@ public class ReaderImpl implements Reader {
       int metadataSize, CompressionCodec codec, int bufferSize) throws IOException {
     bb.position(metadataAbsPos);
     bb.limit(metadataAbsPos + metadataSize);
-    return OrcProto.Metadata.parseFrom(InStream.createCodedInputStream(null, "metadata",
+    return OrcProto.Metadata.parseFrom(InStream.createCodedInputStream("metadata",
         Lists.<DiskRange>newArrayList(new BufferChunk(bb, 0)), metadataSize, codec, bufferSize));
   }
 

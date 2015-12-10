@@ -37,12 +37,10 @@ public abstract class InStream extends InputStream {
   private static final Logger LOG = LoggerFactory.getLogger(InStream.class);
   private static final int PROTOBUF_MESSAGE_MAX_LIMIT = 1024 << 20; // 1GB
 
-  protected final Long fileId;
   protected final String name;
   protected long length;
 
-  public InStream(Long fileId, String name, long length) {
-    this.fileId = fileId;
+  public InStream(String name, long length) {
     this.name = name;
     this.length = length;
   }
@@ -62,8 +60,8 @@ public abstract class InStream extends InputStream {
     private ByteBuffer range;
     private int currentRange;
 
-    public UncompressedStream(Long fileId, String name, List<DiskRange> input, long length) {
-      super(fileId, name, length);
+    public UncompressedStream(String name, List<DiskRange> input, long length) {
+      super(name, length);
       reset(input, length);
     }
 
@@ -188,9 +186,9 @@ public abstract class InStream extends InputStream {
     private int currentRange;
     private boolean isUncompressedOriginal;
 
-    public CompressedStream(Long fileId, String name, List<DiskRange> input, long length,
+    public CompressedStream(String name, List<DiskRange> input, long length,
                             CompressionCodec codec, int bufferSize) {
-      super(fileId, name, length);
+      super(name, length);
       this.bytes = input;
       this.codec = codec;
       this.bufferSize = bufferSize;
@@ -438,8 +436,7 @@ public abstract class InStream extends InputStream {
    */
   @VisibleForTesting
   @Deprecated
-  public static InStream create(Long fileId,
-                                String streamName,
+  public static InStream create(String streamName,
                                 ByteBuffer[] buffers,
                                 long[] offsets,
                                 long length,
@@ -449,7 +446,7 @@ public abstract class InStream extends InputStream {
     for (int i = 0; i < buffers.length; ++i) {
       input.add(new BufferChunk(buffers[i], offsets[i]));
     }
-    return create(fileId, streamName, input, length, codec, bufferSize);
+    return create(streamName, input, length, codec, bufferSize);
   }
 
   /**
@@ -463,16 +460,15 @@ public abstract class InStream extends InputStream {
    * @return an input stream
    * @throws IOException
    */
-  public static InStream create(Long fileId,
-                                String name,
+  public static InStream create(String name,
                                 List<DiskRange> input,
                                 long length,
                                 CompressionCodec codec,
                                 int bufferSize) throws IOException {
     if (codec == null) {
-      return new UncompressedStream(fileId, name, input, length);
+      return new UncompressedStream(name, input, length);
     } else {
-      return new CompressedStream(fileId, name, input, length, codec, bufferSize);
+      return new CompressedStream(name, input, length, codec, bufferSize);
     }
   }
 
@@ -487,13 +483,13 @@ public abstract class InStream extends InputStream {
    * @return coded input stream
    * @throws IOException
    */
-  public static CodedInputStream createCodedInputStream(Long fileId,
+  public static CodedInputStream createCodedInputStream(
       String name,
       List<DiskRange> input,
       long length,
       CompressionCodec codec,
       int bufferSize) throws IOException {
-    InStream inStream = create(fileId, name, input, length, codec, bufferSize);
+    InStream inStream = create(name, input, length, codec, bufferSize);
     CodedInputStream codedInputStream = CodedInputStream.newInstance(inStream);
     codedInputStream.setSizeLimit(PROTOBUF_MESSAGE_MAX_LIMIT);
     return codedInputStream;

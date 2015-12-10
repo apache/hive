@@ -2341,6 +2341,17 @@ public class HiveConf extends Configuration {
     LLAP_LRFU_LAMBDA("hive.llap.io.lrfu.lambda", 0.01f,
         "Lambda for ORC low-level cache LRFU cache policy. Must be in [0, 1]. 0 makes LRFU\n" +
         "behave like LFU, 1 makes it behave like LRU, values in between balance accordingly."),
+    LLAP_CACHE_ALLOW_SYNTHETIC_FILEID("hive.llap.cache.allow.synthetic.fileid", false,
+        "Whether LLAP cache should use synthetic file ID if real one is not available. Systems\n" +
+        "like HDFS, Isilon, etc. provide a unique file/inode ID. On other FSes (e.g. local\n" +
+        "FS), the cache would not work by default because LLAP is unable to uniquely track the\n" +
+        "files; enabling this setting allows LLAP to generate file ID from the path, size and\n" +
+        "modification time, which is almost certain to identify file uniquely. However, if you\n" +
+        "use a FS without file IDs and rewrite files a lot (or are paranoid), you might want\n" +
+        "to avoid this setting."),
+    LLAP_IO_USE_FILEID_PATH("hive.llap.io.use.fileid.path", true,
+        "Whether LLAP should use fileId (inode)-based path to ensure better consistency for the\n" +
+        "cases of file overwrites. This is supported on HDFS."),
     LLAP_ORC_ENABLE_TIME_COUNTERS("hive.llap.io.orc.time.counters", true,
         "Whether to enable time counters for LLAP IO layer (time spent in HDFS, etc.)"),
     LLAP_AUTO_ALLOW_UBER("hive.llap.auto.allow.uber", true,

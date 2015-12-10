@@ -27,9 +27,8 @@ import org.apache.hadoop.hive.common.io.DiskRange;
  */
 public class SettableUncompressedStream extends InStream.UncompressedStream {
 
-  public SettableUncompressedStream(Long fileId, String name,
-      List<DiskRange> input, long length) {
-    super(fileId, name, input, length);
+  public SettableUncompressedStream(String name, List<DiskRange> input, long length) {
+    super(name, input, length);
     setOffset(input);
   }
 

@@ -37,6 +37,11 @@
   <value>4</value>
 </property>
 
+<property>
+  <name>hive.llap.cache.allow.synthetic.fileid</name>
+  <value>true</value>
+</property>
+
 <!-- hadoop IPC options -->
 <property>
   <name>ipc.client.low-latency</name>

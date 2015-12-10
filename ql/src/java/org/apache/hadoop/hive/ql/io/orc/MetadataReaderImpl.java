@@ -85,13 +85,13 @@ public class MetadataReaderImpl implements MetadataReader {
           byte[] buffer = new byte[len];
           file.readFully(offset, buffer, 0, buffer.length);
           ByteBuffer bb = ByteBuffer.wrap(buffer);
-          indexes[col] = OrcProto.RowIndex.parseFrom(InStream.create(null, "index",
+          indexes[col] = OrcProto.RowIndex.parseFrom(InStream.create("index",
               Lists.<DiskRange>newArrayList(new BufferChunk(bb, 0)), stream.getLength(),
                codec, bufferSize));
           if (readBloomFilter) {
             bb.position((int) stream.getLength());
             bloomFilterIndices[col] = OrcProto.BloomFilterIndex.parseFrom(InStream.create(
-                null, "bloom_filter", Lists.<DiskRange>newArrayList(new BufferChunk(bb, 0)),
+                "bloom_filter", Lists.<DiskRange>newArrayList(new BufferChunk(bb, 0)),
                 nextStream.getLength(), codec, bufferSize));
           }
         }
@@ -111,7 +111,7 @@ public class MetadataReaderImpl implements MetadataReader {
     // read the footer
     ByteBuffer tailBuf = ByteBuffer.allocate(tailLength);
     file.readFully(offset, tailBuf.array(), tailBuf.arrayOffset(), tailLength);
-    return OrcProto.StripeFooter.parseFrom(InStream.createCodedInputStream(null, "footer",
+    return OrcProto.StripeFooter.parseFrom(InStream.createCodedInputStream("footer",
         Lists.<DiskRange>newArrayList(new BufferChunk(tailBuf, 0)),
         tailLength, codec, bufferSize));
   }
