@@ -101,7 +101,7 @@ class EncodedReaderImpl implements EncodedReader {
           return tcc;
         }
       };
-  private final long fileId;
+  private final Long fileId;
   private final DataReader dataReader;
   private boolean isDataReaderOpen = false;
   private final CompressionCodec codec;
@@ -276,6 +276,8 @@ class EncodedReaderImpl implements EncodedReader {
       offset += length;
     }
 
+    boolean hasFileId = this.fileId != null;
+    long fileId = hasFileId ? this.fileId : 0;
     if (listToRead.get() == null) {
       // No data to read for this stripe. Check if we have some included index-only columns.
       // TODO: there may be a bug here. Could there be partial RG filtering on index-only column?
@@ -296,10 +298,12 @@ class EncodedReaderImpl implements EncodedReader {
           + RecordReaderUtils.stringifyDiskRanges(toRead.next));
     }
     BooleanRef isAllInCache = new BooleanRef();
-    cache.getFileData(fileId, toRead.next, stripeOffset, CC_FACTORY, isAllInCache);
-    if (isDebugTracingEnabled && LOG.isInfoEnabled()) {
-      LOG.info("Disk ranges after cache (file " + fileId + ", base offset " + stripeOffset
-          + "): " + RecordReaderUtils.stringifyDiskRanges(toRead.next));
+    if (hasFileId) {
+      cache.getFileData(fileId, toRead.next, stripeOffset, CC_FACTORY, isAllInCache);
+      if (isDebugTracingEnabled && LOG.isInfoEnabled()) {
+        LOG.info("Disk ranges after cache (file " + fileId + ", base offset " + stripeOffset
+            + "): " + RecordReaderUtils.stringifyDiskRanges(toRead.next));
+      }
     }
 
     if (!isAllInCache.value) {
@@ -653,8 +657,10 @@ class EncodedReaderImpl implements EncodedReader {
     }
 
     // 6. Finally, put uncompressed data to cache.
-    long[] collisionMask = cache.putFileData(fileId, cacheKeys, targetBuffers, baseOffset);
-    processCacheCollisions(collisionMask, toDecompress, targetBuffers, csd.getCacheBuffers());
+    if (fileId != null) {
+      long[] collisionMask = cache.putFileData(fileId, cacheKeys, targetBuffers, baseOffset);
+      processCacheCollisions(collisionMask, toDecompress, targetBuffers, csd.getCacheBuffers());
+    }
 
     // 7. It may happen that we know we won't use some compression buffers anymore.
     //    Release initial refcounts.
@@ -902,8 +908,10 @@ class EncodedReaderImpl implements EncodedReader {
     }
 
     // 6. Finally, put uncompressed data to cache.
-    long[] collisionMask = cache.putFileData(fileId, cacheKeys, targetBuffers, baseOffset);
-    processCacheCollisions(collisionMask, toCache, targetBuffers, null);
+    if (fileId != null) {
+      long[] collisionMask = cache.putFileData(fileId, cacheKeys, targetBuffers, baseOffset);
+      processCacheCollisions(collisionMask, toCache, targetBuffers, null);
+    }
 
     return lastUncompressed;
   }

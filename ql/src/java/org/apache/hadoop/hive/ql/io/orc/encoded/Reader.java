@@ -68,5 +68,5 @@ public interface Reader extends org.apache.hadoop.hive.ql.io.orc.Reader {
    * @return The reader.
    */
   EncodedReader encodedReader(
-      long fileId, DataCache dataCache, DataReader dataReader, PoolFactory pf) throws IOException;
+      Long fileId, DataCache dataCache, DataReader dataReader, PoolFactory pf) throws IOException;
 }

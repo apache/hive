@@ -42,13 +42,13 @@ public class StreamUtils {
    * @throws IOException
    */
   public static SettableUncompressedStream createSettableUncompressedStream(String streamName,
-      Long fileId, ColumnStreamData streamBuffer) throws IOException {
+      ColumnStreamData streamBuffer) throws IOException {
     if (streamBuffer == null) {
       return null;
     }
 
     DiskRangeInfo diskRangeInfo = createDiskRangeInfo(streamBuffer);
-    return new SettableUncompressedStream(fileId, streamName, diskRangeInfo.getDiskRanges(),
+    return new SettableUncompressedStream(streamName, diskRangeInfo.getDiskRanges(),
         diskRangeInfo.getTotalLength());
   }
 

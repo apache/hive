@@ -993,7 +993,7 @@ public class RecordReaderImpl implements RecordReader {
       List<DiskRange> buffers = RecordReaderUtils.getStreamBuffers(
           ranges, streamOffset, streamDesc.getLength());
       StreamName name = new StreamName(column, streamDesc.getKind());
-      streams.put(name, InStream.create(null, name.toString(), buffers,
+      streams.put(name, InStream.create(name.toString(), buffers,
           streamDesc.getLength(), codec, bufferSize));
       streamOffset += streamDesc.getLength();
     }

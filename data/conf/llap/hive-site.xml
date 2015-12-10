@@ -269,6 +269,11 @@
 </property>
 
 <property>
+  <name>hive.llap.cache.allow.synthetic.fileid</name>
+  <value>true</value>
+</property>
+
+<property>
   <name>hive.llap.io.cache.direct</name>
   <value>false</value>
 </property>

@@ -55,7 +55,7 @@ public class TestIntegerCompressionReader {
     inBuf.flip();
     RunLengthIntegerReaderV2 in =
       new RunLengthIntegerReaderV2(InStream.create
-                                   (null, "test", new ByteBuffer[]{inBuf},
+                                   ("test", new ByteBuffer[]{inBuf},
                                     new long[]{0}, inBuf.remaining(),
                                     codec, 1000), true, false);
     for(int i=0; i < 2048; ++i) {
@@ -108,7 +108,7 @@ public class TestIntegerCompressionReader {
     collect.buffer.setByteBuffer(inBuf, 0, collect.buffer.size());
     inBuf.flip();
     RunLengthIntegerReaderV2 in =
-      new RunLengthIntegerReaderV2(InStream.create(null, "test",
+      new RunLengthIntegerReaderV2(InStream.create("test",
                                                    new ByteBuffer[]{inBuf},
                                                    new long[]{0},
                                                    inBuf.remaining(),
