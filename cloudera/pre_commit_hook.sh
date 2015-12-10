@@ -76,6 +76,6 @@ if [ -n "$tests_modified" ]; then
     driver=`echo $t | cut -d: -f1`
     files=`echo $t | cut -d: -f2`
 
-    mvn test -Phadoop-2 -Dtest=$driver -Dqfile=$files
+    mvn test -Phadoop-2 -Dmaven.repo.local="$MVN_REPO_LOCAL" -Dtest=$driver -Dqfile=$files
   done
 fi
