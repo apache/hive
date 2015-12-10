@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
+import org.apache.hadoop.hive.ql.plan.LimitDesc;
 import org.apache.hadoop.hive.ql.exec.LimitOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
@@ -91,16 +92,19 @@ public class GlobalLimitOptimizer implements Transform {
       //    SELECT * FROM (SELECT col1 as col2 (SELECT * FROM ...) t1 LIMIT ...) t2);
       //
       TableScanOperator ts = topOps.values().iterator().next();
-      Integer tempGlobalLimit = checkQbpForGlobalLimit(ts);
+      LimitOperator tempGlobalLimit = checkQbpForGlobalLimit(ts);
 
       // query qualify for the optimization
-      if (tempGlobalLimit != null && tempGlobalLimit != 0) {
+      if (tempGlobalLimit != null) {
+        LimitDesc tempGlobalLimitDesc = tempGlobalLimit.getConf();
         Table tab = ts.getConf().getTableMetadata();
         Set<FilterOperator> filterOps = OperatorUtils.findOperators(ts, FilterOperator.class);
 
         if (!tab.isPartitioned()) {
           if (filterOps.size() == 0) {
-            globalLimitCtx.enableOpt(tempGlobalLimit);
+            Integer tempOffset = tempGlobalLimitDesc.getOffset();
+            globalLimitCtx.enableOpt(tempGlobalLimitDesc.getLimit(),
+                (tempOffset == null) ? 0 : tempOffset);
           }
         } else {
           // check if the pruner only contains partition columns
@@ -112,11 +116,15 @@ public class GlobalLimitOptimizer implements Transform {
             // If there is any unknown partition, create a map-reduce job for
             // the filter to prune correctly
             if (!partsList.hasUnknownPartitions()) {
-              globalLimitCtx.enableOpt(tempGlobalLimit);
+              Integer tempOffset = tempGlobalLimitDesc.getOffset();
+              globalLimitCtx.enableOpt(tempGlobalLimitDesc.getLimit(),
+                  (tempOffset == null) ? 0 : tempOffset);
             }
           }
         }
         if (globalLimitCtx.isEnable()) {
+          LOG.info("Qualify the optimize that reduces input size for 'offset' for offset "
+              + globalLimitCtx.getGlobalOffset());
           LOG.info("Qualify the optimize that reduces input size for 'limit' for limit "
               + globalLimitCtx.getGlobalLimit());
         }
@@ -141,7 +149,7 @@ public class GlobalLimitOptimizer implements Transform {
    *         if there is no limit, return 0
    *         otherwise, return null
    */
-  private static Integer checkQbpForGlobalLimit(TableScanOperator ts) {
+  private static LimitOperator checkQbpForGlobalLimit(TableScanOperator ts) {
     Set<Class<? extends Operator<?>>> searchedClasses =
           new ImmutableSet.Builder<Class<? extends Operator<?>>>()
             .add(ReduceSinkOperator.class)
@@ -183,10 +191,10 @@ public class GlobalLimitOptimizer implements Transform {
     // Otherwise, return null
     Collection<Operator<?>> limitOps = ops.get(LimitOperator.class);
     if (limitOps.size() == 1) {
-      return ((LimitOperator) limitOps.iterator().next()).getConf().getLimit();
+      return (LimitOperator) limitOps.iterator().next();
     }
     else if (limitOps.size() == 0) {
-      return 0;
+      return null;
     }
     return null;
   }

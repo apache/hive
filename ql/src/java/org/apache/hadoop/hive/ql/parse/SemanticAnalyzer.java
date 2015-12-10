@@ -1325,7 +1325,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         break;
 
       case HiveParser.TOK_LIMIT:
-        qbp.setDestLimit(ctx_1.dest, new Integer(ast.getChild(0).getText()));
+        if (ast.getChildCount() == 2) {
+          qbp.setDestLimit(ctx_1.dest,
+              new Integer(ast.getChild(0).getText()),
+              new Integer(ast.getChild(1).getText()));
+        } else {
+          qbp.setDestLimit(ctx_1.dest, new Integer(0),
+              new Integer(ast.getChild(0).getText()));
+        }
         break;
 
       case HiveParser.TOK_ANALYZE:
@@ -6798,7 +6805,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   @SuppressWarnings("nls")
-  private Operator genLimitPlan(String dest, QB qb, Operator input, int limit)
+  private Operator genLimitPlan(String dest, QB qb, Operator input, int offset, int limit)
       throws SemanticException {
     // A map-only job can be optimized - instead of converting it to a
     // map-reduce job, we can have another map
@@ -6809,7 +6816,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     RowResolver inputRR = opParseCtx.get(input).getRowResolver();
 
-    LimitDesc limitDesc = new LimitDesc(limit);
+    LimitDesc limitDesc = new LimitDesc(offset, limit);
     globalLimitCtx.setLastReduceLimitDesc(limitDesc);
 
     Operator limitMap = putOpInsertMap(OperatorFactory.getAndMakeChild(
@@ -6919,14 +6926,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   @SuppressWarnings("nls")
   private Operator genLimitMapRedPlan(String dest, QB qb, Operator input,
-      int limit, boolean extraMRStep) throws SemanticException {
+      int offset, int limit, boolean extraMRStep) throws SemanticException {
     // A map-only job can be optimized - instead of converting it to a
     // map-reduce job, we can have another map
     // job to do the same to avoid the cost of sorting in the map-reduce phase.
     // A better approach would be to
     // write into a local file and then have a map-only job.
     // Add the limit operator to get the value fields
-    Operator curr = genLimitPlan(dest, qb, input, limit);
+    Operator curr = genLimitPlan(dest, qb, input, offset, limit);
 
     // the client requested that an extra map-reduce step be performed
     if (!extraMRStep) {
@@ -6935,7 +6942,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // Create a reduceSink operator followed by another limit
     curr = genReduceSinkPlan(dest, qb, curr, 1, false);
-    return genLimitPlan(dest, qb, curr, limit);
+    return genLimitPlan(dest, qb, curr, offset, limit);
   }
 
   private ArrayList<ExprNodeDesc> getPartitionColsFromBucketCols(String dest, QB qb, Table tab,
@@ -8868,6 +8875,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     curr = genSelectPlan(dest, qb, curr, gbySource);
     Integer limit = qbp.getDestLimit(dest);
+    Integer offset = (qbp.getDestLimitOffset(dest) == null) ? 0 : qbp.getDestLimitOffset(dest);
 
     // Expressions are not supported currently without a alias.
 
@@ -8912,7 +8920,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (limit != null) {
         // In case of order by, only 1 reducer is used, so no need of
         // another shuffle
-        curr = genLimitMapRedPlan(dest, qb, curr, limit.intValue(), !hasOrderBy);
+        curr = genLimitMapRedPlan(dest, qb, curr, offset.intValue(),
+            limit.intValue(), !hasOrderBy);
       }
     } else {
       // exact limit can be taken care of by the fetch operator
@@ -8925,8 +8934,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           extraMRStep = false;
         }
 
-        curr = genLimitMapRedPlan(dest, qb, curr, limit.intValue(),
-            extraMRStep);
+        curr = genLimitMapRedPlan(dest, qb, curr, offset.intValue(),
+            limit.intValue(), extraMRStep);
         qb.getParseInfo().setOuterQueryLimit(limit.intValue());
       }
       if (!SessionState.get().getHiveOperation().equals(HiveOperation.CREATEVIEW)) {

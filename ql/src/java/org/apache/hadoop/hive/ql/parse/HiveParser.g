@@ -249,6 +249,7 @@ TOK_INDEXPROPERTIES;
 TOK_INDEXPROPLIST;
 TOK_TABTYPE;
 TOK_LIMIT;
+TOK_OFFSET;
 TOK_TABLEPROPERTY;
 TOK_IFEXISTS;
 TOK_IFNOTEXISTS;
@@ -497,6 +498,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
     xlateMap.put("KW_WITH", "WITH");
     xlateMap.put("KW_SERDEPROPERTIES", "SERDEPROPERTIES");
     xlateMap.put("KW_LIMIT", "LIMIT");
+    xlateMap.put("KW_OFFSET", "OFFSET");
     xlateMap.put("KW_SET", "SET");
     xlateMap.put("KW_PROPERTIES", "TBLPROPERTIES");
     xlateMap.put("KW_VALUE_TYPE", "\$VALUE\$");
@@ -2362,7 +2364,8 @@ limitClause
 @init { pushMsg("limit clause", state); }
 @after { popMsg(state); }
    :
-   KW_LIMIT num=Number -> ^(TOK_LIMIT $num)
+   KW_LIMIT ((offset=Number COMMA)? num=Number) -> ^(TOK_LIMIT ($offset)? $num)
+   | KW_LIMIT num=Number KW_OFFSET offset=Number -> ^(TOK_LIMIT ($offset)? $num)
    ;
 
 //DELETE FROM <tableName> WHERE ...;
