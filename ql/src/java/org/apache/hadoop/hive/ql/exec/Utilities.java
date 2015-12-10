@@ -732,7 +732,7 @@ public final class Utilities {
   }
 
   public static PartitionDesc getPartitionDesc(Partition part) throws HiveException {
-    return (new PartitionDesc(part));
+    return new PartitionDesc(part);
   }
 
   public static PartitionDesc getPartitionDescFromTableDesc(TableDesc tblDesc, Partition part,

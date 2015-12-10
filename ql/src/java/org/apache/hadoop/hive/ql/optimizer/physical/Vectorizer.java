@@ -1147,7 +1147,7 @@ public class Vectorizer implements PhysicalPlanResolver {
   class MapWorkVectorizationNodeProcessor extends VectorizationNodeProcessor {
 
     private final MapWork mWork;
-    private VectorTaskColumnInfo vectorTaskColumnInfo;
+    private final VectorTaskColumnInfo vectorTaskColumnInfo;
     private final boolean isTez;
 
     public MapWorkVectorizationNodeProcessor(MapWork mWork, boolean isTez,
@@ -1205,9 +1205,9 @@ public class Vectorizer implements PhysicalPlanResolver {
 
   class ReduceWorkVectorizationNodeProcessor extends VectorizationNodeProcessor {
 
-    private VectorTaskColumnInfo vectorTaskColumnInfo;
+    private final VectorTaskColumnInfo vectorTaskColumnInfo;
 
-    private boolean isTez;
+    private final boolean isTez;
 
     private Operator<? extends OperatorDesc> rootVectorOp;
 

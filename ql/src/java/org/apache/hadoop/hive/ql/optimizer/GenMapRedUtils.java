@@ -527,9 +527,6 @@ public final class GenMapRedUtils {
     Map<String, String> props = tsOp.getConf().getOpProps();
     if (props != null) {
       Properties target = aliasPartnDesc.getProperties();
-      if (target == null) {
-        aliasPartnDesc.setProperties(target = new Properties());
-      }
       target.putAll(props);
     }
 
@@ -668,9 +665,6 @@ public final class GenMapRedUtils {
 
       if (props != null) {
         Properties target = tblDesc.getProperties();
-        if (target == null) {
-          tblDesc.setProperties(target = new Properties());
-        }
         target.putAll(props);
       }
 

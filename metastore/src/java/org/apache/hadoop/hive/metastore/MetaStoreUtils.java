@@ -1012,8 +1012,38 @@ public class MetaStoreUtils {
     return schema;
   }
 
-  public static Properties getSchema(
-      org.apache.hadoop.hive.metastore.api.StorageDescriptor sd,
+  public static Properties addCols(Properties schema, List<FieldSchema> cols) {
+
+    StringBuilder colNameBuf = new StringBuilder();
+    StringBuilder colTypeBuf = new StringBuilder();
+    StringBuilder colComment = new StringBuilder();
+
+    boolean first = true;
+    for (FieldSchema col : cols) {
+      if (!first) {
+        colNameBuf.append(",");
+        colTypeBuf.append(":");
+        colComment.append('\0');
+      }
+      colNameBuf.append(col.getName());
+      colTypeBuf.append(col.getType());
+      colComment.append((null != col.getComment()) ? col.getComment() : "");
+      first = false;
+    }
+    schema.setProperty(
+        org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_COLUMNS,
+        colNameBuf.toString());
+    String colTypes = colTypeBuf.toString();
+    schema.setProperty(
+        org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_COLUMN_TYPES,
+        colTypes);
+    schema.setProperty("columns.comments", colComment.toString());
+
+    return schema;
+
+  }
+
+  public static Properties getSchemaWithoutCols(org.apache.hadoop.hive.metastore.api.StorageDescriptor sd,
       org.apache.hadoop.hive.metastore.api.StorageDescriptor tblsd,
       Map<String, String> parameters, String databaseName, String tableName,
       List<FieldSchema> partitionKeys) {
@@ -1063,30 +1093,7 @@ public class MetaStoreUtils {
                 .getSerdeInfo().getSerializationLib());
       }
     }
-    StringBuilder colNameBuf = new StringBuilder();
-    StringBuilder colTypeBuf = new StringBuilder();
-    StringBuilder colComment = new StringBuilder();
-    boolean first = true;
-    for (FieldSchema col : tblsd.getCols()) {
-      if (!first) {
-        colNameBuf.append(",");
-        colTypeBuf.append(":");
-        colComment.append('\0');
-      }
-      colNameBuf.append(col.getName());
-      colTypeBuf.append(col.getType());
-      colComment.append((null != col.getComment()) ? col.getComment() : "");
-      first = false;
-    }
-    String colNames = colNameBuf.toString();
-    String colTypes = colTypeBuf.toString();
-    schema.setProperty(
-        org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_COLUMNS,
-        colNames);
-    schema.setProperty(
-        org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_COLUMN_TYPES,
-        colTypes);
-    schema.setProperty("columns.comments", colComment.toString());
+
     if (sd.getCols() != null) {
       schema.setProperty(
           org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_DDL,
@@ -1128,6 +1135,15 @@ public class MetaStoreUtils {
     }
 
     return schema;
+  }
+
+  public static Properties getSchema(
+      org.apache.hadoop.hive.metastore.api.StorageDescriptor sd,
+      org.apache.hadoop.hive.metastore.api.StorageDescriptor tblsd,
+      Map<String, String> parameters, String databaseName, String tableName,
+      List<FieldSchema> partitionKeys) {
+
+    return addCols(getSchemaWithoutCols(sd, tblsd, parameters, databaseName, tableName, partitionKeys), tblsd.getCols());
   }
 
   /**

@@ -16,5 +16,5 @@ PREHOOK: Input: default@xyz
 POSTHOOK: query: describe xyz
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@xyz
-valid_colname       	string              	                    
-invalid.colname     	string              	                    
+key                 	string              	                    
+value               	string              	                    
