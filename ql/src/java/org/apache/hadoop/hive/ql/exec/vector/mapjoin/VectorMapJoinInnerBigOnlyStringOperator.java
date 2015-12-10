@@ -175,10 +175,15 @@ public class VectorMapJoinInnerBigOnlyStringOperator extends VectorMapJoinInnerB
          * Single-Column String specific repeated lookup.
          */
 
-        byte[] keyBytes = vector[0];
-        int keyStart = start[0];
-        int keyLength = length[0];
-        JoinUtil.JoinResult joinResult = hashMultiSet.contains(keyBytes, keyStart, keyLength, hashMultiSetResults[0]);
+        JoinUtil.JoinResult joinResult;
+        if (!joinColVector.noNulls && joinColVector.isNull[0]) {
+          joinResult = JoinUtil.JoinResult.NOMATCH;
+        } else {
+          byte[] keyBytes = vector[0];
+          int keyStart = start[0];
+          int keyLength = length[0];
+          joinResult = hashMultiSet.contains(keyBytes, keyStart, keyLength, hashMultiSetResults[0]);
+        }
 
         /*
          * Common repeated join result processing.
@@ -228,12 +233,13 @@ public class VectorMapJoinInnerBigOnlyStringOperator extends VectorMapJoinInnerB
            */
 
           // Implicit -- use batchIndex.
+          boolean isNull = !joinColVector.noNulls && joinColVector.isNull[batchIndex];
 
           /*
            * Equal key series checking.
            */
 
-          if (!haveSaveKey ||
+          if (isNull || !haveSaveKey ||
               StringExpr.equal(vector[saveKeyBatchIndex], start[saveKeyBatchIndex], length[saveKeyBatchIndex],
                                  vector[batchIndex], start[batchIndex], length[batchIndex]) == false) {
 
@@ -255,24 +261,29 @@ public class VectorMapJoinInnerBigOnlyStringOperator extends VectorMapJoinInnerB
               }
             }
 
-            // Regardless of our matching result, we keep that information to make multiple use
-            // of it for a possible series of equal keys.
-            haveSaveKey = true;
-
-            /*
-             * Single-Column String specific save key.
-             */
-
-            saveKeyBatchIndex = batchIndex;
-
-            /*
-             * Single-Column String specific lookup key.
-             */
-
-            byte[] keyBytes = vector[batchIndex];
-            int keyStart = start[batchIndex];
-            int keyLength = length[batchIndex];
-            saveJoinResult = hashMultiSet.contains(keyBytes, keyStart, keyLength, hashMultiSetResults[hashMultiSetResultCount]);
+            if (isNull) {
+              saveJoinResult = JoinUtil.JoinResult.NOMATCH;
+              haveSaveKey = false;
+            } else {
+              // Regardless of our matching result, we keep that information to make multiple use
+              // of it for a possible series of equal keys.
+              haveSaveKey = true;
+  
+              /*
+               * Single-Column String specific save key.
+               */
+  
+              saveKeyBatchIndex = batchIndex;
+  
+              /*
+               * Single-Column String specific lookup key.
+               */
+  
+              byte[] keyBytes = vector[batchIndex];
+              int keyStart = start[batchIndex];
+              int keyLength = length[batchIndex];
+              saveJoinResult = hashMultiSet.contains(keyBytes, keyStart, keyLength, hashMultiSetResults[hashMultiSetResultCount]);
+            }
 
             /*
              * Common inner big-only join result processing.

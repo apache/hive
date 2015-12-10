@@ -78,12 +78,7 @@ public abstract class VectorMapJoinFastLongHashTable
     int keyLength = currentKey.getLength();
     keyBinarySortableDeserializeRead.set(keyBytes, 0, keyLength);
     if (keyBinarySortableDeserializeRead.readCheckNull()) {
-      if (isOuterJoin) {
-        return;
-      } else {
-        // For inner join, we expect all NULL values to have been filtered out before now.
-        throw new HiveException("Unexpected NULL in map join small table");
-      }
+      return;
     }
 
     long key = VectorMapJoinFastLongHashUtil.deserializeLongKey(

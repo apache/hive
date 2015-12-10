@@ -627,17 +627,31 @@ public class VectorSerializeRow {
     serializeWrite.setAppend(output);
   }
 
+  private boolean hasAnyNulls;
+  private boolean isAllNulls;
+
   /*
    * Note that when serializing a row, the logical mapping using selected in use has already
    * been performed.  batchIndex is the actual index of the row.
    */
-  public boolean serializeWrite(VectorizedRowBatch batch, int batchIndex) throws IOException {
-    boolean anyNulls = false;
+  public void serializeWrite(VectorizedRowBatch batch, int batchIndex) throws IOException {
+
+    hasAnyNulls = false;
+    isAllNulls = true;
     for (Writer writer : writers) {
       if (!writer.apply(batch, batchIndex)) {
-        anyNulls = true;
+        hasAnyNulls = true;
+      } else {
+        isAllNulls = false;
       }
     }
-    return anyNulls;
+  }
+
+  public boolean getHasAnyNulls() {
+    return hasAnyNulls;
+  }
+
+  public boolean getIsAllNulls() {
+    return isAllNulls;
   }
 }

@@ -294,9 +294,8 @@ public class VectorMapJoinOuterMultiKeyOperator extends VectorMapJoinOuterGenera
 
           // Generate binary sortable key for current row in vectorized row batch.
           keyVectorSerializeWrite.setOutput(currentKeyOutput);
-          boolean isNull = keyVectorSerializeWrite.serializeWrite(batch, batchIndex);
-
-          if (isNull) {
+          keyVectorSerializeWrite.serializeWrite(batch, batchIndex);
+          if (keyVectorSerializeWrite.getHasAnyNulls()) {
 
             // Have that the NULL does not interfere with the current equal key series, if there
             // is one. We do not set saveJoinResult.
