@@ -362,7 +362,12 @@ public class SessionState {
     if (StringUtils.isEmpty(conf.getVar(HiveConf.ConfVars.HIVESESSIONID))) {
       conf.setVar(HiveConf.ConfVars.HIVESESSIONID, makeSessionId());
     }
-    parentLoader = JavaUtils.getClassLoader();
+    // Using system classloader as the parent. Using thread context
+    // classloader as parent can pollute the session. See HIVE-11878
+    parentLoader = SessionState.class.getClassLoader();
+    // Make sure that each session has its own UDFClassloader. For details see {@link UDFClassLoader}
+    final ClassLoader currentLoader = Utilities.createUDFClassLoader((URLClassLoader) parentLoader, new String[]{});
+    this.conf.setClassLoader(currentLoader);
   }
 
   public void setCmd(String cmdString) {
@@ -1273,7 +1278,7 @@ public class SessionState {
     return scheme;
   }
 
-  List<URI> resolveAndDownload(ResourceType t, String value, boolean convertToUnix) throws URISyntaxException,
+  protected List<URI> resolveAndDownload(ResourceType t, String value, boolean convertToUnix) throws URISyntaxException,
       IOException {
     URI uri = createURI(value);
     if (getURLType(value).equals("file")) {
