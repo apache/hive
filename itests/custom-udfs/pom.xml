@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.apache.hive</groupId>
+    <artifactId>hive-it</artifactId>
+    <version>2.0.0-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+
+  <artifactId>hive-it-custom-udfs</artifactId>
+  <packaging>pom</packaging>
+  <name>Hive Integration - Custom udfs</name>
+  <description>Custom udfs used in hive itest can be defined under this module</description>
+
+  <properties>
+    <hive.path.to.root>../..</hive.path.to.root>
+  </properties>
+
+  <modules>
+    <!--
+    The following three modules are defined for itests udf_classloader.q
+    and udf_classloader_dynamic_dependency_resolution.q . They need to be
+    defined in separate modules instead of a single module to correctly
+     test the said itests
+    -->
+    <module>udf-classloader-util</module>
+    <module>udf-classloader-udf1</module>
+    <module>udf-classloader-udf2</module>
+  </modules>
+
+  <dependencies>
+    <!-- intra-project -->
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-exec</artifactId>
+      <version>${project.version}</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-common</artifactId>
+      <version>${hadoop.version}</version>
+      <optional>true</optional>
+    </dependency>
+  </dependencies>
+</project>
