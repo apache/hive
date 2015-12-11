@@ -41,10 +41,6 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 public class TableScanDesc extends AbstractOperatorDesc {
   private static final long serialVersionUID = 1L;
 
-  static {
-    PTFUtils.makeTransient(TableScanDesc.class, "filterObject", "referencedColumns", "tableMetadata");
-  }
-
   private String alias;
 
   private List<VirtualColumn> virtualCols;

@@ -241,7 +241,7 @@ public class SparkCompiler extends TaskCompiler {
 
     // we need to clone some operator plans and remove union operators still
     for (BaseWork w : procCtx.workWithUnionOperators) {
-      GenSparkUtils.getUtils().removeUnionOperators(conf, procCtx, w);
+      GenSparkUtils.getUtils().removeUnionOperators(procCtx, w);
     }
 
     // we need to fill MapWork with 'local' work and bucket information for SMB Join.

@@ -28,7 +28,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
@@ -205,8 +204,7 @@ public class GenTezUtils {
   }
 
   // removes any union operator and clones the plan
-  public static void removeUnionOperators(Configuration conf, GenTezProcContext context,
-      BaseWork work)
+  public static void removeUnionOperators(GenTezProcContext context, BaseWork work)
     throws SemanticException {
 
     List<Operator<?>> roots = new ArrayList<Operator<?>>();
@@ -217,7 +215,7 @@ public class GenTezUtils {
     roots.addAll(context.eventOperatorSet);
 
     // need to clone the plan.
-    List<Operator<?>> newRoots = SerializationUtilities.cloneOperatorTree(conf, roots);
+    List<Operator<?>> newRoots = SerializationUtilities.cloneOperatorTree(roots);
 
     // we're cloning the operator plan but we're retaining the original work. That means
     // that root operators have to be replaced with the cloned ops. The replacement map

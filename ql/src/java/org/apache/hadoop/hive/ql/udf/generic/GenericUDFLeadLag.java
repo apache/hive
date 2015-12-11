@@ -41,11 +41,6 @@ public abstract class GenericUDFLeadLag extends GenericUDF {
   transient Converter defaultValueConverter;
   int amt;
 
-  static {
-    PTFUtils.makeTransient(GenericUDFLeadLag.class, "exprEvaluator", "pItr", "firstArgOI",
-            "defaultArgOI", "defaultValueConverter");
-  }
-
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
     Object defaultVal = null;

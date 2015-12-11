@@ -64,10 +64,6 @@ import org.apache.hadoop.util.hash.MurmurHash;
 public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
     implements Serializable, TopNHash.BinaryCollector {
 
-  static {
-    PTFUtils.makeTransient(ReduceSinkOperator.class, "inputAliases", "valueIndex");
-  }
-
   /**
    * Counters.
    */
