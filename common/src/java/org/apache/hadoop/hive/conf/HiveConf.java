@@ -2398,6 +2398,8 @@ public class HiveConf extends Configuration {
         "LLAP delegation token lifetime, in seconds if specified without a unit."),
     LLAP_MANAGEMENT_RPC_PORT("hive.llap.management.rpc.port", 15004,
         "RPC port for LLAP daemon management service."),
+    LLAP_WEB_AUTO_AUTH("hive.llap.auto.auth", true,
+        "Whether or not to set Hadoop configs to enable auth in LLAP web app."),
 
     LLAP_DAEMON_RPC_NUM_HANDLERS("hive.llap.daemon.rpc.num.handlers", 5,
       "Number of RPC handlers for LLAP daemon.", "llap.daemon.rpc.num.handlers"),
