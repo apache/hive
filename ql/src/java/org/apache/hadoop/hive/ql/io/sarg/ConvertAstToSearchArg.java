@@ -260,31 +260,37 @@ public class ConvertAstToSearchArg {
       builder.startNot();
     }
 
-    switch (operator) {
-      case IS_NULL:
-        builder.isNull(columnName, type);
-        break;
-      case EQUALS:
-        builder.equals(columnName, type, findLiteral(expression, type));
-        break;
-      case NULL_SAFE_EQUALS:
-        builder.nullSafeEquals(columnName, type, findLiteral(expression, type));
-        break;
-      case LESS_THAN:
-        builder.lessThan(columnName, type, findLiteral(expression, type));
-        break;
-      case LESS_THAN_EQUALS:
-        builder.lessThanEquals(columnName, type, findLiteral(expression, type));
-        break;
-      case IN:
-        builder.in(columnName, type,
-            getLiteralList(expression, type, variable + 1));
-        break;
-      case BETWEEN:
-        builder.between(columnName, type,
-            getLiteral(expression, type, variable + 1),
-            getLiteral(expression, type, variable + 2));
-        break;
+    try {
+      switch (operator) {
+        case IS_NULL:
+          builder.isNull(columnName, type);
+          break;
+        case EQUALS:
+          builder.equals(columnName, type, findLiteral(expression, type));
+          break;
+        case NULL_SAFE_EQUALS:
+          builder.nullSafeEquals(columnName, type, findLiteral(expression, type));
+          break;
+        case LESS_THAN:
+          builder.lessThan(columnName, type, findLiteral(expression, type));
+          break;
+        case LESS_THAN_EQUALS:
+          builder.lessThanEquals(columnName, type, findLiteral(expression, type));
+          break;
+        case IN:
+          builder.in(columnName, type,
+              getLiteralList(expression, type, variable + 1));
+          break;
+        case BETWEEN:
+          builder.between(columnName, type,
+              getLiteral(expression, type, variable + 1),
+              getLiteral(expression, type, variable + 2));
+          break;
+      }
+    } catch (Exception e) {
+      LOG.warn("Exception thrown during SARG creation. Returning YES_NO_NULL." +
+          " Exception: " + e.getMessage());
+      builder.literal(SearchArgument.TruthValue.YES_NO_NULL);
     }
 
     if (needSwap) {
