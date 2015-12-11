@@ -37,9 +37,6 @@ public class LoadMultiFilesDesc implements Serializable {
   private String columnTypes;
   private transient List<Path> srcDirs;
 
-  static {
-    PTFUtils.makeTransient(LoadMultiFilesDesc.class, "targetDirs");
-  }
   public LoadMultiFilesDesc() {
   }
 

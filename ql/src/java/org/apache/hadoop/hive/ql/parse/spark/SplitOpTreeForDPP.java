@@ -107,8 +107,7 @@ public class SplitOpTreeForDPP implements NodeProcessor {
     filterOp.setChildOperators(Utilities.makeList(selOp));
 
     // Now clone the tree above selOp
-    List<Operator<?>> newRoots = SerializationUtilities.cloneOperatorTree(
-        context.parseContext.getConf(), roots);
+    List<Operator<?>> newRoots = SerializationUtilities.cloneOperatorTree(roots);
     for (int i = 0; i < roots.size(); i++) {
       TableScanOperator newTs = (TableScanOperator) newRoots.get(i);
       TableScanOperator oldTs = (TableScanOperator) roots.get(i);

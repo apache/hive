@@ -1615,7 +1615,7 @@ public class TestInputOutputFormat {
     Path mapXml = new Path(workDir, "map.xml");
     localFs.delete(mapXml, true);
     FSDataOutputStream planStream = localFs.create(mapXml);
-    SerializationUtilities.serializePlan(mapWork, planStream, conf);
+    SerializationUtilities.serializePlan(mapWork, planStream);
     planStream.close();
     return conf;
   }

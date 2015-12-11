@@ -31,10 +31,6 @@ public class PTFExpressionDef {
   transient ExprNodeEvaluator exprEvaluator;
   transient ObjectInspector OI;
 
-  static{
-    PTFUtils.makeTransient(PTFExpressionDef.class, "exprEvaluator", "OI");
-  }
-
   public PTFExpressionDef() {}
 
   public PTFExpressionDef(PTFExpressionDef e) {

@@ -32,10 +32,6 @@ public class AbstractOperatorDesc implements OperatorDesc {
   protected transient Map<String, String> opProps;
   protected long memNeeded = 0;
 
-  static {
-    PTFUtils.makeTransient(AbstractOperatorDesc.class, "opProps");
-  }
-
   @Override
   @Explain(skipHeader = true, displayName = "Statistics", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public Statistics getStatistics() {

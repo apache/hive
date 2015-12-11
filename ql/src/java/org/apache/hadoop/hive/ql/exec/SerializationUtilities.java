@@ -17,14 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.exec;
 
-import java.beans.DefaultPersistenceDelegate;
-import java.beans.Encoder;
-import java.beans.ExceptionListener;
-import java.beans.Expression;
-import java.beans.PersistenceDelegate;
-import java.beans.Statement;
-import java.beans.XMLDecoder;
-import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -35,32 +27,20 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
-import org.antlr.runtime.CommonToken;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.plan.AbstractOperatorDesc;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
-import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.SparkEdgeProperty;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
@@ -289,46 +269,37 @@ public class SerializationUtilities {
     }
   }
 
-
   /**
    * Serializes the plan.
    *
    * @param plan The plan, such as QueryPlan, MapredWork, etc.
    * @param out  The stream to write to.
-   * @param conf to pick which serialization format is desired.
    */
-  public static void serializePlan(Object plan, OutputStream out, Configuration conf) {
-    serializePlan(plan, out, conf, false);
+  public static void serializePlan(Object plan, OutputStream out) {
+    serializePlan(plan, out, false);
   }
 
-  public static void serializePlan(Kryo kryo, Object plan, OutputStream out, Configuration conf) {
-    serializePlan(kryo, plan, out, conf, false);
+  public static void serializePlan(Kryo kryo, Object plan, OutputStream out) {
+    serializePlan(kryo, plan, out, false);
   }
 
-  private static void serializePlan(Object plan, OutputStream out, Configuration conf,
-      boolean cloningPlan) {
+  private static void serializePlan(Object plan, OutputStream out, boolean cloningPlan) {
     Kryo kryo = borrowKryo();
     try {
-      serializePlan(kryo, plan, out, conf, cloningPlan);
+      serializePlan(kryo, plan, out, cloningPlan);
     } finally {
       releaseKryo(kryo);
     }
   }
 
-  private static void serializePlan(Kryo kryo, Object plan, OutputStream out, Configuration conf,
-      boolean cloningPlan) {
+  private static void serializePlan(Kryo kryo, Object plan, OutputStream out, boolean cloningPlan) {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SERIALIZE_PLAN);
-    String serializationType = conf.get(HiveConf.ConfVars.PLAN_SERIALIZATION.varname, "kryo");
-    LOG.info("Serializing " + plan.getClass().getSimpleName() + " via " + serializationType);
-    if ("javaXML".equalsIgnoreCase(serializationType)) {
-      serializeObjectByJavaXML(plan, out);
+    LOG.info("Serializing " + plan.getClass().getSimpleName() + " using kryo");
+    if (cloningPlan) {
+      serializeObjectByKryo(kryo, plan, out);
     } else {
-      if (cloningPlan) {
-        serializeObjectByKryo(kryo, plan, out);
-      } else {
-        serializeObjectByKryo(kryo, plan, out);
-      }
+      serializeObjectByKryo(kryo, plan, out);
     }
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SERIALIZE_PLAN);
   }
@@ -338,24 +309,21 @@ public class SerializationUtilities {
    *
    * @param in        The stream to read from.
    * @param planClass class of plan
-   * @param conf      configuration
    * @return The plan, such as QueryPlan, MapredWork, etc.
    */
-  public static <T> T deserializePlan(InputStream in, Class<T> planClass, Configuration conf) {
-    return deserializePlan(in, planClass, conf, false);
+  public static <T> T deserializePlan(InputStream in, Class<T> planClass) {
+    return deserializePlan(in, planClass, false);
   }
 
-  public static <T> T deserializePlan(Kryo kryo, InputStream in, Class<T> planClass,
-      Configuration conf) {
-    return deserializePlan(kryo, in, planClass, conf, false);
+  public static <T> T deserializePlan(Kryo kryo, InputStream in, Class<T> planClass) {
+    return deserializePlan(kryo, in, planClass, false);
   }
 
-  private static <T> T deserializePlan(InputStream in, Class<T> planClass, Configuration conf,
-      boolean cloningPlan) {
+  private static <T> T deserializePlan(InputStream in, Class<T> planClass, boolean cloningPlan) {
     Kryo kryo = borrowKryo();
     T result = null;
     try {
-      result = deserializePlan(kryo, in, planClass, conf, cloningPlan);
+      result = deserializePlan(kryo, in, planClass, cloningPlan);
     } finally {
       releaseKryo(kryo);
     }
@@ -363,20 +331,15 @@ public class SerializationUtilities {
   }
 
   private static <T> T deserializePlan(Kryo kryo, InputStream in, Class<T> planClass,
-      Configuration conf, boolean cloningPlan) {
+      boolean cloningPlan) {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.DESERIALIZE_PLAN);
     T plan;
-    String serializationType = conf.get(HiveConf.ConfVars.PLAN_SERIALIZATION.varname, "kryo");
-    LOG.info("Deserializing " + planClass.getSimpleName() + " via " + serializationType);
-    if ("javaXML".equalsIgnoreCase(serializationType)) {
-      plan = deserializeObjectByJavaXML(in);
+    LOG.info("Deserializing " + planClass.getSimpleName() + " using kryo");
+    if (cloningPlan) {
+      plan = deserializeObjectByKryo(kryo, in, planClass);
     } else {
-      if (cloningPlan) {
-        plan = deserializeObjectByKryo(kryo, in, planClass);
-      } else {
-        plan = deserializeObjectByKryo(kryo, in, planClass);
-      }
+      plan = deserializeObjectByKryo(kryo, in, planClass);
     }
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.DESERIALIZE_PLAN);
     return plan;
@@ -392,10 +355,9 @@ public class SerializationUtilities {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.CLONE_PLAN);
     ByteArrayOutputStream baos = new ByteArrayOutputStream(4096);
-    Configuration conf = new HiveConf();
-    serializePlan(plan, baos, conf, true);
+    serializePlan(plan, baos, true);
     MapredWork newPlan = deserializePlan(new ByteArrayInputStream(baos.toByteArray()),
-        MapredWork.class, conf, true);
+        MapredWork.class, true);
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.CLONE_PLAN);
     return newPlan;
   }
@@ -409,198 +371,11 @@ public class SerializationUtilities {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.CLONE_PLAN);
     ByteArrayOutputStream baos = new ByteArrayOutputStream(4096);
-    Configuration conf = new HiveConf();
-    serializePlan(plan, baos, conf, true);
+    serializePlan(plan, baos, true);
     BaseWork newPlan = deserializePlan(new ByteArrayInputStream(baos.toByteArray()),
-        plan.getClass(), conf, true);
+        plan.getClass(), true);
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.CLONE_PLAN);
     return newPlan;
-  }
-
-  /**
-   * Serialize the object. This helper function mainly makes sure that enums,
-   * counters, etc are handled properly.
-   */
-  private static void serializeObjectByJavaXML(Object plan, OutputStream out) {
-    XMLEncoder e = new XMLEncoder(out);
-    e.setExceptionListener(new ExceptionListener() {
-      @Override
-      public void exceptionThrown(Exception e) {
-        LOG.warn(org.apache.hadoop.util.StringUtils.stringifyException(e));
-        throw new RuntimeException("Cannot serialize object", e);
-      }
-    });
-    // workaround for java 1.5
-    e.setPersistenceDelegate(PlanUtils.ExpressionTypes.class, new EnumDelegate());
-    e.setPersistenceDelegate(GroupByDesc.Mode.class, new EnumDelegate());
-    e.setPersistenceDelegate(java.sql.Date.class, new DatePersistenceDelegate());
-    e.setPersistenceDelegate(Timestamp.class, new TimestampPersistenceDelegate());
-
-    e.setPersistenceDelegate(org.datanucleus.store.types.backed.Map.class, new MapDelegate());
-    e.setPersistenceDelegate(org.datanucleus.store.types.backed.List.class, new ListDelegate());
-    e.setPersistenceDelegate(CommonToken.class, new CommonTokenDelegate());
-    e.setPersistenceDelegate(Path.class, new PathDelegate());
-
-    e.writeObject(plan);
-    e.close();
-  }
-
-
-  /**
-   * Java 1.5 workaround. From http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5015403
-   */
-  public static class EnumDelegate extends DefaultPersistenceDelegate {
-    @Override
-    protected Expression instantiate(Object oldInstance, Encoder out) {
-      return new Expression(Enum.class, "valueOf", new Object[] {oldInstance.getClass(),
-          ((Enum<?>) oldInstance).name()});
-    }
-
-    @Override
-    protected boolean mutatesTo(Object oldInstance, Object newInstance) {
-      return oldInstance == newInstance;
-    }
-  }
-
-  public static class MapDelegate extends DefaultPersistenceDelegate {
-    @Override
-    protected Expression instantiate(Object oldInstance, Encoder out) {
-      Map oldMap = (Map) oldInstance;
-      HashMap newMap = new HashMap(oldMap);
-      return new Expression(newMap, HashMap.class, "new", new Object[] {});
-    }
-
-    @Override
-    protected boolean mutatesTo(Object oldInstance, Object newInstance) {
-      return false;
-    }
-
-    @Override
-    protected void initialize(Class<?> type, Object oldInstance, Object newInstance, Encoder out) {
-      java.util.Collection oldO = (java.util.Collection) oldInstance;
-      java.util.Collection newO = (java.util.Collection) newInstance;
-
-      if (newO.size() != 0) {
-        out.writeStatement(new Statement(oldInstance, "clear", new Object[] {}));
-      }
-      for (Iterator i = oldO.iterator(); i.hasNext();) {
-        out.writeStatement(new Statement(oldInstance, "add", new Object[] {i.next()}));
-      }
-    }
-  }
-
-  public static class SetDelegate extends DefaultPersistenceDelegate {
-    @Override
-    protected Expression instantiate(Object oldInstance, Encoder out) {
-      Set oldSet = (Set) oldInstance;
-      HashSet newSet = new HashSet(oldSet);
-      return new Expression(newSet, HashSet.class, "new", new Object[] {});
-    }
-
-    @Override
-    protected boolean mutatesTo(Object oldInstance, Object newInstance) {
-      return false;
-    }
-
-    @Override
-    protected void initialize(Class<?> type, Object oldInstance, Object newInstance, Encoder out) {
-      java.util.Collection oldO = (java.util.Collection) oldInstance;
-      java.util.Collection newO = (java.util.Collection) newInstance;
-
-      if (newO.size() != 0) {
-        out.writeStatement(new Statement(oldInstance, "clear", new Object[] {}));
-      }
-      for (Iterator i = oldO.iterator(); i.hasNext();) {
-        out.writeStatement(new Statement(oldInstance, "add", new Object[] {i.next()}));
-      }
-    }
-
-  }
-
-  public static class ListDelegate extends DefaultPersistenceDelegate {
-    @Override
-    protected Expression instantiate(Object oldInstance, Encoder out) {
-      List oldList = (List) oldInstance;
-      ArrayList newList = new ArrayList(oldList);
-      return new Expression(newList, ArrayList.class, "new", new Object[] {});
-    }
-
-    @Override
-    protected boolean mutatesTo(Object oldInstance, Object newInstance) {
-      return false;
-    }
-
-    @Override
-    protected void initialize(Class<?> type, Object oldInstance, Object newInstance, Encoder out) {
-      java.util.Collection oldO = (java.util.Collection) oldInstance;
-      java.util.Collection newO = (java.util.Collection) newInstance;
-
-      if (newO.size() != 0) {
-        out.writeStatement(new Statement(oldInstance, "clear", new Object[] {}));
-      }
-      for (Iterator i = oldO.iterator(); i.hasNext();) {
-        out.writeStatement(new Statement(oldInstance, "add", new Object[] {i.next()}));
-      }
-    }
-
-  }
-
-  /**
-   * DatePersistenceDelegate. Needed to serialize java.util.Date
-   * since it is not serialization friendly.
-   * Also works for java.sql.Date since it derives from java.util.Date.
-   */
-  public static class DatePersistenceDelegate extends PersistenceDelegate {
-
-    @Override
-    protected Expression instantiate(Object oldInstance, Encoder out) {
-      Date dateVal = (Date)oldInstance;
-      Object[] args = { dateVal.getTime() };
-      return new Expression(dateVal, dateVal.getClass(), "new", args);
-    }
-
-    @Override
-    protected boolean mutatesTo(Object oldInstance, Object newInstance) {
-      if (oldInstance == null || newInstance == null) {
-        return false;
-      }
-      return oldInstance.getClass() == newInstance.getClass();
-    }
-  }
-
-  /**
-   * TimestampPersistenceDelegate. Needed to serialize java.sql.Timestamp since
-   * it is not serialization friendly.
-   */
-  public static class TimestampPersistenceDelegate extends DatePersistenceDelegate {
-    @Override
-    protected void initialize(Class<?> type, Object oldInstance, Object newInstance, Encoder out) {
-      Timestamp ts = (Timestamp)oldInstance;
-      Object[] args = { ts.getNanos() };
-      Statement stmt = new Statement(oldInstance, "setNanos", args);
-      out.writeStatement(stmt);
-    }
-  }
-
-  /**
-   * Need to serialize org.antlr.runtime.CommonToken
-   */
-  public static class CommonTokenDelegate extends PersistenceDelegate {
-    @Override
-    protected Expression instantiate(Object oldInstance, Encoder out) {
-      CommonToken ct = (CommonToken)oldInstance;
-      Object[] args = {ct.getType(), ct.getText()};
-      return new Expression(ct, ct.getClass(), "new", args);
-    }
-  }
-
-  public static class PathDelegate extends PersistenceDelegate {
-    @Override
-    protected Expression instantiate(Object oldInstance, Encoder out) {
-      Path p = (Path)oldInstance;
-      Object[] args = {p.toString()};
-      return new Expression(p, p.getClass(), "new", args);
-    }
   }
 
   /**
@@ -614,23 +389,6 @@ public class SerializationUtilities {
     output.close();
   }
 
-  /**
-   * De-serialize an object. This helper function mainly makes sure that enums,
-   * counters, etc are handled properly.
-   */
-  @SuppressWarnings("unchecked")
-  private static <T> T deserializeObjectByJavaXML(InputStream in) {
-    XMLDecoder d = null;
-    try {
-      d = new XMLDecoder(in, null, null);
-      return (T) d.readObject();
-    } finally {
-      if (null != d) {
-        d.close();
-      }
-    }
-  }
-
   private static <T> T deserializeObjectByKryo(Kryo kryo, InputStream in, Class<T> clazz ) {
     Input inp = new Input(in);
     kryo.setClassLoader(Utilities.getSessionSpecifiedClassLoader());
@@ -639,13 +397,13 @@ public class SerializationUtilities {
     return t;
   }
 
-  public static List<Operator<?>> cloneOperatorTree(Configuration conf, List<Operator<?>> roots) {
+  public static List<Operator<?>> cloneOperatorTree(List<Operator<?>> roots) {
     ByteArrayOutputStream baos = new ByteArrayOutputStream(4096);
-    serializePlan(roots, baos, conf, true);
+    serializePlan(roots, baos, true);
     @SuppressWarnings("unchecked")
     List<Operator<?>> result =
         deserializePlan(new ByteArrayInputStream(baos.toByteArray()),
-            roots.getClass(), conf, true);
+            roots.getClass(), true);
     return result;
   }
 

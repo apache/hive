@@ -256,7 +256,7 @@ public class GenSparkSkewJoinProcessor {
       List<Operator<?>> reducerList = new ArrayList<Operator<?>>();
       reducerList.add(reduceWork.getReducer());
       Operator<? extends OperatorDesc> reducer = SerializationUtilities.cloneOperatorTree(
-          parseCtx.getConf(), reducerList).get(0);
+          reducerList).get(0);
       Preconditions.checkArgument(reducer instanceof JoinOperator,
           "Reducer should be join operator, but actually is " + reducer.getName());
       JoinOperator cloneJoinOp = (JoinOperator) reducer;

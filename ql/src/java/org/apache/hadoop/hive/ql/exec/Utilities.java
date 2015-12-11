@@ -407,29 +407,29 @@ public final class Utilities {
 
         if(MAP_PLAN_NAME.equals(name)){
           if (ExecMapper.class.getName().equals(conf.get(MAPRED_MAPPER_CLASS))){
-            gWork = SerializationUtilities.deserializePlan(kryo, in, MapWork.class, conf);
+            gWork = SerializationUtilities.deserializePlan(kryo, in, MapWork.class);
           } else if(MergeFileMapper.class.getName().equals(conf.get(MAPRED_MAPPER_CLASS))) {
-            gWork = SerializationUtilities.deserializePlan(kryo, in, MergeFileWork.class, conf);
+            gWork = SerializationUtilities.deserializePlan(kryo, in, MergeFileWork.class);
           } else if(ColumnTruncateMapper.class.getName().equals(conf.get(MAPRED_MAPPER_CLASS))) {
-            gWork = SerializationUtilities.deserializePlan(kryo, in, ColumnTruncateWork.class, conf);
+            gWork = SerializationUtilities.deserializePlan(kryo, in, ColumnTruncateWork.class);
           } else if(PartialScanMapper.class.getName().equals(conf.get(MAPRED_MAPPER_CLASS))) {
-            gWork = SerializationUtilities.deserializePlan(kryo, in, PartialScanWork.class,conf);
+            gWork = SerializationUtilities.deserializePlan(kryo, in, PartialScanWork.class);
           } else {
             throw new RuntimeException("unable to determine work from configuration ."
                 + MAPRED_MAPPER_CLASS + " was "+ conf.get(MAPRED_MAPPER_CLASS)) ;
           }
         } else if (REDUCE_PLAN_NAME.equals(name)) {
           if(ExecReducer.class.getName().equals(conf.get(MAPRED_REDUCER_CLASS))) {
-            gWork = SerializationUtilities.deserializePlan(kryo, in, ReduceWork.class, conf);
+            gWork = SerializationUtilities.deserializePlan(kryo, in, ReduceWork.class);
           } else {
             throw new RuntimeException("unable to determine work from configuration ."
                 + MAPRED_REDUCER_CLASS +" was "+ conf.get(MAPRED_REDUCER_CLASS)) ;
           }
         } else if (name.contains(MERGE_PLAN_NAME)) {
           if (name.startsWith(MAPNAME)) {
-            gWork = SerializationUtilities.deserializePlan(kryo, in, MapWork.class, conf);
+            gWork = SerializationUtilities.deserializePlan(kryo, in, MapWork.class);
           } else if (name.startsWith(REDUCENAME)) {
-            gWork = SerializationUtilities.deserializePlan(kryo, in, ReduceWork.class, conf);
+            gWork = SerializationUtilities.deserializePlan(kryo, in, ReduceWork.class);
           } else {
             throw new RuntimeException("Unknown work type: " + name);
           }
@@ -528,7 +528,7 @@ public final class Utilities {
         ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
         try {
           out = new DeflaterOutputStream(byteOut, new Deflater(Deflater.BEST_SPEED));
-          SerializationUtilities.serializePlan(kryo, w, out, conf);
+          SerializationUtilities.serializePlan(kryo, w, out);
           out.close();
           out = null;
         } finally {
@@ -542,7 +542,7 @@ public final class Utilities {
         FileSystem fs = planPath.getFileSystem(conf);
         try {
           out = fs.create(planPath);
-          SerializationUtilities.serializePlan(kryo, w, out, conf);
+          SerializationUtilities.serializePlan(kryo, w, out);
           out.close();
           out = null;
         } finally {
