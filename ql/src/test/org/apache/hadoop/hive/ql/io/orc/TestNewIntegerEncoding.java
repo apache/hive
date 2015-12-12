@@ -29,12 +29,12 @@ import java.util.Random;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.ql.io.orc.OrcFile.EncodingStrategy;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.orc.CompressionKind;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -49,16 +49,16 @@ import com.google.common.primitives.Longs;
 @RunWith(value = Parameterized.class)
 public class TestNewIntegerEncoding {
 
-  private EncodingStrategy encodingStrategy;
+  private OrcFile.EncodingStrategy encodingStrategy;
 
-  public TestNewIntegerEncoding(EncodingStrategy es) {
+  public TestNewIntegerEncoding( OrcFile.EncodingStrategy es) {
     this.encodingStrategy = es;
   }
 
   @Parameters
   public static Collection<Object[]> data() {
-    Object[][] data = new Object[][] { { EncodingStrategy.COMPRESSION },
-        { EncodingStrategy.SPEED } };
+    Object[][] data = new Object[][] { {  OrcFile.EncodingStrategy.COMPRESSION },
+        {  OrcFile.EncodingStrategy.SPEED } };
     return Arrays.asList(data);
   }
 

@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 
 create table tmptable(key string, value string, hr string, ds string);
 

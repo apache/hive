@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.auto.convert.join=false;
 set hive.optimize.correlation=false;
 -- In this query, subquery a and b both have a GroupByOperator and the a and b will be

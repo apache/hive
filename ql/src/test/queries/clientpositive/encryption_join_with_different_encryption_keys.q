@@ -10,7 +10,7 @@ DROP TABLE IF EXISTS table_key_2 PURGE;
 CREATE TABLE table_key_2 (key INT, value STRING) LOCATION '${hiveconf:hive.metastore.warehouse.dir}/table_key_2';
 CRYPTO CREATE_KEY --keyName key_2 --bitLength 256;
 CRYPTO CREATE_ZONE --keyName key_2 --path ${hiveconf:hive.metastore.warehouse.dir}/table_key_2;
-
+set hive.mapred.mode=nonstrict;
 INSERT OVERWRITE TABLE table_key_1 SELECT * FROM src;
 INSERT OVERWRITE TABLE table_key_2 SELECT * FROM src;
 

@@ -30,7 +30,7 @@
 
 #set -x
 
-usage="Usage: llap-daemon.sh  (start|stop) "
+usage="Usage: llapDaemon.sh  (start|stop) "
 
 # if no args specified, show usage
 if [ $# -le 0 ]; then
@@ -86,10 +86,6 @@ fi
 # some variables
 LLAP_DAEMON_LOG_BASE=llap-daemon-$USER-$HOSTNAME
 export LLAP_DAEMON_LOG_FILE=$LLAP_DAEMON_LOG_BASE.log
-if [ ! -n "${LLAP_DAEMON_LOGGER}" ]; then
-  echo "LLAP_DAEMON_LOGGER not defined... using defaults"
-  LLAP_DAEMON_LOGGER=${LOG_LEVEL_DEFAULT}
-fi
 logLog=$LLAP_DAEMON_LOG_DIR/$LLAP_DAEMON_LOG_BASE.log
 logOut=$LLAP_DAEMON_LOG_DIR/$LLAP_DAEMON_LOG_BASE.out
 pid=$LLAP_DAEMON_PID_DIR/llap-daemon.pid 

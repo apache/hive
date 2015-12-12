@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 -- SORT_QUERY_RESULTS
 -- union :map-reduce sub-queries followed by join
 

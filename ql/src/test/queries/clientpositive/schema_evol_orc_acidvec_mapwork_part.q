@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.cli.print.header=true;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;

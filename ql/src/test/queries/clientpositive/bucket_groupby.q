@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 create table clustergroupby(key string, value string) partitioned by(ds string);
 describe extended clustergroupby;
 alter table clustergroupby clustered by (key) into 1 buckets;

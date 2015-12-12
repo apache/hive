@@ -23,6 +23,7 @@ import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.util.regex.Pattern;
 
+import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.session.OperationLog;
@@ -52,9 +53,9 @@ public class LogDivertAppender
   private static LoggerContext context = (LoggerContext) LogManager.getContext(false);
   private static Configuration configuration = context.getConfiguration();
   public static final Layout<? extends Serializable> verboseLayout = PatternLayout.createLayout(
-      "%d{yy/MM/dd HH:mm:ss} %p %c{2}: %m%n", configuration, null, null, true, false, null, null);
+      "%d{yy/MM/dd HH:mm:ss} %p %c{2}: %m%n", null, configuration, null, null, true, false, null, null);
   public static final Layout<? extends Serializable> nonVerboseLayout = PatternLayout.createLayout(
-      "%-5p : %m%n", configuration, null, null, true, false, null, null);
+      "%-5p : %m%n", null, configuration, null, null, true, false, null, null);
 
   private final OperationManager operationManager;
   private final StringOutputStreamManager manager;
@@ -121,7 +122,7 @@ public class LogDivertAppender
     private static final Pattern executionIncludeNamePattern = Pattern.compile(Joiner.on("|").
         join(new String[]{"org.apache.hadoop.mapreduce.JobSubmitter",
             "org.apache.hadoop.mapreduce.Job", "SessionState", Task.class.getName(),
-            "org.apache.hadoop.hive.ql.exec.spark.status.SparkJobMonitor"}));
+            Driver.class.getName(), "org.apache.hadoop.hive.ql.exec.spark.status.SparkJobMonitor"}));
 
     /* Patterns that are included in performance logging level.
      * In performance mode, show execution and performance logger messages.

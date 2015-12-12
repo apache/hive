@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 -- SORT_QUERY_RESULTS
 
 -- This tests various union queries which have columns on one side of the query

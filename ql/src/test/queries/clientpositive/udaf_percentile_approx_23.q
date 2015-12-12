@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
 -- 0.23 changed input order of data in reducer task, which affects result of percentile_approx
 

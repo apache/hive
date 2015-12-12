@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.exec.submitviachild=true;
 set hive.exec.submit.local.task.via.child=true;
 set hive.input.format=org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;

@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
@@ -61,6 +62,7 @@ public class GenMRFileSink1 implements NodeProcessor {
    * @param opProcCtx
    *          context
    */
+  @Override
   public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx opProcCtx,
       Object... nodeOutputs) throws SemanticException {
     GenMRProcContext ctx = (GenMRProcContext) opProcCtx;
@@ -140,7 +142,7 @@ public class GenMRFileSink1 implements NodeProcessor {
   private void processLinkedFileDesc(GenMRProcContext ctx,
       Task<? extends Serializable> childTask) throws SemanticException {
     Task<? extends Serializable> currTask = ctx.getCurrTask();
-    Operator<? extends OperatorDesc> currTopOp = ctx.getCurrTopOp();
+    TableScanOperator currTopOp = ctx.getCurrTopOp();
     if (currTopOp != null && !ctx.isSeenOp(currTask, currTopOp)) {
       String currAliasId = ctx.getCurrAliasId();
       GenMapRedUtils.setTaskPlan(currAliasId, currTopOp, currTask, false, ctx);
@@ -186,7 +188,7 @@ public class GenMRFileSink1 implements NodeProcessor {
     dest = GenMapRedUtils.createMoveTask(ctx.getCurrTask(), chDir, fsOp, ctx.getParseCtx(),
         ctx.getMvTask(), ctx.getConf(), ctx.getDependencyTaskForMultiInsert());
 
-    Operator<? extends OperatorDesc> currTopOp = ctx.getCurrTopOp();
+    TableScanOperator currTopOp = ctx.getCurrTopOp();
     String currAliasId = ctx.getCurrAliasId();
     HashMap<Operator<? extends OperatorDesc>, Task<? extends Serializable>> opTaskMap =
         ctx.getOpTaskMap();

@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.exec.pre.hooks=;
 
 EXPLAIN

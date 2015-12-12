@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.ql.io.orc;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.nio.ByteBuffer;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -29,6 +28,27 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.orc.BooleanColumnStatistics;
+import org.apache.orc.OrcUtils;
+import org.apache.orc.impl.BufferChunk;
+import org.apache.orc.ColumnStatistics;
+import org.apache.orc.impl.ColumnStatisticsImpl;
+import org.apache.orc.CompressionCodec;
+import org.apache.orc.DataReader;
+import org.apache.orc.DateColumnStatistics;
+import org.apache.orc.DecimalColumnStatistics;
+import org.apache.orc.DoubleColumnStatistics;
+import org.apache.orc.impl.InStream;
+import org.apache.orc.IntegerColumnStatistics;
+import org.apache.orc.impl.MetadataReader;
+import org.apache.orc.impl.MetadataReaderImpl;
+import org.apache.orc.OrcConf;
+import org.apache.orc.impl.OrcIndex;
+import org.apache.orc.impl.PositionProvider;
+import org.apache.orc.impl.StreamName;
+import org.apache.orc.StringColumnStatistics;
+import org.apache.orc.StripeInformation;
+import org.apache.orc.TimestampColumnStatistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -41,9 +61,6 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.filters.BloomFilterIO;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.Type;
-import org.apache.hadoop.hive.ql.io.orc.TreeReaderFactory.TreeReaderSchema;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
@@ -51,6 +68,7 @@ import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.orc.OrcProto;
 
 public class RecordReaderImpl implements RecordReader {
   static final Logger LOG = LoggerFactory.getLogger(RecordReaderImpl.class);
@@ -83,28 +101,6 @@ public class RecordReaderImpl implements RecordReader {
   private final Configuration conf;
   private final MetadataReader metadata;
   private final DataReader dataReader;
-
-  public final static class Index {
-    OrcProto.RowIndex[] rowGroupIndex;
-    OrcProto.BloomFilterIndex[] bloomFilterIndex;
-
-    public Index(OrcProto.RowIndex[] rgIndex, OrcProto.BloomFilterIndex[] bfIndex) {
-      this.rowGroupIndex = rgIndex;
-      this.bloomFilterIndex = bfIndex;
-    }
-
-    public OrcProto.RowIndex[] getRowGroupIndex() {
-      return rowGroupIndex;
-    }
-
-    public OrcProto.BloomFilterIndex[] getBloomFilterIndex() {
-      return bloomFilterIndex;
-    }
-
-    public void setRowGroupIndex(OrcProto.RowIndex[] rowGroupIndex) {
-      this.rowGroupIndex = rowGroupIndex;
-    }
-  }
 
   /**
    * Given a list of column names, find the given column and return the index.
@@ -156,15 +152,15 @@ public class RecordReaderImpl implements RecordReader {
                              Configuration conf
                              ) throws IOException {
 
-    TreeReaderSchema treeReaderSchema;
+    TreeReaderFactory.TreeReaderSchema treeReaderSchema;
     if (options.getSchema() == null) {
-      treeReaderSchema = new TreeReaderSchema().fileTypes(types).schemaTypes(types);
+      treeReaderSchema = new TreeReaderFactory.TreeReaderSchema().fileTypes(types).schemaTypes(types);
     } else {
 
       // Now that we are creating a record reader for a file, validate that the schema to read
       // is compatible with the file schema.
       //
-      List<Type> schemaTypes = OrcUtils.getOrcTypes(options.getSchema());
+      List<OrcProto.Type> schemaTypes = OrcUtils.getOrcTypes(options.getSchema());
       treeReaderSchema = SchemaEvolution.validateAndCreate(types, schemaTypes);
     }
     this.path = path;
@@ -741,7 +737,7 @@ public class RecordReaderImpl implements RecordReader {
             if (indexes[columnIx] == null) {
               throw new AssertionError("Index is not populated for " + columnIx);
             }
-            RowIndexEntry entry = indexes[columnIx].getEntry(rowGroup);
+            OrcProto.RowIndexEntry entry = indexes[columnIx].getEntry(rowGroup);
             if (entry == null) {
               throw new AssertionError("RG is not populated for " + columnIx + " rg " + rowGroup);
             }
@@ -801,7 +797,7 @@ public class RecordReaderImpl implements RecordReader {
           if (!(range instanceof BufferChunk)) {
             continue;
           }
-          dataReader.releaseBuffer(((BufferChunk) range).chunk);
+          dataReader.releaseBuffer(((BufferChunk) range).getChunk());
         }
       }
     }
@@ -868,60 +864,6 @@ public class RecordReaderImpl implements RecordReader {
     bufferChunks = dataReader.readFileData(toRead, stripe.getOffset(), false);
     List<OrcProto.Stream> streamDescriptions = stripeFooter.getStreamsList();
     createStreams(streamDescriptions, bufferChunks, null, codec, bufferSize, streams);
-  }
-
-  /**
-   * The sections of stripe that we have read.
-   * This might not match diskRange - 1 disk range can be multiple buffer chunks, depending on DFS block boundaries.
-   */
-  public static class BufferChunk extends DiskRangeList {
-    final ByteBuffer chunk;
-
-    public BufferChunk(ByteBuffer chunk, long offset) {
-      super(offset, offset + chunk.remaining());
-      this.chunk = chunk;
-    }
-
-    public ByteBuffer getChunk() {
-      return chunk;
-    }
-
-    @Override
-    public boolean hasData() {
-      return chunk != null;
-    }
-
-    @Override
-    public final String toString() {
-      boolean makesSense = chunk.remaining() == (end - offset);
-      return "data range [" + offset + ", " + end + "), size: " + chunk.remaining()
-          + (makesSense ? "" : "(!)") + " type: " + (chunk.isDirect() ? "direct" : "array-backed");
-    }
-
-    @Override
-    public DiskRange sliceAndShift(long offset, long end, long shiftBy) {
-      assert offset <= end && offset >= this.offset && end <= this.end;
-      assert offset + shiftBy >= 0;
-      ByteBuffer sliceBuf = chunk.slice();
-      int newPos = (int) (offset - this.offset);
-      int newLimit = newPos + (int) (end - offset);
-      try {
-        sliceBuf.position(newPos);
-        sliceBuf.limit(newLimit);
-      } catch (Throwable t) {
-        LOG.error("Failed to slice buffer chunk with range" + " [" + this.offset + ", " + this.end
-            + "), position: " + chunk.position() + " limit: " + chunk.limit() + ", "
-            + (chunk.isDirect() ? "direct" : "array") + "; to [" + offset + ", " + end + ") "
-            + t.getClass());
-        throw new RuntimeException(t);
-      }
-      return new BufferChunk(sliceBuf, offset + shiftBy);
-    }
-
-    @Override
-    public ByteBuffer getData() {
-      return chunk;
-    }
   }
 
   /**
@@ -993,7 +935,7 @@ public class RecordReaderImpl implements RecordReader {
       List<DiskRange> buffers = RecordReaderUtils.getStreamBuffers(
           ranges, streamOffset, streamDesc.getLength());
       StreamName name = new StreamName(column, streamDesc.getKind());
-      streams.put(name, InStream.create(null, name.toString(), buffers,
+      streams.put(name, InStream.create(name.toString(), buffers,
           streamDesc.getLength(), codec, bufferSize));
       streamOffset += streamDesc.getLength();
     }
@@ -1199,12 +1141,12 @@ public class RecordReaderImpl implements RecordReader {
     throw new IllegalArgumentException("Seek after the end of reader range");
   }
 
-  Index readRowIndex(
+  OrcIndex readRowIndex(
       int stripeIndex, boolean[] included, boolean[] sargColumns) throws IOException {
     return readRowIndex(stripeIndex, included, null, null, sargColumns);
   }
 
-  Index readRowIndex(int stripeIndex, boolean[] included, OrcProto.RowIndex[] indexes,
+  OrcIndex readRowIndex(int stripeIndex, boolean[] included, OrcProto.RowIndex[] indexes,
       OrcProto.BloomFilterIndex[] bloomFilterIndex, boolean[] sargColumns) throws IOException {
     StripeInformation stripe = stripes.get(stripeIndex);
     OrcProto.StripeFooter stripeFooter = null;

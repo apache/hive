@@ -1,4 +1,4 @@
-set hive.cbo.enable=false;
+set hive.cbo.enable=true;
 set hive.exec.check.crossproducts=false;
 set hive.stats.fetch.column.stats=true;
 set hive.auto.convert.join=false;
@@ -1072,4 +1072,9 @@ insert overwrite table `src/_/cbo` select * from src;
 
 select * from `src/_/cbo` limit 1;
 
-
+drop table `t//`;
+create table `t//` (col string);
+insert into `t//` values(1);
+insert into `t//` values(null);
+analyze table `t//` compute statistics;
+explain select * from `t//`;

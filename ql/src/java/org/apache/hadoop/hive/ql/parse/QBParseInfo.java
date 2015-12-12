@@ -26,6 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.AbstractMap.SimpleEntry;
 
 import org.antlr.runtime.tree.Tree;
 import org.slf4j.Logger;
@@ -99,7 +100,10 @@ public class QBParseInfo {
 
   /* Order by clause */
   private final HashMap<String, ASTNode> destToOrderby;
-  private final HashMap<String, Integer> destToLimit;
+  // Use SimpleEntry to save the offset and rowcount of limit clause
+  // KEY of SimpleEntry: offset
+  // VALUE of SimpleEntry: rowcount
+  private final HashMap<String, SimpleEntry<Integer, Integer>> destToLimit;
   private int outerQueryLimit;
 
   // used by GroupBy
@@ -128,7 +132,7 @@ public class QBParseInfo {
     destToDistributeby = new HashMap<String, ASTNode>();
     destToSortby = new HashMap<String, ASTNode>();
     destToOrderby = new HashMap<String, ASTNode>();
-    destToLimit = new HashMap<String, Integer>();
+    destToLimit = new HashMap<String, SimpleEntry<Integer, Integer>>();
     insertIntoTables = new HashSet<String>();
     destRollups = new HashSet<String>();
     destCubes = new HashSet<String>();
@@ -440,12 +444,16 @@ public class QBParseInfo {
     exprToColumnAlias.put(expr,  alias);
   }
 
-  public void setDestLimit(String dest, Integer limit) {
-    destToLimit.put(dest, limit);
+  public void setDestLimit(String dest, Integer offset, Integer limit) {
+    destToLimit.put(dest, new SimpleEntry<>(offset, limit));
   }
 
   public Integer getDestLimit(String dest) {
-    return destToLimit.get(dest);
+    return destToLimit.get(dest) == null ? null : destToLimit.get(dest).getValue();
+  }
+
+  public Integer getDestLimitOffset(String dest) {
+    return destToLimit.get(dest) == null ? 0 : destToLimit.get(dest).getKey();
   }
 
   /**
@@ -566,7 +574,7 @@ public class QBParseInfo {
     return tableSpecs.get(tName.next());
   }
 
-  public HashMap<String, Integer> getDestToLimit() {
+  public HashMap<String, SimpleEntry<Integer,Integer>> getDestToLimit() {
     return destToLimit;
   }
 

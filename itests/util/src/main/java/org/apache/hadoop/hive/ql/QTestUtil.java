@@ -57,6 +57,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -1352,7 +1353,7 @@ public class QTestUtil {
     try {
       conf.set(HiveConf.ConfVars.PLAN_SERIALIZATION.varname, "javaXML");
       for (Task<? extends Serializable> plan : tasks) {
-        Utilities.serializePlan(plan, ofs, conf);
+        SerializationUtilities.serializePlan(plan, ofs, conf);
       }
       ofs.close();
       fixXml4JDK7(outf.getPath());

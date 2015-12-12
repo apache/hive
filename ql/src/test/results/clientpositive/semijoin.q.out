@@ -151,10 +151,10 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 45 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 45 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 6 Data size: 45 Basic stats: COMPLETE Column stats: NONE
@@ -255,10 +255,10 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 43 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 43 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 6 Data size: 43 Basic stats: COMPLETE Column stats: NONE
@@ -361,10 +361,10 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
@@ -457,16 +457,20 @@ STAGE PLANS:
             Filter Operator
               predicate: (key < 15) (type: boolean)
               Statistics: Num rows: 7 Data size: 51 Basic stats: COMPLETE Column stats: NONE
-              Group By Operator
-                keys: key (type: int), key (type: int)
-                mode: hash
-                outputColumnNames: _col0, _col1
+              Select Operator
+                expressions: key (type: int)
+                outputColumnNames: _col1
                 Statistics: Num rows: 7 Data size: 51 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col1 (type: int)
-                  sort order: +
-                  Map-reduce partition columns: _col1 (type: int)
+                Group By Operator
+                  keys: _col1 (type: int), _col1 (type: int)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
                   Statistics: Num rows: 7 Data size: 51 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col1 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col1 (type: int)
+                    Statistics: Num rows: 7 Data size: 51 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -568,10 +572,10 @@ STAGE PLANS:
               Statistics: Num rows: 2 Data size: 15 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), value (type: string)
-                outputColumnNames: key, value
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 2 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int), value (type: string)
+                  keys: _col0 (type: int), _col1 (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 2 Data size: 15 Basic stats: COMPLETE Column stats: NONE
@@ -972,10 +976,10 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 43 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 43 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 6 Data size: 43 Basic stats: COMPLETE Column stats: NONE
@@ -1088,10 +1092,10 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 45 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 45 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 6 Data size: 45 Basic stats: COMPLETE Column stats: NONE
@@ -1202,10 +1206,10 @@ STAGE PLANS:
               Statistics: Num rows: 11 Data size: 81 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 11 Data size: 81 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 11 Data size: 81 Basic stats: COMPLETE Column stats: NONE
@@ -1322,10 +1326,10 @@ STAGE PLANS:
               Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), value (type: string)
-                outputColumnNames: key, value
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int), value (type: string)
+                  keys: _col0 (type: int), _col1 (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
@@ -1430,10 +1434,10 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 43 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 43 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 6 Data size: 43 Basic stats: COMPLETE Column stats: NONE
@@ -1451,10 +1455,10 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 45 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 45 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 6 Data size: 45 Basic stats: COMPLETE Column stats: NONE
@@ -1568,10 +1572,10 @@ STAGE PLANS:
             Statistics: Num rows: 11 Data size: 84 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int)
-              outputColumnNames: key
+              outputColumnNames: _col0
               Statistics: Num rows: 11 Data size: 84 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: key (type: int)
+                keys: _col0 (type: int)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 11 Data size: 84 Basic stats: COMPLETE Column stats: NONE
@@ -1697,10 +1701,10 @@ STAGE PLANS:
             Statistics: Num rows: 11 Data size: 84 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int)
-              outputColumnNames: key
+              outputColumnNames: _col0
               Statistics: Num rows: 11 Data size: 84 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: key (type: int)
+                keys: _col0 (type: int)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 11 Data size: 84 Basic stats: COMPLETE Column stats: NONE
@@ -1829,10 +1833,10 @@ STAGE PLANS:
             Statistics: Num rows: 11 Data size: 84 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int)
-              outputColumnNames: key
+              outputColumnNames: _col0
               Statistics: Num rows: 11 Data size: 84 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: key (type: int)
+                keys: _col0 (type: int)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 11 Data size: 84 Basic stats: COMPLETE Column stats: NONE
@@ -1953,10 +1957,10 @@ STAGE PLANS:
             Statistics: Num rows: 11 Data size: 84 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int)
-              outputColumnNames: key
+              outputColumnNames: _col0
               Statistics: Num rows: 11 Data size: 84 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: key (type: int)
+                keys: _col0 (type: int)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 11 Data size: 84 Basic stats: COMPLETE Column stats: NONE
@@ -2085,10 +2089,10 @@ STAGE PLANS:
             Statistics: Num rows: 11 Data size: 84 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int)
-              outputColumnNames: key
+              outputColumnNames: _col0
               Statistics: Num rows: 11 Data size: 84 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: key (type: int)
+                keys: _col0 (type: int)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 11 Data size: 84 Basic stats: COMPLETE Column stats: NONE
@@ -2219,10 +2223,10 @@ STAGE PLANS:
             Statistics: Num rows: 11 Data size: 79 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int)
-              outputColumnNames: key
+              outputColumnNames: _col0
               Statistics: Num rows: 11 Data size: 79 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: key (type: int)
+                keys: _col0 (type: int)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 11 Data size: 79 Basic stats: COMPLETE Column stats: NONE
@@ -2372,10 +2376,10 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 45 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 45 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: key (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 6 Data size: 45 Basic stats: COMPLETE Column stats: NONE

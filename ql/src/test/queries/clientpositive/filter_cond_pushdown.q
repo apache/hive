@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 EXPLAIN
 SELECT f.key, g.value
 FROM src f JOIN src m JOIN src g ON(g.value = m.value AND m.value is not null AND m.value !='')

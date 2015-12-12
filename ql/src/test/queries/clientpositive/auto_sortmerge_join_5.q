@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 -- small no part, 4 bucket & big no part, 2 bucket
 
 -- SORT_QUERY_RESULTS

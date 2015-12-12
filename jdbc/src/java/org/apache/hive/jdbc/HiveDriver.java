@@ -238,7 +238,7 @@ public class HiveDriver implements Driver {
 
     JdbcConnectionParams params = null;
     try {
-      params = Utils.parseURL(url);
+      params = Utils.parseURL(url, defaults);
     } catch (ZooKeeperHiveClientException e) {
       throw new SQLException(e);
     }

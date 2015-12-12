@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.io.orc;
 
-import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -33,13 +32,18 @@ import org.apache.hadoop.hive.common.io.DiskRange;
 import org.apache.hadoop.hive.common.io.DiskRangeList;
 import org.apache.hadoop.hive.common.io.DiskRangeList.CreateHelper;
 import org.apache.hadoop.hive.common.io.DiskRangeList.MutateHelper;
-import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.BufferChunk;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.HadoopShims.ByteBufferPoolShim;
 import org.apache.hadoop.hive.shims.HadoopShims.ZeroCopyReaderShim;
+import org.apache.orc.impl.BufferChunk;
+import org.apache.orc.CompressionCodec;
+import org.apache.orc.DataReader;
+import org.apache.orc.impl.DirectDecompressionCodec;
+import org.apache.orc.OrcProto;
 
 import com.google.common.collect.ComparisonChain;
+import org.apache.orc.impl.OutStream;
 
 /**
  * Stateless methods shared between RecordReaderImpl and EncodedReaderImpl.
@@ -262,7 +266,7 @@ public class RecordReaderUtils {
 
   /**
    * Build a string representation of a list of disk ranges.
-   * @param ranges ranges to stringify
+   * @param range ranges to stringify
    * @return the resulting string
    */
   public static String stringifyDiskRanges(DiskRangeList range) {
@@ -288,7 +292,7 @@ public class RecordReaderUtils {
    * Read the list of ranges from the file.
    * @param file the file to read
    * @param base the base of the stripe
-   * @param ranges the disk ranges within the stripe to read
+   * @param range the disk ranges within the stripe to read
    * @return the bytes read for each disk range, which is the same length as
    *    ranges
    * @throws IOException

@@ -39,6 +39,23 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.codec.binary.Hex;
+import org.apache.hadoop.hive.ql.io.IOConstants;
+import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.typeinfo.BaseCharTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
+import org.apache.orc.ColumnStatistics;
+import org.apache.orc.FileMetaInfo;
+import org.apache.orc.OrcUtils;
+import org.apache.orc.StripeInformation;
+import org.apache.orc.StripeStatistics;
+import org.apache.orc.TypeDescription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -63,8 +80,6 @@ import org.apache.hadoop.hive.ql.io.LlapWrappableInputFormatInterface;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.io.SelfDescribingInputFormatInterface;
 import org.apache.hadoop.hive.ql.io.StatsProvidingRecordReader;
-import org.apache.hadoop.hive.ql.io.orc.OrcFile.WriterVersion;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.Type;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
@@ -86,6 +101,7 @@ import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.orc.OrcProto;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.cache.Cache;
@@ -234,7 +250,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     /**
      * Do we have schema on read in the configuration variables?
      */
-    TypeDescription schema = OrcUtils.getDesiredRowTypeDescr(conf);
+    TypeDescription schema = getDesiredRowTypeDescr(conf);
 
     Reader.Options options = new Reader.Options().range(offset, length);
     options.schema(schema);
@@ -242,7 +258,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     List<OrcProto.Type> types = file.getTypes();
     options.include(genIncludedColumns(types, conf, isOriginal));
     setSearchArgument(options, types, conf, isOriginal);
-    return file.rowsOptions(options);
+    return (RecordReader) file.rowsOptions(options);
   }
 
   public static boolean isOriginal(Reader file) {
@@ -1500,7 +1516,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     /**
      * Do we have schema on read in the configuration variables?
      */
-    TypeDescription schema = OrcUtils.getDesiredRowTypeDescr(conf);
+    TypeDescription schema = getDesiredRowTypeDescr(conf);
 
     final Reader reader;
     final int bucket;
@@ -1508,7 +1524,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     readOptions.range(split.getStart(), split.getLength());
 
     // TODO: Convert genIncludedColumns and setSearchArgument to use TypeDescription.
-    final List<Type> schemaTypes = OrcUtils.getOrcTypes(schema);
+    final List<OrcProto.Type> schemaTypes = OrcUtils.getOrcTypes(schema);
     readOptions.include(genIncludedColumns(schemaTypes, conf, SCHEMA_TYPES_IS_ORIGINAL));
     setSearchArgument(readOptions, schemaTypes, conf, SCHEMA_TYPES_IS_ORIGINAL);
 
@@ -1594,7 +1610,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
   }
 
   public static boolean[] pickStripesViaTranslatedSarg(SearchArgument sarg,
-      WriterVersion writerVersion, List<OrcProto.Type> types,
+      OrcFile.WriterVersion writerVersion, List<OrcProto.Type> types,
       List<StripeStatistics> stripeStats, int stripeCount) {
     LOG.info("Translated ORC pushdown predicate: " + sarg);
     assert sarg != null;
@@ -1608,7 +1624,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
   }
 
   private static boolean[] pickStripes(SearchArgument sarg, String[] sargColNames,
-      WriterVersion writerVersion, boolean isOriginal, List<StripeStatistics> stripeStats,
+      OrcFile.WriterVersion writerVersion, boolean isOriginal, List<StripeStatistics> stripeStats,
       int stripeCount, Path filePath) {
     if (sarg == null || stripeStats == null || writerVersion == OrcFile.WriterVersion.ORIGINAL) {
       return null; // only do split pruning if HIVE-8732 has been fixed in the writer
@@ -1927,4 +1943,165 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       return true;
     }
   }
+  /**
+   * Convert a Hive type property string that contains separated type names into a list of
+   * TypeDescription objects.
+   * @return the list of TypeDescription objects.
+   */
+  public static ArrayList<TypeDescription> typeDescriptionsFromHiveTypeProperty(
+      String hiveTypeProperty) {
+
+    // CONSDIER: We need a type name parser for TypeDescription.
+
+    ArrayList<TypeInfo> typeInfoList = TypeInfoUtils.getTypeInfosFromTypeString(hiveTypeProperty);
+    ArrayList<TypeDescription> typeDescrList =new ArrayList<TypeDescription>(typeInfoList.size());
+    for (TypeInfo typeInfo : typeInfoList) {
+      typeDescrList.add(convertTypeInfo(typeInfo));
+    }
+    return typeDescrList;
+  }
+
+  public static TypeDescription convertTypeInfo(TypeInfo info) {
+    switch (info.getCategory()) {
+      case PRIMITIVE: {
+        PrimitiveTypeInfo pinfo = (PrimitiveTypeInfo) info;
+        switch (pinfo.getPrimitiveCategory()) {
+          case BOOLEAN:
+            return TypeDescription.createBoolean();
+          case BYTE:
+            return TypeDescription.createByte();
+          case SHORT:
+            return TypeDescription.createShort();
+          case INT:
+            return TypeDescription.createInt();
+          case LONG:
+            return TypeDescription.createLong();
+          case FLOAT:
+            return TypeDescription.createFloat();
+          case DOUBLE:
+            return TypeDescription.createDouble();
+          case STRING:
+            return TypeDescription.createString();
+          case DATE:
+            return TypeDescription.createDate();
+          case TIMESTAMP:
+            return TypeDescription.createTimestamp();
+          case BINARY:
+            return TypeDescription.createBinary();
+          case DECIMAL: {
+            DecimalTypeInfo dinfo = (DecimalTypeInfo) pinfo;
+            return TypeDescription.createDecimal()
+                .withScale(dinfo.getScale())
+                .withPrecision(dinfo.getPrecision());
+          }
+          case VARCHAR: {
+            BaseCharTypeInfo cinfo = (BaseCharTypeInfo) pinfo;
+            return TypeDescription.createVarchar()
+                .withMaxLength(cinfo.getLength());
+          }
+          case CHAR: {
+            BaseCharTypeInfo cinfo = (BaseCharTypeInfo) pinfo;
+            return TypeDescription.createChar()
+                .withMaxLength(cinfo.getLength());
+          }
+          default:
+            throw new IllegalArgumentException("ORC doesn't handle primitive" +
+                " category " + pinfo.getPrimitiveCategory());
+        }
+      }
+      case LIST: {
+        ListTypeInfo linfo = (ListTypeInfo) info;
+        return TypeDescription.createList
+            (convertTypeInfo(linfo.getListElementTypeInfo()));
+      }
+      case MAP: {
+        MapTypeInfo minfo = (MapTypeInfo) info;
+        return TypeDescription.createMap
+            (convertTypeInfo(minfo.getMapKeyTypeInfo()),
+                convertTypeInfo(minfo.getMapValueTypeInfo()));
+      }
+      case UNION: {
+        UnionTypeInfo minfo = (UnionTypeInfo) info;
+        TypeDescription result = TypeDescription.createUnion();
+        for (TypeInfo child: minfo.getAllUnionObjectTypeInfos()) {
+          result.addUnionChild(convertTypeInfo(child));
+        }
+        return result;
+      }
+      case STRUCT: {
+        StructTypeInfo sinfo = (StructTypeInfo) info;
+        TypeDescription result = TypeDescription.createStruct();
+        for(String fieldName: sinfo.getAllStructFieldNames()) {
+          result.addField(fieldName,
+              convertTypeInfo(sinfo.getStructFieldTypeInfo(fieldName)));
+        }
+        return result;
+      }
+      default:
+        throw new IllegalArgumentException("ORC doesn't handle " +
+            info.getCategory());
+    }
+  }
+
+
+  public static TypeDescription getDesiredRowTypeDescr(Configuration conf) {
+
+    String columnNameProperty = null;
+    String columnTypeProperty = null;
+
+    ArrayList<String> schemaEvolutionColumnNames = null;
+    ArrayList<TypeDescription> schemaEvolutionTypeDescrs = null;
+
+    boolean haveSchemaEvolutionProperties = false;
+    if (HiveConf.getBoolVar(conf, ConfVars.HIVE_SCHEMA_EVOLUTION)) {
+
+      columnNameProperty = conf.get(IOConstants.SCHEMA_EVOLUTION_COLUMNS);
+      columnTypeProperty = conf.get(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES);
+
+      haveSchemaEvolutionProperties =
+          (columnNameProperty != null && columnTypeProperty != null);
+
+      if (haveSchemaEvolutionProperties) {
+        schemaEvolutionColumnNames = Lists.newArrayList(columnNameProperty.split(","));
+        if (schemaEvolutionColumnNames.size() == 0) {
+          haveSchemaEvolutionProperties = false;
+        } else {
+          schemaEvolutionTypeDescrs =
+              typeDescriptionsFromHiveTypeProperty(columnTypeProperty);
+          if (schemaEvolutionTypeDescrs.size() != schemaEvolutionColumnNames.size()) {
+            haveSchemaEvolutionProperties = false;
+          }
+        }
+      }
+    }
+
+    if (!haveSchemaEvolutionProperties) {
+
+      // Try regular properties;
+      columnNameProperty = conf.get(serdeConstants.LIST_COLUMNS);
+      columnTypeProperty = conf.get(serdeConstants.LIST_COLUMN_TYPES);
+      if (columnTypeProperty == null || columnNameProperty == null) {
+        return null;
+      }
+
+      schemaEvolutionColumnNames = Lists.newArrayList(columnNameProperty.split(","));
+      if (schemaEvolutionColumnNames.size() == 0) {
+        return null;
+      }
+      schemaEvolutionTypeDescrs =
+          typeDescriptionsFromHiveTypeProperty(columnTypeProperty);
+      if (schemaEvolutionTypeDescrs.size() != schemaEvolutionColumnNames.size()) {
+        return null;
+      }
+    }
+
+    // Desired schema does not include virtual columns or partition columns.
+    TypeDescription result = TypeDescription.createStruct();
+    for (int i = 0; i < schemaEvolutionColumnNames.size(); i++) {
+      result.addField(schemaEvolutionColumnNames.get(i), schemaEvolutionTypeDescrs.get(i));
+    }
+
+    return result;
+  }
+
 }

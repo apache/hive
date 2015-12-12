@@ -22,6 +22,8 @@ import java.io.PrintStream;
 
 import junit.framework.TestCase;
 
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hive.hcatalog.common.HCatException;
@@ -49,6 +51,32 @@ public class TestHCatSchemaUtils extends TestCase {
     // Looks like HCatFieldSchema.getTypeString() lower-cases its results
     assertEquals(ti.getTypeName().toLowerCase(), hsch.get(0).getTypeString());
     assertEquals(hsch.get(0).getTypeString(), typeString.toLowerCase());
+  }
+  
+  public void testHCatFieldSchemaConversion() throws Exception {
+	  FieldSchema stringFieldSchema = new FieldSchema("name1", serdeConstants.STRING_TYPE_NAME, "comment1");
+	  HCatFieldSchema stringHCatFieldSchema = HCatSchemaUtils.getHCatFieldSchema(stringFieldSchema);
+	  assertEquals(stringHCatFieldSchema.getName(), "name1");
+	  assertEquals(stringHCatFieldSchema.getCategory(), Category.PRIMITIVE);
+	  assertEquals(stringHCatFieldSchema.getComment(), "comment1");
+
+	  FieldSchema listFieldSchema = new FieldSchema("name1", "array<tinyint>", "comment1");
+	  HCatFieldSchema listHCatFieldSchema = HCatSchemaUtils.getHCatFieldSchema(listFieldSchema);
+	  assertEquals(listHCatFieldSchema.getName(), "name1");
+	  assertEquals(listHCatFieldSchema.getCategory(), Category.ARRAY);
+	  assertEquals(listHCatFieldSchema.getComment(), "comment1");
+
+	  FieldSchema mapFieldSchema = new FieldSchema("name1", "map<string,int>", "comment1");
+	  HCatFieldSchema mapHCatFieldSchema = HCatSchemaUtils.getHCatFieldSchema(mapFieldSchema);
+	  assertEquals(mapHCatFieldSchema.getName(), "name1");
+	  assertEquals(mapHCatFieldSchema.getCategory(), Category.MAP);
+	  assertEquals(mapHCatFieldSchema.getComment(), "comment1");
+
+	  FieldSchema structFieldSchema = new FieldSchema("name1", "struct<s:string,i:tinyint>", "comment1");
+	  HCatFieldSchema structHCatFieldSchema = HCatSchemaUtils.getHCatFieldSchema(structFieldSchema);
+	  assertEquals(structHCatFieldSchema.getName(), "name1");
+	  assertEquals(structHCatFieldSchema.getCategory(), Category.STRUCT);
+	  assertEquals(structHCatFieldSchema.getComment(), "comment1");
   }
 
   @SuppressWarnings("unused")

@@ -249,7 +249,7 @@ public class TestHive extends TestCase {
    * @throws Throwable
    */
   public void testMetaStoreApiTiming() throws Throwable {
-    // Get the RootLogger which, if you don't have log4j2-test.xml defined, will only log ERRORs
+    // Get the RootLogger which, if you don't have log4j2-test.properties defined, will only log ERRORs
     Logger logger = LogManager.getLogger("hive.ql.metadata.Hive");
     Level oldLevel = logger.getLevel();
     LoggerContext ctx = (LoggerContext) LogManager.getContext(false);

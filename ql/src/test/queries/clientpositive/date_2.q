@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 drop table if exists date_2;
 
 create table date_2 (

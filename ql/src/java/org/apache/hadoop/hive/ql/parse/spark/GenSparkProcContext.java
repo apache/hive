@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
@@ -135,7 +136,7 @@ public class GenSparkProcContext implements NodeProcessorCtx {
 
   // Alias to operator map, from the semantic analyzer.
   // This is necessary as sometimes semantic analyzer's mapping is different than operator's own alias.
-  public final Map<String, Operator<? extends OperatorDesc>> topOps;
+  public final Map<String, TableScanOperator> topOps;
 
   // The set of pruning sinks
   public final Set<Operator<?>> pruningSinkSet;
@@ -151,7 +152,7 @@ public class GenSparkProcContext implements NodeProcessorCtx {
       List<Task<? extends Serializable>> rootTasks,
       Set<ReadEntity> inputs,
       Set<WriteEntity> outputs,
-      Map<String, Operator<? extends OperatorDesc>> topOps) {
+      Map<String, TableScanOperator> topOps) {
     this.conf = conf;
     this.parseContext = parseContext;
     this.moveTask = moveTask;

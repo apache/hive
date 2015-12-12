@@ -32,7 +32,10 @@
 #export LLAP_DAEMON_USER_CLASSPATH=
 
 # Logger setup for LLAP daemon
-#export LLAP_DAEMON_LOGGER=INFO,RFA
+#export LLAP_DAEMON_LOGGER=RFA
+
+# Log level for LLAP daemon
+#export LLAP_DAEMON_LOG_LEVEL=INFO
 
 # Directory to which logs will be generated
 #export LLAP_DAEMON_LOG_DIR=

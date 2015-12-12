@@ -128,9 +128,10 @@ class ASTBuilder {
     return ASTBuilder.construct(HiveParser.TOK_HAVING, "TOK_HAVING").add(cond).node();
   }
 
-  static ASTNode limit(Object value) {
+  static ASTNode limit(Object offset, Object limit) {
     return ASTBuilder.construct(HiveParser.TOK_LIMIT, "TOK_LIMIT")
-        .add(HiveParser.Number, value.toString()).node();
+        .add(HiveParser.Number, offset.toString())
+        .add(HiveParser.Number, limit.toString()).node();
   }
 
   static ASTNode selectExpr(ASTNode expr, String alias) {

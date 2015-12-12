@@ -1045,15 +1045,6 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   }
 
   @Override
-  public DirectDecompressorShim getDirectDecompressor(DirectCompressionType codec) {
-    if(zeroCopy) {
-      return ZeroCopyShims.getDirectDecompressor(codec);
-    }
-    /* not supported */
-    return null;
-  }
-
-  @Override
   public Configuration getConfiguration(org.apache.hadoop.mapreduce.JobContext context) {
     return context.getConfiguration();
   }

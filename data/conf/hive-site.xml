@@ -275,6 +275,11 @@
 </property>
 
 <property>
+  <name>hive.llap.cache.allow.synthetic.fileid</name>
+  <value>true</value>
+</property>
+
+<property>
   <name>hive.llap.io.use.lrfu</name>
   <value>false</value>
 </property>

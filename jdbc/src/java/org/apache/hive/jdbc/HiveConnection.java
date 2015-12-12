@@ -103,8 +103,6 @@ import java.util.concurrent.TimeUnit;
  */
 public class HiveConnection implements java.sql.Connection {
   public static final Logger LOG = LoggerFactory.getLogger(HiveConnection.class.getName());
-  private static final String HIVE_VAR_PREFIX = "hivevar:";
-  private static final String HIVE_CONF_PREFIX = "hiveconf:";
 
   private String jdbcUriString;
   private String host;
@@ -128,12 +126,11 @@ public class HiveConnection implements java.sql.Connection {
   public HiveConnection(String uri, Properties info) throws SQLException {
     setupLoginTimeout();
     try {
-      connParams = Utils.parseURL(uri);
+      connParams = Utils.parseURL(uri, info);
     } catch (ZooKeeperHiveClientException e) {
       throw new SQLException(e);
     }
     jdbcUriString = connParams.getJdbcUriString();
-    // extract parsed connection parameters:
     // JDBC URL: jdbc:hive2://<host>:<port>/dbName;sess_var_list?hive_conf_list#hive_var_list
     // each list: <key1>=<val1>;<key2>=<val2> and so on
     // sess_var_list -> sessConfMap
@@ -143,19 +140,7 @@ public class HiveConnection implements java.sql.Connection {
     port = connParams.getPort();
     sessConfMap = connParams.getSessionVars();
     hiveConfMap = connParams.getHiveConfs();
-
     hiveVarMap = connParams.getHiveVars();
-    for (Map.Entry<Object, Object> kv : info.entrySet()) {
-      if ((kv.getKey() instanceof String)) {
-        String key = (String) kv.getKey();
-        if (key.startsWith(HIVE_VAR_PREFIX)) {
-          hiveVarMap.put(key.substring(HIVE_VAR_PREFIX.length()), info.getProperty(key));
-        } else if (key.startsWith(HIVE_CONF_PREFIX)) {
-          hiveConfMap.put(key.substring(HIVE_CONF_PREFIX.length()), info.getProperty(key));
-        }
-      }
-    }
-
     isEmbeddedMode = connParams.isEmbeddedMode();
 
     if (isEmbeddedMode) {
@@ -163,17 +148,6 @@ public class HiveConnection implements java.sql.Connection {
       embeddedClient.init(null);
       client = embeddedClient;
     } else {
-      // extract user/password from JDBC connection properties if its not supplied in the
-      // connection URL
-      if (info.containsKey(JdbcConnectionParams.AUTH_USER)) {
-        sessConfMap.put(JdbcConnectionParams.AUTH_USER, info.getProperty(JdbcConnectionParams.AUTH_USER));
-        if (info.containsKey(JdbcConnectionParams.AUTH_PASSWD)) {
-          sessConfMap.put(JdbcConnectionParams.AUTH_PASSWD, info.getProperty(JdbcConnectionParams.AUTH_PASSWD));
-        }
-      }
-      if (info.containsKey(JdbcConnectionParams.AUTH_TYPE)) {
-        sessConfMap.put(JdbcConnectionParams.AUTH_TYPE, info.getProperty(JdbcConnectionParams.AUTH_TYPE));
-      }
       // open the client transport
       openTransport();
       // set up the client

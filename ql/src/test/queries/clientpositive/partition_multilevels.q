@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 create table partition_test_multilevel (key string, value string) partitioned by (level1 string, level2 string, level3 string);
 
 insert overwrite table partition_test_multilevel partition(level1='1111', level2='111', level3='11') select key, value from srcpart tablesample (11 rows);

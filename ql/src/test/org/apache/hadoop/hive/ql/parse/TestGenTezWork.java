@@ -26,8 +26,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
@@ -35,12 +33,9 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
-import org.apache.hadoop.hive.ql.hooks.ReadEntity;
-import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
-import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
@@ -71,17 +66,17 @@ public class TestGenTezWork {
     ctx = new GenTezProcContext(
         new HiveConf(),
         new ParseContext(),
-        (List<Task<MoveWork>>)Collections.EMPTY_LIST,
-        (List<Task<? extends Serializable>>) new ArrayList<Task<? extends Serializable>>(),
-        (Set<ReadEntity>)Collections.EMPTY_SET,
-        (Set<WriteEntity>)Collections.EMPTY_SET);
+        Collections.EMPTY_LIST,
+        new ArrayList<Task<? extends Serializable>>(),
+        Collections.EMPTY_SET,
+        Collections.EMPTY_SET);
 
     proc = new GenTezWork(new GenTezUtils() {
       @Override
-        protected void setupMapWork(MapWork mapWork, GenTezProcContext context, 
-          PrunedPartitionList partitions, Operator<? extends OperatorDesc> root, String alias) 
+        protected void setupMapWork(MapWork mapWork, GenTezProcContext context,
+          PrunedPartitionList partitions, TableScanOperator root, String alias)
         throws SemanticException {
-        
+
         LinkedHashMap<String, Operator<? extends OperatorDesc>> map
           = new LinkedHashMap<String, Operator<? extends OperatorDesc>>();
         map.put("foo", root);

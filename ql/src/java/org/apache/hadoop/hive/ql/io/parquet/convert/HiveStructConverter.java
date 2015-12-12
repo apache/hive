@@ -127,8 +127,10 @@ public class HiveStructConverter extends HiveGroupConverter {
         return hiveFieldTypeInfos.get(i);
       }
     }
-    throw new RuntimeException("cannot find field " + field
-        + " in " + hiveFieldNames);
+    //This means hive type doesn't refer this field that comes from file schema.
+    //i.e. the field is not required for hive table. It can occur due to schema
+    //evolution where some field is deleted.
+    return null;
   }
 
   private Converter getFieldConverter(Type type, int fieldIndex, TypeInfo hiveTypeInfo) {

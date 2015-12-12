@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 set hive.auto.convert.join=false;
 set hive.optimize.correlation=false;

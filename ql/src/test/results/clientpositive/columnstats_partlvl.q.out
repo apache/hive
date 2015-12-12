@@ -494,19 +494,19 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@employee_part
 POSTHOOK: Input: default@employee_part@employeesalary=2000.0
 #### A masked pattern was here ####
-PREHOOK: query: describe formatted Employee_Part.employeeID   partition (employeeSalary=2000.0)
+PREHOOK: query: describe formatted Employee_Part partition (employeeSalary=2000.0) employeeID
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@employee_part
-POSTHOOK: query: describe formatted Employee_Part.employeeID   partition (employeeSalary=2000.0)
+POSTHOOK: query: describe formatted Employee_Part partition (employeeSalary=2000.0) employeeID
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee_part
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 employeeID          	int                 	16                  	34                  	1                   	14                  	                    	                    	                    	                    	from deserializer   
-PREHOOK: query: describe formatted Employee_Part.employeeName partition (employeeSalary=2000.0)
+PREHOOK: query: describe formatted Employee_Part partition (employeeSalary=2000.0) employeeName
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@employee_part
-POSTHOOK: query: describe formatted Employee_Part.employeeName partition (employeeSalary=2000.0)
+POSTHOOK: query: describe formatted Employee_Part partition (employeeSalary=2000.0) employeeName
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee_part
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
@@ -576,19 +576,19 @@ POSTHOOK: Input: default@employee_part
 POSTHOOK: Input: default@employee_part@employeesalary=2000.0
 POSTHOOK: Input: default@employee_part@employeesalary=4000.0
 #### A masked pattern was here ####
-PREHOOK: query: describe formatted Employee_Part.employeeID partition(employeeSalary=2000.0)
+PREHOOK: query: describe formatted Employee_Part partition(employeeSalary=2000.0) employeeID
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@employee_part
-POSTHOOK: query: describe formatted Employee_Part.employeeID partition(employeeSalary=2000.0)
+POSTHOOK: query: describe formatted Employee_Part partition(employeeSalary=2000.0) employeeID
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee_part
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 employeeID          	int                 	16                  	34                  	1                   	14                  	                    	                    	                    	                    	from deserializer   
-PREHOOK: query: describe formatted Employee_Part.employeeID partition(employeeSalary=4000.0)
+PREHOOK: query: describe formatted Employee_Part partition(employeeSalary=4000.0) employeeID
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@employee_part
-POSTHOOK: query: describe formatted Employee_Part.employeeID partition(employeeSalary=4000.0)
+POSTHOOK: query: describe formatted Employee_Part partition(employeeSalary=4000.0) employeeID
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee_part
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
@@ -651,10 +651,10 @@ POSTHOOK: Input: default@employee_part
 POSTHOOK: Input: default@employee_part@employeesalary=2000.0
 POSTHOOK: Input: default@employee_part@employeesalary=4000.0
 #### A masked pattern was here ####
-PREHOOK: query: describe formatted Employee_Part.employeeID
+PREHOOK: query: describe formatted Employee_Part employeeID
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@employee_part
-POSTHOOK: query: describe formatted Employee_Part.employeeID
+POSTHOOK: query: describe formatted Employee_Part employeeID
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee_part
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
@@ -682,10 +682,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@employee_part
 POSTHOOK: Input: default@employee_part@employeesalary=2000.0
 #### A masked pattern was here ####
-PREHOOK: query: describe formatted default.Employee_Part employeeID   partition (employeeSalary=2000.0)
+PREHOOK: query: describe formatted default.Employee_Part partition (employeeSalary=2000.0) employeeID
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@employee_part
-POSTHOOK: query: describe formatted default.Employee_Part employeeID   partition (employeeSalary=2000.0)
+POSTHOOK: query: describe formatted default.Employee_Part partition (employeeSalary=2000.0) employeeID
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee_part
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             

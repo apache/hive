@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 create table src5 (key string, value string);
 load data local inpath '../../data/files/kv5.txt' into table src5;
 load data local inpath '../../data/files/kv5.txt' into table src5;

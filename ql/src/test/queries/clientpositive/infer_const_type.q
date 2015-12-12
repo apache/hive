@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 DROP TABLE infertypes;
 CREATE TABLE infertypes(ti TINYINT, si SMALLINT, i INT, bi BIGINT, fl FLOAT, db DOUBLE, str STRING);
 

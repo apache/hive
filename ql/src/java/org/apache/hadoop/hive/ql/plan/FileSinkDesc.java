@@ -85,7 +85,6 @@ public class FileSinkDesc extends AbstractOperatorDesc {
 
   private boolean statsReliable;
   private ListBucketingCtx lbCtx;
-  private int maxStatsKeyPrefixLength = -1;
   private String statsTmpDir;
 
   private boolean statsCollectRawDataSize;
@@ -152,7 +151,6 @@ public class FileSinkDesc extends AbstractOperatorDesc {
     ret.setParentDir(parentDir);
     ret.setLinkedFileSinkDesc(linkedFileSinkDesc);
     ret.setStatsReliable(statsReliable);
-    ret.setMaxStatsKeyPrefixLength(maxStatsKeyPrefixLength);
     ret.setStatsCollectRawDataSize(statsCollectRawDataSize);
     ret.setDpSortState(dpSortState);
     ret.setWriteType(writeType);
@@ -398,14 +396,6 @@ public class FileSinkDesc extends AbstractOperatorDesc {
 
   public void setLinkedFileSinkDesc(List<FileSinkDesc> linkedFileSinkDesc) {
     this.linkedFileSinkDesc = linkedFileSinkDesc;
-  }
-
-  public int getMaxStatsKeyPrefixLength() {
-    return maxStatsKeyPrefixLength;
-  }
-
-  public void setMaxStatsKeyPrefixLength(int maxStatsKeyPrefixLength) {
-    this.maxStatsKeyPrefixLength = maxStatsKeyPrefixLength;
   }
 
   public boolean isStatsCollectRawDataSize() {

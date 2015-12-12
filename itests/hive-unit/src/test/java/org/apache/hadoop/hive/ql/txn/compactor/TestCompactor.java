@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
 import org.apache.hadoop.conf.Configuration;
@@ -93,6 +110,7 @@ public class TestCompactor {
     hiveConf.setVar(HiveConf.ConfVars.METASTOREWAREHOUSE, TEST_WAREHOUSE_DIR);
     hiveConf.setVar(HiveConf.ConfVars.HIVEINPUTFORMAT, HiveInputFormat.class.getName());
     hiveConf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
+    hiveConf.setVar(HiveConf.ConfVars.HIVEMAPREDMODE, "nonstrict");
     //"org.apache.hadoop.hive.ql.io.HiveInputFormat"
 
     TxnDbUtil.setConfValues(hiveConf);
@@ -326,7 +344,7 @@ public class TestCompactor {
    * 5. Trigger major compaction (which should update stats)
    * 6. check that stats have been updated
    * @throws Exception
-   * todo: 
+   * todo:
    * 2. add non-partitioned test
    * 4. add a test with sorted table?
    */
@@ -374,7 +392,7 @@ public class TestCompactor {
     su = Worker.StatsUpdater.init(ciPart2, colNames, conf, System.getProperty("user.name"));
     su.gatherStats();//compute stats before compaction
     LOG.debug("List of stats columns after analyze Part2: " + txnHandler.findColumnsWithStats(ci));
-    
+
     //now make sure we get the stats we expect for partition we are going to add data to later
     Map<String, List<ColumnStatisticsObj>> stats = msClient.getPartitionColumnStatistics(ci.dbname,
       ci.tableName, Arrays.asList(ci.partName), colNames);

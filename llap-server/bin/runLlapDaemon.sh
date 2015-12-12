@@ -23,7 +23,8 @@ set -x
 #   LLAP_DAEMON_USER_CLASSPATH
 #   LLAP_DAEMON_HEAPSIZE - MB
 #   LLAP_DAEMON_OPTS - additional options
-#   LLAP_DAEMON_LOGGER - default is INFO,console
+#   LLAP_DAEMON_LOG_LEVEL - default is INFO
+#   LLAP_DAEMON_LOGGER - default is console
 #   LLAP_DAEMON_LOG_DIR - defaults to /tmp
 #   LLAP_DAEMON_TMP_DIR - defaults to /tmp
 #   LLAP_DAEMON_LOG_FILE - 
@@ -48,7 +49,8 @@ shift
 
 
 JAVA=$JAVA_HOME/bin/java
-LOG_LEVEL_DEFAULT="INFO,console"
+LOG_LEVEL_DEFAULT="INFO"
+LOGGER_DEFAULT="console"
 JAVA_OPTS_BASE="-server -Djava.net.preferIPv4Stack=true -XX:NewRatio=8 -XX:+UseNUMA -XX:+PrintGCDetails -verbose:gc -XX:+PrintGCTimeStamps"
 
 # CLASSPATH initially contains $HADOOP_CONF_DIR & $YARN_CONF_DIR
@@ -71,8 +73,13 @@ if [ ! -d "${LLAP_DAEMON_CONF_DIR}" ]; then
 fi
 
 if [ ! -n "${LLAP_DAEMON_LOGGER}" ]; then
-  echo "LLAP_DAEMON_LOGGER not defined... using defaults"
-  LLAP_DAEMON_LOGGER=${LOG_LEVEL_DEFAULT}
+  echo "LLAP_DAEMON_LOGGER not defined... using default: ${LOGGER_DEFAULT}"
+  LLAP_DAEMON_LOGGER=${LOGGER_DEFAULT}
+fi
+
+if [ ! -n "${LLAP_DAEMON_LOG_LEVEL}" ]; then
+  echo "LLAP_DAEMON_LOG_LEVEL not defined... using default: ${LOG_LEVEL_DEFAULT}"
+  LLAP_DAEMON_LOG_LEVEL=${LOG_LEVEL_DEFAULT}
 fi
 
 CLASSPATH=${LLAP_DAEMON_CONF_DIR}:${LLAP_DAEMON_HOME}/lib/*:`${HADOOP_PREFIX}/bin/hadoop classpath`:.
@@ -120,10 +127,11 @@ if [ -n "$LLAP_DAEMON_TMP_DIR" ]; then
   export LLAP_DAEMON_OPTS="${LLAP_DAEMON_OPTS} -Djava.io.tmpdir=$LLAP_DAEMON_TMP_DIR"
 fi
 
-LLAP_DAEMON_OPTS="${LLAP_DAEMON_OPTS} -Dlog4j.configuration=llap-daemon-log4j.properties"
+LLAP_DAEMON_OPTS="${LLAP_DAEMON_OPTS} -Dlog4j.configurationFile=llap-daemon-log4j2.properties"
 LLAP_DAEMON_OPTS="${LLAP_DAEMON_OPTS} -Dllap.daemon.log.dir=${LLAP_DAEMON_LOG_DIR}"
 LLAP_DAEMON_OPTS="${LLAP_DAEMON_OPTS} -Dllap.daemon.log.file=${LLAP_DAEMON_LOG_FILE}"
 LLAP_DAEMON_OPTS="${LLAP_DAEMON_OPTS} -Dllap.daemon.root.logger=${LLAP_DAEMON_LOGGER}"
+LLAP_DAEMON_OPTS="${LLAP_DAEMON_OPTS} -Dllap.daemon.log.level=${LLAP_DAEMON_LOG_LEVEL}"
 
 exec "$JAVA" -Dproc_llapdaemon -Xms${LLAP_DAEMON_HEAPSIZE}m -Xmx${LLAP_DAEMON_HEAPSIZE}m ${LLAP_DAEMON_OPTS} -classpath "$CLASSPATH" $CLASS "$@"
 

@@ -1,1 +1,1 @@
-describe src_thrift.lint.abc;
+describe src_thrift lint.abc;

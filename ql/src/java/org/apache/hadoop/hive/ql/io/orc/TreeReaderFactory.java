@@ -57,13 +57,25 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.orc.impl.BitFieldReader;
+import org.apache.orc.impl.DynamicByteArray;
+import org.apache.orc.impl.InStream;
+import org.apache.orc.impl.IntegerReader;
+import org.apache.orc.OrcProto;
+import org.apache.orc.impl.PositionProvider;
+import org.apache.orc.impl.RunLengthByteReader;
+import org.apache.orc.impl.RunLengthIntegerReader;
+import org.apache.orc.impl.RunLengthIntegerReaderV2;
+import org.apache.orc.impl.SerializationUtils;
+import org.apache.orc.impl.StreamName;
 
 /**
  * Factory for creating ORC tree readers.
  */
 public class TreeReaderFactory {
 
-  public static final Logger LOG = LoggerFactory.getLogger(TreeReaderFactory.class);
+  private static final Logger LOG =
+    LoggerFactory.getLogger(TreeReaderFactory.class);
 
   public static class TreeReaderSchema {
 

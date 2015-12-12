@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 -- set of tests HIVE-9481
 drop database if exists x314n cascade;
 create database x314n;

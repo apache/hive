@@ -19,14 +19,29 @@ package org.apache.hadoop.hive.ql.io.orc;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.filters.BloomFilterIO;
+import org.codehaus.jettison.json.JSONArray;
+import org.apache.orc.BinaryColumnStatistics;
+import org.apache.orc.BooleanColumnStatistics;
+import org.apache.orc.ColumnStatistics;
+import org.apache.orc.impl.ColumnStatisticsImpl;
+import org.apache.orc.DateColumnStatistics;
+import org.apache.orc.DecimalColumnStatistics;
+import org.apache.orc.DoubleColumnStatistics;
+import org.apache.orc.IntegerColumnStatistics;
+import org.apache.orc.impl.OrcIndex;
+import org.apache.orc.OrcProto;
+import org.apache.orc.StringColumnStatistics;
+import org.apache.orc.StripeInformation;
+import org.apache.orc.StripeStatistics;
+import org.apache.orc.TimestampColumnStatistics;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
-import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONStringer;
 import org.codehaus.jettison.json.JSONWriter;
 
@@ -35,8 +50,10 @@ import org.codehaus.jettison.json.JSONWriter;
  */
 public class JsonFileDump {
 
-  public static void printJsonMetaData(List<String> files, Configuration conf,
-      List<Integer> rowIndexCols, boolean prettyPrint, boolean printTimeZone) throws JSONException, IOException {
+  public static void printJsonMetaData(List<String> files,
+      Configuration conf,
+      List<Integer> rowIndexCols, boolean prettyPrint, boolean printTimeZone)
+      throws JSONException, IOException {
     JSONStringer writer = new JSONStringer();
     boolean multiFile = files.size() > 1;
     if (multiFile) {
@@ -51,7 +68,11 @@ public class JsonFileDump {
         }
         writer.key("fileName").value(filename);
         Path path = new Path(filename);
-        Reader reader = OrcFile.createReader(path, OrcFile.readerOptions(conf));
+        Reader reader = FileDump.getReader(path, conf, null);
+        if (reader == null) {
+          writer.key("status").value("FAILED");
+          continue;
+        }
         writer.key("fileVersion").value(reader.getFileVersion().getName());
         writer.key("writerVersion").value(reader.getWriterVersion());
         RecordReaderImpl rows = (RecordReaderImpl) reader.rows();
@@ -144,7 +165,7 @@ public class JsonFileDump {
             for (int colIdx : rowIndexCols) {
               sargColumns[colIdx] = true;
             }
-            RecordReaderImpl.Index indices = rows.readRowIndex(stripeIx, null, sargColumns);
+            OrcIndex indices = rows.readRowIndex(stripeIx, null, sargColumns);
             writer.key("indexes").array();
             for (int col : rowIndexCols) {
               writer.object();
@@ -179,8 +200,6 @@ public class JsonFileDump {
         writer.endObject();
       } catch (Exception e) {
         writer.key("status").value("FAILED");
-        System.err.println("Unable to dump data for file: " + filename);
-        e.printStackTrace();
         throw e;
       }
     }

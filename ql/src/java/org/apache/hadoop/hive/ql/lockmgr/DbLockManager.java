@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.lockmgr;
 
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.DDLTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.JavaUtils;
@@ -29,10 +31,15 @@ import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.thrift.TException;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * An implementation of HiveLockManager for use with {@link org.apache.hadoop.hive.ql.lockmgr.DbTxnManager}.
@@ -44,20 +51,20 @@ public class DbLockManager implements HiveLockManager{
   static final private String CLASS_NAME = DbLockManager.class.getName();
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
-  private static final long MAX_SLEEP = 15000;
-  private HiveLockManagerCtx context;
+  private long MAX_SLEEP;
   private Set<DbHiveLock> locks;
   private IMetaStoreClient client;
   private long nextSleep = 50;
+  private final HiveConf conf;
 
-  DbLockManager(IMetaStoreClient client) {
+  DbLockManager(IMetaStoreClient client, HiveConf conf) {
     locks = new HashSet<>();
     this.client = client;
+    this.conf = conf;
   }
 
   @Override
   public void setContext(HiveLockManagerCtx ctx) throws LockException {
-    context = ctx;
   }
 
   @Override
@@ -81,6 +88,15 @@ public class DbLockManager implements HiveLockManager{
    * @return the result of the lock attempt
    */
   LockState lock(LockRequest lock, String queryId, boolean isBlocking, List<HiveLock> acquiredLocks) throws LockException {
+    Objects.requireNonNull(queryId, "queryId cannot be null");
+    nextSleep = 50;
+    /*
+     * get from conf to pick up changes; make sure not to set too low and kill the metastore
+     * MAX_SLEEP is the max time each backoff() will wait for, thus the total time to wait for
+     * successful lock acquisition is approximately (see backoff()) maxNumWaits * MAX_SLEEP.
+     */
+    MAX_SLEEP = Math.max(15000, conf.getTimeVar(HiveConf.ConfVars.HIVE_LOCK_SLEEP_BETWEEN_RETRIES, TimeUnit.MILLISECONDS));
+    int maxNumWaits = Math.max(0, conf.getIntVar(HiveConf.ConfVars.HIVE_LOCK_NUMRETRIES));
     try {
       LOG.info("Requesting: queryId=" + queryId + " " + lock);
       LockResponse res = client.lock(lock);
@@ -91,15 +107,33 @@ public class DbLockManager implements HiveLockManager{
           return LockState.WAITING;
         }
       }
-      while (res.getState() == LockState.WAITING) {
+      int numRetries = 0;
+      long startRetry = System.currentTimeMillis();
+      while (res.getState() == LockState.WAITING && numRetries++ < maxNumWaits) {
         backoff();
         res = client.checkLock(res.getLockid());
 
       }
+      long retryDuration = System.currentTimeMillis() - startRetry;
       DbHiveLock hl = new DbHiveLock(res.getLockid());
       locks.add(hl);
       if (res.getState() != LockState.ACQUIRED) {
-        throw new LockException(ErrorMsg.LOCK_CANNOT_BE_ACQUIRED.getMsg());
+        if(res.getState() == LockState.WAITING) {
+          /**
+           * the {@link #unlock(HiveLock)} here is more about future proofing when support for
+           * multi-statement txns is added.  In that case it's reasonable for the client
+           * to retry this part of txn or try something else w/o aborting the whole txn.
+           * Also for READ_COMMITTED (when and if that is supported).
+           */
+          unlock(hl);//remove the locks in Waiting state
+          LockException le = new LockException(null, ErrorMsg.LOCK_ACQUIRE_TIMEDOUT,
+            lock.toString(), Long.toString(retryDuration), res.toString());
+          if(conf.getBoolVar(HiveConf.ConfVars.TXN_MGR_DUMP_LOCK_STATE_ON_ACQUIRE_TIMEOUT)) {
+            showLocksNewFormat(le.getMessage());
+          }
+          throw le;
+        }
+        throw new LockException(ErrorMsg.LOCK_CANNOT_BE_ACQUIRED.getMsg() + " " + res);
       }
       acquiredLocks.add(hl);
 
@@ -114,14 +148,29 @@ public class DbLockManager implements HiveLockManager{
 
       return res.getState();
     } catch (NoSuchTxnException e) {
-      LOG.error("Metastore could not find txnid " + lock.getTxnid());
-      throw new LockException(ErrorMsg.TXNMGR_NOT_INSTANTIATED.getMsg(), e);
+      LOG.error("Metastore could not find " + JavaUtils.txnIdToString(lock.getTxnid()));
+      throw new LockException(e, ErrorMsg.TXN_NO_SUCH_TRANSACTION, JavaUtils.txnIdToString(lock.getTxnid()));
     } catch (TxnAbortedException e) {
       LOG.error("Transaction " + JavaUtils.txnIdToString(lock.getTxnid()) + " already aborted.");
       throw new LockException(e, ErrorMsg.TXN_ABORTED, JavaUtils.txnIdToString(lock.getTxnid()));
     } catch (TException e) {
       throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(),
           e);
+    }
+  }
+  private void showLocksNewFormat(String preamble) throws LockException {
+    ShowLocksResponse rsp = getLocks();
+
+    // write the results in the file
+    ByteArrayOutputStream baos = new ByteArrayOutputStream(1024*2);
+    DataOutputStream os = new DataOutputStream(baos);
+    try {
+      DDLTask.dumpLockInfo(os, rsp);
+      os.flush();
+      LOG.info(baos.toString());
+    }
+    catch(IOException ex) {
+      LOG.error("Dumping lock info for " + preamble + " failed: " + ex.getMessage(), ex);
     }
   }
   /**
@@ -259,8 +308,8 @@ public class DbLockManager implements HiveLockManager{
   /**
    * Clear the memory of the locks in this object.  This won't clear the locks from the database.
    * It is for use with
-   * {@link #DbLockManager(org.apache.hadoop.hive.metastore.IMetaStoreClient).commitTxn} and
-   * {@link #DbLockManager(org.apache.hadoop.hive.metastore.IMetaStoreClient).rollbackTxn}.
+   * {@link #DbLockManager(org.apache.hadoop.hive.metastore.IMetaStoreClient, org.apache.hadoop.hive.conf.HiveConf)} .commitTxn} and
+   * {@link #DbLockManager(org.apache.hadoop.hive.metastore.IMetaStoreClient, org.apache.hadoop.hive.conf.HiveConf)} .rollbackTxn}.
    */
   void clearLocalLockRecords() {
     locks.clear();

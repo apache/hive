@@ -26,7 +26,7 @@ limitations under the License.
   <name>hive-ptest</name>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <log4j2.version>2.3</log4j2.version>
+    <log4j2.version>2.4.1</log4j2.version>
   </properties>
 
   <repositories>

@@ -18,11 +18,14 @@ import java.io.IOException;
 
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.ipc.VersionedProtocol;
+import org.apache.hadoop.security.token.TokenInfo;
 import org.apache.tez.dag.api.TezException;
 import org.apache.tez.dag.records.TezTaskAttemptID;
 import org.apache.tez.runtime.api.impl.TezHeartbeatRequest;
 import org.apache.tez.runtime.api.impl.TezHeartbeatResponse;
+import org.apache.tez.runtime.common.security.JobTokenSelector;
 
+@TokenInfo(JobTokenSelector.class)
 public interface LlapTaskUmbilicalProtocol extends VersionedProtocol {
 
   public static final long versionID = 1L;

@@ -83,7 +83,7 @@ public class HCatBaseTest {
     hiveConf.setVar(HiveConf.ConfVars.POSTEXECHOOKS, "");
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     hiveConf.setVar(HiveConf.ConfVars.METASTOREWAREHOUSE, TEST_WAREHOUSE_DIR);
-
+    hiveConf.setVar(HiveConf.ConfVars.HIVEMAPREDMODE, "nonstrict");
     if (Shell.WINDOWS) {
       WindowsPathUtil.convertPathsFromWindowsToHdfs(hiveConf);
     }
@@ -99,7 +99,7 @@ public class HCatBaseTest {
   }
 
   /**
-   * creates PigServer in LOCAL mode.  
+   * creates PigServer in LOCAL mode.
    * http://pig.apache.org/docs/r0.12.0/perf.html#error-handling
    * @param stopOnFailure equivalent of "-stop_on_failure" command line arg, setting to 'true' makes
    *                      debugging easier

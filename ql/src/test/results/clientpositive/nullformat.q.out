@@ -82,8 +82,10 @@ POSTHOOK: Input: default@null_tab1
 CREATE TABLE `null_tab1`(
   `a` string, 
   `b` string)
-ROW FORMAT DELIMITED 
-  NULL DEFINED AS 'fooNull' 
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+WITH SERDEPROPERTIES ( 
+  'serialization.null.format'='fooNull') 
 STORED AS INPUTFORMAT 
   'org.apache.hadoop.mapred.TextInputFormat' 
 OUTPUTFORMAT 

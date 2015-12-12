@@ -26,6 +26,7 @@ import java.util.BitSet;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -2361,13 +2362,17 @@ public class CalcitePlanner extends SemanticAnalyzer {
     private RelNode genLimitLogicalPlan(QB qb, RelNode srcRel) throws SemanticException {
       HiveRelNode sortRel = null;
       QBParseInfo qbp = getQBParseInfo(qb);
-      Integer limit = qbp.getDestToLimit().get(qbp.getClauseNames().iterator().next());
+      SimpleEntry<Integer,Integer> entry =
+          qbp.getDestToLimit().get(qbp.getClauseNames().iterator().next());
+      Integer offset = (entry == null) ? 0 : entry.getKey();
+      Integer fetch = (entry == null) ? null : entry.getValue();
 
-      if (limit != null) {
-        RexNode fetch = cluster.getRexBuilder().makeExactLiteral(BigDecimal.valueOf(limit));
+      if (fetch != null) {
+        RexNode offsetRN = cluster.getRexBuilder().makeExactLiteral(BigDecimal.valueOf(offset));
+        RexNode fetchRN = cluster.getRexBuilder().makeExactLiteral(BigDecimal.valueOf(fetch));
         RelTraitSet traitSet = cluster.traitSetOf(HiveRelNode.CONVENTION);
         RelCollation canonizedCollation = traitSet.canonize(RelCollations.EMPTY);
-        sortRel = new HiveSortLimit(cluster, traitSet, srcRel, canonizedCollation, null, fetch);
+        sortRel = new HiveSortLimit(cluster, traitSet, srcRel, canonizedCollation, offsetRN, fetchRN);
 
         RowResolver outputRR = new RowResolver();
         if (!RowResolver.add(outputRR, relToHiveRR.get(srcRel))) {

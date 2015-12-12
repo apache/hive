@@ -24,6 +24,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.orc.CompressionKind;
+import org.apache.orc.TypeDescription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileSystem;
@@ -33,7 +35,6 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.RecordUpdater;
 import org.apache.hadoop.hive.ql.io.StatsProvidingRecordWriter;
-import org.apache.hadoop.hive.ql.io.orc.OrcFile.EncodingStrategy;
 import org.apache.hadoop.hive.ql.io.orc.OrcSerde.OrcSerdeRow;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -160,7 +161,7 @@ public class OrcOutputFormat extends FileOutputFormat<NullWritable, OrcSerdeRow>
         TypeDescription schema = TypeDescription.createStruct();
         for (int i = 0; i < columnNames.size(); ++i) {
           schema.addField(columnNames.get(i),
-              OrcUtils.convertTypeInfo(columnTypes.get(i)));
+              OrcInputFormat.convertTypeInfo(columnTypes.get(i)));
         }
         if (LOG.isDebugEnabled()) {
           LOG.debug("ORC schema = " + schema);

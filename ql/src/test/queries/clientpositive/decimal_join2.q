@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 DROP TABLE IF EXISTS DECIMAL_3_txt;
 DROP TABLE IF EXISTS DECIMAL_3;
 

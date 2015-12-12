@@ -28,6 +28,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -155,8 +156,6 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
 
       String tableFullName = table.getDbName() + "." + table.getTableName();
 
-      int maxPrefixLength = StatsFactory.getMaxPrefixLength(conf);
-
       if (partitions == null) {
         org.apache.hadoop.hive.metastore.api.Table tTable = table.getTTable();
         Map<String, String> parameters = tTable.getParameters();
@@ -173,7 +172,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
 
         if (statsAggregator != null) {
           String prefix = getAggregationPrefix(table, null);
-          updateStats(statsAggregator, parameters, prefix, maxPrefixLength, atomic);
+          updateStats(statsAggregator, parameters, prefix, atomic);
         }
 
         updateQuickStats(wh, parameters, tTable.getSd());
@@ -209,7 +208,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
 
           if (statsAggregator != null) {
             String prefix = getAggregationPrefix(table, partn);
-            updateStats(statsAggregator, parameters, prefix, maxPrefixLength, atomic);
+            updateStats(statsAggregator, parameters, prefix, atomic);
           }
 
           updateQuickStats(wh, parameters, tPart.getSd());
@@ -252,7 +251,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
       throws MetaException {
 
     // prefix is of the form dbName.tblName
-    String prefix = table.getDbName()+"."+table.getTableName();
+    String prefix = table.getDbName() + "." + MetaStoreUtils.encodeTableName(table.getTableName());
     if (partition != null) {
       return Utilities.join(prefix, Warehouse.makePartPath(partition.getSpec()));
     }
@@ -301,10 +300,10 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
   }
 
   private void updateStats(StatsAggregator statsAggregator,
-      Map<String, String> parameters, String prefix, int maxPrefixLength, boolean atomic)
+      Map<String, String> parameters, String prefix, boolean atomic)
       throws HiveException {
 
-    String aggKey = Utilities.getHashedStatsPrefix(prefix, maxPrefixLength);
+    String aggKey = prefix.endsWith(Path.SEPARATOR) ? prefix : prefix + Path.SEPARATOR;
 
     for (String statType : StatsSetupConst.statsRequireCompute) {
       String value = statsAggregator.aggregateStats(aggKey, statType);

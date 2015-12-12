@@ -49,6 +49,7 @@ import org.apache.hive.common.util.DateUtils;
         + " 'yyyy-MM-dd'. num_months is a number. The time part of start_date is "
         + "ignored.\n"
         + "Example:\n " + " > SELECT _FUNC_('2009-08-31', 1) FROM src LIMIT 1;\n" + " '2009-09-30'")
+@NDV(maxNdv = 250) // 250 seems to be reasonable upper limit for this
 public class GenericUDFAddMonths extends GenericUDF {
   private transient Converter[] converters = new Converter[2];
   private transient PrimitiveCategory[] inputTypes = new PrimitiveCategory[2];

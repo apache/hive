@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
+import org.apache.orc.OrcProto;
+import org.apache.orc.impl.StreamName;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

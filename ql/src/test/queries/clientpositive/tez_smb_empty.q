@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 set hive.mapjoin.hybridgrace.hashtable=false;
 set hive.join.emit.interval=2;

@@ -67,6 +67,7 @@ import org.apache.hadoop.io.Text;
     DateColLessDateScalar.class,FilterDateColLessDateScalar.class,
     DateScalarLessDateColumn.class,FilterDateScalarLessDateColumn.class,
     })
+@NDV(maxNdv = 2)
 public class GenericUDFOPLessThan extends GenericUDFBaseCompare {
   public GenericUDFOPLessThan(){
     this.opName = "LESS THAN";

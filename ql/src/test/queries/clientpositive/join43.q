@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 create table purchase_history (s string, product string, price double, time int);
 insert into purchase_history values ('1', 'Belt', 20.00, 21);
 insert into purchase_history values ('1', 'Socks', 3.50, 31);

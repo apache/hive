@@ -12,7 +12,7 @@ create temporary function row_sequence as
 DESCRIBE FUNCTION EXTENDED row_sequence;
 
 set mapred.reduce.tasks=1;
-
+set hive.mapred.mode=nonstrict;
 explain
 select key, row_sequence() as r
 from (select key from src order by key) x

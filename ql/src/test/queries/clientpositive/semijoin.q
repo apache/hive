@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 -- SORT_QUERY_RESULTS
 
 create table t1 as select cast(key as int) key, value from src where key <= 10;

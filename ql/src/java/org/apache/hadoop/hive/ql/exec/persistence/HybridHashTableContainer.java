@@ -29,15 +29,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hive.common.util.HashCodeUtil;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
 import org.apache.hadoop.hive.ql.exec.JoinUtil.JoinResult;
-import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinBytesTableContainer.KeyValueHelper;
 import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapper;
 import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapperBatch;
@@ -58,6 +55,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hive.common.util.BloomFilter;
+import org.apache.hive.common.util.HashCodeUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.esotericsoftware.kryo.Kryo;
 
@@ -159,8 +159,13 @@ public class HybridHashTableContainer
       } else {
         InputStream inputStream = Files.newInputStream(hashMapLocalPath);
         com.esotericsoftware.kryo.io.Input input = new com.esotericsoftware.kryo.io.Input(inputStream);
-        Kryo kryo = Utilities.runtimeSerializationKryo.get();
-        BytesBytesMultiHashMap restoredHashMap = kryo.readObject(input, BytesBytesMultiHashMap.class);
+        Kryo kryo = SerializationUtilities.borrowKryo();
+        BytesBytesMultiHashMap restoredHashMap = null;
+        try {
+          restoredHashMap = kryo.readObject(input, BytesBytesMultiHashMap.class);
+        } finally {
+          SerializationUtilities.releaseKryo(kryo);
+        }
 
         if (rowCount > 0) {
           restoredHashMap.expandAndRehashToTarget(rowCount);
@@ -551,10 +556,14 @@ public class HybridHashTableContainer
 
     com.esotericsoftware.kryo.io.Output output =
         new com.esotericsoftware.kryo.io.Output(outputStream);
-    Kryo kryo = Utilities.runtimeSerializationKryo.get();
-    kryo.writeObject(output, partition.hashMap);  // use Kryo to serialize hashmap
-    output.close();
-    outputStream.close();
+    Kryo kryo = SerializationUtilities.borrowKryo();
+    try {
+      kryo.writeObject(output, partition.hashMap);  // use Kryo to serialize hashmap
+      output.close();
+      outputStream.close();
+    } finally {
+      SerializationUtilities.releaseKryo(kryo);
+    }
 
     partition.hashMapLocalPath = path;
     partition.hashMapOnDisk = true;

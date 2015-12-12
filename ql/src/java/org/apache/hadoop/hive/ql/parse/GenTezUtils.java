@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import static org.apache.hadoop.hive.ql.plan.ReduceSinkDesc.ReducerTraits.AUTOPARALLEL;
+
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashSet;
@@ -26,8 +28,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -48,18 +49,17 @@ import org.apache.hadoop.hive.ql.plan.DynamicPruningEventDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
-import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TezEdgeProperty;
 import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.UnionWork;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-
-import static org.apache.hadoop.hive.ql.plan.ReduceSinkDesc.ReducerTraits.AUTOPARALLEL;
 
 /**
  * GenTezUtils is a collection of shared helper methods to produce TezWork.
@@ -178,7 +178,7 @@ public class GenTezUtils {
 
     String alias = ts.getConf().getAlias();
 
-    setupMapWork(mapWork, context, partitions, root, alias);
+    setupMapWork(mapWork, context, partitions, ts, alias);
 
     if (ts.getConf().getTableMetadata() != null && ts.getConf().getTableMetadata().isDummyTable()) {
       mapWork.setDummyTableScan(true);
@@ -196,7 +196,7 @@ public class GenTezUtils {
 
   // this method's main use is to help unit testing this class
   protected void setupMapWork(MapWork mapWork, GenTezProcContext context,
-      PrunedPartitionList partitions, Operator<? extends OperatorDesc> root,
+      PrunedPartitionList partitions, TableScanOperator root,
       String alias) throws SemanticException {
     // All the setup is done in GenMapRedUtils
     GenMapRedUtils.setMapWork(mapWork, context.parseContext,
@@ -216,7 +216,7 @@ public class GenTezUtils {
     roots.addAll(context.eventOperatorSet);
 
     // need to clone the plan.
-    List<Operator<?>> newRoots = Utilities.cloneOperatorTree(conf, roots);
+    List<Operator<?>> newRoots = SerializationUtilities.cloneOperatorTree(conf, roots);
 
     // we're cloning the operator plan but we're retaining the original work. That means
     // that root operators have to be replaced with the cloned ops. The replacement map

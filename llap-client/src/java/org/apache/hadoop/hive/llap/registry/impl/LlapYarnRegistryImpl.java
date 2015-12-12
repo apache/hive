@@ -32,6 +32,8 @@ import java.util.concurrent.TimeUnit;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.configuration.LlapConfiguration;
 import org.apache.hadoop.hive.llap.registry.ServiceInstance;
 import org.apache.hadoop.hive.llap.registry.ServiceInstanceSet;
@@ -55,6 +57,10 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Preconditions;
 
 public class LlapYarnRegistryImpl implements ServiceRegistry {
+
+  /** IPC endpoint names. */
+  private static final String IPC_SERVICES = "services",
+      IPC_MNG = "llapmng", IPC_SHUFFLE = "shuffle", IPC_LLAP = "llap";
 
   private static final Logger LOG = LoggerFactory.getLogger(LlapYarnRegistryImpl.class);
 
@@ -97,47 +103,43 @@ public class LlapYarnRegistryImpl implements ServiceRegistry {
     encoder = new RegistryUtils.ServiceRecordMarshal();
     this.path = RegistryPathUtils.join(RegistryUtils.componentPath(RegistryUtils.currentUser(),
         SERVICE_CLASS, instanceName, "workers"), "worker-");
-    refreshDelay =
-        conf.getInt(LlapConfiguration.LLAP_DAEMON_SERVICE_REFRESH_INTERVAL,
-            LlapConfiguration.LLAP_DAEMON_SERVICE_REFRESH_INTERVAL_DEFAULT);
+    refreshDelay = HiveConf.getTimeVar(
+        conf, ConfVars.LLAP_DAEMON_SERVICE_REFRESH_INTERVAL, TimeUnit.SECONDS);
     this.isDaemon = isDaemon;
     Preconditions.checkArgument(refreshDelay > 0,
         "Refresh delay for registry has to be positive = %d", refreshDelay);
   }
 
   public Endpoint getRpcEndpoint() {
-    final int rpcPort =
-        conf.getInt(LlapConfiguration.LLAP_DAEMON_RPC_PORT,
-            LlapConfiguration.LLAP_DAEMON_RPC_PORT_DEFAULT);
-    return RegistryTypeUtils.ipcEndpoint("llap", new InetSocketAddress(hostname, rpcPort));
+    final int rpcPort = HiveConf.getIntVar(conf, ConfVars.LLAP_DAEMON_RPC_PORT);
+    return RegistryTypeUtils.ipcEndpoint(IPC_LLAP, new InetSocketAddress(hostname, rpcPort));
   }
 
   public Endpoint getShuffleEndpoint() {
-    final int shufflePort =
-        conf.getInt(LlapConfiguration.LLAP_DAEMON_YARN_SHUFFLE_PORT,
-            LlapConfiguration.LLAP_DAEMON_YARN_SHUFFLE_PORT_DEFAULT);
+    final int shufflePort = HiveConf.getIntVar(conf, ConfVars.LLAP_DAEMON_YARN_SHUFFLE_PORT);
     // HTTP today, but might not be
-    return RegistryTypeUtils.inetAddrEndpoint("shuffle", ProtocolTypes.PROTOCOL_TCP, hostname,
+    return RegistryTypeUtils.inetAddrEndpoint(IPC_SHUFFLE, ProtocolTypes.PROTOCOL_TCP, hostname,
         shufflePort);
   }
 
   public Endpoint getServicesEndpoint() {
-    final int servicePort =
-        conf.getInt(LlapConfiguration.LLAP_DAEMON_SERVICE_PORT,
-            LlapConfiguration.LLAP_DAEMON_SERVICE_PORT_DEFAULT);
-    final boolean isSSL =
-        conf.getBoolean(LlapConfiguration.LLAP_DAEMON_SERVICE_SSL,
-            LlapConfiguration.LLAP_DAEMON_SERVICE_SSL_DEFAULT);
+    final int servicePort = HiveConf.getIntVar(conf, ConfVars.LLAP_DAEMON_WEB_PORT);
+    final boolean isSSL = HiveConf.getBoolVar(conf, ConfVars.LLAP_DAEMON_WEB_SSL);
     final String scheme = isSSL ? "https" : "http";
     final URL serviceURL;
     try {
       serviceURL = new URL(scheme, hostname, servicePort, "");
-      return RegistryTypeUtils.webEndpoint("services", serviceURL.toURI());
+      return RegistryTypeUtils.webEndpoint(IPC_SERVICES, serviceURL.toURI());
     } catch (MalformedURLException e) {
       throw new RuntimeException(e);
     } catch (URISyntaxException e) {
       throw new RuntimeException("llap service URI for " + hostname + " is invalid", e);
     }
+  }
+
+  public Endpoint getMngEndpoint() {
+    return RegistryTypeUtils.ipcEndpoint(IPC_MNG, new InetSocketAddress(hostname,
+        HiveConf.getIntVar(conf, ConfVars.LLAP_MANAGEMENT_RPC_PORT)));
   }
 
   private final String getPath() {
@@ -149,6 +151,7 @@ public class LlapYarnRegistryImpl implements ServiceRegistry {
     String path = getPath();
     ServiceRecord srv = new ServiceRecord();
     srv.addInternalEndpoint(getRpcEndpoint());
+    srv.addInternalEndpoint(getMngEndpoint());
     srv.addInternalEndpoint(getShuffleEndpoint());
     srv.addExternalEndpoint(getServicesEndpoint());
 
@@ -181,19 +184,24 @@ public class LlapYarnRegistryImpl implements ServiceRegistry {
     private boolean alive = true;
     private final String host;
     private final int rpcPort;
+    private final int mngPort;
     private final int shufflePort;
 
     public DynamicServiceInstance(ServiceRecord srv) throws IOException {
       this.srv = srv;
 
-      final Endpoint shuffle = srv.getInternalEndpoint("shuffle");
-      final Endpoint rpc = srv.getInternalEndpoint("llap");
+      final Endpoint shuffle = srv.getInternalEndpoint(IPC_SHUFFLE);
+      final Endpoint rpc = srv.getInternalEndpoint(IPC_LLAP);
+      final Endpoint mng = srv.getInternalEndpoint(IPC_MNG);
 
       this.host =
           RegistryTypeUtils.getAddressField(rpc.addresses.get(0),
               AddressTypes.ADDRESS_HOSTNAME_FIELD);
       this.rpcPort =
           Integer.valueOf(RegistryTypeUtils.getAddressField(rpc.addresses.get(0),
+              AddressTypes.ADDRESS_PORT_FIELD));
+      this.mngPort =
+          Integer.valueOf(RegistryTypeUtils.getAddressField(mng.addresses.get(0),
               AddressTypes.ADDRESS_PORT_FIELD));
       this.shufflePort =
           Integer.valueOf(RegistryTypeUtils.getAddressField(shuffle.addresses.get(0),
@@ -238,14 +246,19 @@ public class LlapYarnRegistryImpl implements ServiceRegistry {
 
     @Override
     public Resource getResource() {
-      int memory = Integer.valueOf(srv.get(LlapConfiguration.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB));
-      int vCores = Integer.valueOf(srv.get(LlapConfiguration.LLAP_DAEMON_NUM_EXECUTORS));
+      int memory = Integer.valueOf(srv.get(ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB.varname));
+      int vCores = Integer.valueOf(srv.get(ConfVars.LLAP_DAEMON_NUM_EXECUTORS.varname));
       return Resource.newInstance(memory, vCores);
     }
 
     @Override
     public String toString() {
       return "DynamicServiceInstance [alive=" + alive + ", host=" + host + ":" + rpcPort + " with resources=" + getResource() +"]";
+    }
+
+    @Override
+    public int getManagementPort() {
+      return mngPort;
     }
 
     // Relying on the identity hashCode and equality, since refreshing instances retains the old copy

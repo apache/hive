@@ -2117,37 +2117,15 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       StringBuilder tbl_row_format = new StringBuilder();
       StorageDescriptor sd = tbl.getTTable().getSd();
       SerDeInfo serdeInfo = sd.getSerdeInfo();
-      tbl_row_format.append("ROW FORMAT");
+      Map<String, String> serdeParams = serdeInfo.getParameters();
+      tbl_row_format.append("ROW FORMAT SERDE \n");
+      tbl_row_format.append("  '" + escapeHiveCommand(serdeInfo.getSerializationLib()) + "' \n");
       if (tbl.getStorageHandler() == null) {
-        Map<String, String> serdeParams = serdeInfo.getParameters();
-        String[] delimiters = new String[] {
-            serdeParams.remove(serdeConstants.FIELD_DELIM),
-            serdeParams.remove(serdeConstants.COLLECTION_DELIM),
-            serdeParams.remove(serdeConstants.MAPKEY_DELIM),
-            serdeParams.remove(serdeConstants.LINE_DELIM),
-            serdeParams.remove(serdeConstants.SERIALIZATION_NULL_FORMAT)
-        };
-        serdeParams.remove(serdeConstants.SERIALIZATION_FORMAT);
-        if (containsNonNull(delimiters)) {
-          // There is a "serialization.format" property by default,
-          // even with a delimited row format.
-          // But our result will only cover the following four delimiters.
-          tbl_row_format.append(" DELIMITED \n");
-
-          // Warn:
-          // If the four delimiters all exist in a CREATE TABLE query,
-          // this following order needs to be strictly followed,
-          // or the query will fail with a ParseException.
-          for (int i = 0; i < DELIMITER_PREFIXES.length; i++) {
-            if (delimiters[i] != null) {
-              tbl_row_format.append("  ").append(DELIMITER_PREFIXES[i]).append(" '");
-              tbl_row_format.append(escapeHiveCommand(StringEscapeUtils.escapeJava(delimiters[i])));
-              tbl_row_format.append("' \n");
-            }
-          }
-        } else {
-          tbl_row_format.append(" SERDE \n  '" +
-              escapeHiveCommand(serdeInfo.getSerializationLib()) + "' \n");
+        // If serialization.format property has the default value, it will not to be included in
+        // SERDE properties
+        if (MetaStoreUtils.DEFAULT_SERIALIZATION_FORMAT.equals(serdeParams.get(
+            serdeConstants.SERIALIZATION_FORMAT))){
+          serdeParams.remove(serdeConstants.SERIALIZATION_FORMAT);
         }
         if (!serdeParams.isEmpty()) {
           appendSerdeParams(tbl_row_format, serdeParams).append(" \n");
@@ -2158,12 +2136,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
             escapeHiveCommand(sd.getOutputFormat()) + "'");
       } else {
         duplicateProps.add(META_TABLE_STORAGE);
-        tbl_row_format.append(" SERDE \n  '" +
-            escapeHiveCommand(serdeInfo.getSerializationLib()) + "' \n");
         tbl_row_format.append("STORED BY \n  '" + escapeHiveCommand(tbl.getParameters().get(
             META_TABLE_STORAGE)) + "' \n");
         // SerDe Properties
-        if (serdeInfo.getParametersSize() > 0) {
+        if (!serdeParams.isEmpty()) {
           appendSerdeParams(tbl_row_format, serdeInfo.getParameters());
         }
       }
@@ -2208,15 +2184,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       prop_string += StringUtils.join(realProps, ", \n");
     }
     return prop_string;
-  }
-
-  private boolean containsNonNull(String[] values) {
-    for (String value : values) {
-      if (value != null) {
-        return true;
-      }
-    }
-    return false;
   }
 
   private StringBuilder appendSerdeParams(StringBuilder builder, Map<String, String> serdeParam) {
@@ -2520,7 +2487,60 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
     return 0;
   }
+  public static void dumpLockInfo(DataOutputStream os, ShowLocksResponse rsp) throws IOException {
+    // Write a header
+    os.writeBytes("Lock ID");
+    os.write(separator);
+    os.writeBytes("Database");
+    os.write(separator);
+    os.writeBytes("Table");
+    os.write(separator);
+    os.writeBytes("Partition");
+    os.write(separator);
+    os.writeBytes("State");
+    os.write(separator);
+    os.writeBytes("Type");
+    os.write(separator);
+    os.writeBytes("Transaction ID");
+    os.write(separator);
+    os.writeBytes("Last Hearbeat");
+    os.write(separator);
+    os.writeBytes("Acquired At");
+    os.write(separator);
+    os.writeBytes("User");
+    os.write(separator);
+    os.writeBytes("Hostname");
+    os.write(terminator);
 
+    List<ShowLocksResponseElement> locks = rsp.getLocks();
+    if (locks != null) {
+      for (ShowLocksResponseElement lock : locks) {
+        os.writeBytes(Long.toString(lock.getLockid()));
+        os.write(separator);
+        os.writeBytes(lock.getDbname());
+        os.write(separator);
+        os.writeBytes((lock.getTablename() == null) ? "NULL" : lock.getTablename());
+        os.write(separator);
+        os.writeBytes((lock.getPartname() == null) ? "NULL" : lock.getPartname());
+        os.write(separator);
+        os.writeBytes(lock.getState().toString());
+        os.write(separator);
+        os.writeBytes(lock.getType().toString());
+        os.write(separator);
+        os.writeBytes((lock.getTxnid() == 0) ? "NULL" : Long.toString(lock.getTxnid()));
+        os.write(separator);
+        os.writeBytes(Long.toString(lock.getLastheartbeat()));
+        os.write(separator);
+        os.writeBytes((lock.getAcquiredat() == 0) ? "NULL" : Long.toString(lock.getAcquiredat()));
+        os.write(separator);
+        os.writeBytes(lock.getUser());
+        os.write(separator);
+        os.writeBytes(lock.getHostname());
+        os.write(separator);
+        os.write(terminator);
+      }
+    }
+  }
   private int showLocksNewFormat(ShowLocksDesc showLocks, HiveLockManager lm)
       throws  HiveException {
 
@@ -2535,59 +2555,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // write the results in the file
     DataOutputStream os = getOutputStream(showLocks.getResFile());
     try {
-      // Write a header
-      os.writeBytes("Lock ID");
-      os.write(separator);
-      os.writeBytes("Database");
-      os.write(separator);
-      os.writeBytes("Table");
-      os.write(separator);
-      os.writeBytes("Partition");
-      os.write(separator);
-      os.writeBytes("State");
-      os.write(separator);
-      os.writeBytes("Type");
-      os.write(separator);
-      os.writeBytes("Transaction ID");
-      os.write(separator);
-      os.writeBytes("Last Hearbeat");
-      os.write(separator);
-      os.writeBytes("Acquired At");
-      os.write(separator);
-      os.writeBytes("User");
-      os.write(separator);
-      os.writeBytes("Hostname");
-      os.write(terminator);
-
-      List<ShowLocksResponseElement> locks = rsp.getLocks();
-      if (locks != null) {
-        for (ShowLocksResponseElement lock : locks) {
-          os.writeBytes(Long.toString(lock.getLockid()));
-          os.write(separator);
-          os.writeBytes(lock.getDbname());
-          os.write(separator);
-          os.writeBytes((lock.getTablename() == null) ? "NULL" : lock.getTablename());
-          os.write(separator);
-          os.writeBytes((lock.getPartname() == null) ? "NULL" : lock.getPartname());
-          os.write(separator);
-          os.writeBytes(lock.getState().toString());
-          os.write(separator);
-          os.writeBytes(lock.getType().toString());
-          os.write(separator);
-          os.writeBytes((lock.getTxnid() == 0) ? "NULL" : Long.toString(lock.getTxnid()));
-          os.write(separator);
-          os.writeBytes(Long.toString(lock.getLastheartbeat()));
-          os.write(separator);
-          os.writeBytes((lock.getAcquiredat() == 0) ? "NULL" : Long.toString(lock.getAcquiredat()));
-          os.write(separator);
-          os.writeBytes(lock.getUser());
-          os.write(separator);
-          os.writeBytes(lock.getHostname());
-          os.write(separator);
-          os.write(terminator);
-        }
-
-      }
+      dumpLockInfo(os, rsp);
     } catch (FileNotFoundException e) {
       LOG.warn("show function: " + stringifyException(e));
       return 1;
@@ -3025,7 +2993,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           cols.addAll(tbl.getPartCols());
         }
       } else {
-        cols = Hive.getFieldsFromDeserializer(colPath, deserializer); // TODO#: here - desc
+        cols = Hive.getFieldsFromDeserializer(colPath, deserializer);
         if (descTbl.isFormatted()) {
           // when column name is specified in describe table DDL, colPath will
           // will be table_name.column_name

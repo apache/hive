@@ -93,28 +93,26 @@ public class SimpleFetchOptimizer implements Transform {
 
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
-    Map<String, Operator<? extends OperatorDesc>> topOps = pctx.getTopOps();
+    Map<String, TableScanOperator> topOps = pctx.getTopOps();
     if (pctx.getQueryProperties().isQuery() && !pctx.getQueryProperties().isAnalyzeCommand()
         && topOps.size() == 1) {
       // no join, no groupby, no distinct, no lateral view, no subq,
       // no CTAS or insert, not analyze command, and single sourced.
       String alias = (String) pctx.getTopOps().keySet().toArray()[0];
-      Operator<?> topOp = (Operator<?>) pctx.getTopOps().values().toArray()[0];
-      if (topOp instanceof TableScanOperator) {
-        try {
-          FetchTask fetchTask = optimize(pctx, alias, (TableScanOperator) topOp);
-          if (fetchTask != null) {
-            pctx.setFetchTask(fetchTask);
-          }
-        } catch (Exception e) {
-          // Has to use full name to make sure it does not conflict with
-          // org.apache.commons.lang.StringUtils
-          LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
-          if (e instanceof SemanticException) {
-            throw (SemanticException) e;
-          }
-          throw new SemanticException(e.getMessage(), e);
+      TableScanOperator topOp = pctx.getTopOps().values().iterator().next();
+      try {
+        FetchTask fetchTask = optimize(pctx, alias, topOp);
+        if (fetchTask != null) {
+          pctx.setFetchTask(fetchTask);
         }
+      } catch (Exception e) {
+        // Has to use full name to make sure it does not conflict with
+        // org.apache.commons.lang.StringUtils
+        LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
+        if (e instanceof SemanticException) {
+          throw (SemanticException) e;
+        }
+        throw new SemanticException(e.getMessage(), e);
       }
     }
     return pctx;
@@ -156,6 +154,13 @@ public class SimpleFetchOptimizer implements Transform {
         HiveConf.ConfVars.HIVEFETCHTASKCONVERSIONTHRESHOLD);
     if (threshold < 0) {
       return true;
+    }
+    Operator child = data.scanOp.getChildOperators().get(0);
+    if(child instanceof SelectOperator) {
+      // select *, constant and casts can be allowed without a threshold check
+      if (checkExpressions((SelectOperator)child)) {
+        return true;
+      }
     }
     long remaining = threshold;
     remaining -= data.getInputLength(pctx, remaining);

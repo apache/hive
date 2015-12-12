@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 create table L as select 4436 id;
 create table LA as select 4436 loan_id, 4748 aid, 4415 pi_id;
 create table FR as select 4436 loan_id;

@@ -77,9 +77,8 @@ public class GenMRTableScan1 implements NodeProcessor {
     // create a dummy MapReduce task
     MapredWork currWork = GenMapRedUtils.getMapRedWork(parseCtx);
     MapRedTask currTask = (MapRedTask) TaskFactory.get(currWork, parseCtx.getConf());
-    Operator<? extends OperatorDesc> currTopOp = op;
     ctx.setCurrTask(currTask);
-    ctx.setCurrTopOp(currTopOp);
+    ctx.setCurrTopOp(op);
 
     for (String alias : parseCtx.getTopOps().keySet()) {
       Operator<? extends OperatorDesc> currOp = parseCtx.getTopOps().get(alias);
@@ -160,9 +159,9 @@ public class GenMRTableScan1 implements NodeProcessor {
               Table source = op.getConf().getTableMetadata();
               List<String> partCols = GenMapRedUtils.getPartitionColumns(op);
               PrunedPartitionList partList = new PrunedPartitionList(source, confirmedPartns, partCols, false);
-              GenMapRedUtils.setTaskPlan(currAliasId, currTopOp, currTask, false, ctx, partList);
+              GenMapRedUtils.setTaskPlan(currAliasId, op, currTask, false, ctx, partList);
             } else { // non-partitioned table
-              GenMapRedUtils.setTaskPlan(currAliasId, currTopOp, currTask, false, ctx);
+              GenMapRedUtils.setTaskPlan(currAliasId, op, currTask, false, ctx);
             }
           }
         }

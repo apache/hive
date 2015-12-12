@@ -1913,6 +1913,12 @@ public class VectorizationContext {
       return null;
     }
 
+    // We don't currently support the BETWEEN ends being columns.  They must be scalars.
+    if (!(childExpr.get(2) instanceof ExprNodeConstantDesc) ||
+        !(childExpr.get(3) instanceof ExprNodeConstantDesc)) {
+      return null;
+    }
+
     boolean notKeywordPresent = (Boolean) ((ExprNodeConstantDesc) childExpr.get(0)).getValue();
     ExprNodeDesc colExpr = childExpr.get(1);
 

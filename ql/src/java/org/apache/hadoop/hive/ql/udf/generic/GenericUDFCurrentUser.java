@@ -30,6 +30,7 @@ import org.apache.hadoop.io.Text;
 
 @UDFType(deterministic = true)
 @Description(name = "current_user", value = "_FUNC_() - Returns current user name", extended = "SessionState UserFromAuthenticator")
+@NDV(maxNdv = 1)
 public class GenericUDFCurrentUser extends GenericUDF {
   protected Text currentUser;
 

@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 -- SORT_QUERY_RESULTS
 create table e1 (key string, keyD double);
 create table e2 (key string, keyD double, value string);

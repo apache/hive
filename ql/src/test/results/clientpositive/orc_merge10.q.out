@@ -568,6 +568,8 @@ Stripes:
 File length: 2137 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
+________________________________________________________________________________________________________________________
+
 -- END ORC FILE DUMP --
 172	val_172	1	0
 PREHOOK: query: select * from orcfile_merge1c where ds='1' and part='0' limit 1
@@ -628,6 +630,8 @@ Stripes:
 File length: 2137 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
+________________________________________________________________________________________________________________________
+
 -- END ORC FILE DUMP --
 172	val_172	1	0
 PREHOOK: query: DROP TABLE orcfile_merge1

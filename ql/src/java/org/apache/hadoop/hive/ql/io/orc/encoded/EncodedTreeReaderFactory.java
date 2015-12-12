@@ -22,12 +22,11 @@ import java.util.List;
 
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch;
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch.ColumnStreamData;
-import org.apache.hadoop.hive.ql.io.orc.CompressionCodec;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream.Kind;
-import org.apache.hadoop.hive.ql.io.orc.PositionProvider;
-import org.apache.hadoop.hive.ql.io.orc.SettableUncompressedStream;
+import org.apache.orc.CompressionCodec;
+import org.apache.orc.impl.PositionProvider;
+import org.apache.orc.impl.SettableUncompressedStream;
 import org.apache.hadoop.hive.ql.io.orc.TreeReaderFactory;
+import org.apache.orc.OrcProto;
 
 public class EncodedTreeReaderFactory extends TreeReaderFactory {
   /**
@@ -87,18 +86,17 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     public void setBuffers(ColumnStreamData[] streamsData, boolean sameStripe)
         throws IOException {
       if (_presentStream != null) {
-        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.PRESENT_VALUE]));
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.PRESENT_VALUE]));
       }
       if (_secondsStream != null) {
-        _secondsStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.DATA_VALUE]));
+        _secondsStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.DATA_VALUE]));
       }
       if (_nanosStream != null) {
-        _nanosStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.SECONDARY_VALUE]));
+        _nanosStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.SECONDARY_VALUE]));
       }
     }
 
     public static class StreamReaderBuilder {
-      private Long fileId;
       private int columnIndex;
       private ColumnStreamData presentStream;
       private ColumnStreamData dataStream;
@@ -106,11 +104,6 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
       private CompressionCodec compressionCodec;
       private OrcProto.ColumnEncoding columnEncoding;
       private boolean skipCorrupt;
-
-      public StreamReaderBuilder setFileId(Long fileId) {
-        this.fileId = fileId;
-        return this;
-      }
 
       public StreamReaderBuilder setColumnIndex(int columnIndex) {
         this.columnIndex = columnIndex;
@@ -150,15 +143,15 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
       public TimestampStreamReader build() throws IOException {
         SettableUncompressedStream present = StreamUtils
             .createSettableUncompressedStream(OrcProto.Stream.Kind.PRESENT.name(),
-                fileId, presentStream);
+                presentStream);
 
         SettableUncompressedStream data = StreamUtils
-            .createSettableUncompressedStream(OrcProto.Stream.Kind.DATA.name(), fileId,
+            .createSettableUncompressedStream(OrcProto.Stream.Kind.DATA.name(),
                 dataStream);
 
         SettableUncompressedStream nanos = StreamUtils
             .createSettableUncompressedStream(OrcProto.Stream.Kind.SECONDARY.name(),
-                fileId, nanosStream);
+                nanosStream);
 
         boolean isFileCompressed = compressionCodec != null;
         return new TimestampStreamReader(columnIndex, present, data, nanos,
@@ -238,30 +231,29 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     public void setBuffers(ColumnStreamData[] streamsData, boolean sameStripe)
         throws IOException {
       if (_presentStream != null) {
-        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.PRESENT_VALUE]));
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.PRESENT_VALUE]));
       }
       if (_dataStream != null) {
-        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.DATA_VALUE]));
+        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.DATA_VALUE]));
       }
       if (!_isDictionaryEncoding) {
         if (_lengthStream != null) {
-          _lengthStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.LENGTH_VALUE]));
+          _lengthStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.LENGTH_VALUE]));
         }
       }
 
       // set these streams only if the stripe is different
       if (!sameStripe && _isDictionaryEncoding) {
         if (_lengthStream != null) {
-          _lengthStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.LENGTH_VALUE]));
+          _lengthStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.LENGTH_VALUE]));
         }
         if (_dictionaryStream != null) {
-          _dictionaryStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.DICTIONARY_DATA_VALUE]));
+          _dictionaryStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.DICTIONARY_DATA_VALUE]));
         }
       }
     }
 
     public static class StreamReaderBuilder {
-      private Long fileId;
       private int columnIndex;
       private ColumnStreamData presentStream;
       private ColumnStreamData dataStream;
@@ -270,10 +262,6 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
       private CompressionCodec compressionCodec;
       private OrcProto.ColumnEncoding columnEncoding;
 
-      public StreamReaderBuilder setFileId(Long fileId) {
-        this.fileId = fileId;
-        return this;
-      }
 
       public StreamReaderBuilder setColumnIndex(int columnIndex) {
         this.columnIndex = columnIndex;
@@ -313,18 +301,18 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
       public StringStreamReader build() throws IOException {
         SettableUncompressedStream present = StreamUtils
             .createSettableUncompressedStream(OrcProto.Stream.Kind.PRESENT.name(),
-                fileId, presentStream);
+                presentStream);
 
         SettableUncompressedStream data = StreamUtils
-            .createSettableUncompressedStream(OrcProto.Stream.Kind.DATA.name(), fileId,
+            .createSettableUncompressedStream(OrcProto.Stream.Kind.DATA.name(),
                 dataStream);
 
         SettableUncompressedStream length = StreamUtils
-            .createSettableUncompressedStream(OrcProto.Stream.Kind.LENGTH.name(), fileId,
+            .createSettableUncompressedStream(OrcProto.Stream.Kind.LENGTH.name(),
                 lengthStream);
 
         SettableUncompressedStream dictionary = StreamUtils.createSettableUncompressedStream(
-            OrcProto.Stream.Kind.DICTIONARY_DATA.name(), fileId, dictionaryStream);
+            OrcProto.Stream.Kind.DICTIONARY_DATA.name(), dictionaryStream);
 
         boolean isFileCompressed = compressionCodec != null;
         return new StringStreamReader(columnIndex, present, data, length, dictionary,
@@ -375,25 +363,20 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     public void setBuffers(ColumnStreamData[] streamsData, boolean sameStripe)
         throws IOException {
       if (_presentStream != null) {
-        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.PRESENT_VALUE]));
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.PRESENT_VALUE]));
       }
       if (_dataStream != null) {
-        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.DATA_VALUE]));
+        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.DATA_VALUE]));
       }
     }
 
     public static class StreamReaderBuilder {
-      private Long fileId;
       private int columnIndex;
       private ColumnStreamData presentStream;
       private ColumnStreamData dataStream;
       private CompressionCodec compressionCodec;
       private OrcProto.ColumnEncoding columnEncoding;
 
-      public StreamReaderBuilder setFileId(Long fileId) {
-        this.fileId = fileId;
-        return this;
-      }
 
       public StreamReaderBuilder setColumnIndex(int columnIndex) {
         this.columnIndex = columnIndex;
@@ -423,10 +406,10 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
       public ShortStreamReader build() throws IOException {
         SettableUncompressedStream present = StreamUtils
             .createSettableUncompressedStream(OrcProto.Stream.Kind.PRESENT.name(),
-                fileId, presentStream);
+                presentStream);
 
         SettableUncompressedStream data = StreamUtils
-            .createSettableUncompressedStream(OrcProto.Stream.Kind.DATA.name(), fileId,
+            .createSettableUncompressedStream(OrcProto.Stream.Kind.DATA.name(),
                 dataStream);
 
         boolean isFileCompressed = compressionCodec != null;
@@ -477,15 +460,14 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     public void setBuffers(ColumnStreamData[] streamsData, boolean sameStripe)
         throws IOException {
       if (_presentStream != null) {
-        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.PRESENT_VALUE]));
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.PRESENT_VALUE]));
       }
       if (_dataStream != null) {
-        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.DATA_VALUE]));
+        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.DATA_VALUE]));
       }
     }
 
     public static class StreamReaderBuilder {
-      private Long fileId;
       private int columnIndex;
       private ColumnStreamData presentStream;
       private ColumnStreamData dataStream;
@@ -493,10 +475,6 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
       private OrcProto.ColumnEncoding columnEncoding;
       private boolean skipCorrupt;
 
-      public StreamReaderBuilder setFileId(Long fileId) {
-        this.fileId = fileId;
-        return this;
-      }
 
       public StreamReaderBuilder setColumnIndex(int columnIndex) {
         this.columnIndex = columnIndex;
@@ -531,10 +509,10 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
       public LongStreamReader build() throws IOException {
         SettableUncompressedStream present = StreamUtils
             .createSettableUncompressedStream(OrcProto.Stream.Kind.PRESENT.name(),
-                fileId, presentStream);
+                presentStream);
 
         SettableUncompressedStream data = StreamUtils
-            .createSettableUncompressedStream(OrcProto.Stream.Kind.DATA.name(), fileId,
+            .createSettableUncompressedStream(OrcProto.Stream.Kind.DATA.name(),
                 dataStream);
 
         boolean isFileCompressed = compressionCodec != null;
@@ -585,25 +563,20 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     public void setBuffers(ColumnStreamData[] streamsData, boolean sameStripe)
         throws IOException {
       if (_presentStream != null) {
-        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.PRESENT_VALUE]));
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.PRESENT_VALUE]));
       }
       if (_dataStream != null) {
-        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.DATA_VALUE]));
+        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.DATA_VALUE]));
       }
     }
 
     public static class StreamReaderBuilder {
-      private Long fileId;
       private int columnIndex;
       private ColumnStreamData presentStream;
       private ColumnStreamData dataStream;
       private CompressionCodec compressionCodec;
       private OrcProto.ColumnEncoding columnEncoding;
 
-      public StreamReaderBuilder setFileId(Long fileId) {
-        this.fileId = fileId;
-        return this;
-      }
 
       public StreamReaderBuilder setColumnIndex(int columnIndex) {
         this.columnIndex = columnIndex;
@@ -633,10 +606,10 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
       public IntStreamReader build() throws IOException {
         SettableUncompressedStream present = StreamUtils
             .createSettableUncompressedStream(OrcProto.Stream.Kind.PRESENT.name(),
-                fileId, presentStream);
+                presentStream);
 
         SettableUncompressedStream data = StreamUtils
-            .createSettableUncompressedStream(OrcProto.Stream.Kind.DATA.name(), fileId,
+            .createSettableUncompressedStream(OrcProto.Stream.Kind.DATA.name(),
                 dataStream);
 
         boolean isFileCompressed = compressionCodec != null;
@@ -687,24 +660,19 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     public void setBuffers(ColumnStreamData[] streamsData, boolean sameStripe)
         throws IOException {
       if (_presentStream != null) {
-        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.PRESENT_VALUE]));
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.PRESENT_VALUE]));
       }
       if (_dataStream != null) {
-        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.DATA_VALUE]));
+        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.DATA_VALUE]));
       }
     }
 
     public static class StreamReaderBuilder {
-      private Long fileId;
       private int columnIndex;
       private ColumnStreamData presentStream;
       private ColumnStreamData dataStream;
       private CompressionCodec compressionCodec;
 
-      public StreamReaderBuilder setFileId(Long fileId) {
-        this.fileId = fileId;
-        return this;
-      }
 
       public StreamReaderBuilder setColumnIndex(int columnIndex) {
         this.columnIndex = columnIndex;
@@ -729,10 +697,10 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
       public FloatStreamReader build() throws IOException {
         SettableUncompressedStream present = StreamUtils
             .createSettableUncompressedStream(OrcProto.Stream.Kind.PRESENT.name(),
-                fileId, presentStream);
+                presentStream);
 
         SettableUncompressedStream data = StreamUtils
-            .createSettableUncompressedStream(OrcProto.Stream.Kind.DATA.name(), fileId,
+            .createSettableUncompressedStream(OrcProto.Stream.Kind.DATA.name(),
                 dataStream);
 
         boolean isFileCompressed = compressionCodec != null;
@@ -782,24 +750,19 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     public void setBuffers(ColumnStreamData[] streamsData, boolean sameStripe)
         throws IOException {
       if (_presentStream != null) {
-        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.PRESENT_VALUE]));
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.PRESENT_VALUE]));
       }
       if (_dataStream != null) {
-        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.DATA_VALUE]));
+        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.DATA_VALUE]));
       }
     }
 
     public static class StreamReaderBuilder {
-      private Long fileId;
       private int columnIndex;
       private ColumnStreamData presentStream;
       private ColumnStreamData dataStream;
       private CompressionCodec compressionCodec;
 
-      public StreamReaderBuilder setFileId(Long fileId) {
-        this.fileId = fileId;
-        return this;
-      }
 
       public StreamReaderBuilder setColumnIndex(int columnIndex) {
         this.columnIndex = columnIndex;
@@ -824,10 +787,10 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
       public DoubleStreamReader build() throws IOException {
         SettableUncompressedStream present = StreamUtils
             .createSettableUncompressedStream(OrcProto.Stream.Kind.PRESENT.name(),
-                fileId, presentStream);
+                presentStream);
 
         SettableUncompressedStream data = StreamUtils
-            .createSettableUncompressedStream(OrcProto.Stream.Kind.DATA.name(), fileId,
+            .createSettableUncompressedStream(OrcProto.Stream.Kind.DATA.name(),
                 dataStream);
 
         boolean isFileCompressed = compressionCodec != null;
@@ -888,18 +851,17 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     public void setBuffers(ColumnStreamData[] streamsData, boolean sameStripe)
         throws IOException {
       if (_presentStream != null) {
-        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.PRESENT_VALUE]));
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.PRESENT_VALUE]));
       }
       if (_valueStream != null) {
-        _valueStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.DATA_VALUE]));
+        _valueStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.DATA_VALUE]));
       }
       if (_scaleStream != null) {
-        _scaleStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.SECONDARY_VALUE]));
+        _scaleStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.SECONDARY_VALUE]));
       }
     }
 
     public static class StreamReaderBuilder {
-      private Long fileId;
       private int columnIndex;
       private ColumnStreamData presentStream;
       private ColumnStreamData valueStream;
@@ -909,10 +871,6 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
       private CompressionCodec compressionCodec;
       private OrcProto.ColumnEncoding columnEncoding;
 
-      public StreamReaderBuilder setFileId(Long fileId) {
-        this.fileId = fileId;
-        return this;
-      }
 
       public StreamReaderBuilder setColumnIndex(int columnIndex) {
         this.columnIndex = columnIndex;
@@ -956,13 +914,13 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
 
       public DecimalStreamReader build() throws IOException {
         SettableUncompressedStream presentInStream = StreamUtils.createSettableUncompressedStream(
-            OrcProto.Stream.Kind.PRESENT.name(), fileId, presentStream);
+            OrcProto.Stream.Kind.PRESENT.name(), presentStream);
 
         SettableUncompressedStream valueInStream = StreamUtils.createSettableUncompressedStream(
-            OrcProto.Stream.Kind.DATA.name(), fileId, valueStream);
+            OrcProto.Stream.Kind.DATA.name(), valueStream);
 
         SettableUncompressedStream scaleInStream = StreamUtils.createSettableUncompressedStream(
-            OrcProto.Stream.Kind.SECONDARY.name(), fileId, scaleStream);
+            OrcProto.Stream.Kind.SECONDARY.name(), scaleStream);
 
         boolean isFileCompressed = compressionCodec != null;
         return new DecimalStreamReader(columnIndex, precision, scale, presentInStream,
@@ -1013,25 +971,19 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     public void setBuffers(ColumnStreamData[] streamsData, boolean sameStripe)
         throws IOException {
       if (_presentStream != null) {
-        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.PRESENT_VALUE]));
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.PRESENT_VALUE]));
       }
       if (_dataStream != null) {
-        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.DATA_VALUE]));
+        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.DATA_VALUE]));
       }
     }
 
     public static class StreamReaderBuilder {
-      private Long fileId;
       private int columnIndex;
       private ColumnStreamData presentStream;
       private ColumnStreamData dataStream;
       private CompressionCodec compressionCodec;
       private OrcProto.ColumnEncoding columnEncoding;
-
-      public StreamReaderBuilder setFileId(Long fileId) {
-        this.fileId = fileId;
-        return this;
-      }
 
       public StreamReaderBuilder setColumnIndex(int columnIndex) {
         this.columnIndex = columnIndex;
@@ -1061,11 +1013,11 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
       public DateStreamReader build() throws IOException {
         SettableUncompressedStream present = StreamUtils
             .createSettableUncompressedStream(OrcProto.Stream.Kind.PRESENT.name(),
-                fileId, presentStream);
+                presentStream);
 
 
         SettableUncompressedStream data = StreamUtils
-            .createSettableUncompressedStream(OrcProto.Stream.Kind.DATA.name(), fileId,
+            .createSettableUncompressedStream(OrcProto.Stream.Kind.DATA.name(),
                 dataStream);
 
         boolean isFileCompressed = compressionCodec != null;
@@ -1146,30 +1098,29 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     public void setBuffers(ColumnStreamData[] streamsData, boolean sameStripe)
         throws IOException {
       if (_presentStream != null) {
-        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.PRESENT_VALUE]));
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.PRESENT_VALUE]));
       }
       if (_dataStream != null) {
-        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.DATA_VALUE]));
+        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.DATA_VALUE]));
       }
       if (!_isDictionaryEncoding) {
         if (_lengthStream != null) {
-          _lengthStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.LENGTH_VALUE]));
+          _lengthStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.LENGTH_VALUE]));
         }
       }
 
       // set these streams only if the stripe is different
       if (!sameStripe && _isDictionaryEncoding) {
         if (_lengthStream != null) {
-          _lengthStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.LENGTH_VALUE]));
+          _lengthStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.LENGTH_VALUE]));
         }
         if (_dictionaryStream != null) {
-          _dictionaryStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.DICTIONARY_DATA_VALUE]));
+          _dictionaryStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.DICTIONARY_DATA_VALUE]));
         }
       }
     }
 
     public static class StreamReaderBuilder {
-      private Long fileId;
       private int columnIndex;
       private int maxLength;
       private ColumnStreamData presentStream;
@@ -1179,10 +1130,6 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
       private CompressionCodec compressionCodec;
       private OrcProto.ColumnEncoding columnEncoding;
 
-      public StreamReaderBuilder setFileId(Long fileId) {
-        this.fileId = fileId;
-        return this;
-      }
 
       public StreamReaderBuilder setColumnIndex(int columnIndex) {
         this.columnIndex = columnIndex;
@@ -1227,18 +1174,18 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
       public CharStreamReader build() throws IOException {
         SettableUncompressedStream present = StreamUtils
             .createSettableUncompressedStream(OrcProto.Stream.Kind.PRESENT.name(),
-                fileId, presentStream);
+                presentStream);
 
         SettableUncompressedStream data = StreamUtils
-            .createSettableUncompressedStream(OrcProto.Stream.Kind.DATA.name(), fileId,
+            .createSettableUncompressedStream(OrcProto.Stream.Kind.DATA.name(),
                 dataStream);
 
         SettableUncompressedStream length = StreamUtils
-            .createSettableUncompressedStream(OrcProto.Stream.Kind.LENGTH.name(), fileId,
+            .createSettableUncompressedStream(OrcProto.Stream.Kind.LENGTH.name(),
                 lengthStream);
 
         SettableUncompressedStream dictionary = StreamUtils.createSettableUncompressedStream(
-            OrcProto.Stream.Kind.DICTIONARY_DATA.name(), fileId, dictionaryStream);
+            OrcProto.Stream.Kind.DICTIONARY_DATA.name(), dictionaryStream);
 
         boolean isFileCompressed = compressionCodec != null;
         return new CharStreamReader(columnIndex, maxLength, present, data, length,
@@ -1319,30 +1266,29 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     public void setBuffers(ColumnStreamData[] streamsData, boolean sameStripe)
         throws IOException {
       if (_presentStream != null) {
-        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.PRESENT_VALUE]));
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.PRESENT_VALUE]));
       }
       if (_dataStream != null) {
-        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.DATA_VALUE]));
+        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.DATA_VALUE]));
       }
       if (!_isDictionaryEncoding) {
         if (_lengthStream != null) {
-          _lengthStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.LENGTH_VALUE]));
+          _lengthStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.LENGTH_VALUE]));
         }
       }
 
       // set these streams only if the stripe is different
       if (!sameStripe && _isDictionaryEncoding) {
         if (_lengthStream != null) {
-          _lengthStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.LENGTH_VALUE]));
+          _lengthStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.LENGTH_VALUE]));
         }
         if (_dictionaryStream != null) {
-          _dictionaryStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.DICTIONARY_DATA_VALUE]));
+          _dictionaryStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.DICTIONARY_DATA_VALUE]));
         }
       }
     }
 
     public static class StreamReaderBuilder {
-      private Long fileId;
       private int columnIndex;
       private int maxLength;
       private ColumnStreamData presentStream;
@@ -1352,10 +1298,6 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
       private CompressionCodec compressionCodec;
       private OrcProto.ColumnEncoding columnEncoding;
 
-      public StreamReaderBuilder setFileId(Long fileId) {
-        this.fileId = fileId;
-        return this;
-      }
 
       public StreamReaderBuilder setColumnIndex(int columnIndex) {
         this.columnIndex = columnIndex;
@@ -1400,18 +1342,18 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
       public VarcharStreamReader build() throws IOException {
         SettableUncompressedStream present = StreamUtils
             .createSettableUncompressedStream(OrcProto.Stream.Kind.PRESENT.name(),
-                fileId, presentStream);
+                presentStream);
 
         SettableUncompressedStream data = StreamUtils
-            .createSettableUncompressedStream(OrcProto.Stream.Kind.DATA.name(), fileId,
+            .createSettableUncompressedStream(OrcProto.Stream.Kind.DATA.name(),
                 dataStream);
 
         SettableUncompressedStream length = StreamUtils
-            .createSettableUncompressedStream(OrcProto.Stream.Kind.LENGTH.name(), fileId,
+            .createSettableUncompressedStream(OrcProto.Stream.Kind.LENGTH.name(),
                 lengthStream);
 
         SettableUncompressedStream dictionary = StreamUtils.createSettableUncompressedStream(
-            OrcProto.Stream.Kind.DICTIONARY_DATA.name(), fileId, dictionaryStream);
+            OrcProto.Stream.Kind.DICTIONARY_DATA.name(), dictionaryStream);
 
         boolean isFileCompressed = compressionCodec != null;
         return new VarcharStreamReader(columnIndex, maxLength, present, data, length,
@@ -1461,24 +1403,19 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     public void setBuffers(ColumnStreamData[] streamsData, boolean sameStripe)
         throws IOException {
       if (_presentStream != null) {
-        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.PRESENT_VALUE]));
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.PRESENT_VALUE]));
       }
       if (_dataStream != null) {
-        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.DATA_VALUE]));
+        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.DATA_VALUE]));
       }
     }
 
     public static class StreamReaderBuilder {
-      private Long fileId;
       private int columnIndex;
       private ColumnStreamData presentStream;
       private ColumnStreamData dataStream;
       private CompressionCodec compressionCodec;
 
-      public StreamReaderBuilder setFileId(Long fileId) {
-        this.fileId = fileId;
-        return this;
-      }
 
       public StreamReaderBuilder setColumnIndex(int columnIndex) {
         this.columnIndex = columnIndex;
@@ -1503,10 +1440,10 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
       public ByteStreamReader build() throws IOException {
         SettableUncompressedStream present = StreamUtils
             .createSettableUncompressedStream(OrcProto.Stream.Kind.PRESENT.name(),
-                fileId, presentStream);
+                presentStream);
 
         SettableUncompressedStream data = StreamUtils
-            .createSettableUncompressedStream(OrcProto.Stream.Kind.DATA.name(), fileId,
+            .createSettableUncompressedStream(OrcProto.Stream.Kind.DATA.name(),
                 dataStream);
 
         boolean isFileCompressed = compressionCodec != null;
@@ -1566,18 +1503,17 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     public void setBuffers(ColumnStreamData[] streamsData, boolean sameStripe)
         throws IOException {
       if (_presentStream != null) {
-        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.PRESENT_VALUE]));
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.PRESENT_VALUE]));
       }
       if (_dataStream != null) {
-        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.DATA_VALUE]));
+        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.DATA_VALUE]));
       }
       if (_lengthsStream != null) {
-        _lengthsStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.LENGTH_VALUE]));
+        _lengthsStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.LENGTH_VALUE]));
       }
     }
 
     public static class StreamReaderBuilder {
-      private Long fileId;
       private int columnIndex;
       private ColumnStreamData presentStream;
       private ColumnStreamData dataStream;
@@ -1585,10 +1521,6 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
       private CompressionCodec compressionCodec;
       private OrcProto.ColumnEncoding columnEncoding;
 
-      public StreamReaderBuilder setFileId(Long fileId) {
-        this.fileId = fileId;
-        return this;
-      }
 
       public StreamReaderBuilder setColumnIndex(int columnIndex) {
         this.columnIndex = columnIndex;
@@ -1622,13 +1554,13 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
 
       public BinaryStreamReader build() throws IOException {
         SettableUncompressedStream present = StreamUtils.createSettableUncompressedStream(
-            OrcProto.Stream.Kind.PRESENT.name(), fileId, presentStream);
+            OrcProto.Stream.Kind.PRESENT.name(), presentStream);
 
         SettableUncompressedStream data = StreamUtils.createSettableUncompressedStream(
-            OrcProto.Stream.Kind.DATA.name(), fileId, dataStream);
+            OrcProto.Stream.Kind.DATA.name(), dataStream);
 
         SettableUncompressedStream length = StreamUtils.createSettableUncompressedStream(
-            OrcProto.Stream.Kind.LENGTH.name(), fileId, lengthStream);
+            OrcProto.Stream.Kind.LENGTH.name(), lengthStream);
 
         boolean isFileCompressed = compressionCodec != null;
         return new BinaryStreamReader(columnIndex, present, data, length, isFileCompressed,
@@ -1677,24 +1609,19 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     public void setBuffers(ColumnStreamData[] streamsData, boolean sameStripe)
         throws IOException {
       if (_presentStream != null) {
-        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.PRESENT_VALUE]));
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.PRESENT_VALUE]));
       }
       if (_dataStream != null) {
-        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.DATA_VALUE]));
+        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.DATA_VALUE]));
       }
     }
 
     public static class StreamReaderBuilder {
-      private Long fileId;
       private int columnIndex;
       private ColumnStreamData presentStream;
       private ColumnStreamData dataStream;
       private CompressionCodec compressionCodec;
 
-      public StreamReaderBuilder setFileId(Long fileId) {
-        this.fileId = fileId;
-        return this;
-      }
 
       public StreamReaderBuilder setColumnIndex(int columnIndex) {
         this.columnIndex = columnIndex;
@@ -1719,10 +1646,10 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
       public BooleanStreamReader build() throws IOException {
         SettableUncompressedStream present = StreamUtils
             .createSettableUncompressedStream(OrcProto.Stream.Kind.PRESENT.name(),
-                fileId, presentStream);
+                presentStream);
 
         SettableUncompressedStream data = StreamUtils
-            .createSettableUncompressedStream(OrcProto.Stream.Kind.DATA.name(), fileId,
+            .createSettableUncompressedStream(OrcProto.Stream.Kind.DATA.name(),
                 dataStream);
 
         boolean isFileCompressed = compressionCodec != null;
@@ -1740,7 +1667,6 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
       List<OrcProto.ColumnEncoding> encodings,
       EncodedColumnBatch<OrcBatchKey> batch,
       CompressionCodec codec, boolean skipCorrupt) throws IOException {
-    long file = batch.getBatchKey().file;
     TreeReader[] treeReaders = new TreeReader[numCols];
     for (int i = 0; i < numCols; i++) {
       int columnIndex = batch.getColumnIxs()[i];
@@ -1756,16 +1682,15 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
       OrcProto.ColumnEncoding columnEncoding = encodings.get(columnIndex);
 
       // stream buffers are arranged in enum order of stream kind
-      ColumnStreamData present = streamBuffers[Kind.PRESENT_VALUE],
-        data = streamBuffers[Kind.DATA_VALUE],
-        dictionary = streamBuffers[Kind.DICTIONARY_DATA_VALUE],
-        lengths = streamBuffers[Kind.LENGTH_VALUE],
-        secondary = streamBuffers[Kind.SECONDARY_VALUE];
+      ColumnStreamData present = streamBuffers[OrcProto.Stream.Kind.PRESENT_VALUE],
+        data = streamBuffers[OrcProto.Stream.Kind.DATA_VALUE],
+        dictionary = streamBuffers[OrcProto.Stream.Kind.DICTIONARY_DATA_VALUE],
+        lengths = streamBuffers[OrcProto.Stream.Kind.LENGTH_VALUE],
+        secondary = streamBuffers[OrcProto.Stream.Kind.SECONDARY_VALUE];
 
       switch (columnType.getKind()) {
         case BINARY:
           treeReaders[i] = BinaryStreamReader.builder()
-              .setFileId(file)
               .setColumnIndex(columnIndex)
               .setPresentStream(present)
               .setDataStream(data)
@@ -1776,7 +1701,6 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
           break;
         case BOOLEAN:
           treeReaders[i] = BooleanStreamReader.builder()
-              .setFileId(file)
               .setColumnIndex(columnIndex)
               .setPresentStream(present)
               .setDataStream(data)
@@ -1785,7 +1709,6 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
           break;
         case BYTE:
           treeReaders[i] = ByteStreamReader.builder()
-              .setFileId(file)
               .setColumnIndex(columnIndex)
               .setPresentStream(present)
               .setDataStream(data)
@@ -1794,7 +1717,6 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
           break;
         case SHORT:
           treeReaders[i] = ShortStreamReader.builder()
-              .setFileId(file)
               .setColumnIndex(columnIndex)
               .setPresentStream(present)
               .setDataStream(data)
@@ -1804,7 +1726,6 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
           break;
         case INT:
           treeReaders[i] = IntStreamReader.builder()
-              .setFileId(file)
               .setColumnIndex(columnIndex)
               .setPresentStream(present)
               .setDataStream(data)
@@ -1814,7 +1735,6 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
           break;
         case LONG:
           treeReaders[i] = LongStreamReader.builder()
-              .setFileId(file)
               .setColumnIndex(columnIndex)
               .setPresentStream(present)
               .setDataStream(data)
@@ -1825,7 +1745,6 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
           break;
         case FLOAT:
           treeReaders[i] = FloatStreamReader.builder()
-              .setFileId(file)
               .setColumnIndex(columnIndex)
               .setPresentStream(present)
               .setDataStream(data)
@@ -1834,7 +1753,6 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
           break;
         case DOUBLE:
           treeReaders[i] = DoubleStreamReader.builder()
-              .setFileId(file)
               .setColumnIndex(columnIndex)
               .setPresentStream(present)
               .setDataStream(data)
@@ -1843,7 +1761,6 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
           break;
         case CHAR:
           treeReaders[i] = CharStreamReader.builder()
-              .setFileId(file)
               .setColumnIndex(columnIndex)
               .setMaxLength(columnType.getMaximumLength())
               .setPresentStream(present)
@@ -1856,7 +1773,6 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
           break;
         case VARCHAR:
           treeReaders[i] = VarcharStreamReader.builder()
-              .setFileId(file)
               .setColumnIndex(columnIndex)
               .setMaxLength(columnType.getMaximumLength())
               .setPresentStream(present)
@@ -1869,7 +1785,6 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
           break;
         case STRING:
           treeReaders[i] = StringStreamReader.builder()
-              .setFileId(file)
               .setColumnIndex(columnIndex)
               .setPresentStream(present)
               .setDataStream(data)
@@ -1881,7 +1796,6 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
           break;
         case DECIMAL:
           treeReaders[i] = DecimalStreamReader.builder()
-              .setFileId(file)
               .setColumnIndex(columnIndex)
               .setPrecision(columnType.getPrecision())
               .setScale(columnType.getScale())
@@ -1894,7 +1808,6 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
           break;
         case TIMESTAMP:
           treeReaders[i] = TimestampStreamReader.builder()
-              .setFileId(file)
               .setColumnIndex(columnIndex)
               .setPresentStream(present)
               .setSecondsStream(data)
@@ -1906,7 +1819,6 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
           break;
         case DATE:
           treeReaders[i] = DateStreamReader.builder()
-              .setFileId(file)
               .setColumnIndex(columnIndex)
               .setPresentStream(present)
               .setDataStream(data)

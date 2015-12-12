@@ -105,7 +105,7 @@ public class TestHCatLoader {
         }});
       }};
 
-  private String storageFormat;
+  private final String storageFormat;
 
   @Parameterized.Parameters
   public static Collection<Object[]> generateParameters() {
@@ -176,6 +176,7 @@ public class TestHCatLoader {
     hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
     hiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname, TEST_WAREHOUSE_DIR);
+    hiveConf.setVar(HiveConf.ConfVars.HIVEMAPREDMODE, "nonstrict");
 
     if (Shell.WINDOWS) {
       WindowsPathUtil.convertPathsFromWindowsToHdfs(hiveConf);

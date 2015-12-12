@@ -30,6 +30,7 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -272,14 +273,13 @@ public class SparkTask extends Task<SparkWork> {
     StatsWork statsWork = statsTask.getWork();
     String tablePrefix = getTablePrefix(statsWork);
     List<Map<String, String>> partitionSpecs = getPartitionSpecs(statsWork);
-    int maxPrefixLength = StatsFactory.getMaxPrefixLength(conf);
 
     if (partitionSpecs == null) {
-      prefixs.add(Utilities.getHashedStatsPrefix(tablePrefix, maxPrefixLength));
+      prefixs.add(tablePrefix.endsWith(Path.SEPARATOR) ? tablePrefix : tablePrefix + Path.SEPARATOR);
     } else {
       for (Map<String, String> partitionSpec : partitionSpecs) {
         String prefixWithPartition = Utilities.join(tablePrefix, Warehouse.makePartPath(partitionSpec));
-        prefixs.add(Utilities.getHashedStatsPrefix(prefixWithPartition, maxPrefixLength));
+        prefixs.add(prefixWithPartition.endsWith(Path.SEPARATOR) ? prefixWithPartition : prefixWithPartition + Path.SEPARATOR);
       }
     }
 

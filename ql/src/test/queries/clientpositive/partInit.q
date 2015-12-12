@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 CREATE TABLE empty (c INT) PARTITIONED BY (p INT);
 SELECT MAX(c) FROM empty;
 SELECT MAX(p) FROM empty;

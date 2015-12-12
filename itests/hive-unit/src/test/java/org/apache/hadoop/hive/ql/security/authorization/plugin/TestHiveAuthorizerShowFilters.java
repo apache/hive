@@ -58,7 +58,7 @@ public class TestHiveAuthorizerShowFilters {
   private static final String dbName2 = (TestHiveAuthorizerShowFilters.class.getSimpleName() + "db2")
       .toLowerCase();
 
-  static HiveAuthorizer mockedAuthorizer;
+  protected static HiveAuthorizer mockedAuthorizer;
 
   static final List<String> AllTables = getSortedList(tableName1, tableName2);
   static final List<String> AllDbs = getSortedList("default", dbName1, dbName2);
@@ -73,27 +73,27 @@ public class TestHiveAuthorizerShowFilters {
    * HiveAuthorizer.filterListCmdObjects, and stores the list argument in
    * filterArguments
    */
-  static class MockedHiveAuthorizerFactory implements HiveAuthorizerFactory {
+  protected static class MockedHiveAuthorizerFactory implements HiveAuthorizerFactory {
+    protected abstract class AuthorizerWithFilterCmdImpl implements HiveAuthorizer {
+      @Override
+      public List<HivePrivilegeObject> filterListCmdObjects(List<HivePrivilegeObject> listObjs,
+          HiveAuthzContext context) throws HiveAuthzPluginException, HiveAccessControlException {
+        // capture arguments in static
+        filterArguments = listObjs;
+        // return static variable with results, if it is set to some set of
+        // values
+        // otherwise return the arguments
+        if (filteredResults.size() == 0) {
+          return filterArguments;
+        }
+        return filteredResults;
+      }
+    }
+    
     @Override
     public HiveAuthorizer createHiveAuthorizer(HiveMetastoreClientFactory metastoreClientFactory,
         HiveConf conf, HiveAuthenticationProvider authenticator, HiveAuthzSessionContext ctx) {
       Mockito.validateMockitoUsage();
-
-      abstract class AuthorizerWithFilterCmdImpl implements HiveAuthorizer {
-        @Override
-        public List<HivePrivilegeObject> filterListCmdObjects(List<HivePrivilegeObject> listObjs,
-            HiveAuthzContext context) throws HiveAuthzPluginException, HiveAccessControlException {
-          // capture arguments in static
-          filterArguments = listObjs;
-          // return static variable with results, if it is set to some set of
-          // values
-          // otherwise return the arguments
-          if (filteredResults.size() == 0) {
-            return filterArguments;
-          }
-          return filteredResults;
-        }
-      }
 
       mockedAuthorizer = Mockito.mock(AuthorizerWithFilterCmdImpl.class, Mockito.withSettings()
           .verboseLogging());

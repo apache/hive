@@ -77,7 +77,7 @@ public class GenMRUnion1 implements NodeProcessor {
 
     UnionParseContext uPrsCtx = uCtx.getUnionParseContext(union);
     ctx.getMapCurrCtx().put(
-        (Operator<? extends OperatorDesc>) union,
+        union,
         new GenMapRedCtx(ctx.getCurrTask(),
             ctx.getCurrAliasId()));
 
@@ -170,7 +170,7 @@ public class GenMRUnion1 implements NodeProcessor {
     // plan
     Task<? extends Serializable> uTask = uCtxTask.getUTask();
     ctx.setCurrTask(uTask);
-    Operator<? extends OperatorDesc> topOp = ctx.getCurrTopOp();
+    TableScanOperator topOp = ctx.getCurrTopOp();
     if (topOp != null && !ctx.isSeenOp(uTask, topOp)) {
       GenMapRedUtils.setTaskPlan(ctx.getCurrAliasId(), ctx
           .getCurrTopOp(), uTask, false, ctx);
@@ -189,6 +189,7 @@ public class GenMRUnion1 implements NodeProcessor {
    * @param opProcCtx
    *          context
    */
+  @Override
   public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx opProcCtx,
       Object... nodeOutputs) throws SemanticException {
     UnionOperator union = (UnionOperator) nd;

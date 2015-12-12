@@ -284,6 +284,15 @@ public class TestVectorTimestampExpressions {
     batch.cols[0].isNull[0] = true;
     verifyUDFYear(batch, testType);
 
+    batch = getVectorizedRowBatch(new long[] {0}, 1, testType);
+    batch.cols[0].isRepeating = true;
+    batch.selectedInUse = true;
+    batch.selected = new int[] {42};
+    verifyUDFYear(batch, testType);
+    batch.cols[0].noNulls = false;
+    batch.cols[0].isNull[0] = true;
+    verifyUDFYear(batch, testType);
+
     batch = getVectorizedRandomRowBatch(200, VectorizedRowBatch.DEFAULT_SIZE, testType);
     verifyUDFYear(batch, testType);
     TestVectorizedRowBatch.addRandomNulls(batch.cols[0]);
@@ -367,6 +376,15 @@ public class TestVectorTimestampExpressions {
     batch.cols[0].isNull[0] = true;
     verifyUDFDayOfMonth(batch, testType);
 
+    batch = getVectorizedRowBatch(new long[] {0}, 1, testType);
+    batch.cols[0].isRepeating = true;
+    batch.selectedInUse = true;
+    batch.selected = new int[] {42};
+    verifyUDFDayOfMonth(batch, testType);
+    batch.cols[0].noNulls = false;
+    batch.cols[0].isNull[0] = true;
+    verifyUDFDayOfMonth(batch, testType);
+
     batch = getVectorizedRandomRowBatch(200, VectorizedRowBatch.DEFAULT_SIZE, testType);
     verifyUDFDayOfMonth(batch, testType);
     TestVectorizedRowBatch.addRandomNulls(batch.cols[0]);
@@ -438,6 +456,15 @@ public class TestVectorTimestampExpressions {
 
     batch = getVectorizedRowBatch(new long[] {0}, 1, testType);
     batch.cols[0].isRepeating = true;
+    verifyUDFHour(batch, testType);
+    batch.cols[0].noNulls = false;
+    batch.cols[0].isNull[0] = true;
+    verifyUDFHour(batch, testType);
+
+    batch = getVectorizedRowBatch(new long[] {0}, 1, testType);
+    batch.cols[0].isRepeating = true;
+    batch.selectedInUse = true;
+    batch.selected = new int[] {42};
     verifyUDFHour(batch, testType);
     batch.cols[0].noNulls = false;
     batch.cols[0].isNull[0] = true;
@@ -519,6 +546,15 @@ public class TestVectorTimestampExpressions {
     batch.cols[0].isNull[0] = true;
     verifyUDFMinute(batch, testType);
 
+    batch = getVectorizedRowBatch(new long[] {0}, 1, testType);
+    batch.cols[0].isRepeating = true;
+    batch.selectedInUse = true;
+    batch.selected = new int[] {42};
+    verifyUDFMinute(batch, testType);
+    batch.cols[0].noNulls = false;
+    batch.cols[0].isNull[0] = true;
+    verifyUDFMinute(batch, testType);
+
     batch = getVectorizedRandomRowBatch(200, VectorizedRowBatch.DEFAULT_SIZE, testType);
     verifyUDFMinute(batch, testType);
     TestVectorizedRowBatch.addRandomNulls(batch.cols[0]);
@@ -595,6 +631,15 @@ public class TestVectorTimestampExpressions {
     batch.cols[0].isNull[0] = true;
     verifyUDFMonth(batch, testType);
 
+    batch = getVectorizedRowBatch(new long[] {0}, 1, testType);
+    batch.cols[0].isRepeating = true;
+    batch.selectedInUse = true;
+    batch.selected = new int[] {42};
+    verifyUDFMonth(batch, testType);
+    batch.cols[0].noNulls = false;
+    batch.cols[0].isNull[0] = true;
+    verifyUDFMonth(batch, testType);
+
     batch = getVectorizedRandomRowBatch(200, VectorizedRowBatch.DEFAULT_SIZE, testType);
     verifyUDFMonth(batch, testType);
     TestVectorizedRowBatch.addRandomNulls(batch.cols[0]);
@@ -666,6 +711,15 @@ public class TestVectorTimestampExpressions {
 
     batch = getVectorizedRowBatch(new long[] {0}, 1, testType);
     batch.cols[0].isRepeating = true;
+    verifyUDFSecond(batch, testType);
+    batch.cols[0].noNulls = false;
+    batch.cols[0].isNull[0] = true;
+    verifyUDFSecond(batch, testType);
+
+    batch = getVectorizedRowBatch(new long[] {0}, 1, testType);
+    batch.cols[0].isRepeating = true;
+    batch.selectedInUse = true;
+    batch.selected = new int[] {42};
     verifyUDFSecond(batch, testType);
     batch.cols[0].noNulls = false;
     batch.cols[0].isNull[0] = true;
@@ -761,6 +815,15 @@ public class TestVectorTimestampExpressions {
     batch.cols[0].isNull[0] = true;
     verifyUDFUnixTimeStamp(batch, testType);
 
+    batch = getVectorizedRowBatch(new long[] {0}, 1, testType);
+    batch.cols[0].isRepeating = true;
+    batch.selectedInUse = true;
+    batch.selected = new int[] {42};
+    verifyUDFUnixTimeStamp(batch, testType);
+    batch.cols[0].noNulls = false;
+    batch.cols[0].isNull[0] = true;
+
+    verifyUDFUnixTimeStamp(batch, testType);
     batch = getVectorizedRandomRowBatch(200, VectorizedRowBatch.DEFAULT_SIZE, testType);
     verifyUDFUnixTimeStamp(batch, testType);
     TestVectorizedRowBatch.addRandomNulls(batch.cols[0]);
@@ -829,6 +892,15 @@ public class TestVectorTimestampExpressions {
 
     batch = getVectorizedRowBatch(new long[] {0}, 1, testType);
     batch.cols[0].isRepeating = true;
+    verifyUDFWeekOfYear(batch, testType);
+    batch.cols[0].noNulls = false;
+    batch.cols[0].isNull[0] = true;
+    verifyUDFWeekOfYear(batch, testType);
+
+    batch = getVectorizedRowBatch(new long[] {0}, 1, testType);
+    batch.cols[0].isRepeating = true;
+    batch.selectedInUse = true;
+    batch.selected = new int[] {42};
     verifyUDFWeekOfYear(batch, testType);
     batch.cols[0].noNulls = false;
     batch.cols[0].isNull[0] = true;

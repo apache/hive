@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.vectorized.execution.enabled=false;
 
 drop table if exists t1_staging;

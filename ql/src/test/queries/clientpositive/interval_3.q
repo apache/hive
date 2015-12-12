@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 -- where clause
 select
   l_orderkey, l_shipdate, l_receiptdate

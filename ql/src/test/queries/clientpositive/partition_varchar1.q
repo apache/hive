@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 drop table partition_varchar_1;
 
 create table partition_varchar_1 (key string, value varchar(20)) partitioned by (dt varchar(10), region int);

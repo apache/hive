@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.cbo.returnpath.hiveop=true;
 set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.LineageLogger;
 

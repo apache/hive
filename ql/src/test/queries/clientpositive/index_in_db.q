@@ -11,3 +11,6 @@ create index id_index on table testtb (id) as 'COMPACT' WITH DEFERRED REBUILD  i
 
 use default;
 select * from index_test_db.testtb where id>2;
+
+use index_test_db;
+drop index id_index on testtb;

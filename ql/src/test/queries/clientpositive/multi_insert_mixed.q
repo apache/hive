@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 create table src_multi1 like src;
 create table src_multi2 like src;
 create table src_multi3 like src;

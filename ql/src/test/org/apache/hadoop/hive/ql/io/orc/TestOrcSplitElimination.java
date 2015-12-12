@@ -29,7 +29,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -121,7 +121,7 @@ public class TestOrcSplitElimination {
     childExpr.add(col);
     childExpr.add(con);
     ExprNodeGenericFuncDesc en = new ExprNodeGenericFuncDesc(inspector, udf, childExpr);
-    String sargStr = Utilities.serializeExpression(en);
+    String sargStr = SerializationUtilities.serializeExpression(en);
     conf.set("hive.io.filter.expr.serialized", sargStr);
     InputSplit[] splits = in.getSplits(conf, 1);
     assertEquals(5, splits.length);
@@ -129,7 +129,7 @@ public class TestOrcSplitElimination {
     con = new ExprNodeConstantDesc(1);
     childExpr.set(1, con);
     en = new ExprNodeGenericFuncDesc(inspector, udf, childExpr);
-    sargStr = Utilities.serializeExpression(en);
+    sargStr = SerializationUtilities.serializeExpression(en);
     conf.set("hive.io.filter.expr.serialized", sargStr);
     splits = in.getSplits(conf, 1);
     assertEquals(0, splits.length);
@@ -137,7 +137,7 @@ public class TestOrcSplitElimination {
     con = new ExprNodeConstantDesc(2);
     childExpr.set(1, con);
     en = new ExprNodeGenericFuncDesc(inspector, udf, childExpr);
-    sargStr = Utilities.serializeExpression(en);
+    sargStr = SerializationUtilities.serializeExpression(en);
     conf.set("hive.io.filter.expr.serialized", sargStr);
     splits = in.getSplits(conf, 1);
     assertEquals(1, splits.length);
@@ -145,7 +145,7 @@ public class TestOrcSplitElimination {
     con = new ExprNodeConstantDesc(5);
     childExpr.set(1, con);
     en = new ExprNodeGenericFuncDesc(inspector, udf, childExpr);
-    sargStr = Utilities.serializeExpression(en);
+    sargStr = SerializationUtilities.serializeExpression(en);
     conf.set("hive.io.filter.expr.serialized", sargStr);
     splits = in.getSplits(conf, 1);
     assertEquals(2, splits.length);
@@ -153,7 +153,7 @@ public class TestOrcSplitElimination {
     con = new ExprNodeConstantDesc(13);
     childExpr.set(1, con);
     en = new ExprNodeGenericFuncDesc(inspector, udf, childExpr);
-    sargStr = Utilities.serializeExpression(en);
+    sargStr = SerializationUtilities.serializeExpression(en);
     conf.set("hive.io.filter.expr.serialized", sargStr);
     splits = in.getSplits(conf, 1);
     assertEquals(3, splits.length);
@@ -161,7 +161,7 @@ public class TestOrcSplitElimination {
     con = new ExprNodeConstantDesc(29);
     childExpr.set(1, con);
     en = new ExprNodeGenericFuncDesc(inspector, udf, childExpr);
-    sargStr = Utilities.serializeExpression(en);
+    sargStr = SerializationUtilities.serializeExpression(en);
     conf.set("hive.io.filter.expr.serialized", sargStr);
     splits = in.getSplits(conf, 1);
     assertEquals(4, splits.length);
@@ -169,7 +169,7 @@ public class TestOrcSplitElimination {
     con = new ExprNodeConstantDesc(70);
     childExpr.set(1, con);
     en = new ExprNodeGenericFuncDesc(inspector, udf, childExpr);
-    sargStr = Utilities.serializeExpression(en);
+    sargStr = SerializationUtilities.serializeExpression(en);
     conf.set("hive.io.filter.expr.serialized", sargStr);
     splits = in.getSplits(conf, 1);
     assertEquals(5, splits.length);
@@ -199,7 +199,7 @@ public class TestOrcSplitElimination {
     childExpr.add(col);
     childExpr.add(con);
     ExprNodeGenericFuncDesc en = new ExprNodeGenericFuncDesc(inspector, udf, childExpr);
-    String sargStr = Utilities.serializeExpression(en);
+    String sargStr = SerializationUtilities.serializeExpression(en);
     conf.set("hive.io.filter.expr.serialized", sargStr);
     InputSplit[] splits = in.getSplits(conf, 1);
     assertEquals(2, splits.length);
@@ -207,7 +207,7 @@ public class TestOrcSplitElimination {
     con = new ExprNodeConstantDesc(0);
     childExpr.set(1, con);
     en = new ExprNodeGenericFuncDesc(inspector, udf, childExpr);
-    sargStr = Utilities.serializeExpression(en);
+    sargStr = SerializationUtilities.serializeExpression(en);
     conf.set("hive.io.filter.expr.serialized", sargStr);
     splits = in.getSplits(conf, 1);
     // no stripes satisfies the condition
@@ -216,7 +216,7 @@ public class TestOrcSplitElimination {
     con = new ExprNodeConstantDesc(2);
     childExpr.set(1, con);
     en = new ExprNodeGenericFuncDesc(inspector, udf, childExpr);
-    sargStr = Utilities.serializeExpression(en);
+    sargStr = SerializationUtilities.serializeExpression(en);
     conf.set("hive.io.filter.expr.serialized", sargStr);
     splits = in.getSplits(conf, 1);
     // only first stripe will satisfy condition and hence single split
@@ -225,7 +225,7 @@ public class TestOrcSplitElimination {
     con = new ExprNodeConstantDesc(5);
     childExpr.set(1, con);
     en = new ExprNodeGenericFuncDesc(inspector, udf, childExpr);
-    sargStr = Utilities.serializeExpression(en);
+    sargStr = SerializationUtilities.serializeExpression(en);
     conf.set("hive.io.filter.expr.serialized", sargStr);
     splits = in.getSplits(conf, 1);
     // first stripe will satisfy the predicate and will be a single split, last stripe will be a
@@ -235,7 +235,7 @@ public class TestOrcSplitElimination {
     con = new ExprNodeConstantDesc(13);
     childExpr.set(1, con);
     en = new ExprNodeGenericFuncDesc(inspector, udf, childExpr);
-    sargStr = Utilities.serializeExpression(en);
+    sargStr = SerializationUtilities.serializeExpression(en);
     conf.set("hive.io.filter.expr.serialized", sargStr);
     splits = in.getSplits(conf, 1);
     // first 2 stripes will satisfy the predicate and merged to single split, last stripe will be a
@@ -245,7 +245,7 @@ public class TestOrcSplitElimination {
     con = new ExprNodeConstantDesc(29);
     childExpr.set(1, con);
     en = new ExprNodeGenericFuncDesc(inspector, udf, childExpr);
-    sargStr = Utilities.serializeExpression(en);
+    sargStr = SerializationUtilities.serializeExpression(en);
     conf.set("hive.io.filter.expr.serialized", sargStr);
     splits = in.getSplits(conf, 1);
     // first 3 stripes will satisfy the predicate and merged to single split, last stripe will be a
@@ -255,7 +255,7 @@ public class TestOrcSplitElimination {
     con = new ExprNodeConstantDesc(70);
     childExpr.set(1, con);
     en = new ExprNodeGenericFuncDesc(inspector, udf, childExpr);
-    sargStr = Utilities.serializeExpression(en);
+    sargStr = SerializationUtilities.serializeExpression(en);
     conf.set("hive.io.filter.expr.serialized", sargStr);
     splits = in.getSplits(conf, 1);
     // first 2 stripes will satisfy the predicate and merged to single split, last two stripe will
@@ -304,7 +304,7 @@ public class TestOrcSplitElimination {
     childExpr2.add(en1);
     ExprNodeGenericFuncDesc en2 = new ExprNodeGenericFuncDesc(inspector, udf2, childExpr2);
 
-    String sargStr = Utilities.serializeExpression(en2);
+    String sargStr = SerializationUtilities.serializeExpression(en2);
     conf.set("hive.io.filter.expr.serialized", sargStr);
     InputSplit[] splits = in.getSplits(conf, 1);
     assertEquals(2, splits.length);
@@ -321,7 +321,7 @@ public class TestOrcSplitElimination {
     childExpr2.set(1, en1);
     en2 = new ExprNodeGenericFuncDesc(inspector, udf2, childExpr2);
 
-    sargStr = Utilities.serializeExpression(en2);
+    sargStr = SerializationUtilities.serializeExpression(en2);
     conf.set("hive.io.filter.expr.serialized", sargStr);
     splits = in.getSplits(conf, 1);
     // no stripe will satisfy the predicate
@@ -339,7 +339,7 @@ public class TestOrcSplitElimination {
     childExpr2.set(1, en1);
     en2 = new ExprNodeGenericFuncDesc(inspector, udf2, childExpr2);
 
-    sargStr = Utilities.serializeExpression(en2);
+    sargStr = SerializationUtilities.serializeExpression(en2);
     conf.set("hive.io.filter.expr.serialized", sargStr);
     splits = in.getSplits(conf, 1);
     // only first stripe will satisfy condition and hence single split
@@ -358,7 +358,7 @@ public class TestOrcSplitElimination {
     childExpr2.set(1, en1);
     en2 = new ExprNodeGenericFuncDesc(inspector, udf2, childExpr2);
 
-    sargStr = Utilities.serializeExpression(en2);
+    sargStr = SerializationUtilities.serializeExpression(en2);
     conf.set("hive.io.filter.expr.serialized", sargStr);
     splits = in.getSplits(conf, 1);
     // first two stripes will satisfy condition and hence single split
@@ -378,7 +378,7 @@ public class TestOrcSplitElimination {
     childExpr2.set(1, en1);
     en2 = new ExprNodeGenericFuncDesc(inspector, udf2, childExpr2);
 
-    sargStr = Utilities.serializeExpression(en2);
+    sargStr = SerializationUtilities.serializeExpression(en2);
     conf.set("hive.io.filter.expr.serialized", sargStr);
     splits = in.getSplits(conf, 1);
     // only second stripes will satisfy condition and hence single split

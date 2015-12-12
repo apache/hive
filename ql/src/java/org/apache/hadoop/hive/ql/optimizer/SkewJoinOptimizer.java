@@ -190,7 +190,7 @@ public class SkewJoinOptimizer implements Transform {
 
       // Update the topOps appropriately
       Map<String, Operator<? extends OperatorDesc>> topOps = getTopOps(joinOpClone);
-      Map<String, Operator<? extends OperatorDesc>> origTopOps = parseContext.getTopOps();
+      Map<String, TableScanOperator> origTopOps = parseContext.getTopOps();
 
       for (Entry<String, Operator<? extends OperatorDesc>> topOp : topOps.entrySet()) {
         TableScanOperator tso = (TableScanOperator) topOp.getValue();
@@ -283,7 +283,7 @@ public class SkewJoinOptimizer implements Transform {
      * @param op The join operator being optimized
      * @param tableScanOpsForJoin table scan operators which are parents of the join operator
      * @return map<join keys intersection skewedkeys, list of skewed values>.
-     * @throws SemanticException 
+     * @throws SemanticException
      */
     private Map<List<ExprNodeDesc>, List<List<String>>>
       getSkewedValues(
@@ -406,7 +406,7 @@ public class SkewJoinOptimizer implements Transform {
             return tsOp;
           }
         }
-        if ((op.getParentOperators() == null) || (op.getParentOperators().isEmpty()) || 
+        if ((op.getParentOperators() == null) || (op.getParentOperators().isEmpty()) ||
             (op.getParentOperators().size() > 1)) {
           return null;
         }

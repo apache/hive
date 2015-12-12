@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.test.mode=true;
 set hive.test.mode.prefix=;
 set hive.test.mode.nosamplelist=replsrc,repldst,repldst_md;

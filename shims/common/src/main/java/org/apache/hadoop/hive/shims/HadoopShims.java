@@ -488,19 +488,6 @@ public interface HadoopShims {
     public void releaseBuffer(ByteBuffer buffer);
   }
 
-  public enum DirectCompressionType {
-    NONE,
-    ZLIB_NOHEADER,
-    ZLIB,
-    SNAPPY,
-  };
-
-  public interface DirectDecompressorShim {
-    public void decompress(ByteBuffer src, ByteBuffer dst) throws IOException;
-  }
-
-  public DirectDecompressorShim getDirectDecompressor(DirectCompressionType codec);
-
   /**
    * Get configuration from JobContext
    */

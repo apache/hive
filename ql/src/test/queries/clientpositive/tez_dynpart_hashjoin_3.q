@@ -4,7 +4,7 @@ set hive.optimize.limitjointranspose.reductiontuples=100;
 set hive.explain.user=false;
 set hive.auto.convert.join=false;
 set hive.optimize.dynamic.partition.hashjoin=false;
-
+set hive.mapred.mode=nonstrict;
 explain
 select a.*
 from alltypesorc a left outer join src b

@@ -28,7 +28,6 @@ import org.apache.hadoop.hive.ql.exec.PTFUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.TableSample;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -71,7 +70,6 @@ public class TableScanDesc extends AbstractOperatorDesc {
    */
   private boolean gatherStats;
   private boolean statsReliable;
-  private int maxStatsKeyPrefixLength = -1;
   private String tmpStatsDir;
 
   private ExprNodeGenericFuncDesc filterExpr;
@@ -254,14 +252,6 @@ public class TableScanDesc extends AbstractOperatorDesc {
 
   public void setStatsReliable(boolean statsReliable) {
     this.statsReliable = statsReliable;
-  }
-
-  public int getMaxStatsKeyPrefixLength() {
-    return maxStatsKeyPrefixLength;
-  }
-
-  public void setMaxStatsKeyPrefixLength(int maxStatsKeyPrefixLength) {
-    this.maxStatsKeyPrefixLength = maxStatsKeyPrefixLength;
   }
 
   public void setRowLimit(int rowLimit) {

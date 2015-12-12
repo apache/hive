@@ -240,6 +240,16 @@ public class HBaseStore implements RawStore {
   }
 
   @Override
+  public int getDatabaseCount() throws MetaException {
+    try {
+      return getHBase().getDatabaseCount();
+    } catch (IOException e) {
+      LOG.error("Unable to get database count", e);
+      throw new MetaException("Error scanning databases");
+    }
+  }
+
+  @Override
   public boolean createType(Type type) {
     throw new UnsupportedOperationException();
   }
@@ -558,6 +568,16 @@ public class HBaseStore implements RawStore {
   @Override
   public List<String> getAllTables(String dbName) throws MetaException {
     return getTables(dbName, null);
+  }
+
+  @Override
+  public int getTableCount() throws MetaException {
+    try {
+      return getHBase().getTableCount();
+    } catch (IOException e) {
+      LOG.error("Unable to get table count", e);
+      throw new MetaException("Error scanning tables");
+    }
   }
 
   @Override
@@ -881,6 +901,16 @@ public class HBaseStore implements RawStore {
    * role), but we also have to remove all the privileges associated with that role directly.
    * That means a walk of the DBS table and of the TBLS table.
    */
+
+  @Override
+  public int getPartitionCount() throws MetaException {
+    try {
+      return getHBase().getPartitionCount();
+    } catch (IOException e) {
+      LOG.error("Unable to get partition count", e);
+      throw new MetaException("Error scanning partitions");
+    }
+  }
 
   @Override
   public boolean addRole(String roleName, String ownerName) throws InvalidObjectException,

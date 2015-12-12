@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 create table dummy(i int);
 insert into table dummy values (1);

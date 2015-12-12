@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Decimal;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -43,6 +44,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.optimizer.stats.annotation.StatsRulesProcFactory;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.ColStatistics.Range;
@@ -54,6 +56,9 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.Statistics.State;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
+import org.apache.hadoop.hive.ql.udf.generic.NDV;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
@@ -85,11 +90,13 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableTimestamp
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.io.BytesWritable;
+import org.apache.hive.common.util.AnnotationUtils;
 import org.apache.tez.mapreduce.hadoop.MRJobConfig;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -1247,7 +1254,7 @@ public class StatsUtils {
       // null projection
       if (encd.getValue() == null) {
         colName = encd.getName();
-        colType = "null";
+        colType = serdeConstants.VOID_TYPE_NAME;
         numNulls = numRows;
       } else {
         colName = encd.getName();
@@ -1261,14 +1268,14 @@ public class StatsUtils {
       ExprNodeGenericFuncDesc engfd = (ExprNodeGenericFuncDesc) end;
       colName = engfd.getName();
       colType = engfd.getTypeString();
-      countDistincts = numRows;
+      countDistincts = getNDVFor(engfd, numRows, parentStats);
       oi = engfd.getWritableObjectInspector();
     } else if (end instanceof ExprNodeColumnListDesc) {
 
       // column list
       ExprNodeColumnListDesc encd = (ExprNodeColumnListDesc) end;
       colName = Joiner.on(",").join(encd.getCols());
-      colType = "array";
+      colType = serdeConstants.LIST_TYPE_NAME;
       countDistincts = numRows;
       oi = encd.getWritableObjectInspector();
     } else if (end instanceof ExprNodeFieldDesc) {
@@ -1304,6 +1311,45 @@ public class StatsUtils {
 
     return colStats;
   }
+
+
+  public static Long addWithExpDecay (List<Long> distinctVals) {
+    // Exponential back-off for NDVs.
+    // 1) Descending order sort of NDVs
+    // 2) denominator = NDV1 * (NDV2 ^ (1/2)) * (NDV3 ^ (1/4))) * ....
+    Collections.sort(distinctVals, Collections.reverseOrder());
+
+    long denom = distinctVals.get(0);
+    for (int i = 1; i < distinctVals.size(); i++) {
+      denom = (long) (denom * Math.pow(distinctVals.get(i), 1.0 / (1 << i)));
+    }
+
+    return denom;
+  }
+
+  private static long getNDVFor(ExprNodeGenericFuncDesc engfd, long numRows, Statistics parentStats) {
+
+    GenericUDF udf = engfd.getGenericUDF();
+    if (!FunctionRegistry.isDeterministic(udf)){
+      return numRows;
+    }
+    List<Long> ndvs = Lists.newArrayList();
+    Class<?> udfClass = udf instanceof GenericUDFBridge ? ((GenericUDFBridge) udf).getUdfClass() : udf.getClass();
+    NDV ndv = AnnotationUtils.getAnnotation(udfClass, NDV.class);
+    long udfNDV = Long.MAX_VALUE;
+    if (ndv != null) {
+      udfNDV = ndv.maxNdv();
+    } else {
+      for (String col : engfd.getCols()) {
+        ColStatistics stats = parentStats.getColumnStatisticsFromColName(col);
+        if (stats != null) {
+          ndvs.add(stats.getCountDistint());
+        }
+      }
+    }
+    long countDistincts = ndvs.isEmpty() ? numRows : addWithExpDecay(ndvs);
+    return Collections.min(Lists.newArrayList(countDistincts, udfNDV, numRows));
+    }
 
   /**
    * Get number of rows of a give table

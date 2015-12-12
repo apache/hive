@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 
 
 create table partition_vs_table(key string, value string) partitioned by (ds string);
