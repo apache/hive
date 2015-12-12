@@ -216,7 +216,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     @SuppressWarnings("unchecked")
     LlapIo<VectorizedRowBatch> llapIo = LlapProxy.getIo();
     if (llapIo == null) {
-      LOG.info("Not using LLAP because IO is not initialized");
+      LOG.info("Not using LLAP IO because it is not initialized");
       return inputFormat;
     }
     return castInputFormat(llapIo.getInputFormat(inputFormat));

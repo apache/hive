@@ -39,7 +39,11 @@ public class HdfsUtils {
     if (fileSystem instanceof DistributedFileSystem) {
       return SHIMS.getFileId(fileSystem, pathStr);
     }
-    if (!allowSynthetic) return null;
+    if (!allowSynthetic) {
+      LOG.warn("Cannot get unique file ID from "
+        + fileSystem.getClass().getSimpleName() + "; returning null");
+      return null;
+    }
     // If we are not on DFS, we just hash the file name + size and hope for the best.
     // TODO: we assume it only happens in tests. Fix?
     int nameHash = pathStr.hashCode();
@@ -50,7 +54,7 @@ public class HdfsUtils {
         combinedHash = modTimeHash ^ fileSizeHash;
     long id = (((long)nameHash & 0xffffffffL) << 32) | ((long)combinedHash & 0xffffffffL);
     LOG.warn("Cannot get unique file ID from "
-        + fileSystem.getClass().getSimpleName() + "; using " + id + "(" + pathStr
+        + fileSystem.getClass().getSimpleName() + "; using " + id + " (" + pathStr
         + "," + nameHash + "," + fileSize + ")");
     return id;
   }
