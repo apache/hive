@@ -231,11 +231,11 @@ STAGE PLANS:
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -246,7 +246,7 @@ STAGE PLANS:
                         input vertices:
                           0 Map 1
                         Position of Big Table: 1
-                        Statistics: Num rows: 63 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 127 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
                         HybridGraceHashJoin: true
                         Group By Operator
                           aggregations: count()
@@ -551,11 +551,11 @@ STAGE PLANS:
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -566,7 +566,7 @@ STAGE PLANS:
                         input vertices:
                           0 Map 1
                         Position of Big Table: 1
-                        Statistics: Num rows: 63 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 127 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
                         HybridGraceHashJoin: true
                         Group By Operator
                           aggregations: count()
@@ -866,7 +866,7 @@ STAGE PLANS:
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
@@ -877,7 +877,7 @@ STAGE PLANS:
                       input vertices:
                         0 Map 1
                       Position of Big Table: 1
-                      Statistics: Num rows: 63 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 127 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
                       HybridGraceHashJoin: true
                       Group By Operator
                         aggregations: count()
@@ -1192,12 +1192,12 @@ STAGE PLANS:
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
                            Inner Join 0 to 2
-                      Estimated key counts: Map 1 => 1, Map 4 => 58
+                      Estimated key counts: Map 1 => 1, Map 4 => 116
                       keys:
                         0 key (type: string)
                         1 key (type: string)
@@ -1206,7 +1206,7 @@ STAGE PLANS:
                         0 Map 1
                         2 Map 4
                       Position of Big Table: 1
-                      Statistics: Num rows: 127 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 255 Data size: 25572 Basic stats: COMPLETE Column stats: NONE
                       HybridGraceHashJoin: true
                       Group By Operator
                         aggregations: count()
@@ -1328,12 +1328,12 @@ STAGE PLANS:
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: string)
                       sort order: +
                       Map-reduce partition columns: key (type: string)
-                      Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
                       tag: 2
                       auto parallelism: true
             Path -> Alias:

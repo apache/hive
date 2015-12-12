@@ -47,10 +47,10 @@ STAGE PLANS:
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: '10' (type: string), y&y (type: string), 'a' (type: string)
-                outputColumnNames: _col0, _col1, _col2
+                outputColumnNames: x+1, y&y, !@#$%^&*()_q
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                  keys: x+1 (type: string), y&y (type: string), !@#$%^&*()_q (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE

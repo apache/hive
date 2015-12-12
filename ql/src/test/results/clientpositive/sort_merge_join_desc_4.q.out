@@ -79,7 +79,7 @@ STAGE PLANS:
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key is not null and value is not null) and (key < 10)) (type: boolean)
-              Statistics: Num rows: 41 Data size: 435 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 key (type: string), value (type: string)
@@ -93,14 +93,14 @@ STAGE PLANS:
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key is not null and value is not null) and (key < 10)) (type: boolean)
-              Statistics: Num rows: 41 Data size: 435 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
                 keys:
                   0 key (type: string), value (type: string)
                   1 key (type: string), value (type: string)
-                Statistics: Num rows: 45 Data size: 478 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash

@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptPredicateList;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
@@ -26,6 +27,7 @@ import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.RelFactories;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
+import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
@@ -35,6 +37,7 @@ import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.util.Util;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotNull;
 import org.apache.hive.common.util.AnnotationUtils;
 
@@ -68,14 +71,21 @@ public class HiveJoinPushTransitivePredicatesRule extends RelOptRule {
 
   @Override public void onMatch(RelOptRuleCall call) {
     Join join = call.rel(0);
+
+    // Register that we have visited this operator in this rule
+    HiveRulesRegistry registry = call.getPlanner().getContext().unwrap(HiveRulesRegistry.class);
+    if (registry != null) {
+      registry.registerVisited(this, join);
+    }
+
     RelOptPredicateList preds = RelMetadataQuery.getPulledUpPredicates(join);
 
     RexBuilder rB = join.getCluster().getRexBuilder();
     RelNode lChild = call.rel(1);
     RelNode rChild = call.rel(2);
 
-    List<RexNode> leftPreds = getValidPreds(preds.leftInferredPredicates, lChild.getRowType().getFieldList());
-    List<RexNode> rightPreds = getValidPreds(preds.rightInferredPredicates, rChild.getRowType().getFieldList());
+    List<RexNode> leftPreds = getValidPreds(join.getCluster(), lChild, preds.leftInferredPredicates, lChild.getRowType());
+    List<RexNode> rightPreds = getValidPreds(join.getCluster(), rChild, preds.rightInferredPredicates, rChild.getRowType());
 
     if (leftPreds.isEmpty() && rightPreds.isEmpty()) {
       return;
@@ -97,11 +107,17 @@ public class HiveJoinPushTransitivePredicatesRule extends RelOptRule {
         lChild, rChild, join.getJoinType(), join.isSemiJoinDone());
     call.getPlanner().onCopy(join, newRel);
 
+    // We register new Join rel so we do not fire the rule on them again
+    if (registry != null) {
+      registry.registerVisited(this, newRel);
+    }
+
     call.transformTo(newRel);
   }
 
-  private ImmutableList<RexNode> getValidPreds (List<RexNode> rexs, List<RelDataTypeField> types) {
-    InputRefValidator validator = new InputRefValidator(types);
+  private ImmutableList<RexNode> getValidPreds(RelOptCluster cluster, RelNode rn,
+      List<RexNode> rexs, RelDataType rType) {
+    InputRefValidator validator = new InputRefValidator(rType.getFieldList());
     List<RexNode> valids = new ArrayList<RexNode>(rexs.size());
     for (RexNode rex : rexs) {
       try {
@@ -111,7 +127,25 @@ public class HiveJoinPushTransitivePredicatesRule extends RelOptRule {
         Util.swallow(e, null);
       }
     }
-    return ImmutableList.copyOf(valids);
+
+    return HiveCalciteUtil.getPredsNotPushedAlready(rn, valids);
+  }
+
+  private RexNode getTypeSafePred(RelOptCluster cluster, RexNode rex, RelDataType rType) {
+    RexNode typeSafeRex = rex;
+    if ((typeSafeRex instanceof RexCall) && HiveCalciteUtil.isComparisonOp((RexCall) typeSafeRex)) {
+      RexBuilder rb = cluster.getRexBuilder();
+      List<RexNode> fixedPredElems = new ArrayList<RexNode>();
+      RelDataType commonType = cluster.getTypeFactory().leastRestrictive(
+          RexUtil.types(((RexCall) rex).getOperands()));
+      for (RexNode rn : ((RexCall) rex).getOperands()) {
+        fixedPredElems.add(rb.ensureType(commonType, rn, true));
+      }
+
+      typeSafeRex = rb.makeCall(((RexCall) typeSafeRex).getOperator(), fixedPredElems);
+    }
+
+    return typeSafeRex;
   }
 
   private static class InputRefValidator  extends RexVisitorImpl<Void> {

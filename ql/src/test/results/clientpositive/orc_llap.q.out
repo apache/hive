@@ -260,14 +260,14 @@ STAGE PLANS:
             Statistics: Num rows: 122880 Data size: 29079940 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((cint > 10) and cbigint is not null) (type: boolean)
-              Statistics: Num rows: 20480 Data size: 4846656 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 40960 Data size: 9693313 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: cint (type: int), csmallint (type: smallint), cbigint (type: bigint)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 20480 Data size: 4846656 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 40960 Data size: 9693313 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 20480 Data size: 4846656 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 40960 Data size: 9693313 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -330,14 +330,14 @@ STAGE PLANS:
             Statistics: Num rows: 122880 Data size: 29079940 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((cint > 10) and cbigint is not null) (type: boolean)
-              Statistics: Num rows: 20480 Data size: 4846656 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 40960 Data size: 9693313 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ctinyint (type: tinyint), csmallint (type: smallint), cint (type: int), cbigint (type: bigint), cfloat (type: float), cdouble (type: double), cstring1 (type: string), cstring2 (type: string), ctimestamp1 (type: timestamp), ctimestamp2 (type: timestamp), cboolean1 (type: boolean), cboolean2 (type: boolean)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
-                Statistics: Num rows: 20480 Data size: 4846656 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 40960 Data size: 9693313 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 20480 Data size: 4846656 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 40960 Data size: 9693313 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -561,11 +561,11 @@ STAGE PLANS:
             Statistics: Num rows: 122880 Data size: 29079940 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (cbigint is not null and csmallint is not null) (type: boolean)
-              Statistics: Num rows: 30720 Data size: 7269985 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 122880 Data size: 29079940 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: csmallint (type: smallint), cstring1 (type: string)
                 outputColumnNames: _col0, _col2
-                Statistics: Num rows: 30720 Data size: 7269985 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 122880 Data size: 29079940 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: smallint)
@@ -580,11 +580,11 @@ STAGE PLANS:
             Statistics: Num rows: 122880 Data size: 29079940 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (cbigint is not null and csmallint is not null) (type: boolean)
-              Statistics: Num rows: 30720 Data size: 7269985 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 122880 Data size: 29079940 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: csmallint (type: smallint), cstring2 (type: string)
                 outputColumnNames: _col0, _col2
-                Statistics: Num rows: 30720 Data size: 7269985 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 122880 Data size: 29079940 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -592,14 +592,14 @@ STAGE PLANS:
                     0 _col0 (type: smallint)
                     1 _col0 (type: smallint)
                   outputColumnNames: _col2, _col5
-                  Statistics: Num rows: 33792 Data size: 7996983 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 135168 Data size: 31987934 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col5 (type: string)
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 33792 Data size: 7996983 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 135168 Data size: 31987934 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 33792 Data size: 7996983 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 135168 Data size: 31987934 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -701,14 +701,14 @@ STAGE PLANS:
             Statistics: Num rows: 98779 Data size: 1580469 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((cint > 10) and cbigint is not null) (type: boolean)
-              Statistics: Num rows: 16463 Data size: 263408 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 32926 Data size: 526817 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: cint (type: int), csmallint (type: smallint), cbigint (type: bigint)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 16463 Data size: 263408 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 32926 Data size: 526817 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 16463 Data size: 263408 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 32926 Data size: 526817 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -771,14 +771,14 @@ STAGE PLANS:
             Statistics: Num rows: 4938 Data size: 1580469 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((cint > 10) and cbigint is not null) (type: boolean)
-              Statistics: Num rows: 823 Data size: 263411 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1646 Data size: 526823 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ctinyint (type: tinyint), csmallint (type: smallint), cint (type: int), cbigint (type: bigint), cfloat (type: float), cdouble (type: double), cstring1 (type: string), cstring2 (type: string), ctimestamp1 (type: timestamp), ctimestamp2 (type: timestamp), cboolean1 (type: boolean), cboolean2 (type: boolean)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
-                Statistics: Num rows: 823 Data size: 263411 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1646 Data size: 526823 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 823 Data size: 263411 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1646 Data size: 526823 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1002,11 +1002,11 @@ STAGE PLANS:
             Statistics: Num rows: 14111 Data size: 1580469 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (cbigint is not null and csmallint is not null) (type: boolean)
-              Statistics: Num rows: 3528 Data size: 395145 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 14111 Data size: 1580469 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: csmallint (type: smallint), cstring1 (type: string)
                 outputColumnNames: _col0, _col2
-                Statistics: Num rows: 3528 Data size: 395145 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 14111 Data size: 1580469 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: smallint)
@@ -1021,11 +1021,11 @@ STAGE PLANS:
             Statistics: Num rows: 14111 Data size: 1580469 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (cbigint is not null and csmallint is not null) (type: boolean)
-              Statistics: Num rows: 3528 Data size: 395145 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 14111 Data size: 1580469 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: csmallint (type: smallint), cstring2 (type: string)
                 outputColumnNames: _col0, _col2
-                Statistics: Num rows: 3528 Data size: 395145 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 14111 Data size: 1580469 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -1033,14 +1033,14 @@ STAGE PLANS:
                     0 _col0 (type: smallint)
                     1 _col0 (type: smallint)
                   outputColumnNames: _col2, _col5
-                  Statistics: Num rows: 3880 Data size: 434659 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 15522 Data size: 1738515 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col5 (type: string)
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 3880 Data size: 434659 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 15522 Data size: 1738515 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 3880 Data size: 434659 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 15522 Data size: 1738515 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

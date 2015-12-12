@@ -34,4 +34,8 @@ public class TraitsUtil {
   public static RelTraitSet getDefaultTraitSet(RelOptCluster cluster) {
     return cluster.traitSetOf(HiveRelNode.CONVENTION, RelCollations.EMPTY);
   }
+
+  public static RelTraitSet getDefaultTraitSet(RelOptCluster cluster, RelTraitSet traitsFromInput) {
+    return RelTraitSet.createEmpty().merge(traitsFromInput).merge(getDefaultTraitSet(cluster));
+  }
 }

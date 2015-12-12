@@ -20,7 +20,7 @@ FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-{"expr$0":498,"expr$1":"val_498"}	{"expr$0":498,"expr$1":"val_498"}
+{"expr$0":498,"expr$1":"val_498"}	{"expr$0":"98","expr$1":"val_98"}
 PREHOOK: query: SELECT max(struct(CAST(key as INT), value)),
        max(struct(key, value))
 FROM src
@@ -46,7 +46,7 @@ FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-{"expr$0":498,"expr$1":"val_498"}	{"expr$0":498,"expr$1":"val_498"}
+{"expr$0":498,"expr$1":"val_498"}	{"expr$0":"98","expr$1":"val_98"}
 PREHOOK: query: SELECT max(struct(CAST(key as INT), value)),
        max(struct(key, value))
 FROM src

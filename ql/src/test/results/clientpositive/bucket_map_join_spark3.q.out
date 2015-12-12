@@ -221,11 +221,11 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 15 Data size: 1583 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 29 Data size: 3062 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 15 Data size: 1583 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 29 Data size: 3062 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: int)
@@ -242,11 +242,11 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 28 Data size: 2958 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 55 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 28 Data size: 2958 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 55 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -255,17 +255,17 @@ STAGE PLANS:
                     1 _col0 (type: int)
                   outputColumnNames: _col0, _col1, _col3
                   Position of Big Table: 1
-                  Statistics: Num rows: 30 Data size: 3253 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 60 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: string), _col3 (type: string)
                     outputColumnNames: _col0, _col1, _col2
-                    Statistics: Num rows: 30 Data size: 3253 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 60 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
                       GlobalTableId: 1
 #### A masked pattern was here ####
                       NumFilesPerFileSink: 1
-                      Statistics: Num rows: 30 Data size: 3253 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 60 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
@@ -592,11 +592,11 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 15 Data size: 1583 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 29 Data size: 3062 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 15 Data size: 1583 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 29 Data size: 3062 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: int)
@@ -613,11 +613,11 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 28 Data size: 2958 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 55 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 28 Data size: 2958 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 55 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -626,17 +626,17 @@ STAGE PLANS:
                     1 _col0 (type: int)
                   outputColumnNames: _col0, _col1, _col3
                   Position of Big Table: 1
-                  Statistics: Num rows: 30 Data size: 3253 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 60 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: string), _col3 (type: string)
                     outputColumnNames: _col0, _col1, _col2
-                    Statistics: Num rows: 30 Data size: 3253 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 60 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
                       GlobalTableId: 1
 #### A masked pattern was here ####
                       NumFilesPerFileSink: 1
-                      Statistics: Num rows: 30 Data size: 3253 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 60 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat

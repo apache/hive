@@ -52,8 +52,12 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnListDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicListDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
@@ -337,8 +341,9 @@ public class StatsRulesProcFactory {
           }
         } else if (udf instanceof GenericUDFOPNot) {
           newNumRows = evaluateNotExpr(stats, pred, aspCtx, neededCols, fop);
+        } else if (udf instanceof GenericUDFOPNotNull) {
+          return evaluateNotNullExpr(stats, genFunc);
         } else {
-
           // single predicate condition
           newNumRows = evaluateChildExpr(stats, pred, aspCtx, neededCols, fop, evaluatedRowCount);
         }
@@ -443,6 +448,58 @@ public class StatsRulesProcFactory {
       return numRows / 2;
     }
 
+    private long evaluateNotNullExpr(Statistics parentStats, ExprNodeGenericFuncDesc pred) {
+      long noOfNulls = getMaxNulls(parentStats, pred);
+      long parentCardinality = parentStats.getNumRows();
+      long newPredCardinality = parentCardinality;
+
+      if (parentCardinality > noOfNulls) {
+        newPredCardinality = parentCardinality - noOfNulls;
+      } else {
+        LOG.error("Invalid column stats: No of nulls > cardinality");
+      }
+
+      return newPredCardinality;
+    }
+
+    private long getMaxNulls(Statistics stats, ExprNodeDesc pred) {
+      long tmpNoNulls = 0;
+      long maxNoNulls = 0;
+
+      if (pred instanceof ExprNodeColumnDesc) {
+        ColStatistics cs = stats.getColumnStatisticsFromColName(((ExprNodeColumnDesc) pred)
+            .getColumn());
+        if (cs != null) {
+          tmpNoNulls = cs.getNumNulls();
+        }
+      } else if (pred instanceof ExprNodeGenericFuncDesc || pred instanceof ExprNodeColumnListDesc) {
+        long noNullsOfChild = 0;
+        for (ExprNodeDesc childExpr : pred.getChildren()) {
+          noNullsOfChild = getMaxNulls(stats, childExpr);
+          if (noNullsOfChild > tmpNoNulls) {
+            tmpNoNulls = noNullsOfChild;
+          }
+        }
+      } else if (pred instanceof ExprNodeConstantDesc) {
+        if (ExprNodeDescUtils.isNullConstant(pred)) {
+          tmpNoNulls = stats.getNumRows();
+        } else {
+          tmpNoNulls = 0;
+        }
+      } else if (pred instanceof ExprNodeDynamicListDesc) {
+        tmpNoNulls = 0;
+      } else if (pred instanceof ExprNodeFieldDesc) {
+        // TODO Confirm this is safe
+        tmpNoNulls = getMaxNulls(stats, ((ExprNodeFieldDesc) pred).getDesc());
+      }
+
+      if (tmpNoNulls > maxNoNulls) {
+        maxNoNulls = tmpNoNulls;
+      }
+
+      return maxNoNulls;
+    }
+
     private long evaluateChildExpr(Statistics stats, ExprNodeDesc child,
         AnnotateStatsProcCtx aspCtx, List<String> neededCols,
         FilterOperator fop, long evaluatedRowCount) throws CloneNotSupportedException {
@@ -525,8 +582,7 @@ public class StatsRulesProcFactory {
             || udf instanceof GenericUDFOPLessThan) {
           return numRows / 3;
         } else if (udf instanceof GenericUDFOPNotNull) {
-          long newNumRows = evaluateColEqualsNullExpr(stats, genFunc);
-          return stats.getNumRows() - newNumRows;
+            return evaluateNotNullExpr(stats, genFunc);
         } else if (udf instanceof GenericUDFOPNull) {
           return evaluateColEqualsNullExpr(stats, genFunc);
         } else if (udf instanceof GenericUDFOPAnd || udf instanceof GenericUDFOPOr

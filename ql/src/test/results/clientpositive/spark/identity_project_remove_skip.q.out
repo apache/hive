@@ -35,19 +35,19 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((key is not null and (value = 'val_105')) and (key = '105')) (type: boolean)
-                    Statistics: Num rows: 62 Data size: 658 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      Statistics: Num rows: 62 Data size: 658 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: '105' (type: string)
                         sort order: +
-                        Statistics: Num rows: 62 Data size: 658 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Local Work:
               Map Reduce Local Work
             Reduce Operator Tree:
               Select Operator
-                Statistics: Num rows: 62 Data size: 658 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
                 Spark HashTable Sink Operator
                   keys:
                     0 '105' (type: string)

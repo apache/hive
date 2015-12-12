@@ -143,11 +143,11 @@ STAGE PLANS:
             Statistics: Num rows: 3 Data size: 294 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: c2 is not null (type: boolean)
-              Statistics: Num rows: 2 Data size: 196 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 294 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: c1 (type: int), c2 (type: char(10))
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 2 Data size: 196 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 294 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 _col1 (type: char(10))
@@ -161,11 +161,11 @@ STAGE PLANS:
             Statistics: Num rows: 3 Data size: 294 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: c2 is not null (type: boolean)
-              Statistics: Num rows: 2 Data size: 196 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 294 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: c1 (type: int), c2 (type: char(10))
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 2 Data size: 196 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 294 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -173,11 +173,11 @@ STAGE PLANS:
                     0 _col1 (type: char(10))
                     1 _col1 (type: char(10))
                   outputColumnNames: _col0, _col1, _col2, _col3
-                  Statistics: Num rows: 2 Data size: 215 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3 Data size: 323 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int)
                     sort order: +
-                    Statistics: Num rows: 2 Data size: 215 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3 Data size: 323 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col1 (type: char(10)), _col2 (type: int), _col3 (type: char(10))
       Execution mode: vectorized
       Local Work:
@@ -186,10 +186,10 @@ STAGE PLANS:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: char(10)), VALUE._col1 (type: int), VALUE._col2 (type: char(10))
           outputColumnNames: _col0, _col1, _col2, _col3
-          Statistics: Num rows: 2 Data size: 215 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 3 Data size: 323 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 2 Data size: 215 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 Data size: 323 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -243,11 +243,11 @@ STAGE PLANS:
             Statistics: Num rows: 3 Data size: 294 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: c2 is not null (type: boolean)
-              Statistics: Num rows: 2 Data size: 196 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 294 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: c1 (type: int), c2 (type: char(10))
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 2 Data size: 196 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 294 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 _col1 (type: char(20))
@@ -261,11 +261,11 @@ STAGE PLANS:
             Statistics: Num rows: 3 Data size: 324 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: c2 is not null (type: boolean)
-              Statistics: Num rows: 2 Data size: 216 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 324 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: c1 (type: int), c2 (type: char(20))
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 2 Data size: 216 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 324 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -273,11 +273,11 @@ STAGE PLANS:
                     0 _col1 (type: char(20))
                     1 _col1 (type: char(20))
                   outputColumnNames: _col0, _col1, _col2, _col3
-                  Statistics: Num rows: 2 Data size: 215 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3 Data size: 323 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int)
                     sort order: +
-                    Statistics: Num rows: 2 Data size: 215 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3 Data size: 323 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col1 (type: char(10)), _col2 (type: int), _col3 (type: char(20))
       Execution mode: vectorized
       Local Work:
@@ -286,10 +286,10 @@ STAGE PLANS:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: char(10)), VALUE._col1 (type: int), VALUE._col2 (type: char(20))
           outputColumnNames: _col0, _col1, _col2, _col3
-          Statistics: Num rows: 2 Data size: 215 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 3 Data size: 323 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 2 Data size: 215 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 Data size: 323 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -345,11 +345,11 @@ STAGE PLANS:
             Statistics: Num rows: 3 Data size: 273 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: c2 is not null (type: boolean)
-              Statistics: Num rows: 2 Data size: 182 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 273 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: c1 (type: int), c2 (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 2 Data size: 182 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 273 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 UDFToString(_col1) (type: string)
@@ -362,12 +362,12 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 3 Data size: 294 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: UDFToString(c2) is not null (type: boolean)
-              Statistics: Num rows: 2 Data size: 196 Basic stats: COMPLETE Column stats: NONE
+              predicate: (c2 is not null and UDFToString(c2) is not null) (type: boolean)
+              Statistics: Num rows: 3 Data size: 294 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: c1 (type: int), c2 (type: char(10))
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 2 Data size: 196 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 294 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -375,11 +375,11 @@ STAGE PLANS:
                     0 UDFToString(_col1) (type: string)
                     1 _col1 (type: string)
                   outputColumnNames: _col0, _col1, _col2, _col3
-                  Statistics: Num rows: 2 Data size: 215 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3 Data size: 323 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int)
                     sort order: +
-                    Statistics: Num rows: 2 Data size: 215 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3 Data size: 323 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col1 (type: char(10)), _col2 (type: int), _col3 (type: string)
       Execution mode: vectorized
       Local Work:
@@ -388,10 +388,10 @@ STAGE PLANS:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: char(10)), VALUE._col1 (type: int), VALUE._col2 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3
-          Statistics: Num rows: 2 Data size: 215 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 3 Data size: 323 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 2 Data size: 215 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 Data size: 323 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

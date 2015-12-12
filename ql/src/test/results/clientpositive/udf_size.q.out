@@ -39,11 +39,11 @@ STAGE PLANS:
           Statistics: Num rows: 11 Data size: 3070 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             predicate: (lint is not null and mstringstring is not null) (type: boolean)
-            Statistics: Num rows: 3 Data size: 837 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 11 Data size: 3070 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: size(lint) (type: int), size(lintstring) (type: int), size(mstringstring) (type: int), -1 (type: int)
               outputColumnNames: _col0, _col1, _col2, _col3
-              Statistics: Num rows: 3 Data size: 837 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 11 Data size: 3070 Basic stats: COMPLETE Column stats: NONE
               Limit
                 Number of rows: 1
                 Statistics: Num rows: 1 Data size: 279 Basic stats: COMPLETE Column stats: NONE

@@ -87,33 +87,33 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key is not null and value is not null) (type: boolean)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              predicate: (value is not null and key is not null) (type: boolean)
+              Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string), ds (type: string), hr (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: string)
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col2 (type: string), _col3 (type: string)
           TableScan
             alias: a
             Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key is not null and value is not null) (type: boolean)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              predicate: (value is not null and key is not null) (type: boolean)
+              Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string), ds (type: string), hr (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: string)
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col2 (type: string), _col3 (type: string)
       Reduce Operator Tree:
         Join Operator
@@ -123,14 +123,14 @@ STAGE PLANS:
             0 _col0 (type: string), _col1 (type: string)
             1 _col0 (type: string), _col1 (type: string)
           outputColumnNames: _col2, _col3, _col6, _col7
-          Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: _col2 (type: string), _col3 (type: string), _col6 (type: string), _col7 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

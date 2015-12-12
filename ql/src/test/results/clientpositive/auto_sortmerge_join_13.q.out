@@ -88,7 +88,7 @@ STAGE PLANS:
             Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
               Sorted Merge Bucket Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -266,7 +266,7 @@ STAGE PLANS:
             Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
               Sorted Merge Bucket Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -444,7 +444,7 @@ STAGE PLANS:
             Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
               Sorted Merge Bucket Map Join Operator
                 condition map:
                      Inner Join 0 to 1

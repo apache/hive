@@ -802,10 +802,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_hour
-                  filterExpr: ((((date = '2008-04-08') and (UDFToDouble(hour) = 11.0)) and ds is not null) and hr is not null) (type: boolean)
+                  filterExpr: ((((date = '2008-04-08') and (UDFToDouble(hour) = 11.0)) and hr is not null) and ds is not null) (type: boolean)
                   Statistics: Num rows: 4 Data size: 108 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((((date = '2008-04-08') and (UDFToDouble(hour) = 11.0)) and ds is not null) and hr is not null) (type: boolean)
+                    predicate: ((((date = '2008-04-08') and (UDFToDouble(hour) = 11.0)) and hr is not null) and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
@@ -924,7 +924,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: (ds is not null and hr is not null) (type: boolean)
+                  filterExpr: (hr is not null and ds is not null) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ds (type: string), hr (type: string)
@@ -939,10 +939,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_hour
-                  filterExpr: ((((date = '2008-04-08') and (UDFToDouble(hour) = 11.0)) and ds is not null) and hr is not null) (type: boolean)
+                  filterExpr: ((((date = '2008-04-08') and (UDFToDouble(hour) = 11.0)) and hr is not null) and ds is not null) (type: boolean)
                   Statistics: Num rows: 4 Data size: 108 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((((date = '2008-04-08') and (UDFToDouble(hour) = 11.0)) and ds is not null) and hr is not null) (type: boolean)
+                    predicate: ((((date = '2008-04-08') and (UDFToDouble(hour) = 11.0)) and hr is not null) and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
@@ -1284,28 +1284,28 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: UDFToDouble(hr) is not null (type: boolean)
+                  filterExpr: (hr is not null and UDFToDouble(hr) is not null) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: UDFToDouble(hr) is not null (type: boolean)
-                    Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: hr (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: UDFToDouble(_col0) (type: double)
                         sort order: +
                         Map-reduce partition columns: UDFToDouble(_col0) (type: double)
-                        Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_double_hour
-                  filterExpr: ((UDFToDouble(hour) = 11.0) and UDFToDouble(UDFToInteger((hr / 2.0))) is not null) (type: boolean)
+                  filterExpr: (((UDFToDouble(hour) = 11.0) and hr is not null) and UDFToDouble(UDFToInteger((hr / 2.0))) is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 14 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((UDFToDouble(hour) = 11.0) and UDFToDouble(UDFToInteger((hr / 2.0))) is not null) (type: boolean)
+                    predicate: (((UDFToDouble(hour) = 11.0) and hr is not null) and UDFToDouble(UDFToInteger((hr / 2.0))) is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: hr (type: double)
@@ -1339,7 +1339,7 @@ STAGE PLANS:
                 keys:
                   0 UDFToDouble(_col0) (type: double)
                   1 UDFToDouble(UDFToInteger((_col0 / 2.0))) (type: double)
-                Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -1413,16 +1413,16 @@ STAGE PLANS:
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (UDFToDouble(hr) * 2.0) is not null (type: boolean)
-                    Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: hr (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: (UDFToDouble(_col0) * 2.0) (type: double)
                         sort order: +
                         Map-reduce partition columns: (UDFToDouble(_col0) * 2.0) (type: double)
-                        Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -1464,7 +1464,7 @@ STAGE PLANS:
                 keys:
                   0 (UDFToDouble(_col0) * 2.0) (type: double)
                   1 _col0 (type: double)
-                Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -1534,28 +1534,28 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: UDFToDouble(hr) is not null (type: boolean)
+                  filterExpr: (hr is not null and UDFToDouble(hr) is not null) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: UDFToDouble(hr) is not null (type: boolean)
-                    Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: hr (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: UDFToDouble(_col0) (type: double)
                         sort order: +
                         Map-reduce partition columns: UDFToDouble(_col0) (type: double)
-                        Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_double_hour
-                  filterExpr: ((UDFToDouble(hour) = 11.0) and UDFToDouble(UDFToInteger((hr / 2.0))) is not null) (type: boolean)
+                  filterExpr: (((UDFToDouble(hour) = 11.0) and hr is not null) and UDFToDouble(UDFToInteger((hr / 2.0))) is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 14 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((UDFToDouble(hour) = 11.0) and UDFToDouble(UDFToInteger((hr / 2.0))) is not null) (type: boolean)
+                    predicate: (((UDFToDouble(hour) = 11.0) and hr is not null) and UDFToDouble(UDFToInteger((hr / 2.0))) is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: hr (type: double)
@@ -1574,7 +1574,7 @@ STAGE PLANS:
                 keys:
                   0 UDFToDouble(_col0) (type: double)
                   1 UDFToDouble(UDFToInteger((_col0 / 2.0))) (type: double)
-                Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -1644,20 +1644,20 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: (UDFToDouble(hr) * 2.0) is not null (type: boolean)
+                  filterExpr: (hr is not null and (UDFToDouble(hr) * 2.0) is not null) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (UDFToDouble(hr) * 2.0) is not null (type: boolean)
-                    Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: hr (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: (UDFToDouble(_col0) * 2.0) (type: double)
                         sort order: +
                         Map-reduce partition columns: (UDFToDouble(_col0) * 2.0) (type: double)
-                        Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -1684,7 +1684,7 @@ STAGE PLANS:
                 keys:
                   0 (UDFToDouble(_col0) * 2.0) (type: double)
                   1 _col0 (type: double)
-                Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -1771,24 +1771,24 @@ STAGE PLANS:
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: UDFToString((UDFToDouble(hr) * 2.0)) is not null (type: boolean)
-                    Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: hr (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: UDFToString((UDFToDouble(_col0) * 2.0)) (type: string)
                         sort order: +
                         Map-reduce partition columns: UDFToString((UDFToDouble(_col0) * 2.0)) (type: string)
-                        Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_double_hour
-                  filterExpr: ((UDFToDouble(hour) = 11.0) and UDFToString(hr) is not null) (type: boolean)
+                  filterExpr: (((UDFToDouble(hour) = 11.0) and hr is not null) and UDFToString(hr) is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 14 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((UDFToDouble(hour) = 11.0) and UDFToString(hr) is not null) (type: boolean)
+                    predicate: (((UDFToDouble(hour) = 11.0) and hr is not null) and UDFToString(hr) is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: hr (type: double)
@@ -1822,7 +1822,7 @@ STAGE PLANS:
                 keys:
                   0 UDFToString((UDFToDouble(_col0) * 2.0)) (type: string)
                   1 UDFToString(_col0) (type: string)
-                Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -1885,7 +1885,6 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 #### A masked pattern was here ####
 1000
-Warning: Shuffle Join MERGEJOIN[21][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: -- parent is reduce tasks
 EXPLAIN select count(*) from srcpart join (select ds as ds, ds as `date` from srcpart group by ds) s on (srcpart.ds = s.ds) where s.`date` = '2008-04-08'
 PREHOOK: type: QUERY
@@ -1909,13 +1908,17 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: (ds = '2008-04-08') (type: boolean)
-                  Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                  filterExpr: ds is not null (type: boolean)
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                    expressions: ds (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      sort order: 
-                      Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -1942,9 +1945,9 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 
-                  1 
-                Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -1975,11 +1978,26 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    sort order: 
+                Select Operator
+                  expressions: _col0 (type: string)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    keys: _col0 (type: string)
+                    mode: hash
+                    outputColumnNames: _col0
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Dynamic Partitioning Event Operator
+                      Target Input: srcpart
+                      Partition key expr: ds
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      Target column: ds
+                      Target Vertex: Map 1
 
   Stage: Stage-0
     Fetch Operator
@@ -1987,18 +2005,21 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[21][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select count(*) from srcpart join (select ds as ds, ds as `date` from srcpart group by ds) s on (srcpart.ds = s.ds) where s.`date` = '2008-04-08'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from srcpart join (select ds as ds, ds as `date` from srcpart group by ds) s on (srcpart.ds = s.ds) where s.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 1000
 PREHOOK: query: select count(*) from srcpart where ds = '2008-04-08'
@@ -2164,10 +2185,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_hour
-                  filterExpr: ((((date = '2008-04-08') and (UDFToDouble(hour) = 11.0)) and ds is not null) and hr is not null) (type: boolean)
+                  filterExpr: ((((date = '2008-04-08') and (UDFToDouble(hour) = 11.0)) and hr is not null) and ds is not null) (type: boolean)
                   Statistics: Num rows: 4 Data size: 108 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((((date = '2008-04-08') and (UDFToDouble(hour) = 11.0)) and ds is not null) and hr is not null) (type: boolean)
+                    predicate: ((((date = '2008-04-08') and (UDFToDouble(hour) = 11.0)) and hr is not null) and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
@@ -2604,7 +2625,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: (ds) IN (RS[14]) (type: boolean)
+                  filterExpr: (ds) IN (RS[12]) (type: boolean)
                   Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ds (type: string)
@@ -3896,10 +3917,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_hour
-                  filterExpr: ((((date = '2008-04-08') and (UDFToDouble(hour) = 11.0)) and ds is not null) and hr is not null) (type: boolean)
+                  filterExpr: ((((date = '2008-04-08') and (UDFToDouble(hour) = 11.0)) and hr is not null) and ds is not null) (type: boolean)
                   Statistics: Num rows: 4 Data size: 108 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((((date = '2008-04-08') and (UDFToDouble(hour) = 11.0)) and ds is not null) and hr is not null) (type: boolean)
+                    predicate: ((((date = '2008-04-08') and (UDFToDouble(hour) = 11.0)) and hr is not null) and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
@@ -4120,15 +4141,15 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: UDFToDouble(hr) is not null (type: boolean)
+                  filterExpr: (hr is not null and UDFToDouble(hr) is not null) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: UDFToDouble(hr) is not null (type: boolean)
-                    Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: hr (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -4137,7 +4158,7 @@ STAGE PLANS:
                           1 UDFToDouble(UDFToInteger((_col0 / 2.0))) (type: double)
                         input vertices:
                           1 Map 3
-                        Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                         HybridGraceHashJoin: true
                         Group By Operator
                           aggregations: count()
@@ -4152,10 +4173,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_double_hour
-                  filterExpr: ((UDFToDouble(hour) = 11.0) and UDFToDouble(UDFToInteger((hr / 2.0))) is not null) (type: boolean)
+                  filterExpr: (((UDFToDouble(hour) = 11.0) and hr is not null) and UDFToDouble(UDFToInteger((hr / 2.0))) is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 14 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((UDFToDouble(hour) = 11.0) and UDFToDouble(UDFToInteger((hr / 2.0))) is not null) (type: boolean)
+                    predicate: (((UDFToDouble(hour) = 11.0) and hr is not null) and UDFToDouble(UDFToInteger((hr / 2.0))) is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: hr (type: double)
@@ -4245,11 +4266,11 @@ STAGE PLANS:
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (UDFToDouble(hr) * 2.0) is not null (type: boolean)
-                    Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: hr (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -4258,7 +4279,7 @@ STAGE PLANS:
                           1 _col0 (type: double)
                         input vertices:
                           1 Map 3
-                        Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                         HybridGraceHashJoin: true
                         Group By Operator
                           aggregations: count()
@@ -4355,7 +4376,6 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 #### A masked pattern was here ####
 1000
-Warning: Map Join MAPJOIN[21][bigTable=?] in task 'Reducer 3' is a cross product
 PREHOOK: query: -- parent is reduce tasks
 EXPLAIN select count(*) from srcpart join (select ds as ds, ds as `date` from srcpart group by ds) s on (srcpart.ds = s.ds) where s.`date` = '2008-04-08'
 PREHOOK: type: QUERY
@@ -4378,13 +4398,17 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: (ds = '2008-04-08') (type: boolean)
-                  Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                  filterExpr: ds is not null (type: boolean)
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                    expressions: ds (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      sort order: 
-                      Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -4412,26 +4436,25 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  Map Join Operator
-                    condition map:
-                         Inner Join 0 to 1
-                    keys:
-                      0 
-                      1 
-                    input vertices:
-                      0 Map 1
-                    Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
-                    Group By Operator
-                      aggregations: count()
-                      mode: hash
-                      outputColumnNames: _col0
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col0 (type: string)
+                    1 _col0 (type: string)
+                  input vertices:
+                    0 Map 1
+                  Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
+                  HybridGraceHashJoin: true
+                  Group By Operator
+                    aggregations: count()
+                    mode: hash
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      sort order: 
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col0 (type: bigint)
+                      value expressions: _col0 (type: bigint)
         Reducer 4 
             Reduce Operator Tree:
               Group By Operator
@@ -4453,18 +4476,21 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[21][bigTable=?] in task 'Reducer 3' is a cross product
 PREHOOK: query: select count(*) from srcpart join (select ds as ds, ds as `date` from srcpart group by ds) s on (srcpart.ds = s.ds) where s.`date` = '2008-04-08'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from srcpart join (select ds as ds, ds as `date` from srcpart group by ds) s on (srcpart.ds = s.ds) where s.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 1000
 PREHOOK: query: select count(*) from srcpart where ds = '2008-04-08'
@@ -4775,7 +4801,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: (ds) IN (RS[14]) (type: boolean)
+                  filterExpr: (ds) IN (RS[12]) (type: boolean)
                   Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ds (type: string)
@@ -5281,11 +5307,11 @@ STAGE PLANS:
                   Statistics: Num rows: 2000 Data size: 188000 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: UDFToDouble(hr) is not null (type: boolean)
-                    Statistics: Num rows: 1000 Data size: 94000 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 188000 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), hr (type: int)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1000 Data size: 94000 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2000 Data size: 188000 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -5294,7 +5320,7 @@ STAGE PLANS:
                           1 _col0 (type: string), UDFToDouble(_col2) (type: double)
                         input vertices:
                           1 Map 3
-                        Statistics: Num rows: 1100 Data size: 103400 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2200 Data size: 206800 Basic stats: COMPLETE Column stats: NONE
                         HybridGraceHashJoin: true
                         Group By Operator
                           aggregations: count()
@@ -5309,48 +5335,48 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_hour
-                  filterExpr: (((((date = '2008-04-08') or (date = '2008-04-09')) and (UDFToDouble(hour) = 11.0)) and ds is not null) and UDFToDouble(hr) is not null) (type: boolean)
+                  filterExpr: (((((UDFToDouble(hour) = 11.0) and ((date = '2008-04-08') or (date = '2008-04-09'))) and hr is not null) and ds is not null) and UDFToDouble(hr) is not null) (type: boolean)
                   Statistics: Num rows: 4 Data size: 108 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((((date = '2008-04-08') or (date = '2008-04-09')) and (UDFToDouble(hour) = 11.0)) and ds is not null) and UDFToDouble(hr) is not null) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+                    predicate: (((((UDFToDouble(hour) = 11.0) and ((date = '2008-04-08') or (date = '2008-04-09'))) and hr is not null) and ds is not null) and UDFToDouble(hr) is not null) (type: boolean)
+                    Statistics: Num rows: 2 Data size: 54 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
                       outputColumnNames: _col0, _col2
-                      Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 54 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), UDFToDouble(_col2) (type: double)
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), UDFToDouble(_col2) (type: double)
-                        Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 54 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col0 (type: string)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 54 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           keys: _col0 (type: string)
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 2 Data size: 54 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
                             Target Input: srcpart_orc
                             Partition key expr: ds
-                            Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 2 Data size: 54 Basic stats: COMPLETE Column stats: NONE
                             Target column: ds
                             Target Vertex: Map 1
                       Select Operator
                         expressions: UDFToDouble(_col2) (type: double)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 54 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           keys: _col0 (type: double)
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 2 Data size: 54 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
                             Target Input: srcpart_orc
                             Partition key expr: UDFToDouble(hr)
-                            Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 2 Data size: 54 Basic stats: COMPLETE Column stats: NONE
                             Target column: hr
                             Target Vertex: Map 1
         Reducer 2 

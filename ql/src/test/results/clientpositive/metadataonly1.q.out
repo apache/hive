@@ -622,8 +622,8 @@ STAGE PLANS:
                   value expressions: _col0 (type: string)
                   auto parallelism: false
       Path -> Alias:
-        -mr-10006default.test1{ds=1} [$hdt$_1:a2]
-        -mr-10007default.test1{ds=2} [$hdt$_1:a2]
+        -mr-10006default.test1{ds=1} [$hdt$_1:$hdt$_1:a2]
+        -mr-10007default.test1{ds=2} [$hdt$_1:$hdt$_1:a2]
       Path -> Partition:
         -mr-10006default.test1{ds=1} 
           Partition
@@ -704,8 +704,8 @@ STAGE PLANS:
               name: default.test1
             name: default.test1
       Truncated Path -> Alias:
-        -mr-10006default.test1{ds=1} [$hdt$_1:a2]
-        -mr-10007default.test1{ds=2} [$hdt$_1:a2]
+        -mr-10006default.test1{ds=1} [$hdt$_1:$hdt$_1:a2]
+        -mr-10007default.test1{ds=2} [$hdt$_1:$hdt$_1:a2]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator

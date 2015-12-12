@@ -141,11 +141,11 @@ STAGE PLANS:
           Filter Operator
             isSamplingPred: false
             predicate: key is not null (type: boolean)
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), value (type: string), '2008-04-08' (type: string), hr (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
               ListSink
 
 PREHOOK: query: SELECT x.* FROM SRCPART x WHERE key IS NOT NULL AND ds = '2008-04-08'

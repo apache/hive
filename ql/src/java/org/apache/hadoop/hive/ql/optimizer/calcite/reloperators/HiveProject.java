@@ -50,6 +50,7 @@ public class HiveProject extends Project implements HiveRelNode {
   public static final ProjectFactory DEFAULT_PROJECT_FACTORY = new HiveProjectFactoryImpl();
 
   private final List<Integer>        virtualCols;
+  private boolean isSysnthetic;
 
   /**
    * Creates a HiveProject.
@@ -165,10 +166,14 @@ public class HiveProject extends Project implements HiveRelNode {
   }
 
   @Override
-  public Project copy(RelTraitSet traitSet, RelNode input, List<RexNode> exps,
-      RelDataType rowType) {
+  public Project copy(RelTraitSet traitSet, RelNode input, List<RexNode> exps, RelDataType rowType) {
     assert traitSet.containsIfApplicable(HiveRelNode.CONVENTION);
-    return new HiveProject(getCluster(), traitSet, input, exps, rowType, getFlags());
+    HiveProject hp = new HiveProject(getCluster(), traitSet, input, exps, rowType, getFlags());
+    if (this.isSysnthetic()) {
+      hp.setSynthetic();
+    }
+
+    return hp;
   }
 
   @Override
@@ -184,6 +189,16 @@ public class HiveProject extends Project implements HiveRelNode {
     return virtualCols;
   }
 
+  // TODO: this should come through RelBuilder to the constructor as opposed to
+  // set method. This requires calcite change
+  public void setSynthetic() {
+    this.isSysnthetic = true;
+  }
+
+  public boolean isSysnthetic() {
+    return isSysnthetic;
+  }
+
   /**
    * Implementation of {@link ProjectFactory} that returns
    * {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject}
@@ -196,9 +211,9 @@ public class HiveProject extends Project implements HiveRelNode {
         List<? extends RexNode> childExprs, List<String> fieldNames) {
       RelOptCluster cluster = child.getCluster();
       RelDataType rowType = RexUtil.createStructType(cluster.getTypeFactory(), childExprs, fieldNames);
+      RelTraitSet trait = TraitsUtil.getDefaultTraitSet(cluster, child.getTraitSet());
       RelNode project = HiveProject.create(cluster, child,
-          childExprs, rowType,
-          child.getTraitSet(), Collections.<RelCollation> emptyList());
+          childExprs, rowType, trait, Collections.<RelCollation> emptyList());
 
       return project;
     }

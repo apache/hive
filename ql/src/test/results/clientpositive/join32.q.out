@@ -124,11 +124,11 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 _col3 (type: string)
@@ -141,12 +141,12 @@ STAGE PLANS:
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: (value is not null and key is not null) (type: boolean)
-              Statistics: Num rows: 7 Data size: 53 Basic stats: COMPLETE Column stats: NONE
+              predicate: (key is not null and value is not null) (type: boolean)
+              Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 7 Data size: 53 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: string)
@@ -163,11 +163,11 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate: value is not null (type: boolean)
-              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: value (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -176,7 +176,7 @@ STAGE PLANS:
                     1 _col1 (type: string)
                   outputColumnNames: _col0, _col3
                   Position of Big Table: 0
-                  Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                   Map Join Operator
                     condition map:
                          Inner Join 0 to 1
@@ -185,17 +185,17 @@ STAGE PLANS:
                       1 _col0 (type: string)
                     outputColumnNames: _col0, _col3, _col6
                     Position of Big Table: 0
-                    Statistics: Num rows: 302 Data size: 3213 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 605 Data size: 6427 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col3 (type: string), _col0 (type: string), _col6 (type: string)
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 302 Data size: 3213 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 605 Data size: 6427 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
                         GlobalTableId: 1
 #### A masked pattern was here ####
                         NumFilesPerFileSink: 1
-                        Statistics: Num rows: 302 Data size: 3213 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 605 Data size: 6427 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat

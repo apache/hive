@@ -487,6 +487,14 @@ public class ExprNodeDescUtils {
     return true;
   }
 
+  public static boolean isNullConstant(ExprNodeDesc value) {
+    if ((value instanceof ExprNodeConstantDesc)
+        && ((ExprNodeConstantDesc) value).getValue() == null) {
+      return true;
+    }
+    return false;
+  }
+
   public static PrimitiveTypeInfo deriveMinArgumentCast(
       ExprNodeDesc childExpr, TypeInfo targetType) {
     assert targetType instanceof PrimitiveTypeInfo : "Not a primitive type" + targetType;
