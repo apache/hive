@@ -73,6 +73,7 @@ import org.apache.hadoop.hive.common.io.SortAndDigestPrintStream;
 import org.apache.hadoop.hive.common.io.SortPrintStream;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -254,11 +255,6 @@ public class QTestUtil {
     }
   }
 
-  public QTestUtil(String outDir, String logDir, String initScript, String cleanupScript) throws
-      Exception {
-    this(outDir, logDir, MiniClusterType.none, null, "0.20", initScript, cleanupScript);
-  }
-
   public String getOutputDirectory() {
     return outDir;
   }
@@ -341,12 +337,6 @@ public class QTestUtil {
     }
   }
 
-  public QTestUtil(String outDir, String logDir, MiniClusterType clusterType, String hadoopVer,
-                   String initScript, String cleanupScript)
-    throws Exception {
-    this(outDir, logDir, clusterType, null, hadoopVer, initScript, cleanupScript);
-  }
-
   private String getKeyProviderURI() {
     // Use the target directory if it is not specified
     String HIVE_ROOT = QTestUtil.ensurePathEndsInSlash(System.getProperty("hive.root"));
@@ -373,13 +363,8 @@ public class QTestUtil {
   }
 
   public QTestUtil(String outDir, String logDir, MiniClusterType clusterType,
-      String confDir, String hadoopVer, String initScript, String cleanupScript)
-    throws Exception {
-    this(outDir, logDir, clusterType, confDir, hadoopVer, initScript, cleanupScript, false);
-  }
-
-  public QTestUtil(String outDir, String logDir, MiniClusterType clusterType,
-      String confDir, String hadoopVer, String initScript, String cleanupScript, boolean useHBaseMetastore)
+      String confDir, String hadoopVer, String initScript, String cleanupScript,
+      boolean useHBaseMetastore, boolean withLlapIo)
     throws Exception {
     this.outDir = outDir;
     this.logDir = logDir;
@@ -452,6 +437,11 @@ public class QTestUtil {
     }
 
     initConf();
+    if (withLlapIo && clusterType == MiniClusterType.none) {
+      LOG.info("initializing llap IO");
+      LlapProxy.initializeLlapIo(conf);
+    }
+
 
     // Use the current directory if it is not specified
     String dataDir = conf.get("test.data.files");
@@ -1772,7 +1762,7 @@ public class QTestUtil {
     QTestUtil[] qt = new QTestUtil[qfiles.length];
     for (int i = 0; i < qfiles.length; i++) {
       qt[i] = new QTestUtil(resDir, logDir, MiniClusterType.none, null, "0.20",
-          defaultInitScript, defaultCleanupScript);
+          defaultInitScript, defaultCleanupScript, false, false);
       qt[i].addFile(qfiles[i]);
       qt[i].clearTestSideEffects();
     }

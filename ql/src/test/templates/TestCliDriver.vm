@@ -45,7 +45,7 @@ public class $className {
         hiveConfDir = HIVE_ROOT + hiveConfDir;
       }
       qt = new QTestUtil((HIVE_ROOT + "$resultsDir"), (HIVE_ROOT + "$logDir"), miniMR,
-      hiveConfDir, hadoopVer, initScript, cleanupScript, useHBaseMetastore);
+      hiveConfDir, hadoopVer, initScript, cleanupScript, useHBaseMetastore, true);
 
       // do a one time initialization
       qt.cleanUp();
