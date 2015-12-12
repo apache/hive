@@ -260,6 +260,14 @@ public final class OrcFile extends org.apache.orc.OrcFile {
       batchSize = maxSize;
       return this;
     }
+
+    ObjectInspector getInspector() {
+      return inspector;
+    }
+
+    int getBatchSize() {
+      return batchSize;
+    }
   }
 
   /**
@@ -297,17 +305,7 @@ public final class OrcFile extends org.apache.orc.OrcFile {
     FileSystem fs = opts.getFileSystem() == null ?
       path.getFileSystem(opts.getConfiguration()) : opts.getFileSystem();
 
-    return new WriterImpl(fs, path, opts.getConfiguration(), opts.inspector,
-                          opts.getSchema(),
-                          opts.getStripeSize(), opts.getCompress(),
-                          opts.getBufferSize(), opts.getRowIndexStride(),
-                          opts.getMemoryManager(), opts.getBlockPadding(),
-                          opts.getVersion(), opts.getCallback(),
-                          opts.getEncodingStrategy(),
-                          opts.getCompressionStrategy(),
-                          opts.getPaddingTolerance(), opts.getBlockSize(),
-                          opts.getBloomFilterColumns(),
-                          opts.getBloomFilterFpp(), opts.batchSize);
+    return new WriterImpl(fs, path, opts);
   }
 
   /**

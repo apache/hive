@@ -530,16 +530,7 @@ public class OrcFile {
     FileSystem fs = opts.getFileSystem() == null ?
         path.getFileSystem(opts.getConfiguration()) : opts.getFileSystem();
 
-    return new WriterImpl(fs, path, opts.getConfiguration(),
-        opts.getSchema(),
-        opts.getStripeSize(), opts.getCompress(),
-        opts.getBufferSize(), opts.getRowIndexStride(),
-        opts.getMemoryManager(), opts.getBlockPadding(),
-        opts.getVersion(), opts.getCallback(),
-        opts.getEncodingStrategy(),
-        opts.getCompressionStrategy(),
-        opts.getPaddingTolerance(), opts.getBlockSize(),
-        opts.getBloomFilterColumns(), opts.getBloomFilterFpp());
+    return new WriterImpl(fs, path, opts);
   }
 
 }

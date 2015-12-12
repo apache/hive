@@ -148,27 +148,12 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
 
   public WriterImpl(FileSystem fs,
                     Path path,
-                    Configuration conf,
-                    TypeDescription schema,
-                    long stripeSize,
-                    CompressionKind compress,
-                    int bufferSize,
-                    int rowIndexStride,
-                    MemoryManager memoryManager,
-                    boolean addBlockPadding,
-                    OrcFile.Version version,
-                    OrcFile.WriterCallback callback,
-                    OrcFile.EncodingStrategy encodingStrategy,
-                    OrcFile.CompressionStrategy compressionStrategy,
-                    double paddingTolerance,
-                    long blockSizeValue,
-                    String bloomFilterColumnNames,
-                    double bloomFilterFpp) throws IOException {
+                    OrcFile.WriterOptions opts) throws IOException {
     this.fs = fs;
     this.path = path;
-    this.conf = conf;
-    this.callback = callback;
-    this.schema = schema;
+    this.conf = opts.getConfiguration();
+    this.callback = opts.getCallback();
+    this.schema = opts.getSchema();
     if (callback != null) {
       callbackContext = new OrcFile.WriterContext(){
 
@@ -180,30 +165,30 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     } else {
       callbackContext = null;
     }
-    this.adjustedStripeSize = stripeSize;
-    this.defaultStripeSize = stripeSize;
-    this.version = version;
-    this.encodingStrategy = encodingStrategy;
-    this.compressionStrategy = compressionStrategy;
-    this.addBlockPadding = addBlockPadding;
-    this.blockSize = blockSizeValue;
-    this.paddingTolerance = paddingTolerance;
-    this.compress = compress;
-    this.rowIndexStride = rowIndexStride;
-    this.memoryManager = memoryManager;
+    this.adjustedStripeSize = opts.getStripeSize();
+    this.defaultStripeSize = opts.getStripeSize();
+    this.version = opts.getVersion();
+    this.encodingStrategy = opts.getEncodingStrategy();
+    this.compressionStrategy = opts.getCompressionStrategy();
+    this.addBlockPadding = opts.getBlockPadding();
+    this.blockSize = opts.getBlockSize();
+    this.paddingTolerance = opts.getPaddingTolerance();
+    this.compress = opts.getCompress();
+    this.rowIndexStride = opts.getRowIndexStride();
+    this.memoryManager = opts.getMemoryManager();
     buildIndex = rowIndexStride > 0;
     codec = createCodec(compress);
     int numColumns = schema.getMaximumId() + 1;
     this.bufferSize = getEstimatedBufferSize(defaultStripeSize,
-        numColumns, bufferSize);
+        numColumns, opts.getBufferSize());
     if (version == OrcFile.Version.V_0_11) {
       /* do not write bloom filters for ORC v11 */
       this.bloomFilterColumns = new boolean[schema.getMaximumId() + 1];
     } else {
       this.bloomFilterColumns =
-          OrcUtils.includeColumns(bloomFilterColumnNames, schema);
+          OrcUtils.includeColumns(opts.getBloomFilterColumns(), schema);
     }
-    this.bloomFilterFpp = bloomFilterFpp;
+    this.bloomFilterFpp = opts.getBloomFilterFpp();
     treeWriter = createTreeWriter(schema, streamFactory, false);
     if (buildIndex && rowIndexStride < MIN_ROW_INDEX_STRIDE) {
       throw new IllegalArgumentException("Row stride must be at least " +
@@ -211,7 +196,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     }
 
     // ensure that we are able to handle callbacks before we register ourselves
-    memoryManager.addWriter(path, stripeSize, this);
+    memoryManager.addWriter(path, opts.getStripeSize(), this);
   }
 
   @VisibleForTesting

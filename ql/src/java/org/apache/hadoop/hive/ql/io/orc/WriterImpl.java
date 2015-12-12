@@ -25,10 +25,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
-import org.apache.orc.CompressionKind;
-import org.apache.orc.impl.MemoryManager;
-import org.apache.orc.TypeDescription;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
@@ -90,30 +86,10 @@ public class WriterImpl extends org.apache.orc.impl.WriterImpl implements Writer
 
   WriterImpl(FileSystem fs,
              Path path,
-             Configuration conf,
-             ObjectInspector inspector,
-             TypeDescription schema,
-             long stripeSize,
-             CompressionKind compress,
-             int bufferSize,
-             int rowIndexStride,
-             MemoryManager memoryManager,
-             boolean addBlockPadding,
-             OrcFile.Version version,
-             OrcFile.WriterCallback callback,
-             OrcFile.EncodingStrategy encodingStrategy,
-             OrcFile.CompressionStrategy compressionStrategy,
-             double paddingTolerance,
-             long blockSizeValue,
-             String bloomFilterColumnNames,
-             double bloomFilterFpp,
-             int batchSize) throws IOException {
-    super(fs, path, conf, schema, stripeSize, compress, bufferSize,
-        rowIndexStride, memoryManager, addBlockPadding, version, callback,
-        encodingStrategy, compressionStrategy, paddingTolerance, blockSizeValue,
-        bloomFilterColumnNames, bloomFilterFpp);
-    this.inspector = inspector;
-    internalBatch = schema.createRowBatch(batchSize);
+             OrcFile.WriterOptions opts) throws IOException {
+    super(fs, path, opts);
+    this.inspector = opts.getInspector();
+    internalBatch = opts.getSchema().createRowBatch(opts.getBatchSize());
     if (inspector instanceof StructObjectInspector) {
       List<? extends StructField> fieldList =
           ((StructObjectInspector) inspector).getAllStructFieldRefs();
