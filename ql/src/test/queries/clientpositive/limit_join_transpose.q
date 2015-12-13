@@ -98,3 +98,20 @@ from src src1 right outer join (
 on src1.key = src2.key
 order by src2.key
 limit 1;
+
+explain
+select *
+from src src1 right outer join (
+  select *
+  from src src2 left outer join src src3
+  on src2.value = src3.value) src2
+on src1.key = src2.key
+limit 0;
+
+select *
+from src src1 right outer join (
+  select *
+  from src src2 left outer join src src3
+  on src2.value = src3.value) src2
+on src1.key = src2.key
+limit 0;
