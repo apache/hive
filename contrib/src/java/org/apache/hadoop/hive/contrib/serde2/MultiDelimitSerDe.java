@@ -63,7 +63,7 @@ import org.apache.hadoop.io.Writable;
     serdeConstants.SERIALIZATION_ENCODING,
     LazySerDeParameters.SERIALIZATION_EXTEND_NESTING_LEVELS,
     LazySerDeParameters.SERIALIZATION_EXTEND_ADDITIONAL_NESTING_LEVELS})
-public class MultiDelimitSerDe extends AbstractSerDe {
+public class MultiDelimitSerDe extends AbstractEncodingAwareSerDe {
 
   private static final byte[] DEFAULT_SEPARATORS = {(byte) 1, (byte) 2, (byte) 3};
   // Due to HIVE-6404, define our own constant
@@ -94,6 +94,7 @@ public class MultiDelimitSerDe extends AbstractSerDe {
   @Override
   public void initialize(Configuration conf, Properties tbl) throws SerDeException {
     // get the SerDe parameters
+    super.initialize(conf, tbl);
     serdeParams = new LazySerDeParameters(conf, tbl, getClass().getName());
 
     fieldDelimited = tbl.getProperty(serdeConstants.FIELD_DELIM);
@@ -134,8 +135,9 @@ public class MultiDelimitSerDe extends AbstractSerDe {
     return Text.class;
   }
 
-  @Override
-  public Object deserialize(Writable blob) throws SerDeException {
+
+  @Override 
+  public Object doDeserialize(Writable blob) throws SerDeException {
     if (byteArrayRef == null) {
       byteArrayRef = new ByteArrayRef();
     }
@@ -159,8 +161,9 @@ public class MultiDelimitSerDe extends AbstractSerDe {
     return cachedLazyStruct;
   }
 
-  @Override
-  public Writable serialize(Object obj, ObjectInspector objInspector) throws SerDeException {
+  @Override 
+  public Writable doSerialize(Object obj, ObjectInspector objInspector)
+      throws SerDeException {
     StructObjectInspector soi = (StructObjectInspector) objInspector;
     List<? extends StructField> fields = soi.getAllStructFieldRefs();
     List<Object> list = soi.getStructFieldsDataAsList(obj);
@@ -284,6 +287,16 @@ public class MultiDelimitSerDe extends AbstractSerDe {
         return;
     }
     throw new RuntimeException("Unknown category type: "+ objInspector.getCategory());
+  }
+
+  protected Text transformFromUTF8(Writable blob) {
+    Text text = (Text)blob;
+    return SerDeUtils.transformTextFromUTF8(text, this.charset);
+  }
+
+  protected Text transformToUTF8(Writable blob) {
+    Text text = (Text) blob;
+    return SerDeUtils.transformTextToUTF8(text, this.charset);
   }
 
   @Override
