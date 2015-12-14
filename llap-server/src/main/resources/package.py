@@ -13,9 +13,9 @@ from templates import metainfo, appConfig, resources, runner
 
 class LlapResource(object):
 	def __init__(self, config):
-		self.memory = config["llap.daemon.memory.per.instance.mb"]
-		self.cores = config["llap.daemon.vcpus.per.instance"]
-		size = config["llap.daemon.yarn.container.mb"]
+		self.memory = config["hive.llap.daemon.memory.per.instance.mb"]
+		self.cores = config["hive.llap.daemon.vcpus.per.instance"]
+		size = config["hive.llap.daemon.yarn.container.mb"]
 		# convert to Mb
 		self.cache = config["hive.llap.io.cache.orc.size"] / (1024*1024.0)
 		self.direct = config["hive.llap.io.cache.direct"]
