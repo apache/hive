@@ -1215,7 +1215,7 @@ public class TestNewIntegerEncoding {
         .encodingStrategy(encodingStrategy));
 
     List<Timestamp> tslist = Lists.newArrayList();
-    tslist.add(Timestamp.valueOf("9999-01-01 00:00:00"));
+    tslist.add(Timestamp.valueOf("2099-01-01 00:00:00"));
     tslist.add(Timestamp.valueOf("2003-01-01 00:00:00"));
     tslist.add(Timestamp.valueOf("1999-01-01 00:00:00"));
     tslist.add(Timestamp.valueOf("1995-01-01 00:00:00"));
