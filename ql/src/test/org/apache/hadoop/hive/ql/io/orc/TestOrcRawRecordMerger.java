@@ -867,7 +867,7 @@ public class TestOrcRawRecordMerger {
     Writer writer = OrcFile.createWriter(new Path(root, "0000010_0"),
         OrcFile.writerOptions(conf).inspector(inspector).fileSystem(fs)
         .blockPadding(false).bufferSize(10000).compress(CompressionKind.NONE)
-        .stripeSize(1).memory(mgr).version(OrcFile.Version.V_0_11));
+        .stripeSize(1).memory(mgr).batchSize(2).version(OrcFile.Version.V_0_11));
     String[] values= new String[]{"ignore.1", "0.1", "ignore.2", "ignore.3",
        "2.0", "2.1", "3.0", "ignore.4", "ignore.5", "ignore.6"};
     for(int i=0; i < values.length; ++i) {
@@ -878,7 +878,8 @@ public class TestOrcRawRecordMerger {
     // write a delta
     AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf)
         .writingBase(false).minimumTransactionId(1).maximumTransactionId(1)
-        .bucket(BUCKET).inspector(inspector).filesystem(fs).recordIdColumn(5).finalDestination(root);
+        .bucket(BUCKET).inspector(inspector).filesystem(fs).recordIdColumn(5)
+        .finalDestination(root);
     RecordUpdater ru = of.getRecordUpdater(root, options);
     values = new String[]{"0.0", null, null, "1.1", null, null, null,
         "ignore.7"};
@@ -972,7 +973,7 @@ public class TestOrcRawRecordMerger {
         .bucket(BUCKET).inspector(inspector).filesystem(fs);
     options.orcOptions(OrcFile.writerOptions(conf)
       .stripeSize(1).blockPadding(false).compress(CompressionKind.NONE)
-      .memory(mgr));
+      .memory(mgr).batchSize(2));
     options.finalDestination(root);
     RecordUpdater ru = of.getRecordUpdater(root, options);
     String[] values= new String[]{"ignore.1", "0.1", "ignore.2", "ignore.3",
@@ -983,7 +984,8 @@ public class TestOrcRawRecordMerger {
     ru.close(false);
 
     // write a delta
-    options.writingBase(false).minimumTransactionId(1).maximumTransactionId(1).recordIdColumn(5);
+    options.writingBase(false).minimumTransactionId(1).maximumTransactionId(1)
+        .recordIdColumn(5);
     ru = of.getRecordUpdater(root, options);
     values = new String[]{"0.0", null, null, "1.1", null, null, null,
         "ignore.7"};
@@ -1020,7 +1022,7 @@ public class TestOrcRawRecordMerger {
 
     // loop through the 5 splits and read each
     for(int i=0; i < 4; ++i) {
-      System.out.println("starting split " + i);
+      System.out.println("starting split " + i + " = " + splits[i]);
       rr = inf.getRecordReader(splits[i], job, Reporter.NULL);
       NullWritable key = rr.createKey();
       OrcStruct value = rr.createValue();

@@ -655,7 +655,8 @@ public class TestOrcFile {
         OrcFile.writerOptions(conf)
             .inspector(inspector)
             .stripeSize(100000)
-            .bufferSize(10000));
+            .bufferSize(10000)
+            .batchSize(1000));
     for (int i = 0; i < 11000; i++) {
       if (i >= 5000) {
         if (i >= 10000) {
@@ -1260,6 +1261,7 @@ public class TestOrcFile {
                                          .inspector(inspector)
                                          .stripeSize(1000)
                                          .compress(CompressionKind.NONE)
+                                         .batchSize(1000)
                                          .bufferSize(100)
                                          .blockPadding(false));
     OrcStruct row = new OrcStruct(3);
@@ -1835,8 +1837,9 @@ public class TestOrcFile {
     @Override
     public void addedRow(int count) throws IOException {
       rows += count;
-      if (rows % 100 == 0) {
+      if (rows >= 100) {
         callback.checkMemory(rate);
+        rows = 0;
       }
     }
   }
@@ -1858,6 +1861,7 @@ public class TestOrcFile {
                                          .bufferSize(100)
                                          .rowIndexStride(0)
                                          .memory(memory)
+                                         .batchSize(100)
                                          .version(OrcFile.Version.V_0_11));
     assertEquals(testFilePath, memory.path);
     for(int i=0; i < 2500; ++i) {
@@ -1894,6 +1898,7 @@ public class TestOrcFile {
                                          .bufferSize(100)
                                          .rowIndexStride(0)
                                          .memory(memory)
+                                         .batchSize(100)
                                          .version(OrcFile.Version.V_0_12));
     assertEquals(testFilePath, memory.path);
     for(int i=0; i < 2500; ++i) {

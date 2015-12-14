@@ -16,9 +16,8 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.io.filters;
+package org.apache.orc;
 
-import org.apache.orc.OrcProto;
 import org.apache.hive.common.util.BloomFilter;
 
 import com.google.common.primitives.Longs;

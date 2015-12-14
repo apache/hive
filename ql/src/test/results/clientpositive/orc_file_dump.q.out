@@ -93,7 +93,7 @@ PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
 -- BEGIN ORC FILE DUMP --
 #### A masked pattern was here ####
-File Version: 0.12 with HIVE_4243
+File Version: 0.12 with HIVE_12055
 Rows: 1049
 Compression: ZLIB
 Compression size: 262144
@@ -213,7 +213,7 @@ PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
 -- BEGIN ORC FILE DUMP --
 #### A masked pattern was here ####
-File Version: 0.12 with HIVE_4243
+File Version: 0.12 with HIVE_12055
 Rows: 1049
 Compression: ZLIB
 Compression size: 262144
@@ -345,7 +345,7 @@ PREHOOK: Input: default@orc_ppd_part@ds=2015/hr=10
 #### A masked pattern was here ####
 -- BEGIN ORC FILE DUMP --
 #### A masked pattern was here ####
-File Version: 0.12 with HIVE_4243
+File Version: 0.12 with HIVE_12055
 Rows: 1049
 Compression: ZLIB
 Compression size: 262144

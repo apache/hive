@@ -63,6 +63,7 @@ public class ReaderImpl implements Reader {
   private static final int DIRECTORY_SIZE_GUESS = 16 * 1024;
 
   protected final FileSystem fileSystem;
+  private final long maxLength;
   protected final Path path;
   protected final org.apache.orc.CompressionKind compressionKind;
   protected final CompressionCodec codec;
@@ -329,6 +330,7 @@ public class ReaderImpl implements Reader {
     this.fileSystem = fs;
     this.path = path;
     this.conf = options.getConfiguration();
+    this.maxLength = options.getMaxLength();
 
     FileMetadata fileMetadata = options.getFileMetadata();
     if (fileMetadata != null) {
@@ -858,5 +860,18 @@ public class ReaderImpl implements Reader {
   @Override
   public DataReader createDefaultDataReader(boolean useZeroCopy) {
     return RecordReaderUtils.createDefaultDataReader(fileSystem, path, useZeroCopy, codec);
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder buffer = new StringBuilder();
+    buffer.append("ORC Reader(");
+    buffer.append(path);
+    if (maxLength != -1) {
+      buffer.append(", ");
+      buffer.append(maxLength);
+    }
+    buffer.append(")");
+    return buffer.toString();
   }
 }

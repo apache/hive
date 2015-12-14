@@ -23,7 +23,9 @@ import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.orc.impl.MemoryManager;
+import org.apache.orc.impl.WriterImpl;
 
 /**
  * Contains factory methods to read or write ORC files.
@@ -102,6 +104,8 @@ public class OrcFile {
     ORIGINAL(0),
     HIVE_8732(1), // corrupted stripe/file maximum column statistics
     HIVE_4243(2), // use real column names from Hive tables
+    HIVE_12055(3), // vectorized writer
+
     // Don't use any magic numbers here except for the below:
     FUTURE(Integer.MAX_VALUE); // a version from a future writer
 
@@ -138,6 +142,7 @@ public class OrcFile {
       return values[val];
     }
   }
+  public static final WriterVersion CURRENT_WRITER = WriterVersion.HIVE_12055;
 
   public enum EncodingStrategy {
     SPEED, COMPRESSION
@@ -509,6 +514,23 @@ public class OrcFile {
       };
     }
     return memoryManager.get();
+  }
+
+  /**
+   * Create an ORC file writer. This is the public interface for creating
+   * writers going forward and new options will only be added to this method.
+   * @param path filename to write to
+   * @param opts the options
+   * @return a new ORC file writer
+   * @throws IOException
+   */
+  public static Writer createWriter(Path path,
+                                    WriterOptions opts
+                                    ) throws IOException {
+    FileSystem fs = opts.getFileSystem() == null ?
+        path.getFileSystem(opts.getConfiguration()) : opts.getFileSystem();
+
+    return new WriterImpl(fs, path, opts);
   }
 
 }
