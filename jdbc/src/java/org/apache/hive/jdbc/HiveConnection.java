@@ -122,6 +122,7 @@ public class HiveConnection implements java.sql.Connection {
   private final List<TProtocolVersion> supportedProtocols = new LinkedList<TProtocolVersion>();
   private int loginTimeout = 0;
   private TProtocolVersion protocol;
+  private int fetchSize = HiveStatement.DEFAULT_FETCH_SIZE;
 
   public HiveConnection(String uri, Properties info) throws SQLException {
     setupLoginTimeout();
@@ -142,6 +143,10 @@ public class HiveConnection implements java.sql.Connection {
     hiveConfMap = connParams.getHiveConfs();
     hiveVarMap = connParams.getHiveVars();
     isEmbeddedMode = connParams.isEmbeddedMode();
+
+    if (sessConfMap.containsKey(JdbcConnectionParams.FETCH_SIZE)) {
+      fetchSize = Integer.parseInt(sessConfMap.get(JdbcConnectionParams.FETCH_SIZE));
+    }
 
     if (isEmbeddedMode) {
       EmbeddedThriftBinaryCLIService embeddedClient = new EmbeddedThriftBinaryCLIService();
@@ -821,7 +826,7 @@ public class HiveConnection implements java.sql.Connection {
     if (isClosed) {
       throw new SQLException("Can't create Statement, connection is closed");
     }
-    return new HiveStatement(this, client, sessHandle);
+    return new HiveStatement(this, client, sessHandle, fetchSize);
   }
 
   /*
@@ -842,7 +847,7 @@ public class HiveConnection implements java.sql.Connection {
           " is not supported", "HYC00"); // Optional feature not implemented
     }
     return new HiveStatement(this, client, sessHandle,
-        resultSetType == ResultSet.TYPE_SCROLL_INSENSITIVE);
+        resultSetType == ResultSet.TYPE_SCROLL_INSENSITIVE, fetchSize);
   }
 
   /*

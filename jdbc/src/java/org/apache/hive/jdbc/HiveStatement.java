@@ -18,6 +18,25 @@
 
 package org.apache.hive.jdbc;
 
+import org.apache.hive.service.cli.RowSet;
+import org.apache.hive.service.cli.RowSetFactory;
+import org.apache.hive.service.cli.thrift.TCLIService;
+import org.apache.hive.service.cli.thrift.TCancelOperationReq;
+import org.apache.hive.service.cli.thrift.TCancelOperationResp;
+import org.apache.hive.service.cli.thrift.TCloseOperationReq;
+import org.apache.hive.service.cli.thrift.TCloseOperationResp;
+import org.apache.hive.service.cli.thrift.TExecuteStatementReq;
+import org.apache.hive.service.cli.thrift.TExecuteStatementResp;
+import org.apache.hive.service.cli.thrift.TFetchOrientation;
+import org.apache.hive.service.cli.thrift.TFetchResultsReq;
+import org.apache.hive.service.cli.thrift.TFetchResultsResp;
+import org.apache.hive.service.cli.thrift.TGetOperationStatusReq;
+import org.apache.hive.service.cli.thrift.TGetOperationStatusResp;
+import org.apache.hive.service.cli.thrift.TOperationHandle;
+import org.apache.hive.service.cli.thrift.TSessionHandle;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -28,32 +47,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.hive.service.cli.RowSet;
-import org.apache.hive.service.cli.RowSetFactory;
-import org.apache.hive.service.cli.thrift.TCLIService;
-import org.apache.hive.service.cli.thrift.TCancelOperationReq;
-import org.apache.hive.service.cli.thrift.TCancelOperationResp;
-import org.apache.hive.service.cli.thrift.TCloseOperationReq;
-import org.apache.hive.service.cli.thrift.TCloseOperationResp;
-import org.apache.hive.service.cli.thrift.TExecuteStatementReq;
-import org.apache.hive.service.cli.thrift.TExecuteStatementResp;
-import org.apache.hive.service.cli.thrift.TGetOperationStatusReq;
-import org.apache.hive.service.cli.thrift.TGetOperationStatusResp;
-import org.apache.hive.service.cli.thrift.TOperationHandle;
-import org.apache.hive.service.cli.thrift.TSessionHandle;
-import org.apache.hive.service.cli.thrift.TFetchResultsReq;
-import org.apache.hive.service.cli.thrift.TFetchResultsResp;
-import org.apache.hive.service.cli.thrift.TFetchOrientation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * HiveStatement.
  *
  */
 public class HiveStatement implements java.sql.Statement {
   public static final Logger LOG = LoggerFactory.getLogger(HiveStatement.class.getName());
-  private static final int DEFAULT_FETCH_SIZE = 1000;
+  public static final int DEFAULT_FETCH_SIZE = 1000;
   private final HiveConnection connection;
   private TCLIService.Iface client;
   private TOperationHandle stmtHandle = null;
@@ -110,15 +110,26 @@ public class HiveStatement implements java.sql.Statement {
 
   public HiveStatement(HiveConnection connection, TCLIService.Iface client,
       TSessionHandle sessHandle) {
-    this(connection, client, sessHandle, false);
+    this(connection, client, sessHandle, false, DEFAULT_FETCH_SIZE);
   }
 
   public HiveStatement(HiveConnection connection, TCLIService.Iface client,
-      TSessionHandle sessHandle, boolean isScrollableResultset) {
+      TSessionHandle sessHandle, int fetchSize) {
+    this(connection, client, sessHandle, false, fetchSize);
+  }
+
+  public HiveStatement(HiveConnection connection, TCLIService.Iface client,
+                       TSessionHandle sessHandle, boolean isScrollableResultset) {
+    this(connection, client, sessHandle, isScrollableResultset, DEFAULT_FETCH_SIZE);
+  }
+
+  public HiveStatement(HiveConnection connection, TCLIService.Iface client,
+      TSessionHandle sessHandle, boolean isScrollableResultset, int fetchSize) {
     this.connection = connection;
     this.client = client;
     this.sessHandle = sessHandle;
     this.isScrollableResultset = isScrollableResultset;
+    this.fetchSize = fetchSize;
   }
 
   /*
