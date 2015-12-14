@@ -649,12 +649,21 @@ public class VectorizedBatchUtil {
   public static void debugDisplayOneRow(VectorizedRowBatch batch, int index, String prefix) {
     StringBuilder sb = new StringBuilder();
     sb.append(prefix + " row " + index + " ");
-    for (int column = 0; column < batch.cols.length; column++) {
+    for (int p = 0; p < batch.projectionSize; p++) {
+      int column = batch.projectedColumns[p];
+      if (p == column) {
+        sb.append("(col " + p + ") ");
+      } else {
+        sb.append("(proj col " + p + " col " + column + ") ");
+      }
       ColumnVector colVector = batch.cols[column];
       if (colVector == null) {
-        sb.append("(null colVector " + column + ")");
+        sb.append("(null ColumnVector)");
       } else {
         boolean isRepeating = colVector.isRepeating;
+        if (isRepeating) {
+          sb.append("(repeating)");
+        }
         index = (isRepeating ? 0 : index);
         if (colVector.noNulls || !colVector.isNull[index]) {
           if (colVector instanceof LongColumnVector) {
