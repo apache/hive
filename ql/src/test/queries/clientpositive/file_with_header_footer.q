@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 dfs ${system:test.dfs.mkdir} hdfs:///tmp/test/;
 
 dfs -copyFromLocal ../../data/files/header_footer_table_1 hdfs:///tmp/test/header_footer_table_1;

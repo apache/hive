@@ -119,12 +119,12 @@ public class HiveOpConverter {
   private final SemanticAnalyzer                              semanticAnalyzer;
   private final HiveConf                                      hiveConf;
   private final UnparseTranslator                             unparseTranslator;
-  private final Map<String, Operator<? extends OperatorDesc>> topOps;
+  private final Map<String, TableScanOperator>                topOps;
   private final boolean                                       strictMode;
   private int                                                 uniqueCounter;
 
   public HiveOpConverter(SemanticAnalyzer semanticAnalyzer, HiveConf hiveConf,
-      UnparseTranslator unparseTranslator, Map<String, Operator<? extends OperatorDesc>> topOps,
+      UnparseTranslator unparseTranslator, Map<String, TableScanOperator> topOps,
       boolean strictMode) {
     this.semanticAnalyzer = semanticAnalyzer;
     this.hiveConf = hiveConf;
@@ -600,7 +600,7 @@ public class HiveOpConverter {
     }
     ExprNodeDesc[] expressions = new ExprNodeDesc[exchangeRel.getJoinKeys().size()];
     for (int index = 0; index < exchangeRel.getJoinKeys().size(); index++) {
-      expressions[index] = convertToExprNode((RexNode) exchangeRel.getJoinKeys().get(index),
+      expressions[index] = convertToExprNode(exchangeRel.getJoinKeys().get(index),
           exchangeRel.getInput(), inputOpAf.tabAlias, inputOpAf);
     }
     exchangeRel.setJoinExpressions(expressions);
@@ -943,7 +943,7 @@ public class HiveOpConverter {
       int rightPos = joinCondns[i].getRight();
 
       for (ExprNodeDesc expr : filterExpressions.get(i)) {
-        // We need to update the exprNode, as currently 
+        // We need to update the exprNode, as currently
         // they refer to columns in the output of the join;
         // they should refer to the columns output by the RS
         int inputPos = updateExprNode(expr, reversedExprs, colExprMap);
@@ -956,9 +956,9 @@ public class HiveOpConverter {
                 joinCondns[i].getType() == JoinDesc.LEFT_OUTER_JOIN ||
                 joinCondns[i].getType() == JoinDesc.RIGHT_OUTER_JOIN) {
           if (inputPos == leftPos) {
-            updateFilterMap(filterMap, leftPos, rightPos);          
+            updateFilterMap(filterMap, leftPos, rightPos);
           } else {
-            updateFilterMap(filterMap, rightPos, leftPos);          
+            updateFilterMap(filterMap, rightPos, leftPos);
           }
         }
       }
@@ -992,7 +992,7 @@ public class HiveOpConverter {
    * This method updates the input expr, changing all the
    * ExprNodeColumnDesc in it to refer to columns given by the
    * colExprMap.
-   * 
+   *
    * For instance, "col_0 = 1" would become "VALUE.col_0 = 1";
    * the execution engine expects filters in the Join operators
    * to be expressed that way.

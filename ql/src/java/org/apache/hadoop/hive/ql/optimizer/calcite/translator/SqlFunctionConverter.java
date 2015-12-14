@@ -202,6 +202,7 @@ public class SqlFunctionConverter {
         case IN:
         case BETWEEN:
         case ROW:
+        case IS_NOT_NULL:
           node = (ASTNode) ParseDriver.adaptor.create(HiveParser.TOK_FUNCTION, "TOK_FUNCTION");
           node.addChild((ASTNode) ParseDriver.adaptor.create(hToken.type, hToken.text));
           break;
@@ -314,7 +315,7 @@ public class SqlFunctionConverter {
       registerFunction("in", HiveIn.INSTANCE, hToken(HiveParser.Identifier, "in"));
       registerFunction("between", HiveBetween.INSTANCE, hToken(HiveParser.Identifier, "between"));
       registerFunction("struct", SqlStdOperatorTable.ROW, hToken(HiveParser.Identifier, "struct"));
-
+      registerFunction("isnotnull", SqlStdOperatorTable.IS_NOT_NULL, hToken(HiveParser.TOK_ISNOTNULL, "TOK_ISNOTNULL"));
     }
 
     private void registerFunction(String name, SqlOperator calciteFn, HiveToken hiveToken) {

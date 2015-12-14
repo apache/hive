@@ -43,27 +43,35 @@ public class LowLevelCacheMemoryManager implements MemoryManager {
     this.evictor = evictor;
     this.usedMemory = new AtomicLong(0);
     this.metrics = metrics;
-    metrics.incrCacheCapacityTotal(maxSize);
+    metrics.setCacheCapacityTotal(maxSize);
     if (LlapIoImpl.LOGL.isInfoEnabled()) {
       LlapIoImpl.LOG.info("Cache memory manager initialized with max size " + maxSize);
     }
   }
 
   @Override
-  public boolean reserveMemory(long memoryToReserve, boolean waitForEviction) {
+  public boolean reserveMemory(final long memoryToReserve, boolean waitForEviction) {
     // TODO: if this cannot evict enough, it will spin infinitely. Terminate at some point?
     int badCallCount = 0;
     int nextLog = 4;
-    while (memoryToReserve > 0) {
-      long usedMem = usedMemory.get(), newUsedMem = usedMem + memoryToReserve;
+    long evictedTotalMetric = 0, reservedTotalMetric = 0, remainingToReserve = memoryToReserve;
+    boolean result = true;
+    while (remainingToReserve > 0) {
+      long usedMem = usedMemory.get(), newUsedMem = usedMem + remainingToReserve;
       if (newUsedMem <= maxSize) {
-        if (usedMemory.compareAndSet(usedMem, newUsedMem)) break;
+        if (usedMemory.compareAndSet(usedMem, newUsedMem)) {
+          reservedTotalMetric += remainingToReserve;
+          break;
+        }
         continue;
       }
       // TODO: for one-block case, we could move notification for the last block out of the loop.
-      long evicted = evictor.evictSomeBlocks(memoryToReserve);
+      long evicted = evictor.evictSomeBlocks(remainingToReserve);
       if (evicted == 0) {
-        if (!waitForEviction) return false;
+        if (!waitForEviction) {
+          result = false;
+          break;
+        }
         ++badCallCount;
         if (badCallCount == nextLog) {
           LlapIoImpl.LOG.warn("Cannot evict blocks for " + badCallCount + " calls; cache full?");
@@ -72,24 +80,28 @@ public class LowLevelCacheMemoryManager implements MemoryManager {
             Thread.sleep(Math.min(1000, nextLog));
           } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            return false;
+            result = false;
+            break;
           }
         }
         continue;
       }
+      evictedTotalMetric += evicted;
       badCallCount = 0;
       // Adjust the memory - we have to account for what we have just evicted.
       while (true) {
-        long reserveWithEviction = Math.min(memoryToReserve, maxSize - usedMem + evicted);
-        if (usedMemory.compareAndSet(usedMem, usedMem - evicted + reserveWithEviction)) {
-          memoryToReserve -= reserveWithEviction;
+        long availableToReserveAfterEvict = maxSize - usedMem + evicted;
+        long reservedAfterEvict = Math.min(remainingToReserve, availableToReserveAfterEvict);
+        if (usedMemory.compareAndSet(usedMem, usedMem - evicted + reservedAfterEvict)) {
+          remainingToReserve -= reservedAfterEvict;
+          reservedTotalMetric += reservedAfterEvict;
           break;
         }
         usedMem = usedMemory.get();
       }
     }
-    metrics.incrCacheCapacityUsed(memoryToReserve);
-    return true;
+    metrics.incrCacheCapacityUsed(reservedTotalMetric - evictedTotalMetric);
+    return result;
   }
 
 
@@ -103,12 +115,13 @@ public class LowLevelCacheMemoryManager implements MemoryManager {
   }
 
   @Override
-  public void releaseMemory(long memoryToRelease) {
+  public void releaseMemory(final long memoryToRelease) {
     long oldV;
     do {
       oldV = usedMemory.get();
       assert oldV >= memoryToRelease;
     } while (!usedMemory.compareAndSet(oldV, oldV - memoryToRelease));
+    metrics.incrCacheCapacityUsed(-memoryToRelease);
   }
 
   @Override

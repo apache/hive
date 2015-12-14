@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileContext;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.configuration.LlapConfiguration;
 import org.apache.hadoop.hive.llap.daemon.impl.LlapDaemon;
 import org.apache.hadoop.service.AbstractService;
@@ -142,7 +143,7 @@ public class MiniLlapCluster extends AbstractService {
   @Override
   public void serviceInit(Configuration conf) {
     llapDaemon = new LlapDaemon(conf, numExecutorsPerService, execBytesPerService, llapIoEnabled,
-        ioIsDirect, ioBytesPerService, localDirs, 0, 0);
+        ioIsDirect, ioBytesPerService, localDirs, 0, 0, 0);
     llapDaemon.init(conf);
   }
 
@@ -150,16 +151,16 @@ public class MiniLlapCluster extends AbstractService {
   public void serviceStart() {
     llapDaemon.start();
 
-    clusterSpecificConfiguration.set(LlapConfiguration.LLAP_DAEMON_SERVICE_HOSTS,
+    clusterSpecificConfiguration.set(ConfVars.LLAP_DAEMON_SERVICE_HOSTS.varname,
         getServiceAddress().getHostName());
-    clusterSpecificConfiguration.setInt(LlapConfiguration.LLAP_DAEMON_RPC_PORT,
+    clusterSpecificConfiguration.setInt(ConfVars.LLAP_DAEMON_RPC_PORT.varname,
         getServiceAddress().getPort());
 
     clusterSpecificConfiguration.setInt(
-        LlapConfiguration.LLAP_DAEMON_NUM_EXECUTORS,
+        ConfVars.LLAP_DAEMON_NUM_EXECUTORS.varname,
         numExecutorsPerService);
     clusterSpecificConfiguration.setLong(
-        LlapConfiguration.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB, execBytesPerService);
+        ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB.varname, execBytesPerService);
     // Optimize local fetch does not work with LLAP due to different local directories
     // used by containers and LLAP
     clusterSpecificConfiguration

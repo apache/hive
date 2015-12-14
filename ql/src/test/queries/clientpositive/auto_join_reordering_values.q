@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 -- HIVE-5056 RS has expression list for values, but it's ignored in MapJoinProcessor
 
 create table testsrc ( `key` int,`val` string);

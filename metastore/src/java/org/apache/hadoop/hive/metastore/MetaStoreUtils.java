@@ -90,6 +90,7 @@ public class MetaStoreUtils {
 
   public static final String DEFAULT_DATABASE_NAME = "default";
   public static final String DEFAULT_DATABASE_COMMENT = "Default Hive database";
+  public static final String DEFAULT_SERIALIZATION_FORMAT = "1";
 
   public static final String DATABASE_WAREHOUSE_SUFFIX = ".db";
 
@@ -116,8 +117,8 @@ public class MetaStoreUtils {
     SerDeInfo serdeInfo = sd.getSerdeInfo();
     serdeInfo.setSerializationLib(LazySimpleSerDe.class.getName());
     serdeInfo.setParameters(new HashMap<String, String>());
-    serdeInfo.getParameters().put(
-        org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT, "1");
+    serdeInfo.getParameters().put(org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT,
+        DEFAULT_SERIALIZATION_FORMAT);
 
     List<FieldSchema> fields = new ArrayList<FieldSchema>();
     sd.setCols(fields);

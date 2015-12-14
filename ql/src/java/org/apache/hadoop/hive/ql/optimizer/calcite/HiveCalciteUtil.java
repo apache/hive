@@ -25,6 +25,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.apache.calcite.plan.RelOptCluster;
+import org.apache.calcite.plan.RelOptPredicateList;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.plan.RelOptUtil.InputFinder;
 import org.apache.calcite.plan.RelOptUtil.InputReferencedVisitor;
@@ -32,6 +34,8 @@ import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.RelFactories.ProjectFactory;
 import org.apache.calcite.rel.core.Sort;
+import org.apache.calcite.rel.metadata.RelMetadataQuery;
+import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
@@ -44,6 +48,7 @@ import org.apache.calcite.rex.RexLocalRef;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexOver;
 import org.apache.calcite.rex.RexRangeRef;
+import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.rex.RexVisitor;
 import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.sql.SqlKind;
@@ -613,6 +618,46 @@ public class HiveCalciteUtil {
     return (new Pair<RelNode, RelNode>(parentOforiginalProjRel, originalProjRel));
   }
 
+  public static boolean isComparisonOp(RexCall call) {
+    return call.getKind().belongsTo(SqlKind.COMPARISON);
+  }
+
+  private static final Function<RexNode, String> REX_STR_FN = new Function<RexNode, String>() {
+                                                              public String apply(RexNode r) {
+                                                                return r.toString();
+                                                              }
+                                                            };
+
+  public static ImmutableList<RexNode> getPredsNotPushedAlready(RelNode inp, List<RexNode> predsToPushDown) {
+    final RelOptPredicateList predicates = RelMetadataQuery.getPulledUpPredicates(inp);
+    final ImmutableSet<String> alreadyPushedPreds = ImmutableSet.copyOf(Lists.transform(
+        predicates.pulledUpPredicates, REX_STR_FN));
+    final ImmutableList.Builder<RexNode> newConjuncts = ImmutableList.builder();
+    for (RexNode r : predsToPushDown) {
+      if (!alreadyPushedPreds.contains(r.toString())) {
+        newConjuncts.add(r);
+      }
+    }
+    return newConjuncts.build();
+  }
+
+  public static RexNode getTypeSafePred(RelOptCluster cluster, RexNode rex, RelDataType rType) {
+    RexNode typeSafeRex = rex;
+    if ((typeSafeRex instanceof RexCall) && HiveCalciteUtil.isComparisonOp((RexCall) typeSafeRex)) {
+      RexBuilder rb = cluster.getRexBuilder();
+      List<RexNode> fixedPredElems = new ArrayList<RexNode>();
+      RelDataType commonType = cluster.getTypeFactory().leastRestrictive(
+          RexUtil.types(((RexCall) rex).getOperands()));
+      for (RexNode rn : ((RexCall) rex).getOperands()) {
+        fixedPredElems.add(rb.ensureType(commonType, rn, true));
+      }
+
+      typeSafeRex = rb.makeCall(((RexCall) typeSafeRex).getOperator(), fixedPredElems);
+    }
+
+    return typeSafeRex;
+  }
+
   public static boolean isDeterministic(RexNode expr) {
     boolean deterministic = true;
 
@@ -633,6 +678,58 @@ public class HiveCalciteUtil {
     }
 
     return deterministic;
+  }
+
+  public static boolean isDeterministicFuncOnLiterals(RexNode expr) {
+    boolean deterministicFuncOnLiterals = true;
+
+    RexVisitor<Void> visitor = new RexVisitorImpl<Void>(true) {
+      @Override
+      public Void visitCall(org.apache.calcite.rex.RexCall call) {
+        if (!call.getOperator().isDeterministic()) {
+          throw new Util.FoundOne(call);
+        }
+        return super.visitCall(call);
+      }
+
+      @Override
+      public Void visitInputRef(RexInputRef inputRef) {
+        throw new Util.FoundOne(inputRef);
+      }
+
+      @Override
+      public Void visitLocalRef(RexLocalRef localRef) {
+        throw new Util.FoundOne(localRef);
+      }
+
+      @Override
+      public Void visitOver(RexOver over) {
+        throw new Util.FoundOne(over);
+      }
+
+      @Override
+      public Void visitDynamicParam(RexDynamicParam dynamicParam) {
+        throw new Util.FoundOne(dynamicParam);
+      }
+
+      @Override
+      public Void visitRangeRef(RexRangeRef rangeRef) {
+        throw new Util.FoundOne(rangeRef);
+      }
+
+      @Override
+      public Void visitFieldAccess(RexFieldAccess fieldAccess) {
+        throw new Util.FoundOne(fieldAccess);
+      }
+    };
+
+    try {
+      expr.accept(visitor);
+    } catch (Util.FoundOne e) {
+      deterministicFuncOnLiterals = false;
+    }
+
+    return deterministicFuncOnLiterals;
   }
 
   public static <T> ImmutableMap<Integer, T> getColInfoMap(List<T> hiveCols,
@@ -803,6 +900,7 @@ public class HiveCalciteUtil {
 
   public static Set<Integer> getInputRefs(RexNode expr) {
     InputRefsCollector irefColl = new InputRefsCollector(true);
+    expr.accept(irefColl);
     return irefColl.getInputRefSet();
   }
 

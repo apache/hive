@@ -130,10 +130,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@employee_part
 POSTHOOK: Input: default@employee_part@employeesalary=4000.0/country=USA
 #### A masked pattern was here ####
-PREHOOK: query: describe formatted Employee_Part.employeeName partition (employeeSalary='4000.0', country='USA')
+PREHOOK: query: describe formatted Employee_Part partition (employeeSalary='4000.0', country='USA') employeeName
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@employee_part
-POSTHOOK: query: describe formatted Employee_Part.employeeName partition (employeeSalary='4000.0', country='USA')
+POSTHOOK: query: describe formatted Employee_Part partition (employeeSalary='4000.0', country='USA') employeeName
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee_part
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
@@ -205,19 +205,19 @@ POSTHOOK: Input: default@employee_part
 POSTHOOK: Input: default@employee_part@employeesalary=2000.0/country=UK
 POSTHOOK: Input: default@employee_part@employeesalary=2000.0/country=USA
 #### A masked pattern was here ####
-PREHOOK: query: describe formatted Employee_Part.employeeID partition (employeeSalary='2000.0', country='USA')
+PREHOOK: query: describe formatted Employee_Part partition (employeeSalary='2000.0', country='USA') employeeID
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@employee_part
-POSTHOOK: query: describe formatted Employee_Part.employeeID partition (employeeSalary='2000.0', country='USA')
+POSTHOOK: query: describe formatted Employee_Part partition (employeeSalary='2000.0', country='USA') employeeID
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee_part
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 employeeID          	int                 	16                  	34                  	1                   	14                  	                    	                    	                    	                    	from deserializer   
-PREHOOK: query: describe formatted Employee_Part.employeeID partition (employeeSalary='2000.0', country='UK')
+PREHOOK: query: describe formatted Employee_Part partition (employeeSalary='2000.0', country='UK') employeeID
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@employee_part
-POSTHOOK: query: describe formatted Employee_Part.employeeID partition (employeeSalary='2000.0', country='UK')
+POSTHOOK: query: describe formatted Employee_Part partition (employeeSalary='2000.0', country='UK') employeeID
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee_part
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
@@ -297,10 +297,10 @@ POSTHOOK: Input: default@employee_part@employeesalary=3000.0/country=USA
 POSTHOOK: Input: default@employee_part@employeesalary=3500.0/country=UK
 POSTHOOK: Input: default@employee_part@employeesalary=4000.0/country=USA
 #### A masked pattern was here ####
-PREHOOK: query: describe formatted Employee_Part.employeeID partition (employeeSalary='3000.0', country='UK')
+PREHOOK: query: describe formatted Employee_Part partition (employeeSalary='3000.0', country='UK') employeeID
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@employee_part
-POSTHOOK: query: describe formatted Employee_Part.employeeID partition (employeeSalary='3000.0', country='UK')
+POSTHOOK: query: describe formatted Employee_Part partition (employeeSalary='3000.0', country='UK') employeeID
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee_part
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
@@ -378,10 +378,10 @@ POSTHOOK: Input: default@employee_part@employeesalary=3000.0/country=USA
 POSTHOOK: Input: default@employee_part@employeesalary=3500.0/country=UK
 POSTHOOK: Input: default@employee_part@employeesalary=4000.0/country=USA
 #### A masked pattern was here ####
-PREHOOK: query: describe formatted Employee_Part.employeeName partition (employeeSalary='3500.0', country='UK')
+PREHOOK: query: describe formatted Employee_Part partition (employeeSalary='3500.0', country='UK') employeeName
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@employee_part
-POSTHOOK: query: describe formatted Employee_Part.employeeName partition (employeeSalary='3500.0', country='UK')
+POSTHOOK: query: describe formatted Employee_Part partition (employeeSalary='3500.0', country='UK') employeeName
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee_part
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
@@ -455,10 +455,10 @@ POSTHOOK: Input: default@employee@employeesalary=2000.0/country=USA
 POSTHOOK: Input: default@employee@employeesalary=3000.0/country=UK
 POSTHOOK: Input: default@employee@employeesalary=3500.0/country=UK
 #### A masked pattern was here ####
-PREHOOK: query: describe formatted Employee.employeeName partition (employeeSalary='3500.0', country='UK')
+PREHOOK: query: describe formatted Employee partition (employeeSalary='3500.0', country='UK') employeeName
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@employee
-POSTHOOK: query: describe formatted Employee.employeeName partition (employeeSalary='3500.0', country='UK')
+POSTHOOK: query: describe formatted Employee partition (employeeSalary='3500.0', country='UK') employeeName
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
@@ -502,10 +502,10 @@ POSTHOOK: Input: default@employee@employeesalary=3000.0/country=USA
 POSTHOOK: Input: default@employee@employeesalary=3500.0/country=UK
 POSTHOOK: Input: default@employee@employeesalary=4000.0/country=USA
 #### A masked pattern was here ####
-PREHOOK: query: describe formatted Employee.employeeName partition (employeeSalary='3000.0', country='USA')
+PREHOOK: query: describe formatted Employee partition (employeeSalary='3000.0', country='USA') employeeName
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@employee
-POSTHOOK: query: describe formatted Employee.employeeName partition (employeeSalary='3000.0', country='USA')
+POSTHOOK: query: describe formatted Employee partition (employeeSalary='3000.0', country='USA') employeeName
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
@@ -540,28 +540,28 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@employee
 POSTHOOK: Input: default@employee@employeesalary=6000.0/country=UK
 #### A masked pattern was here ####
-PREHOOK: query: describe formatted Employee.employeeName partition (employeeSalary='6000.0', country='UK')
+PREHOOK: query: describe formatted Employee partition (employeeSalary='6000.0', country='UK') employeeName
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@employee
-POSTHOOK: query: describe formatted Employee.employeeName partition (employeeSalary='6000.0', country='UK')
+POSTHOOK: query: describe formatted Employee partition (employeeSalary='6000.0', country='UK') employeeName
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 employeeName        	string              	                    	                    	0                   	9                   	4.777777777777778   	6                   	                    	                    	from deserializer   
-PREHOOK: query: describe formatted Employee.c partition (employeeSalary='6000.0', country='UK')
+PREHOOK: query: describe formatted Employee partition (employeeSalary='6000.0', country='UK') c
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@employee
-POSTHOOK: query: describe formatted Employee.c partition (employeeSalary='6000.0', country='UK')
+POSTHOOK: query: describe formatted Employee partition (employeeSalary='6000.0', country='UK') c
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 c                   	int                 	2000                	4000                	0                   	4                   	                    	                    	                    	                    	from deserializer   
-PREHOOK: query: describe formatted Employee.d partition (employeeSalary='6000.0', country='UK')
+PREHOOK: query: describe formatted Employee partition (employeeSalary='6000.0', country='UK') d
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@employee
-POSTHOOK: query: describe formatted Employee.d partition (employeeSalary='6000.0', country='UK')
+POSTHOOK: query: describe formatted Employee partition (employeeSalary='6000.0', country='UK') d
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             

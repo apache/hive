@@ -32,8 +32,7 @@ import java.util.Set;
 import java.util.Stack;
 
 import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
@@ -82,6 +81,8 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hive.common.util.DateUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 
@@ -1051,6 +1052,19 @@ public class TypeCheckProcFactory {
             if (value != null) {
               children.set(constIdx, new ExprNodeConstantDesc(value));
             }
+          }
+
+          // if column type is char and constant type is string, then convert the constant to char
+          // type with padded spaces.
+          final PrimitiveTypeInfo colTypeInfo = TypeInfoFactory
+              .getPrimitiveTypeInfo(columnType);
+          if (constType.equalsIgnoreCase(serdeConstants.STRING_TYPE_NAME) &&
+              colTypeInfo instanceof CharTypeInfo) {
+            final Object originalValue = ((ExprNodeConstantDesc) children.get(constIdx)).getValue();
+            final String constValue = originalValue.toString();
+            final int length = TypeInfoUtils.getCharacterLengthForType(colTypeInfo);
+            final HiveChar newValue = new HiveChar(constValue, length);
+            children.set(constIdx, new ExprNodeConstantDesc(colTypeInfo, newValue));
           }
         }
         if (genericUDF instanceof GenericUDFOPOr) {

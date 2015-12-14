@@ -23,8 +23,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Stack;
 
-import junit.framework.TestCase;
-
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -36,7 +34,7 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
-import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -51,6 +49,8 @@ import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TException;
 
 import com.google.common.collect.Lists;
+
+import junit.framework.TestCase;
 
 /**
  * Tests hive metastore expression support. This should be moved in metastore module
@@ -166,8 +166,8 @@ public class TestMetastoreExpr extends TestCase {
   public void checkExpr(int numParts,
       String dbName, String tblName, ExprNodeGenericFuncDesc expr) throws Exception {
     List<Partition> parts = new ArrayList<Partition>();
-    client.listPartitionsByExpr(
-        dbName, tblName, Utilities.serializeExpressionToKryo(expr), null, (short)-1, parts);
+    client.listPartitionsByExpr(dbName, tblName,
+        SerializationUtilities.serializeExpressionToKryo(expr), null, (short)-1, parts);
     assertEquals("Partition check failed: " + expr.getExprString(), numParts, parts.size());
   }
 

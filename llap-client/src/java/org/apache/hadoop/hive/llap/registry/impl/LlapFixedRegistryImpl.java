@@ -24,6 +24,8 @@ import java.util.Set;
 
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.configuration.LlapConfiguration;
 import org.apache.hadoop.hive.llap.registry.ServiceInstance;
 import org.apache.hadoop.hive.llap.registry.ServiceInstanceSet;
@@ -44,6 +46,7 @@ public class LlapFixedRegistryImpl implements ServiceRegistry {
 
   private final int port;
   private final int shuffle;
+  private final int mngPort;
   private final String[] hosts;
   private final int memory;
   private final int vcores;
@@ -53,13 +56,10 @@ public class LlapFixedRegistryImpl implements ServiceRegistry {
 
   public LlapFixedRegistryImpl(String hosts, Configuration conf) {
     this.hosts = hosts.split(",");
-    this.port =
-        conf.getInt(LlapConfiguration.LLAP_DAEMON_RPC_PORT,
-            LlapConfiguration.LLAP_DAEMON_RPC_PORT_DEFAULT);
-    this.shuffle =
-        conf.getInt(LlapConfiguration.LLAP_DAEMON_YARN_SHUFFLE_PORT,
-            LlapConfiguration.LLAP_DAEMON_YARN_SHUFFLE_PORT_DEFAULT);
+    this.port = HiveConf.getIntVar(conf, ConfVars.LLAP_DAEMON_RPC_PORT);
+    this.shuffle = HiveConf.getIntVar(conf, ConfVars.LLAP_DAEMON_YARN_SHUFFLE_PORT);
     this.resolveHosts = conf.getBoolean(FIXED_REGISTRY_RESOLVE_HOST_NAMES, true);
+    this.mngPort = HiveConf.getIntVar(conf, ConfVars.LLAP_MANAGEMENT_RPC_PORT);
 
     for (Map.Entry<String, String> kv : conf) {
       if (kv.getKey().startsWith(LlapConfiguration.LLAP_DAEMON_PREFIX)
@@ -70,12 +70,8 @@ public class LlapFixedRegistryImpl implements ServiceRegistry {
       }
     }
 
-    this.memory =
-        conf.getInt(LlapConfiguration.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB,
-            LlapConfiguration.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB_DEFAULT);
-    this.vcores =
-        conf.getInt(LlapConfiguration.LLAP_DAEMON_NUM_EXECUTORS,
-            LlapConfiguration.LLAP_DAEMON_NUM_EXECUTORS_DEFAULT);
+    this.memory = HiveConf.getIntVar(conf, ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB);
+    this.vcores = HiveConf.getIntVar(conf, ConfVars.LLAP_DAEMON_NUM_EXECUTORS);
   }
 
   @Override
@@ -139,6 +135,11 @@ public class LlapFixedRegistryImpl implements ServiceRegistry {
     public int getRpcPort() {
       // TODO: allow >1 port per host?
       return LlapFixedRegistryImpl.this.port;
+    }
+
+    @Override
+    public int getManagementPort() {
+      return LlapFixedRegistryImpl.this.mngPort;
     }
 
     @Override

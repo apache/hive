@@ -313,7 +313,7 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 1070 Data size: 4281 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2140 Data size: 8562 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 key (type: int)
@@ -337,7 +337,7 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 1070 Data size: 4281 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2140 Data size: 8562 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -345,7 +345,7 @@ STAGE PLANS:
                   0 key (type: int)
                   1 key (type: int)
                 Position of Big Table: 0
-                Statistics: Num rows: 1177 Data size: 4709 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2354 Data size: 9418 Basic stats: COMPLETE Column stats: NONE
                 BucketMapJoin: true
                 Group By Operator
                   aggregations: count()
@@ -702,7 +702,7 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 1070 Data size: 4281 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2140 Data size: 8562 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 key (type: int), part (type: string)
@@ -726,7 +726,7 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 1070 Data size: 4281 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2140 Data size: 8562 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -734,7 +734,7 @@ STAGE PLANS:
                   0 key (type: int), part (type: string)
                   1 key (type: int), part (type: string)
                 Position of Big Table: 0
-                Statistics: Num rows: 1177 Data size: 4709 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2354 Data size: 9418 Basic stats: COMPLETE Column stats: NONE
                 BucketMapJoin: true
                 Group By Operator
                   aggregations: count()

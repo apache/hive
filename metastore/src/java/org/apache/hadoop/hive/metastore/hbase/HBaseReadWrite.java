@@ -19,8 +19,10 @@
 package org.apache.hadoop.hive.metastore.hbase;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Iterators;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.hbase.filter.FirstKeyOnlyFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -419,6 +421,12 @@ public class HBaseReadWrite {
       for (Database db : dbs) lines.add(dumpThriftObject(db));
       return lines;
     }
+  }
+
+  int getDatabaseCount() throws IOException {
+    Filter fil = new FirstKeyOnlyFilter();
+    Iterator<Result> iter = scan(DB_TABLE, fil);
+    return Iterators.size(iter);
   }
 
   /**********************************************************************************************
@@ -863,6 +871,12 @@ public class HBaseReadWrite {
       lines.add(printOnePartition(iter.next()));
     }
     return lines;
+  }
+
+  int getPartitionCount() throws IOException {
+    Filter fil = new FirstKeyOnlyFilter();
+    Iterator<Result> iter = scan(PART_TABLE, fil);
+    return Iterators.size(iter);
   }
 
   private String printOnePartition(Result result) throws IOException, TException {
@@ -1669,6 +1683,12 @@ public class HBaseReadWrite {
       lines.add(printOneTable(iter.next()));
     }
     return lines;
+  }
+
+  int getTableCount() throws IOException {
+    Filter fil = new FirstKeyOnlyFilter();
+    Iterator<Result> iter = scan(TABLE_TABLE, fil);
+    return Iterators.size(iter);
   }
 
   private String printOneTable(Result result) throws IOException, TException {

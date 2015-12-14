@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 create table split    (id int, line_id int, orders string);
 create table bar      (id int, line_id int, orders string);
 create table foo      (id int, line_id int, orders string);

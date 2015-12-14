@@ -124,11 +124,11 @@ STAGE PLANS:
                   Statistics: Num rows: 100 Data size: 29638 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: bin is not null (type: boolean)
-                    Statistics: Num rows: 50 Data size: 14819 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 100 Data size: 29638 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: t (type: tinyint), si (type: smallint), i (type: int), b (type: bigint), f (type: float), d (type: double), bo (type: boolean), s (type: string), ts (type: timestamp), dec (type: decimal(4,2)), bin (type: binary)
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
-                      Statistics: Num rows: 50 Data size: 14819 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 100 Data size: 29638 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -138,12 +138,12 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21
                         input vertices:
                           1 Map 3
-                        Statistics: Num rows: 55 Data size: 16300 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 110 Data size: 32601 Basic stats: COMPLETE Column stats: NONE
                         HybridGraceHashJoin: true
                         Select Operator
                           expressions: hash(_col0,_col1,_col2,_col3,_col4,_col5,_col6,_col7,_col8,_col9,_col10,_col11,_col12,_col13,_col14,_col15,_col16,_col17,_col18,_col19,_col20,_col21) (type: int)
                           outputColumnNames: _col0
-                          Statistics: Num rows: 55 Data size: 16300 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 110 Data size: 32601 Basic stats: COMPLETE Column stats: NONE
                           Group By Operator
                             aggregations: sum(_col0)
                             mode: hash
@@ -160,16 +160,16 @@ STAGE PLANS:
                   Statistics: Num rows: 100 Data size: 29638 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: bin is not null (type: boolean)
-                    Statistics: Num rows: 50 Data size: 14819 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 100 Data size: 29638 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: t (type: tinyint), si (type: smallint), i (type: int), b (type: bigint), f (type: float), d (type: double), bo (type: boolean), s (type: string), ts (type: timestamp), dec (type: decimal(4,2)), bin (type: binary)
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
-                      Statistics: Num rows: 50 Data size: 14819 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 100 Data size: 29638 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col10 (type: binary)
                         sort order: +
                         Map-reduce partition columns: _col10 (type: binary)
-                        Statistics: Num rows: 50 Data size: 14819 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 100 Data size: 29638 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: int), _col3 (type: bigint), _col4 (type: float), _col5 (type: double), _col6 (type: boolean), _col7 (type: string), _col8 (type: timestamp), _col9 (type: decimal(4,2))
         Reducer 2 
             Execution mode: vectorized

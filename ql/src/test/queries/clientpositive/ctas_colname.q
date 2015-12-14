@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 -- SORT_QUERY_RESULTS
 
 -- HIVE-4392, column aliases from expressionRR (GBY, etc.) are not valid name for table

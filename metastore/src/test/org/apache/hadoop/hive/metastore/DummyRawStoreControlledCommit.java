@@ -788,4 +788,19 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   public void getFileMetadataByExpr(List<Long> fileIds, FileMetadataExprType type, byte[] expr,
       ByteBuffer[] metadatas, ByteBuffer[] stripeBitsets, boolean[] eliminated) {
   }
+
+  @Override
+  public int getTableCount() throws MetaException {
+    return objectStore.getTableCount();
+  }
+
+  @Override
+  public int getPartitionCount() throws MetaException {
+    return objectStore.getPartitionCount();
+  }
+
+  @Override
+  public int getDatabaseCount() throws MetaException {
+    return objectStore.getDatabaseCount();
+  }
 }

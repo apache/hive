@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.typecheck.on.insert = true;
 
 -- begin part(string, string) pass(string, int)

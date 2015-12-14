@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 -- this is to test the case where some dynamic partitions are merged and some are moved
 
 create table srcpart_merge_dp like srcpart;

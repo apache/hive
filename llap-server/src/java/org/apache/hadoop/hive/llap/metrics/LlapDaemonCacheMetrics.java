@@ -38,6 +38,7 @@ import org.apache.hadoop.metrics2.annotation.Metric;
 import org.apache.hadoop.metrics2.annotation.Metrics;
 import org.apache.hadoop.metrics2.lib.MetricsRegistry;
 import org.apache.hadoop.metrics2.lib.MutableCounterLong;
+import org.apache.hadoop.metrics2.lib.MutableGaugeLong;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -53,9 +54,9 @@ public class LlapDaemonCacheMetrics implements MetricsSource {
   @Metric
   MutableCounterLong cacheReadRequests;
   @Metric
-  MutableCounterLong cacheCapacityTotal;
+  MutableGaugeLong cacheCapacityTotal;
   @Metric
-  MutableCounterLong cacheCapacityUsed;
+  MutableCounterLong cacheCapacityUsed; // Not using the gauge to avoid races.
   @Metric
   MutableCounterLong cacheRequestedBytes;
   @Metric
@@ -77,16 +78,12 @@ public class LlapDaemonCacheMetrics implements MetricsSource {
     return ms.register(displayName, null, new LlapDaemonCacheMetrics(displayName, sessionId));
   }
 
-  public void incrCacheCapacityTotal(long delta) {
-    cacheCapacityTotal.incr(delta);
+  public void setCacheCapacityTotal(long value) {
+    cacheCapacityTotal.set(value);
   }
 
   public void incrCacheCapacityUsed(long delta) {
     cacheCapacityUsed.incr(delta);
-  }
-
-  public void decrCacheCapacityUsed(int delta) {
-    cacheCapacityUsed.incr(-delta);
   }
 
   public void incrCacheRequestedBytes(long delta) {

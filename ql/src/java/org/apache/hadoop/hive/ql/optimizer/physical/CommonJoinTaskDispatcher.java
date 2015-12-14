@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.LateralViewForwardOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -485,7 +486,7 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
         }
         // deep copy a new mapred work from xml
         // Once HIVE-4396 is in, it would be faster to use a cheaper method to clone the plan
-        MapredWork newWork = Utilities.clonePlan(currTask.getWork());
+        MapredWork newWork = SerializationUtilities.clonePlan(currTask.getWork());
 
         // create map join task and set big table as i
         MapRedTask newTask = convertTaskToMapJoinTask(newWork, pos);

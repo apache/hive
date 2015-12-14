@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
@@ -177,7 +178,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
       OutputStream out = null;
       try {
         out = FileSystem.getLocal(conf).create(planPath);
-        Utilities.serializePlan(plan, out, conf);
+        SerializationUtilities.serializePlan(plan, out);
         out.close();
         out = null;
       } finally {

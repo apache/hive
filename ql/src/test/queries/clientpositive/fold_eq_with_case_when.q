@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 explain
 SELECT  
 SUM((CASE WHEN 1000000 = 0 THEN NULL ELSE l_partkey / 1000000 END)),

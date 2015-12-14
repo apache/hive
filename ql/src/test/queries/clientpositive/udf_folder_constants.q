@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 drop table if exists udf_tb1;
 drop table if exists udf_tb2;
 

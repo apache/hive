@@ -66,7 +66,7 @@ ${env.PIG_HOME}/bin/pig
      uncertainty.</p>
 
   <p><strong>Note:</strong> The location of the log files created by Templeton and some other properties
-     of the logging system are set in the webhcat-log4j2.xml file.</p>
+     of the logging system are set in the webhcat-log4j2.properties file.</p>
 
   <section>
   <title>Variables</title>

@@ -22,22 +22,22 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.metastore.Metastore.SplitInfo;
 import org.apache.hadoop.hive.metastore.Metastore.SplitInfos;
 import org.apache.hadoop.hive.metastore.PartitionExpressionProxy;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto;
 import org.apache.hadoop.hive.ql.io.orc.ReaderImpl;
-import org.apache.hadoop.hive.ql.io.orc.StripeInformation;
+import org.apache.orc.StripeInformation;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.apache.orc.OrcProto;
 
 /**
  * The basic implementation of PartitionExpressionProxy that uses ql package classes.
@@ -71,7 +71,7 @@ public class PartitionExpressionForMetastore implements PartitionExpressionProxy
   private ExprNodeGenericFuncDesc deserializeExpr(byte[] exprBytes) throws MetaException {
     ExprNodeGenericFuncDesc expr = null;
     try {
-      expr = Utilities.deserializeExpressionFromKryo(exprBytes);
+      expr = SerializationUtilities.deserializeExpressionFromKryo(exprBytes);
     } catch (Exception ex) {
       LOG.error("Failed to deserialize the expression", ex);
       throw new MetaException(ex.getMessage());

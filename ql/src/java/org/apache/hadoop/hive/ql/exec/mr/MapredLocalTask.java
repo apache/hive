@@ -33,6 +33,7 @@ import java.util.Properties;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileSystem;
@@ -159,7 +160,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
       OutputStream out = null;
       try {
         out = FileSystem.getLocal(conf).create(planPath);
-        Utilities.serializePlan(plan, out, conf);
+        SerializationUtilities.serializePlan(plan, out);
         out.close();
         out = null;
       } finally {

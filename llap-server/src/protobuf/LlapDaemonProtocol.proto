@@ -117,9 +117,20 @@ message TerminateFragmentRequestProto {
 message TerminateFragmentResponseProto {
 }
 
+message GetTokenRequestProto {
+}
+
+message GetTokenResponseProto {
+  optional bytes token = 1;
+}
+
 service LlapDaemonProtocol {
   rpc submitWork(SubmitWorkRequestProto) returns (SubmitWorkResponseProto);
   rpc sourceStateUpdated(SourceStateUpdatedRequestProto) returns (SourceStateUpdatedResponseProto);
   rpc queryComplete(QueryCompleteRequestProto) returns (QueryCompleteResponseProto);
   rpc terminateFragment(TerminateFragmentRequestProto) returns (TerminateFragmentResponseProto);
+}
+
+service LlapManagementProtocol {
+  rpc getDelegationToken(GetTokenRequestProto) returns (GetTokenResponseProto);
 }

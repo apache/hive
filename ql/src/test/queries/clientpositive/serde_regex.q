@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 EXPLAIN
 CREATE TABLE serde_regex(
   host STRING,

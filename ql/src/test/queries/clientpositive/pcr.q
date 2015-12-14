@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 drop table pcr_t1;
 drop table pcr_t2;
 drop table pcr_t3;

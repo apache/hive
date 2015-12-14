@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.auto.convert.join=false;
 set hive.optimize.correlation=false;
 -- When Correlation Optimizer is turned off, 5 MR jobs will be generated.

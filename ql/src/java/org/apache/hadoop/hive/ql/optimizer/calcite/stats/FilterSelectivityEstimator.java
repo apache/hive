@@ -17,6 +17,10 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.stats;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.plan.RelOptUtil.InputReferencedVisitor;
 import org.apache.calcite.rel.RelNode;
@@ -31,8 +35,10 @@ import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.type.SqlTypeUtil;
 import org.apache.calcite.util.ImmutableBitSet;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
+import org.apache.hadoop.hive.ql.plan.ColStatistics;
 
 public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
   private final RelNode childRel;
@@ -78,6 +84,21 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     case NOT:
     case NOT_EQUALS: {
       selectivity = computeNotEqualitySelectivity(call);
+      break;
+    }
+
+    case IS_NOT_NULL: {
+      if (childRel instanceof HiveTableScan) {
+        double noOfNulls = getMaxNulls(call, (HiveTableScan) childRel);
+        double totalNoOfTuples = childRel.getRows();
+        if (totalNoOfTuples >= noOfNulls) {
+          selectivity = (totalNoOfTuples - noOfNulls) / Math.max(totalNoOfTuples, 1);
+        } else {
+          throw new RuntimeException("Invalid Stats number of null > no of tuples");
+        }
+      } else {
+        selectivity = computeNotEqualitySelectivity(call);
+      }
       break;
     }
 
@@ -197,6 +218,33 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     }
 
     return selectivity;
+  }
+
+  /**
+   * Given a RexCall & TableScan find max no of nulls. Currently it picks the
+   * col with max no of nulls.
+   * 
+   * TODO: improve this
+   * 
+   * @param call
+   * @param t
+   * @return
+   */
+  private long getMaxNulls(RexCall call, HiveTableScan t) {
+    long tmpNoNulls = 0;
+    long maxNoNulls = 0;
+
+    Set<Integer> iRefSet = HiveCalciteUtil.getInputRefs(call);
+    List<ColStatistics> colStats = t.getColStat(new ArrayList<Integer>(iRefSet));
+
+    for (ColStatistics cs : colStats) {
+      tmpNoNulls = cs.getNumNulls();
+      if (tmpNoNulls > maxNoNulls) {
+        maxNoNulls = tmpNoNulls;
+      }
+    }
+
+    return maxNoNulls;
   }
 
   private Double getMaxNDV(RexCall call) {

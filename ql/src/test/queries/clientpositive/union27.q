@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 -- SORT_QUERY_RESULTS
 create table jackson_sev_same as select * from src;
 create table dim_pho as select * from src;

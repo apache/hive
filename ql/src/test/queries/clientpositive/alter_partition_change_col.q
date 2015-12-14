@@ -6,7 +6,7 @@ SET hive.exec.dynamic.partition.mode = nonstrict;
 create table alter_partition_change_col0 (c1 string, c2 string);
 load data local inpath '../../data/files/dec.txt' overwrite into table alter_partition_change_col0;
 
-create table alter_partition_change_col1 (c1 string, c2 string) partitioned by (p1 string, p2 string);
+create table alter_partition_change_col1 (c1 string, c2 string) partitioned by (p1 string comment 'Column p1', p2 string comment 'Column p2');
 
 insert overwrite table alter_partition_change_col1 partition (p1, p2)
   select c1, c2, 'abc', '123' from alter_partition_change_col0
@@ -30,6 +30,10 @@ describe alter_partition_change_col1;
 describe alter_partition_change_col1 partition (p1='abc', p2='123');
 select * from alter_partition_change_col1 where p1='abc';
 select * from alter_partition_change_col1 where p1='__HIVE_DEFAULT_PARTITION__';
+
+-- change the comment on a partition column without changing type or renaming it
+alter table alter_partition_change_col1 partition column (p1 string comment 'Changed comment for p1');
+describe alter_partition_change_col1;
 
 -- now change the column type of the existing partition
 alter table alter_partition_change_col1 partition (p1='abc', p2='123') change c2 c2 decimal(14,4);

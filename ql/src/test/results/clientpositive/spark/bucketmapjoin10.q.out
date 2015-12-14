@@ -210,7 +210,7 @@ STAGE PLANS:
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 869 Data size: 3477 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1737 Data size: 6950 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
                       keys:
                         0 key (type: int)
@@ -334,7 +334,7 @@ STAGE PLANS:
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 869 Data size: 3477 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1737 Data size: 6950 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
@@ -344,7 +344,7 @@ STAGE PLANS:
                       input vertices:
                         1 Map 3
                       Position of Big Table: 0
-                      Statistics: Num rows: 955 Data size: 3824 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1910 Data size: 7645 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
                         mode: hash

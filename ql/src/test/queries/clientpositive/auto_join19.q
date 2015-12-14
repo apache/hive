@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.auto.convert.join = true;
 
 CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE;

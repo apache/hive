@@ -22,6 +22,7 @@ import static org.apache.tez.dag.api.client.DAGStatus.State.RUNNING;
 import static org.fusesource.jansi.Ansi.ansi;
 
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -135,9 +136,7 @@ public class TezJobMonitor {
     Runtime.getRuntime().addShutdownHook(new Thread() {
       @Override
       public void run() {
-        for (DAGClient c: shutdownList) {
-          TezJobMonitor.killRunningJobs();
-        }
+        TezJobMonitor.killRunningJobs();
         try {
           for (TezSessionState s : TezSessionPoolManager.getInstance().getOpenSessions()) {
             System.err.println("Shutting down tez session.");
@@ -346,8 +345,8 @@ public class TezJobMonitor {
         }
       } catch (Exception e) {
         console.printInfo("Exception: " + e.getMessage());
-        if (++failedCounter % maxRetryInterval / checkInterval == 0
-            || e instanceof InterruptedException) {
+        boolean isInterrupted = hasInterruptedException(e);
+        if (isInterrupted || (++failedCounter % maxRetryInterval / checkInterval == 0)) {
           try {
             console.printInfo("Killing DAG...");
             dagClient.tryKillDAG();
@@ -376,8 +375,20 @@ public class TezJobMonitor {
         }
       }
     }
+
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_RUN_DAG);
     return rc;
+  }
+
+  private static boolean hasInterruptedException(Throwable e) {
+    // Hadoop IPC wraps InterruptedException. GRRR.
+    while (e != null) {
+      if (e instanceof InterruptedException || e instanceof InterruptedIOException) {
+        return true;
+      }
+      e = e.getCause();
+    }
+    return false;
   }
 
   /**

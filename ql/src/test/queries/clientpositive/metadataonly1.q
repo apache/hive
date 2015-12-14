@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 CREATE TABLE TEST1(A INT, B DOUBLE) partitioned by (ds string);
 explain extended select max(ds) from TEST1;
 select max(ds) from TEST1;

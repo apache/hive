@@ -75,10 +75,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@loc_orc_1d
 POSTHOOK: Input: default@loc_orc_1d@year=2001
 #### A masked pattern was here ####
-PREHOOK: query: describe formatted loc_orc_1d.state PARTITION(year='2001')
+PREHOOK: query: describe formatted loc_orc_1d PARTITION(year='2001') state
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@loc_orc_1d
-POSTHOOK: query: describe formatted loc_orc_1d.state PARTITION(year='2001')
+POSTHOOK: query: describe formatted loc_orc_1d PARTITION(year='2001') state
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_1d
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             

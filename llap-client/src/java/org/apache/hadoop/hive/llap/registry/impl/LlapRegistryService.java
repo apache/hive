@@ -16,6 +16,8 @@ package org.apache.hadoop.hive.llap.registry.impl;
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.configuration.LlapConfiguration;
 import org.apache.hadoop.hive.llap.registry.ServiceInstanceSet;
 import org.apache.hadoop.hive.llap.registry.ServiceRegistry;
@@ -37,7 +39,7 @@ public class LlapRegistryService extends AbstractService {
 
   @Override
   public void serviceInit(Configuration conf) {
-    String hosts = conf.getTrimmed(LlapConfiguration.LLAP_DAEMON_SERVICE_HOSTS);
+    String hosts = HiveConf.getTrimmedVar(conf, ConfVars.LLAP_DAEMON_SERVICE_HOSTS);
     if (hosts.startsWith("@")) {
       registry = new LlapYarnRegistryImpl(hosts.substring(1), conf, isDaemon);
     } else {

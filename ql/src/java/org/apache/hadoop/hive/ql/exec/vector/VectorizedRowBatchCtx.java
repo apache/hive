@@ -25,6 +25,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.common.type.HiveChar;
+import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -159,14 +161,17 @@ public class VectorizedRowBatchCtx {
         String key = vrbCtx.rowColumnNames[vrbCtx.dataColumnCount + i];
 
         // Create a Standard java object Inspector
+        TypeInfo partColTypeInfo = vrbCtx.rowColumnTypeInfos[vrbCtx.dataColumnCount + i];
         ObjectInspector objectInspector =
-            TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(
-                vrbCtx.rowColumnTypeInfos[vrbCtx.dataColumnCount + i]);
+            TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(partColTypeInfo);
         objectValue =
             ObjectInspectorConverters.
                 getConverter(PrimitiveObjectInspectorFactory.
                     javaStringObjectInspector, objectInspector).
                         convert(partSpec.get(key));
+        if (partColTypeInfo instanceof CharTypeInfo) {
+          objectValue = ((HiveChar) objectValue).getStrippedValue();
+        }
       }
       partitionValues[i] = objectValue;
     }

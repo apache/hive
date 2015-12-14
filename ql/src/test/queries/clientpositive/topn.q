@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 CREATE TABLE `sample_07` ( `code` string , `description` string , `total_emp` int , `salary` int ) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' STORED AS TextFile;
 set hive.limit.pushdown.memory.usage=0.9999999;
 

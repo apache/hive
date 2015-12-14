@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 -- small no part, 4 bucket & big 2 part, 2 bucket
 CREATE TABLE bucket_small (key string, value string) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE;
 load data local inpath '../../data/files/srcsortbucket1outof4.txt' INTO TABLE bucket_small;

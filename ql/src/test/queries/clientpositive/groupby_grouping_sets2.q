@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.new.job.grouping.set.cardinality=2;
 
 CREATE TABLE T1(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE; 

@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFHourLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFHourString;
+import org.apache.hadoop.hive.ql.udf.generic.NDV;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.io.IntWritable;
@@ -48,6 +49,7 @@ import org.apache.hadoop.io.Text;
     + "  12\n"
     + "  > SELECT _FUNC_('12:58:59') FROM src LIMIT 1;\n" + "  12")
 @VectorizedExpressions({VectorUDFHourLong.class, VectorUDFHourString.class})
+@NDV(maxNdv = 24)
 public class UDFHour extends UDF {
   private final SimpleDateFormat formatter1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
   private final SimpleDateFormat formatter2 = new SimpleDateFormat("HH:mm:ss");

@@ -813,11 +813,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s
-                  Statistics: Num rows: 6058 Data size: 2793 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6058 Data size: 2757 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: cmodtinyint (type: int)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 6058 Data size: 2793 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 6058 Data size: 2757 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Left Outer Join0 to 1
@@ -826,7 +826,7 @@ STAGE PLANS:
                         1 _col0 (type: int)
                       input vertices:
                         1 Map 3
-                      Statistics: Num rows: 6663 Data size: 3072 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 6663 Data size: 3032 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
                         mode: hash
@@ -934,11 +934,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s
-                  Statistics: Num rows: 6058 Data size: 2793 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6058 Data size: 2757 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: cmodtinyint (type: int), cmodint (type: int)
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 6058 Data size: 2793 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 6058 Data size: 2757 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Left Outer Join0 to 1
@@ -950,7 +950,7 @@ STAGE PLANS:
                         1 _col0 (type: int)
                       input vertices:
                         1 Map 3
-                      Statistics: Num rows: 6663 Data size: 3072 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 6663 Data size: 3032 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
                         mode: hash
@@ -1058,11 +1058,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s
-                  Statistics: Num rows: 6058 Data size: 2793 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6058 Data size: 2757 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: cmodtinyint (type: int), cmodint (type: int)
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 6058 Data size: 2793 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 6058 Data size: 2757 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Left Outer Join0 to 1
@@ -1074,7 +1074,7 @@ STAGE PLANS:
                         1 _col0 (type: int)
                       input vertices:
                         1 Map 3
-                      Statistics: Num rows: 6663 Data size: 3072 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 6663 Data size: 3032 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
                         mode: hash
@@ -1182,11 +1182,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s
-                  Statistics: Num rows: 6058 Data size: 2793 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6058 Data size: 2757 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: cmodtinyint (type: int)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 6058 Data size: 2793 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 6058 Data size: 2757 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Left Outer Join0 to 1
@@ -1198,7 +1198,7 @@ STAGE PLANS:
                         1 _col0 (type: int)
                       input vertices:
                         1 Map 3
-                      Statistics: Num rows: 6663 Data size: 3072 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 6663 Data size: 3032 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
                         mode: hash
@@ -1300,11 +1300,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s
-                  Statistics: Num rows: 6058 Data size: 2793 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6058 Data size: 2757 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: cmodtinyint (type: int)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 6058 Data size: 2793 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 6058 Data size: 2757 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
                       keys:
                         0 _col0 (type: int)
@@ -1323,11 +1323,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s
-                  Statistics: Num rows: 6058 Data size: 2793 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6058 Data size: 2757 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: cmodtinyint (type: int), cmodint (type: int)
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 6058 Data size: 2793 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 6058 Data size: 2757 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Left Outer Join0 to 1
@@ -1337,7 +1337,7 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       input vertices:
                         1 Map 3
-                      Statistics: Num rows: 6663 Data size: 3072 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 6663 Data size: 3032 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
                              Left Outer Join0 to 1
@@ -1346,7 +1346,7 @@ STAGE PLANS:
                           1 _col0 (type: int)
                         input vertices:
                           1 Map 4
-                        Statistics: Num rows: 7329 Data size: 3379 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 7329 Data size: 3335 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           aggregations: count()
                           mode: hash

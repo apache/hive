@@ -55,7 +55,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.ObjectPair;
-import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.StatsSetupConst.StatDB;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -241,8 +240,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private HashMap<TableScanOperator, ExprNodeDesc> opToPartPruner;
   private HashMap<TableScanOperator, PrunedPartitionList> opToPartList;
-  protected HashMap<String, Operator<? extends OperatorDesc>> topOps;
-  private final HashMap<String, Operator<? extends OperatorDesc>> topSelOps;
+  protected HashMap<String, TableScanOperator> topOps;
   protected LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtx;
   private List<LoadTableDesc> loadTableWork;
   private List<LoadFileDesc> loadFileWork;
@@ -319,8 +317,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     opToSamplePruner = new HashMap<TableScanOperator, SampleDesc>();
     nameToSplitSample = new HashMap<String, SplitSample>();
     // Must be deterministic order maps - see HIVE-8707
-    topOps = new LinkedHashMap<String, Operator<? extends OperatorDesc>>();
-    topSelOps = new LinkedHashMap<String, Operator<? extends OperatorDesc>>();
+    topOps = new LinkedHashMap<String, TableScanOperator>();
     loadTableWork = new ArrayList<LoadTableDesc>();
     loadFileWork = new ArrayList<LoadFileDesc>();
     opParseCtx = new LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext>();
@@ -358,7 +355,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     loadTableWork.clear();
     loadFileWork.clear();
     topOps.clear();
-    topSelOps.clear();
     destTableId = 1;
     idToTableNameMap.clear();
     qb = null;
@@ -1329,7 +1325,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         break;
 
       case HiveParser.TOK_LIMIT:
-        qbp.setDestLimit(ctx_1.dest, new Integer(ast.getChild(0).getText()));
+        if (ast.getChildCount() == 2) {
+          qbp.setDestLimit(ctx_1.dest,
+              new Integer(ast.getChild(0).getText()),
+              new Integer(ast.getChild(1).getText()));
+        } else {
+          qbp.setDestLimit(ctx_1.dest, new Integer(0),
+              new Integer(ast.getChild(0).getText()));
+        }
         break;
 
       case HiveParser.TOK_ANALYZE:
@@ -2367,6 +2370,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           LOG.warn(ErrorMsg.OUTERJOIN_USES_FILTERS.getErrorCodedMsg());
           joinTree.getFiltersForPushing().get(1).add(joinCond);
         }
+      } else if (type.equals(JoinType.LEFTSEMI)) {
+        joinTree.getExpressions().get(0).add(leftCondn);
+        joinTree.getExpressions().get(1).add(rightCondn);
+        boolean nullsafe = joinCond.getToken().getType() == HiveParser.EQUAL_NS;
+        joinTree.getNullSafes().add(nullsafe);
+        joinTree.getFiltersForPushing().get(1).add(joinCond);
       } else {
         joinTree.getFiltersForPushing().get(1).add(joinCond);
       }
@@ -6796,7 +6805,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   @SuppressWarnings("nls")
-  private Operator genLimitPlan(String dest, QB qb, Operator input, int limit)
+  private Operator genLimitPlan(String dest, QB qb, Operator input, int offset, int limit)
       throws SemanticException {
     // A map-only job can be optimized - instead of converting it to a
     // map-reduce job, we can have another map
@@ -6807,7 +6816,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     RowResolver inputRR = opParseCtx.get(input).getRowResolver();
 
-    LimitDesc limitDesc = new LimitDesc(limit);
+    LimitDesc limitDesc = new LimitDesc(offset, limit);
     globalLimitCtx.setLastReduceLimitDesc(limitDesc);
 
     Operator limitMap = putOpInsertMap(OperatorFactory.getAndMakeChild(
@@ -6917,14 +6926,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   @SuppressWarnings("nls")
   private Operator genLimitMapRedPlan(String dest, QB qb, Operator input,
-      int limit, boolean extraMRStep) throws SemanticException {
+      int offset, int limit, boolean extraMRStep) throws SemanticException {
     // A map-only job can be optimized - instead of converting it to a
     // map-reduce job, we can have another map
     // job to do the same to avoid the cost of sorting in the map-reduce phase.
     // A better approach would be to
     // write into a local file and then have a map-only job.
     // Add the limit operator to get the value fields
-    Operator curr = genLimitPlan(dest, qb, input, limit);
+    Operator curr = genLimitPlan(dest, qb, input, offset, limit);
 
     // the client requested that an extra map-reduce step be performed
     if (!extraMRStep) {
@@ -6933,7 +6942,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // Create a reduceSink operator followed by another limit
     curr = genReduceSinkPlan(dest, qb, curr, 1, false);
-    return genLimitPlan(dest, qb, curr, limit);
+    return genLimitPlan(dest, qb, curr, offset, limit);
   }
 
   private ArrayList<ExprNodeDesc> getPartitionColsFromBucketCols(String dest, QB qb, Table tab,
@@ -7585,22 +7594,27 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     RowResolver inputRR = opParseCtx.get(input).getRowResolver();
     ArrayList<ExprNodeDesc> colList = new ArrayList<ExprNodeDesc>();
-    ArrayList<String> columnNames = new ArrayList<String>();
-
+    ArrayList<String> outputColumnNames = new ArrayList<String>();
     Map<String, ExprNodeDesc> colExprMap = new HashMap<String, ExprNodeDesc>();
+
+    RowResolver outputRR = new RowResolver();
+
     // construct the list of columns that need to be projected
-    for (ASTNode field : fields) {
-      ExprNodeColumnDesc exprNode = (ExprNodeColumnDesc) genExprNodeDesc(field,
-          inputRR);
+    for (int i = 0; i < fields.size(); ++i) {
+      ASTNode field = fields.get(i);
+      ExprNodeDesc exprNode = genExprNodeDesc(field, inputRR);
+      String colName = getColumnInternalName(i);
+      outputColumnNames.add(colName);
+      ColumnInfo colInfo = new ColumnInfo(colName, exprNode.getTypeInfo(), "", false);
+      outputRR.putExpression(field, colInfo);
       colList.add(exprNode);
-      columnNames.add(exprNode.getColumn());
-      colExprMap.put(exprNode.getColumn(), exprNode);
+      colExprMap.put(colName, exprNode);
     }
 
     // create selection operator
     Operator output = putOpInsertMap(OperatorFactory.getAndMakeChild(
-        new SelectDesc(colList, columnNames, false), new RowSchema(inputRR
-            .getColumnInfos()), input), inputRR);
+        new SelectDesc(colList, outputColumnNames, false),
+        new RowSchema(outputRR.getColumnInfos()), input), outputRR);
 
     output.setColumnExprMap(colExprMap);
     return output;
@@ -8861,6 +8875,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     curr = genSelectPlan(dest, qb, curr, gbySource);
     Integer limit = qbp.getDestLimit(dest);
+    Integer offset = (qbp.getDestLimitOffset(dest) == null) ? 0 : qbp.getDestLimitOffset(dest);
 
     // Expressions are not supported currently without a alias.
 
@@ -8905,7 +8920,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (limit != null) {
         // In case of order by, only 1 reducer is used, so no need of
         // another shuffle
-        curr = genLimitMapRedPlan(dest, qb, curr, limit.intValue(), !hasOrderBy);
+        curr = genLimitMapRedPlan(dest, qb, curr, offset.intValue(),
+            limit.intValue(), !hasOrderBy);
       }
     } else {
       // exact limit can be taken care of by the fetch operator
@@ -8918,8 +8934,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           extraMRStep = false;
         }
 
-        curr = genLimitMapRedPlan(dest, qb, curr, limit.intValue(),
-            extraMRStep);
+        curr = genLimitMapRedPlan(dest, qb, curr, offset.intValue(),
+            limit.intValue(), extraMRStep);
         qb.getParseInfo().setOuterQueryLimit(limit.intValue());
       }
       if (!SessionState.get().getHiveOperation().equals(HiveOperation.CREATEVIEW)) {
@@ -9244,11 +9260,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     RowResolver rwsch;
 
     // is the table already present
-    Operator<? extends OperatorDesc> top = topOps.get(alias_id);
-    Operator<? extends OperatorDesc> dummySel = topSelOps.get(alias_id);
-    if (dummySel != null) {
-      top = dummySel;
-    }
+    TableScanOperator top = topOps.get(alias_id);
 
     if (top == null) {
       // Determine row schema for TSOP.
@@ -9302,7 +9314,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         nameToSplitSample.remove(alias_id);
       }
 
-      top = putOpInsertMap(OperatorFactory.get(tsDesc,
+      top = (TableScanOperator) putOpInsertMap(OperatorFactory.get(tsDesc,
           new RowSchema(rwsch.getColumnInfos())), rwsch);
 
       // Add this to the list of top operators - we always start from a table
@@ -9310,11 +9322,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       topOps.put(alias_id, top);
 
       // Add a mapping from the table scan operator to Table
-      topToTable.put((TableScanOperator) top, tab);
+      topToTable.put(top, tab);
 
       Map<String, String> props = qb.getTabPropsForAlias(alias);
       if (props != null) {
-        topToTableProps.put((TableScanOperator) top, props);
+        topToTableProps.put(top, props);
         tsDesc.setOpProps(props);
       }
     } else {
@@ -9326,7 +9338,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Operator<? extends OperatorDesc> op = top;
     TableSample ts = qb.getParseInfo().getTabSample(alias);
     if (ts != null) {
-      TableScanOperator tableScanOp = (TableScanOperator) top;
+      TableScanOperator tableScanOp = top;
       tableScanOp.getConf().setTableSample(ts);
       int num = ts.getNumerator();
       int den = ts.getDenominator();
@@ -9491,7 +9503,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       tsDesc.setGatherStats(true);
       tsDesc.setStatsReliable(conf.getBoolVar(HiveConf.ConfVars.HIVE_STATS_RELIABLE));
-      tsDesc.setMaxStatsKeyPrefixLength(StatsFactory.getMaxPrefixLength(conf));
 
       // append additional virtual columns for storing statistics
       Iterator<VirtualColumn> vcs = VirtualColumn.getStatsRegistry(conf).iterator();
@@ -9520,7 +9531,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // db_name.table_name + partitionSec
       // as the prefix for easy of read during explain and debugging.
       // Currently, partition spec can only be static partition.
-      String k = tblName + Path.SEPARATOR;
+      String k = MetaStoreUtils.encodeTableName(tblName) + Path.SEPARATOR;
       tsDesc.setStatsAggPrefix(tab.getDbName()+"."+k);
 
       // set up WriteEntity for replication
@@ -9639,7 +9650,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
          * as Join conditions
          */
         Set<String> dests = qb.getParseInfo().getClauseNames();
-        if ( dests.size() == 1 ) {
+        if ( dests.size() == 1 && joinTree.getNoOuterJoin()) {
           String dest = dests.iterator().next();
           ASTNode whereClause = qb.getParseInfo().getWhrForClause(dest);
           if ( whereClause != null ) {
@@ -10527,6 +10538,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // For example, in Column[a].b.c and Column[a].b, Column[a].b should be
       // unparsed before Column[a].b.c
       Collections.sort(fieldDescList, new Comparator<Map.Entry<ASTNode, ExprNodeDesc>>() {
+        @Override
         public int compare(Entry<ASTNode, ExprNodeDesc> o1, Entry<ASTNode, ExprNodeDesc> o2) {
           ExprNodeFieldDesc fieldDescO1 = (ExprNodeFieldDesc) o1.getValue();
           ExprNodeFieldDesc fieldDescO2 = (ExprNodeFieldDesc) o2.getValue();
@@ -11762,9 +11774,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       else
       {
         int amt = Integer.parseInt(amtNode.getText());
-        if ( amt < 0 ) {
+        if ( amt <= 0 ) {
           throw new SemanticException(
-              "Window Frame Boundary Amount must be a +ve integer, amount provide is: " + amt);
+              "Window Frame Boundary Amount must be a positive integer, provided amount is: " + amt);
         }
         bs.setAmt(amt);
       }

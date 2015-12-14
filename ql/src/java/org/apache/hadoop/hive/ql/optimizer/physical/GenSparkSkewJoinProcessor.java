@@ -18,10 +18,12 @@
 
 package org.apache.hadoop.hive.ql.optimizer.physical;
 
-import com.google.common.base.Preconditions;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -32,6 +34,7 @@ import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.SparkHashTableSinkOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -62,12 +65,10 @@ import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.google.common.base.Preconditions;
 
 /**
  * Copied from GenMRSkewJoinProcessor. It's used for spark task
@@ -254,8 +255,8 @@ public class GenSparkSkewJoinProcessor {
       // this makes sure MJ has the same downstream operator plan as the original join
       List<Operator<?>> reducerList = new ArrayList<Operator<?>>();
       reducerList.add(reduceWork.getReducer());
-      Operator<? extends OperatorDesc> reducer = Utilities.cloneOperatorTree(
-          parseCtx.getConf(), reducerList).get(0);
+      Operator<? extends OperatorDesc> reducer = SerializationUtilities.cloneOperatorTree(
+          reducerList).get(0);
       Preconditions.checkArgument(reducer instanceof JoinOperator,
           "Reducer should be join operator, but actually is " + reducer.getName());
       JoinOperator cloneJoinOp = (JoinOperator) reducer;

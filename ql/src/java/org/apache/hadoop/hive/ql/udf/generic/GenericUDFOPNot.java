@@ -36,6 +36,7 @@ import org.apache.hadoop.io.BooleanWritable;
  */
 @Description(name = "not", value = "_FUNC_ a - Logical not")
 @VectorizedExpressions({NotCol.class, SelectColumnIsFalse.class})
+@NDV(maxNdv = 2)
 public class GenericUDFOPNot extends GenericUDF {
   private final BooleanWritable result = new BooleanWritable();
   private transient BooleanObjectInspector boi;

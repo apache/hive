@@ -153,8 +153,14 @@ public class TestFileDump {
           (MyRecord.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
     }
     conf.set(HiveConf.ConfVars.HIVE_ORC_ENCODING_STRATEGY.varname, "COMPRESSION");
-    Writer writer = OrcFile.createWriter(fs, testFilePath, conf, inspector,
-        100000, CompressionKind.ZLIB, 10000, 1000);
+    Writer writer = OrcFile.createWriter(testFilePath,
+        OrcFile.writerOptions(conf)
+            .fileSystem(fs)
+            .inspector(inspector)
+            .batchSize(1000)
+            .compress(CompressionKind.ZLIB)
+            .stripeSize(100000)
+            .rowIndexStride(1000));
     Random r1 = new Random(1);
     String[] words = new String[]{"It", "was", "the", "best", "of", "times,",
         "it", "was", "the", "worst", "of", "times,", "it", "was", "the", "age",
@@ -263,8 +269,15 @@ public class TestFileDump {
     Configuration conf = new Configuration();
     conf.set(HiveConf.ConfVars.HIVE_ORC_ENCODING_STRATEGY.varname, "COMPRESSION");
     conf.setFloat(HiveConf.ConfVars.HIVE_ORC_DICTIONARY_KEY_SIZE_THRESHOLD.varname, 0.49f);
-    Writer writer = OrcFile.createWriter(fs, testFilePath, conf, inspector,
-        100000, CompressionKind.ZLIB, 10000, 1000);
+    Writer writer = OrcFile.createWriter(testFilePath,
+        OrcFile.writerOptions(conf)
+            .fileSystem(fs)
+            .batchSize(1000)
+            .inspector(inspector)
+            .stripeSize(100000)
+            .compress(CompressionKind.ZLIB)
+            .rowIndexStride(1000)
+            .bufferSize(10000));
     Random r1 = new Random(1);
     String[] words = new String[]{"It", "was", "the", "best", "of", "times,",
         "it", "was", "the", "worst", "of", "times,", "it", "was", "the", "age",
@@ -319,6 +332,7 @@ public class TestFileDump {
         .compress(CompressionKind.ZLIB)
         .bufferSize(10000)
         .rowIndexStride(1000)
+        .batchSize(1000)
         .bloomFilterColumns("S");
     Writer writer = OrcFile.createWriter(testFilePath, options);
     Random r1 = new Random(1);
@@ -368,7 +382,8 @@ public class TestFileDump {
         .bufferSize(10000)
         .rowIndexStride(1000)
         .bloomFilterColumns("l")
-        .bloomFilterFpp(0.01);
+        .bloomFilterFpp(0.01)
+        .batchSize(1000);
     Writer writer = OrcFile.createWriter(testFilePath, options);
     Random r1 = new Random(1);
     String[] words = new String[]{"It", "was", "the", "best", "of", "times,",

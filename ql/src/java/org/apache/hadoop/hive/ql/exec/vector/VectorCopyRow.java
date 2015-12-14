@@ -260,4 +260,19 @@ public class VectorCopyRow {
       copyRow.copy(inBatch, inBatchIndex, outBatch, outBatchIndex);
     }
   }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("VectorCopyRow ");
+    for (CopyRow copyRow : subRowToBatchCopiersByValue) {
+      if (sb.length() > 0) {
+        sb.append(", ");
+      }
+      sb.append(copyRow.getClass().getName());
+      sb.append(" inColumnIndex " + copyRow.inColumnIndex);
+      sb.append(" outColumnIndex " + copyRow.outColumnIndex);
+    }
+    return sb.toString();
+  }
 }

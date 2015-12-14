@@ -1,1 +1,1 @@
-describe src_thrift.mStringString.abc;
+describe src_thrift mStringString.abc;

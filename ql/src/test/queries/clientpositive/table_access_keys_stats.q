@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 SET hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.CheckTableAccessHook;
 SET hive.stats.collect.tablekeys=true;
 

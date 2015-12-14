@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 drop table if exists test_txt;
 drop table if exists test_orc;
 create table test_txt(

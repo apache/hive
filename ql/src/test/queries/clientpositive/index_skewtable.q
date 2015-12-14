@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 -- Test creating an index on skewed table
 
 -- Create a skew table

@@ -17,8 +17,18 @@
  */
 package org.apache.hadoop.hive.ql.io.orc;
 
-import com.google.common.annotations.VisibleForTesting;
+import java.io.IOException;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Deque;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
+import org.apache.orc.OrcUtils;
+import org.apache.orc.StripeInformation;
+import org.apache.orc.TypeDescription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -33,12 +43,10 @@ import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  * Merges a base and a list of delta files together into a single stream of
@@ -439,7 +447,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
     this.length = options.getLength();
     this.validTxnList = validTxnList;
 
-    TypeDescription typeDescr = OrcUtils.getDesiredRowTypeDescr(conf);
+    TypeDescription typeDescr = OrcInputFormat.getDesiredRowTypeDescr(conf);
     if (typeDescr == null) {
       throw new IOException(ErrorMsg.SCHEMA_REQUIRED_TO_READ_ACID_TABLES.getErrorCodedMsg());
     }
@@ -537,7 +545,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
    * @return the maximum size of the file to use
    * @throws IOException
    */
-  private static long getLastFlushLength(FileSystem fs,
+  static long getLastFlushLength(FileSystem fs,
                                          Path deltaFile) throws IOException {
     Path lengths = OrcRecordUpdater.getSideFile(deltaFile);
     long result = Long.MAX_VALUE;

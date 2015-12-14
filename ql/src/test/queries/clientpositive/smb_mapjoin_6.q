@@ -1,5 +1,4 @@
-;
-
+set hive.mapred.mode=nonstrict;
 set hive.exec.reducers.max = 1;
 
 

@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 select key from(
 select '1' as key from srcpart where ds="2008-04-09"
 UNION all

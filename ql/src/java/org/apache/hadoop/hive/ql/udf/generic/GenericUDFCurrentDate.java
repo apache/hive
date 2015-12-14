@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.sql.Date;
+
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
@@ -34,6 +35,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 @Description(name = "current_date",
     value = "_FUNC_() - Returns the current date at the start of query evaluation."
     + " All calls of current_date within the same query return the same value.")
+@NDV(maxNdv = 1)
 public class GenericUDFCurrentDate extends GenericUDF {
 
   protected DateWritable currentDate;

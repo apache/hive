@@ -32,8 +32,8 @@ import org.slf4j.LoggerFactory;
  */
 public class LogUtils {
 
-  private static final String HIVE_L4J = "hive-log4j2.xml";
-  private static final String HIVE_EXEC_L4J = "hive-exec-log4j2.xml";
+  private static final String HIVE_L4J = "hive-log4j2.properties";
+  private static final String HIVE_EXEC_L4J = "hive-exec-log4j2.properties";
   private static final Logger l4j = LoggerFactory.getLogger(LogUtils.class);
 
   @SuppressWarnings("serial")

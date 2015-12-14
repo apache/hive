@@ -312,8 +312,7 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
       statsToPublish.clear();
       String prefix = Utilities.join(conf.getStatsAggPrefix(), pspecs);
 
-      int maxKeyLength = conf.getMaxStatsKeyPrefixLength();
-      String key = Utilities.getHashedStatsPrefix(prefix, maxKeyLength);
+      String key = prefix.endsWith(Path.SEPARATOR) ? prefix : prefix + Path.SEPARATOR;
       for(String statType : stats.get(pspecs).getStoredStats()) {
         statsToPublish.put(statType, Long.toString(stats.get(pspecs).getStat(statType)));
       }

@@ -517,7 +517,7 @@ PREHOOK: Input: default@orcfile_merge1@ds=1/part=0
 #### A masked pattern was here ####
 -- BEGIN ORC FILE DUMP --
 #### A masked pattern was here ####
-File Version: 0.12 with HIVE_4243
+File Version: 0.12 with HIVE_12055
 Rows: 242
 Compression: SNAPPY
 Compression size: 4096
@@ -568,6 +568,8 @@ Stripes:
 File length: 2137 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
+________________________________________________________________________________________________________________________
+
 -- END ORC FILE DUMP --
 172	val_172	1	0
 PREHOOK: query: select * from orcfile_merge1c where ds='1' and part='0' limit 1
@@ -577,7 +579,7 @@ PREHOOK: Input: default@orcfile_merge1c@ds=1/part=0
 #### A masked pattern was here ####
 -- BEGIN ORC FILE DUMP --
 #### A masked pattern was here ####
-File Version: 0.12 with HIVE_4243
+File Version: 0.12 with HIVE_12055
 Rows: 242
 Compression: SNAPPY
 Compression size: 4096
@@ -628,6 +630,8 @@ Stripes:
 File length: 2137 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
+________________________________________________________________________________________________________________________
+
 -- END ORC FILE DUMP --
 172	val_172	1	0
 PREHOOK: query: DROP TABLE orcfile_merge1

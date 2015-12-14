@@ -16,26 +16,30 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 -->
-
 <configuration>
 <property>
-  <name>llap.daemon.service.hosts</name>
+  <name>hive.llap.daemon.service.hosts</name>
   <value>localhost</value>
 </property>
 
 <property>
-  <name>llap.daemon.service.port</name>
+  <name>hive.llap.daemon.service.port</name>
   <value>0</value>
 </property>
 
 <property>
-  <name>llap.daemon.num.executors</name>
+  <name>hive.llap.daemon.num.executors</name>
   <value>4</value>
 </property>
 
 <property>
-  <name>llap.daemon.task.scheduler.wait.queue.size</name>
+  <name>hive.llap.daemon.task.scheduler.wait.queue.size</name>
   <value>4</value>
+</property>
+
+<property>
+  <name>hive.llap.cache.allow.synthetic.fileid</name>
+  <value>true</value>
 </property>
 
 <!-- hadoop IPC options -->

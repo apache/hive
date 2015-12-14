@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -740,12 +741,12 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     int ret;
     if (localtask) {
       memoryMXBean = ManagementFactory.getMemoryMXBean();
-      MapredLocalWork plan = Utilities.deserializePlan(pathData, MapredLocalWork.class, conf);
+      MapredLocalWork plan = SerializationUtilities.deserializePlan(pathData, MapredLocalWork.class);
       MapredLocalTask ed = new MapredLocalTask(plan, conf, isSilent);
       ret = ed.executeInProcess(new DriverContext());
 
     } else {
-      MapredWork plan = Utilities.deserializePlan(pathData, MapredWork.class, conf);
+      MapredWork plan = SerializationUtilities.deserializePlan(pathData, MapredWork.class);
       ExecDriver ed = new ExecDriver(plan, conf, isSilent);
       ret = ed.execute(new DriverContext());
     }

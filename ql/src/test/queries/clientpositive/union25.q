@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 create table tmp_srcpart like srcpart;
 
 insert overwrite table tmp_srcpart partition (ds='2008-04-08', hr='11')

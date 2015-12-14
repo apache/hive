@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.txn;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.jolbox.bonecp.BoneCPConfig;
 import com.jolbox.bonecp.BoneCPDataSource;
 import org.apache.commons.dbcp.ConnectionFactory;
@@ -518,16 +519,17 @@ public class TxnHandler {
         // Heartbeat on the lockid first, to assure that our lock is still valid.
         // Then look up the lock info (hopefully in the cache).  If these locks
         // are associated with a transaction then heartbeat on that as well.
-        Long txnid = getTxnIdFromLockId(dbConn, extLockId);
-        if(txnid == null) {
+        LockInfo info = getTxnIdFromLockId(dbConn, extLockId);
+        if(info == null) {
           throw new NoSuchLockException("No such lock " + JavaUtils.lockIdToString(extLockId));
         }
-        if (txnid > 0) {
-          heartbeatTxn(dbConn, txnid);
+        if (info.txnId > 0) {
+          heartbeatTxn(dbConn, info.txnId);
         }
         else {
           heartbeatLock(dbConn, extLockId);
         }
+        closeDbConn(dbConn);
         dbConn = getDbConn(Connection.TRANSACTION_SERIALIZABLE);
         return checkLock(dbConn, extLockId);
       } catch (SQLException e) {
@@ -570,28 +572,29 @@ public class TxnHandler {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
         //hl_txnid <> 0 means it's associated with a transaction
-        String s = "delete from HIVE_LOCKS where hl_lock_ext_id = " + extLockId + " AND hl_txnid = 0";
+        String s = "delete from HIVE_LOCKS where hl_lock_ext_id = " + extLockId + " AND (hl_txnid = 0 OR" +
+          " (hl_txnid <> 0 AND hl_lock_state = '" + LOCK_WAITING + "'))";
         LOG.debug("Going to execute update <" + s + ">");
         int rc = stmt.executeUpdate(s);
         if (rc < 1) {
           LOG.debug("Going to rollback");
           dbConn.rollback();
-          Long txnid = getTxnIdFromLockId(dbConn, extLockId);
-          if(txnid == null) {
-            LOG.error("No lock found for unlock(" + rqst + ")");
+          LockInfo info = getTxnIdFromLockId(dbConn, extLockId);
+          if(info == null) {
+            //didn't find any lock with extLockId but at ReadCommitted there is a possibility that
+            //it existed when above delete ran but it didn't have the expected state.
+            LOG.error("No lock in " + LOCK_WAITING + " mode found for unlock(" + rqst + ")");
             throw new NoSuchLockException("No such lock " + JavaUtils.lockIdToString(extLockId));
           }
-          if(txnid != 0) {
-            String msg = "Unlocking locks associated with transaction" +
-              " not permitted.  Lockid " + JavaUtils.lockIdToString(extLockId) + " is associated with " +
-              "transaction " + JavaUtils.txnIdToString(txnid);
+          if(info.txnId != 0) {
+            String msg = "Unlocking locks associated with transaction not permitted.  " + info;
             LOG.error(msg);
             throw new TxnOpenException(msg);
           }
-          if(txnid == 0) {
+          if(info.txnId == 0) {
             //we didn't see this lock when running DELETE stmt above but now it showed up
             //so should "should never happen" happened...
-            String msg = "Found lock " + JavaUtils.lockIdToString(extLockId) + " with " + JavaUtils.txnIdToString(txnid);
+            String msg = "Found lock in unexpected state " + info;
             LOG.error(msg);
             throw new MetaException(msg);
           }
@@ -935,22 +938,24 @@ public class TxnHandler {
   /**
    * For testing only, do not use.
    */
+  @VisibleForTesting
   int numLocksInLockTable() throws SQLException, MetaException {
-    Connection dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+    Connection dbConn = null;
     Statement stmt = null;
+    ResultSet rs = null;
     try {
+      dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
       stmt = dbConn.createStatement();
       String s = "select count(*) from HIVE_LOCKS";
       LOG.debug("Going to execute query <" + s + ">");
-      ResultSet rs = stmt.executeQuery(s);
+      rs = stmt.executeQuery(s);
       rs.next();
       int rc = rs.getInt(1);
       // Necessary to clean up the transaction in the db.
       dbConn.rollback();
       return rc;
     } finally {
-      closeDbConn(dbConn);
-      closeStmt(stmt);
+      close(rs, stmt, dbConn);
     }
   }
 
@@ -977,7 +982,8 @@ public class TxnHandler {
         return dbConn;
       } catch (SQLException e){
         if ((--rc) <= 0) throw e;
-        LOG.error("There is a problem with a connection from the pool, retrying", e);
+        LOG.error("There is a problem with a connection from the pool, retrying(rc=" + rc + "): " +
+          getMessage(e), e);
       }
     }
   }
@@ -1910,22 +1916,23 @@ public class TxnHandler {
     }
   }
 
-  private Long getTxnIdFromLockId(Connection dbConn, long extLockId)
+  private LockInfo getTxnIdFromLockId(Connection dbConn, long extLockId)
     throws NoSuchLockException, MetaException, SQLException {
     Statement stmt = null;
     ResultSet rs = null;
     try {
       stmt = dbConn.createStatement();
-      String s = "select hl_txnid from HIVE_LOCKS where hl_lock_ext_id = " +
-        extLockId;
+      String s = "select hl_lock_ext_id, hl_lock_int_id, hl_db, hl_table, " +
+        "hl_partition, hl_lock_state, hl_lock_type, hl_txnid from HIVE_LOCKS where " +
+        "hl_lock_ext_id = " + extLockId;
       LOG.debug("Going to execute query <" + s + ">");
       rs = stmt.executeQuery(s);
       if (!rs.next()) {
         return null;
       }
-      long txnid = rs.getLong(1);
-      LOG.debug("getTxnIdFromLockId(" + extLockId + ") Return " + JavaUtils.txnIdToString(txnid));
-      return txnid;
+      LockInfo info = new LockInfo(rs);
+      LOG.debug("getTxnIdFromLockId(" + extLockId + ") Return " + JavaUtils.txnIdToString(info.txnId));
+      return info;
     } finally {
       close(rs);
       closeStmt(stmt);
@@ -1951,7 +1958,7 @@ public class TxnHandler {
       }
       if (!sawAtLeastOne) {
         throw new MetaException("This should never happen!  We already " +
-          "checked the lock existed but now we can't find it!");
+          "checked the lock(" + JavaUtils.lockIdToString(extLockId) + ") existed but now we can't find it!");
       }
       return ourLockInfo;
     } finally {
@@ -2116,6 +2123,9 @@ public class TxnHandler {
     if ("bonecp".equals(connectionPooler)) {
       BoneCPConfig config = new BoneCPConfig();
       config.setJdbcUrl(driverUrl);
+      //if we are waiting for connection for 60s, something is really wrong
+      //better raise an error than hang forever
+      config.setConnectionTimeoutInMs(60000);
       config.setMaxConnectionsPerPartition(10);
       config.setPartitionCount(1);
       config.setUser(user);
@@ -2255,7 +2265,10 @@ public class TxnHandler {
         //in MSSQL this means Communication Link Failure
         return true;
       }
-      //see https://issues.apache.org/jira/browse/HIVE-9938
+      if("ORA-08176".equalsIgnoreCase(sqlException.getSQLState())) {
+        return true;
+      }
+      //see also https://issues.apache.org/jira/browse/HIVE-9938
     }
     return false;
   }
@@ -2271,9 +2284,14 @@ public class TxnHandler {
    */
   private int getRequiredIsolationLevel() throws MetaException, SQLException {
     if(dbProduct == null) {
-      Connection tmp = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
-      determineDatabaseProduct(tmp);
-      closeDbConn(tmp);
+      Connection tmp = null;
+      try {
+        tmp = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        determineDatabaseProduct(tmp);
+      }
+      finally {
+        closeDbConn(tmp);
+      }
     }
     switch (dbProduct) {
       case DERBY:

@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 set hive.stats.dbclass=fs;
 set hive.compute.query.using.stats=true;
@@ -44,7 +45,7 @@ CREATE TABLE stats_null_part(a double, b int, c STRING, d smallint) partitioned 
 insert into table stats_null_part partition(dt) select a,b,c,d,b from temps_null ;
 analyze table stats_null_part compute statistics for columns;
 
-describe formatted stats_null_part.a partition(dt = 1);
+describe formatted stats_null_part partition(dt = 1) a;
 
 reset hive.exec.dynamic.partition.mode;
 drop table stats_null;

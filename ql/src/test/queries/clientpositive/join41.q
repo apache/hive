@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 create table s1 as select * from src where key = 0;
 
 set hive.auto.convert.join.noconditionaltask=false;

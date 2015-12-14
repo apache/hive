@@ -80,14 +80,14 @@ STAGE PLANS:
                         0 key (type: int)
                         1 key (type: int)
                       outputColumnNames: _col0, _col1, _col5, _col6
-                      Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: string)
                         outputColumnNames: _col0, _col1, _col2, _col3
-                        Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                         File Output Operator
                           compressed: false
-                          Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 2 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                           table:
                               input format: org.apache.hadoop.mapred.TextInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -317,7 +317,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 1 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                     Sorted Merge Bucket Map Join Operator
                       condition map:
                            Inner Join 0 to 1
@@ -325,14 +325,14 @@ STAGE PLANS:
                         0 key (type: int)
                         1 key (type: int)
                       outputColumnNames: _col0, _col1, _col5, _col6
-                      Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: string)
                         outputColumnNames: _col0, _col1, _col2, _col3
-                        Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                         File Output Operator
                           compressed: false
-                          Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 2 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                           table:
                               input format: org.apache.hadoop.mapred.TextInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

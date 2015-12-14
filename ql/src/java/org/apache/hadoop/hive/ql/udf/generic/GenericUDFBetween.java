@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.io.BooleanWritable;
 
 @Description(name = "between", value = "_FUNC_ a [NOT] BETWEEN b AND c - evaluate if a is [not] in between b and c")
+@NDV(maxNdv = 2)
 public class GenericUDFBetween extends GenericUDF {
 
   GenericUDFOPEqualOrGreaterThan egt = new GenericUDFOPEqualOrGreaterThan();

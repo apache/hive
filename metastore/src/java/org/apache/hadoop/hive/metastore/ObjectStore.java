@@ -37,8 +37,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
@@ -64,10 +67,6 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
-import org.apache.hadoop.hive.common.metrics.common.Metrics;
-import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
-import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
-import org.apache.hadoop.hive.common.metrics.common.MetricsVariable;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
@@ -217,7 +216,6 @@ public class ObjectStore implements RawStore, Configurable {
   private volatile int openTrasactionCalls = 0;
   private Transaction currentTransaction = null;
   private TXN_STATUS transactionStatus = TXN_STATUS.NO_STATE;
-
   private Pattern partitionValidationPattern;
 
   /**
@@ -286,17 +284,6 @@ public class ObjectStore implements RawStore, Configurable {
       transactionStatus = TXN_STATUS.NO_STATE;
 
       initialize(propsFromConf);
-
-      //Add metric for number of active JDO transactions.
-      Metrics metrics = MetricsFactory.getInstance();
-      if (metrics != null) {
-        metrics.addGauge(MetricsConstant.JDO_ACTIVE_TRANSACTIONS, new MetricsVariable() {
-          @Override
-          public Object getValue() {
-            return openTrasactionCalls;
-          }
-        });
-      }
 
       String partitionValidationRegex =
           hiveConf.get(HiveConf.ConfVars.METASTORE_PARTITION_NAME_WHITELIST_PATTERN.name());
@@ -472,7 +459,6 @@ public class ObjectStore implements RawStore, Configurable {
 
     boolean result = currentTransaction.isActive();
     debugLog("Open transaction: count = " + openTrasactionCalls + ", isActive = " + result);
-    incrementMetricsCount(MetricsConstant.JDO_OPEN_TRANSACTIONS);
     return result;
   }
 
@@ -511,7 +497,6 @@ public class ObjectStore implements RawStore, Configurable {
       currentTransaction.commit();
     }
 
-    incrementMetricsCount(MetricsConstant.JDO_COMMIT_TRANSACTIONS);
     return true;
   }
 
@@ -549,7 +534,6 @@ public class ObjectStore implements RawStore, Configurable {
       // from reattaching in future transactions
       pm.evictAll();
     }
-    incrementMetricsCount(MetricsConstant.JDO_ROLLBACK_TRANSACTIONS);
   }
 
   @Override
@@ -1065,6 +1049,40 @@ public class ObjectStore implements RawStore, Configurable {
       }
     }
     return tbls;
+  }
+
+  public int getDatabaseCount() throws MetaException {
+    return getObjectCount("name", MDatabase.class.getName());
+  }
+
+  public int getPartitionCount() throws MetaException {
+    return getObjectCount("partitionName", MPartition.class.getName());
+  }
+
+  public int getTableCount() throws MetaException {
+    return getObjectCount("tableName", MTable.class.getName());
+  }
+
+  private int getObjectCount(String fieldName, String objName) {
+    Long result = 0L;
+    boolean commited = false;
+    Query query = null;
+    try {
+      openTransaction();
+      String queryStr =
+        "select count(" + fieldName + ") from " + objName;
+      query = pm.newQuery(queryStr);
+      result = (Long) query.execute();
+      commited = commitTransaction();
+    } finally {
+      if (!commited) {
+        rollbackTransaction();
+      }
+      if (query != null) {
+        query.closeAll();
+      }
+    }
+    return result.intValue();
   }
 
   @Override
@@ -2490,6 +2508,7 @@ public class ObjectStore implements RawStore, Configurable {
         start(initTable);
         if (doUseDirectSql) {
           try {
+            directSql.prepareTxn();
             setResult(getSqlResult(this));
           } catch (Exception ex) {
             handleDirectSqlError(ex);
@@ -7327,17 +7346,6 @@ public class ObjectStore implements RawStore, Configurable {
       if (query != null) {
         query.closeAll();
       }
-    }
-  }
-
-  private void incrementMetricsCount(String name) {
-    try {
-      Metrics metrics = MetricsFactory.getInstance();
-      if (metrics != null) {
-        metrics.incrementCounter(name);
-      }
-    } catch (Exception e) {
-      LOG.warn("Error Reporting JDO operation to Metrics system", e);
     }
   }
 

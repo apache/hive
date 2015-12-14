@@ -131,6 +131,7 @@ public class TestJdbcDriver2 {
     Class.forName(driverName);
     Connection con1 = getConnection("default");
     System.setProperty(ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LEVEL.varname, "verbose");
+    System.setProperty(ConfVars.HIVEMAPREDMODE.varname, "nonstrict");
 
     Statement stmt1 = con1.createStatement();
     assertNotNull("Statement is null", stmt1);
@@ -1953,7 +1954,7 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
     ZooKeeperHiveClientException {
   new HiveDriver();
   for (String[] testValues : HTTP_URL_PROPERTIES) {
-    JdbcConnectionParams params = Utils.parseURL(testValues[0]);
+    JdbcConnectionParams params = Utils.parseURL(testValues[0], new Properties());
     assertEquals(params.getHost(), testValues[1]);
     assertEquals(params.getPort(), Integer.parseInt(testValues[2]));
     assertEquals(params.getDbName(), testValues[3]);

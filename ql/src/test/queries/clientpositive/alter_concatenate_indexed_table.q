@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.exec.concatenate.check.index =false;
 create table src_rc_concatenate_test(key int, value string) stored as rcfile;
 

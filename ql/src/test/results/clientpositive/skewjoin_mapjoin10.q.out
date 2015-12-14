@@ -112,11 +112,11 @@ STAGE PLANS:
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key is not null and ((key = 2) or (key = 3))) (type: boolean)
-              Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), val (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: int)
@@ -145,11 +145,11 @@ STAGE PLANS:
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key is not null and ((key = 2) or (key = 3))) (type: boolean)
-              Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), val (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -157,12 +157,12 @@ STAGE PLANS:
                     0 _col0 (type: int)
                     1 _col0 (type: int)
                   outputColumnNames: _col0, _col1, _col2, _col3
-                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 26 Basic stats: COMPLETE Column stats: NONE
                   Union
-                    Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 7 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 7 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -186,10 +186,10 @@ STAGE PLANS:
                   outputColumnNames: _col0, _col1, _col2, _col3
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Union
-                    Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 7 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 7 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -396,11 +396,11 @@ STAGE PLANS:
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key is not null and ((key = 2) or (key = 3))) (type: boolean)
-              Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: int)
@@ -429,20 +429,20 @@ STAGE PLANS:
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key is not null and ((key = 2) or (key = 3))) (type: boolean)
-              Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
                   keys:
                     0 _col0 (type: int)
                     1 _col0 (type: int)
-                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 26 Basic stats: COMPLETE Column stats: NONE
                   Union
-                    Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 7 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count(1)
                       mode: hash
@@ -470,7 +470,7 @@ STAGE PLANS:
                     1 _col0 (type: int)
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Union
-                    Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 7 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count(1)
                       mode: hash

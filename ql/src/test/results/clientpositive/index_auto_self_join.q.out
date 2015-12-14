@@ -21,32 +21,32 @@ STAGE PLANS:
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((UDFToDouble(key) > 80.0) and (UDFToDouble(key) < 100.0)) and value is not null) (type: boolean)
-              Statistics: Num rows: 28 Data size: 297 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 28 Data size: 297 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col1 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col1 (type: string)
-                  Statistics: Num rows: 28 Data size: 297 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: string)
           TableScan
             alias: a
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((UDFToDouble(key) > 70.0) and (UDFToDouble(key) < 90.0)) and value is not null) (type: boolean)
-              Statistics: Num rows: 28 Data size: 297 Basic stats: COMPLETE Column stats: NONE
+              predicate: (((UDFToDouble(key) < 90.0) and (UDFToDouble(key) > 70.0)) and value is not null) (type: boolean)
+              Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 28 Data size: 297 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col1 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col1 (type: string)
-                  Statistics: Num rows: 28 Data size: 297 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: string)
       Reduce Operator Tree:
         Join Operator
@@ -56,14 +56,14 @@ STAGE PLANS:
             0 _col1 (type: string)
             1 _col1 (type: string)
           outputColumnNames: _col0, _col2
-          Statistics: Num rows: 30 Data size: 326 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 60 Data size: 642 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: _col0 (type: string), _col2 (type: string)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 30 Data size: 326 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 60 Data size: 642 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 30 Data size: 326 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 60 Data size: 642 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -137,10 +137,10 @@ STAGE PLANS:
               predicate: (((UDFToDouble(key) > 80.0) and (UDFToDouble(key) < 100.0)) and (not EWAH_BITMAP_EMPTY(_bitmaps))) (type: boolean)
               Select Operator
                 expressions: _bucketname (type: string), _offset (type: bigint)
-                outputColumnNames: _col1, _col2
+                outputColumnNames: _bucketname, _offset
                 Group By Operator
-                  aggregations: collect_set(_col2)
-                  keys: _col1 (type: string)
+                  aggregations: collect_set(_offset)
+                  keys: _bucketname (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Reduce Output Operator
@@ -176,33 +176,33 @@ STAGE PLANS:
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((UDFToDouble(key) > 80.0) and (UDFToDouble(key) < 100.0)) and value is not null) (type: boolean)
-              Statistics: Num rows: 28 Data size: 297 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 28 Data size: 297 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col1 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col1 (type: string)
-                  Statistics: Num rows: 28 Data size: 297 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: string)
           TableScan
             alias: a
-            filterExpr: (((UDFToDouble(key) > 70.0) and (UDFToDouble(key) < 90.0)) and value is not null) (type: boolean)
+            filterExpr: (((UDFToDouble(key) < 90.0) and (UDFToDouble(key) > 70.0)) and value is not null) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((UDFToDouble(key) > 70.0) and (UDFToDouble(key) < 90.0)) and value is not null) (type: boolean)
-              Statistics: Num rows: 28 Data size: 297 Basic stats: COMPLETE Column stats: NONE
+              predicate: (((UDFToDouble(key) < 90.0) and (UDFToDouble(key) > 70.0)) and value is not null) (type: boolean)
+              Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 28 Data size: 297 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col1 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col1 (type: string)
-                  Statistics: Num rows: 28 Data size: 297 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: string)
       Reduce Operator Tree:
         Join Operator
@@ -212,14 +212,14 @@ STAGE PLANS:
             0 _col1 (type: string)
             1 _col1 (type: string)
           outputColumnNames: _col0, _col2
-          Statistics: Num rows: 30 Data size: 326 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 60 Data size: 642 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: _col0 (type: string), _col2 (type: string)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 30 Data size: 326 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 60 Data size: 642 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 30 Data size: 326 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 60 Data size: 642 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -230,15 +230,15 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: default__src_src_index__
-            filterExpr: (((UDFToDouble(key) > 70.0) and (UDFToDouble(key) < 90.0)) and (not EWAH_BITMAP_EMPTY(_bitmaps))) (type: boolean)
+            filterExpr: (((UDFToDouble(key) < 90.0) and (UDFToDouble(key) > 70.0)) and (not EWAH_BITMAP_EMPTY(_bitmaps))) (type: boolean)
             Filter Operator
-              predicate: (((UDFToDouble(key) > 70.0) and (UDFToDouble(key) < 90.0)) and (not EWAH_BITMAP_EMPTY(_bitmaps))) (type: boolean)
+              predicate: (((UDFToDouble(key) < 90.0) and (UDFToDouble(key) > 70.0)) and (not EWAH_BITMAP_EMPTY(_bitmaps))) (type: boolean)
               Select Operator
                 expressions: _bucketname (type: string), _offset (type: bigint)
-                outputColumnNames: _col1, _col2
+                outputColumnNames: _bucketname, _offset
                 Group By Operator
-                  aggregations: collect_set(_col2)
-                  keys: _col1 (type: string)
+                  aggregations: collect_set(_offset)
+                  keys: _bucketname (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Reduce Output Operator

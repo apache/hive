@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 set hive.merge.mapfiles=true;
 set hive.merge.mapredfiles=true;

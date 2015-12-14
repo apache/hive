@@ -39,6 +39,8 @@ import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
+import org.apache.orc.OrcProto;
+import org.apache.orc.TypeDescription;
 
 /**
  * A MapReduce/Hive input format for ORC files.
@@ -64,7 +66,7 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
       /**
        * Do we have schema on read in the configuration variables?
        */
-      TypeDescription schema = OrcUtils.getDesiredRowTypeDescr(conf);
+      TypeDescription schema = OrcInputFormat.getDesiredRowTypeDescr(conf);
 
       List<OrcProto.Type> types = file.getTypes();
       Reader.Options options = new Reader.Options();

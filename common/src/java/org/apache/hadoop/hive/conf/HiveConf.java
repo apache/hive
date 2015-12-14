@@ -18,7 +18,26 @@
 
 package org.apache.hadoop.hive.conf;
 
-import com.google.common.base.Joiner;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.security.auth.login.LoginException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -38,26 +57,7 @@ import org.apache.hive.common.HiveCompat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.security.auth.login.LoginException;
-
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintStream;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import com.google.common.base.Joiner;
 
 /**
  * Hive Configuration.
@@ -218,6 +218,9 @@ public class HiveConf extends Configuration {
     }
   }
 
+  public static final String HIVE_LLAP_DAEMON_SERVICE_PRINCIPAL_NAME = "hive.llap.daemon.service.principal";
+
+
   /**
    * dbVars are the parameters can be set per database. If these
    * parameters are set as a database property, when switching to that
@@ -249,9 +252,6 @@ public class HiveConf extends Configuration {
     // QL execution stuff
     SCRIPTWRAPPER("hive.exec.script.wrapper", null, ""),
     PLAN("hive.exec.plan", "", ""),
-    PLAN_SERIALIZATION("hive.plan.serialization.format", "kryo",
-        "Query plan format serialization between client and task nodes. \n" +
-        "Two supported values are : kryo and javaXML. Kryo is default."),
     STAGINGDIR("hive.exec.stagingdir", ".hive-staging",
         "Directory name that will be created inside table locations in order to support HDFS encryption. " +
         "This is replaces ${hive.exec.scratchdir} for query results with the exception of read-only tables. " +
@@ -781,7 +781,7 @@ public class HiveConf extends Configuration {
         "hive.txn.valid.txns,hive.script.operator.env.blacklist",
         "Comma separated list of keys from the configuration file not to convert to environment " +
         "variables when envoking the script operator"),
-    HIVEMAPREDMODE("hive.mapred.mode", "nonstrict",
+    HIVEMAPREDMODE("hive.mapred.mode", "strict",
         "The mode in which the Hive operations are being performed. \n" +
         "In strict mode, some risky queries are not allowed to run. They include:\n" +
         "  Cartesian Product.\n" +
@@ -1391,9 +1391,6 @@ public class HiveConf extends Configuration {
         "A lower value for error indicates higher accuracy and a higher compute cost."),
     HIVE_METASTORE_STATS_NDV_DENSITY_FUNCTION("hive.metastore.stats.ndv.densityfunction", false,
         "Whether to use density function to estimate the NDV for the whole table based on the NDV of partitions"),
-    HIVE_STATS_KEY_PREFIX_MAX_LENGTH("hive.stats.key.prefix.max.length", 150,
-        "Determines if when the prefix of the key used for intermediate stats collection\n" +
-        "exceeds a certain length, a hash of the key is used instead.  If the value < 0 then hashing"),
     HIVE_STATS_KEY_PREFIX("hive.stats.key.prefix", "", "", true), // internal usage only
     // if length of variable length data type cannot be determined this length will be used.
     HIVE_STATS_MAX_VARIABLE_LENGTH("hive.stats.max.variable.length", 100,
@@ -1461,8 +1458,8 @@ public class HiveConf extends Configuration {
     HIVE_UNLOCK_NUMRETRIES("hive.unlock.numretries", 10,
         "The number of times you want to retry to do one unlock"),
     HIVE_LOCK_SLEEP_BETWEEN_RETRIES("hive.lock.sleep.between.retries", "60s",
-        new TimeValidator(TimeUnit.SECONDS),
-        "The sleep time between various retries"),
+        new TimeValidator(TimeUnit.SECONDS, 0L, false, Long.MAX_VALUE, false),
+        "The maximum sleep time between various retries"),
     HIVE_LOCK_MAPRED_ONLY("hive.lock.mapred.only.operation", false,
         "This param is to control whether or not only do lock on queries\n" +
         "that need to execute at least one mapred job."),
@@ -1506,6 +1503,10 @@ public class HiveConf extends Configuration {
         "no transactions."),
     HIVE_TXN_TIMEOUT("hive.txn.timeout", "300s", new TimeValidator(TimeUnit.SECONDS),
         "time after which transactions are declared aborted if the client has not sent a heartbeat."),
+    TXN_MGR_DUMP_LOCK_STATE_ON_ACQUIRE_TIMEOUT("hive.txn.manager.dump.lock.state.on.acquire.timeout", false,
+      "Set this to true so that when attempt to acquire a lock on resource times out, the current state" +
+        " of the lock manager is dumped to log file.  This is for debugging.  See also " +
+        "hive.lock.numretries and hive.lock.sleep.between.retries."),
 
     HIVE_TXN_MAX_OPEN_BATCH("hive.txn.max.open.batch", 1000,
         "Maximum number of transactions that can be fetched in one call to open_txns().\n" +
@@ -1747,12 +1748,12 @@ public class HiveConf extends Configuration {
     // logging configuration
     HIVE_LOG4J_FILE("hive.log4j.file", "",
         "Hive log4j configuration file.\n" +
-        "If the property is not set, then logging will be initialized using hive-log4j2.xml found on the classpath.\n" +
+        "If the property is not set, then logging will be initialized using hive-log4j2.properties found on the classpath.\n" +
         "If the property is set, the value must be a valid URI (java.net.URI, e.g. \"file:///tmp/my-logging.xml\"), \n" +
         "which you can then extract a URL from and pass to PropertyConfigurator.configure(URL)."),
     HIVE_EXEC_LOG4J_FILE("hive.exec.log4j.file", "",
         "Hive log4j configuration file for execution mode(sub command).\n" +
-        "If the property is not set, then logging will be initialized using hive-exec-log4j2.xml found on the classpath.\n" +
+        "If the property is not set, then logging will be initialized using hive-exec-log4j2.properties found on the classpath.\n" +
         "If the property is set, the value must be a valid URI (java.net.URI, e.g. \"file:///tmp/my-logging.xml\"), \n" +
         "which you can then extract a URL from and pass to PropertyConfigurator.configure(URL)."),
 
@@ -1851,6 +1852,20 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_WEBUI_BIND_HOST("hive.server2.webui.host", "0.0.0.0", "The host address the HiveServer2 WebUI will listen on"),
     HIVE_SERVER2_WEBUI_PORT("hive.server2.webui.port", 10002, "The port the HiveServer2 WebUI will listen on"),
     HIVE_SERVER2_WEBUI_MAX_THREADS("hive.server2.webui.max.threads", 50, "The max HiveServer2 WebUI threads"),
+    HIVE_SERVER2_WEBUI_USE_SSL("hive.server2.webui.use.ssl", false,
+        "Set this to true for using SSL encryption for HiveServer2 WebUI."),
+    HIVE_SERVER2_WEBUI_SSL_KEYSTORE_PATH("hive.server2.webui.keystore.path", "",
+        "SSL certificate keystore location for HiveServer2 WebUI."),
+    HIVE_SERVER2_WEBUI_SSL_KEYSTORE_PASSWORD("hive.server2.webui.keystore.password", "",
+        "SSL certificate keystore password for HiveServer2 WebUI."),
+    HIVE_SERVER2_WEBUI_USE_SPNEGO("hive.server2.webui.use.spnego", false,
+        "If true, the HiveServer2 WebUI will be secured with SPNEGO. Clients must authenticate with Kerberos."),
+    HIVE_SERVER2_WEBUI_SPNEGO_KEYTAB("hive.server2.webui.spnego.keytab", "",
+        "The path to the Kerberos Keytab file containing the HiveServer2 WebUI SPNEGO service principal."),
+    HIVE_SERVER2_WEBUI_SPNEGO_PRINCIPAL("hive.server2.webui.spnego.principal",
+        "HTTP/_HOST@EXAMPLE.COM", "The HiveServer2 WebUI SPNEGO service principal.\n" +
+        "The special string _HOST will be replaced automatically with \n" +
+        "the value of hive.server2.webui.host or the correct host name."),
 
     // Tez session settings
     HIVE_SERVER2_TEZ_DEFAULT_QUEUES("hive.server2.tez.default.queues", "",
@@ -2102,16 +2117,6 @@ public class HiveConf extends Configuration {
 
     HIVE_SECURITY_COMMAND_WHITELIST("hive.security.command.whitelist", "set,reset,dfs,add,list,delete,reload,compile",
         "Comma separated list of non-SQL Hive commands users are authorized to execute"),
-    HIVE_CONF_RESTRICTED_LIST("hive.conf.restricted.list",
-        "hive.security.authenticator.manager,hive.security.authorization.manager,hive.users.in.admin.role",
-        "Comma separated list of configuration options which are immutable at runtime"),
-    HIVE_CONF_HIDDEN_LIST("hive.conf.hidden.list",
-        METASTOREPWD.varname + "," + HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname,
-        "Comma separated list of configuration options which should not be read by normal user like passwords"),
-
-    HIVE_CONF_INTERNAL_VARIABLE_LIST("hive.conf.internal.variable.list",
-        "hive.added.files.path,hive.added.jars.path,hive.added.archives.path",
-        "Comma separated list of variables which are used internally and should not be configurable."),
 
     // If this is set all move tasks at the end of a multi-insert query will only begin once all
     // outputs are ready
@@ -2337,6 +2342,17 @@ public class HiveConf extends Configuration {
     LLAP_LRFU_LAMBDA("hive.llap.io.lrfu.lambda", 0.01f,
         "Lambda for ORC low-level cache LRFU cache policy. Must be in [0, 1]. 0 makes LRFU\n" +
         "behave like LFU, 1 makes it behave like LRU, values in between balance accordingly."),
+    LLAP_CACHE_ALLOW_SYNTHETIC_FILEID("hive.llap.cache.allow.synthetic.fileid", false,
+        "Whether LLAP cache should use synthetic file ID if real one is not available. Systems\n" +
+        "like HDFS, Isilon, etc. provide a unique file/inode ID. On other FSes (e.g. local\n" +
+        "FS), the cache would not work by default because LLAP is unable to uniquely track the\n" +
+        "files; enabling this setting allows LLAP to generate file ID from the path, size and\n" +
+        "modification time, which is almost certain to identify file uniquely. However, if you\n" +
+        "use a FS without file IDs and rewrite files a lot (or are paranoid), you might want\n" +
+        "to avoid this setting."),
+    LLAP_IO_USE_FILEID_PATH("hive.llap.io.use.fileid.path", true,
+        "Whether LLAP should use fileId (inode)-based path to ensure better consistency for the\n" +
+        "cases of file overwrites. This is supported on HDFS."),
     LLAP_ORC_ENABLE_TIME_COUNTERS("hive.llap.io.orc.time.counters", true,
         "Whether to enable time counters for LLAP IO layer (time spent in HDFS, etc.)"),
     LLAP_AUTO_ALLOW_UBER("hive.llap.auto.allow.uber", true,
@@ -2362,7 +2378,135 @@ public class HiveConf extends Configuration {
         "By default, percentile latency metrics are disabled."),
     LLAP_IO_THREADPOOL_SIZE("hive.llap.io.threadpool.size", 10,
         "Specify the number of threads to use for low-level IO thread pool."),
+    LLAP_KERBEROS_PRINCIPAL(HIVE_LLAP_DAEMON_SERVICE_PRINCIPAL_NAME, "",
+        "The name of the LLAP daemon's service principal."),
+    LLAP_KERBEROS_KEYTAB_FILE("hive.llap.daemon.keytab.file", "",
+        "The path to the Kerberos Keytab file containing the LLAP daemon's service principal."),
+    LLAP_ZKSM_KERBEROS_PRINCIPAL("hive.llap.zk.sm.principal", "",
+        "The name of the principal to use to talk to ZooKeeper for ZooKeeper SecretManager."),
+    LLAP_ZKSM_KERBEROS_KEYTAB_FILE("hive.llap.zk.sm.keytab.file", "",
+        "The path to the Kerberos Keytab file containing the principal to use to talk to\n" +
+        "ZooKeeper for ZooKeeper SecretManager."),
+    LLAP_ZKSM_ZK_CONNECTION_STRING("hive.llap.zk.sm.connectionString", "",
+        "ZooKeeper connection string for ZooKeeper SecretManager."),
+    LLAP_SECURITY_ACL("hive.llap.daemon.service.acl", "*", "The ACL for LLAP daemon."),
+    LLAP_MANAGEMENT_ACL("hive.llap.management.service.acl", "*",
+        "The ACL for LLAP daemon management."),
+    // Hadoop DelegationTokenManager default is 1 week.
+    LLAP_DELEGATION_TOKEN_LIFETIME("hive.llap.daemon.delegation.token.lifetime", "14d",
+         new TimeValidator(TimeUnit.SECONDS),
+        "LLAP delegation token lifetime, in seconds if specified without a unit."),
+    LLAP_MANAGEMENT_RPC_PORT("hive.llap.management.rpc.port", 15004,
+        "RPC port for LLAP daemon management service."),
+    LLAP_WEB_AUTO_AUTH("hive.llap.auto.auth", true,
+        "Whether or not to set Hadoop configs to enable auth in LLAP web app."),
 
+    LLAP_DAEMON_RPC_NUM_HANDLERS("hive.llap.daemon.rpc.num.handlers", 5,
+      "Number of RPC handlers for LLAP daemon.", "llap.daemon.rpc.num.handlers"),
+    LLAP_DAEMON_WORK_DIRS("hive.llap.daemon.work.dirs", "",
+      "Working directories for the daemon. Needs to be set for a secure cluster, since LLAP may\n" +
+      "not have access to the default YARN working directories.", "llap.daemon.work.dirs"),
+    LLAP_DAEMON_YARN_SHUFFLE_PORT("hive.llap.daemon.yarn.shuffle.port", 15551,
+      "YARN shuffle port for LLAP-daemon-hosted shuffle.", "llap.daemon.yarn.shuffle.port"),
+    LLAP_DAEMON_YARN_CONTAINER_MB("hive.llap.daemon.yarn.container.mb", -1,
+      "TODO doc. Unused?", "llap.daemon.yarn.container.mb"),
+    LLAP_DAEMON_SHUFFLE_DIR_WATCHER_ENABLED("hive.llap.daemon.shuffle.dir.watcher.enabled", false,
+      "TODO doc", "llap.daemon.shuffle.dir-watcher.enabled"),
+    LLAP_DAEMON_AM_LIVENESS_HEARTBEAT_INTERVAL_MS(
+      "hive.llap.daemon.am.liveness.heartbeat.interval.ms", "10000ms",
+      new TimeValidator(TimeUnit.MILLISECONDS),
+      "Tez AM-LLAP heartbeat interval (milliseconds). This needs to be below the task timeout\n" +
+      "interval, but otherwise as high as possible to avoid unnecessary traffic.",
+      "llap.daemon.am.liveness.heartbeat.interval-ms"),
+    LLAP_DAEMON_AM_LIVENESS_CONNECTION_TIMEOUT_MS(
+      "hive.llap.am.liveness.connection.timeout.ms", "10000ms",
+      new TimeValidator(TimeUnit.MILLISECONDS),
+      "Amount of time to wait on connection failures to the AM from an LLAP daemon before\n" +
+      "considering the AM to be dead.", "llap.am.liveness.connection.timeout-millis"),
+    // Not used yet - since the Writable RPC engine does not support this policy.
+    LLAP_DAEMON_AM_LIVENESS_CONNECTION_SLEEP_BETWEEN_RETRIES_MS(
+      "hive.llap.am.liveness.connection.sleep.between.retries.ms", "2000ms",
+      new TimeValidator(TimeUnit.MILLISECONDS),
+      "Sleep duration while waiting to retry connection failures to the AM from the daemon for\n" +
+      "the general keep-alive thread (milliseconds).",
+      "llap.am.liveness.connection.sleep-between-retries-millis"),
+    LLAP_DAEMON_NUM_EXECUTORS("hive.llap.daemon.num.executors", 4,
+      "Number of executors to use in LLAP daemon; essentially, the number of tasks that can be\n" +
+      "executed in parallel.", "llap.daemon.num.executors"),
+    LLAP_DAEMON_RPC_PORT("hive.llap.daemon.rpc.port", 15001, "The LLAP daemon RPC port.",
+      "llap.daemon.rpc.port"),
+    LLAP_DAEMON_MEMORY_PER_INSTANCE_MB("hive.llap.daemon.memory.per.instance.mb", 4096,
+      "The total amount of memory to use for the executors inside LLAP (in megabytes).",
+      "llap.daemon.memory.per.instance.mb"),
+    LLAP_DAEMON_VCPUS_PER_INSTANCE("hive.llap.daemon.vcpus.per.instance", 4,
+      "The total number of vcpus to use for the executors inside LLAP.",
+      "llap.daemon.vcpus.per.instance"),
+    LLAP_DAEMON_NUM_FILE_CLEANER_THREADS("hive.llap.daemon.num.file.cleaner.threads", 1,
+      "Number of file cleaner threads in LLAP.", "llap.daemon.num.file.cleaner.threads"),
+    LLAP_FILE_CLEANUP_DELAY_SECONDS("hive.llap.file.cleanup.delay.seconds", "300s",
+       new TimeValidator(TimeUnit.SECONDS),
+      "How long to delay before cleaning up query files in LLAP (in seconds, for debugging).",
+      "llap.file.cleanup.delay-seconds"),
+    LLAP_DAEMON_SERVICE_HOSTS("hive.llap.daemon.service.hosts", "",
+      "Explicitly specified hosts to use for LLAP scheduling. Useful for testing. By default,\n" +
+      "YARN registry is used.", "llap.daemon.service.hosts"),
+    LLAP_DAEMON_SERVICE_REFRESH_INTERVAL("hive.llap.daemon.service.refresh.interval.sec", "60s",
+       new TimeValidator(TimeUnit.SECONDS),
+      "LLAP YARN registry service list refresh delay, in seconds.",
+      "llap.daemon.service.refresh.interval"),
+    LLAP_DAEMON_COMMUNICATOR_NUM_THREADS("hive.llap.daemon.communicator.num.threads", 10,
+      "Number of threads to use in LLAP task communicator in Tez AM.",
+      "llap.daemon.communicator.num.threads"),
+    LLAP_TASK_SCHEDULER_NODE_REENABLE_MIN_TIMEOUT_MS(
+      "hive.llap.task.scheduler.node.reenable.min.timeout.ms", "200ms",
+      new TimeValidator(TimeUnit.MILLISECONDS),
+      "Minimum time after which a previously disabled node will be re-enabled for scheduling,\n" +
+      "in milliseconds. This may be modified by an exponential back-off if failures persist.",
+      "llap.task.scheduler.node.re-enable.min.timeout.ms"),
+    LLAP_TASK_SCHEDULER_NODE_REENABLE_MAX_TIMEOUT_MS(
+      "hive.llap.task.scheduler.node.reenable.max.timeout.ms", "10000ms",
+      new TimeValidator(TimeUnit.MILLISECONDS),
+      "Maximum time after which a previously disabled node will be re-enabled for scheduling,\n" +
+      "in milliseconds. This may be modified by an exponential back-off if failures persist.",
+      "llap.task.scheduler.node.re-enable.max.timeout.ms"),
+    LLAP_TASK_SCHEDULER_NODE_DISABLE_BACK_OFF_FACTOR(
+      "hive.llap.task.scheduler.node.disable.backoff.factor", 1.5f,
+      "Backoff factor on successive blacklists of a node due to some failures. Blacklist times\n" +
+      "start at the min timeout and go up to the max timeout based on this backoff factor.",
+      "llap.task.scheduler.node.disable.backoff.factor"),
+    LLAP_TASK_SCHEDULER_NUM_SCHEDULABLE_TASKS_PER_NODE(
+      "hive.llap.task.scheduler.num.schedulable.tasks.per.node", 0,
+      "The number of tasks the AM TaskScheduler will try allocating per node. 0 indicates that\n" +
+      "this should be picked up from the Registry. -1 indicates unlimited capacity; positive\n" +
+      "values indicate a specific bound.", "llap.task.scheduler.num.schedulable.tasks.per.node"),
+    LLAP_DAEMON_TASK_SCHEDULER_WAIT_QUEUE_SIZE("hive.llap.daemon.task.scheduler.wait.queue.size",
+      10, "LLAP scheduler maximum queue size.", "llap.daemon.task.scheduler.wait.queue.size"),
+    LLAP_DAEMON_WAIT_QUEUE_COMPARATOR_CLASS_NAME(
+      "hive.llap.daemon.wait.queue.comparator.class.name",
+      "org.apache.hadoop.hive.llap.daemon.impl.comparator.ShortestJobFirstComparator",
+      "The priority comparator to use for LLAP scheduler prioroty queue. The built-in options\n" +
+      "are org.apache.hadoop.hive.llap.daemon.impl.comparator.ShortestJobFirstComparator and\n" +
+      ".....FirstInFirstOutComparator", "llap.daemon.wait.queue.comparator.class.name"),
+    LLAP_DAEMON_TASK_SCHEDULER_ENABLE_PREEMPTION(
+      "hive.llap.daemon.task.scheduler.enable.preemption", true,
+      "Whether non-finishable running tasks (e.g. a reducer waiting for inputs) should be\n" +
+      "preempted by finishable tasks inside LLAP scheduler.",
+      "llap.daemon.task.scheduler.enable.preemption"),
+    LLAP_TASK_COMMUNICATOR_CONNECTION_TIMEOUT_MS(
+      "hive.llap.task.communicator.connection.timeout.ms", "16000ms",
+      new TimeValidator(TimeUnit.MILLISECONDS),
+      "Connection timeout (in milliseconds) before a failure to an LLAP daemon from Tez AM.",
+      "llap.task.communicator.connection.timeout-millis"),
+    LLAP_TASK_COMMUNICATOR_CONNECTION_SLEEP_BETWEEN_RETRIES_MS(
+      "hive.llap.task.communicator.connection.sleep.between.retries.ms", "2000ms",
+      new TimeValidator(TimeUnit.MILLISECONDS),
+      "Sleep duration (in milliseconds) to wait before retrying on error when obtaining a\n" +
+      "connection to LLAP daemon from Tez AM.",
+      "llap.task.communicator.connection.sleep-between-retries-millis"),
+    LLAP_DAEMON_WEB_PORT("hive.llap.daemon.web.port", 15002, "LLAP daemon web UI port.",
+      "llap.daemon.service.port"),
+    LLAP_DAEMON_WEB_SSL("hive.llap.daemon.web.ssl", false,
+      "Whether LLAP daemon web UI should use SSL.", "llap.daemon.service.ssl"),
 
     SPARK_CLIENT_FUTURE_TIMEOUT("hive.spark.client.future.timeout",
       "60s", new TimeValidator(TimeUnit.SECONDS),
@@ -2411,10 +2555,22 @@ public class HiveConf extends Configuration {
         "Expected inflation factor between disk/in memory representation of hash tables"),
     HIVE_LOG_TRACE_ID("hive.log.trace.id", "",
         "Log tracing id that can be used by upstream clients for tracking respective logs. " +
-        "Truncated to " + LOG_PREFIX_LENGTH + " characters. Defaults to use auto-generated session id.");
+        "Truncated to " + LOG_PREFIX_LENGTH + " characters. Defaults to use auto-generated session id."),
+
+
+    HIVE_CONF_RESTRICTED_LIST("hive.conf.restricted.list",
+        "hive.security.authenticator.manager,hive.security.authorization.manager,hive.users.in.admin.role",
+        "Comma separated list of configuration options which are immutable at runtime"),
+    HIVE_CONF_HIDDEN_LIST("hive.conf.hidden.list",
+        METASTOREPWD.varname + "," + HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname,
+        "Comma separated list of configuration options which should not be read by normal user like passwords"),
+    HIVE_CONF_INTERNAL_VARIABLE_LIST("hive.conf.internal.variable.list",
+        "hive.added.files.path,hive.added.jars.path,hive.added.archives.path",
+        "Comma separated list of variables which are used internally and should not be configurable.");
 
 
     public final String varname;
+    private final String altName;
     private final String defaultExpr;
 
     public final String defaultStrVal;
@@ -2434,28 +2590,39 @@ public class HiveConf extends Configuration {
     private final boolean caseSensitive;
 
     ConfVars(String varname, Object defaultVal, String description) {
-      this(varname, defaultVal, null, description, true, false);
+      this(varname, defaultVal, null, description, true, false, null);
+    }
+
+    ConfVars(String varname, Object defaultVal, String description, String altName) {
+      this(varname, defaultVal, null, description, true, false, altName);
+    }
+
+    ConfVars(String varname, Object defaultVal, Validator validator, String description,
+        String altName) {
+      this(varname, defaultVal, validator, description, true, false, altName);
     }
 
     ConfVars(String varname, Object defaultVal, String description, boolean excluded) {
-      this(varname, defaultVal, null, description, true, excluded);
+      this(varname, defaultVal, null, description, true, excluded, null);
     }
 
     ConfVars(String varname, String defaultVal, boolean caseSensitive, String description) {
-      this(varname, defaultVal, null, description, caseSensitive, false);
+      this(varname, defaultVal, null, description, caseSensitive, false, null);
     }
 
     ConfVars(String varname, Object defaultVal, Validator validator, String description) {
-      this(varname, defaultVal, validator, description, true, false);
+      this(varname, defaultVal, validator, description, true, false, null);
     }
 
-    ConfVars(String varname, Object defaultVal, Validator validator, String description, boolean caseSensitive, boolean excluded) {
+    ConfVars(String varname, Object defaultVal, Validator validator, String description,
+        boolean caseSensitive, boolean excluded, String altName) {
       this.varname = varname;
       this.validator = validator;
       this.description = description;
       this.defaultExpr = defaultVal == null ? null : String.valueOf(defaultVal);
       this.excluded = excluded;
       this.caseSensitive = caseSensitive;
+      this.altName = altName;
       if (defaultVal == null || defaultVal instanceof String) {
         this.valClass = String.class;
         this.valType = VarType.STRING;
@@ -2697,6 +2864,9 @@ public class HiveConf extends Configuration {
 
   public static int getIntVar(Configuration conf, ConfVars var) {
     assert (var.valClass == Integer.class) : var.varname;
+    if (var.altName != null) {
+      return conf.getInt(var.varname, conf.getInt(var.altName, var.defaultIntVal));
+    }
     return conf.getInt(var.varname, var.defaultIntVal);
   }
 
@@ -2791,10 +2961,16 @@ public class HiveConf extends Configuration {
 
   public static long getLongVar(Configuration conf, ConfVars var) {
     assert (var.valClass == Long.class) : var.varname;
+    if (var.altName != null) {
+      return conf.getLong(var.varname, conf.getLong(var.altName, var.defaultLongVal));
+    }
     return conf.getLong(var.varname, var.defaultLongVal);
   }
 
   public static long getLongVar(Configuration conf, ConfVars var, long defaultVal) {
+    if (var.altName != null) {
+      return conf.getLong(var.varname, conf.getLong(var.altName, defaultVal));
+    }
     return conf.getLong(var.varname, defaultVal);
   }
 
@@ -2813,10 +2989,16 @@ public class HiveConf extends Configuration {
 
   public static float getFloatVar(Configuration conf, ConfVars var) {
     assert (var.valClass == Float.class) : var.varname;
+    if (var.altName != null) {
+      return conf.getFloat(var.varname, conf.getFloat(var.altName, var.defaultFloatVal));
+    }
     return conf.getFloat(var.varname, var.defaultFloatVal);
   }
 
   public static float getFloatVar(Configuration conf, ConfVars var, float defaultVal) {
+    if (var.altName != null) {
+      return conf.getFloat(var.varname, conf.getFloat(var.altName, defaultVal));
+    }
     return conf.getFloat(var.varname, defaultVal);
   }
 
@@ -2835,10 +3017,16 @@ public class HiveConf extends Configuration {
 
   public static boolean getBoolVar(Configuration conf, ConfVars var) {
     assert (var.valClass == Boolean.class) : var.varname;
+    if (var.altName != null) {
+      return conf.getBoolean(var.varname, conf.getBoolean(var.altName, var.defaultBoolVal));
+    }
     return conf.getBoolean(var.varname, var.defaultBoolVal);
   }
 
   public static boolean getBoolVar(Configuration conf, ConfVars var, boolean defaultVal) {
+    if (var.altName != null) {
+      return conf.getBoolean(var.varname, conf.getBoolean(var.altName, defaultVal));
+    }
     return conf.getBoolean(var.varname, defaultVal);
   }
 
@@ -2857,10 +3045,24 @@ public class HiveConf extends Configuration {
 
   public static String getVar(Configuration conf, ConfVars var) {
     assert (var.valClass == String.class) : var.varname;
+    if (var.altName != null) {
+      return conf.get(var.varname, conf.get(var.altName, var.defaultStrVal));
+    }
     return conf.get(var.varname, var.defaultStrVal);
   }
 
+  public static String getTrimmedVar(Configuration conf, ConfVars var) {
+    assert (var.valClass == String.class) : var.varname;
+    if (var.altName != null) {
+      return conf.getTrimmed(var.varname, conf.getTrimmed(var.altName, var.defaultStrVal));
+    }
+    return conf.getTrimmed(var.varname, var.defaultStrVal);
+  }
+
   public static String getVar(Configuration conf, ConfVars var, String defaultVal) {
+    if (var.altName != null) {
+      return conf.get(var.varname, conf.get(var.altName, defaultVal));
+    }
     return conf.get(var.varname, defaultVal);
   }
 

@@ -77,7 +77,7 @@ public class StringAppender
     if (nullablePatternString == null) {
       layout = PatternLayout.createDefaultLayout();
     } else {
-      layout = PatternLayout.createLayout(nullablePatternString, configuration,
+      layout = PatternLayout.createLayout(nullablePatternString, null, configuration,
           null, null, true, false, null, null);
     }
 

@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.join.cache.size=1;
 
 -- SORT_QUERY_RESULTS

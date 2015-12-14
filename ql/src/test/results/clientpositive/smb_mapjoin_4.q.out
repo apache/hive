@@ -69,7 +69,7 @@ STAGE PLANS:
             Statistics: Num rows: 2 Data size: 222 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 1 Data size: 111 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 222 Basic stats: COMPLETE Column stats: NONE
               Sorted Merge Bucket Map Join Operator
                 condition map:
                      Inner Join 0 to 1

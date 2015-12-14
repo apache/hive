@@ -194,7 +194,7 @@ abstract public class AbstractBucketJoinProc implements NodeProcessor {
     LinkedHashMap<String, List<List<String>>> tblAliasToBucketedFilePathsInEachPartition =
         new LinkedHashMap<String, List<List<String>>>();
 
-    HashMap<String, Operator<? extends OperatorDesc>> topOps = pGraphContext.getTopOps();
+    HashMap<String, TableScanOperator> topOps = pGraphContext.getTopOps();
 
     HashMap<String, String> aliasToNewAliasMap = new HashMap<String, String>();
 
@@ -228,7 +228,7 @@ abstract public class AbstractBucketJoinProc implements NodeProcessor {
 
       // For nested sub-queries, the alias mapping is not maintained in QB currently.
       if (topOps.containsValue(tso)) {
-        for (Map.Entry<String, Operator<? extends OperatorDesc>> topOpEntry : topOps.entrySet()) {
+        for (Map.Entry<String, TableScanOperator> topOpEntry : topOps.entrySet()) {
           if (topOpEntry.getValue() == tso) {
             String newAlias = topOpEntry.getKey();
             if (!newAlias.equals(alias)) {

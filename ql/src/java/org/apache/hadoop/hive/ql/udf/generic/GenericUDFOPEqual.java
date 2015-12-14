@@ -66,6 +66,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
   DateColEqualDateScalar.class,FilterDateColEqualDateScalar.class,
   DateScalarEqualDateColumn.class,FilterDateScalarEqualDateColumn.class,
   })
+@NDV(maxNdv = 2)
 public class GenericUDFOPEqual extends GenericUDFBaseCompare {
   public GenericUDFOPEqual(){
     this.opName = "EQUAL";

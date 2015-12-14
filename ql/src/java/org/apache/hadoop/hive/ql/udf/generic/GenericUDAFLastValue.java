@@ -251,10 +251,15 @@ public class GenericUDAFLastValue extends AbstractGenericUDAFResolver {
       // For the case: X following and Y following, process first Y-X results and then insert X nulls.
       // For the case X preceding and Y following, process Y results.
       for (int i = Math.max(0, wFrameDef.getStart().getRelativeOffset()); i < wFrameDef.getEnd().getRelativeOffset(); i++) {
-        s.results.add(s.lastValue);
+        if (s.hasResultReady()) {
+          s.results.add(s.lastValue);
+        }
+        s.numRows++;
       }
       for (int i = 0; i < wFrameDef.getStart().getRelativeOffset(); i++) {
-        s.results.add(null);
+        if (s.hasResultReady()) {
+          s.results.add(null);
+        }
         s.numRows++;
       }
 

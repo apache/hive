@@ -18,10 +18,32 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
-import com.google.common.collect.Sets;
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
+import static org.apache.hadoop.hive.serde.serdeConstants.COLLECTION_DELIM;
+import static org.apache.hadoop.hive.serde.serdeConstants.ESCAPE_CHAR;
+import static org.apache.hadoop.hive.serde.serdeConstants.FIELD_DELIM;
+import static org.apache.hadoop.hive.serde.serdeConstants.LINE_DELIM;
+import static org.apache.hadoop.hive.serde.serdeConstants.MAPKEY_DELIM;
+import static org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT;
+import static org.apache.hadoop.hive.serde.serdeConstants.STRING_TYPE_NAME;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -81,6 +103,7 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.FunctionTask;
 import org.apache.hadoop.hive.ql.exec.FunctionUtils;
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.tez.InPlaceUpdates;
 import org.apache.hadoop.hive.ql.index.HiveIndexHandler;
@@ -100,32 +123,10 @@ import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
-import static org.apache.hadoop.hive.serde.serdeConstants.COLLECTION_DELIM;
-import static org.apache.hadoop.hive.serde.serdeConstants.ESCAPE_CHAR;
-import static org.apache.hadoop.hive.serde.serdeConstants.FIELD_DELIM;
-import static org.apache.hadoop.hive.serde.serdeConstants.LINE_DELIM;
-import static org.apache.hadoop.hive.serde.serdeConstants.MAPKEY_DELIM;
-import static org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT;
-import static org.apache.hadoop.hive.serde.serdeConstants.STRING_TYPE_NAME;
+import com.google.common.collect.Sets;
 
 /**
  * This class has functions that implement meta data/DDL operations using calls
@@ -784,7 +785,7 @@ public class Hive {
   public static List<FieldSchema> getFieldsFromDeserializerForMsStorage(
       Table tbl, Deserializer deserializer) throws SerDeException, MetaException {
     List<FieldSchema> schema = MetaStoreUtils.getFieldsFromDeserializer(
-        tbl.getTableName(), tbl.getDeserializer());
+        tbl.getTableName(), deserializer);
     for (FieldSchema field : schema) {
       field.setType(MetaStoreUtils.TYPE_FROM_DESERIALIZER);
     }
@@ -2087,7 +2088,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
           new ArrayList<ObjectPair<Integer,byte[]>>(partSpecs.size());
       for (DropTableDesc.PartSpec partSpec : partSpecs) {
         partExprs.add(new ObjectPair<Integer, byte[]>(partSpec.getPrefixLength(),
-            Utilities.serializeExpressionToKryo(partSpec.getPartSpec())));
+            SerializationUtilities.serializeExpressionToKryo(partSpec.getPartSpec())));
       }
       List<org.apache.hadoop.hive.metastore.api.Partition> tParts = getMSC().dropPartitions(
           dbName, tblName, partExprs, dropOptions);
@@ -2362,7 +2363,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public boolean getPartitionsByExpr(Table tbl, ExprNodeGenericFuncDesc expr, HiveConf conf,
       List<Partition> result) throws HiveException, TException {
     assert result != null;
-    byte[] exprBytes = Utilities.serializeExpressionToKryo(expr);
+    byte[] exprBytes = SerializationUtilities.serializeExpressionToKryo(expr);
     String defaultPartitionName = HiveConf.getVar(conf, ConfVars.DEFAULTPARTITIONNAME);
     List<org.apache.hadoop.hive.metastore.api.Partition> msParts =
         new ArrayList<org.apache.hadoop.hive.metastore.api.Partition>();
@@ -2953,19 +2954,35 @@ private void constructOneLBLocationMap(FileStatus fSta,
       List<List<Path[]>> result = checkPaths(conf, destFs, srcs, srcFs, destf, true);
 
       if (oldPath != null) {
+        boolean oldPathDeleted = false;
+        boolean isOldPathUnderDestf = false;
         try {
           FileSystem fs2 = oldPath.getFileSystem(conf);
           if (fs2.exists(oldPath)) {
             // Do not delete oldPath if:
             //  - destf is subdir of oldPath
             //if ( !(fs2.equals(destf.getFileSystem(conf)) && FileUtils.isSubDir(oldPath, destf, fs2)))
-            if (FileUtils.isSubDir(oldPath, destf, fs2)) {
-              FileUtils.trashFilesUnderDir(fs2, oldPath, conf);
+            isOldPathUnderDestf = FileUtils.isSubDir(oldPath, destf, fs2);
+            if (isOldPathUnderDestf) {
+              // if oldPath is destf or its subdir, its should definitely be deleted, otherwise its
+              // existing content might result in incorrect (extra) data.
+              // But not sure why we changed not to delete the oldPath in HIVE-8750 if it is
+              // not the destf or its subdir?
+              oldPathDeleted = FileUtils.trashFilesUnderDir(fs2, oldPath, conf);
             }
           }
-        } catch (Exception e) {
-          //swallow the exception
-          LOG.warn("Directory " + oldPath.toString() + " cannot be removed: " + e, e);
+        } catch (IOException e) {
+          if (isOldPathUnderDestf) {
+            // if oldPath is a subdir of destf but it could not be cleaned
+            throw new HiveException("Directory " + oldPath.toString()
+                + " could not be cleaned up.", e);
+          } else {
+            //swallow the exception since it won't affect the final result
+            LOG.warn("Directory " + oldPath.toString() + " cannot be cleaned: " + e, e);
+          }
+        }
+        if (isOldPathUnderDestf && !oldPathDeleted) {
+          throw new HiveException("Destination directory " + destf + " has not be cleaned up.");
         }
       }
 

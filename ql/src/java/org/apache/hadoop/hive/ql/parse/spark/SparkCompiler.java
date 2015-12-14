@@ -26,8 +26,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
@@ -97,7 +95,6 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 public class SparkCompiler extends TaskCompiler {
   private static final String CLASS_NAME = SparkCompiler.class.getName();
   private static final PerfLogger PERF_LOGGER = SessionState.getPerfLogger();
-  private static final Logger LOGGER = LoggerFactory.getLogger(SparkCompiler.class);
 
   public SparkCompiler() {
   }
@@ -241,7 +238,7 @@ public class SparkCompiler extends TaskCompiler {
 
     // we need to clone some operator plans and remove union operators still
     for (BaseWork w : procCtx.workWithUnionOperators) {
-      GenSparkUtils.getUtils().removeUnionOperators(conf, procCtx, w);
+      GenSparkUtils.getUtils().removeUnionOperators(procCtx, w);
     }
 
     // we need to fill MapWork with 'local' work and bucket information for SMB Join.

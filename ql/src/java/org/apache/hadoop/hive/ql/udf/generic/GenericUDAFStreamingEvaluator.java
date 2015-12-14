@@ -56,6 +56,16 @@ public abstract class GenericUDAFStreamingEvaluator<T1> extends
       results.clear();
       numRows = 0;
     }
+
+    /**
+     * For the cases "X preceding and Y preceding" or the number of processed rows
+     * is more than the size of FOLLOWING window, we are able to generate a PTF result
+     * for a previous row.
+     * @return
+     */
+    public boolean hasResultReady() {
+      return this.numRows >= wFrameDef.getEnd().getRelativeOffset();
+    }
   }
 
   @Override
@@ -141,16 +151,6 @@ public abstract class GenericUDAFStreamingEvaluator<T1> extends
       }
 
       /**
-       * For the cases "X preceding and Y preceding" or the number of processed rows
-       * is more than the size of FOLLOWING window, we are able to generate a PTF result
-       * for a previous row.
-       * @return
-       */
-      public boolean hasResultReady() {
-        return this.numRows >= wFrameDef.getEnd().getRelativeOffset();
-      }
-
-      /**
        * Retrieve the next stored intermediate result, i.e.,
        * Get S[x-1] in the computation of S[x..y] = S[y] - S[x-1].
        */
@@ -206,11 +206,15 @@ public abstract class GenericUDAFStreamingEvaluator<T1> extends
       // For the case: X following and Y following, process first Y-X results and then insert X nulls.
       // For the case X preceding and Y following, process Y results.
       for (int i = Math.max(0, wFrameDef.getStart().getRelativeOffset()); i < wFrameDef.getEnd().getRelativeOffset(); i++) {
-        ss.results.add(getNextResult(ss));
+        if (ss.hasResultReady()) {
+          ss.results.add(getNextResult(ss));
+        }
         ss.numRows++;
       }
       for (int i = 0; i < wFrameDef.getStart().getRelativeOffset(); i++) {
-        ss.results.add(null);
+        if (ss.hasResultReady()) {
+          ss.results.add(null);
+        }
         ss.numRows++;
       }
 

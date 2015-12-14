@@ -29,11 +29,6 @@ public class MetricsConstant {
   public static final String OPEN_CONNECTIONS = "open_connections";
   public static final String OPEN_OPERATIONS = "open_operations";
 
-  public static final String JDO_ACTIVE_TRANSACTIONS = "active_jdo_transactions";
-  public static final String JDO_ROLLBACK_TRANSACTIONS = "rollbacked_jdo_transactions";
-  public static final String JDO_COMMIT_TRANSACTIONS = "committed_jdo_transactions";
-  public static final String JDO_OPEN_TRANSACTIONS = "opened_jdo_transactions";
-
   public static final String METASTORE_HIVE_LOCKS = "metastore_hive_locks";
   public static final String ZOOKEEPER_HIVE_SHAREDLOCKS = "zookeeper_hive_sharedlocks";
   public static final String ZOOKEEPER_HIVE_EXCLUSIVELOCKS = "zookeeper_hive_exclusivelocks";
@@ -44,4 +39,12 @@ public class MetricsConstant {
 
   public static final String OPERATION_PREFIX = "hs2_operation_";
   public static final String COMPLETED_OPERATION_PREFIX = "hs2_completed_operation_";
+
+  public static final String INIT_TOTAL_DATABASES = "init_total_count_dbs";
+  public static final String INIT_TOTAL_TABLES = "init_total_count_tables";
+  public static final String INIT_TOTAL_PARTITIONS = "init_total_count_partitions";
+
+  public static final String DELTA_TOTAL_DATABASES = "delta_total_count_dbs";
+  public static final String DELTA_TOTAL_TABLES = "delta_total_count_tables";
+  public static final String DELTA_TOTAL_PARTITIONS = "delta_total_count_partitions";
 }

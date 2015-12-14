@@ -1,4 +1,4 @@
-set hive.cbo.enable=false;
+set hive.cbo.enable=true;
 
 -- try the query without indexing, with manual indexing, and with automatic indexing
 -- SORT_QUERY_RESULTS

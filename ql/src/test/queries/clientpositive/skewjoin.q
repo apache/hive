@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 set hive.optimize.skewjoin = true;
 set hive.skewjoin.key = 2;

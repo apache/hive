@@ -299,7 +299,7 @@ public abstract class CLIServiceTest {
     ExecutorService executor = Executors.newFixedThreadPool(THREAD_COUNT);
     CountDownLatch cdlIn = new CountDownLatch(THREAD_COUNT), cdlOut = new CountDownLatch(1);
     @SuppressWarnings("unchecked")
-    Callable<Void>[] cs = (Callable<Void>[])new Callable[3];
+    Callable<Void>[] cs = new Callable[3];
     // Create callables with different queries.
     String query = "SELECT ID + %1$d FROM " + tableName;
     cs[0] = createQueryCallable(
@@ -314,7 +314,7 @@ public abstract class CLIServiceTest {
         query, confOverlay, longPollingTimeout, QUERY_COUNT, cdlIn, cdlOut);
 
     @SuppressWarnings("unchecked")
-    FutureTask<Void>[] tasks = (FutureTask<Void>[])new FutureTask[THREAD_COUNT];
+    FutureTask<Void>[] tasks = new FutureTask[THREAD_COUNT];
     for (int i = 0; i < THREAD_COUNT; ++i) {
       tasks[i] = new FutureTask<Void>(cs[i % cs.length]);
       executor.execute(tasks[i]);
@@ -338,6 +338,7 @@ public abstract class CLIServiceTest {
       final Map<String, String> confOverlay, final long longPollingTimeout,
       final int queryCount, final CountDownLatch cdlIn, final CountDownLatch cdlOut) {
     return new Callable<Void>() {
+      @Override
       public Void call() throws Exception {
         syncThreadStart(cdlIn, cdlOut);
         SessionHandle sessionHandle = openSession(confOverlay);

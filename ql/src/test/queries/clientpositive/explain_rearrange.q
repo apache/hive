@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 -- query from auto_sortmerge_join_9.q
 
 CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS;

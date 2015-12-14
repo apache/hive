@@ -1,0 +1,21 @@
+PREHOOK: query: CREATE DATABASE IF NOT EXISTS db1
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:db1
+POSTHOOK: query: CREATE DATABASE IF NOT EXISTS db1
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:db1
+PREHOOK: query: use db1
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:db1
+POSTHOOK: query: use db1
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:db1
+PREHOOK: query: CREATE TABLE IF NOT EXISTS name1 (col1 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:db1
+PREHOOK: Output: db1@name1
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS name1 (col1 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:db1
+POSTHOOK: Output: db1@name1
+FAILED: SemanticException [Error 10072]: Database does not exist: name1

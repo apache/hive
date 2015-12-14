@@ -25,8 +25,8 @@ import org.apache.hadoop.hive.common.Pool.PoolObjectHelper;
 import org.apache.hadoop.hive.common.io.DataCache;
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch;
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch.ColumnStreamData;
-import org.apache.hadoop.hive.ql.io.orc.DataReader;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream;
+import org.apache.orc.DataReader;
+import org.apache.orc.OrcProto;
 
 /**
  * The interface for reading encoded data from ORC files.
@@ -48,7 +48,7 @@ public interface Reader extends org.apache.hadoop.hive.ql.io.orc.Reader {
      * All the previous streams are data streams, this and the next ones are index streams.
      * We assume the sort will stay the same for backward compat.
      */
-    public static final int MAX_DATA_STREAMS = Stream.Kind.ROW_INDEX.getNumber();
+    public static final int MAX_DATA_STREAMS = OrcProto.Stream.Kind.ROW_INDEX.getNumber();
     public void init(long fileId, int stripeIx, int rgIx, int columnCount) {
       if (batchKey == null) {
         batchKey = new OrcBatchKey(fileId, stripeIx, rgIx);
@@ -68,5 +68,5 @@ public interface Reader extends org.apache.hadoop.hive.ql.io.orc.Reader {
    * @return The reader.
    */
   EncodedReader encodedReader(
-      long fileId, DataCache dataCache, DataReader dataReader, PoolFactory pf) throws IOException;
+      Long fileId, DataCache dataCache, DataReader dataReader, PoolFactory pf) throws IOException;
 }

@@ -24,15 +24,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
-import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Output;
 
 public class FSStatsPublisher implements StatsPublisher {
@@ -100,7 +101,12 @@ public class FSStatsPublisher implements StatsPublisher {
       Output output = new Output(statsFile.getFileSystem(conf).create(statsFile,true));
       LOG.debug("Created file : " + statsFile);
       LOG.debug("Writing stats in it : " + statsMap);
-      Utilities.runtimeSerializationKryo.get().writeObject(output, statsMap);
+      Kryo kryo = SerializationUtilities.borrowKryo();
+      try {
+        kryo.writeObject(output, statsMap);
+      } finally {
+        SerializationUtilities.releaseKryo(kryo);
+      }
       output.close();
       return true;
     } catch (IOException e) {

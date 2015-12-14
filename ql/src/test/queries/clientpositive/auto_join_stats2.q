@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.auto.convert.join = true;
 
 -- Auto_join2 no longer tests merging the mapjoin work if big-table selection is based on stats, as src3 is smaller statistically than src1 + src2.

@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 dfs ${system:test.dfs.mkdir} hdfs:///target/tmp/test_empty_table;
 
 create external table roottable (key string) row format delimited fields terminated by '\\t' stored as textfile location 'hdfs:///target/tmp/test_empty_table';

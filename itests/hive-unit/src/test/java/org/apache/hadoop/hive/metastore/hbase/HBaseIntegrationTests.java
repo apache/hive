@@ -94,6 +94,7 @@ public class HBaseIntegrationTests {
         SessionStateConfigUserAuthenticator.class.getName());
     conf.setBoolVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED, true);
     conf.setVar(HiveConf.ConfVars.USERS_IN_ADMIN_ROLE, System.getProperty("user.name"));
+    conf.setVar(HiveConf.ConfVars.HIVEMAPREDMODE,"nonstrict");
     //HBaseReadWrite.setTestConnection(hconn);
 
     SessionState.start(new CliSessionState(conf));

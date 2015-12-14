@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 drop table pcr_t1;
 
 create table pcr_t1 (key int, value string) partitioned by (ds1 string, ds2 string);

@@ -378,12 +378,14 @@ public class TestDbTxnManager {
   private static class MockQueryPlan extends QueryPlan {
     private final HashSet<ReadEntity> inputs;
     private final HashSet<WriteEntity> outputs;
-
+    private final String queryId;
+    
     MockQueryPlan(TestDbTxnManager test) {
       HashSet<ReadEntity> r = test.readEntities;
       HashSet<WriteEntity> w = test.writeEntities;
       inputs = (r == null) ? new HashSet<ReadEntity>() : r;
       outputs = (w == null) ? new HashSet<WriteEntity>() : w;
+      queryId = makeQueryId();
     }
 
     @Override
@@ -394,6 +396,10 @@ public class TestDbTxnManager {
     @Override
     public HashSet<WriteEntity> getOutputs() {
       return outputs;
+    }
+    @Override
+    public String getQueryId() {
+      return queryId;
     }
   }
 

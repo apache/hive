@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 CREATE TABLE T1(key INT, val STRING);
 LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1;
 CREATE TABLE T2(key INT, val STRING);

@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 -- SORT_QUERY_RESULTS
 
 CREATE TABLE dest_j1(key STRING, cnt1 INT, cnt2 INT);

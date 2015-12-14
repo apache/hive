@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.optimize.skewjoin.compiletime = true;
 
 set hive.stats.autogather=false;
