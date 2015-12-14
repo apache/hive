@@ -390,7 +390,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
 
       Metrics metrics = MetricsFactory.getInstance();
-      if (metrics != null) {
+      if (metrics != null && hiveConf.getBoolVar(ConfVars.METASTORE_INIT_METADATA_COUNT_ENABLED)) {
         LOG.info("Begin calculating metadata count metrics.");
         updateMetrics();
         LOG.info("Finished metadata count metrics: " + initDatabaseCount + " databases, " + initTableCount +
