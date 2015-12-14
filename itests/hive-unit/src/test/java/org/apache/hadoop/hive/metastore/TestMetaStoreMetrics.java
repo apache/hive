@@ -17,35 +17,17 @@
  */
 package org.apache.hadoop.hive.metastore;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.common.metrics.MetricsTestUtils;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
-import org.apache.hadoop.hive.common.metrics.metrics2.MetricsReporting;
+import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
+import org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.SerDeInfo;
-import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
-import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.Driver;
-import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.ShimLoader;
-import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Tests Hive Metastore Metrics.
@@ -53,56 +35,35 @@ import java.util.Map;
  */
 public class TestMetaStoreMetrics {
 
-  private static File workDir = new File(System.getProperty("test.tmp.dir"));
-  private static File jsonReportFile;
 
   private static HiveConf hiveConf;
   private static Driver driver;
+  private static CodahaleMetrics metrics;
 
   @BeforeClass
   public static void before() throws Exception {
 
     int port = MetaStoreUtils.findFreePort();
 
-    jsonReportFile = new File(workDir, "json_reporting");
-    jsonReportFile.delete();
-
     hiveConf = new HiveConf(TestMetaStoreMetrics.class);
     hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
     hiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
     hiveConf.setBoolVar(HiveConf.ConfVars.METASTORE_METRICS, true);
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
-    hiveConf.setVar(HiveConf.ConfVars.HIVE_METRICS_REPORTER, MetricsReporting.JSON_FILE.name() + "," + MetricsReporting.JMX.name());
-    hiveConf.setVar(HiveConf.ConfVars.HIVE_METRICS_JSON_FILE_LOCATION, jsonReportFile.toString());
-    hiveConf.setVar(HiveConf.ConfVars.HIVE_METRICS_JSON_FILE_INTERVAL, "100ms");
 
     MetaStoreUtils.startMetaStore(port, ShimLoader.getHadoopThriftAuthBridge(), hiveConf);
     SessionState.start(new CliSessionState(hiveConf));
     driver = new Driver(hiveConf);
+
+    metrics = (CodahaleMetrics) MetricsFactory.getInstance();
   }
 
 
   @Test
   public void testMethodCounts() throws Exception {
     driver.run("show databases");
-
-    //give timer thread a chance to print the metrics
-    Thread.sleep(2000);
-
-    //This can be replaced by CodahaleMetrics's JsonServlet reporter once it is exposed.
-    byte[] jsonData = Files.readAllBytes(Paths.get(jsonReportFile.getAbsolutePath()));
-    ObjectMapper objectMapper = new ObjectMapper();
-
-    JsonNode rootNode = objectMapper.readTree(jsonData);
-    JsonNode timersNode = rootNode.path("timers");
-    JsonNode methodCounterNode = timersNode.path("api_get_all_databases");
-    JsonNode methodCountNode = methodCounterNode.path("count");
-    Assert.assertTrue(methodCountNode.asInt() > 0);
-
-    JsonNode countersNode = rootNode.path("counters");
-    JsonNode committedJdoTxNode = countersNode.path("committed_jdo_transactions");
-    JsonNode committedCountNode = committedJdoTxNode.path("count");
-    Assert.assertTrue(committedCountNode.asInt() > 0);
+    String json = metrics.dumpJson();
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.TIMER, "api_get_all_databases", 1);
   }
 
   @Test
@@ -144,12 +105,11 @@ public class TestMetaStoreMetrics {
     driver.run("drop database tempdb cascade");
 
     //give timer thread a chance to print the metrics
-    Thread.sleep(2000);
-
-    MetricsTestUtils.verifyMetricFile(jsonReportFile, MetricsTestUtils.COUNTER, MetricsConstant.DELTA_TOTAL_DATABASES, 1);
-    MetricsTestUtils.verifyMetricFile(jsonReportFile, MetricsTestUtils.COUNTER, MetricsConstant.DELTA_TOTAL_TABLES, 4);
-    MetricsTestUtils.verifyMetricFile(jsonReportFile, MetricsTestUtils.COUNTER, MetricsConstant.DELTA_TOTAL_PARTITIONS, 6);
-
+    CodahaleMetrics metrics = (CodahaleMetrics) MetricsFactory.getInstance();
+    String json = metrics.dumpJson();
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, MetricsConstant.DELTA_TOTAL_DATABASES, 1);
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, MetricsConstant.DELTA_TOTAL_TABLES, 4);
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, MetricsConstant.DELTA_TOTAL_PARTITIONS, 6);
 
     //to test initial metadata count metrics.
     hiveConf.setVar(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL, ObjectStore.class.getName());
@@ -157,55 +117,36 @@ public class TestMetaStoreMetrics {
     baseHandler.init();
     baseHandler.updateMetrics();
 
-    Thread.sleep(2000);
-
     //1 new db + default
-    MetricsTestUtils.verifyMetricFile(jsonReportFile, MetricsTestUtils.GAUGE, MetricsConstant.INIT_TOTAL_DATABASES, 2);
-    MetricsTestUtils.verifyMetricFile(jsonReportFile, MetricsTestUtils.GAUGE, MetricsConstant.INIT_TOTAL_TABLES, 4);
-    MetricsTestUtils.verifyMetricFile(jsonReportFile, MetricsTestUtils.GAUGE, MetricsConstant.INIT_TOTAL_PARTITIONS, 6);
+    json = metrics.dumpJson();
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, MetricsConstant.INIT_TOTAL_DATABASES, 2);
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, MetricsConstant.INIT_TOTAL_TABLES, 4);
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, MetricsConstant.INIT_TOTAL_PARTITIONS, 6);
   }
 
 
   @Test
   public void testConnections() throws Exception {
-    byte[] jsonData = Files.readAllBytes(Paths.get(jsonReportFile.getAbsolutePath()));
-    ObjectMapper objectMapper = new ObjectMapper();
-    JsonNode rootNode = objectMapper.readTree(jsonData);
-    JsonNode countersNode = rootNode.path("counters");
-    JsonNode openCnxNode = countersNode.path("open_connections");
-    JsonNode openCnxCountNode = openCnxNode.path("count");
-    Assert.assertTrue(openCnxCountNode.asInt() == 1);
 
-    //create a second connection
+    //initial state is one connection
+    String json = metrics.dumpJson();
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, MetricsConstant.OPEN_CONNECTIONS, 1);
+
+    //create two connections
     HiveMetaStoreClient msc = new HiveMetaStoreClient(hiveConf);
     HiveMetaStoreClient msc2 = new HiveMetaStoreClient(hiveConf);
-    Thread.sleep(2000);
 
-    jsonData = Files.readAllBytes(Paths.get(jsonReportFile.getAbsolutePath()));
-    rootNode = objectMapper.readTree(jsonData);
-    countersNode = rootNode.path("counters");
-    openCnxNode = countersNode.path("open_connections");
-    openCnxCountNode = openCnxNode.path("count");
-    Assert.assertTrue(openCnxCountNode.asInt() == 3);
+    json = metrics.dumpJson();
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, MetricsConstant.OPEN_CONNECTIONS, 3);
 
+    //close one connection, verify still two left
     msc.close();
-    Thread.sleep(2000);
+    json = metrics.dumpJson();
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, MetricsConstant.OPEN_CONNECTIONS, 2);
 
-    jsonData = Files.readAllBytes(Paths.get(jsonReportFile.getAbsolutePath()));
-    rootNode = objectMapper.readTree(jsonData);
-    countersNode = rootNode.path("counters");
-    openCnxNode = countersNode.path("open_connections");
-    openCnxCountNode = openCnxNode.path("count");
-    Assert.assertTrue(openCnxCountNode.asInt() == 2);
-
+    //close one connection, verify still one left
     msc2.close();
-    Thread.sleep(2000);
-
-    jsonData = Files.readAllBytes(Paths.get(jsonReportFile.getAbsolutePath()));
-    rootNode = objectMapper.readTree(jsonData);
-    countersNode = rootNode.path("counters");
-    openCnxNode = countersNode.path("open_connections");
-    openCnxCountNode = openCnxNode.path("count");
-    Assert.assertTrue(openCnxCountNode.asInt() == 1);
+    json = metrics.dumpJson();
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, MetricsConstant.OPEN_CONNECTIONS, 1);
   }
 }

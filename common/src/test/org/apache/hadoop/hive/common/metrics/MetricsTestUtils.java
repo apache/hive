@@ -44,16 +44,15 @@ public class MetricsTestUtils {
     }
   }
 
-  public static void verifyMetricFile(File jsonReportFile, MetricsCategory category, String metricsName,
+  public static void verifyMetricsJson(String json, MetricsCategory category, String metricsName,
     Object expectedValue) throws Exception {
-    JsonNode jsonNode = getJsonNode(jsonReportFile, category, metricsName);
+    JsonNode jsonNode = getJsonNode(json, category, metricsName);
     Assert.assertEquals(expectedValue.toString(), jsonNode.asText());
   }
 
-  private static JsonNode getJsonNode(File jsonReportFile, MetricsCategory category, String metricsName) throws Exception {
-    byte[] jsonData = Files.readAllBytes(Paths.get(jsonReportFile.getAbsolutePath()));
+  private static JsonNode getJsonNode(String json, MetricsCategory category, String metricsName) throws Exception {
     ObjectMapper objectMapper = new ObjectMapper();
-    JsonNode rootNode = objectMapper.readTree(jsonData);
+    JsonNode rootNode = objectMapper.readTree(json);
     JsonNode categoryNode = rootNode.path(category.category);
     JsonNode metricsNode = categoryNode.path(metricsName);
     return metricsNode.path(category.metricsHandle);

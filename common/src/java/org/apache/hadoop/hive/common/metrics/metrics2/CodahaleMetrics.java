@@ -332,6 +332,13 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
     return metricRegistry;
   }
 
+  @VisibleForTesting
+  public String dumpJson() throws Exception {
+    ObjectMapper jsonMapper = new ObjectMapper().registerModule(
+      new MetricsModule(TimeUnit.MILLISECONDS, TimeUnit.MILLISECONDS, false));
+    return jsonMapper.writerWithDefaultPrettyPrinter().writeValueAsString(metricRegistry);
+  }
+
   /**
    * Should be only called once to initialize the reporters
    */
