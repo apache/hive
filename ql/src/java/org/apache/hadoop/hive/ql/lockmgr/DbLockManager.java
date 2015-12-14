@@ -48,6 +48,7 @@ public class DbLockManager implements HiveLockManager{
   static final private Log LOG = LogFactory.getLog(CLASS_NAME);
 
   private long MAX_SLEEP;
+  //longer term we should always have a txn id and then we won't need to track locks here at all
   private Set<DbHiveLock> locks;
   private IMetaStoreClient client;
   private long nextSleep = 50;
@@ -111,7 +112,27 @@ public class DbLockManager implements HiveLockManager{
 
       }
       long retryDuration = System.currentTimeMillis() - startRetry;
-      DbHiveLock hl = new DbHiveLock(res.getLockid());
+      DbHiveLock hl = new DbHiveLock(res.getLockid(), queryId, lock.getTxnid());
+      if(locks.size() > 0) {
+        boolean logMsg = false;
+        for(DbHiveLock l : locks) {
+          if(l.txnId != hl.txnId) {
+            //locks from different transactions detected (or from transaction and read-only query in autocommit)
+            logMsg = true;
+            break;
+          }
+          else if(l.txnId == 0) {
+            if(!l.queryId.equals(hl.queryId)) {
+              //here means no open transaction, but different queries
+              logMsg = true;
+              break;
+            }
+          }
+        }
+        if(logMsg) {
+          LOG.warn("adding new DbHiveLock(" + hl + ") while we are already tracking locks: " + locks);
+        }
+      }
       locks.add(hl);
       if (res.getState() != LockState.ACQUIRED) {
         if(res.getState() == LockState.WAITING) {
@@ -177,12 +198,17 @@ public class DbLockManager implements HiveLockManager{
   @Override
   public void unlock(HiveLock hiveLock) throws LockException {
     long lockId = ((DbHiveLock)hiveLock).lockId;
+    boolean removed = false;
     try {
       LOG.debug("Unlocking " + hiveLock);
       client.unlock(lockId);
-      boolean removed = locks.remove(hiveLock);
+      //important to remove after unlock() in case it fails
+      removed = locks.remove(hiveLock);
       LOG.debug("Removed a lock " + removed);
     } catch (NoSuchLockException e) {
+      //if metastore has no record of this lock, it most likely timed out; either way
+      //there is no point tracking it here any longer
+      removed = locks.remove(hiveLock);
       LOG.error("Metastore could find no record of lock " + JavaUtils.lockIdToString(lockId));
       throw new LockException(e, ErrorMsg.LOCK_NO_SUCH_LOCK, JavaUtils.lockIdToString(lockId));
     } catch (TxnOpenException e) {
@@ -192,10 +218,16 @@ public class DbLockManager implements HiveLockManager{
       throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(),
           e);
     }
+    finally {
+      if(removed) {
+        LOG.debug("Removed a lock " + hiveLock);
+      }
+    }
   }
 
   @Override
   public void releaseLocks(List<HiveLock> hiveLocks) {
+    LOG.info("releaseLocks: " + hiveLocks);
     for (HiveLock lock : hiveLocks) {
       try {
         unlock(lock);
@@ -203,6 +235,8 @@ public class DbLockManager implements HiveLockManager{
         // Not sure why this method doesn't throw any exceptions,
         // but since the interface doesn't allow it we'll just swallow them and
         // move on.
+        //This OK-ish since releaseLocks() is only called for RO/AC queries; it
+        //would be really bad to eat exceptions here for write operations
       }
     }
   }
@@ -249,9 +283,16 @@ public class DbLockManager implements HiveLockManager{
   static class DbHiveLock extends HiveLock {
 
     long lockId;
+    String queryId;
+    long txnId;
 
     DbHiveLock(long id) {
       lockId = id;
+    }
+    DbHiveLock(long id, String queryId, long txnId) {
+      lockId = id;
+      this.queryId = queryId;
+      this.txnId = txnId;
     }
 
     @Override
@@ -279,7 +320,7 @@ public class DbLockManager implements HiveLockManager{
     }
     @Override
     public String toString() {
-      return JavaUtils.lockIdToString(lockId);
+      return JavaUtils.lockIdToString(lockId) + " queryId=" + queryId + " " + JavaUtils.txnIdToString(txnId);
     }
   }
 
