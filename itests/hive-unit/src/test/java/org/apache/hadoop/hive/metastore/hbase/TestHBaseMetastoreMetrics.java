@@ -21,19 +21,19 @@ package org.apache.hadoop.hive.metastore.hbase;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.common.metrics.MetricsTestUtils;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
+import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
+import org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics;
 import org.apache.hadoop.hive.common.metrics.metrics2.MetricsReporting;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.ql.Driver;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.File;
 import java.io.IOException;
 
 /**
@@ -41,14 +41,10 @@ import java.io.IOException;
  */
 public class TestHBaseMetastoreMetrics extends HBaseIntegrationTests {
 
-  private static File jsonReportFile;
+  private CodahaleMetrics metrics;
 
   @BeforeClass
   public static void startup() throws Exception {
-    File workDir = new File(System.getProperty("test.tmp.dir"));
-    jsonReportFile = new File(workDir, "json_reporting");
-    jsonReportFile.delete();
-
     HBaseIntegrationTests.startMiniCluster();
   }
 
@@ -68,10 +64,9 @@ public class TestHBaseMetastoreMetrics extends HBaseIntegrationTests {
 
     conf.setBoolVar(HiveConf.ConfVars.METASTORE_METRICS, true);
     conf.setVar(HiveConf.ConfVars.HIVE_METRICS_REPORTER, MetricsReporting.JSON_FILE.name() + "," + MetricsReporting.JMX.name());
-    conf.setVar(HiveConf.ConfVars.HIVE_METRICS_JSON_FILE_LOCATION, jsonReportFile.toString());
-    conf.setVar(HiveConf.ConfVars.HIVE_METRICS_JSON_FILE_INTERVAL, "100ms");
     SessionState.start(new CliSessionState(conf));
     driver = new Driver(conf);
+    metrics = (CodahaleMetrics) MetricsFactory.getInstance();
   }
 
   @Test
@@ -112,12 +107,10 @@ public class TestHBaseMetastoreMetrics extends HBaseIntegrationTests {
     driver.run("use default");
     driver.run("drop database tempdb cascade");
 
-    //give timer thread a chance to print the metrics
-    Thread.sleep(2000);
-
-    MetricsTestUtils.verifyMetricFile(jsonReportFile, MetricsTestUtils.COUNTER, MetricsConstant.DELTA_TOTAL_DATABASES, 1);
-    MetricsTestUtils.verifyMetricFile(jsonReportFile, MetricsTestUtils.COUNTER, MetricsConstant.DELTA_TOTAL_TABLES, 4);
-    MetricsTestUtils.verifyMetricFile(jsonReportFile, MetricsTestUtils.COUNTER, MetricsConstant.DELTA_TOTAL_PARTITIONS, 6);
+    String json = metrics.dumpJson();
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, MetricsConstant.DELTA_TOTAL_DATABASES, 1);
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, MetricsConstant.DELTA_TOTAL_TABLES, 4);
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, MetricsConstant.DELTA_TOTAL_PARTITIONS, 6);
 
 
     //to test initial metadata count metrics.
@@ -126,11 +119,10 @@ public class TestHBaseMetastoreMetrics extends HBaseIntegrationTests {
     baseHandler.init();
     baseHandler.updateMetrics();
 
-    Thread.sleep(2000);
-
     //1 new db + default
-    MetricsTestUtils.verifyMetricFile(jsonReportFile, MetricsTestUtils.GAUGE, MetricsConstant.INIT_TOTAL_DATABASES, 2);
-    MetricsTestUtils.verifyMetricFile(jsonReportFile, MetricsTestUtils.GAUGE, MetricsConstant.INIT_TOTAL_TABLES, 4);
-    MetricsTestUtils.verifyMetricFile(jsonReportFile, MetricsTestUtils.GAUGE, MetricsConstant.INIT_TOTAL_PARTITIONS, 6);
+    json = metrics.dumpJson();
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, MetricsConstant.INIT_TOTAL_DATABASES, 2);
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, MetricsConstant.INIT_TOTAL_TABLES, 4);
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, MetricsConstant.INIT_TOTAL_PARTITIONS, 6);
   }
 }

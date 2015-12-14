@@ -701,6 +701,8 @@ public class HiveConf extends Configuration {
     METASTORE_AGGREGATE_STATS_CACHE_CLEAN_UNTIL("hive.metastore.aggregate.stats.cache.clean.until", (float) 0.8,
         "The cleaner thread cleans until cache reaches this % full size."),
     METASTORE_METRICS("hive.metastore.metrics.enabled", false, "Enable metrics on the metastore."),
+    METASTORE_INIT_METADATA_COUNT_ENABLED("hive.metastore.initial.metadata.count.enabled", true,
+      "Enable a metadata count at metastore startup for metrics."),
 
     // Parameters for exporting metadata on table drop (requires the use of the)
     // org.apache.hadoop.hive.ql.parse.MetaDataExportListener preevent listener

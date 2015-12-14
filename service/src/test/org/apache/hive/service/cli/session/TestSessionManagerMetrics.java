@@ -21,6 +21,7 @@ package org.apache.hive.service.cli.session;
 import org.apache.hadoop.hive.common.metrics.MetricsTestUtils;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
+import org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics;
 import org.apache.hadoop.hive.common.metrics.metrics2.MetricsReporting;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.service.server.HiveServer2;
@@ -35,7 +36,7 @@ import java.io.File;
 public class TestSessionManagerMetrics {
 
   private static SessionManager sm;
-  private static File jsonReportFile;
+  private static CodahaleMetrics metrics;
 
   @BeforeClass
   public static void setup() throws Exception {
@@ -44,19 +45,17 @@ public class TestSessionManagerMetrics {
     conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_ASYNC_EXEC_WAIT_QUEUE_SIZE, 10);
     conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_ASYNC_EXEC_KEEPALIVE_TIME, "1000000s");
 
-    File workDir = new File(System.getProperty("test.tmp.dir"));
-    jsonReportFile = new File(workDir, "json_reporting");
-    jsonReportFile.delete();
+
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED, true);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     conf.setVar(HiveConf.ConfVars.HIVE_METRICS_REPORTER, MetricsReporting.JSON_FILE.name() + "," + MetricsReporting.JMX.name());
-    conf.setVar(HiveConf.ConfVars.HIVE_METRICS_JSON_FILE_LOCATION, jsonReportFile.toString());
-    conf.setVar(HiveConf.ConfVars.HIVE_METRICS_JSON_FILE_INTERVAL, "100ms");
     MetricsFactory.init(conf);
 
     HiveServer2 hs2 = new HiveServer2();
     sm = new SessionManager(hs2);
     sm.init(conf);
+
+    metrics = (CodahaleMetrics) MetricsFactory.getInstance();
   }
 
   final Object barrier = new Object();
@@ -85,16 +84,16 @@ public class TestSessionManagerMetrics {
     sm.submitBackgroundOperation(new BarrierRunnable());
     sm.submitBackgroundOperation(new BarrierRunnable());
 
-    Thread.sleep(2000);
+    String json = metrics.dumpJson();
 
-    MetricsTestUtils.verifyMetricFile(jsonReportFile, MetricsTestUtils.GAUGE, MetricsConstant.EXEC_ASYNC_POOL_SIZE, 2);
-    MetricsTestUtils.verifyMetricFile(jsonReportFile, MetricsTestUtils.GAUGE, MetricsConstant.EXEC_ASYNC_QUEUE_SIZE, 2);
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, MetricsConstant.EXEC_ASYNC_POOL_SIZE, 2);
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, MetricsConstant.EXEC_ASYNC_QUEUE_SIZE, 2);
 
     synchronized (barrier) {
       barrier.notifyAll();
     }
-    Thread.sleep(2000);
-    MetricsTestUtils.verifyMetricFile(jsonReportFile, MetricsTestUtils.GAUGE, MetricsConstant.EXEC_ASYNC_POOL_SIZE, 2);
-    MetricsTestUtils.verifyMetricFile(jsonReportFile, MetricsTestUtils.GAUGE, MetricsConstant.EXEC_ASYNC_QUEUE_SIZE, 0);
+    json = metrics.dumpJson();
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, MetricsConstant.EXEC_ASYNC_POOL_SIZE, 2);
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, MetricsConstant.EXEC_ASYNC_QUEUE_SIZE, 0);
   }
 }
