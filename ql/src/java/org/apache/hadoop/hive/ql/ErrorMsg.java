@@ -426,6 +426,7 @@ public enum ErrorMsg {
   TBL_SORTED_NOT_BUCKETED(10306, "Destination table {0} found to be sorted but not bucketed.", true),
   //{2} should be lockid
   LOCK_ACQUIRE_TIMEDOUT(10307, "Lock acquisition for {0} timed out after {1}ms.  {2}", true),
+  COMPILE_LOCK_TIMED_OUT(10308, "Attempt to acquire compile lock timed out.", true),
   //========================== 20000 range starts here ========================//
   SCRIPT_INIT_ERROR(20000, "Unable to initialize custom script."),
   SCRIPT_IO_ERROR(20001, "An error occurred while reading or writing to your custom script. "

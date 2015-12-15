@@ -23,8 +23,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
@@ -33,11 +35,16 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHook;
+import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContext;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hive.service.server.HiveServer2;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -303,15 +310,15 @@ public abstract class CLIServiceTest {
     // Create callables with different queries.
     String query = "SELECT ID + %1$d FROM " + tableName;
     cs[0] = createQueryCallable(
-        query, confOverlay, longPollingTimeout, QUERY_COUNT, cdlIn, cdlOut);
+        query, confOverlay, longPollingTimeout, QUERY_COUNT, OperationState.FINISHED, true, cdlIn, cdlOut);
     query = "SELECT t1.ID, SUM(t2.ID) + %1$d FROM  " + tableName + " t1 CROSS JOIN "
         + tableName + " t2 GROUP BY t1.ID HAVING t1.ID > 1";
     cs[1] = createQueryCallable(
-        query, confOverlay, longPollingTimeout, QUERY_COUNT, cdlIn, cdlOut);
+        query, confOverlay, longPollingTimeout, QUERY_COUNT, OperationState.FINISHED, true, cdlIn, cdlOut);
     query = "SELECT b.a FROM (SELECT (t1.ID + %1$d) as a , t2.* FROM  " + tableName
         + " t1 INNER JOIN " + tableName + " t2 ON t1.ID = t2.ID WHERE t2.ID > 2) b";
     cs[2] = createQueryCallable(
-        query, confOverlay, longPollingTimeout, QUERY_COUNT, cdlIn, cdlOut);
+        query, confOverlay, longPollingTimeout, QUERY_COUNT, OperationState.FINISHED, true, cdlIn, cdlOut);
 
     @SuppressWarnings("unchecked")
     FutureTask<Void>[] tasks = new FutureTask[THREAD_COUNT];
@@ -334,13 +341,118 @@ public abstract class CLIServiceTest {
     client.closeSession(sessionHandle);
   }
 
+  public static class CompileLockTestSleepHook implements HiveSemanticAnalyzerHook {
+    @Override
+    public ASTNode preAnalyze(HiveSemanticAnalyzerHookContext context,
+      ASTNode ast) throws SemanticException {
+      try {
+        Thread.sleep(20 * 1000);
+      } catch (Throwable t) {
+        // do nothing
+      }
+      return ast;
+    }
+
+    @Override
+    public void postAnalyze(HiveSemanticAnalyzerHookContext context,
+      List<Task<? extends Serializable>> rootTasks) throws SemanticException {
+    }
+  }
+
+  @Test
+  public void testGlobalCompileLockTimeout() throws Exception {
+    String tableName = "TEST_COMPILE_LOCK_TIMEOUT";
+    String columnDefinitions = "(ID STRING)";
+
+    // Open a session and set up the test data
+    SessionHandle sessionHandle = setupTestData(tableName, columnDefinitions,
+        new HashMap<String, String>());
+    assertNotNull(sessionHandle);
+
+    int THREAD_COUNT = 3;
+    @SuppressWarnings("unchecked")
+    FutureTask<Void>[] tasks = (FutureTask<Void>[])new FutureTask[THREAD_COUNT];
+    long longPollingTimeoutMs = 10 * 60 * 1000; // Larger than max compile duration used in test
+
+    // 1st query acquires the lock and takes 20 secs to compile
+    Map<String, String> confOverlay = getConfOverlay(0, longPollingTimeoutMs);
+    confOverlay.put(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK.varname,
+        CompileLockTestSleepHook.class.getName());
+    String query = "SELECT 0 FROM " + tableName;
+    tasks[0] = new FutureTask<Void>(
+        createQueryCallable(query, confOverlay, longPollingTimeoutMs, 1,
+            OperationState.FINISHED, false, null, null));
+    new Thread(tasks[0]).start();
+    Thread.sleep(5 * 1000);
+
+    // 2nd query's session has compile lock timeout of 1 sec, so it should
+    // not be able to acquire the lock within that time period
+    confOverlay = getConfOverlay(1, longPollingTimeoutMs);
+    query = "SELECT 1 FROM " + tableName;
+    tasks[1] = new FutureTask<Void>(
+        createQueryCallable(query, confOverlay, longPollingTimeoutMs, 1,
+            OperationState.ERROR, false, null, null));
+    new Thread(tasks[1]).start();
+
+    // 3rd query's session has compile lock timeout of 100 secs, so it should
+    // be able to acquire the lock and finish successfully
+    confOverlay = getConfOverlay(100, longPollingTimeoutMs);
+    query = "SELECT 2 FROM " + tableName;
+    tasks[2] = new FutureTask<Void>(
+        createQueryCallable(query, confOverlay, longPollingTimeoutMs, 1,
+            OperationState.FINISHED, false, null, null));
+    new Thread(tasks[2]).start();
+
+    boolean foundExpectedException = false;
+    for (int i = 0; i < THREAD_COUNT; ++i) {
+      try {
+        tasks[i].get();
+      } catch (Throwable t) {
+        if (i == 1) {
+          assertTrue(t.getMessage().contains(
+              ErrorMsg.COMPILE_LOCK_TIMED_OUT.getMsg()));
+          foundExpectedException = true;
+        } else {
+          throw new RuntimeException(t);
+        }
+      }
+    }
+    assertTrue(foundExpectedException);
+
+    // Cleanup
+    client.executeStatement(sessionHandle, "DROP TABLE " + tableName,
+        getConfOverlay(0, longPollingTimeoutMs));
+    client.closeSession(sessionHandle);
+  }
+
+  private Map<String, String> getConfOverlay(long compileLockTimeoutSecs,
+    long longPollingTimeoutMs) {
+    Map<String, String> confOverlay = new HashMap<String, String>();
+    confOverlay.put(
+        HiveConf.ConfVars.HIVE_SERVER2_PARALLEL_COMPILATION.varname, "false");
+    confOverlay.put(
+        HiveConf.ConfVars.HIVE_SERVER2_LONG_POLLING_TIMEOUT.varname,
+        longPollingTimeoutMs + "ms");
+    if (compileLockTimeoutSecs > 0) {
+      confOverlay.put(
+          HiveConf.ConfVars.HIVE_SERVER2_COMPILE_LOCK_TIMEOUT.varname,
+          compileLockTimeoutSecs + "s");
+    }
+    return confOverlay;
+  }
+
   private Callable<Void> createQueryCallable(final String queryStringFormat,
       final Map<String, String> confOverlay, final long longPollingTimeout,
-      final int queryCount, final CountDownLatch cdlIn, final CountDownLatch cdlOut) {
+      final int queryCount, final OperationState expectedOperationState,
+      final boolean syncThreadStart, final CountDownLatch cdlIn,
+      final CountDownLatch cdlOut) {
     return new Callable<Void>() {
       @Override
       public Void call() throws Exception {
-        syncThreadStart(cdlIn, cdlOut);
+        if (syncThreadStart) {
+          syncThreadStart(cdlIn, cdlOut);
+        }
+
         SessionHandle sessionHandle = openSession(confOverlay);
         OperationHandle[] hs  = new OperationHandle[queryCount];
         for (int i = 0; i < hs.length; ++i) {
@@ -349,7 +461,7 @@ public abstract class CLIServiceTest {
           hs[i] = client.executeStatementAsync(sessionHandle, queryString, confOverlay);
         }
         for (int i = hs.length - 1; i >= 0; --i) {
-          waitForAsyncQuery(hs[i], OperationState.FINISHED, longPollingTimeout);
+          waitForAsyncQuery(hs[i], expectedOperationState, longPollingTimeout);
         }
         return null;
       }
@@ -404,7 +516,6 @@ public abstract class CLIServiceTest {
     OperationHandle h = client.executeStatementAsync(sessionHandle, queryString, confOverlay);
     return waitForAsyncQuery(h, expectedState, longPollingTimeout);
   }
-
 
   private OperationStatus waitForAsyncQuery(OperationHandle opHandle,
       OperationState expectedState, long longPollingTimeout) throws HiveSQLException {
