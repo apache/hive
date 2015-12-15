@@ -396,6 +396,7 @@
                 <taskdef name="qtestgen" classname="org.apache.hadoop.hive.ant.QTestGenTask"
                   classpath="${test.classpath}" />
                 <mkdir dir="${project.build.directory}/qfile-results/clientpositive/" />
+                <mkdir dir="${project.build.directory}/qfile-results/clientpositive/perf" /> 
                 <mkdir dir="${project.build.directory}/qfile-results/clientnegative/" />
                 <mkdir dir="${project.build.directory}/qfile-results/clientcompare"/>
                 <mkdir dir="${project.build.directory}/qfile-results/positive/" />
@@ -440,6 +441,25 @@
                   hadoopVersion="${hadoop.version}"
                   initScript="${initScript}"
                   cleanupScript="q_test_cleanup.sql"/>
+
+		<!-- PerfCli -->
+                <qtestgen hiveRootDirectory="${basedir}/${hive.path.to.root}/"
+                  outputDirectory="${project.build.directory}/generated-test-sources/java/org/apache/hadoop/hive/cli/"
+	          templatePath="${basedir}/${hive.path.to.root}/ql/src/test/templates/" template="TestPerfCliDriver.vm"
+                  queryDirectory="${basedir}/${hive.path.to.root}/ql/src/test/queries/clientpositive/perf"
+                  queryFile="${qfile}"
+                  excludeQueryFile="${minimr.query.files},${minitez.query.files},${encrypted.query.files}"
+                  queryFileRegex="${qfile_regex}"
+                  clusterMode="tez"
+                  runDisabled="${run_disabled}"
+                  hiveConfDir="${basedir}/${hive.path.to.root}/data/conf/perf-reg"
+                  resultsDirectory="${basedir}/${hive.path.to.root}/ql/src/test/results/clientpositive/perf" className="TestPerfCliDriver"
+                  logFile="${project.build.directory}/testperfclidrivergen.log"
+                  logDirectory="${project.build.directory}/qfile-results/clientpositive"
+                  hadoopVersion="${hadoop.version}"
+	          initScript="q_perf_test_init.sql"
+                  cleanupScript="q_perf_test_cleanup.sql"
+                  useHBaseMetastore="false"/>
 
                 <!-- Negative Cli -->
                 <qtestgen hiveRootDirectory="${basedir}/${hive.path.to.root}/"
