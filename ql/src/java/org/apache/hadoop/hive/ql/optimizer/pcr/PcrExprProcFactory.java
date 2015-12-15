@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicListDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
@@ -377,17 +378,31 @@ public final class PcrExprProcFactory {
               if (FunctionRegistry.isDeterministic(((ExprNodeGenericFuncDesc) lhs)
                   .getGenericUDF())) {
                 boolean hasOnlyPartCols = true;
+                boolean hasDynamicListDesc = false;
+
                 for (ExprNodeDesc ed : ((ExprNodeGenericFuncDesc) lhs).getChildren()) {
-                    // Check if the current field expression contains only
-                    // partition column or a virtual column or constants.
-                    // If yes, this filter predicate is a candidate for this optimization.
-                    if (!(ed instanceof ExprNodeColumnDesc &&
-                         ((ExprNodeColumnDesc)ed).getIsPartitionColOrVirtualCol())) {
-                      hasOnlyPartCols = false;
+                  // Check if the current field expression contains only
+                  // partition column or a virtual column or constants.
+                  // If yes, this filter predicate is a candidate for this optimization.
+                  if (!(ed instanceof ExprNodeColumnDesc &&
+                       ((ExprNodeColumnDesc)ed).getIsPartitionColOrVirtualCol())) {
+                    hasOnlyPartCols = false;
+                    break;
+                  }
+                }
+
+                // If we have non-partition columns, we cannot remove the predicate.
+                if (hasOnlyPartCols) {
+                  // We should not remove the dynamic partition pruner generated synthetic predicates.
+                  for (int i = 1; i < children.size(); i++) {
+                    if (children.get(i) instanceof ExprNodeDynamicListDesc) {
+                      hasDynamicListDesc = true;
                       break;
                     }
-                 }
-                 removePredElem = hasOnlyPartCols;
+                  }
+                }
+
+                removePredElem = hasOnlyPartCols && !hasDynamicListDesc;
               }
           }
 

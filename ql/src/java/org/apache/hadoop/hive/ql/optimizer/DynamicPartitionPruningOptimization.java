@@ -65,7 +65,6 @@ import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
-import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 
 /**
  * This optimization looks for expressions of the kind "x IN (RS[n])". If such
@@ -166,7 +165,8 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
           procCtx.getClass().getName());
     }
 
-    final FilterOperator filter = (FilterOperator) nd;
+    FilterOperator filter = (FilterOperator) nd;
+    FilterDesc desc = filter.getConf();
 
     TableScanOperator ts = null;
 
@@ -183,19 +183,15 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
       ts = (TableScanOperator) filter.getParentOperators().get(0);
     }
 
-    final ExprNodeDesc filterPredicate = filter.getConf().getPredicate(),
-        tsPredicate = ts != null ? ts.getConf().getFilterExpr() : null,
-        predicateToUse = (tsPredicate == null) ? filterPredicate : tsPredicate;
-
     if (LOG.isDebugEnabled()) {
       LOG.debug("Parent: " + filter.getParentOperators().get(0));
-      LOG.debug("Filter: " + predicateToUse.getExprString());
+      LOG.debug("Filter: " + desc.getPredicateString());
       LOG.debug("TableScan: " + ts);
     }
 
     // collect the dynamic pruning conditions
     removerContext.dynLists.clear();
-    walkExprTree(predicateToUse, removerContext);
+    walkExprTree(desc.getPredicate(), removerContext);
 
     for (DynamicListContext ctx : removerContext) {
       String column = extractColName(ctx.parent);
@@ -228,52 +224,49 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
       }
 
       // we always remove the condition by replacing it with "true"
-      if (predicateToUse == filterPredicate) {
-        removeDppExpr(filter.getConf(), ctx);
+      ExprNodeDesc constNode = new ExprNodeConstantDesc(ctx.parent.getTypeInfo(), true);
+      if (ctx.grandParent == null) {
+        desc.setPredicate(constNode);
       } else {
-        removeDppExpr(ts.getConf(), ctx);
+        int i = ctx.grandParent.getChildren().indexOf(ctx.parent);
+        ctx.grandParent.getChildren().remove(i);
+        ctx.grandParent.getChildren().add(i, constNode);
       }
     }
 
-    // Clean up the other predicate too.
-    if (predicateToUse == tsPredicate) {
-      removerContext = new DynamicPartitionPrunerContext();
-      removerContext.dynLists.clear();
-      walkExprTree(filterPredicate, removerContext);
-      for (DynamicListContext ctx : removerContext) {
-        removeDppExpr(filter.getConf(), ctx);
-      }
-    }
+    // if we pushed the predicate into the table scan we need to remove the
+    // synthetic conditions there.
+    cleanTableScanFilters(ts);
 
     return false;
   }
 
+  private void cleanTableScanFilters(TableScanOperator ts) throws SemanticException {
 
-  private void removeDppExpr(final FilterDesc desc, DynamicListContext ctx) {
-    ExprNodeDesc constNode = new ExprNodeConstantDesc(ctx.parent.getTypeInfo(), true);
-    if (ctx.grandParent == null) {
-      desc.setPredicate(constNode);
-    } else {
-      int i = ctx.grandParent.getChildren().indexOf(ctx.parent);
-      ctx.grandParent.getChildren().remove(i);
-      ctx.grandParent.getChildren().add(i, constNode);
+    if (ts == null || ts.getConf() == null || ts.getConf().getFilterExpr() == null) {
+      // nothing to do
+      return;
+    }
+
+    DynamicPartitionPrunerContext removerContext = new DynamicPartitionPrunerContext();
+
+    // collect the dynamic pruning conditions
+    removerContext.dynLists.clear();
+    walkExprTree(ts.getConf().getFilterExpr(), removerContext);
+
+    for (DynamicListContext ctx : removerContext) {
+      // remove the condition by replacing it with "true"
+      ExprNodeDesc constNode = new ExprNodeConstantDesc(ctx.parent.getTypeInfo(), true);
+      if (ctx.grandParent == null) {
+        // we're the only node, just clear out the expression
+        ts.getConf().setFilterExpr(null);
+      } else {
+        int i = ctx.grandParent.getChildren().indexOf(ctx.parent);
+        ctx.grandParent.getChildren().remove(i);
+        ctx.grandParent.getChildren().add(i, constNode);
+      }
     }
   }
-
-  private void removeDppExpr(TableScanDesc conf, DynamicListContext ctx) {
-
-    ExprNodeDesc constNode = new ExprNodeConstantDesc(ctx.parent.getTypeInfo(), true);
-    if (ctx.grandParent == null) {
-      // we're the only node, just clear out the expression
-      conf.setFilterExpr(null);
-    } else {
-      int i = ctx.grandParent.getChildren().indexOf(ctx.parent);
-      ctx.grandParent.getChildren().remove(i);
-      ctx.grandParent.getChildren().add(i, constNode);
-    }
-  }
-
-
 
   private void generateEventOperatorPlan(DynamicListContext ctx, ParseContext parseContext,
       TableScanOperator ts, String column) {

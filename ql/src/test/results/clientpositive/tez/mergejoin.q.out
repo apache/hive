@@ -1363,7 +1363,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: (key) IN (RS[4]) (type: boolean)
                   Statistics: Num rows: 500 Data size: 47000 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int)
@@ -1456,7 +1455,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: (key) IN (RS[5]) (type: boolean)
                   Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int)
