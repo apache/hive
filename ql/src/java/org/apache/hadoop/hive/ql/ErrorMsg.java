@@ -429,7 +429,7 @@ public enum ErrorMsg {
       "Alter table partition type {0} does not support cascade", true),
 
   DROP_NATIVE_FUNCTION(10301, "Cannot drop native function"),
-
+  COMPILE_LOCK_TIMED_OUT(10308, "Attempt to acquire compile lock timed out.", true),
   //========================== 20000 range starts here ========================//
   SCRIPT_INIT_ERROR(20000, "Unable to initialize custom script."),
   SCRIPT_IO_ERROR(20001, "An error occurred while reading or writing to your custom script. "

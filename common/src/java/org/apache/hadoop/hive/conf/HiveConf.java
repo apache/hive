@@ -1702,7 +1702,10 @@ public class HiveConf extends Configuration {
         "Transport mode of HiveServer2."),
     HIVE_SERVER2_THRIFT_BIND_HOST("hive.server2.thrift.bind.host", "",
         "Bind host on which to run the HiveServer2 Thrift service."),
-
+    HIVE_SERVER2_COMPILE_LOCK_TIMEOUT("hive.server2.compile.lock.timeout", "0s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "Number of seconds a request will wait to acquire the compile lock before giving up. " +
+        "Setting it to 0s disables the timeout."),
     // http (over thrift) transport settings
     HIVE_SERVER2_THRIFT_HTTP_PORT("hive.server2.thrift.http.port", 10001,
         "Port number of HiveServer2 Thrift interface when hive.server2.transport.mode is 'http'."),

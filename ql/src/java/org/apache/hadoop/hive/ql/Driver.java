@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -124,8 +126,6 @@ public class Driver implements CommandProcessor {
   static final private String CLASS_NAME = Driver.class.getName();
   static final private Log LOG = LogFactory.getLog(CLASS_NAME);
   static final private LogHelper console = new LogHelper(LOG);
-
-  private static final Object compileMonitor = new Object();
 
   private int maxRows = 100;
   ByteStream.Output bos = new ByteStream.Output();
@@ -1150,12 +1150,21 @@ public class Driver implements CommandProcessor {
     return createProcessorResponse(compileInternal(command));
   }
 
+  private static final ReentrantLock globalCompileLock = new ReentrantLock();
   private int compileInternal(String command) {
     int ret;
     LOG.debug("Acquire a monitor for compiling query");
-    synchronized (compileMonitor) {
-      ret = compile(command);
+    final ReentrantLock compileLock = tryAcquireCompileLock(command);
+    if (compileLock == null) {
+      return ErrorMsg.COMPILE_LOCK_TIMED_OUT.getErrorCode();
     }
+
+    try {
+      ret = compile(command);
+    } finally {
+      compileLock.unlock();
+    }
+
     if (ret != 0) {
       try {
         releaseLocksAndCommitOrRollback(false);
@@ -1164,7 +1173,45 @@ public class Driver implements CommandProcessor {
             + org.apache.hadoop.util.StringUtils.stringifyException(e));
       }
     }
+
     return ret;
+  }
+
+  /**
+   * Acquires the compile lock. If the compile lock wait timeout is configured,
+   * it will acquire the lock if it is not held by another thread within the given
+   * waiting time.
+   * @return the ReentrantLock object if the lock was successfully acquired,
+   *         or {@code null} if compile lock wait timeout is configured and
+   *         either the waiting time elapsed before the lock could be acquired
+   *         or if the current thread is interrupted.
+   */
+  private ReentrantLock tryAcquireCompileLock(String command) {
+    long maxCompileLockWaitTime = HiveConf.getTimeVar(
+          this.conf, ConfVars.HIVE_SERVER2_COMPILE_LOCK_TIMEOUT,
+          TimeUnit.SECONDS);
+    if (maxCompileLockWaitTime > 0) {
+      try {
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Waiting to acquire compile lock: " + command);
+        }
+        if(!globalCompileLock.tryLock(maxCompileLockWaitTime, TimeUnit.SECONDS)) {
+          errorMessage = ErrorMsg.COMPILE_LOCK_TIMED_OUT.getErrorCodedMsg();
+          LOG.error(errorMessage + ": " + command);
+          return null;
+        }
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Interrupted Exception ignored", e);
+        }
+        return null;
+      }
+    } else {
+      globalCompileLock.lock();
+    }
+
+    return globalCompileLock;
   }
 
   private CommandProcessorResponse runInternal(String command, boolean alreadyCompiled)
