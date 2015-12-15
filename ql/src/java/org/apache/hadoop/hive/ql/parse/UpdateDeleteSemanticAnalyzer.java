@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
@@ -143,16 +144,20 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     List<String> bucketingCols = mTable.getBucketCols();
 
     rewrittenQueryStr.append("insert into table ");
-    rewrittenQueryStr.append(getDotName(tableName));
+    rewrittenQueryStr.append(getDotName(new String[] {
+        HiveUtils.unparseIdentifier(tableName[0], this.conf),
+        HiveUtils.unparseIdentifier(tableName[1], this.conf) }));
 
     // If the table is partitioned we have to put the partition() clause in
     if (partCols != null && partCols.size() > 0) {
       rewrittenQueryStr.append(" partition (");
       boolean first = true;
       for (FieldSchema fschema : partCols) {
-        if (first) first = false;
-        else rewrittenQueryStr.append(", ");
-        rewrittenQueryStr.append(fschema.getName());
+        if (first)
+          first = false;
+        else
+          rewrittenQueryStr.append(", ");
+        rewrittenQueryStr.append(HiveUtils.unparseIdentifier(fschema.getName(), this.conf));
       }
       rewrittenQueryStr.append(")");
     }
@@ -214,7 +219,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
         rewrittenQueryStr.append(',');
         String name = nonPartCols.get(i).getName();
         ASTNode setCol = setCols.get(name);
-        rewrittenQueryStr.append(name);
+        rewrittenQueryStr.append(HiveUtils.unparseIdentifier(name, this.conf));
         if (setCol != null) {
           // This is one of the columns we're setting, record it's position so we can come back
           // later and patch it up.
@@ -228,11 +233,13 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     if (partCols != null) {
       for (FieldSchema fschema : partCols) {
         rewrittenQueryStr.append(", ");
-        rewrittenQueryStr.append(fschema.getName());
+        rewrittenQueryStr.append(HiveUtils.unparseIdentifier(fschema.getName(), this.conf));
       }
     }
     rewrittenQueryStr.append(" from ");
-    rewrittenQueryStr.append(getDotName(tableName));
+    rewrittenQueryStr.append(getDotName(new String[] {
+        HiveUtils.unparseIdentifier(tableName[0], this.conf),
+        HiveUtils.unparseIdentifier(tableName[1], this.conf) }));
 
     ASTNode where = null;
     int whereIndex = deleting() ? 1 : 2;
