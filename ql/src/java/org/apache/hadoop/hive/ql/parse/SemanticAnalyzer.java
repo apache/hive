@@ -531,6 +531,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (expressionTree.getChild(0).getType() == HiveParser.Identifier) {
         String functionName = unescapeIdentifier(expressionTree.getChild(0)
             .getText());
+        // Validate the function name
+        if (FunctionRegistry.getFunctionInfo(functionName) == null) {
+          throw new SemanticException(ErrorMsg.INVALID_FUNCTION.getMsg(functionName));
+        }
         if(FunctionRegistry.impliesOrder(functionName)) {
           throw new SemanticException(ErrorMsg.MISSING_OVER_CLAUSE.getMsg(functionName));
         }
