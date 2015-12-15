@@ -56,12 +56,12 @@ PREHOOK: query: select count(*) from encryptedTable where ds='today'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@encryptedtable
 PREHOOK: Input: default@encryptedtable@ds=today
-#### A PARTIAL masked pattern was here #### data/warehouse/encryptedTable/.hive-staging
+#### A masked pattern was here ####
 POSTHOOK: query: select count(*) from encryptedTable where ds='today'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@encryptedtable
 POSTHOOK: Input: default@encryptedtable@ds=today
-#### A PARTIAL masked pattern was here #### data/warehouse/encryptedTable/.hive-staging
+#### A masked pattern was here ####
 2
 PREHOOK: query: insert into table encryptedTable partition (ds='today') select key, value from encryptedTableSrc
 PREHOOK: type: QUERY
@@ -77,12 +77,12 @@ PREHOOK: query: select count(*) from encryptedTable where ds='today'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@encryptedtable
 PREHOOK: Input: default@encryptedtable@ds=today
-#### A PARTIAL masked pattern was here #### data/warehouse/encryptedTable/.hive-staging
+#### A masked pattern was here ####
 POSTHOOK: query: select count(*) from encryptedTable where ds='today'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@encryptedtable
 POSTHOOK: Input: default@encryptedtable@ds=today
-#### A PARTIAL masked pattern was here #### data/warehouse/encryptedTable/.hive-staging
+#### A masked pattern was here ####
 4
 PREHOOK: query: insert overwrite table encryptedTable partition (ds='today') select key, value from encryptedTableSrc
 PREHOOK: type: QUERY
@@ -98,12 +98,12 @@ PREHOOK: query: select count(*) from encryptedTable where ds='today'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@encryptedtable
 PREHOOK: Input: default@encryptedtable@ds=today
-#### A PARTIAL masked pattern was here #### data/warehouse/encryptedTable/.hive-staging
+#### A masked pattern was here ####
 POSTHOOK: query: select count(*) from encryptedTable where ds='today'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@encryptedtable
 POSTHOOK: Input: default@encryptedtable@ds=today
-#### A PARTIAL masked pattern was here #### data/warehouse/encryptedTable/.hive-staging
+#### A masked pattern was here ####
 2
 PREHOOK: query: -- clean up
 drop table encryptedTable PURGE
