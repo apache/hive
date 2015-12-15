@@ -562,23 +562,23 @@ STAGE PLANS:
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((((UDFToDouble(key) > 10.0) and (UDFToDouble(key) < 20.0)) and (UDFToDouble(key) > 15.0)) and (UDFToDouble(key) < 25.0)) and key is not null) (type: boolean)
-              Statistics: Num rows: 3 Data size: 31 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 6 Data size: 63 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 keys: key (type: string), value (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 3 Data size: 31 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 6 Data size: 63 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: string)
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                  Statistics: Num rows: 3 Data size: 31 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 63 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: string), KEY._col1 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 3 Data size: 31 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             table:
@@ -594,14 +594,14 @@ STAGE PLANS:
               key expressions: _col0 (type: string)
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 31 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col1 (type: string)
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: string)
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 31 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col1 (type: string)
       Reduce Operator Tree:
         Join Operator
@@ -611,7 +611,7 @@ STAGE PLANS:
             0 _col0 (type: string)
             1 _col0 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3
-          Statistics: Num rows: 1 Data size: 11 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 3 Data size: 34 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             table:
@@ -626,15 +626,15 @@ STAGE PLANS:
             Reduce Output Operator
               key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
               sort order: --++
-              Statistics: Num rows: 1 Data size: 11 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 34 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey2 (type: string), KEY.reducesinkkey3 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3
-          Statistics: Num rows: 1 Data size: 11 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 3 Data size: 34 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 11 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 Data size: 34 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -647,24 +647,24 @@ STAGE PLANS:
             alias: src1
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((((UDFToDouble(key) > 15.0) and (UDFToDouble(key) < 25.0)) and (UDFToDouble(key) > 10.0)) and (UDFToDouble(key) < 20.0)) and key is not null) (type: boolean)
-              Statistics: Num rows: 3 Data size: 31 Basic stats: COMPLETE Column stats: NONE
+              predicate: (((((UDFToDouble(key) > 15.0) and (UDFToDouble(key) < 25.0)) and (UDFToDouble(key) < 20.0)) and (UDFToDouble(key) > 10.0)) and key is not null) (type: boolean)
+              Statistics: Num rows: 6 Data size: 63 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 keys: key (type: string), value (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 3 Data size: 31 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 6 Data size: 63 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: string)
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                  Statistics: Num rows: 3 Data size: 31 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 63 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: string), KEY._col1 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 3 Data size: 31 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             table:

@@ -132,11 +132,11 @@ STAGE PLANS:
             Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 5 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
                 outputColumnNames: key, value
-                Statistics: Num rows: 5 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 key (type: string)
@@ -150,11 +150,11 @@ STAGE PLANS:
             Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 5 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
                 outputColumnNames: key, value
-                Statistics: Num rows: 5 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -162,7 +162,7 @@ STAGE PLANS:
                     0 key (type: string)
                     1 key (type: string)
                   outputColumnNames: key, value, key0, value0
-                  Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 11 Data size: 105 Basic stats: COMPLETE Column stats: NONE
                   Map Join Operator
                     condition map:
                          Inner Join 0 to 1
@@ -187,7 +187,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[26][bigTable=?] in task 'Stage-5:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[25][bigTable=?] in task 'Stage-5:MAPRED' is a cross product
 PREHOOK: query: explain select * from A join 
          (select d1.key 
           from B d1 join B d2 on d1.key = d2.key 
@@ -219,11 +219,11 @@ STAGE PLANS:
             Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 5 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: key
-                Statistics: Num rows: 5 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 key (type: string)
@@ -237,11 +237,11 @@ STAGE PLANS:
             Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 5 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: key
-                Statistics: Num rows: 5 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -249,21 +249,21 @@ STAGE PLANS:
                     0 key (type: string)
                     1 key (type: string)
                   outputColumnNames: key
-                  Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 11 Data size: 105 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string)
                     outputColumnNames: key
-                    Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 11 Data size: 105 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       keys: key (type: string)
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 11 Data size: 105 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 11 Data size: 105 Basic stats: COMPLETE Column stats: NONE
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:
@@ -271,7 +271,7 @@ STAGE PLANS:
           keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: key
-          Statistics: Num rows: 2 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 5 Data size: 47 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             table:
@@ -454,9 +454,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[44][bigTable=?] in task 'Stage-7:MAPRED' is a cross product
-Warning: Map Join MAPJOIN[37][bigTable=?] in task 'Stage-6:MAPRED' is a cross product
-Warning: Shuffle Join JOIN[21][tables = [, ]] in Stage 'Stage-2:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[43][bigTable=?] in task 'Stage-7:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[36][bigTable=?] in task 'Stage-6:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[20][tables = [, ]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: explain select * from 
 (select A.key from A group by key) ss join 
 (select d1.key from B d1 join B d2 on d1.key = d2.key where 1 = 1 group by d1.key) od1
@@ -597,7 +597,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               sort order: 
-              Statistics: Num rows: 2 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 5 Data size: 47 Basic stats: COMPLETE Column stats: NONE
               value expressions: key (type: string)
       Reduce Operator Tree:
         Join Operator
@@ -629,11 +629,11 @@ STAGE PLANS:
             Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 5 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: key
-                Statistics: Num rows: 5 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 key (type: string)
@@ -647,11 +647,11 @@ STAGE PLANS:
             Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 5 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: key
-                Statistics: Num rows: 5 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -659,21 +659,21 @@ STAGE PLANS:
                     0 key (type: string)
                     1 key (type: string)
                   outputColumnNames: key
-                  Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 11 Data size: 105 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string)
                     outputColumnNames: key
-                    Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 11 Data size: 105 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       keys: key (type: string)
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 11 Data size: 105 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 11 Data size: 105 Basic stats: COMPLETE Column stats: NONE
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:
@@ -681,7 +681,7 @@ STAGE PLANS:
           keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: key
-          Statistics: Num rows: 2 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 5 Data size: 47 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             table:

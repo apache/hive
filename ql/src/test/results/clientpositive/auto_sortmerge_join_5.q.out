@@ -123,11 +123,11 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 14 Data size: 1425 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 27 Data size: 2750 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 14 Data size: 1425 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 27 Data size: 2750 Basic stats: COMPLETE Column stats: NONE
                 Sorted Merge Bucket Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -290,11 +290,11 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 14 Data size: 1425 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 27 Data size: 2750 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 14 Data size: 1425 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 27 Data size: 2750 Basic stats: COMPLETE Column stats: NONE
                 Sorted Merge Bucket Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -470,11 +470,11 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 1 Data size: 113 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 226 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 113 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 226 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: string)
@@ -491,11 +491,11 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 14 Data size: 1425 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 27 Data size: 2750 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 14 Data size: 1425 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 27 Data size: 2750 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -644,11 +644,11 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 14 Data size: 1425 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 27 Data size: 2750 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 14 Data size: 1425 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 27 Data size: 2750 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: string)
@@ -665,11 +665,11 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 1 Data size: 113 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 226 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 113 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 226 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -813,11 +813,11 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 14 Data size: 1425 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 27 Data size: 2750 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 14 Data size: 1425 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 27 Data size: 2750 Basic stats: COMPLETE Column stats: NONE
                 Sorted Merge Bucket Map Join Operator
                   condition map:
                        Inner Join 0 to 1

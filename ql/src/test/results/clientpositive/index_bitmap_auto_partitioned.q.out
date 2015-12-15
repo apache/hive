@@ -70,10 +70,10 @@ STAGE PLANS:
               predicate: ((UDFToDouble(key) = 86.0) and (not EWAH_BITMAP_EMPTY(_bitmaps))) (type: boolean)
               Select Operator
                 expressions: _bucketname (type: string), _offset (type: bigint)
-                outputColumnNames: _col1, _col2
+                outputColumnNames: _bucketname, _offset
                 Group By Operator
-                  aggregations: collect_set(_col2)
-                  keys: _col1 (type: string)
+                  aggregations: collect_set(_offset)
+                  keys: _bucketname (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Reduce Output Operator

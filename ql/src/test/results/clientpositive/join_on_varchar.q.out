@@ -81,7 +81,7 @@ STAGE PLANS:
             Statistics: Num rows: 2 Data size: 23 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: c2 is not null (type: boolean)
-              Statistics: Num rows: 1 Data size: 11 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 23 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 c1 (type: varchar(30))
@@ -95,7 +95,7 @@ STAGE PLANS:
             Statistics: Num rows: 2 Data size: 26 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: c1 is not null (type: boolean)
-              Statistics: Num rows: 1 Data size: 13 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 26 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -103,25 +103,25 @@ STAGE PLANS:
                   0 c1 (type: varchar(30))
                   1 c2 (type: varchar(30))
                 outputColumnNames: _col0, _col5
-                Statistics: Num rows: 1 Data size: 14 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 28 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: varchar(10)), _col5 (type: varchar(30))
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 1 Data size: 14 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 28 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: varchar(10)), _col1 (type: varchar(30))
                     sort order: ++
-                    Statistics: Num rows: 1 Data size: 14 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 28 Basic stats: COMPLETE Column stats: NONE
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: varchar(10)), KEY.reducesinkkey1 (type: varchar(30))
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 1 Data size: 14 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2 Data size: 28 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 14 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 28 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

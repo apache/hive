@@ -75,7 +75,7 @@ STAGE PLANS:
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key is not null and value is not null) and (key < 10)) (type: boolean)
-              Statistics: Num rows: 41 Data size: 435 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Sorted Merge Bucket Map Join Operator
                 condition map:
                      Inner Join 0 to 1

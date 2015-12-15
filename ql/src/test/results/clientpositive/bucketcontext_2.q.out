@@ -192,7 +192,7 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 key (type: string)
@@ -216,7 +216,7 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 27 Data size: 2750 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 54 Data size: 5500 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -224,7 +224,7 @@ STAGE PLANS:
                   0 key (type: string)
                   1 key (type: string)
                 Position of Big Table: 1
-                Statistics: Num rows: 31 Data size: 3196 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 63 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
                 BucketMapJoin: true
                 Group By Operator
                   aggregations: count()
@@ -450,7 +450,7 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 27 Data size: 2750 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 54 Data size: 5500 Basic stats: COMPLETE Column stats: NONE
               Sorted Merge Bucket Map Join Operator
                 condition map:
                      Inner Join 0 to 1

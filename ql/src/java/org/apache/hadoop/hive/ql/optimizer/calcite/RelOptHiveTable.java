@@ -198,7 +198,7 @@ public class RelOptHiveTable extends RelOptAbstractTable {
       if (null == partitionList) {
         // we are here either unpartitioned table or partitioned table with no
         // predicates
-        computePartitionList(hiveConf, null);
+        computePartitionList(hiveConf, null, new HashSet<Integer>());
       }
       if (hiveTblMetadata.isPartitioned()) {
         List<Long> rowCounts = StatsUtils.getBasicStatForPartitions(hiveTblMetadata,
@@ -234,8 +234,7 @@ public class RelOptHiveTable extends RelOptAbstractTable {
     return sb.toString();
   }
 
-  public void computePartitionList(HiveConf conf, RexNode pruneNode) {
-
+  public void computePartitionList(HiveConf conf, RexNode pruneNode, Set<Integer> partOrVirtualCols) {
     try {
       if (!hiveTblMetadata.isPartitioned() || pruneNode == null
           || InputFinder.bits(pruneNode).length() == 0) {
@@ -248,7 +247,7 @@ public class RelOptHiveTable extends RelOptAbstractTable {
 
       // We have valid pruning expressions, only retrieve qualifying partitions
       ExprNodeDesc pruneExpr = pruneNode.accept(new ExprNodeConverter(getName(), getRowType(),
-          HiveCalciteUtil.getInputRefs(pruneNode), this.getRelOptSchema().getTypeFactory()));
+          partOrVirtualCols, this.getRelOptSchema().getTypeFactory()));
 
       partitionList = PartitionPruner.prune(hiveTblMetadata, pruneExpr, conf, getName(),
           partitionCache);
@@ -287,7 +286,7 @@ public class RelOptHiveTable extends RelOptAbstractTable {
     if (null == partitionList) {
       // We could be here either because its an unpartitioned table or because
       // there are no pruning predicates on a partitioned table.
-      computePartitionList(hiveConf, null);
+      computePartitionList(hiveConf, null, new HashSet<Integer>());
     }
 
     // 2. Obtain Col Stats for Non Partition Cols

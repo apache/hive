@@ -138,7 +138,7 @@ POSTHOOK: query: load data local inpath '../../data/files/smallsrcsortbucket3out
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@bucket_medium@ds=2008-04-08
-Warning: Map Join MAPJOIN[33][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[36][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
 PREHOOK: query: explain extended select count(*) FROM bucket_small a JOIN bucket_medium b ON a.key = b.key JOIN bucket_big c ON c.key = b.key JOIN bucket_medium d ON c.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select count(*) FROM bucket_small a JOIN bucket_medium b ON a.key = b.key JOIN bucket_big c ON c.key = b.key JOIN bucket_medium d ON c.key = b.key
@@ -427,11 +427,11 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -441,7 +441,7 @@ STAGE PLANS:
                     1 _col0 (type: string)
                     2 _col0 (type: string)
                   Position of Big Table: 2
-                  Statistics: Num rows: 127 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 255 Data size: 25572 Basic stats: COMPLETE Column stats: NONE
                   Map Join Operator
                     condition map:
                          Inner Join 0 to 1
@@ -449,7 +449,7 @@ STAGE PLANS:
                       0 
                       1 
                     Position of Big Table: 0
-                    Statistics: Num rows: 139 Data size: 14064 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 280 Data size: 28129 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
                       mode: hash
@@ -697,7 +697,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[33][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[36][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
 PREHOOK: query: select count(*) FROM bucket_small a JOIN bucket_medium b ON a.key = b.key JOIN bucket_big c ON c.key = b.key JOIN bucket_medium d ON c.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucket_big

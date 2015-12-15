@@ -46,9 +46,6 @@ POSTHOOK: query: load data local inpath '../../data/files/smbbucket_3.rc' overwr
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@smb_bucket_3
-Warning: Shuffle Join JOIN[9][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 2' is a cross product
-Warning: Shuffle Join JOIN[22][tables = [$hdt$_1, $hdt$_2]] in Work 'Reducer 6' is a cross product
-Warning: Shuffle Join JOIN[27][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 3' is a cross product
 PREHOOK: query: explain 
 select * from (select a.key from smb_bucket_1 a join smb_bucket_2 b on (a.key = b.key) where a.key = 5) t1 left outer join (select c.key from smb_bucket_2 c join smb_bucket_3 d on (c.key = d.key) where c.key=5) t2 on (t1.key=t2.key) where t2.key=5
 PREHOOK: type: QUERY
@@ -63,9 +60,9 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 1), Map 4 (PARTITION-LEVEL SORT, 1)
-        Reducer 6 <- Map 5 (PARTITION-LEVEL SORT, 1), Map 7 (PARTITION-LEVEL SORT, 1)
-        Reducer 3 <- Reducer 2 (PARTITION-LEVEL SORT, 1), Reducer 6 (PARTITION-LEVEL SORT, 1)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 4 (PARTITION-LEVEL SORT, 2)
+        Reducer 6 <- Map 5 (PARTITION-LEVEL SORT, 2), Map 7 (PARTITION-LEVEL SORT, 2)
+        Reducer 3 <- Reducer 2 (PARTITION-LEVEL SORT, 2), Reducer 6 (PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -79,7 +76,9 @@ STAGE PLANS:
                     Select Operator
                       Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        sort order: 
+                        key expressions: 5 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: 5 (type: int)
                         Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
@@ -87,12 +86,14 @@ STAGE PLANS:
                   alias: b
                   Statistics: Num rows: 51 Data size: 206 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (5 = key) (type: boolean)
+                    predicate: (key = 5) (type: boolean)
                     Statistics: Num rows: 25 Data size: 100 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       Statistics: Num rows: 25 Data size: 100 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        sort order: 
+                        key expressions: 5 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: 5 (type: int)
                         Statistics: Num rows: 25 Data size: 100 Basic stats: COMPLETE Column stats: NONE
         Map 5 
             Map Operator Tree:
@@ -105,7 +106,9 @@ STAGE PLANS:
                     Select Operator
                       Statistics: Num rows: 25 Data size: 100 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        sort order: 
+                        key expressions: 5 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: 5 (type: int)
                         Statistics: Num rows: 25 Data size: 100 Basic stats: COMPLETE Column stats: NONE
         Map 7 
             Map Operator Tree:
@@ -113,12 +116,14 @@ STAGE PLANS:
                   alias: d
                   Statistics: Num rows: 55 Data size: 222 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (5 = key) (type: boolean)
+                    predicate: (key = 5) (type: boolean)
                     Statistics: Num rows: 27 Data size: 108 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       Statistics: Num rows: 27 Data size: 108 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        sort order: 
+                        key expressions: 5 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: 5 (type: int)
                         Statistics: Num rows: 27 Data size: 108 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
@@ -126,11 +131,13 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 
-                  1 
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
                 Statistics: Num rows: 28 Data size: 114 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  sort order: 
+                  key expressions: 5 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: 5 (type: int)
                   Statistics: Num rows: 28 Data size: 114 Basic stats: COMPLETE Column stats: NONE
         Reducer 3 
             Reduce Operator Tree:
@@ -138,8 +145,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 
-                  1 
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
                 Statistics: Num rows: 31 Data size: 129 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: 5 (type: int), 5 (type: int)
@@ -158,11 +165,13 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 
-                  1 
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
                 Statistics: Num rows: 29 Data size: 118 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  sort order: 
+                  key expressions: 5 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: 5 (type: int)
                   Statistics: Num rows: 29 Data size: 118 Basic stats: COMPLETE Column stats: NONE
 
   Stage: Stage-0
@@ -171,9 +180,6 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[37][bigTable=?] in task 'Stage-1:MAPRED' is a cross product
-Warning: Map Join MAPJOIN[39][bigTable=?] in task 'Stage-1:MAPRED' is a cross product
-Warning: Map Join MAPJOIN[38][bigTable=?] in task 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: -- explain
 -- select * from smb_bucket_1 a left outer join smb_bucket_2 b on a.key = b.key left outer join src c on a.key=c.value
 
@@ -207,14 +213,14 @@ STAGE PLANS:
                   alias: b
                   Statistics: Num rows: 51 Data size: 206 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (5 = key) (type: boolean)
+                    predicate: (key = 5) (type: boolean)
                     Statistics: Num rows: 25 Data size: 100 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       Statistics: Num rows: 25 Data size: 100 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
-                          0 
-                          1 
+                          0 5 (type: int)
+                          1 5 (type: int)
             Local Work:
               Map Reduce Local Work
 
@@ -236,15 +242,15 @@ STAGE PLANS:
                         condition map:
                              Inner Join 0 to 1
                         keys:
-                          0 
-                          1 
+                          0 5 (type: int)
+                          1 5 (type: int)
                         input vertices:
                           1 Map 2
                         Statistics: Num rows: 28 Data size: 114 Basic stats: COMPLETE Column stats: NONE
                         Spark HashTable Sink Operator
                           keys:
-                            0 
-                            1 
+                            0 5 (type: int)
+                            1 5 (type: int)
             Local Work:
               Map Reduce Local Work
         Map 3 
@@ -259,8 +265,8 @@ STAGE PLANS:
                       Statistics: Num rows: 25 Data size: 100 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
-                          0 
-                          1 
+                          0 5 (type: int)
+                          1 5 (type: int)
             Local Work:
               Map Reduce Local Work
 
@@ -274,7 +280,7 @@ STAGE PLANS:
                   alias: d
                   Statistics: Num rows: 55 Data size: 222 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (5 = key) (type: boolean)
+                    predicate: (key = 5) (type: boolean)
                     Statistics: Num rows: 27 Data size: 108 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       Statistics: Num rows: 27 Data size: 108 Basic stats: COMPLETE Column stats: NONE
@@ -282,8 +288,8 @@ STAGE PLANS:
                         condition map:
                              Inner Join 0 to 1
                         keys:
-                          0 
-                          1 
+                          0 5 (type: int)
+                          1 5 (type: int)
                         input vertices:
                           0 Map 3
                         Statistics: Num rows: 29 Data size: 118 Basic stats: COMPLETE Column stats: NONE
@@ -291,8 +297,8 @@ STAGE PLANS:
                           condition map:
                                Inner Join 0 to 1
                           keys:
-                            0 
-                            1 
+                            0 5 (type: int)
+                            1 5 (type: int)
                           input vertices:
                             0 Map 1
                           Statistics: Num rows: 31 Data size: 129 Basic stats: COMPLETE Column stats: NONE
@@ -316,9 +322,6 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[37][bigTable=?] in task 'Stage-1:MAPRED' is a cross product
-Warning: Map Join MAPJOIN[39][bigTable=?] in task 'Stage-1:MAPRED' is a cross product
-Warning: Map Join MAPJOIN[38][bigTable=?] in task 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: select * from (select a.key from smb_bucket_1 a join smb_bucket_2 b on (a.key = b.key) where a.key = 5) t1 left outer join (select c.key from smb_bucket_2 c join smb_bucket_3 d on (c.key = d.key) where c.key=5) t2 on (t1.key=t2.key) where t2.key=5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_1

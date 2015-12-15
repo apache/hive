@@ -94,7 +94,7 @@ select `cbo_/t3////`.c_int, c, count(*) from (select key as a, c_int+1 as b, sum
 
 
 
-set hive.cbo.enable=true;
+set hive.cbo.enable=false;
 
 set hive.exec.check.crossproducts=false;
 
@@ -152,7 +152,7 @@ select unionsrc.key, count(1) FROM (select 'max' as key, max(c_int) as value fro
 
 
 
-set hive.cbo.enable=true;
+set hive.cbo.enable=false;
 
 set hive.exec.check.crossproducts=false;
 
@@ -280,7 +280,7 @@ select * from (select q, b, `//cbo_t2`.p, `c/b/o_t1`.c, `cbo_/t3////`.c_int from
 
 
 
-set hive.cbo.enable=true;
+set hive.cbo.enable=false;
 
 set hive.exec.check.crossproducts=false;
 
@@ -310,7 +310,7 @@ select `cbo_/t3////`.c_int, c, count(*) from (select key as a, c_int+1 as b, sum
 
 select `cbo_/t3////`.c_int, c, count(*) from (select key as a, c_int+1 as b, sum(c_int) as c from `c/b/o_t1` where (`c/b/o_t1`.c_int + 1 >= 0) and (`c/b/o_t1`.c_int > 0 or `c/b/o_t1`.c_float >= 0)  group by c_float, `c/b/o_t1`.c_int, key having `c/b/o_t1`.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0 order by b % c asc, b desc limit 5) `c/b/o_t1` left outer join (select key as p, c_int+1 as q, sum(c_int) as r from `//cbo_t2` where (`//cbo_t2`.c_int + 1 >= 0) and (`//cbo_t2`.c_int > 0 or `//cbo_t2`.c_float >= 0)  group by c_float, `//cbo_t2`.c_int, key  having `//cbo_t2`.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0 limit 5) `//cbo_t2` on `c/b/o_t1`.a=p left outer join `cbo_/t3////` on `c/b/o_t1`.a=key where (b + `//cbo_t2`.q >= 0) and (b > 0 or c_int >= 0) group by `cbo_/t3////`.c_int, c  having `cbo_/t3////`.c_int > 0 and (c_int >=1 or c >= 1) and (c_int + c) >= 0  order by `cbo_/t3////`.c_int % c asc, `cbo_/t3////`.c_int, c desc limit 5;
 
-set hive.cbo.enable=true;
+set hive.cbo.enable=false;
 
 set hive.exec.check.crossproducts=false;
 
@@ -342,7 +342,7 @@ select a, c, count(*)  from (select key as a, c_int+1 as b, sum(c_int) as c from
 
 
 
-set hive.cbo.enable=true;
+set hive.cbo.enable=false;
 
 set hive.exec.check.crossproducts=false;
 
@@ -452,7 +452,7 @@ select key from `c/b/o_t1` where c_int = -6  or c_int = +6;
 
 select count(`c/b/o_t1`.dt) from `c/b/o_t1` join `//cbo_t2` on `c/b/o_t1`.dt  = `//cbo_t2`.dt  where `c/b/o_t1`.dt = '2014' ;
 
-set hive.cbo.enable=true;
+set hive.cbo.enable=false;
 
 set hive.exec.check.crossproducts=false;
 
@@ -470,7 +470,7 @@ select `c/b/o_t1`.value from `c/b/o_t1` join `//cbo_t2` on `c/b/o_t1`.key = `//c
 
 
 
-set hive.cbo.enable=true;
+set hive.cbo.enable=false;
 
 set hive.exec.check.crossproducts=false;
 
@@ -602,7 +602,7 @@ from (select b.key, count(*)
 
 
 
-set hive.cbo.enable=true;
+set hive.cbo.enable=false;
 
 set hive.exec.check.crossproducts=false;
 
@@ -712,7 +712,7 @@ having p_name in
 
 
 
-set hive.cbo.enable=true;
+set hive.cbo.enable=false;
 
 set hive.exec.check.crossproducts=false;
 
@@ -872,7 +872,7 @@ having b.p_mfgr not in
 
 
 
-set hive.cbo.enable=true;
+set hive.cbo.enable=false;
 
 set hive.exec.check.crossproducts=false;
 
@@ -910,7 +910,7 @@ select count(distinct c_int) as a, avg(c_float) from `c/b/o_t1` group by c_int o
 
 select count(distinct c_int) as a, avg(c_float) from `c/b/o_t1` group by c_float, c_int order by a;
 
-set hive.cbo.enable=true;
+set hive.cbo.enable=false;
 
 set hive.exec.check.crossproducts=false;
 
@@ -936,7 +936,7 @@ select r2.key from (select key, c_int from (select key, c_int from `c/b/o_t1` un
 
 
 
-set hive.cbo.enable=true;
+set hive.cbo.enable=false;
 
 set hive.exec.check.crossproducts=false;
 
@@ -1026,7 +1026,7 @@ drop view v3;
 
 drop view v4;
 
-set hive.cbo.enable=true;
+set hive.cbo.enable=false;
 
 set hive.exec.check.crossproducts=false;
 

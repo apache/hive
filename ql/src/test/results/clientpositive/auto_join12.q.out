@@ -21,42 +21,27 @@ JOIN
 ON src1.c1 = src3.c5 AND src3.c5 < 80
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-7 is a root stage
-  Stage-2 depends on stages: Stage-7
+  Stage-6 is a root stage
+  Stage-2 depends on stages: Stage-6
   Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
-  Stage: Stage-7
+  Stage: Stage-6
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$hdt$_0:$hdt$_0:src 
+        $hdt$_0:$hdt$_1:src 
           Fetch Operator
             limit: -1
-        $hdt$_0:$hdt$_1:$hdt$_1:src 
+        $hdt$_0:$hdt$_2:src 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$hdt$_0:$hdt$_0:src 
+        $hdt$_0:$hdt$_1:src 
           TableScan
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((UDFToDouble(key) < 80.0) and (UDFToDouble(key) < 100.0)) and key is not null) (type: boolean)
-              Statistics: Num rows: 28 Data size: 297 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: key (type: string)
-                outputColumnNames: _col0
-                Statistics: Num rows: 28 Data size: 297 Basic stats: COMPLETE Column stats: NONE
-                HashTable Sink Operator
-                  keys:
-                    0 _col0 (type: string)
-                    1 _col0 (type: string)
-        $hdt$_0:$hdt$_1:$hdt$_1:src 
-          TableScan
-            alias: src
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: ((UDFToDouble(key) < 100.0) and (UDFToDouble(key) < 80.0)) (type: boolean)
+              predicate: (((UDFToDouble(key) < 100.0) and (UDFToDouble(key) < 80.0)) and key is not null) (type: boolean)
               Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
@@ -66,6 +51,23 @@ STAGE PLANS:
                   keys:
                     0 _col0 (type: string)
                     1 _col0 (type: string)
+                    2 _col0 (type: string)
+        $hdt$_0:$hdt$_2:src 
+          TableScan
+            alias: src
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (((UDFToDouble(key) < 80.0) and (UDFToDouble(key) < 100.0)) and key is not null) (type: boolean)
+              Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: key (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
+                HashTable Sink Operator
+                  keys:
+                    0 _col0 (type: string)
+                    1 _col0 (type: string)
+                    2 _col0 (type: string)
 
   Stage: Stage-2
     Map Reduce
@@ -74,41 +76,35 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((UDFToDouble(key) < 100.0) and (UDFToDouble(key) < 80.0)) (type: boolean)
-              Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
+              predicate: (UDFToDouble(key) < 100.0) (type: boolean)
+              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
+                       Inner Join 0 to 2
                   keys:
                     0 _col0 (type: string)
                     1 _col0 (type: string)
-                  outputColumnNames: _col0, _col2
-                  Statistics: Num rows: 60 Data size: 642 Basic stats: COMPLETE Column stats: NONE
-                  Map Join Operator
-                    condition map:
-                         Inner Join 0 to 1
-                    keys:
-                      0 _col0 (type: string)
-                      1 _col0 (type: string)
-                    outputColumnNames: _col1, _col3
-                    Statistics: Num rows: 66 Data size: 706 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: hash(_col1,_col3) (type: int)
+                    2 _col0 (type: string)
+                  outputColumnNames: _col0, _col3
+                  Statistics: Num rows: 365 Data size: 3878 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: hash(_col0,_col3) (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 365 Data size: 3878 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: sum(_col0)
+                      mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 66 Data size: 706 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        aggregations: sum(_col0)
-                        mode: hash
-                        outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        sort order: 
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          sort order: 
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col0 (type: bigint)
+                        value expressions: _col0 (type: bigint)
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:

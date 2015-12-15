@@ -62,13 +62,11 @@ import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.metadata.CachingRelMetadataProvider;
 import org.apache.calcite.rel.metadata.ChainedRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMetadataProvider;
-import org.apache.calcite.rel.rules.FilterAggregateTransposeRule;
-import org.apache.calcite.rel.rules.FilterProjectTransposeRule;
+import org.apache.calcite.rel.rules.FilterMergeRule;
 import org.apache.calcite.rel.rules.JoinToMultiJoinRule;
 import org.apache.calcite.rel.rules.LoptOptimizeJoinRule;
 import org.apache.calcite.rel.rules.ProjectMergeRule;
 import org.apache.calcite.rel.rules.ProjectRemoveRule;
-import org.apache.calcite.rel.rules.ReduceExpressionsRule;
 import org.apache.calcite.rel.rules.SemiJoinFilterTransposeRule;
 import org.apache.calcite.rel.rules.SemiJoinJoinTransposeRule;
 import org.apache.calcite.rel.rules.SemiJoinProjectTransposeRule;
@@ -137,7 +135,9 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateJoinTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateProjectMergeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveExpandDistinctAggregatesRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterAggregateTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterJoinRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterProjectTSTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterProjectTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterSetOpTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveInsertExchange4JoinRule;
@@ -818,7 +818,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
   private class CalcitePlannerAction implements Frameworks.PlannerAction<RelNode> {
     private RelOptCluster                                 cluster;
     private RelOptSchema                                  relOptSchema;
-    private final Map<String, PrunedPartitionList>              partitionCache;
+    private final Map<String, PrunedPartitionList>        partitionCache;
 
     // TODO: Do we need to keep track of RR, ColNameToPosMap for every op or
     // just last one.
@@ -918,11 +918,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       // 4. Run other optimizations that do not need stats
       calciteOptimizedPlan = hepPlan(calciteOptimizedPlan, false, mdProvider.getMetadataProvider(),
-              HepMatchOrder.BOTTOM_UP, ReduceExpressionsRule.JOIN_INSTANCE,
-              ReduceExpressionsRule.FILTER_INSTANCE, ReduceExpressionsRule.PROJECT_INSTANCE,
+              HepMatchOrder.BOTTOM_UP,
               ProjectRemoveRule.INSTANCE, UnionMergeRule.INSTANCE,
               new ProjectMergeRule(false, HiveProject.DEFAULT_PROJECT_FACTORY),
-              HiveAggregateProjectMergeRule.INSTANCE);
+              HiveAggregateProjectMergeRule.INSTANCE, HiveJoinCommuteRule.INSTANCE);
 
       // 5. Run aggregate-join transpose (cost based)
       //    If it failed because of missing stats, we continue with
@@ -954,10 +953,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
           }
         }
       }
-
-      // 6. Run rule to try to remove projects on top of join operators
-      calciteOptimizedPlan = hepPlan(calciteOptimizedPlan, false, mdProvider.getMetadataProvider(),
-              HepMatchOrder.BOTTOM_UP, HiveJoinCommuteRule.INSTANCE);
 
       // 7. Run rule to fix windowing issue when it is done over
       // aggregation columns (HIVE-10627)
@@ -1014,12 +1009,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
      * @return
      */
     private RelNode applyPreJoinOrderingTransforms(RelNode basePlan, RelMetadataProvider mdProvider) {
-
       // TODO: Decorelation of subquery should be done before attempting
       // Partition Pruning; otherwise Expression evaluation may try to execute
       // corelated sub query.
 
-      //0. Distinct aggregate rewrite
+      //1. Distinct aggregate rewrite
       // Run this optimization early, since it is expanding the operator pipeline.
       if (!conf.getVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("mr") &&
           conf.getBoolVar(HiveConf.ConfVars.HIVEOPTIMIZEDISTINCTREWRITE)) {
@@ -1029,7 +1023,40 @@ public class CalcitePlanner extends SemanticAnalyzer {
         basePlan = hepPlan(basePlan, true, mdProvider, HiveExpandDistinctAggregatesRule.INSTANCE);
       }
 
-      // 1. Push down limit through outer join
+      // 2. Try factoring out common filter elements & separating deterministic
+      // vs non-deterministic UDF. This needs to run before PPD so that PPD can
+      // add on-clauses for old style Join Syntax
+      // Ex: select * from R1 join R2 where ((R1.x=R2.x) and R1.y<10) or
+      // ((R1.x=R2.x) and R1.z=10)) and rand(1) < 0.1
+      basePlan = hepPlan(basePlan, false, mdProvider, HepMatchOrder.ARBITRARY,
+          HivePreFilteringRule.INSTANCE);
+
+      // 3. PPD for old Join Syntax
+      // NOTE: PPD needs to run before adding not null filters in order to
+      // support old style join syntax (so that on-clauses will get filled up).
+      // TODO: Add in ReduceExpressionrules (Constant folding) to below once
+      // HIVE-11927 is fixed.
+      basePlan = hepPlan(basePlan, true, mdProvider, new HiveFilterProjectTransposeRule(
+          Filter.class, HiveFilter.DEFAULT_FILTER_FACTORY, HiveProject.class,
+          HiveProject.DEFAULT_PROJECT_FACTORY), new HiveFilterSetOpTransposeRule(
+          HiveFilter.DEFAULT_FILTER_FACTORY), HiveFilterJoinRule.JOIN,
+          HiveFilterJoinRule.FILTER_ON_JOIN, new HiveFilterAggregateTransposeRule(Filter.class,
+              HiveFilter.DEFAULT_FILTER_FACTORY, Aggregate.class), new FilterMergeRule(
+              HiveFilter.DEFAULT_FILTER_FACTORY));
+
+      // TODO: Transitive inference, constant prop & Predicate push down has to
+      // do multiple passes till no more inference is left
+      // Currently doing so would result in a spin. Just checking for if inferred
+      // pred is present below may not be sufficient as inferred & pushed pred
+      // could have been mutated by constant folding/prop
+      // 4. Transitive inference for join on clauses
+      basePlan = hepPlan(basePlan, true, mdProvider, new HiveJoinPushTransitivePredicatesRule(
+          Join.class, HiveFilter.DEFAULT_FILTER_FACTORY));
+
+      // 5. Push down limit through outer join
+      // NOTE: We run this after PPD to support old style join syntax.
+      // Ex: select * from R1 left outer join R2 where ((R1.x=R2.x) and R1.y<10) or
+      // ((R1.x=R2.x) and R1.z=10)) and rand(1) < 0.1 order by R1.x limit 10
       if (conf.getBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_LIMIT_JOIN_TRANSPOSE)) {
         // This should be a cost based decision, but till we enable the extended cost
         // model, we will use the given value for the variable
@@ -1044,35 +1071,28 @@ public class CalcitePlanner extends SemanticAnalyzer {
             HiveProjectSortTransposeRule.INSTANCE);
       }
 
-      // 2. Push Down Semi Joins
+      // 6. Add not null filters
+      basePlan = hepPlan(basePlan, true, mdProvider, HiveJoinAddNotNullRule.INSTANCE);
+
+      // 7. Rerun Constant propagation and PPD now that we have added Not NULL filters & did transitive inference
+      // TODO: Add in ReduceExpressionrules (Constant folding) to below once
+      // HIVE-11927 is fixed.
+      basePlan = hepPlan(basePlan, true, mdProvider, new HiveFilterProjectTransposeRule(
+          Filter.class, HiveFilter.DEFAULT_FILTER_FACTORY, HiveProject.class,
+          HiveProject.DEFAULT_PROJECT_FACTORY), new HiveFilterSetOpTransposeRule(
+          HiveFilter.DEFAULT_FILTER_FACTORY), HiveFilterJoinRule.JOIN,
+          HiveFilterJoinRule.FILTER_ON_JOIN, new HiveFilterAggregateTransposeRule(Filter.class,
+              HiveFilter.DEFAULT_FILTER_FACTORY, Aggregate.class), new FilterMergeRule(
+              HiveFilter.DEFAULT_FILTER_FACTORY));
+
+      // 8. Push Down Semi Joins
       basePlan = hepPlan(basePlan, true, mdProvider, SemiJoinJoinTransposeRule.INSTANCE,
           SemiJoinFilterTransposeRule.INSTANCE, SemiJoinProjectTransposeRule.INSTANCE);
 
-      // 3. Add not null filters
-      if (conf.getBoolVar(HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP)) {
-        basePlan = hepPlan(basePlan, true, mdProvider, HiveJoinAddNotNullRule.INSTANCE);
-      }
+      // 9. Apply Partition Pruning
+      basePlan = hepPlan(basePlan, false, mdProvider, new HivePartitionPruneRule(conf));
 
-      // 4. Constant propagation, common filter extraction, and PPD
-      basePlan = hepPlan(basePlan, true, mdProvider,
-          ReduceExpressionsRule.PROJECT_INSTANCE,
-          ReduceExpressionsRule.FILTER_INSTANCE,
-          ReduceExpressionsRule.JOIN_INSTANCE,
-          HivePreFilteringRule.INSTANCE,
-          new HiveFilterProjectTransposeRule(Filter.class, HiveFilter.DEFAULT_FILTER_FACTORY,
-                  HiveProject.class, HiveProject.DEFAULT_PROJECT_FACTORY),
-          new HiveFilterSetOpTransposeRule(HiveFilter.DEFAULT_FILTER_FACTORY),
-          HiveFilterJoinRule.JOIN,
-          HiveFilterJoinRule.FILTER_ON_JOIN,
-          new FilterAggregateTransposeRule(Filter.class,
-              HiveFilter.DEFAULT_FILTER_FACTORY, Aggregate.class));
-
-      // 5. Transitive inference & Partition Pruning
-      basePlan = hepPlan(basePlan, false, mdProvider, new HiveJoinPushTransitivePredicatesRule(
-          Join.class, HiveFilter.DEFAULT_FILTER_FACTORY),
-          new HivePartitionPruneRule(conf));
-
-      // 6. Projection Pruning
+      // 10. Projection Pruning (this introduces select above TS & hence needs to be run last due to PP)
       HiveRelFieldTrimmer fieldTrimmer = new HiveRelFieldTrimmer(null,
           cluster, HiveProject.DEFAULT_PROJECT_FACTORY,
           HiveFilter.DEFAULT_FILTER_FACTORY, HiveJoin.HIVE_JOIN_FACTORY,
@@ -1080,11 +1100,18 @@ public class CalcitePlanner extends SemanticAnalyzer {
           HiveAggregate.HIVE_AGGR_REL_FACTORY, HiveUnion.UNION_REL_FACTORY);
       basePlan = fieldTrimmer.trim(basePlan);
 
-      // 7. Rerun PPD through Project as column pruning would have introduced DT
-      // above scans
-      basePlan = hepPlan(basePlan, true, mdProvider,
-          new FilterProjectTransposeRule(Filter.class, HiveFilter.DEFAULT_FILTER_FACTORY,
-              HiveProject.class, HiveProject.DEFAULT_PROJECT_FACTORY));
+
+      // 11. Merge Project-Project if possible
+      basePlan = hepPlan(basePlan, false, mdProvider, new ProjectMergeRule(true,
+          HiveProject.DEFAULT_PROJECT_FACTORY));
+
+      // 12. Rerun PPD through Project as column pruning would have introduced
+      // DT above scans; By pushing filter just above TS, Hive can push it into
+      // storage (incase there are filters on non partition cols). This only
+      // matches FIL-PROJ-TS
+      basePlan = hepPlan(basePlan, true, mdProvider, new HiveFilterProjectTSTransposeRule(
+          Filter.class, HiveFilter.DEFAULT_FILTER_FACTORY, HiveProject.class,
+          HiveProject.DEFAULT_PROJECT_FACTORY, HiveTableScan.class));
 
       return basePlan;
     }

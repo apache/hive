@@ -37,6 +37,7 @@ import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.ImmutableBitSet;
+import org.apache.calcite.util.Pair;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
@@ -44,6 +45,7 @@ import org.apache.hadoop.hive.ql.plan.ColStatistics;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
+import com.google.common.collect.ImmutableSet;
 
 
 /**
@@ -61,6 +63,7 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
   private final String tblAlias;
   private final String concatQbIDAlias;
   private final boolean useQBIdInDigest;
+  private final ImmutableSet<Integer> viurtualOrPartColIndxsInTS;
 
   public String getTableAlias() {
     return tblAlias;
@@ -94,7 +97,9 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
     this.tblAlias = alias;
     this.concatQbIDAlias = concatQbIDAlias;
     this.hiveTableScanRowType = newRowtype;
-    this.neededColIndxsFrmReloptHT = buildNeededColIndxsFrmReloptHT(table.getRowType(), newRowtype);
+    Pair<ImmutableList<Integer>, ImmutableSet<Integer>> colIndxPair = buildColIndxsFrmReloptHT(table, newRowtype);
+    this.neededColIndxsFrmReloptHT = colIndxPair.getKey();
+    this.viurtualOrPartColIndxsInTS = colIndxPair.getValue();
     this.useQBIdInDigest = useQBIdInDigest;
   }
 
@@ -183,7 +188,13 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
         fieldNames));
 
     // 5. Add Proj on top of TS
-    return relBuilder.push(newHT).project(exprList, new ArrayList<String>(fieldNames)).build();
+    HiveProject hp = (HiveProject) relBuilder.push(newHT)
+        .project(exprList, new ArrayList<String>(fieldNames)).build();
+
+    // 6. Set synthetic flag, so that we would push filter below this one
+    hp.setSynthetic();
+
+    return hp;
   }
 
   public List<Integer> getNeededColIndxsFrmReloptHT() {
@@ -194,17 +205,36 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
     return hiveTableScanRowType;
   }
 
-  private static ImmutableList<Integer> buildNeededColIndxsFrmReloptHT(RelDataType htRowtype,
-      RelDataType scanRowType) {
+  public Set<Integer> getPartOrVirtualCols() {
+    return viurtualOrPartColIndxsInTS;
+  }
+
+  private static Pair<ImmutableList<Integer>, ImmutableSet<Integer>> buildColIndxsFrmReloptHT(
+      RelOptHiveTable relOptHTable, RelDataType scanRowType) {
+    RelDataType relOptHtRowtype = relOptHTable.getRowType();
+    ImmutableList<Integer> neededColIndxsFrmReloptHT;
     Builder<Integer> neededColIndxsFrmReloptHTBldr = new ImmutableList.Builder<Integer>();
-    Map<String, Integer> colNameToPosInReloptHT = HiveCalciteUtil.getRowColNameIndxMap(htRowtype
-        .getFieldList());
+    ImmutableSet<Integer> viurtualOrPartColIndxsInTS;
+    ImmutableSet.Builder<Integer> viurtualOrPartColIndxsInTSBldr = new ImmutableSet.Builder<Integer>();
+
+    Map<String, Integer> colNameToPosInReloptHT = HiveCalciteUtil
+        .getRowColNameIndxMap(relOptHtRowtype.getFieldList());
     List<String> colNamesInScanRowType = scanRowType.getFieldNames();
 
+    int partOrVirtualColStartPosInrelOptHtRowtype = relOptHTable.getNonPartColumns().size();
+    int tmp;
     for (int i = 0; i < colNamesInScanRowType.size(); i++) {
-      neededColIndxsFrmReloptHTBldr.add(colNameToPosInReloptHT.get(colNamesInScanRowType.get(i)));
+      tmp = colNameToPosInReloptHT.get(colNamesInScanRowType.get(i));
+      neededColIndxsFrmReloptHTBldr.add(tmp);
+      if (tmp >= partOrVirtualColStartPosInrelOptHtRowtype) {
+        viurtualOrPartColIndxsInTSBldr.add(i);
+      }
     }
 
-    return neededColIndxsFrmReloptHTBldr.build();
+    neededColIndxsFrmReloptHT = neededColIndxsFrmReloptHTBldr.build();
+    viurtualOrPartColIndxsInTS = viurtualOrPartColIndxsInTSBldr.build();
+
+    return new Pair<ImmutableList<Integer>, ImmutableSet<Integer>>(neededColIndxsFrmReloptHT,
+        viurtualOrPartColIndxsInTS);
   }
 }

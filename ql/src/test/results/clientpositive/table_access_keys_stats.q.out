@@ -175,11 +175,11 @@ ON subq1.key = subq2.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
-Operator:GBY_3
+Operator:GBY_4
 Table:default@t1
 Keys:key
 
-Operator:GBY_10
+Operator:GBY_12
 Table:default@t1
 Keys:key
 
@@ -197,11 +197,11 @@ ORDER BY subq1.key ASC, subq1.c ASC, subq2.key ASC, subq2.val ASC, subq2.c ASC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
-Operator:GBY_3
+Operator:GBY_4
 Table:default@t1
 Keys:key
 
-Operator:GBY_10
+Operator:GBY_12
 Table:default@t1
 Keys:key,val
 
@@ -277,7 +277,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
-Operator:JOIN_8
+Operator:JOIN_10
 Table:default@t1
 Keys:key
 Table:default@t2
@@ -296,7 +296,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
-Operator:JOIN_8
+Operator:JOIN_10
 Table:default@t1
 Keys:key,val
 Table:default@t2
@@ -369,7 +369,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
-Operator:JOIN_9
+Operator:JOIN_10
 Table:default@t1
 Keys:val
 Table:default@t2
@@ -411,9 +411,9 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
-Operator:JOIN_9
+Operator:JOIN_10
 Table:default@t1
-Keys:key
+Keys:val,key
 Table:default@t2
 Keys:key
 
@@ -435,11 +435,11 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
-Operator:JOIN_9
+Operator:JOIN_10
 Table:default@t1
 Keys:key
 Table:default@t2
-Keys:key
+Keys:val,key
 
 PREHOOK: query: -- no mapping on functions
 SELECT *
@@ -472,9 +472,9 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
-Operator:JOIN_9
+Operator:JOIN_10
 Table:default@t1
-Keys:key
+Keys:val,key
 Table:default@t2
 Keys:key
 
@@ -503,13 +503,13 @@ PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
 #### A masked pattern was here ####
-Operator:JOIN_9
+Operator:JOIN_10
 Table:default@t1
-Keys:key
+Keys:val,key
 Table:default@t2
 Keys:key
 
-Operator:GBY_17
+Operator:GBY_18
 Table:default@t3
 Keys:val
 
@@ -518,7 +518,6 @@ Keys:val
 13.0	1
 17.0	1
 46.0	1
-Warning: Shuffle Join JOIN[21][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-3:MAPRED' is a cross product
 PREHOOK: query: -- join followed by join
 SELECT *
 FROM
@@ -542,9 +541,9 @@ PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
 #### A masked pattern was here ####
-Operator:JOIN_9
+Operator:JOIN_10
 Table:default@t1
-Keys:key
+Keys:val,key
 Table:default@t2
 Keys:key
 

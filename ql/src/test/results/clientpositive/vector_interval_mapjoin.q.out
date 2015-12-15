@@ -172,15 +172,15 @@ STAGE PLANS:
             alias: vectortab_b_1korc
             Statistics: Num rows: 1000 Data size: 458448 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: s is not null (type: boolean)
-              Statistics: Num rows: 500 Data size: 229224 Basic stats: COMPLETE Column stats: NONE
+              predicate: ((dt - CAST( ts AS DATE)) is not null and s is not null) (type: boolean)
+              Statistics: Num rows: 1000 Data size: 458448 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: s (type: string), (dt - CAST( ts AS DATE)) (type: interval_day_time)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 500 Data size: 229224 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1000 Data size: 458448 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
                   predicate: _col1 is not null (type: boolean)
-                  Statistics: Num rows: 250 Data size: 114612 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1000 Data size: 458448 Basic stats: COMPLETE Column stats: NONE
                   HashTable Sink Operator
                     keys:
                       0 _col1 (type: interval_day_time), _col0 (type: string)
@@ -193,15 +193,15 @@ STAGE PLANS:
             alias: vectortab_a_1korc
             Statistics: Num rows: 1000 Data size: 460264 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: s is not null (type: boolean)
-              Statistics: Num rows: 500 Data size: 230132 Basic stats: COMPLETE Column stats: NONE
+              predicate: ((dt - CAST( ts AS DATE)) is not null and s is not null) (type: boolean)
+              Statistics: Num rows: 1000 Data size: 460264 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: s (type: string), (dt - CAST( ts AS DATE)) (type: interval_day_time)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 500 Data size: 230132 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1000 Data size: 460264 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
                   predicate: _col1 is not null (type: boolean)
-                  Statistics: Num rows: 250 Data size: 115066 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1000 Data size: 460264 Basic stats: COMPLETE Column stats: NONE
                   Map Join Operator
                     condition map:
                          Inner Join 0 to 1
@@ -209,14 +209,14 @@ STAGE PLANS:
                       0 _col1 (type: interval_day_time), _col0 (type: string)
                       1 _col1 (type: interval_day_time), _col0 (type: string)
                     outputColumnNames: _col0, _col1, _col2
-                    Statistics: Num rows: 275 Data size: 126572 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1100 Data size: 506290 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: string), _col2 (type: string), _col1 (type: interval_day_time)
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 275 Data size: 126572 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1100 Data size: 506290 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 275 Data size: 126572 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1100 Data size: 506290 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

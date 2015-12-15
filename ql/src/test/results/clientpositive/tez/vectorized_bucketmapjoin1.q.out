@@ -118,12 +118,12 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 1 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: int)
                       sort order: +
                       Map-reduce partition columns: key (type: int)
-                      Statistics: Num rows: 1 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                       value expressions: value (type: string)
             Execution mode: vectorized
         Map 3 
@@ -133,12 +133,12 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 1 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: int)
                       sort order: +
                       Map-reduce partition columns: key (type: int)
-                      Statistics: Num rows: 1 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                       value expressions: value (type: string)
             Execution mode: vectorized
         Reducer 2 
@@ -150,14 +150,14 @@ STAGE PLANS:
                   0 key (type: int)
                   1 key (type: int)
                 outputColumnNames: _col0, _col1, _col5, _col6
-                Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: string)
                   outputColumnNames: _col0, _col1, _col2, _col3
-                  Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -207,12 +207,12 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 1 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: int)
                       sort order: +
                       Map-reduce partition columns: key (type: int)
-                      Statistics: Num rows: 1 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                       value expressions: value (type: string)
             Execution mode: vectorized
         Map 3 
@@ -222,12 +222,12 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 50 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 1 Data size: 25 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 50 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: int)
                       sort order: +
                       Map-reduce partition columns: key (type: int)
-                      Statistics: Num rows: 1 Data size: 25 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 50 Basic stats: COMPLETE Column stats: NONE
                       value expressions: value (type: string)
         Reducer 2 
             Reduce Operator Tree:
@@ -238,14 +238,14 @@ STAGE PLANS:
                   0 key (type: int)
                   1 key (type: int)
                 outputColumnNames: _col0, _col1, _col5, _col6
-                Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: string)
                   outputColumnNames: _col0, _col1, _col2, _col3
-                  Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -305,12 +305,12 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 1 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: int)
                       sort order: +
                       Map-reduce partition columns: key (type: int)
-                      Statistics: Num rows: 1 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                       value expressions: value (type: string)
             Execution mode: vectorized
         Map 3 
@@ -320,12 +320,12 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 52 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 1 Data size: 26 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 52 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: int)
                       sort order: +
                       Map-reduce partition columns: key (type: int)
-                      Statistics: Num rows: 1 Data size: 26 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 52 Basic stats: COMPLETE Column stats: NONE
                       value expressions: value (type: string)
         Reducer 2 
             Reduce Operator Tree:
@@ -336,14 +336,14 @@ STAGE PLANS:
                   0 key (type: int)
                   1 key (type: int)
                 outputColumnNames: _col0, _col1, _col5, _col6
-                Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: string)
                   outputColumnNames: _col0, _col1, _col2, _col3
-                  Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
