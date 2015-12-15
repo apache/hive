@@ -55,7 +55,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
  * this changes the row resolver, the tree is built again. This can be optimized
  * later to patch the tree.
  */
-public class ColumnPruner implements Transform {
+public class ColumnPruner extends Transform {
   protected ParseContext pGraphContext;
 
   /**

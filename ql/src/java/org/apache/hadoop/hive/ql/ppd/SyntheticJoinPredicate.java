@@ -60,7 +60,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 /**
  * creates synthetic predicates that represent "IN (keylist other table)"
  */
-public class SyntheticJoinPredicate implements Transform {
+public class SyntheticJoinPredicate extends Transform {
 
   private static transient Logger LOG = LoggerFactory.getLogger(SyntheticJoinPredicate.class.getName());
 

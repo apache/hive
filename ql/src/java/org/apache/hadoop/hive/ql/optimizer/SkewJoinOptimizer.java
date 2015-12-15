@@ -75,7 +75,7 @@ import org.slf4j.LoggerFactory;
  * SkewJoinOptimizer.
  *
  */
-public class SkewJoinOptimizer implements Transform {
+public class SkewJoinOptimizer extends Transform {
 
   private static final Logger LOG = LoggerFactory.getLogger(SkewJoinOptimizer.class.getName());
 

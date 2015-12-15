@@ -41,7 +41,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * this transformation does bucket map join optimization.
  */
-public class BucketMapJoinOptimizer implements Transform {
+public class BucketMapJoinOptimizer extends Transform {
 
   private static final Logger LOG = LoggerFactory.getLogger(GroupByOptimizer.class
       .getName());
@@ -49,7 +49,6 @@ public class BucketMapJoinOptimizer implements Transform {
   public BucketMapJoinOptimizer() {
   }
 
-  @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
 
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();

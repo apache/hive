@@ -79,7 +79,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
  * etc) change the columns as data flows through them. In such cases the column
  * references are replaced by the corresponding expression in the input data.
  */
-public class PredicatePushDown implements Transform {
+public class PredicatePushDown extends Transform {
 
   private static final Logger LOG = LoggerFactory.getLogger(PredicatePushDown.class);
   private ParseContext pGraphContext;

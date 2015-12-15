@@ -59,7 +59,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
  * 3. Propagate expression: if the expression is an assignment like column=constant, the expression
  * will be propagate to parents to see if further folding operation is possible.
  */
-public class ConstantPropagate implements Transform {
+public class ConstantPropagate extends Transform {
 
   private static final Logger LOG = LoggerFactory.getLogger(ConstantPropagate.class);
   protected ParseContext pGraphContext;

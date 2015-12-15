@@ -46,7 +46,7 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
-public class HiveOpConverterPostProc implements Transform {
+public class HiveOpConverterPostProc extends Transform {
 
   private static final Logger LOG = LoggerFactory.getLogger(HiveOpConverterPostProc.class);
 

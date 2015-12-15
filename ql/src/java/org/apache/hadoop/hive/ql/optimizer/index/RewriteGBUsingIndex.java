@@ -89,7 +89,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
  *  For test cases, @see ql_rewrite_gbtoidx.q
  */
 
-public class RewriteGBUsingIndex implements Transform {
+public class RewriteGBUsingIndex extends Transform {
   private ParseContext parseContext;
   private Hive hiveDb;
   private HiveConf hiveConf;

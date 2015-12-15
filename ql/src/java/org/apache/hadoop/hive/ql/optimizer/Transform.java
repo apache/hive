@@ -18,8 +18,10 @@
 
 package org.apache.hadoop.hive.ql.optimizer;
 
+import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
  * Optimizer interface. All the rule-based optimizations implement this
@@ -27,7 +29,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
  * current parse context (which contains the operator tree among other things),
  * perform all the optimizations, and then return the updated parse context.
  */
-public interface Transform {
+public abstract class Transform {
   /**
    * All transformation steps implement this interface.
    * 
@@ -36,5 +38,19 @@ public interface Transform {
    * @return ParseContext
    * @throws SemanticException
    */
-  ParseContext transform(ParseContext pctx) throws SemanticException;
+  public abstract ParseContext transform(ParseContext pctx) throws SemanticException;
+  
+  public void beginPerfLogging() {
+    PerfLogger perfLogger = SessionState.getPerfLogger();
+    perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
+  }
+
+  public void endPerfLogging() {
+    PerfLogger perfLogger = SessionState.getPerfLogger();
+    perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER);
+  }
+  public void endPerfLogging(String additionalInfo) {
+    PerfLogger perfLogger = SessionState.getPerfLogger();
+	perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, additionalInfo);
+  }  
 }

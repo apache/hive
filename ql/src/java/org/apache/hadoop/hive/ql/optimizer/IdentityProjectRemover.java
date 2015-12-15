@@ -68,7 +68,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
  *  Note absence of select operator after filter and after join operator.
  *  Also, see : identity_proj_remove.q
  */
-public class IdentityProjectRemover implements Transform {
+public class IdentityProjectRemover extends Transform {
 
   private static final Logger LOG = LoggerFactory.getLogger(IdentityProjectRemover.class);
   @Override

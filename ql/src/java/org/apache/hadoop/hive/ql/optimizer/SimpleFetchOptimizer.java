@@ -87,7 +87,7 @@ import org.apache.hadoop.mapred.JobConf;
  * Tries to convert simple fetch query to single fetch task, which fetches rows directly
  * from location of table/partition.
  */
-public class SimpleFetchOptimizer implements Transform {
+public class SimpleFetchOptimizer extends Transform {
 
   private final Logger LOG = LoggerFactory.getLogger(SimpleFetchOptimizer.class.getName());
 

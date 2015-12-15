@@ -70,7 +70,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
  * The transformation step that does partition pruning.
  *
  */
-public class PartitionPruner implements Transform {
+public class PartitionPruner extends Transform {
 
   // The log
   public static final String CLASS_NAME = PartitionPruner.class.getName();

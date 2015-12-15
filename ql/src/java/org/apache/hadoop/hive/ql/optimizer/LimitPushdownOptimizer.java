@@ -85,7 +85,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
  * REDUCER : 10(b,d)-20(l)-30(c,k,o)-40(j,m)-50(n)
  * LIMIT 3 : 10(b,d)-20(l)
  */
-public class LimitPushdownOptimizer implements Transform {
+public class LimitPushdownOptimizer extends Transform {
 
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {

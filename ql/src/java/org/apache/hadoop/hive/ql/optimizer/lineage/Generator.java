@@ -53,7 +53,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
  * and tables from the plan before it goes through other
  * optimization phases.
  */
-public class Generator implements Transform {
+public class Generator extends Transform {
 
   /* (non-Javadoc)
    * @see org.apache.hadoop.hive.ql.optimizer.Transform#transform(org.apache.hadoop.hive.ql.parse.ParseContext)

@@ -64,7 +64,7 @@ import com.google.common.collect.ListMultimap;
  * AND operator children, the optimization might generate an IN clause that uses
  * structs.
  */
-public class PointLookupOptimizer implements Transform {
+public class PointLookupOptimizer extends Transform {
 
   private static final Logger LOG = LoggerFactory.getLogger(PointLookupOptimizer.class);
   private static final String IN_UDF =

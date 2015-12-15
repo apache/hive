@@ -76,7 +76,7 @@ import com.google.common.collect.Maps;
  * into the destination table. This enables reducers to keep only one record writer all the time
  * thereby reducing the the memory pressure on the reducers.
  */
-public class SortedDynPartitionOptimizer implements Transform {
+public class SortedDynPartitionOptimizer extends Transform {
 
   private static final String BUCKET_NUMBER_COL_NAME = "_bucket_number";
   @Override

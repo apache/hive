@@ -224,7 +224,9 @@ public class Optimizer {
    */
   public ParseContext optimize() throws SemanticException {
     for (Transform t : transformations) {
-        pctx = t.transform(pctx);
+      t.beginPerfLogging();
+      pctx = t.transform(pctx);
+      t.endPerfLogging(t.toString());
     }
     return pctx;
   }

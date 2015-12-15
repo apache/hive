@@ -61,7 +61,7 @@ import com.google.common.collect.Multimap;
  * needed by this query.
  * This optimizer step populates the GlobalLimitCtx which is used later on to prune the inputs.
  */
-public class GlobalLimitOptimizer implements Transform {
+public class GlobalLimitOptimizer extends Transform {
 
   private final Logger LOG = LoggerFactory.getLogger(GlobalLimitOptimizer.class.getName());
 

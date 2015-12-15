@@ -82,7 +82,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
  * Test queries associated with this optimizer are correlationoptimizer1.q to
  * correlationoptimizer14.q
  */
-public class CorrelationOptimizer implements Transform {
+public class CorrelationOptimizer extends Transform {
 
   private static final Logger LOG = LoggerFactory.getLogger(CorrelationOptimizer.class.getName());
 

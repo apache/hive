@@ -44,7 +44,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
  * The transformation step that does partition condition remover.
  *
  */
-public class PartitionConditionRemover implements Transform {
+public class PartitionConditionRemover extends Transform {
 
   // The log
   private static final Logger LOG = LoggerFactory
