@@ -41,7 +41,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
  * The transformation step that does list bucketing pruning.
  *
  */
-public class ListBucketingPruner implements Transform {
+public class ListBucketingPruner extends Transform {
   static final Logger LOG = LoggerFactory.getLogger(ListBucketingPruner.class.getName());
 
   /*

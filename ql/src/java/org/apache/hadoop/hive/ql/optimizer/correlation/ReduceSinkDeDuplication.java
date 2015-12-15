@@ -62,7 +62,7 @@ import com.google.common.collect.Lists;
  *
  * This optimizer removes/replaces child-RS (not parent) which is safer way for DefaultGraphWalker.
  */
-public class ReduceSinkDeDuplication implements Transform {
+public class ReduceSinkDeDuplication extends Transform {
 
   private static final String RS = ReduceSinkOperator.getOperatorName();
   private static final String GBY = GroupByOperator.getOperatorName();

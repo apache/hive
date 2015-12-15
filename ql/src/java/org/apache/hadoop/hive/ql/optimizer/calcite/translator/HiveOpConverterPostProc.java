@@ -44,7 +44,7 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
-public class HiveOpConverterPostProc implements Transform {
+public class HiveOpConverterPostProc extends Transform {
 
   private ParseContext                                  pctx;
   private Map<String, Operator<? extends OperatorDesc>> aliasToOpInfo;

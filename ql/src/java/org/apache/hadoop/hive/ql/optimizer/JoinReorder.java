@@ -37,7 +37,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
  * largest tag so that they are processed last. In future, once statistics are
  * implemented, this transformation can also be done based on costs.
  */
-public class JoinReorder implements Transform {
+public class JoinReorder extends Transform {
 
   private final Map<Operator<?>, Integer> cache = new IdentityHashMap<Operator<?>, Integer>();
   /**

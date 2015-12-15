@@ -44,7 +44,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
 //try to replace a bucket map join with a sorted merge map join
-public class SortedMergeBucketMapJoinOptimizer implements Transform {
+public class SortedMergeBucketMapJoinOptimizer extends Transform {
 
   private static final Logger LOG = LoggerFactory
       .getLogger(SortedMergeBucketMapJoinOptimizer.class.getName());

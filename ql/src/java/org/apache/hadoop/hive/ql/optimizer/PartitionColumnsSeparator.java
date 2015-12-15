@@ -62,7 +62,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
  * This predicate is in turn used by the partition pruner to prune the columns that are not
  * part of the original IN(STRUCT(..)..) predicate.
  */
-public class PartitionColumnsSeparator implements Transform {
+public class PartitionColumnsSeparator extends Transform {
 
   private static final Log LOG = LogFactory.getLog(PointLookupOptimizer.class);
   private static final String IN_UDF =

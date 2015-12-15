@@ -86,7 +86,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
  * the reduce sink operator above the join are converted to map sink operators. In future, once
  * statistics are implemented, this transformation can also be done based on costs.
  */
-public class MapJoinProcessor implements Transform {
+public class MapJoinProcessor extends Transform {
 
   // mapjoin table descriptor contains a key descriptor which needs the field schema
   // (column type + column name). The column name is not really used anywhere, but it

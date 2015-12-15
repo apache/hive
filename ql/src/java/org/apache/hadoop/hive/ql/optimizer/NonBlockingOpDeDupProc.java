@@ -54,7 +54,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 /**
  * merges SEL-SEL or FIL-FIL into single operator
  */
-public class NonBlockingOpDeDupProc implements Transform {
+public class NonBlockingOpDeDupProc extends Transform {
 
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {

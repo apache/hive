@@ -50,7 +50,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
  *
  * The parse Context is not changed.
  */
-public class UnionProcessor implements Transform {
+public class UnionProcessor extends Transform {
 
   /**
    * empty constructor.
