@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.hbase;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -100,6 +101,10 @@ public class HBaseStatsAggregator implements StatsAggregator {
   }
 
   public boolean closeConnection() {
+    if (htable != null) {
+      IOUtils.closeQuietly(htable);
+      htable = null;
+    }
     return true;
   }
 

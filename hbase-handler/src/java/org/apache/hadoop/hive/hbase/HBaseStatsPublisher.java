@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.hbase;
 import java.io.IOException;
 import java.util.Map;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -126,6 +127,11 @@ public class HBaseStatsPublisher implements StatsPublisher {
     } catch (IOException e) {
       LOG.error("Cannot commit changes in stats publishing.", e);
       return false;
+    } finally {
+      if (htable != null) {
+        IOUtils.closeQuietly(htable);
+        htable = null;
+      }
     }
   }
 
