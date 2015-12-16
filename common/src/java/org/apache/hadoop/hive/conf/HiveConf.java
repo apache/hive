@@ -2836,7 +2836,9 @@ public class HiveConf extends Configuration {
       // When either name or value is null, the set method below will fail,
       // and throw IllegalArgumentException
       set(name, value);
-      isSparkConfigUpdated = isSparkRelatedConfig(name);
+      if (isSparkRelatedConfig(name)) {
+        isSparkConfigUpdated = true;
+      }
     }
   }
 
