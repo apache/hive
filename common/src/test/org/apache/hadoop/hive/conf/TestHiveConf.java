@@ -117,4 +117,18 @@ public class TestHiveConf {
     Assert.assertEquals(TimeUnit.NANOSECONDS, HiveConf.unitFor("ns", null));
     Assert.assertEquals(TimeUnit.NANOSECONDS, HiveConf.unitFor("nsecs", null));
   }
+
+  @Test
+  public void testSparkConfigUpdate(){
+    HiveConf conf = new HiveConf();
+    Assert.assertFalse(conf.getSparkConfigUpdated());
+
+    conf.verifyAndSet("spark.master", "yarn-cluster");
+    Assert.assertTrue(conf.getSparkConfigUpdated());
+    conf.verifyAndSet("hive.execution.engine", "spark");
+    Assert.assertTrue("Expected spark config updated.", conf.getSparkConfigUpdated());
+
+    conf.setSparkConfigUpdated(false);
+    Assert.assertFalse(conf.getSparkConfigUpdated());
+  }
 }
