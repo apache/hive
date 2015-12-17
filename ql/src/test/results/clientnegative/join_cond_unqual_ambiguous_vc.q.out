@@ -1,1 +1,1 @@
-FAILED: SemanticException Column input__file__name Found in more than One Tables/Subqueries
+FAILED: SemanticException Column INPUT__FILE__NAME Found in more than One Tables/Subqueries

@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.ql.lib.Node;
  */
 public class ASTNode extends CommonTree implements Node,Serializable {
   private static final long serialVersionUID = 1L;
-  private transient StringBuffer astStr;
+  private transient StringBuilder astStr;
   private transient ASTNodeOrigin origin;
   private transient int startIndx = -1;
   private transient int endIndx = -1;
@@ -133,10 +133,11 @@ public class ASTNode extends CommonTree implements Node,Serializable {
     return sb;
   }
 
-  private ASTNode getRootNodeWithValidASTStr (boolean useMemoizedRoot) {
-    if (useMemoizedRoot && rootNode != null && rootNode.parent == null &&
+  private void getRootNodeWithValidASTStr () {
+
+    if (rootNode != null && rootNode.parent == null &&
         rootNode.hasValidMemoizedString()) {
-      return rootNode;
+      return;
     }
     ASTNode retNode = this;
     while (retNode.parent != null) {
@@ -144,11 +145,11 @@ public class ASTNode extends CommonTree implements Node,Serializable {
     }
     rootNode=retNode;
     if (!rootNode.isValidASTStr) {
-      rootNode.astStr = new StringBuffer();
+      rootNode.astStr = new StringBuilder();
       rootNode.toStringTree(rootNode);
       rootNode.isValidASTStr = true;
     }
-    return retNode;
+    return;
   }
 
   private boolean hasValidMemoizedString() {
@@ -174,7 +175,7 @@ public class ASTNode extends CommonTree implements Node,Serializable {
 
   private void addtoMemoizedString(String string) {
     if (astStr == null) {
-      astStr = new StringBuffer();
+      astStr = new StringBuilder();
     }
     astStr.append(string);
   }
@@ -227,7 +228,7 @@ public class ASTNode extends CommonTree implements Node,Serializable {
 
     // The root might have changed because of tree modifications.
     // Compute the new root for this tree and set the astStr.
-    getRootNodeWithValidASTStr(true);
+    getRootNodeWithValidASTStr();
 
     // If rootNotModified is false, then startIndx and endIndx will be stale.
     if (startIndx >= 0 && endIndx <= rootNode.getMemoizedStringLen()) {
@@ -240,14 +241,18 @@ public class ASTNode extends CommonTree implements Node,Serializable {
     this.rootNode = rootNode;
     startIndx = rootNode.getMemoizedStringLen();
     // Leaf node
+    String str;
     if ( children==null || children.size()==0 ) {
-      rootNode.addtoMemoizedString(this.toString());
+      str = this.toString();
+      rootNode.addtoMemoizedString(this.getType() != HiveParser.StringLiteral ? str.toLowerCase() : str);
       endIndx =  rootNode.getMemoizedStringLen();
-      return this.toString();
+      return this.getType() != HiveParser.StringLiteral ? str.toLowerCase() : str;
     }
+
     if ( !isNil() ) {
       rootNode.addtoMemoizedString("(");
-      rootNode.addtoMemoizedString(this.toString());
+      str = this.toString();
+      rootNode.addtoMemoizedString((this.getType() == HiveParser.StringLiteral || null == str) ? str :  str.toLowerCase());
       rootNode.addtoMemoizedString(" ");
     }
     for (int i = 0; children!=null && i < children.size(); i++) {

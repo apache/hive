@@ -112,7 +112,6 @@ public class RowResolver implements Serializable{
     if (tab_alias != null) {
       tab_alias = tab_alias.toLowerCase();
     }
-    col_alias = col_alias.toLowerCase();
 
     /*
      * allow multiple mappings to the same ColumnInfo.
@@ -169,7 +168,6 @@ public class RowResolver implements Serializable{
    * @throws SemanticException
    */
   public ColumnInfo get(String tab_alias, String col_alias) throws SemanticException {
-    col_alias = col_alias.toLowerCase();
     ColumnInfo ret = null;
 
     if (tab_alias != null) {

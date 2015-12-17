@@ -55,100 +55,100 @@ public class TestIUD {
     }
     return (ASTNode) nd.getChild(0);
   }
-  
+
   @Test
   public void testDeleteNoWhere() throws ParseException {
     ASTNode ast = parse("DELETE FROM src");
-    Assert.assertEquals("AST doesn't match", 
-      "(TOK_DELETE_FROM " +
-        "(TOK_TABNAME src))", ast.toStringTree());
+    Assert.assertEquals("AST doesn't match",
+      "(tok_delete_from " +
+        "(tok_tabname src))", ast.toStringTree());
   }
   @Test
   public void testDeleteWithWhere() throws ParseException {
     ASTNode ast = parse("DELETE FROM src WHERE key IS NOT NULL AND src.value < 0");
-    Assert.assertEquals("AST doesn't match", 
-      "(TOK_DELETE_FROM " +
-        "(TOK_TABNAME src) " +
-        "(TOK_WHERE " +
-          "(AND " +
-            "(TOK_FUNCTION TOK_ISNOTNULL (TOK_TABLE_OR_COL key)) " +
-            "(< (. (TOK_TABLE_OR_COL src) value) 0))))",
+    Assert.assertEquals("AST doesn't match",
+      "(tok_delete_from " +
+        "(tok_tabname src) " +
+        "(tok_where " +
+          "(and " +
+            "(tok_function tok_isnotnull (tok_table_or_col key)) " +
+            "(< (. (tok_table_or_col src) value) 0))))",
       ast.toStringTree());
   }
   @Test
   public void testUpdateNoWhereSingleSet() throws ParseException {
     ASTNode ast = parse("UPDATE src set key = 3");
     Assert.assertEquals("AST doesn't match",
-      "(TOK_UPDATE_TABLE " +
-        "(TOK_TABNAME src) " +
-        "(TOK_SET_COLUMNS_CLAUSE " +
+      "(tok_update_table " +
+        "(tok_tabname src) " +
+        "(tok_set_columns_clause " +
           "(= " +
-            "(TOK_TABLE_OR_COL key) 3)))",
+            "(tok_table_or_col key) 3)))",
       ast.toStringTree());
   }
   @Test
   public void testUpdateNoWhereMultiSet() throws ParseException {
     ASTNode ast = parse("UPDATE src set key = 3, value = 8");
-    Assert.assertEquals("AST doesn't match", 
-      "(TOK_UPDATE_TABLE " +
-        "(TOK_TABNAME src) " +
-        "(TOK_SET_COLUMNS_CLAUSE " +
+    Assert.assertEquals("AST doesn't match",
+      "(tok_update_table " +
+        "(tok_tabname src) " +
+        "(tok_set_columns_clause " +
           "(= " +
-            "(TOK_TABLE_OR_COL key) 3) " +
+            "(tok_table_or_col key) 3) " +
           "(= " +
-            "(TOK_TABLE_OR_COL value) 8)))",
+            "(tok_table_or_col value) 8)))",
       ast.toStringTree());
   }
   @Test
   public void testUpdateWithWhereSingleSet() throws ParseException {
     ASTNode ast = parse("UPDATE src SET key = 3 WHERE value IS NULL");
     Assert.assertEquals("AST doesn't match",
-      "(TOK_UPDATE_TABLE " +
-        "(TOK_TABNAME src) " +
-        "(TOK_SET_COLUMNS_CLAUSE " +
+      "(tok_update_table " +
+        "(tok_tabname src) " +
+        "(tok_set_columns_clause " +
           "(= " +
-            "(TOK_TABLE_OR_COL key) 3)) " +
-        "(TOK_WHERE (TOK_FUNCTION TOK_ISNULL (TOK_TABLE_OR_COL value))))",
+            "(tok_table_or_col key) 3)) " +
+        "(tok_where (tok_function tok_isnull (tok_table_or_col value))))",
       ast.toStringTree());
   }
   @Test
   public void testUpdateWithWhereSingleSetExpr() throws ParseException {
     ASTNode ast = parse("UPDATE src SET key = -3+(5*9)%8, val = cast(6.1 + c as INT), d = d - 1 WHERE value IS NULL");
     Assert.assertEquals("AST doesn't match",
-      "(TOK_UPDATE_TABLE (TOK_TABNAME src) " +
-        "(TOK_SET_COLUMNS_CLAUSE " +
-        "(= (TOK_TABLE_OR_COL key) (+ (- 3) (% (* 5 9) 8))) " +
-        "(= (TOK_TABLE_OR_COL val) (TOK_FUNCTION TOK_INT (+ 6.1 (TOK_TABLE_OR_COL c)))) " +
-        "(= (TOK_TABLE_OR_COL d) (- (TOK_TABLE_OR_COL d) 1))) " +
-        "(TOK_WHERE (TOK_FUNCTION TOK_ISNULL (TOK_TABLE_OR_COL value))))",
+      "(tok_update_table (tok_tabname src) " +
+        "(tok_set_columns_clause " +
+        "(= (tok_table_or_col key) (+ (- 3) (% (* 5 9) 8))) " +
+        "(= (tok_table_or_col val) (tok_function tok_int (+ 6.1 (tok_table_or_col c)))) " +
+        "(= (tok_table_or_col d) (- (tok_table_or_col d) 1))) " +
+        "(tok_where (tok_function tok_isnull (tok_table_or_col value))))",
       ast.toStringTree());
   }
   @Test
   public void testUpdateWithWhereMultiSet() throws ParseException {
     ASTNode ast = parse("UPDATE src SET key = 3, value = 8 WHERE VALUE = 1230997");
-    Assert.assertEquals("AST doesn't match", 
-      "(TOK_UPDATE_TABLE " +
-        "(TOK_TABNAME src) " +
-        "(TOK_SET_COLUMNS_CLAUSE " +
+    Assert.assertEquals("AST doesn't match",
+      "(tok_update_table " +
+        "(tok_tabname src) " +
+        "(tok_set_columns_clause " +
         "(= " +
-          "(TOK_TABLE_OR_COL key) 3) " +
+          "(tok_table_or_col key) 3) " +
         "(= " +
-          "(TOK_TABLE_OR_COL value) 8)) " +
-        "(TOK_WHERE (= (TOK_TABLE_OR_COL VALUE) 1230997)))",
+          "(tok_table_or_col value) 8)) " +
+        "(tok_where (= (tok_table_or_col value) 1230997)))",
       ast.toStringTree());
   }
   @Test
   public void testStandardInsertIntoTable() throws ParseException {
     ASTNode ast = parse("INSERT into TABLE page_view SELECT pvs.viewTime, pvs.userid from page_view_stg pvs where pvs.userid is null");
     Assert.assertEquals("AST doesn't match",
-      "(TOK_QUERY " +
-        "(TOK_FROM " +
-          "(TOK_TABREF (TOK_TABNAME page_view_stg) pvs)) " +
-        "(TOK_INSERT (TOK_INSERT_INTO (TOK_TAB (TOK_TABNAME page_view))) " +
-        "(TOK_SELECT " +
-          "(TOK_SELEXPR (. (TOK_TABLE_OR_COL pvs) viewTime)) " +
-          "(TOK_SELEXPR (. (TOK_TABLE_OR_COL pvs) userid))) " +
-        "(TOK_WHERE (TOK_FUNCTION TOK_ISNULL (. (TOK_TABLE_OR_COL pvs) userid)))))",
+      "(tok_query " +
+        "(tok_from " +
+          "(tok_tabref (tok_tabname page_view_stg) pvs)) " +
+        "(tok_insert (tok_insert_into (tok_tab (tok_tabname page_view))) " +
+        "(tok_select " +
+          "(tok_selexpr (. (tok_table_or_col pvs) viewtime)) " +
+          "(tok_selexpr (. (tok_table_or_col pvs) userid))) " +
+        "(tok_where (tok_function tok_isnull (. (tok_table_or_col pvs) userid)))))",
       ast.toStringTree());
   }
   @Test
@@ -163,55 +163,55 @@ public class TestIUD {
   }
   @Test
   public void testSelectStarFromVirtTable1Row() throws ParseException {
-    ASTNode ast = parse("select * from (values (3,4)) as VC(a,b)");
+    ASTNode ast = parse("select * from (values (3,4)) as vc(a,b)");
     Assert.assertEquals("AST doesn't match",
-      "(TOK_QUERY " +
-        "(TOK_FROM " +
-          "(TOK_VIRTUAL_TABLE " +
-            "(TOK_VIRTUAL_TABREF (TOK_TABNAME VC) (TOK_COL_NAME a b)) " +
-            "(TOK_VALUES_TABLE (TOK_VALUE_ROW 3 4)))) " +
-        "(TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))",
+      "(tok_query " +
+        "(tok_from " +
+          "(tok_virtual_table " +
+            "(tok_virtual_tabref (tok_tabname vc) (tok_col_name a b)) " +
+            "(tok_values_table (tok_value_row 3 4)))) " +
+        "(tok_insert (tok_destination (tok_dir tok_tmp_file)) (tok_select (tok_selexpr tok_allcolref))))",
       ast.toStringTree());
   }
   @Test
   public void testSelectStarFromVirtTable2Row() throws ParseException {
-    ASTNode ast = parse("select * from (values (1,2),(3,4)) as VC(a,b)");
+    ASTNode ast = parse("select * from (values (1,2),(3,4)) as vc(a,b)");
     Assert.assertEquals("AST doesn't match",
-      "(TOK_QUERY " +
-        "(TOK_FROM " +
-          "(TOK_VIRTUAL_TABLE " +
-            "(TOK_VIRTUAL_TABREF (TOK_TABNAME VC) (TOK_COL_NAME a b)) " +
-            "(TOK_VALUES_TABLE (TOK_VALUE_ROW 1 2) (TOK_VALUE_ROW 3 4)))) " +
-        "(TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))",
+      "(tok_query " +
+        "(tok_from " +
+          "(tok_virtual_table " +
+            "(tok_virtual_tabref (tok_tabname vc) (tok_col_name a b)) " +
+            "(tok_values_table (tok_value_row 1 2) (tok_value_row 3 4)))) " +
+        "(tok_insert (tok_destination (tok_dir tok_tmp_file)) (tok_select (tok_selexpr tok_allcolref))))",
       ast.toStringTree());
   }
   @Test
   public void testSelectStarFromVirtTable2RowNamedProjections() throws ParseException {
-    ASTNode ast = parse("select a as c, b as d from (values (1,2),(3,4)) as VC(a,b)");
+    ASTNode ast = parse("select a as c, b as d from (values (1,2),(3,4)) as vc(a,b)");
     Assert.assertEquals("AST doesn't match",
-      "(TOK_QUERY " +
-        "(TOK_FROM " +
-        "(TOK_VIRTUAL_TABLE " +
-          "(TOK_VIRTUAL_TABREF (TOK_TABNAME VC) (TOK_COL_NAME a b)) " +
-          "(TOK_VALUES_TABLE (TOK_VALUE_ROW 1 2) (TOK_VALUE_ROW 3 4)))) " +
-        "(TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) " +
-          "(TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL a) c) (TOK_SELEXPR (TOK_TABLE_OR_COL b) d))))",
+      "(tok_query " +
+        "(tok_from " +
+        "(tok_virtual_table " +
+          "(tok_virtual_tabref (tok_tabname vc) (tok_col_name a b)) " +
+          "(tok_values_table (tok_value_row 1 2) (tok_value_row 3 4)))) " +
+        "(tok_insert (tok_destination (tok_dir tok_tmp_file)) " +
+          "(tok_select (tok_selexpr (tok_table_or_col a) c) (tok_selexpr (tok_table_or_col b) d))))",
       ast.toStringTree());
   }
   @Test
   public void testInsertIntoTableAsSelectFromNamedVirtTable() throws ParseException {
-    ASTNode ast = parse("insert into page_view select a,b as c from (values (1,2),(3,4)) as VC(a,b) where b = 9");
+    ASTNode ast = parse("insert into page_view select a,b as c from (values (1,2),(3,4)) as vc(a,b) where b = 9");
     Assert.assertEquals("AST doesn't match",
-      "(TOK_QUERY " +
-        "(TOK_FROM " +
-          "(TOK_VIRTUAL_TABLE " +
-            "(TOK_VIRTUAL_TABREF (TOK_TABNAME VC) (TOK_COL_NAME a b)) " +
-            "(TOK_VALUES_TABLE (TOK_VALUE_ROW 1 2) (TOK_VALUE_ROW 3 4)))) " +
-        "(TOK_INSERT (TOK_INSERT_INTO (TOK_TAB (TOK_TABNAME page_view))) " +
-          "(TOK_SELECT " +
-            "(TOK_SELEXPR (TOK_TABLE_OR_COL a)) " +
-            "(TOK_SELEXPR (TOK_TABLE_OR_COL b) c)) " +
-          "(TOK_WHERE (= (TOK_TABLE_OR_COL b) 9))))",
+      "(tok_query " +
+        "(tok_from " +
+          "(tok_virtual_table " +
+            "(tok_virtual_tabref (tok_tabname vc) (tok_col_name a b)) " +
+            "(tok_values_table (tok_value_row 1 2) (tok_value_row 3 4)))) " +
+        "(tok_insert (tok_insert_into (tok_tab (tok_tabname page_view))) " +
+          "(tok_select " +
+            "(tok_selexpr (tok_table_or_col a)) " +
+            "(tok_selexpr (tok_table_or_col b) c)) " +
+          "(tok_where (= (tok_table_or_col b) 9))))",
       ast.toStringTree());
   }
   /**
@@ -220,31 +220,31 @@ public class TestIUD {
    */
   @Test
   public void testInsertIntoTableAsSelectFromNamedVirtTableNamedCol() throws ParseException {
-    ASTNode ast = parse("insert into page_view(c1,c2) select a,b as c from (values (1,2),(3,4)) as VC(a,b) where b = 9");
+    ASTNode ast = parse("insert into page_view(c1,c2) select a,b as c from (values (1,2),(3,4)) as vc(a,b) where b = 9");
     Assert.assertEquals("AST doesn't match",
-      "(TOK_QUERY " +
-        "(TOK_FROM " +
-        "(TOK_VIRTUAL_TABLE " +
-        "(TOK_VIRTUAL_TABREF (TOK_TABNAME VC) (TOK_COL_NAME a b)) " +
-        "(TOK_VALUES_TABLE (TOK_VALUE_ROW 1 2) (TOK_VALUE_ROW 3 4)))) " +
-        "(TOK_INSERT (TOK_INSERT_INTO (TOK_TAB (TOK_TABNAME page_view)) (TOK_TABCOLNAME c1 c2)) " +
-        "(TOK_SELECT " +
-        "(TOK_SELEXPR (TOK_TABLE_OR_COL a)) " +
-        "(TOK_SELEXPR (TOK_TABLE_OR_COL b) c)) " +
-        "(TOK_WHERE (= (TOK_TABLE_OR_COL b) 9))))",
+      "(tok_query " +
+        "(tok_from " +
+        "(tok_virtual_table " +
+        "(tok_virtual_tabref (tok_tabname vc) (tok_col_name a b)) " +
+        "(tok_values_table (tok_value_row 1 2) (tok_value_row 3 4)))) " +
+        "(tok_insert (tok_insert_into (tok_tab (tok_tabname page_view)) (tok_tabcolname c1 c2)) " +
+        "(tok_select " +
+        "(tok_selexpr (tok_table_or_col a)) " +
+        "(tok_selexpr (tok_table_or_col b) c)) " +
+        "(tok_where (= (tok_table_or_col b) 9))))",
       ast.toStringTree());
   }
   @Test
   public void testInsertIntoTableFromAnonymousTable1Row() throws ParseException {
     ASTNode ast = parse("insert into page_view values(1,2)");
     Assert.assertEquals("AST doesn't match",
-      "(TOK_QUERY " +
-        "(TOK_FROM " +
-        "(TOK_VIRTUAL_TABLE " +
-        "(TOK_VIRTUAL_TABREF TOK_ANONYMOUS) " +
-        "(TOK_VALUES_TABLE (TOK_VALUE_ROW 1 2)))) " +
-        "(TOK_INSERT (TOK_INSERT_INTO (TOK_TAB (TOK_TABNAME page_view))) " +
-        "(TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))",
+      "(tok_query " +
+        "(tok_from " +
+        "(tok_virtual_table " +
+        "(tok_virtual_tabref tok_anonymous) " +
+        "(tok_values_table (tok_value_row 1 2)))) " +
+        "(tok_insert (tok_insert_into (tok_tab (tok_tabname page_view))) " +
+        "(tok_select (tok_selexpr tok_allcolref))))",
       ast.toStringTree());
   }
   /**
@@ -255,20 +255,20 @@ public class TestIUD {
   public void testInsertIntoTableFromAnonymousTable1RowNamedCol() throws ParseException {
     ASTNode ast = parse("insert into page_view(a,b) values(1,2)");
     Assert.assertEquals("AST doesn't match",
-      "(TOK_QUERY " +
-        "(TOK_FROM " +
-          "(TOK_VIRTUAL_TABLE " +
-            "(TOK_VIRTUAL_TABREF TOK_ANONYMOUS) " +
-            "(TOK_VALUES_TABLE (TOK_VALUE_ROW 1 2))" +
+      "(tok_query " +
+        "(tok_from " +
+          "(tok_virtual_table " +
+            "(tok_virtual_tabref tok_anonymous) " +
+            "(tok_values_table (tok_value_row 1 2))" +
           ")" +
         ") " +
-        "(TOK_INSERT " +
-          "(TOK_INSERT_INTO " +
-            "(TOK_TAB (TOK_TABNAME page_view)) " +
-            "(TOK_TABCOLNAME a b)" +//this is "extra" piece we get vs previous query
+        "(tok_insert " +
+          "(tok_insert_into " +
+            "(tok_tab (tok_tabname page_view)) " +
+            "(tok_tabcolname a b)" +//this is "extra" piece we get vs previous query
           ") " +
-          "(TOK_SELECT " +
-            "(TOK_SELEXPR TOK_ALLCOLREF)" +
+          "(tok_select " +
+            "(tok_selexpr tok_allcolref)" +
           ")" +
         ")" +
       ")", ast.toStringTree());
@@ -277,31 +277,31 @@ public class TestIUD {
   public void testInsertIntoTableFromAnonymousTable() throws ParseException {
     ASTNode ast = parse("insert into table page_view values(-1,2),(3,+4)");
     Assert.assertEquals("AST doesn't match",
-      "(TOK_QUERY " +
-        "(TOK_FROM " +
-          "(TOK_VIRTUAL_TABLE " +
-          "(TOK_VIRTUAL_TABREF TOK_ANONYMOUS) " +
-          "(TOK_VALUES_TABLE (TOK_VALUE_ROW (- 1) 2) (TOK_VALUE_ROW 3 (+ 4))))) " +
-        "(TOK_INSERT (TOK_INSERT_INTO (TOK_TAB (TOK_TABNAME page_view))) " +
-          "(TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))",
+      "(tok_query " +
+        "(tok_from " +
+          "(tok_virtual_table " +
+          "(tok_virtual_tabref tok_anonymous) " +
+          "(tok_values_table (tok_value_row (- 1) 2) (tok_value_row 3 (+ 4))))) " +
+        "(tok_insert (tok_insert_into (tok_tab (tok_tabname page_view))) " +
+          "(tok_select (tok_selexpr tok_allcolref))))",
       ast.toStringTree());
-    //same query as above less the "table" keyword KW_TABLE
+    //same query as above less the "table" keyword KW_table
     ast = parse("insert into page_view values(-1,2),(3,+4)");
     Assert.assertEquals("AST doesn't match",
-      "(TOK_QUERY " +
-        "(TOK_FROM " +
-        "(TOK_VIRTUAL_TABLE " +
-        "(TOK_VIRTUAL_TABREF TOK_ANONYMOUS) " +
-        "(TOK_VALUES_TABLE (TOK_VALUE_ROW (- 1) 2) (TOK_VALUE_ROW 3 (+ 4))))) " +
-        "(TOK_INSERT (TOK_INSERT_INTO (TOK_TAB (TOK_TABNAME page_view))) " +
-        "(TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))",
+      "(tok_query " +
+        "(tok_from " +
+        "(tok_virtual_table " +
+        "(tok_virtual_tabref tok_anonymous) " +
+        "(tok_values_table (tok_value_row (- 1) 2) (tok_value_row 3 (+ 4))))) " +
+        "(tok_insert (tok_insert_into (tok_tab (tok_tabname page_view))) " +
+        "(tok_select (tok_selexpr tok_allcolref))))",
       ast.toStringTree());
   }
   @Test
   public void testMultiInsert() throws ParseException {
     ASTNode ast = parse("from S insert into T1 select a, b insert into T2 select c, d");
-    Assert.assertEquals("AST doesn't match", "(TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME S))) " +
-      "(TOK_INSERT (TOK_INSERT_INTO (TOK_TAB (TOK_TABNAME T1))) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL a)) (TOK_SELEXPR (TOK_TABLE_OR_COL b)))) " +
-      "(TOK_INSERT (TOK_INSERT_INTO (TOK_TAB (TOK_TABNAME T2))) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL c)) (TOK_SELEXPR (TOK_TABLE_OR_COL d)))))", ast.toStringTree());
+    Assert.assertEquals("AST doesn't match", "(tok_query (tok_from (tok_tabref (tok_tabname s))) " +
+      "(tok_insert (tok_insert_into (tok_tab (tok_tabname t1))) (tok_select (tok_selexpr (tok_table_or_col a)) (tok_selexpr (tok_table_or_col b)))) " +
+      "(tok_insert (tok_insert_into (tok_tab (tok_tabname t2))) (tok_select (tok_selexpr (tok_table_or_col c)) (tok_selexpr (tok_table_or_col d)))))", ast.toStringTree());
   }
 }
