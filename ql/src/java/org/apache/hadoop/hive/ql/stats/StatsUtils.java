@@ -709,13 +709,19 @@ public class StatsUtils {
       cs.setAvgColLen(JavaDataModel.get().lengthOfDecimal());
       cs.setCountDistint(csd.getDecimalStats().getNumDVs());
       cs.setNumNulls(csd.getDecimalStats().getNumNulls());
-      Decimal val = csd.getDecimalStats().getHighValue();
-      BigDecimal maxVal = HiveDecimal.
-          create(new BigInteger(val.getUnscaled()), val.getScale()).bigDecimalValue();
-      val = csd.getDecimalStats().getLowValue();
-      BigDecimal minVal = HiveDecimal.
-          create(new BigInteger(val.getUnscaled()), val.getScale()).bigDecimalValue();
-      cs.setRange(minVal, maxVal);
+      Decimal highValue = csd.getDecimalStats().getHighValue();
+      Decimal lowValue = csd.getDecimalStats().getLowValue();
+      if (highValue != null && highValue.getUnscaled() != null
+          && lowValue != null && lowValue.getUnscaled() != null) {
+        HiveDecimal maxHiveDec = HiveDecimal.create(new BigInteger(highValue.getUnscaled()), highValue.getScale());
+        BigDecimal maxVal = maxHiveDec == null ? null : maxHiveDec.bigDecimalValue();
+        HiveDecimal minHiveDec = HiveDecimal.create(new BigInteger(lowValue.getUnscaled()), lowValue.getScale());
+        BigDecimal minVal = minHiveDec == null ? null : minHiveDec.bigDecimalValue();
+
+        if (minVal != null && maxVal != null) {
+          cs.setRange(minVal, maxVal);
+        }
+      }
     } else if (colTypeLowerCase.equals(serdeConstants.DATE_TYPE_NAME)) {
       cs.setAvgColLen(JavaDataModel.get().lengthOfDate());
     } else {
