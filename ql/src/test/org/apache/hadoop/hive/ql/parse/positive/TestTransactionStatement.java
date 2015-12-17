@@ -30,7 +30,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.File;
 import java.io.IOException;
 
 /**
@@ -65,38 +64,38 @@ public class TestTransactionStatement {
   public void testTxnStart() throws ParseException {
     ASTNode ast = parse("START TRANSACTION");
     Assert.assertEquals("AST doesn't match",
-      "TOK_START_TRANSACTION", ast.toStringTree());
-    
+      "tok_start_transaction", ast.toStringTree());
+
     ast = parse("START TRANSACTION ISOLATION LEVEL SNAPSHOT");
     Assert.assertEquals("AST doesn't match",
-      "(TOK_START_TRANSACTION (TOK_ISOLATION_LEVEL TOK_ISOLATION_SNAPSHOT))", ast.toStringTree());
-    
+      "(tok_start_transaction (tok_isolation_level tok_isolation_snapshot))", ast.toStringTree());
+
     ast = parse("START TRANSACTION READ ONLY");
     Assert.assertEquals("AST doesn't match",
-      "(TOK_START_TRANSACTION (TOK_TXN_ACCESS_MODE TOK_TXN_READ_ONLY))", ast.toStringTree());
-    
+      "(tok_start_transaction (tok_txn_access_mode tok_txn_read_only))", ast.toStringTree());
+
     ast = parse("START TRANSACTION READ WRITE, ISOLATION LEVEL SNAPSHOT");
     Assert.assertEquals("AST doesn't match",
-      "(TOK_START_TRANSACTION (TOK_TXN_ACCESS_MODE TOK_TXN_READ_WRITE) (TOK_ISOLATION_LEVEL TOK_ISOLATION_SNAPSHOT))", ast.toStringTree());
-    
+      "(tok_start_transaction (tok_txn_access_mode tok_txn_read_write) (tok_isolation_level tok_isolation_snapshot))", ast.toStringTree());
+
   }
   @Test
   public void testTxnCommitRollback() throws ParseException {
     ASTNode ast = parse("COMMIT");
-    Assert.assertEquals("AST doesn't match", "TOK_COMMIT", ast.toStringTree());
+    Assert.assertEquals("AST doesn't match", "tok_commit", ast.toStringTree());
     ast = parse("COMMIT WORK");
-    Assert.assertEquals("AST doesn't match", "TOK_COMMIT", ast.toStringTree());
+    Assert.assertEquals("AST doesn't match", "tok_commit", ast.toStringTree());
     ast = parse("ROLLBACK");
-    Assert.assertEquals("AST doesn't match", "TOK_ROLLBACK", ast.toStringTree());
+    Assert.assertEquals("AST doesn't match", "tok_rollback", ast.toStringTree());
     ast = parse("ROLLBACK WORK");
-    Assert.assertEquals("AST doesn't match", "TOK_ROLLBACK", ast.toStringTree());
+    Assert.assertEquals("AST doesn't match", "tok_rollback", ast.toStringTree());
   }
-  
+
   @Test
   public void testAutoCommit() throws ParseException {
     ASTNode ast = parse("SET AUTOCOMMIT TRUE");
-    Assert.assertEquals("AST doesn't match", "(TOK_SET_AUTOCOMMIT TOK_TRUE)", ast.toStringTree());
+    Assert.assertEquals("AST doesn't match", "(tok_set_autocommit tok_true)", ast.toStringTree());
     ast = parse("SET AUTOCOMMIT FALSE");
-    Assert.assertEquals("AST doesn't match", "(TOK_SET_AUTOCOMMIT TOK_FALSE)", ast.toStringTree());
+    Assert.assertEquals("AST doesn't match", "(tok_set_autocommit tok_false)", ast.toStringTree());
   }
 }

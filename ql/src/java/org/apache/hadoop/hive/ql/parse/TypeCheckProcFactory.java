@@ -378,7 +378,7 @@ public class TypeCheckProcFactory {
       default:
         // HiveParser.identifier | HiveParse.KW_IF | HiveParse.KW_LEFT |
         // HiveParse.KW_RIGHT
-        str = BaseSemanticAnalyzer.unescapeIdentifier(expr.getText());
+        str = BaseSemanticAnalyzer.unescapeIdentifier(expr.getText().toLowerCase());
         break;
       }
       return new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, str);
@@ -818,7 +818,7 @@ public class TypeCheckProcFactory {
           ((SettableUDF)genericUDF).setTypeInfo(typeInfo);
         }
       }
-      
+
       List<ExprNodeDesc> childrenList = new ArrayList<ExprNodeDesc>(children.length);
 
       childrenList.addAll(Arrays.asList(children));

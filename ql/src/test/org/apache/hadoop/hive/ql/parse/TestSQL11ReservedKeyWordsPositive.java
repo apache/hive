@@ -65,7 +65,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME ALL) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname all) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -75,7 +75,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME ALTER) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname alter) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -85,7 +85,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME ARRAY) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname array) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -95,7 +95,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME AS) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname as) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -105,7 +105,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME AUTHORIZATION) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname authorization) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -115,7 +115,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME BETWEEN) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname between) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -125,7 +125,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME BIGINT) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname bigint) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -135,7 +135,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME BINARY) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname binary) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -145,7 +145,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME BOOLEAN) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname boolean) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -155,7 +155,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME BOTH) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname both) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -165,7 +165,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME BY) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname by) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -175,7 +175,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME CREATE) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname create) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -185,7 +185,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME CUBE) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname cube) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -195,7 +195,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME CURRENT_DATE) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname current_date) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -205,7 +205,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME CURRENT_TIMESTAMP) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname current_timestamp) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -215,7 +215,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME CURSOR) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname cursor) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -225,7 +225,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME DATE) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname date) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -235,7 +235,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME DECIMAL) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname decimal) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -245,7 +245,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME DELETE) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname delete) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -255,7 +255,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME DESCRIBE) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname describe) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -265,7 +265,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME DOUBLE) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname double) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -275,7 +275,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME DROP) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname drop) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -285,7 +285,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME EXISTS) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname exists) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -295,7 +295,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME EXTERNAL) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname external) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -305,7 +305,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME FALSE) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname false) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -315,7 +315,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME FETCH) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname fetch) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -325,7 +325,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME FLOAT) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname float) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -335,7 +335,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME FOR) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname for) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -345,7 +345,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME FULL) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname full) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -355,7 +355,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME GRANT) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname grant) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -365,7 +365,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME GROUP) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname group) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -375,7 +375,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME GROUPING) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname grouping) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -385,7 +385,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME IMPORT) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname import) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -395,7 +395,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME IN) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname in) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -405,7 +405,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME INNER) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname inner) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -415,7 +415,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME INSERT) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname insert) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -425,7 +425,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME INT) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname int) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -435,7 +435,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME INTERSECT) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname intersect) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -445,7 +445,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME INTO) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname into) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -455,7 +455,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME IS) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname is) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -465,7 +465,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME LATERAL) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname lateral) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -475,7 +475,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME LEFT) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname left) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -485,7 +485,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME LIKE) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname like) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -495,7 +495,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME LOCAL) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname local) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -505,7 +505,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME NONE) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname none) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -515,7 +515,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME NULL) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname null) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -525,7 +525,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME OF) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname of) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -535,7 +535,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME ORDER) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname order) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -545,7 +545,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME OUT) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname out) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -555,7 +555,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME OUTER) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname outer) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -565,7 +565,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME PARTITION) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname partition) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -575,7 +575,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME PERCENT) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname percent) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -585,7 +585,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME PROCEDURE) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname procedure) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -595,7 +595,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME RANGE) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname range) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -605,7 +605,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME READS) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname reads) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -615,7 +615,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME REVOKE) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname revoke) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -625,7 +625,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME RIGHT) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname right) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -635,7 +635,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME ROLLUP) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname rollup) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -645,7 +645,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME ROW) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname row) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -655,7 +655,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME ROWS) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname rows) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -665,7 +665,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME SET) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname set) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -675,7 +675,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME SMALLINT) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname smallint) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -685,7 +685,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME TABLE) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname table) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -695,7 +695,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME TIMESTAMP) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname timestamp) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -705,7 +705,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME TO) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname to) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -715,7 +715,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME TRIGGER) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname trigger) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -725,7 +725,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME TRUE) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname true) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -735,7 +735,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME TRUNCATE) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname truncate) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -745,7 +745,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME UNION) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname union) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -755,7 +755,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME UPDATE) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname update) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -765,7 +765,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME USER) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname user) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -775,7 +775,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME USING) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname using) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -785,7 +785,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME VALUES) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname values) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -795,7 +795,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME WITH) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname with) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -806,7 +806,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME RLIKE) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname rlike) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 
@@ -816,7 +816,7 @@ public class TestSQL11ReservedKeyWordsPositive {
     Assert
         .assertEquals(
             "AST doesn't match",
-            "(TOK_CREATETABLE (TOK_TABNAME REGEXP) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            "(tok_createtable (tok_tabname regexp) tok_liketable (tok_tabcollist (tok_tabcol col tok_string)))",
             ast.toStringTree());
   }
 }
