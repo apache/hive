@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
+import com.esotericsoftware.kryo.KryoException;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
@@ -513,6 +514,11 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
             if (hashPartitions[i].isHashMapOnDisk()) {
               try {
                 continueProcess(i);     // Re-process spilled data
+              } catch (KryoException ke) {
+                LOG.error("Processing the spilled data failed due to Kryo error!");
+                LOG.error("Cleaning up all spilled data!");
+                cleanupGraceHashJoin();
+                throw new HiveException(ke);
               } catch (Exception e) {
                 throw new HiveException(e);
               }
@@ -654,6 +660,19 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
       process(row, conf.getPosBigTable());
     }
     bigTable.clear();
+  }
+
+  /**
+   * Clean up data participating the join, i.e. in-mem and on-disk files for small table(s) and big table
+   */
+  private void cleanupGraceHashJoin() {
+    for (byte pos = 0; pos < mapJoinTables.length; pos++) {
+      if (pos != conf.getPosBigTable()) {
+        LOG.info("Cleaning up small table data at pos: " + pos);
+        HybridHashTableContainer container = (HybridHashTableContainer) mapJoinTables[pos];
+        container.clear();
+      }
+    }
   }
 
   /**
