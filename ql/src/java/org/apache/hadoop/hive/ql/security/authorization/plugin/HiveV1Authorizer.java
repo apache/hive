@@ -380,7 +380,7 @@ public class HiveV1Authorizer implements HiveAuthorizer {
   }
 
   @Override
-  public HiveAuthorizationTranslator getHiveAuthorizationTranslator() throws HiveException {
+  public HiveAuthorizationTranslator getHiveAuthorizationTranslator() throws HiveAuthzPluginException {
     // custom translator is not needed, so return null
     return null;
   }

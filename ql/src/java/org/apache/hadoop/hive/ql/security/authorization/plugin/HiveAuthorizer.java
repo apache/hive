@@ -219,7 +219,7 @@ public interface HiveAuthorizer {
    * @return
    * @throws HiveException
    */
-  HiveAuthorizationTranslator getHiveAuthorizationTranslator() throws HiveException;
+  HiveAuthorizationTranslator getHiveAuthorizationTranslator() throws HiveAuthzPluginException;
 
 }
 

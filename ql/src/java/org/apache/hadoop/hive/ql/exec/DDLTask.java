@@ -157,6 +157,7 @@ import org.apache.hadoop.hive.ql.security.authorization.AuthorizationUtils;
 import org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationTranslator;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizationTranslator;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrincipal;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilege;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeInfo;
@@ -678,8 +679,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return 0;
   }
 
-  private HiveAuthorizationTranslator getAuthorizationTranslator(HiveAuthorizer authorizer) {
-    if(authorizer.getHiveAuthorizationTranslator() == null) {
+  private HiveAuthorizationTranslator getAuthorizationTranslator(HiveAuthorizer authorizer)
+      throws HiveAuthzPluginException {
+    if (authorizer.getHiveAuthorizationTranslator() == null) {
       return defaultAuthorizationTranslator;
     } else {
       return authorizer.getHiveAuthorizationTranslator();
