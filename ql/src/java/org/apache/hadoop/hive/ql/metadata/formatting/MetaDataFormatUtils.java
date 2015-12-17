@@ -145,7 +145,16 @@ public final class MetaDataFormatUtils {
   }
 
   private static String convertToString(Decimal val) {
-    return HiveDecimal.create(new BigInteger(val.getUnscaled()), val.getScale()).toString();
+    if (val == null) {
+      return "";
+    }
+
+    HiveDecimal result = HiveDecimal.create(new BigInteger(val.getUnscaled()), val.getScale());
+    if (result != null) {
+      return result.toString();
+    } else {
+      return "";
+    }
   }
 
   private static ColumnStatisticsObj getColumnStatisticsObject(String colName,
