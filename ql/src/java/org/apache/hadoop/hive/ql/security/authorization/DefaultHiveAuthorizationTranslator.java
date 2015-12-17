@@ -17,6 +17,10 @@
  */
 package org.apache.hadoop.hive.ql.security.authorization;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.PrincipalDesc;
 import org.apache.hadoop.hive.ql.plan.PrivilegeDesc;
@@ -25,6 +29,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorization
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrincipal;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilege;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 
 
 /**
@@ -34,18 +39,42 @@ public class DefaultHiveAuthorizationTranslator implements HiveAuthorizationTran
 
   @Override
   public HivePrincipal getHivePrincipal(PrincipalDesc principal) throws HiveException {
-    return AuthorizationUtils.getHivePrincipal(principal);
+    if (principal == null) {
+      return null;
+    }
+    return AuthorizationUtils.getHivePrincipal(principal.getName(), principal.getType());
   }
 
   @Override
   public HivePrivilege getHivePrivilege(PrivilegeDesc privilege) {
-    return AuthorizationUtils.getHivePrivilege(privilege);
+    Privilege priv = privilege.getPrivilege();
+    return new HivePrivilege(priv.toString(), privilege.getColumns(), priv.getScopeList());
   }
 
   @Override
   public HivePrivilegeObject getHivePrivilegeObject(PrivilegeObjectDesc privSubjectDesc)
       throws HiveException {
-    return AuthorizationUtils.getHivePrivilegeObject(privSubjectDesc);
+    // null means ALL for show grants, GLOBAL for grant/revoke
+    HivePrivilegeObjectType objectType = null;
+
+    String[] dbTable;
+    List<String> partSpec = null;
+    List<String> columns = null;
+    if (privSubjectDesc == null) {
+      dbTable = new String[] {null, null};
+    } else {
+      if (privSubjectDesc.getTable()) {
+        dbTable = Utilities.getDbTableName(privSubjectDesc.getObject());
+      } else {
+        dbTable = new String[] {privSubjectDesc.getObject(), null};
+      }
+      if (privSubjectDesc.getPartSpec() != null) {
+        partSpec = new ArrayList<String>(privSubjectDesc.getPartSpec().values());
+      }
+      columns = privSubjectDesc.getColumns();
+      objectType = AuthorizationUtils.getPrivObjectType(privSubjectDesc);
+    }
+    return new HivePrivilegeObject(objectType, dbTable[0], dbTable[1], partSpec, columns, null);
   }
 
 

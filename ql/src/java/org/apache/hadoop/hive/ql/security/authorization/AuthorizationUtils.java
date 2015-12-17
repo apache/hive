@@ -121,11 +121,6 @@ public class AuthorizationUtils {
     return hivePrivileges;
   }
 
-  static HivePrivilege getHivePrivilege(PrivilegeDesc privilege) {
-    Privilege priv = privilege.getPrivilege();
-    return new HivePrivilege(priv.toString(), privilege.getColumns(), priv.getScopeList());
-  }
-
   public static List<HivePrincipal> getHivePrincipals(List<PrincipalDesc> principals,
       HiveAuthorizationTranslator trans)
       throws HiveException {
@@ -136,12 +131,6 @@ public class AuthorizationUtils {
     return hivePrincipals;
   }
 
-  static HivePrincipal getHivePrincipal(PrincipalDesc principal) throws HiveException {
-    if (principal == null) {
-      return null;
-    }
-    return getHivePrincipal(principal.getName(), principal.getType());
-  }
 
   public static HivePrincipal getHivePrincipal(String name, PrincipalType type) throws HiveException {
     return new HivePrincipal(name, AuthorizationUtils.getHivePrincipalType(type));
@@ -172,32 +161,6 @@ public class AuthorizationUtils {
     HivePrivilegeObjectType objType = getHiveObjType(privObj.getObjectType());
     return new HivePrivilegeObject(objType, privObj.getDbName(), privObj.getObjectName(),
         privObj.getPartValues(), privObj.getColumnName());
-  }
-
-  static HivePrivilegeObject getHivePrivilegeObject(PrivilegeObjectDesc privSubjectDesc)
-      throws HiveException {
-
-    // null means ALL for show grants, GLOBAL for grant/revoke
-    HivePrivilegeObjectType objectType = null;
-
-    String[] dbTable;
-    List<String> partSpec = null;
-    List<String> columns = null;
-    if (privSubjectDesc == null) {
-      dbTable = new String[] {null, null};
-    } else {
-      if (privSubjectDesc.getTable()) {
-        dbTable = Utilities.getDbTableName(privSubjectDesc.getObject());
-      } else {
-        dbTable = new String[] {privSubjectDesc.getObject(), null};
-      }
-      if (privSubjectDesc.getPartSpec() != null) {
-        partSpec = new ArrayList<String>(privSubjectDesc.getPartSpec().values());
-      }
-      columns = privSubjectDesc.getColumns();
-      objectType = getPrivObjectType(privSubjectDesc);
-    }
-    return new HivePrivilegeObject(objectType, dbTable[0], dbTable[1], partSpec, columns, null);
   }
 
   /**
