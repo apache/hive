@@ -118,7 +118,7 @@ runner = """
 
 BASEDIR=$(dirname $0)
 slider stop %(name)s
-slider destroy %(name)s 
+slider destroy %(name)s --force
 slider install-package --name LLAP --package  $BASEDIR/llap-%(version)s.zip --replacepkg
 slider create %(name)s --resources $BASEDIR/resources.json --template $BASEDIR/appConfig.json
 """
