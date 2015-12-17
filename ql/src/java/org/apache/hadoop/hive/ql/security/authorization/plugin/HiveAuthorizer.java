@@ -23,9 +23,6 @@ import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPri
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.PrincipalDesc;
-import org.apache.hadoop.hive.ql.plan.PrivilegeDesc;
-import org.apache.hadoop.hive.ql.plan.PrivilegeObjectDesc;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 
 /**
@@ -212,14 +209,17 @@ public interface HiveAuthorizer {
    * @param hiveConf
    * @throws HiveAuthzPluginException
    */
-  public void applyAuthorizationConfigPolicy(HiveConf hiveConf) throws HiveAuthzPluginException;
+  void applyAuthorizationConfigPolicy(HiveConf hiveConf) throws HiveAuthzPluginException;
 
-  public List<HivePrincipal> getHivePrincipals(List<PrincipalDesc> principals)
-      throws HiveException;
+  /**
+   * Get a {@link HiveAuthorizationTranslator} implementation. See
+   * {@link HiveAuthorizationTranslator} for details. Return null if no
+   * customization is needed. Most implementations are expected to return null.
+   *
+   * @return
+   * @throws HiveException
+   */
+  HiveAuthorizationTranslator getHiveAuthorizationTranslator() throws HiveException;
 
-  public List<HivePrivilege> getHivePrivileges(List<PrivilegeDesc> privileges);
-
-  public HivePrivilegeObject getHivePrivilegeObject(PrivilegeObjectDesc privSubjectDesc)
-      throws HiveException;
 }
 
