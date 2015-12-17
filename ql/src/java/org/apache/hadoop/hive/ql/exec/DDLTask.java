@@ -665,8 +665,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       grantorPrinc = new HivePrincipal(grantOrRevokeRoleDDL.getGrantor(),
           AuthorizationUtils.getHivePrincipalType(grantOrRevokeRoleDDL.getGrantorType()));
     }
-    List<HivePrincipal> principals = getAuthorizationTranslator(authorizer).getHivePrincipals(
-        grantOrRevokeRoleDDL.getPrincipalDesc());
+    List<HivePrincipal> principals = AuthorizationUtils.getHivePrincipals(
+        grantOrRevokeRoleDDL.getPrincipalDesc(), getAuthorizationTranslator(authorizer));
     List<String> roles = grantOrRevokeRoleDDL.getRoles();
 
     boolean grantOption = grantOrRevokeRoleDDL.isGrantOption();
@@ -680,7 +680,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   private HiveAuthorizationTranslator getAuthorizationTranslator(HiveAuthorizer authorizer) {
     if(authorizer.getHiveAuthorizationTranslator() == null) {
-      return defaultAuthorizationTranslator ;
+      return defaultAuthorizationTranslator;
+    } else {
+      return authorizer.getHiveAuthorizationTranslator();
     }
   }
 
@@ -689,7 +691,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     HiveAuthorizer authorizer = getSessionAuthorizer();
     try {
       List<HivePrivilegeInfo> privInfos = authorizer.showPrivileges(
-          AuthorizationUtils.getHivePrincipal(showGrantDesc.getPrincipalDesc()),
+          getAuthorizationTranslator(authorizer).getHivePrincipal(showGrantDesc.getPrincipalDesc()),
           getAuthorizationTranslator(authorizer).getHivePrivilegeObject(showGrantDesc.getHiveObj()));
       boolean testMode = conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST);
       writeToFile(writeGrantInfo(privInfos, testMode), showGrantDesc.getResFile());
@@ -707,10 +709,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     HiveAuthorizer authorizer = getSessionAuthorizer();
 
     //Convert to object types used by the authorization plugin interface
-    List<HivePrincipal> hivePrincipals = getAuthorizationTranslator(authorizer).getHivePrincipals(
-        principals);
-    List<HivePrivilege> hivePrivileges = getAuthorizationTranslator(authorizer).getHivePrivileges(
-        privileges);
+    List<HivePrincipal> hivePrincipals = AuthorizationUtils.getHivePrincipals(
+        principals, getAuthorizationTranslator(authorizer));
+    List<HivePrivilege> hivePrivileges = AuthorizationUtils.getHivePrivileges(
+        privileges, getAuthorizationTranslator(authorizer));
     HivePrivilegeObject hivePrivObject = getAuthorizationTranslator(authorizer)
         .getHivePrivilegeObject(privSubjectDesc);
 

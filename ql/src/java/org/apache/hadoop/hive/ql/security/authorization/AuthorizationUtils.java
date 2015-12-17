@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.PrincipalDesc;
 import org.apache.hadoop.hive.ql.plan.PrivilegeDesc;
 import org.apache.hadoop.hive.ql.plan.PrivilegeObjectDesc;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizationTranslator;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrincipal;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrincipal.HivePrincipalType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilege;
@@ -111,27 +112,31 @@ public class AuthorizationUtils {
         HivePrivilegeObjectType.DATABASE;
   }
 
-  public static List<HivePrivilege> getHivePrivileges(List<PrivilegeDesc> privileges) {
-    List<HivePrivilege> hivePrivileges = new ArrayList<HivePrivilege>();
+  public static List<HivePrivilege> getHivePrivileges(List<PrivilegeDesc> privileges,
+      HiveAuthorizationTranslator trans) {
+  List<HivePrivilege> hivePrivileges = new ArrayList<HivePrivilege>();
     for(PrivilegeDesc privilege : privileges){
-      Privilege priv = privilege.getPrivilege();
-      hivePrivileges.add(
-          new HivePrivilege(priv.toString(), privilege.getColumns(), priv.getScopeList()));
+      hivePrivileges.add(trans.getHivePrivilege(privilege));
     }
     return hivePrivileges;
   }
 
-  public static List<HivePrincipal> getHivePrincipals(List<PrincipalDesc> principals)
-      throws HiveException {
+  static HivePrivilege getHivePrivilege(PrivilegeDesc privilege) {
+    Privilege priv = privilege.getPrivilege();
+    return new HivePrivilege(priv.toString(), privilege.getColumns(), priv.getScopeList());
+  }
 
-    ArrayList<HivePrincipal> hivePrincipals = new ArrayList<HivePrincipal>();
+  public static List<HivePrincipal> getHivePrincipals(List<PrincipalDesc> principals,
+      HiveAuthorizationTranslator trans)
+      throws HiveException {
+  ArrayList<HivePrincipal> hivePrincipals = new ArrayList<HivePrincipal>();
     for(PrincipalDesc principal : principals){
-      hivePrincipals.add(getHivePrincipal(principal));
+      hivePrincipals.add(trans.getHivePrincipal(principal));
     }
     return hivePrincipals;
   }
 
-  public static HivePrincipal getHivePrincipal(PrincipalDesc principal) throws HiveException {
+  static HivePrincipal getHivePrincipal(PrincipalDesc principal) throws HiveException {
     if (principal == null) {
       return null;
     }
@@ -169,7 +174,7 @@ public class AuthorizationUtils {
         privObj.getPartValues(), privObj.getColumnName());
   }
 
-  public static HivePrivilegeObject getHivePrivilegeObject(PrivilegeObjectDesc privSubjectDesc)
+  static HivePrivilegeObject getHivePrivilegeObject(PrivilegeObjectDesc privSubjectDesc)
       throws HiveException {
 
     // null means ALL for show grants, GLOBAL for grant/revoke

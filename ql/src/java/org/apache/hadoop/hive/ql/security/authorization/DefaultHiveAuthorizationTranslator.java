@@ -17,8 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.security.authorization;
 
-import java.util.List;
-
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.PrincipalDesc;
 import org.apache.hadoop.hive.ql.plan.PrivilegeDesc;
@@ -34,17 +32,21 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObje
  */
 public class DefaultHiveAuthorizationTranslator implements HiveAuthorizationTranslator {
 
-  public List<HivePrincipal> getHivePrincipals(List<PrincipalDesc> principals)
-      throws HiveException {
-    return AuthorizationUtils.getHivePrincipals(principals);
+  @Override
+  public HivePrincipal getHivePrincipal(PrincipalDesc principal) throws HiveException {
+    return AuthorizationUtils.getHivePrincipal(principal);
   }
 
-  public List<HivePrivilege> getHivePrivileges(List<PrivilegeDesc> privileges) {
-    return AuthorizationUtils.getHivePrivileges(privileges);
+  @Override
+  public HivePrivilege getHivePrivilege(PrivilegeDesc privilege) {
+    return AuthorizationUtils.getHivePrivilege(privilege);
   }
 
+  @Override
   public HivePrivilegeObject getHivePrivilegeObject(PrivilegeObjectDesc privSubjectDesc)
       throws HiveException {
     return AuthorizationUtils.getHivePrivilegeObject(privSubjectDesc);
   }
+
+
 }

@@ -69,5 +69,4 @@ public interface HiveAccessController {
       HiveAccessControlException;
 
   void applyAuthorizationConfigPolicy(HiveConf hiveConf) throws HiveAuthzPluginException;
-
 }

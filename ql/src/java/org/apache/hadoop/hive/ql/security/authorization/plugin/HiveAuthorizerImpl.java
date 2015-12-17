@@ -136,11 +136,15 @@ public class HiveAuthorizerImpl implements HiveAuthorizer {
     accessController.applyAuthorizationConfigPolicy(hiveConf);
   }
 
+  /* (non-Javadoc)
+   * @see org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer#getHiveAuthorizationTranslator()
+   *
+   * No customization of this API is done for most Authorization implementations. It is meant 
+   * to be used for special cases in Apache Sentry (incubating)
+   *
+   */
   @Override
   public HiveAuthorizationTranslator getHiveAuthorizationTranslator() throws HiveException {
-    // no customization of this API is done for most Authorization
-    // implementations.
-    // it is meant to be used for special cases in Apache Sentry (incubating)
     return null;
   }
 

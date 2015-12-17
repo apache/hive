@@ -17,8 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.security.authorization.plugin;
 
-import java.util.List;
-
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -38,11 +36,11 @@ import org.apache.hadoop.hive.ql.plan.PrivilegeObjectDesc;
 @Evolving
 public interface HiveAuthorizationTranslator {
 
-  public List<HivePrincipal> getHivePrincipals(List<PrincipalDesc> principals)
+  public HivePrincipal getHivePrincipal(PrincipalDesc principal)
       throws HiveException;
 
-  public List<HivePrivilege> getHivePrivileges(List<PrivilegeDesc> privileges);
+  public HivePrivilege getHivePrivilege(PrivilegeDesc privilege);
 
-  public HivePrivilegeObject getHivePrivilegeObject(PrivilegeObjectDesc privSubjectDesc)
+  public HivePrivilegeObject getHivePrivilegeObject(PrivilegeObjectDesc privObject)
       throws HiveException;
 }
