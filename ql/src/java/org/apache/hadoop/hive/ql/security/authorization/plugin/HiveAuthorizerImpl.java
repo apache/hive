@@ -144,7 +144,7 @@ public class HiveAuthorizerImpl implements HiveAuthorizer {
    *
    */
   @Override
-  public HiveAuthorizationTranslator getHiveAuthorizationTranslator() throws HiveException {
+  public HiveAuthorizationTranslator getHiveAuthorizationTranslator() throws HiveAuthzPluginException{
     return null;
   }
 
