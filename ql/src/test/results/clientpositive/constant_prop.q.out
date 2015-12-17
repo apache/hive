@@ -33,7 +33,7 @@ STAGE PLANS:
           Row Limit Per Split: 1
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions: named_struct(if(array_contains(array(1,2), 3), 'F1', 'B1'),1,if(array_contains(map_keys(map('b':'x')), 'b'), 'F2', 'B2'),2) (type: struct<b1:int,f2:int>), named_struct(if(array_contains(array(1,2), 3), 'F1', 'B1'),1,if(array_contains(map_keys(map('b':'x')), 'b'), 'F2', 'B2'),2).F2 (type: int)
+            expressions: named_struct(if(array_contains(array(1,2), 3), 'F1', 'B1'),1,if(array_contains(map_keys(map('b':'x')), 'b'), 'F2', 'B2'),2) (type: struct<b1:int,f2:int>), named_struct(if(array_contains(array(1,2), 3), 'F1', 'B1'),1,if(array_contains(map_keys(map('b':'x')), 'b'), 'F2', 'B2'),2).f2 (type: int)
             outputColumnNames: _col0, _col1
             Statistics: Num rows: 500 Data size: 30000 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink

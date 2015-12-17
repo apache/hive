@@ -35,7 +35,7 @@ STAGE PLANS:
               predicate: (lint[0] > 0) (type: boolean)
               Statistics: Num rows: 3 Data size: 837 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: lint[1] (type: int), lintstring[0].MYSTRING (type: string)
+                expressions: lint[1] (type: int), lintstring[0].mystring (type: string)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 3 Data size: 837 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator

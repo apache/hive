@@ -1242,7 +1242,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           VirtualColumn vc = vcs.next();
           colInfo = new ColumnInfo(vc.getName(), vc.getTypeInfo(), tableAlias, true,
               vc.getIsHidden());
-          rr.put(tableAlias, vc.getName(), colInfo);
+          rr.put(tableAlias, vc.getName().toLowerCase(), colInfo);
           cInfoLst.add(colInfo);
         }
 

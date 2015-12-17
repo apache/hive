@@ -547,7 +547,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           if(containsLeadLagUDF(expressionTree)) {
             throw new SemanticException(ErrorMsg.MISSING_OVER_CLAUSE.getMsg(functionName));
           }
-          aggregations.put(expressionTree.toStringTree().toLowerCase(), expressionTree);
+          aggregations.put(expressionTree.toStringTree(), expressionTree);
           FunctionInfo fi = FunctionRegistry.getFunctionInfo(functionName);
           if (!fi.isNative()) {
             unparseTranslator.addIdentifierTranslation((ASTNode) expressionTree
@@ -3452,7 +3452,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         (selExpr.getChildCount() == 3 &&
         selExpr.getChild(2).getType() == HiveParser.TOK_WINDOWSPEC)) {
       // return zz for "xx + yy AS zz"
-      colAlias = unescapeIdentifier(selExpr.getChild(1).getText());
+      colAlias = unescapeIdentifier(selExpr.getChild(1).getText().toLowerCase());
       colRef[0] = tabAlias;
       colRef[1] = colAlias;
       return colRef;
@@ -3461,7 +3461,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ASTNode root = (ASTNode) selExpr.getChild(0);
     if (root.getType() == HiveParser.TOK_TABLE_OR_COL) {
       colAlias =
-          BaseSemanticAnalyzer.unescapeIdentifier(root.getChild(0).getText());
+          BaseSemanticAnalyzer.unescapeIdentifier(root.getChild(0).getText().toLowerCase());
       colRef[0] = tabAlias;
       colRef[1] = colAlias;
       return colRef;
@@ -3479,7 +3479,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // Return zz for "xx.zz" and "xx.yy.zz"
       ASTNode col = (ASTNode) root.getChild(1);
       if (col.getType() == HiveParser.Identifier) {
-        colAlias = unescapeIdentifier(col.getText());
+        colAlias = unescapeIdentifier(col.getText().toLowerCase());
       }
     }
 
@@ -3489,7 +3489,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       String expr_flattened = root.toStringTree();
 
       // remove all TOK tokens
-      String expr_no_tok = expr_flattened.replaceAll("TOK_\\S+", "");
+      String expr_no_tok = expr_flattened.replaceAll("tok_\\S+", "");
 
       // remove all non alphanumeric letters, replace whitespace spans with underscore
       String expr_formatted = expr_no_tok.replaceAll("\\W", " ").trim().replaceAll("\\s+", "_");
@@ -3627,7 +3627,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         ASTNode selExprChild = (ASTNode) selExpr.getChild(i);
         switch (selExprChild.getType()) {
         case HiveParser.Identifier:
-          udtfColAliases.add(unescapeIdentifier(selExprChild.getText()));
+          udtfColAliases.add(unescapeIdentifier(selExprChild.getText().toLowerCase()));
           unparseTranslator.addIdentifierTranslation(selExprChild);
           break;
         case HiveParser.TOK_TABALIAS:
@@ -5199,6 +5199,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     List<ExprNodeDesc.ExprNodeDescEqualityWrapper> whereExpressions =
         new ArrayList<ExprNodeDesc.ExprNodeDescEqualityWrapper>();
     for (String dest : dests) {
+
       ASTNode whereExpr = parseInfo.getWhrForClause(dest);
 
       if (whereExpr != null) {
@@ -9248,7 +9249,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       List<VirtualColumn> vcList = new ArrayList<VirtualColumn>();
       while (vcs.hasNext()) {
         VirtualColumn vc = vcs.next();
-        rwsch.put(alias, vc.getName(), new ColumnInfo(vc.getName(),
+        rwsch.put(alias, vc.getName().toLowerCase(), new ColumnInfo(vc.getName(),
             vc.getTypeInfo(), alias, true, vc.getIsHidden()));
         vcList.add(vc);
       }

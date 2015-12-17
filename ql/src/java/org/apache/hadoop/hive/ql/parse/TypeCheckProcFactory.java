@@ -358,7 +358,7 @@ public class TypeCheckProcFactory {
       default:
         // HiveParser.identifier | HiveParse.KW_IF | HiveParse.KW_LEFT |
         // HiveParse.KW_RIGHT
-        str = BaseSemanticAnalyzer.unescapeIdentifier(expr.getText());
+        str = BaseSemanticAnalyzer.unescapeIdentifier(expr.getText().toLowerCase());
         break;
       }
       return new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, str);
