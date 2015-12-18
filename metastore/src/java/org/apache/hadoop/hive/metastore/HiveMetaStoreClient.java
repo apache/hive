@@ -287,13 +287,16 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
 
   @Override
   public boolean isCompatibleWith(HiveConf conf) {
-    if (currentMetaVars == null) {
+    // Make a copy of currentMetaVars, there is a race condition that
+	// currentMetaVars might be changed during the execution of the method
+    Map<String, String> currentMetaVarsCopy = currentMetaVars;
+    if (currentMetaVarsCopy == null) {
       return false; // recreate
     }
     boolean compatible = true;
     for (ConfVars oneVar : HiveConf.metaVars) {
       // Since metaVars are all of different types, use string for comparison
-      String oldVar = currentMetaVars.get(oneVar.varname);
+      String oldVar = currentMetaVarsCopy.get(oneVar.varname);
       String newVar = conf.get(oneVar.varname, "");
       if (oldVar == null ||
           (oneVar.isCaseSensitive() ? !oldVar.equals(newVar) : !oldVar.equalsIgnoreCase(newVar))) {
