@@ -30,6 +30,7 @@ import org.apache.commons.compress.utils.CharsetNames;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.HiveKey;
@@ -67,6 +68,7 @@ public class HiveSparkClientFactory {
 
   public static Map<String, String> initiateSparkConf(HiveConf hiveConf) {
     Map<String, String> sparkConf = new HashMap<String, String>();
+    HBaseConfiguration.addHbaseResources(hiveConf);
 
     // set default spark configurations.
     sparkConf.put("spark.master", SPARK_DEFAULT_MASTER);
@@ -139,7 +141,16 @@ public class HiveSparkClientFactory {
         if (value != null && !value.isEmpty()) {
           sparkConf.put("spark.hadoop." + propertyName, value);
         }
+      } else if (propertyName.startsWith("hbase")) {
+        // Add HBase related configuration to Spark because in security mode, Spark needs it
+        // to generate hbase delegation token for Spark. This is a temp solution to deal with
+        // Spark problem.
+        String value = hiveConf.get(propertyName);
+        sparkConf.put("spark.hadoop." + propertyName, value);
+        LOG.info(String.format(
+          "load HBase configuration (%s -> %s).", propertyName, value));
       }
+
       if (RpcConfiguration.HIVE_SPARK_RSC_CONFIGS.contains(propertyName)) {
         String value = RpcConfiguration.getValue(hiveConf, propertyName);
         sparkConf.put(propertyName, value);
