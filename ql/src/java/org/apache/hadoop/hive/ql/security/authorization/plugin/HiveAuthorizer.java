@@ -23,9 +23,6 @@ import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPri
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.PrincipalDesc;
-import org.apache.hadoop.hive.ql.plan.PrivilegeDesc;
-import org.apache.hadoop.hive.ql.plan.PrivilegeObjectDesc;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 
 /**
@@ -212,14 +209,23 @@ public interface HiveAuthorizer {
    * @param hiveConf
    * @throws HiveAuthzPluginException
    */
-  public void applyAuthorizationConfigPolicy(HiveConf hiveConf) throws HiveAuthzPluginException;
+  void applyAuthorizationConfigPolicy(HiveConf hiveConf) throws HiveAuthzPluginException;
 
-  public List<HivePrincipal> getHivePrincipals(List<PrincipalDesc> principals)
-      throws HiveException;
+  /**
+   * Get a {@link HiveAuthorizationTranslator} implementation. See
+   * {@link HiveAuthorizationTranslator} for details. Return null if no
+   * customization is needed. Most implementations are expected to return null.
+   *
+   * The java signature of the method makes it necessary to only return Object
+   * type so that older implementations can extend the interface to build
+   * against older versions of Hive that don't include this additional method
+   * and HiveAuthorizationTranslator class. However, if a non null value is
+   * returned, the Object has to be of type HiveAuthorizationTranslator
+   *
+   * @return
+   * @throws HiveException
+   */
+  Object getHiveAuthorizationTranslator() throws HiveAuthzPluginException;
 
-  public List<HivePrivilege> getHivePrivileges(List<PrivilegeDesc> privileges);
-
-  public HivePrivilegeObject getHivePrivilegeObject(PrivilegeObjectDesc privSubjectDesc)
-      throws HiveException;
 }
 
