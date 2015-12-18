@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.llap.cli;
 
 import java.io.OutputStreamWriter;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -45,6 +47,9 @@ import com.google.common.base.Preconditions;
 public class LlapServiceDriver {
 
   protected static final Logger LOG = LoggerFactory.getLogger(LlapServiceDriver.class.getName());
+  private static final String[] DEFAULT_AUX_CLASSES = new String[] {
+    "org.apache.hive.hcatalog.data.JsonSerDe", "org.apache.hadoop.hive.hbase.HBaseSerDe" };
+
   private final Configuration conf;
 
   public LlapServiceDriver() {
@@ -204,10 +209,44 @@ public class LlapServiceDriver {
     CompressionUtils.unTar(new Path(libDir, "tez.tar.gz").toString(), libDir.toString(), true);
     lfs.delete(new Path(libDir, "tez.tar.gz"), false);
 
-    // TODO: aux jars (like compression libs)
-
     lfs.copyFromLocalFile(new Path(Utilities.jarFinderGetJar(LlapInputFormat.class)), libDir);
     lfs.copyFromLocalFile(new Path(Utilities.jarFinderGetJar(HiveInputFormat.class)), libDir);
+
+    // copy default aux classes (json/hbase)
+
+    for (String className : DEFAULT_AUX_CLASSES) {
+      String jarPath = null;
+      boolean hasException = false;
+      try {
+        Class<?> auxClass = Class.forName(className);
+        jarPath = Utilities.jarFinderGetJar(auxClass);
+      } catch (Throwable t) {
+        hasException = true;
+        String err =
+            "Cannot find a jar for [" + className + "] due to an exception (" + t.getMessage()
+                + "); not packaging the jar";
+        LOG.error(err, t);
+        System.err.println(err);
+      }
+      if (jarPath != null) {
+        lfs.copyFromLocalFile(new Path(jarPath), libDir);
+      } else if (!hasException) {
+        String err = "Cannot find a jar for [" + className + "]; not packaging the jar";
+        LOG.error(err);
+        System.err.println(err);
+      }
+    }
+
+    String auxJars = options.getAuxJars();
+    if (auxJars != null && !auxJars.isEmpty()) {
+      // TODO: transitive dependencies warning?
+      String[] jarPaths = auxJars.split(",");
+      for (String jarPath : jarPaths) {
+        if (!jarPath.isEmpty()) {
+          lfs.copyFromLocalFile(new Path(jarPath), libDir);
+        }
+      }
+    }
 
     Path confPath = new Path(tmpDir, "conf");
     lfs.mkdirs(confPath);
