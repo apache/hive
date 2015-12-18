@@ -143,7 +143,7 @@ public class MiniLlapCluster extends AbstractService {
   @Override
   public void serviceInit(Configuration conf) {
     llapDaemon = new LlapDaemon(conf, numExecutorsPerService, execBytesPerService, llapIoEnabled,
-        ioIsDirect, ioBytesPerService, localDirs, 0, 0);
+        ioIsDirect, ioBytesPerService, localDirs, 0, 0, 0);
     llapDaemon.init(conf);
   }
 

@@ -1240,14 +1240,14 @@ STAGE PLANS:
                   Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key is not null and (key <> 0)) (type: boolean)
-                    Statistics: Num rows: 19 Data size: 2148 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: (key / key) (type: decimal(38,24))
                       outputColumnNames: _col0
-                      Statistics: Num rows: 19 Data size: 2148 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 19 Data size: 2148 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1322,14 +1322,14 @@ STAGE PLANS:
                   Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (value is not null and (value <> 0)) (type: boolean)
-                    Statistics: Num rows: 19 Data size: 2148 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: (key / CAST( value AS decimal(10,0))) (type: decimal(31,21))
                       outputColumnNames: _col0
-                      Statistics: Num rows: 19 Data size: 2148 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 19 Data size: 2148 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1394,14 +1394,14 @@ STAGE PLANS:
                   Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (value is not null and (value <> 0)) (type: boolean)
-                    Statistics: Num rows: 19 Data size: 2148 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: (UDFToDouble(key) / (UDFToDouble(value) / 2.0)) (type: double)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 19 Data size: 2148 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 19 Data size: 2148 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

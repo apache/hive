@@ -42,11 +42,11 @@ STAGE PLANS:
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((UDFToDouble(key) < 200.0) and UDFToDouble(key) is not null) (type: boolean)
-              Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 (UDFToDouble(_col2) + UDFToDouble(_col0)) (type: double)
@@ -90,7 +90,7 @@ STAGE PLANS:
                   Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (UDFToDouble(_col2) + UDFToDouble(_col0)) is not null (type: boolean)
-                    Statistics: Num rows: 91 Data size: 969 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
@@ -98,11 +98,11 @@ STAGE PLANS:
                         0 (UDFToDouble(_col2) + UDFToDouble(_col0)) (type: double)
                         1 UDFToDouble(_col0) (type: double)
                       outputColumnNames: _col1, _col2
-                      Statistics: Num rows: 100 Data size: 1065 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 200 Data size: 2132 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: hash(_col2,_col1) (type: int)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 100 Data size: 1065 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 200 Data size: 2132 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           aggregations: sum(_col0)
                           mode: hash

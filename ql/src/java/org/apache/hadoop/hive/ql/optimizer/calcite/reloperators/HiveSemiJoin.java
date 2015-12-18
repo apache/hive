@@ -28,7 +28,6 @@ import org.apache.calcite.rel.InvalidRelException;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.JoinInfo;
 import org.apache.calcite.rel.core.JoinRelType;
-import org.apache.calcite.rel.core.RelFactories.SemiJoinFactory;
 import org.apache.calcite.rel.core.SemiJoin;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataTypeField;
@@ -40,8 +39,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
 import com.google.common.collect.ImmutableList;
 
 public class HiveSemiJoin extends SemiJoin implements HiveRelNode {
-
-  public static final SemiJoinFactory HIVE_SEMIJOIN_FACTORY = new HiveSemiJoinFactoryImpl();
 
   private final RexNode joinFilter;
 
@@ -108,19 +105,4 @@ public class HiveSemiJoin extends SemiJoin implements HiveRelNode {
     return RelMetadataQuery.getNonCumulativeCost(this);
   }
 
-  /**
-   * Implementation of {@link SemiJoinFactory} that returns
-   * {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin}
-   * .
-   */
-  private static class HiveSemiJoinFactoryImpl implements SemiJoinFactory {
-    @Override
-    public RelNode createSemiJoin(RelNode left, RelNode right,
-            RexNode condition) {
-      final JoinInfo joinInfo = JoinInfo.of(left, right, condition);
-      final RelOptCluster cluster = left.getCluster();
-      return getSemiJoin(cluster, left.getTraitSet(), left, right, condition,
-          joinInfo.leftKeys, joinInfo.rightKeys);
-    }
-  }
 }

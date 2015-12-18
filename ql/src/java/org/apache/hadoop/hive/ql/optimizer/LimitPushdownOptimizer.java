@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.LimitDesc;
 
 /**
  * Make RS calculate top-K selection for limit clause.
@@ -85,7 +86,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
  * REDUCER : 10(b,d)-20(l)-30(c,k,o)-40(j,m)-50(n)
  * LIMIT 3 : 10(b,d)-20(l)
  */
-public class LimitPushdownOptimizer implements Transform {
+public class LimitPushdownOptimizer extends Transform {
 
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
@@ -130,7 +131,9 @@ public class LimitPushdownOptimizer implements Transform {
           return false;
         }
         LimitOperator limit = (LimitOperator) nd;
-        rs.getConf().setTopN(limit.getConf().getLimit());
+        LimitDesc limitDesc = limit.getConf();
+        Integer offset = limitDesc.getOffset();
+        rs.getConf().setTopN(limitDesc.getLimit() + ((offset == null) ? 0 : offset));
         rs.getConf().setTopNMemoryUsage(((LimitPushdownContext) procCtx).threshold);
         if (rs.getNumChild() == 1 && rs.getChildren().get(0) instanceof GroupByOperator) {
           rs.getConf().setMapGroupBy(true);

@@ -23,8 +23,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
-import junit.framework.TestCase;
-
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -36,6 +34,8 @@ import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.JobConf;
+
+import junit.framework.TestCase;
 
 /**
  * TestPlan.
@@ -83,7 +83,7 @@ public class TestPlan extends TestCase {
       JobConf job = new JobConf(TestPlan.class);
       // serialize the configuration once ..
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      Utilities.serializePlan(mrwork, baos, job);
+      SerializationUtilities.serializePlan(mrwork, baos);
       baos.close();
       String v1 = baos.toString();
 
@@ -101,7 +101,7 @@ public class TestPlan extends TestCase {
 
       // serialize again
       baos.reset();
-      Utilities.serializePlan(mrwork2, baos, job);
+      SerializationUtilities.serializePlan(mrwork2, baos);
       baos.close();
 
       // verify that the two are equal

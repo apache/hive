@@ -18,12 +18,12 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
 import org.apache.calcite.rel.rules.ProjectMergeRule;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 
 public class HiveProjectMergeRule extends ProjectMergeRule {
   public static final HiveProjectMergeRule INSTANCE = new HiveProjectMergeRule();
 
   public HiveProjectMergeRule() {
-    super(true, HiveProject.DEFAULT_PROJECT_FACTORY);
+    super(true, HiveRelFactories.HIVE_BUILDER);
   }
 }

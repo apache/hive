@@ -32,7 +32,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
-import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.index.AggregateIndexHandler;
@@ -44,7 +43,6 @@ import org.apache.hadoop.hive.ql.optimizer.IndexUtils;
 import org.apache.hadoop.hive.ql.optimizer.Transform;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
 
 /**
@@ -89,7 +87,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
  *  For test cases, @see ql_rewrite_gbtoidx.q
  */
 
-public class RewriteGBUsingIndex implements Transform {
+public class RewriteGBUsingIndex extends Transform {
   private ParseContext parseContext;
   private Hive hiveDb;
   private HiveConf hiveConf;
@@ -160,9 +158,9 @@ public class RewriteGBUsingIndex implements Transform {
      * if the optimization can be applied. If yes, we add the name of the top table to
      * the tsOpToProcess to apply rewrite later on.
      * */
-    for (Map.Entry<String, Operator<?>> entry : parseContext.getTopOps().entrySet()) {
+    for (Map.Entry<String, TableScanOperator> entry : parseContext.getTopOps().entrySet()) {
       String alias = entry.getKey();
-      TableScanOperator topOp = (TableScanOperator) entry.getValue();
+      TableScanOperator topOp = entry.getValue();
       Table table = topOp.getConf().getTableMetadata();
       List<Index> indexes = tableToIndex.get(table);
       if (indexes.isEmpty()) {
@@ -230,16 +228,14 @@ public class RewriteGBUsingIndex implements Transform {
     supportedIndexes.add(AggregateIndexHandler.class.getName());
 
     // query the metastore to know what columns we have indexed
-    Collection<Operator<? extends OperatorDesc>> topTables = parseContext.getTopOps().values();
+    Collection<TableScanOperator> topTables = parseContext.getTopOps().values();
     Map<Table, List<Index>> indexes = new HashMap<Table, List<Index>>();
-    for (Operator<? extends OperatorDesc> op : topTables) {
-      if (op instanceof TableScanOperator) {
-        TableScanOperator tsOP = (TableScanOperator) op;
-        List<Index> tblIndexes = IndexUtils.getIndexes(tsOP.getConf().getTableMetadata(),
-            supportedIndexes);
-        if (tblIndexes.size() > 0) {
-          indexes.put(tsOP.getConf().getTableMetadata(), tblIndexes);
-        }
+    for (TableScanOperator op : topTables) {
+      TableScanOperator tsOP = op;
+      List<Index> tblIndexes = IndexUtils.getIndexes(tsOP.getConf().getTableMetadata(),
+          supportedIndexes);
+      if (tblIndexes.size() > 0) {
+        indexes.put(tsOP.getConf().getTableMetadata(), tblIndexes);
       }
     }
 

@@ -54,7 +54,7 @@ import org.apache.hadoop.hive.ql.plan.FilterDesc.SampleDesc;
  * The transformation step that does sample pruning.
  *
  */
-public class SamplePruner implements Transform {
+public class SamplePruner extends Transform {
 
   /**
    * SamplePrunerCtx.

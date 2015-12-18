@@ -56,7 +56,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 /**
  * propagates filters to other aliases based on join condition
  */
-public class PredicateTransitivePropagate implements Transform {
+public class PredicateTransitivePropagate extends Transform {
 
   private ParseContext pGraphContext;
 

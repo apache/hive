@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.txn;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.jolbox.bonecp.BoneCPConfig;
 import com.jolbox.bonecp.BoneCPDataSource;
 import org.apache.commons.dbcp.ConnectionFactory;
@@ -528,7 +529,7 @@ public class TxnHandler {
         else {
           heartbeatLock(dbConn, extLockId);
         }
-        dbConn = getDbConn(Connection.TRANSACTION_SERIALIZABLE);
+        dbConn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
         return checkLock(dbConn, extLockId);
       } catch (SQLException e) {
         LOG.debug("Going to rollback");
@@ -936,22 +937,24 @@ public class TxnHandler {
   /**
    * For testing only, do not use.
    */
+  @VisibleForTesting
   int numLocksInLockTable() throws SQLException, MetaException {
-    Connection dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+    Connection dbConn = null;
     Statement stmt = null;
+    ResultSet rs = null;
     try {
+      dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
       stmt = dbConn.createStatement();
       String s = "select count(*) from HIVE_LOCKS";
       LOG.debug("Going to execute query <" + s + ">");
-      ResultSet rs = stmt.executeQuery(s);
+      rs = stmt.executeQuery(s);
       rs.next();
       int rc = rs.getInt(1);
       // Necessary to clean up the transaction in the db.
       dbConn.rollback();
       return rc;
     } finally {
-      closeDbConn(dbConn);
-      closeStmt(stmt);
+      close(rs, stmt, dbConn);
     }
   }
 
@@ -978,7 +981,8 @@ public class TxnHandler {
         return dbConn;
       } catch (SQLException e){
         if ((--rc) <= 0) throw e;
-        LOG.error("There is a problem with a connection from the pool, retrying", e);
+        LOG.error("There is a problem with a connection from the pool, retrying(rc=" + rc + "): " +
+          getMessage(e), e);
       }
     }
   }
@@ -1093,6 +1097,10 @@ public class TxnHandler {
         } else {
           LOG.error("Fatal error. Retry limit (" + retryLimit + ") reached. Last error: " + getMessage(e));
         }
+      }
+      else {
+        //make sure we know we saw an error that we don't recognize
+        LOG.info("Non-retryable error: " + getMessage(e));
       }
     }
     finally {
@@ -1572,7 +1580,7 @@ public class TxnHandler {
         return checkLock(dbConn, extLockId);
       } catch (NoSuchLockException e) {
         // This should never happen, as we just added the lock id
-        throw new MetaException("Couldn't find a lock we just created!");
+        throw new MetaException("Couldn't find a lock we just created! " + e.getMessage());
       } finally {
         close(rs);
         closeStmt(stmt);
@@ -1701,7 +1709,7 @@ public class TxnHandler {
         if (index == -1) {
           LOG.debug("Going to rollback");
           dbConn.rollback();
-          throw new MetaException("How did we get here, we heartbeated our lock before we started!");
+          throw new MetaException("How did we get here, we heartbeated our lock before we started! ( " + info + ")");
         }
 
 
@@ -1953,7 +1961,7 @@ public class TxnHandler {
       }
       if (!sawAtLeastOne) {
         throw new MetaException("This should never happen!  We already " +
-          "checked the lock existed but now we can't find it!");
+          "checked the lock(" + JavaUtils.lockIdToString(extLockId) + ") existed but now we can't find it!");
       }
       return ourLockInfo;
     } finally {
@@ -1967,17 +1975,50 @@ public class TxnHandler {
   // open transactions.
   private void timeOutLocks(Connection dbConn, long now) {
     Statement stmt = null;
+    ResultSet rs = null;
     try {
       stmt = dbConn.createStatement();
-      // Remove any timed out locks from the table.
-      String s = "delete from HIVE_LOCKS where hl_last_heartbeat < " +
-        (now - timeout) + " and hl_txnid = 0";//when txnid is > 0, the lock is
+      long maxHeartbeatTime = now - timeout;
+      //doing a SELECT first is less efficient but makes it easier to debug things
+      String s = "select distinct hl_lock_ext_id from HIVE_LOCKS where hl_last_heartbeat < " +
+        maxHeartbeatTime + " and hl_txnid = 0";//when txnid is <> 0, the lock is
       //associated with a txn and is handled by performTimeOuts()
       //want to avoid expiring locks for a txn w/o expiring the txn itself
-      LOG.debug("Going to execute update <" + s + ">");
-      int deletedLocks = stmt.executeUpdate(s);
+      List<Long> extLockIDs = new ArrayList<>();
+      rs = stmt.executeQuery(s);
+      while(rs.next()) {
+        extLockIDs.add(rs.getLong(1));
+      }
+      rs.close();
+      dbConn.commit();
+      if(extLockIDs.size() <= 0) {
+        return;
+      }
+      int deletedLocks = 0;
+      //include same hl_last_heartbeat condition in case someone heartbeated since the select
+      s = "delete from HIVE_LOCKS where hl_last_heartbeat < " + maxHeartbeatTime + " and hl_txnid = 0" +
+        " and hl_lock_ext_id IN (";
+      int numWholeBatches = extLockIDs.size() / TIMED_OUT_TXN_ABORT_BATCH_SIZE;
+      for(int i = 0; i < numWholeBatches; i++) {
+        StringBuilder sb = new StringBuilder(s);
+        for(int j = i * TIMED_OUT_TXN_ABORT_BATCH_SIZE; j < (i + 1) * TIMED_OUT_TXN_ABORT_BATCH_SIZE; j++) {
+          sb.append(extLockIDs.get(j)).append(",");
+        }
+        sb.setCharAt(sb.length() - 1, ')');
+        LOG.debug("Removing expired locks via: " + sb.toString());
+        deletedLocks += stmt.executeUpdate(sb.toString());
+        dbConn.commit();
+      }
+      StringBuilder sb = new StringBuilder(s);
+      for(int i = numWholeBatches * TIMED_OUT_TXN_ABORT_BATCH_SIZE; i < extLockIDs.size(); i++) {
+        sb.append(extLockIDs.get(i)).append(",");
+      }
+      sb.setCharAt(sb.length() - 1, ')');
+      LOG.debug("Removing expired locks via: " + sb.toString());
+      deletedLocks += stmt.executeUpdate(sb.toString());
       if(deletedLocks > 0) {
-        LOG.info("Deleted " + deletedLocks + " locks from HIVE_LOCKS due to timeout");
+        LOG.info("Deleted " + deletedLocks + " ext locks from HIVE_LOCKS due to timeout (vs. " +
+          extLockIDs.size() + " found. List: " + extLockIDs + ") maxHeartbeatTime=" + maxHeartbeatTime);
       }
       LOG.debug("Going to commit");
       dbConn.commit();
@@ -1988,6 +2029,7 @@ public class TxnHandler {
     catch(Exception ex) {
       LOG.error("Failed to purge timedout locks due to: " + ex.getMessage(), ex);
     } finally {
+      close(rs);
       closeStmt(stmt);
     }
   }
@@ -2118,6 +2160,9 @@ public class TxnHandler {
     if ("bonecp".equals(connectionPooler)) {
       BoneCPConfig config = new BoneCPConfig();
       config.setJdbcUrl(driverUrl);
+      //if we are waiting for connection for 60s, something is really wrong
+      //better raise an error than hang forever
+      config.setConnectionTimeoutInMs(60000);
       config.setMaxConnectionsPerPartition(10);
       config.setPartitionCount(1);
       config.setUser(user);
@@ -2257,7 +2302,8 @@ public class TxnHandler {
         //in MSSQL this means Communication Link Failure
         return true;
       }
-      if("ORA-08176".equalsIgnoreCase(sqlException.getSQLState())) {
+      if("ORA-08176".equalsIgnoreCase(sqlException.getSQLState()) ||
+        sqlException.getMessage().contains("consistent read failure; rollback data not available")) {
         return true;
       }
       //see also https://issues.apache.org/jira/browse/HIVE-9938
@@ -2276,9 +2322,14 @@ public class TxnHandler {
    */
   private int getRequiredIsolationLevel() throws MetaException, SQLException {
     if(dbProduct == null) {
-      Connection tmp = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
-      determineDatabaseProduct(tmp);
-      closeDbConn(tmp);
+      Connection tmp = null;
+      try {
+        tmp = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        determineDatabaseProduct(tmp);
+      }
+      finally {
+        closeDbConn(tmp);
+      }
     }
     switch (dbProduct) {
       case DERBY:

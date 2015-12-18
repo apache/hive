@@ -42,7 +42,7 @@ import org.apache.hadoop.hive.ql.optimizer.Transform;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
-public class AnnotateWithStatistics implements Transform {
+public class AnnotateWithStatistics extends Transform {
 
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {

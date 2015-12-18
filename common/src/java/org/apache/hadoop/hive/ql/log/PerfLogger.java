@@ -39,6 +39,7 @@ public class PerfLogger {
   public static final String COMPILE = "compile";
   public static final String PARSE = "parse";
   public static final String ANALYZE = "semanticAnalyze";
+  public static final String OPTIMIZER = "optimizer";
   public static final String DO_AUTHORIZATION = "doAuthorization";
   public static final String DRIVER_EXECUTE = "Driver.execute";
   public static final String INPUT_SUMMARY = "getInputSummary";
@@ -116,10 +117,12 @@ public class PerfLogger {
    * @param method method or ID that identifies this perf log element.
    */
   public void PerfLogBegin(String callerName, String method) {
-    long startTime = System.currentTimeMillis();
-    LOG.info("<PERFLOG method=" + method + " from=" + callerName + ">");
-    startTimes.put(method, new Long(startTime));
-    beginMetrics(method);
+    if (LOG.isDebugEnabled()) {
+      long startTime = System.currentTimeMillis();
+      LOG.debug("<PERFLOG method=" + method + " from=" + callerName + ">");
+      startTimes.put(method, new Long(startTime));
+      beginMetrics(method);
+    }
   }
   /**
    * Call this function in correspondence of PerfLogBegin to mark the end of the measurement.
@@ -138,31 +141,34 @@ public class PerfLogger {
    * @return long duration  the difference between now and startTime, or -1 if startTime is null
    */
   public long PerfLogEnd(String callerName, String method, String additionalInfo) {
-    Long startTime = startTimes.get(method);
-    long endTime = System.currentTimeMillis();
-    long duration = -1;
+    if (LOG.isDebugEnabled()) {
+      Long startTime = startTimes.get(method);
+      long endTime = System.currentTimeMillis();
+      long duration = -1;
 
-    endTimes.put(method, new Long(endTime));
+      endTimes.put(method, new Long(endTime));
 
-    StringBuilder sb = new StringBuilder("</PERFLOG method=").append(method);
-    if (startTime != null) {
-      sb.append(" start=").append(startTime);
+      StringBuilder sb = new StringBuilder("</PERFLOG method=").append(method);
+      if (startTime != null) {
+        sb.append(" start=").append(startTime);
+      }
+      sb.append(" end=").append(endTime);
+      if (startTime != null) {
+        duration = endTime - startTime.longValue();
+        sb.append(" duration=").append(duration);
+      }
+      sb.append(" from=").append(callerName);
+      if (additionalInfo != null) {
+        sb.append(" ").append(additionalInfo);
+      }
+      sb.append(">");
+      LOG.debug(sb.toString());
+
+      endMetrics(method);
+
+      return duration;
     }
-    sb.append(" end=").append(endTime);
-    if (startTime != null) {
-      duration = endTime - startTime.longValue();
-      sb.append(" duration=").append(duration);
-    }
-    sb.append(" from=").append(callerName);
-    if (additionalInfo != null) {
-      sb.append(" ").append(additionalInfo);
-    }
-    sb.append(">");
-    LOG.info(sb.toString());
-
-    endMetrics(method);
-
-    return duration;
+    return -1;
   }
 
   public Long getStartTime(String method) {

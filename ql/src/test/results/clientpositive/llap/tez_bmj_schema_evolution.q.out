@@ -89,11 +89,11 @@ STAGE PLANS:
                   Statistics: Num rows: 1000 Data size: 52312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 500 Data size: 26156 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1000 Data size: 52312 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int), value (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 500 Data size: 26156 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1000 Data size: 52312 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -103,12 +103,12 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1
                         input vertices:
                           1 Map 3
-                        Statistics: Num rows: 550 Data size: 28771 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1100 Data size: 57543 Basic stats: COMPLETE Column stats: NONE
                         HybridGraceHashJoin: true
                         Reduce Output Operator
                           key expressions: _col0 (type: int)
                           sort order: +
-                          Statistics: Num rows: 550 Data size: 28771 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1100 Data size: 57543 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col1 (type: string)
             Execution mode: llap
         Map 3 
@@ -118,16 +118,16 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
         Reducer 2 
             Execution mode: uber
@@ -135,10 +135,10 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 550 Data size: 28771 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1100 Data size: 57543 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 550 Data size: 28771 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1100 Data size: 57543 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

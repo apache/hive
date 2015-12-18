@@ -57,8 +57,9 @@ public class HiveSortJoinReduceRule extends RelOptRule {
     final HiveSortLimit sortLimit = call.rel(0);
     final HiveJoin join = call.rel(1);
 
-    // If sort does not contain a limit operation, we bail out
-    if (!HiveCalciteUtil.limitRelNode(sortLimit)) {
+    // If sort does not contain a limit operation or limit is 0, we bail out
+    if (!HiveCalciteUtil.limitRelNode(sortLimit) ||
+            RexLiteral.intValue(sortLimit.fetch) == 0) {
       return false;
     }
 

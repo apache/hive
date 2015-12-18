@@ -121,12 +121,16 @@ public class SparkUtilities {
   public static SparkSession getSparkSession(HiveConf conf,
       SparkSessionManager sparkSessionManager) throws HiveException {
     SparkSession sparkSession = SessionState.get().getSparkSession();
+    HiveConf sessionConf = SessionState.get().getConf();
 
     // Spark configurations are updated close the existing session
-    if (conf.getSparkConfigUpdated()) {
+    // In case of async queries or confOverlay is not empty,
+    // sessionConf and conf are different objects
+    if (sessionConf.getSparkConfigUpdated() || conf.getSparkConfigUpdated()) {
       sparkSessionManager.closeSession(sparkSession);
       sparkSession =  null;
       conf.setSparkConfigUpdated(false);
+      sessionConf.setSparkConfigUpdated(false);
     }
     sparkSession = sparkSessionManager.getSession(sparkSession, conf, true);
     SessionState.get().setSparkSession(sparkSession);

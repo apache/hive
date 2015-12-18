@@ -215,7 +215,8 @@ public class MapReduceCompiler extends TaskCompiler {
           //
           long sizePerRow = HiveConf.getLongVar(conf,
               HiveConf.ConfVars.HIVELIMITMAXROWSIZE);
-          estimatedInput = globalLimitCtx.getGlobalLimit() * sizePerRow;
+          estimatedInput = (globalLimitCtx.getGlobalOffset() +
+              globalLimitCtx.getGlobalLimit()) * sizePerRow;
           long minSplitSize = HiveConf.getLongVar(conf,
               HiveConf.ConfVars.MAPREDMINSPLITSIZE);
           long estimatedNumMap = inputSummary.getLength() / minSplitSize + 1;

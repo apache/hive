@@ -34,18 +34,15 @@ STAGE PLANS:
                 expressions: key (type: string), value (type: string)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 18 Data size: 191 Basic stats: COMPLETE Column stats: NONE
-                Filter Operator
-                  predicate: ((_col0 > '4') and (_col1 > 'val_4')) (type: boolean)
-                  Statistics: Num rows: 2 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                  Union
-                    Statistics: Num rows: 4 Data size: 42 Basic stats: COMPLETE Column stats: NONE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 4 Data size: 42 Basic stats: COMPLETE Column stats: NONE
-                      table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                Union
+                  Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -56,18 +53,15 @@ STAGE PLANS:
                 expressions: key (type: string), value (type: string)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 18 Data size: 191 Basic stats: COMPLETE Column stats: NONE
-                Filter Operator
-                  predicate: ((_col0 > '4') and (_col1 > 'val_4')) (type: boolean)
-                  Statistics: Num rows: 2 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                  Union
-                    Statistics: Num rows: 4 Data size: 42 Basic stats: COMPLETE Column stats: NONE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 4 Data size: 42 Basic stats: COMPLETE Column stats: NONE
-                      table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                Union
+                  Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator

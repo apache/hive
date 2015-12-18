@@ -59,7 +59,7 @@ STAGE PLANS:
             alias: foo
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (((orders <> 'blah') and id is not null) and line_id is not null) (type: boolean)
+              predicate: (((orders <> 'blah') and line_id is not null) and id is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: id (type: int), line_id (type: int)
@@ -74,7 +74,7 @@ STAGE PLANS:
             alias: bar
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (id is not null and line_id is not null) (type: boolean)
+              predicate: (line_id is not null and id is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: id (type: int), line_id (type: int)
@@ -89,7 +89,7 @@ STAGE PLANS:
             alias: split
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (id is not null and line_id is not null) (type: boolean)
+              predicate: (line_id is not null and id is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: id (type: int), line_id (type: int)
@@ -104,7 +104,7 @@ STAGE PLANS:
             alias: forecast
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (id is not null and line_id is not null) (type: boolean)
+              predicate: (line_id is not null and id is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: id (type: int), line_id (type: int)

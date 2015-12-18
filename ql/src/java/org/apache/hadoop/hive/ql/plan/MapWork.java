@@ -372,7 +372,7 @@ public class MapWork extends BaseWork {
 
   @Override
   @Explain(displayName = "Map Operator Tree", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public Set<Operator<?>> getAllRootOperators() {
+  public Set<Operator<? extends OperatorDesc>> getAllRootOperators() {
     Set<Operator<?>> opSet = new LinkedHashSet<Operator<?>>();
 
     for (Operator<?> op : getAliasToWork().values()) {

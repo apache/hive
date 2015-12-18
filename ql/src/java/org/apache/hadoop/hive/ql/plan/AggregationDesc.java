@@ -33,10 +33,6 @@ import org.apache.hadoop.util.ReflectionUtils;
  */
 public class AggregationDesc implements java.io.Serializable {
 
-  static {
-    PTFUtils.makeTransient(AggregationDesc.class, "genericUDAFEvaluator");
-  }
-
   private static final long serialVersionUID = 1L;
   private String genericUDAFName;
 

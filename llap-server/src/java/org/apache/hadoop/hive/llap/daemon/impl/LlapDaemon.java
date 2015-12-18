@@ -38,7 +38,7 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceSta
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.TerminateFragmentRequestProto;
 import org.apache.hadoop.hive.llap.daemon.services.impl.LlapWebServices;
-import org.apache.hadoop.hive.llap.io.api.LlapIoProxy;
+import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
 import org.apache.hadoop.hive.llap.metrics.LlapMetricsSystem;
 import org.apache.hadoop.hive.llap.metrics.MetricsUtils;
@@ -80,19 +80,22 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
   private final String[] localDirs;
 
   // TODO Not the best way to share the address
-  private final AtomicReference<InetSocketAddress> address = new AtomicReference<>();
+  private final AtomicReference<InetSocketAddress> srvAddress = new AtomicReference<>(),
+      mngAddress = new AtomicReference<>();
   private final AtomicReference<Integer> shufflePort = new AtomicReference<>();
 
   public LlapDaemon(Configuration daemonConf, int numExecutors, long executorMemoryBytes,
-      boolean ioEnabled, boolean isDirectCache, long ioMemoryBytes, String[] localDirs, int rpcPort,
-      int shufflePort) {
+      boolean ioEnabled, boolean isDirectCache, long ioMemoryBytes, String[] localDirs, int srvPort,
+      int mngPort, int shufflePort) {
     super("LlapDaemon");
 
     printAsciiArt();
 
     Preconditions.checkArgument(numExecutors > 0);
-    Preconditions.checkArgument(rpcPort == 0 || (rpcPort > 1024 && rpcPort < 65536),
-        "RPC Port must be between 1025 and 65535, or 0 automatic selection");
+    Preconditions.checkArgument(srvPort == 0 || (srvPort > 1024 && srvPort < 65536),
+        "Server RPC Port must be between 1025 and 65535, or 0 automatic selection");
+    Preconditions.checkArgument(mngPort == 0 || (mngPort > 1024 && mngPort < 65536),
+        "Management RPC Port must be between 1025 and 65535, or 0 automatic selection");
     Preconditions.checkArgument(localDirs != null && localDirs.length > 0,
         "Work dirs must be specified");
     Preconditions.checkArgument(shufflePort == 0 || (shufflePort > 1024 && shufflePort < 65536),
@@ -111,7 +114,8 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
         daemonConf, ConfVars.LLAP_DAEMON_TASK_SCHEDULER_ENABLE_PREEMPTION);
     LOG.info("Attempting to start LlapDaemonConf with the following configuration: " +
         "numExecutors=" + numExecutors +
-        ", rpcListenerPort=" + rpcPort +
+        ", rpcListenerPort=" + srvPort +
+        ", mngListenerPort=" + mngPort +
         ", workDirs=" + Arrays.toString(localDirs) +
         ", shufflePort=" + shufflePort +
         ", executorMemory=" + executorMemoryBytes +
@@ -154,11 +158,10 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
         " sessionId: " + sessionId);
 
 
-    this.amReporter = new AMReporter(address, new QueryFailedHandlerProxy(), daemonConf);
+    this.amReporter = new AMReporter(srvAddress, new QueryFailedHandlerProxy(), daemonConf);
 
-
-    this.server = new LlapDaemonProtocolServerImpl(numHandlers, this, address, rpcPort);
-
+    this.server = new LlapDaemonProtocolServerImpl(
+        numHandlers, this, srvAddress, mngAddress, srvPort, mngPort);
 
     this.containerRunner = new ContainerRunnerImpl(daemonConf,
         numExecutors,
@@ -166,7 +169,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
         enablePreemption,
         localDirs,
         this.shufflePort,
-        address,
+        srvAddress,
         executorMemoryBytes,
         metrics,
         amReporter);
@@ -227,8 +230,8 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
   @Override
   public void serviceInit(Configuration conf) throws Exception {
     super.serviceInit(conf);
-    LlapIoProxy.setDaemon(true);
-    LlapIoProxy.initializeLlapIo(conf);
+    LlapProxy.setDaemon(true);
+    LlapProxy.initializeLlapIo(conf);
   }
 
   @Override
@@ -262,7 +265,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
       LlapMetricsSystem.shutdown();
     }
 
-    LlapIoProxy.close();
+    LlapProxy.close();
   }
 
   public static void main(String[] args) throws Exception {
@@ -274,8 +277,11 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
       LlapConfiguration daemonConf = new LlapConfiguration();
       int numExecutors = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_DAEMON_NUM_EXECUTORS);
 
-      String[] localDirs = daemonConf.getTrimmedStrings(ConfVars.LLAP_DAEMON_WORK_DIRS.varname);
+      String localDirList = HiveConf.getVar(daemonConf, ConfVars.LLAP_DAEMON_WORK_DIRS);
+      String[] localDirs = (localDirList == null || localDirList.isEmpty()) ?
+          new String[0] : StringUtils.getTrimmedStrings(localDirList);
       int rpcPort = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_DAEMON_RPC_PORT);
+      int mngPort = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_MANAGEMENT_RPC_PORT);
       int shufflePort = daemonConf
           .getInt(ShuffleHandler.SHUFFLE_PORT_CONFIG_KEY, ShuffleHandler.DEFAULT_SHUFFLE_PORT);
       long executorMemoryBytes = HiveConf.getIntVar(
@@ -287,8 +293,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
       boolean llapIoEnabled = HiveConf.getBoolVar(daemonConf, HiveConf.ConfVars.LLAP_IO_ENABLED);
       llapDaemon =
           new LlapDaemon(daemonConf, numExecutors, executorMemoryBytes, llapIoEnabled, isDirectCache,
-              cacheMemoryBytes, localDirs,
-              rpcPort, shufflePort);
+              cacheMemoryBytes, localDirs, rpcPort, mngPort, shufflePort);
 
       LOG.info("Adding shutdown hook for LlapDaemon");
       ShutdownHookManager.addShutdownHook(new CompositeServiceShutdownHook(llapDaemon), 1);

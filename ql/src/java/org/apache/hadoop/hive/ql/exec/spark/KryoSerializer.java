@@ -24,11 +24,12 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
+import org.apache.hadoop.mapred.JobConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.mapred.JobConf;
 
+import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 
@@ -39,15 +40,28 @@ public class KryoSerializer {
     ByteArrayOutputStream stream = new ByteArrayOutputStream();
     Output output = new Output(stream);
 
-    Utilities.sparkSerializationKryo.get().writeObject(output, object);
+    Kryo kryo = SerializationUtilities.borrowKryo();
+    kryo.setClassLoader(Thread.currentThread().getContextClassLoader());
+    try {
+      kryo.writeObject(output, object);
+    } finally {
+      SerializationUtilities.releaseKryo(kryo);
+    }
 
     output.close(); // close() also calls flush()
     return stream.toByteArray();
   }
 
   public static <T> T deserialize(byte[] buffer, Class<T> clazz) {
-    return Utilities.sparkSerializationKryo.get().readObject(
-        new Input(new ByteArrayInputStream(buffer)), clazz);
+    Kryo kryo = SerializationUtilities.borrowKryo();
+    kryo.setClassLoader(Thread.currentThread().getContextClassLoader());
+    T result = null;
+    try {
+      result = kryo.readObject(new Input(new ByteArrayInputStream(buffer)), clazz);
+    } finally {
+      SerializationUtilities.releaseKryo(kryo);
+    }
+    return result;
   }
 
   public static byte[] serializeJobConf(JobConf jobConf) {
@@ -78,10 +92,6 @@ public class KryoSerializer {
       throw new IllegalStateException(msg, e);
     }
     return conf;
-  }
-
-  public static void setClassLoader(ClassLoader classLoader) {
-    Utilities.sparkSerializationKryo.get().setClassLoader(classLoader);
   }
 
 }

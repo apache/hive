@@ -18,7 +18,26 @@
 
 package org.apache.hadoop.hive.conf;
 
-import com.google.common.base.Joiner;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.security.auth.login.LoginException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -38,26 +57,7 @@ import org.apache.hive.common.HiveCompat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.security.auth.login.LoginException;
-
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintStream;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import com.google.common.base.Joiner;
 
 /**
  * Hive Configuration.
@@ -218,6 +218,9 @@ public class HiveConf extends Configuration {
     }
   }
 
+  public static final String HIVE_LLAP_DAEMON_SERVICE_PRINCIPAL_NAME = "hive.llap.daemon.service.principal";
+
+
   /**
    * dbVars are the parameters can be set per database. If these
    * parameters are set as a database property, when switching to that
@@ -249,9 +252,6 @@ public class HiveConf extends Configuration {
     // QL execution stuff
     SCRIPTWRAPPER("hive.exec.script.wrapper", null, ""),
     PLAN("hive.exec.plan", "", ""),
-    PLAN_SERIALIZATION("hive.plan.serialization.format", "kryo",
-        "Query plan format serialization between client and task nodes. \n" +
-        "Two supported values are : kryo and javaXML. Kryo is default."),
     STAGINGDIR("hive.exec.stagingdir", ".hive-staging",
         "Directory name that will be created inside table locations in order to support HDFS encryption. " +
         "This is replaces ${hive.exec.scratchdir} for query results with the exception of read-only tables. " +
@@ -701,6 +701,8 @@ public class HiveConf extends Configuration {
     METASTORE_AGGREGATE_STATS_CACHE_CLEAN_UNTIL("hive.metastore.aggregate.stats.cache.clean.until", (float) 0.8,
         "The cleaner thread cleans until cache reaches this % full size."),
     METASTORE_METRICS("hive.metastore.metrics.enabled", false, "Enable metrics on the metastore."),
+    METASTORE_INIT_METADATA_COUNT_ENABLED("hive.metastore.initial.metadata.count.enabled", true,
+      "Enable a metadata count at metastore startup for metrics."),
 
     // Parameters for exporting metadata on table drop (requires the use of the)
     // org.apache.hadoop.hive.ql.parse.MetaDataExportListener preevent listener
@@ -1847,17 +1849,28 @@ public class HiveConf extends Configuration {
         "Bind host on which to run the HiveServer2 Thrift service."),
     HIVE_SERVER2_PARALLEL_COMPILATION("hive.driver.parallel.compilation", false, "Whether to\n" +
         "enable parallel compilation between sessions on HiveServer2. The default is false."),
-
+    HIVE_SERVER2_COMPILE_LOCK_TIMEOUT("hive.server2.compile.lock.timeout", "0s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "Number of seconds a request will wait to acquire the compile lock before giving up. " +
+        "Setting it to 0s disables the timeout."),
     // HiveServer2 WebUI
     HIVE_SERVER2_WEBUI_BIND_HOST("hive.server2.webui.host", "0.0.0.0", "The host address the HiveServer2 WebUI will listen on"),
     HIVE_SERVER2_WEBUI_PORT("hive.server2.webui.port", 10002, "The port the HiveServer2 WebUI will listen on"),
     HIVE_SERVER2_WEBUI_MAX_THREADS("hive.server2.webui.max.threads", 50, "The max HiveServer2 WebUI threads"),
-    HIVE_SERVER2_WEBUI_USE_SSL("hive.server2.webui.use.SSL", false,
+    HIVE_SERVER2_WEBUI_USE_SSL("hive.server2.webui.use.ssl", false,
         "Set this to true for using SSL encryption for HiveServer2 WebUI."),
     HIVE_SERVER2_WEBUI_SSL_KEYSTORE_PATH("hive.server2.webui.keystore.path", "",
         "SSL certificate keystore location for HiveServer2 WebUI."),
     HIVE_SERVER2_WEBUI_SSL_KEYSTORE_PASSWORD("hive.server2.webui.keystore.password", "",
         "SSL certificate keystore password for HiveServer2 WebUI."),
+    HIVE_SERVER2_WEBUI_USE_SPNEGO("hive.server2.webui.use.spnego", false,
+        "If true, the HiveServer2 WebUI will be secured with SPNEGO. Clients must authenticate with Kerberos."),
+    HIVE_SERVER2_WEBUI_SPNEGO_KEYTAB("hive.server2.webui.spnego.keytab", "",
+        "The path to the Kerberos Keytab file containing the HiveServer2 WebUI SPNEGO service principal."),
+    HIVE_SERVER2_WEBUI_SPNEGO_PRINCIPAL("hive.server2.webui.spnego.principal",
+        "HTTP/_HOST@EXAMPLE.COM", "The HiveServer2 WebUI SPNEGO service principal.\n" +
+        "The special string _HOST will be replaced automatically with \n" +
+        "the value of hive.server2.webui.host or the correct host name."),
 
     // Tez session settings
     HIVE_SERVER2_TEZ_DEFAULT_QUEUES("hive.server2.tez.default.queues", "",
@@ -2109,16 +2122,6 @@ public class HiveConf extends Configuration {
 
     HIVE_SECURITY_COMMAND_WHITELIST("hive.security.command.whitelist", "set,reset,dfs,add,list,delete,reload,compile",
         "Comma separated list of non-SQL Hive commands users are authorized to execute"),
-    HIVE_CONF_RESTRICTED_LIST("hive.conf.restricted.list",
-        "hive.security.authenticator.manager,hive.security.authorization.manager,hive.users.in.admin.role",
-        "Comma separated list of configuration options which are immutable at runtime"),
-    HIVE_CONF_HIDDEN_LIST("hive.conf.hidden.list",
-        METASTOREPWD.varname + "," + HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname,
-        "Comma separated list of configuration options which should not be read by normal user like passwords"),
-
-    HIVE_CONF_INTERNAL_VARIABLE_LIST("hive.conf.internal.variable.list",
-        "hive.added.files.path,hive.added.jars.path,hive.added.archives.path",
-        "Comma separated list of variables which are used internally and should not be configurable."),
 
     // If this is set all move tasks at the end of a multi-insert query will only begin once all
     // outputs are ready
@@ -2344,6 +2347,17 @@ public class HiveConf extends Configuration {
     LLAP_LRFU_LAMBDA("hive.llap.io.lrfu.lambda", 0.01f,
         "Lambda for ORC low-level cache LRFU cache policy. Must be in [0, 1]. 0 makes LRFU\n" +
         "behave like LFU, 1 makes it behave like LRU, values in between balance accordingly."),
+    LLAP_CACHE_ALLOW_SYNTHETIC_FILEID("hive.llap.cache.allow.synthetic.fileid", false,
+        "Whether LLAP cache should use synthetic file ID if real one is not available. Systems\n" +
+        "like HDFS, Isilon, etc. provide a unique file/inode ID. On other FSes (e.g. local\n" +
+        "FS), the cache would not work by default because LLAP is unable to uniquely track the\n" +
+        "files; enabling this setting allows LLAP to generate file ID from the path, size and\n" +
+        "modification time, which is almost certain to identify file uniquely. However, if you\n" +
+        "use a FS without file IDs and rewrite files a lot (or are paranoid), you might want\n" +
+        "to avoid this setting."),
+    LLAP_IO_USE_FILEID_PATH("hive.llap.io.use.fileid.path", true,
+        "Whether LLAP should use fileId (inode)-based path to ensure better consistency for the\n" +
+        "cases of file overwrites. This is supported on HDFS."),
     LLAP_ORC_ENABLE_TIME_COUNTERS("hive.llap.io.orc.time.counters", true,
         "Whether to enable time counters for LLAP IO layer (time spent in HDFS, etc.)"),
     LLAP_AUTO_ALLOW_UBER("hive.llap.auto.allow.uber", true,
@@ -2369,6 +2383,28 @@ public class HiveConf extends Configuration {
         "By default, percentile latency metrics are disabled."),
     LLAP_IO_THREADPOOL_SIZE("hive.llap.io.threadpool.size", 10,
         "Specify the number of threads to use for low-level IO thread pool."),
+    LLAP_KERBEROS_PRINCIPAL(HIVE_LLAP_DAEMON_SERVICE_PRINCIPAL_NAME, "",
+        "The name of the LLAP daemon's service principal."),
+    LLAP_KERBEROS_KEYTAB_FILE("hive.llap.daemon.keytab.file", "",
+        "The path to the Kerberos Keytab file containing the LLAP daemon's service principal."),
+    LLAP_ZKSM_KERBEROS_PRINCIPAL("hive.llap.zk.sm.principal", "",
+        "The name of the principal to use to talk to ZooKeeper for ZooKeeper SecretManager."),
+    LLAP_ZKSM_KERBEROS_KEYTAB_FILE("hive.llap.zk.sm.keytab.file", "",
+        "The path to the Kerberos Keytab file containing the principal to use to talk to\n" +
+        "ZooKeeper for ZooKeeper SecretManager."),
+    LLAP_ZKSM_ZK_CONNECTION_STRING("hive.llap.zk.sm.connectionString", "",
+        "ZooKeeper connection string for ZooKeeper SecretManager."),
+    LLAP_SECURITY_ACL("hive.llap.daemon.service.acl", "*", "The ACL for LLAP daemon."),
+    LLAP_MANAGEMENT_ACL("hive.llap.management.service.acl", "*",
+        "The ACL for LLAP daemon management."),
+    // Hadoop DelegationTokenManager default is 1 week.
+    LLAP_DELEGATION_TOKEN_LIFETIME("hive.llap.daemon.delegation.token.lifetime", "14d",
+         new TimeValidator(TimeUnit.SECONDS),
+        "LLAP delegation token lifetime, in seconds if specified without a unit."),
+    LLAP_MANAGEMENT_RPC_PORT("hive.llap.management.rpc.port", 15004,
+        "RPC port for LLAP daemon management service."),
+    LLAP_WEB_AUTO_AUTH("hive.llap.auto.auth", true,
+        "Whether or not to set Hadoop configs to enable auth in LLAP web app."),
 
     LLAP_DAEMON_RPC_NUM_HANDLERS("hive.llap.daemon.rpc.num.handlers", 5,
       "Number of RPC handlers for LLAP daemon.", "llap.daemon.rpc.num.handlers"),
@@ -2524,7 +2560,18 @@ public class HiveConf extends Configuration {
         "Expected inflation factor between disk/in memory representation of hash tables"),
     HIVE_LOG_TRACE_ID("hive.log.trace.id", "",
         "Log tracing id that can be used by upstream clients for tracking respective logs. " +
-        "Truncated to " + LOG_PREFIX_LENGTH + " characters. Defaults to use auto-generated session id.");
+        "Truncated to " + LOG_PREFIX_LENGTH + " characters. Defaults to use auto-generated session id."),
+
+
+    HIVE_CONF_RESTRICTED_LIST("hive.conf.restricted.list",
+        "hive.security.authenticator.manager,hive.security.authorization.manager,hive.users.in.admin.role",
+        "Comma separated list of configuration options which are immutable at runtime"),
+    HIVE_CONF_HIDDEN_LIST("hive.conf.hidden.list",
+        METASTOREPWD.varname + "," + HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname,
+        "Comma separated list of configuration options which should not be read by normal user like passwords"),
+    HIVE_CONF_INTERNAL_VARIABLE_LIST("hive.conf.internal.variable.list",
+        "hive.added.files.path,hive.added.jars.path,hive.added.archives.path",
+        "Comma separated list of variables which are used internally and should not be configurable.");
 
 
     public final String varname;
@@ -2789,7 +2836,9 @@ public class HiveConf extends Configuration {
       // When either name or value is null, the set method below will fail,
       // and throw IllegalArgumentException
       set(name, value);
-      isSparkConfigUpdated = isSparkRelatedConfig(name);
+      if (isSparkRelatedConfig(name)) {
+        isSparkConfigUpdated = true;
+      }
     }
   }
 

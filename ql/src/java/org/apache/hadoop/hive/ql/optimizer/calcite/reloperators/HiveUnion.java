@@ -22,15 +22,11 @@ import java.util.List;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.rel.core.RelFactories;
 import org.apache.calcite.rel.core.SetOp;
 import org.apache.calcite.rel.core.Union;
-import org.apache.calcite.sql.SqlKind;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode.Implementor;
 
 public class HiveUnion extends Union {
-
-  public static final HiveUnionRelFactory UNION_REL_FACTORY = new HiveUnionRelFactory();
 
   public HiveUnion(RelOptCluster cluster, RelTraitSet traits, List<RelNode> inputs) {
     super(cluster, traits, inputs, true);
@@ -44,14 +40,4 @@ public class HiveUnion extends Union {
   public void implement(Implementor implementor) {
   }
 
-  private static class HiveUnionRelFactory implements RelFactories.SetOpFactory {
-
-    @Override
-    public RelNode createSetOp(SqlKind kind, List<RelNode> inputs, boolean all) {
-      if (kind != SqlKind.UNION) {
-        throw new IllegalStateException("Expected to get Set operator of type Union. Found : " + kind);
-      }
-      return new HiveUnion(inputs.get(0).getCluster(), inputs.get(0).getTraitSet(), inputs);
-    }
-  }
 }

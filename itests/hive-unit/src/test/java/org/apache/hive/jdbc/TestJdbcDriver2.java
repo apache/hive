@@ -307,6 +307,14 @@ public class TestJdbcDriver2 {
     checkBadUrl("jdbc:hive2://localhost:10000test");
   }
 
+  @Test
+  public void testURLWithFetchSize() throws SQLException {
+    Connection con = getConnection("default;fetchSize=1234");
+    Statement stmt = con.createStatement();
+
+    assertEquals(stmt.getFetchSize(), 1234);
+  }
+
   private void checkBadUrl(String url) throws SQLException {
     try{
       DriverManager.getConnection(url, "", "");

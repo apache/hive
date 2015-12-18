@@ -49,7 +49,6 @@ import org.apache.hadoop.hive.ql.plan.FilterDesc.SampleDesc;
 import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
-import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 
 /**
@@ -68,7 +67,7 @@ public class ParseContext {
   private HashMap<TableScanOperator, PrunedPartitionList> opToPartList;
   private HashMap<TableScanOperator, SampleDesc> opToSamplePruner;
   private Map<TableScanOperator, Map<String, ExprNodeDesc>> opToPartToSkewedPruner;
-  private HashMap<String, Operator<? extends OperatorDesc>> topOps;
+  private HashMap<String, TableScanOperator> topOps;
   private Set<JoinOperator> joinOps;
   private Set<MapJoinOperator> mapJoinOps;
   private Set<SMBMapJoinOperator> smbMapJoinOps;
@@ -150,7 +149,7 @@ public class ParseContext {
       HiveConf conf,
       HashMap<TableScanOperator, ExprNodeDesc> opToPartPruner,
       HashMap<TableScanOperator, PrunedPartitionList> opToPartList,
-      HashMap<String, Operator<? extends OperatorDesc>> topOps,
+      HashMap<String, TableScanOperator> topOps,
       Set<JoinOperator> joinOps,
       Set<SMBMapJoinOperator> smbMapJoinOps,
       List<LoadTableDesc> loadTableWork, List<LoadFileDesc> loadFileWork,
@@ -257,7 +256,7 @@ public class ParseContext {
   /**
    * @return the topOps
    */
-  public HashMap<String, Operator<? extends OperatorDesc>> getTopOps() {
+  public HashMap<String, TableScanOperator> getTopOps() {
     return topOps;
   }
 
@@ -265,7 +264,7 @@ public class ParseContext {
    * @param topOps
    *          the topOps to set
    */
-  public void setTopOps(HashMap<String, Operator<? extends OperatorDesc>> topOps) {
+  public void setTopOps(HashMap<String, TableScanOperator> topOps) {
     this.topOps = topOps;
   }
 

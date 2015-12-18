@@ -68,6 +68,11 @@ f2:int,f3:int>>) STORED AS PARQUET;
 INSERT INTO TABLE arrays_of_struct_to_map select array(named_struct("c1",1,"c2",2)), array(named_struct("f1",
 77,"f2",88,"f3",99)) FROM parquet_type_promotion LIMIT 1;
 SELECT * FROM arrays_of_struct_to_map;
+-- Testing schema evolution of dropping column from array<struct<>>
+ALTER TABLE arrays_of_struct_to_map REPLACE COLUMNS (locations1 array<struct<c1:int>>, locations2
+array<struct<f2:int>>);
+SELECT * FROM arrays_of_struct_to_map;
+-- Testing schema evolution of adding columns into array<struct<>>
 ALTER TABLE arrays_of_struct_to_map REPLACE COLUMNS (locations1 array<struct<c1:int,c2:int,c3:int>>, locations2
 array<struct<f1:int,f2:int,f3:int>>);
 SELECT * FROM arrays_of_struct_to_map;

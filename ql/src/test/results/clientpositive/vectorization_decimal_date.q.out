@@ -25,11 +25,11 @@ STAGE PLANS:
             Statistics: Num rows: 12288 Data size: 1651260 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (cint is not null and cdouble is not null) (type: boolean)
-              Statistics: Num rows: 3072 Data size: 412815 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 12288 Data size: 1651260 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: cdate (type: date), cdecimal (type: decimal(20,10))
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 3072 Data size: 412815 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 12288 Data size: 1651260 Basic stats: COMPLETE Column stats: NONE
                 Limit
                   Number of rows: 10
                   Statistics: Num rows: 10 Data size: 1340 Basic stats: COMPLETE Column stats: NONE

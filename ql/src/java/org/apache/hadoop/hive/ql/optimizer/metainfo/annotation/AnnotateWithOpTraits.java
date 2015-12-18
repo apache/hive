@@ -49,7 +49,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
  * This class annotates each operator with its traits. The OpTraits class
  * specifies the traits that are populated for each operator.
  */
-public class AnnotateWithOpTraits implements Transform {
+public class AnnotateWithOpTraits extends Transform {
 
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {

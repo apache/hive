@@ -23,11 +23,9 @@ import java.sql.Timestamp;
 import java.util.List;
 
 import org.apache.commons.codec.binary.Base64;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveChar;
-import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -51,6 +49,8 @@ import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
@@ -260,31 +260,37 @@ public class ConvertAstToSearchArg {
       builder.startNot();
     }
 
-    switch (operator) {
-      case IS_NULL:
-        builder.isNull(columnName, type);
-        break;
-      case EQUALS:
-        builder.equals(columnName, type, findLiteral(expression, type));
-        break;
-      case NULL_SAFE_EQUALS:
-        builder.nullSafeEquals(columnName, type, findLiteral(expression, type));
-        break;
-      case LESS_THAN:
-        builder.lessThan(columnName, type, findLiteral(expression, type));
-        break;
-      case LESS_THAN_EQUALS:
-        builder.lessThanEquals(columnName, type, findLiteral(expression, type));
-        break;
-      case IN:
-        builder.in(columnName, type,
-            getLiteralList(expression, type, variable + 1));
-        break;
-      case BETWEEN:
-        builder.between(columnName, type,
-            getLiteral(expression, type, variable + 1),
-            getLiteral(expression, type, variable + 2));
-        break;
+    try {
+      switch (operator) {
+        case IS_NULL:
+          builder.isNull(columnName, type);
+          break;
+        case EQUALS:
+          builder.equals(columnName, type, findLiteral(expression, type));
+          break;
+        case NULL_SAFE_EQUALS:
+          builder.nullSafeEquals(columnName, type, findLiteral(expression, type));
+          break;
+        case LESS_THAN:
+          builder.lessThan(columnName, type, findLiteral(expression, type));
+          break;
+        case LESS_THAN_EQUALS:
+          builder.lessThanEquals(columnName, type, findLiteral(expression, type));
+          break;
+        case IN:
+          builder.in(columnName, type,
+              getLiteralList(expression, type, variable + 1));
+          break;
+        case BETWEEN:
+          builder.between(columnName, type,
+              getLiteral(expression, type, variable + 1),
+              getLiteral(expression, type, variable + 2));
+          break;
+      }
+    } catch (Exception e) {
+      LOG.warn("Exception thrown during SARG creation. Returning YES_NO_NULL." +
+          " Exception: " + e.getMessage());
+      builder.literal(SearchArgument.TruthValue.YES_NO_NULL);
     }
 
     if (needSwap) {
@@ -433,7 +439,7 @@ public class ConvertAstToSearchArg {
   public static SearchArgument createFromConf(Configuration conf) {
     String sargString;
     if ((sargString = conf.get(TableScanDesc.FILTER_EXPR_CONF_STR)) != null) {
-      return create(Utilities.deserializeExpression(sargString));
+      return create(SerializationUtilities.deserializeExpression(sargString));
     } else if ((sargString = conf.get(SARG_PUSHDOWN)) != null) {
       return create(sargString);
     }

@@ -268,7 +268,7 @@ STAGE PLANS:
                   alias: dept
                   Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (deptid is not null and deptname is not null) (type: boolean)
+                    predicate: (deptname is not null and deptid is not null) (type: boolean)
                     Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: deptid (type: int), deptname (type: string)
@@ -342,7 +342,7 @@ STAGE PLANS:
                   alias: d
                   Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (deptid is not null and deptname is not null) (type: boolean)
+                    predicate: (deptname is not null and deptid is not null) (type: boolean)
                     Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: deptid (type: int), deptname (type: string)
@@ -420,7 +420,7 @@ STAGE PLANS:
                   alias: dept
                   Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (deptid is not null and deptname is not null) (type: boolean)
+                    predicate: (deptname is not null and deptid is not null) (type: boolean)
                     Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: deptid (type: int), deptname (type: string)
@@ -694,7 +694,7 @@ STAGE PLANS:
                   alias: d
                   Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (deptid is not null and deptname is not null) (type: boolean)
+                    predicate: (deptname is not null and deptid is not null) (type: boolean)
                     Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: deptid (type: int), deptname (type: string)

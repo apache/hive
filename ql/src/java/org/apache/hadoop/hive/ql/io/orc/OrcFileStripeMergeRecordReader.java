@@ -27,6 +27,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.RecordReader;
+import org.apache.orc.OrcProto;
+import org.apache.orc.StripeInformation;
 
 public class OrcFileStripeMergeRecordReader implements
     RecordReader<OrcFileKeyWrapper, OrcFileValueWrapper> {
@@ -98,7 +100,7 @@ public class OrcFileStripeMergeRecordReader implements
           valueWrapper.setUserMetadata(((ReaderImpl) reader).getOrcProtoUserMetadata());
         }
         keyWrapper.setInputPath(path);
-        keyWrapper.setCompression(reader.getCompression());
+        keyWrapper.setCompression(reader.getCompressionKind());
         keyWrapper.setCompressBufferSize(reader.getCompressionSize());
         keyWrapper.setVersion(reader.getFileVersion());
         keyWrapper.setRowIndexStride(reader.getRowIndexStride());

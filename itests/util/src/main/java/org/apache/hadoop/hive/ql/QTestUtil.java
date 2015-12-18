@@ -39,15 +39,24 @@ import java.io.PrintStream;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.net.URL;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -56,10 +65,8 @@ import java.util.regex.Pattern;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -75,6 +82,7 @@ import org.apache.hadoop.hive.common.io.SortAndDigestPrintStream;
 import org.apache.hadoop.hive.common.io.SortPrintStream;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -108,6 +116,8 @@ import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 import org.junit.Assert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableList;
 
@@ -254,11 +264,6 @@ public class QTestUtil {
     }
   }
 
-  public QTestUtil(String outDir, String logDir, String initScript, String cleanupScript) throws
-      Exception {
-    this(outDir, logDir, MiniClusterType.none, null, "0.20", initScript, cleanupScript);
-  }
-
   public String getOutputDirectory() {
     return outDir;
   }
@@ -341,12 +346,6 @@ public class QTestUtil {
     }
   }
 
-  public QTestUtil(String outDir, String logDir, MiniClusterType clusterType, String hadoopVer,
-                   String initScript, String cleanupScript)
-    throws Exception {
-    this(outDir, logDir, clusterType, null, hadoopVer, initScript, cleanupScript);
-  }
-
   private String getKeyProviderURI() {
     // Use the target directory if it is not specified
     String HIVE_ROOT = QTestUtil.ensurePathEndsInSlash(System.getProperty("hive.root"));
@@ -373,13 +372,8 @@ public class QTestUtil {
   }
 
   public QTestUtil(String outDir, String logDir, MiniClusterType clusterType,
-      String confDir, String hadoopVer, String initScript, String cleanupScript)
-    throws Exception {
-    this(outDir, logDir, clusterType, confDir, hadoopVer, initScript, cleanupScript, false);
-  }
-
-  public QTestUtil(String outDir, String logDir, MiniClusterType clusterType,
-      String confDir, String hadoopVer, String initScript, String cleanupScript, boolean useHBaseMetastore)
+      String confDir, String hadoopVer, String initScript, String cleanupScript,
+      boolean useHBaseMetastore, boolean withLlapIo)
     throws Exception {
     this.outDir = outDir;
     this.logDir = logDir;
@@ -452,6 +446,11 @@ public class QTestUtil {
     }
 
     initConf();
+    if (withLlapIo && clusterType == MiniClusterType.none) {
+      LOG.info("initializing llap IO");
+      LlapProxy.initializeLlapIo(conf);
+    }
+
 
     // Use the current directory if it is not specified
     String dataDir = conf.get("test.data.files");
@@ -1327,49 +1326,6 @@ public class QTestUtil {
     }
   }
 
-  private final Pattern[] xmlPlanMask = toPattern(new String[] {
-      "<java version=\".*\" class=\"java.beans.XMLDecoder\">",
-      "<string>.*/tmp/.*</string>",
-      "<string>file:.*</string>",
-      "<string>pfile:.*</string>",
-      "<string>[0-9]{10}</string>",
-      "<string>/.*/warehouse/.*</string>"
-  });
-
-  public int checkPlan(String tname, List<Task<? extends Serializable>> tasks) throws Exception {
-
-    if (tasks == null) {
-      throw new Exception("Plan is null");
-    }
-    File planDir = new File(outDir, "plan");
-    String planFile = outPath(planDir.toString(), tname + ".xml");
-
-    File outf = null;
-    outf = new File(logDir);
-    outf = new File(outf, tname.concat(".xml"));
-
-    FileOutputStream ofs = new FileOutputStream(outf);
-    try {
-      conf.set(HiveConf.ConfVars.PLAN_SERIALIZATION.varname, "javaXML");
-      for (Task<? extends Serializable> plan : tasks) {
-        Utilities.serializePlan(plan, ofs, conf);
-      }
-      ofs.close();
-      fixXml4JDK7(outf.getPath());
-      maskPatterns(xmlPlanMask, outf.getPath());
-
-      int exitVal = executeDiffCommand(outf.getPath(), planFile, true, false);
-
-      if (exitVal != 0 && overWrite) {
-        exitVal = overwriteResults(outf.getPath(), planFile);
-      }
-      return exitVal;
-    } finally {
-      conf.set(HiveConf.ConfVars.PLAN_SERIALIZATION.varname, "kryo");
-      IOUtils.closeQuietly(ofs);
-    }
-  }
-
   /**
    * Given the current configurations (e.g., hadoop version and execution mode), return
    * the correct file name to compare with the current test run output.
@@ -1403,103 +1359,6 @@ public class QTestUtil {
       }
     }
    return ret;
-  }
-
-  /**
-   * Fix the XML generated by JDK7 which is slightly different from what's generated by JDK6,
-   * causing 40+ test failures. There are mainly two problems:
-   *
-   * 1. object element's properties, id and class, are in reverse order, i.e.
-   *    <object class="org.apache.hadoop.hive.ql.exec.MapRedTask" id="MapRedTask0">
-   *    which needs to be fixed to
-   *    <object id="MapRedTask0" class="org.apache.hadoop.hive.ql.exec.MapRedTask">
-   * 2. JDK introduces Enum as class, i.e.
-   *    <object id="GenericUDAFEvaluator$Mode0" class="java.lang.Enum">
-   *      <class>org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator$Mode</class>
-   *    which needs to be fixed to
-   *    <object id="GenericUDAFEvaluator$Mode0" class="org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator$Mode"
-   *     method="valueOf">
-   *
-   * Though not elegant, this allows these test cases to pass until we have a better serialization mechanism.
-   *
-   * Did I mention this is test code?
-   *
-   * @param fname the name of the file to fix
-   * @throws Exception in case of IO error
-   */
-  private static void fixXml4JDK7(String fname) throws Exception {
-    String version = System.getProperty("java.version");
-    if (!version.startsWith("1.7")) {
-      return;
-    }
-
-    BufferedReader in = new BufferedReader(new FileReader(fname));
-    BufferedWriter out = new BufferedWriter(new FileWriter(fname + ".orig"));
-    String line = null;
-    while (null != (line = in.readLine())) {
-      out.write(line);
-      out.write('\n');
-    }
-    in.close();
-    out.close();
-
-    in = new BufferedReader(new FileReader(fname + ".orig"));
-    out = new BufferedWriter(new FileWriter(fname));
-
-    while (null != (line = in.readLine())) {
-      if (line.indexOf("<object ") == -1 || line.indexOf("class=") == -1) {
-        out.write(line);
-      } else {
-        StringBuilder sb = new StringBuilder();
-        String prefix = line.substring(0, line.indexOf("<object") + 7);
-        sb.append( prefix );
-        String postfix = line.substring(line.lastIndexOf('"') + 1);
-        String id = getPropertyValue(line, "id");
-        if (id != null) {
-          sb.append(" id=" + id);
-        }
-        String cls = getPropertyValue(line, "class");
-        assert(cls != null);
-        if (cls.equals("\"java.lang.Enum\"")) {
-          line = in.readLine();
-          cls = "\"" + getElementValue(line, "class") + "\"";
-          sb.append(" class=" + cls + " method=\"valueOf\"" );
-        } else {
-          sb.append(" class=" + cls);
-        }
-
-        sb.append(postfix);
-        out.write(sb.toString());
-      }
-
-      out.write('\n');
-    }
-
-    in.close();
-    out.close();
-  }
-
-  /**
-   * Get the value of a property in line. The returned value has original quotes
-   */
-  private static String getPropertyValue(String line, String name) {
-    int start = line.indexOf( name + "=" );
-    if (start == -1) {
-      return null;
-    }
-    start += name.length() + 1;
-    int end = line.indexOf("\"", start + 1);
-    return line.substring( start, end + 1 );
-  }
-
-  /**
-   * Get the value of the element in input. (Note: the returned value has no quotes.)
-   */
-  private static String getElementValue(String line, String name) {
-    assert(line.contains("<" + name + ">"));
-    int start = line.indexOf("<" + name + ">") + name.length() + 2;
-    int end = line.indexOf("</" + name + ">");
-    return line.substring(start, end);
   }
 
   private Pattern[] toPattern(String[] patternStrs) {
@@ -1912,7 +1771,7 @@ public class QTestUtil {
     QTestUtil[] qt = new QTestUtil[qfiles.length];
     for (int i = 0; i < qfiles.length; i++) {
       qt[i] = new QTestUtil(resDir, logDir, MiniClusterType.none, null, "0.20",
-          defaultInitScript, defaultCleanupScript);
+          defaultInitScript, defaultCleanupScript, false, false);
       qt[i].addFile(qfiles[i]);
       qt[i].clearTestSideEffects();
     }
@@ -2141,4 +2000,158 @@ public class QTestUtil {
       Assert.fail("Unexpected exception " + org.apache.hadoop.util.StringUtils.stringifyException(e));
     }
   }
+
+  public static void setupMetaStoreTableColumnStatsFor30TBTPCDSWorkload(HiveConf conf) {
+    Connection conn = null;
+    ArrayList<Statement> statements = new ArrayList<Statement>(); // list of Statements, PreparedStatements
+
+    try {
+      Properties props = new Properties(); // connection properties
+      props.put("user", conf.get("javax.jdo.option.ConnectionUserName"));
+      props.put("password", conf.get("javax.jdo.option.ConnectionPassword"));
+      conn = DriverManager.getConnection(conf.get("javax.jdo.option.ConnectionURL"), props);
+      ResultSet rs = null;
+      Statement s = conn.createStatement();
+
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Connected to metastore database ");
+      }
+
+      String mdbPath =   "../../data/files/tpcds-perf/metastore_export/";
+
+      // Setup the table column stats
+      BufferedReader br = new BufferedReader(new FileReader(new File("../../metastore/scripts/upgrade/derby/022-HIVE-11107.derby.sql")));
+      String command;
+
+      s.execute("DROP TABLE APP.TABLE_PARAMS");
+      s.execute("DROP TABLE APP.TAB_COL_STATS");
+      // Create the column stats table
+      while ((command = br.readLine()) != null) {
+        if (!command.endsWith(";")) {
+          continue;
+        }
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Going to run command : " + command);
+        }
+        try {
+          PreparedStatement psCommand = conn.prepareStatement(command.substring(0, command.length()-1));
+          statements.add(psCommand);
+          psCommand.execute();
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("successfully completed " + command);
+          }
+        } catch (SQLException e) {
+          LOG.info("Got SQL Exception " + e.getMessage());
+        }
+      }
+      br.close();
+
+      File tabColStatsCsv = new File(mdbPath+"csv/TAB_COL_STATS.txt");
+      File tabParamsCsv = new File(mdbPath+"csv/TABLE_PARAMS.txt");
+
+      // Set up the foreign key constraints properly in the TAB_COL_STATS data
+      String tmpBaseDir =  System.getProperty("test.tmp.dir");
+      File tmpFileLoc1 = new File(tmpBaseDir+"/TAB_COL_STATS.txt");
+      File tmpFileLoc2 = new File(tmpBaseDir+"/TABLE_PARAMS.txt");
+      FileUtils.copyFile(tabColStatsCsv, tmpFileLoc1);
+      FileUtils.copyFile(tabParamsCsv, tmpFileLoc2);
+
+      class MyComp implements Comparator<String> {
+        @Override
+        public int compare(String str1, String str2) {
+          if (str2.length() != str1.length()) {
+            return str2.length() - str1.length();
+          }
+          return str1.compareTo(str2);
+        }
+      }
+
+      SortedMap<String, Integer> tableNameToID = new TreeMap<String, Integer>(new MyComp());
+
+     rs = s.executeQuery("SELECT * FROM APP.TBLS");
+      while(rs.next()) {
+        String tblName = rs.getString("TBL_NAME");
+        Integer tblId = rs.getInt("TBL_ID");
+        tableNameToID.put(tblName, tblId);
+
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Resultset : " +  tblName + " | " + tblId);
+        }
+      }
+      for (Map.Entry<String, Integer> entry : tableNameToID.entrySet()) {
+        String toReplace = "_" + entry.getKey() + "_" ;
+        String replacementString = ""+entry.getValue();
+        try {
+          String content1 = FileUtils.readFileToString(tmpFileLoc1, "UTF-8");
+          content1 = content1.replaceAll(toReplace, replacementString);
+          FileUtils.writeStringToFile(tmpFileLoc1, content1, "UTF-8");
+          String content2 = FileUtils.readFileToString(tmpFileLoc2, "UTF-8");
+          content2 = content2.replaceAll(toReplace, replacementString);
+          FileUtils.writeStringToFile(tmpFileLoc2, content2, "UTF-8");
+        } catch (IOException e) {
+          LOG.info("Generating file failed", e);
+        }
+      }
+
+      // Load the column stats and table params with 30 TB scale
+      String importStatement1 =  "CALL SYSCS_UTIL.SYSCS_IMPORT_TABLE_LOBS_FROM_EXTFILE(null, '" + "TAB_COL_STATS" +
+        "', '" + tmpFileLoc1.getAbsolutePath() +
+        "', ',', null, 'UTF-8', 1)";
+      String importStatement2 =  "CALL SYSCS_UTIL.SYSCS_IMPORT_TABLE_LOBS_FROM_EXTFILE(null, '" + "TABLE_PARAMS" +
+        "', '" + tmpFileLoc2.getAbsolutePath() +
+        "', ',', null, 'UTF-8', 1)";
+      try {
+        PreparedStatement psImport1 = conn.prepareStatement(importStatement1);
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Going to execute : " + importStatement1);
+        }
+        statements.add(psImport1);
+        psImport1.execute();
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("successfully completed " + importStatement1);
+        }
+        PreparedStatement psImport2 = conn.prepareStatement(importStatement2);
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Going to execute : " + importStatement2);
+        }
+        statements.add(psImport2);
+        psImport2.execute();
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("successfully completed " + importStatement2);
+        }
+      } catch (SQLException e) {
+        LOG.info("Got SQL Exception  " +  e.getMessage());
+      }
+    } catch (FileNotFoundException e1) {
+        LOG.info("Got File not found Exception " + e1.getMessage());
+	} catch (IOException e1) {
+        LOG.info("Got IOException " + e1.getMessage());
+	} catch (SQLException e1) {
+        LOG.info("Got SQLException " + e1.getMessage());
+	} finally {
+      // Statements and PreparedStatements
+      int i = 0;
+      while (!statements.isEmpty()) {
+        // PreparedStatement extend Statement
+        Statement st = (Statement)statements.remove(i);
+        try {
+          if (st != null) {
+            st.close();
+            st = null;
+          }
+        } catch (SQLException sqle) {
+        }
+      }
+
+      //Connection
+      try {
+        if (conn != null) {
+          conn.close();
+          conn = null;
+        }
+      } catch (SQLException sqle) {
+      }
+    }
+  }
+
 }

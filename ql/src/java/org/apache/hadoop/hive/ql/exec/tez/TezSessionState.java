@@ -18,6 +18,8 @@
 package org.apache.hadoop.hive.ql.exec.tez;
 
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -40,6 +42,7 @@ import java.util.concurrent.TimeoutException;
 
 import javax.security.auth.login.LoginException;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.hadoop.fs.FileStatus;
@@ -48,11 +51,16 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.llap.io.api.LlapProxy;
+import org.apache.hadoop.hive.llap.security.LlapTokenIdentifier;
+import org.apache.hadoop.hive.llap.security.LlapTokenProvider;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.shims.Utils;
+import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.hadoop.yarn.api.records.LocalResourceType;
 import org.apache.tez.client.TezClient;
@@ -189,7 +197,8 @@ public class TezSessionState {
     this.queueName = conf.get("tez.queue.name");
     this.doAsEnabled = conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS);
 
-    final boolean llapMode = "llap".equals(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_MODE));
+    final boolean llapMode = "llap".equals(HiveConf.getVar(
+        conf, HiveConf.ConfVars.HIVE_EXECUTION_MODE));
 
     UserGroupInformation ugi = Utils.getUGI();
     user = ugi.getShortUserName();
@@ -258,19 +267,25 @@ public class TezSessionState {
     conf.stripHiddenConfigurations(tezConfig);
 
     ServicePluginsDescriptor servicePluginsDescriptor;
-    UserPayload servicePluginPayload = TezUtils.createUserPayloadFromConf(tezConfig);
 
+    Credentials llapCredentials = null;
     if (llapMode) {
+      if (UserGroupInformation.isSecurityEnabled()) {
+        LlapTokenProvider tp = LlapProxy.getOrInitTokenProvider(conf);
+        Token<LlapTokenIdentifier> token = tp.getDelegationToken();
+        LOG.info("Obtained a token: " + token);
+        llapCredentials = new Credentials();
+        llapCredentials.addToken(LlapTokenIdentifier.KIND_NAME, token);
+      }
+      UserPayload servicePluginPayload = TezUtils.createUserPayloadFromConf(tezConfig);
       // we need plugins to handle llap and uber mode
       servicePluginsDescriptor = ServicePluginsDescriptor.create(true,
-          new TaskSchedulerDescriptor[]{
-              TaskSchedulerDescriptor.create(LLAP_SERVICE, LLAP_SCHEDULER)
-                  .setUserPayload(servicePluginPayload)},
-          new ContainerLauncherDescriptor[]{
-              ContainerLauncherDescriptor.create(LLAP_SERVICE, LLAP_LAUNCHER)},
-          new TaskCommunicatorDescriptor[]{
-              TaskCommunicatorDescriptor.create(LLAP_SERVICE, LLAP_TASK_COMMUNICATOR)
-                  .setUserPayload(servicePluginPayload)});
+          new TaskSchedulerDescriptor[] { TaskSchedulerDescriptor.create(
+              LLAP_SERVICE, LLAP_SCHEDULER).setUserPayload(servicePluginPayload) },
+          new ContainerLauncherDescriptor[] { ContainerLauncherDescriptor.create(
+              LLAP_SERVICE, LLAP_LAUNCHER) },
+          new TaskCommunicatorDescriptor[] { TaskCommunicatorDescriptor.create(
+              LLAP_SERVICE, LLAP_TASK_COMMUNICATOR).setUserPayload(servicePluginPayload) });
     } else {
       servicePluginsDescriptor = ServicePluginsDescriptor.create(true);
     }
@@ -286,7 +301,8 @@ public class TezSessionState {
 
     final TezClient session = TezClient.newBuilder("HIVE-" + sessionId, tezConfig)
         .setIsSession(true).setLocalResources(commonLocalResources)
-        .setServicePluginDescriptor(servicePluginsDescriptor).build();
+        .setCredentials(llapCredentials).setServicePluginDescriptor(servicePluginsDescriptor)
+        .build();
 
     LOG.info("Opening new Tez Session (id: " + sessionId
         + ", scratch dir: " + tezScratchDir + ")");

@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.common.io.DiskRange;
 import org.apache.hadoop.hive.common.io.DiskRangeList;
 import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
 import org.apache.hadoop.hive.llap.DebugUtils;
 import org.apache.hadoop.hive.llap.cache.Cache;
@@ -54,14 +55,13 @@ import org.apache.hadoop.hive.llap.io.metadata.OrcStripeMetadata;
 import org.apache.hadoop.hive.ql.exec.DDLTask;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HdfsUtils;
-import org.apache.hadoop.hive.ql.io.orc.CompressionKind;
-import org.apache.hadoop.hive.ql.io.orc.DataReader;
-import org.apache.hadoop.hive.ql.io.orc.MetadataReader;
+import org.apache.orc.CompressionKind;
+import org.apache.orc.DataReader;
+import org.apache.orc.impl.MetadataReader;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile.ReaderOptions;
-import org.apache.hadoop.hive.ql.io.orc.OrcConf;
+import org.apache.orc.OrcConf;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto;
 import org.apache.hadoop.hive.ql.io.orc.OrcSplit;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Reader;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
@@ -74,12 +74,13 @@ import org.apache.hadoop.hive.ql.io.orc.encoded.OrcCacheKey;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.OrcEncodedColumnBatch;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.PoolFactory;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderUtils;
-import org.apache.hadoop.hive.ql.io.orc.StripeInformation;
+import org.apache.orc.StripeInformation;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.common.util.FixedSizedObjectPool;
+import org.apache.orc.OrcProto;
 import org.apache.tez.common.CallableWithNdc;
 
 /**
@@ -148,7 +149,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   private Reader orcReader;
   private MetadataReader metadataReader;
   private EncodedReader stripeReader;
-  private long fileId;
+  private Long fileId;
   private FileSystem fs;
   /**
    * readState[stripeIx'][colIx'] => boolean array (could be a bitmask) of rg-s that need to be
@@ -227,8 +228,10 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     // 1. Get file metadata from cache, or create the reader and read it.
     // Don't cache the filesystem object for now; Tez closes it and FS cache will fix all that
     fs = split.getPath().getFileSystem(conf);
-    fileId = determineFileId(fs, split);
-    counters.setDesc(QueryFragmentCounters.Desc.FILE, fileId);
+    fileId = determineFileId(fs, split,
+        HiveConf.getBoolVar(conf, ConfVars.LLAP_CACHE_ALLOW_SYNTHETIC_FILEID));
+    counters.setDesc(QueryFragmentCounters.Desc.FILE, split.getPath()
+        + (fileId == null ? "" : " (" + fileId + ")"));
 
     try {
       fileMetadata = getOrReadFileMetadata();
@@ -333,7 +336,9 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
 
     // 6. Read data.
     // TODO: I/O threadpool could be here - one thread per stripe; for now, linear.
-    OrcBatchKey stripeKey = new OrcBatchKey(fileId, -1, 0);
+    boolean hasFileId = this.fileId != null;
+    long fileId = hasFileId ? this.fileId : 0;
+    OrcBatchKey stripeKey = hasFileId ? new OrcBatchKey(fileId, -1, 0) : null;
     for (int stripeIxMod = 0; stripeIxMod < readState.length; ++stripeIxMod) {
       if (processStop()) {
         cleanupReaders();
@@ -377,8 +382,10 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
         if (stripeMetadatas != null) {
           stripeMetadata = stripeMetadatas.get(stripeIxMod);
         } else {
-          stripeKey.stripeIx = stripeIx;
-          stripeMetadata = metadataCache.getStripeMetadata(stripeKey);
+          if (hasFileId) {
+            stripeKey.stripeIx = stripeIx;
+            stripeMetadata = metadataCache.getStripeMetadata(stripeKey);
+          }
           isFoundInCache = (stripeMetadata != null);
           if (!isFoundInCache) {
             counters.incrCounter(Counter.METADATA_CACHE_MISS);
@@ -387,12 +394,15 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
             stripeMetadata = new OrcStripeMetadata(
                 stripeKey, metadataReader, stripe, stripeIncludes, sargColumns);
             counters.incrTimeCounter(Counter.HDFS_TIME_US, startTimeHdfs);
-            stripeMetadata = metadataCache.putStripeMetadata(stripeMetadata);
-            if (DebugUtils.isTraceOrcEnabled()) {
-              LlapIoImpl.LOG.info("Caching stripe " + stripeKey.stripeIx
-                  + " metadata with includes: " + DebugUtils.toString(stripeIncludes));
+            if (hasFileId) {
+              stripeMetadata = metadataCache.putStripeMetadata(stripeMetadata);
+              if (DebugUtils.isTraceOrcEnabled()) {
+                LlapIoImpl.LOG.info("Caching stripe " + stripeKey.stripeIx
+                    + " metadata with includes: " + DebugUtils.toString(stripeIncludes));
+              }
+              stripeKey = new OrcBatchKey(fileId, -1, 0);
             }
-            stripeKey = new OrcBatchKey(fileId, -1, 0);
+
           }
           consumer.setStripeMetadata(stripeMetadata);
         }
@@ -515,7 +525,8 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     return true;
   }
 
-  private static long determineFileId(FileSystem fs, FileSplit split) throws IOException {
+  private static Long determineFileId(FileSystem fs, FileSplit split,
+      boolean allowSynthetic) throws IOException {
     if (split instanceof OrcSplit) {
       Long fileId = ((OrcSplit)split).getFileId();
       if (fileId != null) {
@@ -523,7 +534,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       }
     }
     LOG.warn("Split for " + split.getPath() + " (" + split.getClass() + ") does not have file ID");
-    return HdfsUtils.getFileId(fs, split.getPath());
+    return HdfsUtils.getFileId(fs, split.getPath(), allowSynthetic);
   }
 
   private boolean[][] genStripeColRgs(List<Integer> stripeCols, boolean[][] globalColRgs) {
@@ -588,7 +599,10 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
    */
   private void ensureOrcReader() throws IOException {
     if (orcReader != null) return;
-    Path path = HdfsUtils.getFileIdPath(fs, split.getPath(), fileId);
+    Path path = split.getPath();
+    if (fileId != null && HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_USE_FILEID_PATH)) {
+      path = HdfsUtils.getFileIdPath(fs, path, fileId);
+    }
     if (DebugUtils.isTraceOrcEnabled()) {
       LOG.info("Creating reader for " + path + " (" + split.getPath() + ")");
     }
@@ -602,16 +616,19 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
    *  Gets file metadata for the split from cache, or reads it from the file.
    */
   private OrcFileMetadata getOrReadFileMetadata() throws IOException {
-    OrcFileMetadata metadata = metadataCache.getFileMetadata(fileId);
-    if (metadata != null) {
-      counters.incrCounter(Counter.METADATA_CACHE_HIT);
-      return metadata;
+    OrcFileMetadata metadata = null;
+    if (fileId != null) {
+      metadata = metadataCache.getFileMetadata(fileId);
+      if (metadata != null) {
+        counters.incrCounter(Counter.METADATA_CACHE_HIT);
+        return metadata;
+      }
+      counters.incrCounter(Counter.METADATA_CACHE_MISS);
     }
-    counters.incrCounter(Counter.METADATA_CACHE_MISS);
     ensureOrcReader();
     // We assume this call doesn't touch HDFS because everything is already read; don't add time.
-    metadata = new OrcFileMetadata(fileId, orcReader);
-    return metadataCache.putFileMetadata(metadata);
+    metadata = new OrcFileMetadata(fileId != null ? fileId : 0, orcReader);
+    return (fileId == null) ? metadata : metadataCache.putFileMetadata(metadata);
   }
 
   /**
@@ -620,25 +637,33 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   private ArrayList<OrcStripeMetadata> readStripesMetadata(
       boolean[] globalInc, boolean[] sargColumns) throws IOException {
     ArrayList<OrcStripeMetadata> result = new ArrayList<OrcStripeMetadata>(readState.length);
-    OrcBatchKey stripeKey = new OrcBatchKey(fileId, 0, 0);
+    boolean hasFileId = this.fileId != null;
+    long fileId = hasFileId ? this.fileId : 0;
+    OrcBatchKey stripeKey = hasFileId ? new OrcBatchKey(fileId, 0, 0) : null;
     for (int stripeIxMod = 0; stripeIxMod < readState.length; ++stripeIxMod) {
-      stripeKey.stripeIx = stripeIxMod + stripeIxFrom;
-      OrcStripeMetadata value = metadataCache.getStripeMetadata(stripeKey);
+      OrcStripeMetadata value = null;
+      int stripeIx = stripeIxMod + stripeIxFrom;
+      if (hasFileId) {
+        stripeKey.stripeIx = stripeIx;
+        value = metadataCache.getStripeMetadata(stripeKey);
+      }
       if (value == null || !value.hasAllIndexes(globalInc)) {
         counters.incrCounter(Counter.METADATA_CACHE_MISS);
         ensureMetadataReader();
-        StripeInformation si = fileMetadata.getStripes().get(stripeKey.stripeIx);
+        StripeInformation si = fileMetadata.getStripes().get(stripeIx);
         if (value == null) {
           long startTime = counters.startTimeCounter();
           value = new OrcStripeMetadata(stripeKey, metadataReader, si, globalInc, sargColumns);
           counters.incrTimeCounter(Counter.HDFS_TIME_US, startTime);
-          value = metadataCache.putStripeMetadata(value);
-          if (DebugUtils.isTraceOrcEnabled()) {
-            LlapIoImpl.LOG.info("Caching stripe " + stripeKey.stripeIx
-                + " metadata with includes: " + DebugUtils.toString(globalInc));
+          if (hasFileId) {
+            value = metadataCache.putStripeMetadata(value);
+            if (DebugUtils.isTraceOrcEnabled()) {
+              LlapIoImpl.LOG.info("Caching stripe " + stripeKey.stripeIx
+                  + " metadata with includes: " + DebugUtils.toString(globalInc));
+            }
+            // Create new key object to reuse for gets; we've used the old one to put in cache.
+            stripeKey = new OrcBatchKey(fileId, 0, 0);
           }
-          // Create new key object to reuse for gets; we've used the old one to put in cache.
-          stripeKey = new OrcBatchKey(fileId, 0, 0);
         }
         // We might have got an old value from cache; recheck it has indexes.
         if (!value.hasAllIndexes(globalInc)) {

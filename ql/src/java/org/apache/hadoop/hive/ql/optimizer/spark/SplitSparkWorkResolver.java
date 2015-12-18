@@ -30,8 +30,8 @@ import java.util.Set;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.Task;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
 import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalContext;
 import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalPlanResolver;
@@ -95,7 +95,7 @@ public class SplitSparkWorkResolver implements PhysicalPlanResolver {
     boolean isFirst = true;
 
     for (BaseWork childWork : childWorks) {
-      BaseWork clonedParentWork = Utilities.cloneBaseWork(parentWork);
+      BaseWork clonedParentWork = SerializationUtilities.cloneBaseWork(parentWork);
       // give the cloned work a different name
       clonedParentWork.setName(clonedParentWork.getName().replaceAll("^([a-zA-Z]+)(\\s+)(\\d+)",
           "$1$2" + GenSparkUtils.getUtils().getNextSeqNumber()));

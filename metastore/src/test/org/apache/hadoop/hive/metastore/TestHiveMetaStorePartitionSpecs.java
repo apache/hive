@@ -97,7 +97,7 @@ public class TestHiveMetaStorePartitionSpecs {
 
     Thread t = new Thread(new RunMS());
     t.start();
-    Thread.sleep(5000);
+    Thread.sleep(10000);
 
     securityManager = System.getSecurityManager();
     System.setSecurityManager(new NoExitSecurityManager());

@@ -142,4 +142,18 @@ public class TestHiveConf {
     Assert.assertEquals("", conf2.get(HiveConf.ConfVars.METASTOREPWD.varname));
     Assert.assertEquals("", conf2.get(HiveConf.ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname));
   }
+
+  @Test
+  public void testSparkConfigUpdate(){
+    HiveConf conf = new HiveConf();
+    Assert.assertFalse(conf.getSparkConfigUpdated());
+
+    conf.verifyAndSet("spark.master", "yarn-cluster");
+    Assert.assertTrue(conf.getSparkConfigUpdated());
+    conf.verifyAndSet("hive.execution.engine", "spark");
+    Assert.assertTrue("Expected spark config updated.", conf.getSparkConfigUpdated());
+
+    conf.setSparkConfigUpdated(false);
+    Assert.assertFalse(conf.getSparkConfigUpdated());
+  }
 }

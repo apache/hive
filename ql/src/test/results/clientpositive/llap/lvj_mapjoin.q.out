@@ -120,20 +120,20 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 39 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: aid is not null (type: boolean)
-                    Statistics: Num rows: 2 Data size: 26 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3 Data size: 39 Basic stats: COMPLETE Column stats: NONE
                     Lateral View Forward
-                      Statistics: Num rows: 2 Data size: 26 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3 Data size: 39 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: aid (type: int)
                         outputColumnNames: aid
-                        Statistics: Num rows: 2 Data size: 26 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 3 Data size: 39 Basic stats: COMPLETE Column stats: NONE
                         Lateral View Join Operator
                           outputColumnNames: _col0, _col5
-                          Statistics: Num rows: 4 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 6 Data size: 78 Basic stats: COMPLETE Column stats: NONE
                           Select Operator
                             expressions: _col0 (type: int), _col5 (type: string)
                             outputColumnNames: _col0, _col1
-                            Statistics: Num rows: 4 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 6 Data size: 78 Basic stats: COMPLETE Column stats: NONE
                             Map Join Operator
                               condition map:
                                    Inner Join 0 to 1
@@ -143,18 +143,18 @@ STAGE PLANS:
                               outputColumnNames: _col0, _col1, _col2, _col3
                               input vertices:
                                 1 Map 2
-                              Statistics: Num rows: 4 Data size: 57 Basic stats: COMPLETE Column stats: NONE
+                              Statistics: Num rows: 6 Data size: 85 Basic stats: COMPLETE Column stats: NONE
                               HybridGraceHashJoin: true
                               Filter Operator
                                 predicate: (_col0 = _col2) (type: boolean)
-                                Statistics: Num rows: 2 Data size: 28 Basic stats: COMPLETE Column stats: NONE
+                                Statistics: Num rows: 3 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                                 Select Operator
                                   expressions: _col0 (type: int), _col1 (type: string), _col3 (type: string)
                                   outputColumnNames: _col0, _col1, _col2
-                                  Statistics: Num rows: 2 Data size: 28 Basic stats: COMPLETE Column stats: NONE
+                                  Statistics: Num rows: 3 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                                   File Output Operator
                                     compressed: false
-                                    Statistics: Num rows: 2 Data size: 28 Basic stats: COMPLETE Column stats: NONE
+                                    Statistics: Num rows: 3 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                                     table:
                                         input format: org.apache.hadoop.mapred.TextInputFormat
                                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -162,17 +162,17 @@ STAGE PLANS:
                       Select Operator
                         expressions: av (type: array<string>)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 2 Data size: 26 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 3 Data size: 39 Basic stats: COMPLETE Column stats: NONE
                         UDTF Operator
-                          Statistics: Num rows: 2 Data size: 26 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 3 Data size: 39 Basic stats: COMPLETE Column stats: NONE
                           function name: explode
                           Lateral View Join Operator
                             outputColumnNames: _col0, _col5
-                            Statistics: Num rows: 4 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 6 Data size: 78 Basic stats: COMPLETE Column stats: NONE
                             Select Operator
                               expressions: _col0 (type: int), _col5 (type: string)
                               outputColumnNames: _col0, _col1
-                              Statistics: Num rows: 4 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                              Statistics: Num rows: 6 Data size: 78 Basic stats: COMPLETE Column stats: NONE
                               Map Join Operator
                                 condition map:
                                      Inner Join 0 to 1
@@ -182,18 +182,18 @@ STAGE PLANS:
                                 outputColumnNames: _col0, _col1, _col2, _col3
                                 input vertices:
                                   1 Map 2
-                                Statistics: Num rows: 4 Data size: 57 Basic stats: COMPLETE Column stats: NONE
+                                Statistics: Num rows: 6 Data size: 85 Basic stats: COMPLETE Column stats: NONE
                                 HybridGraceHashJoin: true
                                 Filter Operator
                                   predicate: (_col0 = _col2) (type: boolean)
-                                  Statistics: Num rows: 2 Data size: 28 Basic stats: COMPLETE Column stats: NONE
+                                  Statistics: Num rows: 3 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                                   Select Operator
                                     expressions: _col0 (type: int), _col1 (type: string), _col3 (type: string)
                                     outputColumnNames: _col0, _col1, _col2
-                                    Statistics: Num rows: 2 Data size: 28 Basic stats: COMPLETE Column stats: NONE
+                                    Statistics: Num rows: 3 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                                     File Output Operator
                                       compressed: false
-                                      Statistics: Num rows: 2 Data size: 28 Basic stats: COMPLETE Column stats: NONE
+                                      Statistics: Num rows: 3 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                                       table:
                                           input format: org.apache.hadoop.mapred.TextInputFormat
                                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -206,45 +206,45 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 39 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: bid is not null (type: boolean)
-                    Statistics: Num rows: 2 Data size: 26 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3 Data size: 39 Basic stats: COMPLETE Column stats: NONE
                     Lateral View Forward
-                      Statistics: Num rows: 2 Data size: 26 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3 Data size: 39 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: bid (type: int)
                         outputColumnNames: bid
-                        Statistics: Num rows: 2 Data size: 26 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 3 Data size: 39 Basic stats: COMPLETE Column stats: NONE
                         Lateral View Join Operator
                           outputColumnNames: _col0, _col5
-                          Statistics: Num rows: 4 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 6 Data size: 78 Basic stats: COMPLETE Column stats: NONE
                           Select Operator
                             expressions: _col0 (type: int), _col5 (type: string)
                             outputColumnNames: _col0, _col1
-                            Statistics: Num rows: 4 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 6 Data size: 78 Basic stats: COMPLETE Column stats: NONE
                             Reduce Output Operator
                               key expressions: _col0 (type: int)
                               sort order: +
                               Map-reduce partition columns: _col0 (type: int)
-                              Statistics: Num rows: 4 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                              Statistics: Num rows: 6 Data size: 78 Basic stats: COMPLETE Column stats: NONE
                               value expressions: _col1 (type: string)
                       Select Operator
                         expressions: bv (type: array<string>)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 2 Data size: 26 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 3 Data size: 39 Basic stats: COMPLETE Column stats: NONE
                         UDTF Operator
-                          Statistics: Num rows: 2 Data size: 26 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 3 Data size: 39 Basic stats: COMPLETE Column stats: NONE
                           function name: explode
                           Lateral View Join Operator
                             outputColumnNames: _col0, _col5
-                            Statistics: Num rows: 4 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 6 Data size: 78 Basic stats: COMPLETE Column stats: NONE
                             Select Operator
                               expressions: _col0 (type: int), _col5 (type: string)
                               outputColumnNames: _col0, _col1
-                              Statistics: Num rows: 4 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                              Statistics: Num rows: 6 Data size: 78 Basic stats: COMPLETE Column stats: NONE
                               Reduce Output Operator
                                 key expressions: _col0 (type: int)
                                 sort order: +
                                 Map-reduce partition columns: _col0 (type: int)
-                                Statistics: Num rows: 4 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                                Statistics: Num rows: 6 Data size: 78 Basic stats: COMPLETE Column stats: NONE
                                 value expressions: _col1 (type: string)
             Execution mode: llap
 

@@ -89,7 +89,7 @@ import com.google.common.collect.Lists;
  * Optimizer looks at query plan to determine if it can answer query using statistics
  * and than change the plan to answer query entirely using statistics stored in metastore.
  */
-public class StatsOptimizer implements Transform {
+public class StatsOptimizer extends Transform {
   // TODO: [HIVE-6289] while getting stats from metastore, we currently only get one col at
   //       a time; this could be improved - get all necessary columns in advance, then use local.
   // TODO: [HIVE-6292] aggregations could be done directly in metastore. Hive over MySQL!

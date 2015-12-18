@@ -1271,7 +1271,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     return getName() + "[" + getIdentifier() + "]";
   }
 
-  public static String toString(Collection<Operator<? extends OperatorDesc>> top) {
+  public static String toString(Collection<TableScanOperator> top) {
     StringBuilder builder = new StringBuilder();
     Set<String> visited = new HashSet<String>();
     for (Operator<?> op : top) {

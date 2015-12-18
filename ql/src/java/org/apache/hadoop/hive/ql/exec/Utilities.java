@@ -18,14 +18,13 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import java.util.ArrayList;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import java.beans.DefaultPersistenceDelegate;
 import java.beans.Encoder;
-import java.beans.ExceptionListener;
 import java.beans.Expression;
-import java.beans.PersistenceDelegate;
 import java.beans.Statement;
-import java.beans.XMLDecoder;
-import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
@@ -36,29 +35,22 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Array;
-import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLDecoder;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.sql.SQLTransientException;
-import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -83,12 +75,10 @@ import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
-import org.antlr.runtime.CommonToken;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.WordUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
@@ -150,22 +140,16 @@ import org.apache.hadoop.hive.ql.metadata.InputEstimator;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.AbstractOperatorDesc;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
-import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
-import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.MergeJoinWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
-import org.apache.hadoop.hive.ql.plan.PlanUtils.ExpressionTypes;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
-import org.apache.hadoop.hive.ql.plan.SparkEdgeProperty;
-import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.api.Adjacency;
@@ -181,9 +165,6 @@ import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.StandardConstantListObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.StandardConstantMapObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.StandardConstantStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
@@ -209,14 +190,10 @@ import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.util.Progressable;
 import org.apache.hadoop.util.Shell;
 import org.apache.hive.common.util.ReflectionUtil;
-import org.objenesis.strategy.StdInstantiatorStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.io.Input;
-import com.esotericsoftware.kryo.io.Output;
-import com.esotericsoftware.kryo.serializers.FieldSerializer;
 import com.google.common.base.Preconditions;
 
 /**
@@ -391,6 +368,7 @@ public final class Utilities {
   private static BaseWork getBaseWork(Configuration conf, String name) {
     Path path = null;
     InputStream in = null;
+    Kryo kryo = SerializationUtilities.borrowKryo();
     try {
       String engine = HiveConf.getVar(conf, ConfVars.HIVE_EXECUTION_ENGINE);
       if (engine.equals("spark")) {
@@ -401,7 +379,7 @@ public final class Utilities {
           ClassLoader loader = Thread.currentThread().getContextClassLoader();
           ClassLoader newLoader = addToClassPath(loader, addedJars.split(";"));
           Thread.currentThread().setContextClassLoader(newLoader);
-          runtimeSerializationKryo.get().setClassLoader(newLoader);
+          kryo.setClassLoader(newLoader);
         }
       }
 
@@ -410,16 +388,7 @@ public final class Utilities {
       assert path != null;
       BaseWork gWork = gWorkMap.get(conf).get(path);
       if (gWork == null) {
-        Path localPath;
-        if (conf.getBoolean("mapreduce.task.uberized", false) && name.equals(REDUCE_PLAN_NAME)) {
-          localPath = new Path(name);
-        } else if (ShimLoader.getHadoopShims().isLocalMode(conf)) {
-          localPath = path;
-        } else {
-          LOG.debug("***************non-local mode***************");
-          localPath = new Path(name);
-        }
-        localPath = path;
+        Path localPath = path;
         LOG.debug("local path = " + localPath);
         if (HiveConf.getBoolVar(conf, ConfVars.HIVE_RPC_QUERY_PLAN)) {
           LOG.debug("Loading plan from string: "+path.toUri().getPath());
@@ -438,29 +407,29 @@ public final class Utilities {
 
         if(MAP_PLAN_NAME.equals(name)){
           if (ExecMapper.class.getName().equals(conf.get(MAPRED_MAPPER_CLASS))){
-            gWork = deserializePlan(in, MapWork.class, conf);
+            gWork = SerializationUtilities.deserializePlan(kryo, in, MapWork.class);
           } else if(MergeFileMapper.class.getName().equals(conf.get(MAPRED_MAPPER_CLASS))) {
-            gWork = deserializePlan(in, MergeFileWork.class, conf);
+            gWork = SerializationUtilities.deserializePlan(kryo, in, MergeFileWork.class);
           } else if(ColumnTruncateMapper.class.getName().equals(conf.get(MAPRED_MAPPER_CLASS))) {
-            gWork = deserializePlan(in, ColumnTruncateWork.class, conf);
+            gWork = SerializationUtilities.deserializePlan(kryo, in, ColumnTruncateWork.class);
           } else if(PartialScanMapper.class.getName().equals(conf.get(MAPRED_MAPPER_CLASS))) {
-            gWork = deserializePlan(in, PartialScanWork.class,conf);
+            gWork = SerializationUtilities.deserializePlan(kryo, in, PartialScanWork.class);
           } else {
             throw new RuntimeException("unable to determine work from configuration ."
                 + MAPRED_MAPPER_CLASS + " was "+ conf.get(MAPRED_MAPPER_CLASS)) ;
           }
         } else if (REDUCE_PLAN_NAME.equals(name)) {
           if(ExecReducer.class.getName().equals(conf.get(MAPRED_REDUCER_CLASS))) {
-            gWork = deserializePlan(in, ReduceWork.class, conf);
+            gWork = SerializationUtilities.deserializePlan(kryo, in, ReduceWork.class);
           } else {
             throw new RuntimeException("unable to determine work from configuration ."
                 + MAPRED_REDUCER_CLASS +" was "+ conf.get(MAPRED_REDUCER_CLASS)) ;
           }
         } else if (name.contains(MERGE_PLAN_NAME)) {
           if (name.startsWith(MAPNAME)) {
-            gWork = deserializePlan(in, MapWork.class, conf);
+            gWork = SerializationUtilities.deserializePlan(kryo, in, MapWork.class);
           } else if (name.startsWith(REDUCENAME)) {
-            gWork = deserializePlan(in, ReduceWork.class, conf);
+            gWork = SerializationUtilities.deserializePlan(kryo, in, ReduceWork.class);
           } else {
             throw new RuntimeException("Unknown work type: " + name);
           }
@@ -480,6 +449,7 @@ public final class Utilities {
       LOG.error(msg, e);
       throw new RuntimeException(msg, e);
     } finally {
+      SerializationUtilities.releaseKryo(kryo);
       if (in != null) {
         try {
           in.close();
@@ -523,163 +493,6 @@ public final class Utilities {
     return ret;
   }
 
-  /**
-   * Java 1.5 workaround. From http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5015403
-   */
-  public static class EnumDelegate extends DefaultPersistenceDelegate {
-    @Override
-    protected Expression instantiate(Object oldInstance, Encoder out) {
-      return new Expression(Enum.class, "valueOf", new Object[] {oldInstance.getClass(),
-          ((Enum<?>) oldInstance).name()});
-    }
-
-    @Override
-    protected boolean mutatesTo(Object oldInstance, Object newInstance) {
-      return oldInstance == newInstance;
-    }
-  }
-
-  public static class MapDelegate extends DefaultPersistenceDelegate {
-    @Override
-    protected Expression instantiate(Object oldInstance, Encoder out) {
-      Map oldMap = (Map) oldInstance;
-      HashMap newMap = new HashMap(oldMap);
-      return new Expression(newMap, HashMap.class, "new", new Object[] {});
-    }
-
-    @Override
-    protected boolean mutatesTo(Object oldInstance, Object newInstance) {
-      return false;
-    }
-
-    @Override
-    protected void initialize(Class<?> type, Object oldInstance, Object newInstance, Encoder out) {
-      java.util.Collection oldO = (java.util.Collection) oldInstance;
-      java.util.Collection newO = (java.util.Collection) newInstance;
-
-      if (newO.size() != 0) {
-        out.writeStatement(new Statement(oldInstance, "clear", new Object[] {}));
-      }
-      for (Iterator i = oldO.iterator(); i.hasNext();) {
-        out.writeStatement(new Statement(oldInstance, "add", new Object[] {i.next()}));
-      }
-    }
-  }
-
-  public static class SetDelegate extends DefaultPersistenceDelegate {
-    @Override
-    protected Expression instantiate(Object oldInstance, Encoder out) {
-      Set oldSet = (Set) oldInstance;
-      HashSet newSet = new HashSet(oldSet);
-      return new Expression(newSet, HashSet.class, "new", new Object[] {});
-    }
-
-    @Override
-    protected boolean mutatesTo(Object oldInstance, Object newInstance) {
-      return false;
-    }
-
-    @Override
-    protected void initialize(Class<?> type, Object oldInstance, Object newInstance, Encoder out) {
-      java.util.Collection oldO = (java.util.Collection) oldInstance;
-      java.util.Collection newO = (java.util.Collection) newInstance;
-
-      if (newO.size() != 0) {
-        out.writeStatement(new Statement(oldInstance, "clear", new Object[] {}));
-      }
-      for (Iterator i = oldO.iterator(); i.hasNext();) {
-        out.writeStatement(new Statement(oldInstance, "add", new Object[] {i.next()}));
-      }
-    }
-
-  }
-
-  public static class ListDelegate extends DefaultPersistenceDelegate {
-    @Override
-    protected Expression instantiate(Object oldInstance, Encoder out) {
-      List oldList = (List) oldInstance;
-      ArrayList newList = new ArrayList(oldList);
-      return new Expression(newList, ArrayList.class, "new", new Object[] {});
-    }
-
-    @Override
-    protected boolean mutatesTo(Object oldInstance, Object newInstance) {
-      return false;
-    }
-
-    @Override
-    protected void initialize(Class<?> type, Object oldInstance, Object newInstance, Encoder out) {
-      java.util.Collection oldO = (java.util.Collection) oldInstance;
-      java.util.Collection newO = (java.util.Collection) newInstance;
-
-      if (newO.size() != 0) {
-        out.writeStatement(new Statement(oldInstance, "clear", new Object[] {}));
-      }
-      for (Iterator i = oldO.iterator(); i.hasNext();) {
-        out.writeStatement(new Statement(oldInstance, "add", new Object[] {i.next()}));
-      }
-    }
-
-  }
-
-  /**
-   * DatePersistenceDelegate. Needed to serialize java.util.Date
-   * since it is not serialization friendly.
-   * Also works for java.sql.Date since it derives from java.util.Date.
-   */
-  public static class DatePersistenceDelegate extends PersistenceDelegate {
-
-    @Override
-    protected Expression instantiate(Object oldInstance, Encoder out) {
-      Date dateVal = (Date)oldInstance;
-      Object[] args = { dateVal.getTime() };
-      return new Expression(dateVal, dateVal.getClass(), "new", args);
-    }
-
-    @Override
-    protected boolean mutatesTo(Object oldInstance, Object newInstance) {
-      if (oldInstance == null || newInstance == null) {
-        return false;
-      }
-      return oldInstance.getClass() == newInstance.getClass();
-    }
-  }
-
-  /**
-   * TimestampPersistenceDelegate. Needed to serialize java.sql.Timestamp since
-   * it is not serialization friendly.
-   */
-  public static class TimestampPersistenceDelegate extends DatePersistenceDelegate {
-    @Override
-    protected void initialize(Class<?> type, Object oldInstance, Object newInstance, Encoder out) {
-      Timestamp ts = (Timestamp)oldInstance;
-      Object[] args = { ts.getNanos() };
-      Statement stmt = new Statement(oldInstance, "setNanos", args);
-      out.writeStatement(stmt);
-    }
-  }
-
-  /**
-   * Need to serialize org.antlr.runtime.CommonToken
-   */
-  public static class CommonTokenDelegate extends PersistenceDelegate {
-    @Override
-    protected Expression instantiate(Object oldInstance, Encoder out) {
-      CommonToken ct = (CommonToken)oldInstance;
-      Object[] args = {ct.getType(), ct.getText()};
-      return new Expression(ct, ct.getClass(), "new", args);
-    }
-  }
-
-  public static class PathDelegate extends PersistenceDelegate {
-    @Override
-    protected Expression instantiate(Object oldInstance, Encoder out) {
-      Path p = (Path)oldInstance;
-      Object[] args = {p.toString()};
-      return new Expression(p, p.getClass(), "new", args);
-    }
-  }
-
   public static void setMapRedWork(Configuration conf, MapredWork w, Path hiveScratchDir) {
     String useName = conf.get(INPUT_NAME);
     if (useName == null) {
@@ -702,6 +515,7 @@ public final class Utilities {
   }
 
   private static Path setBaseWork(Configuration conf, BaseWork w, Path hiveScratchDir, String name, boolean useCache) {
+    Kryo kryo = SerializationUtilities.borrowKryo();
     try {
       setPlanPath(conf, hiveScratchDir);
 
@@ -714,7 +528,7 @@ public final class Utilities {
         ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
         try {
           out = new DeflaterOutputStream(byteOut, new Deflater(Deflater.BEST_SPEED));
-          serializePlan(w, out, conf);
+          SerializationUtilities.serializePlan(kryo, w, out);
           out.close();
           out = null;
         } finally {
@@ -728,7 +542,7 @@ public final class Utilities {
         FileSystem fs = planPath.getFileSystem(conf);
         try {
           out = fs.create(planPath);
-          serializePlan(w, out, conf);
+          SerializationUtilities.serializePlan(kryo, w, out);
           out.close();
           out = null;
         } finally {
@@ -760,6 +574,8 @@ public final class Utilities {
       String msg = "Error caching " + name + ": " + e;
       LOG.error(msg, e);
       throw new RuntimeException(msg, e);
+    } finally {
+      SerializationUtilities.releaseKryo(kryo);
     }
   }
 
@@ -790,73 +606,6 @@ public final class Utilities {
     return null;
   }
 
-  /**
-   * Serializes expression via Kryo.
-   * @param expr Expression.
-   * @return Bytes.
-   */
-  public static byte[] serializeExpressionToKryo(ExprNodeGenericFuncDesc expr) {
-    return serializeObjectToKryo(expr);
-  }
-
-  /**
-   * Deserializes expression from Kryo.
-   * @param bytes Bytes containing the expression.
-   * @return Expression; null if deserialization succeeded, but the result type is incorrect.
-   */
-  public static ExprNodeGenericFuncDesc deserializeExpressionFromKryo(byte[] bytes) {
-    return deserializeObjectFromKryo(bytes, ExprNodeGenericFuncDesc.class);
-  }
-
-  public static String serializeExpression(ExprNodeGenericFuncDesc expr) {
-    try {
-      return new String(Base64.encodeBase64(serializeExpressionToKryo(expr)), "UTF-8");
-    } catch (UnsupportedEncodingException ex) {
-      throw new RuntimeException("UTF-8 support required", ex);
-    }
-  }
-
-  public static ExprNodeGenericFuncDesc deserializeExpression(String s) {
-    byte[] bytes;
-    try {
-      bytes = Base64.decodeBase64(s.getBytes("UTF-8"));
-    } catch (UnsupportedEncodingException ex) {
-      throw new RuntimeException("UTF-8 support required", ex);
-    }
-    return deserializeExpressionFromKryo(bytes);
-  }
-
-  private static byte[] serializeObjectToKryo(Serializable object) {
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    Output output = new Output(baos);
-    runtimeSerializationKryo.get().writeObject(output, object);
-    output.close();
-    return baos.toByteArray();
-  }
-
-  private static <T extends Serializable> T deserializeObjectFromKryo(byte[] bytes, Class<T> clazz) {
-    Input inp = new Input(new ByteArrayInputStream(bytes));
-    T func = runtimeSerializationKryo.get().readObject(inp, clazz);
-    inp.close();
-    return func;
-  }
-
-  public static String serializeObject(Serializable expr) {
-    try {
-      return new String(Base64.encodeBase64(serializeObjectToKryo(expr)), "UTF-8");
-    } catch (UnsupportedEncodingException ex) {
-      throw new RuntimeException("UTF-8 support required", ex);
-    }
-  }
-
-  public static <T extends Serializable> T deserializeObject(String s, Class<T> clazz) {
-    try {
-      return deserializeObjectFromKryo(Base64.decodeBase64(s.getBytes("UTF-8")), clazz);
-    } catch (UnsupportedEncodingException ex) {
-      throw new RuntimeException("UTF-8 support required", ex);
-    }
-  }
-
   public static class CollectionPersistenceDelegate extends DefaultPersistenceDelegate {
     @Override
     protected Expression instantiate(Object oldInstance, Encoder out) {
@@ -869,415 +618,6 @@ public final class Utilities {
       while (ite.hasNext()) {
         out.writeStatement(new Statement(oldInstance, "add", new Object[] {ite.next()}));
       }
-    }
-  }
-
-  /**
-   * Kryo serializer for timestamp.
-   */
-  private static class TimestampSerializer extends
-  com.esotericsoftware.kryo.Serializer<Timestamp> {
-
-    @Override
-    public Timestamp read(Kryo kryo, Input input, Class<Timestamp> clazz) {
-      Timestamp ts = new Timestamp(input.readLong());
-      ts.setNanos(input.readInt());
-      return ts;
-    }
-
-    @Override
-    public void write(Kryo kryo, Output output, Timestamp ts) {
-      output.writeLong(ts.getTime());
-      output.writeInt(ts.getNanos());
-    }
-  }
-
-   /** Custom Kryo serializer for sql date, otherwise Kryo gets confused between
-   java.sql.Date and java.util.Date while deserializing
-   */
-  private static class SqlDateSerializer extends
-    com.esotericsoftware.kryo.Serializer<java.sql.Date> {
-
-    @Override
-    public java.sql.Date read(Kryo kryo, Input input, Class<java.sql.Date> clazz) {
-      return new java.sql.Date(input.readLong());
-    }
-
-    @Override
-    public void write(Kryo kryo, Output output, java.sql.Date sqlDate) {
-      output.writeLong(sqlDate.getTime());
-    }
-  }
-
-  private static class CommonTokenSerializer extends com.esotericsoftware.kryo.Serializer<CommonToken> {
-    @Override
-    public CommonToken read(Kryo kryo, Input input, Class<CommonToken> clazz) {
-      return new CommonToken(input.readInt(), input.readString());
-    }
-
-    @Override
-  public void write(Kryo kryo, Output output, CommonToken token) {
-      output.writeInt(token.getType());
-      output.writeString(token.getText());
-    }
-  }
-
-  private static class PathSerializer extends com.esotericsoftware.kryo.Serializer<Path> {
-
-    @Override
-    public void write(Kryo kryo, Output output, Path path) {
-      output.writeString(path.toUri().toString());
-    }
-
-    @Override
-    public Path read(Kryo kryo, Input input, Class<Path> type) {
-      return new Path(URI.create(input.readString()));
-    }
-  }
-
-  public static List<Operator<?>> cloneOperatorTree(Configuration conf, List<Operator<?>> roots) {
-    ByteArrayOutputStream baos = new ByteArrayOutputStream(4096);
-    serializePlan(roots, baos, conf, true);
-    @SuppressWarnings("unchecked")
-    List<Operator<?>> result =
-        deserializePlan(new ByteArrayInputStream(baos.toByteArray()),
-        roots.getClass(), conf, true);
-    return result;
-  }
-
-  private static void serializePlan(Object plan, OutputStream out, Configuration conf, boolean cloningPlan) {
-    PerfLogger perfLogger = SessionState.getPerfLogger();
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SERIALIZE_PLAN);
-    String serializationType = conf.get(HiveConf.ConfVars.PLAN_SERIALIZATION.varname, "kryo");
-    LOG.info("Serializing " + plan.getClass().getSimpleName() + " via " + serializationType);
-    if("javaXML".equalsIgnoreCase(serializationType)) {
-      serializeObjectByJavaXML(plan, out);
-    } else {
-      if(cloningPlan) {
-        serializeObjectByKryo(cloningQueryPlanKryo.get(), plan, out);
-      } else {
-        serializeObjectByKryo(runtimeSerializationKryo.get(), plan, out);
-      }
-    }
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SERIALIZE_PLAN);
-  }
-  /**
-   * Serializes the plan.
-   * @param plan The plan, such as QueryPlan, MapredWork, etc.
-   * @param out The stream to write to.
-   * @param conf to pick which serialization format is desired.
-   */
-  public static void serializePlan(Object plan, OutputStream out, Configuration conf) {
-    serializePlan(plan, out, conf, false);
-  }
-
-  private static <T> T deserializePlan(InputStream in, Class<T> planClass, Configuration conf, boolean cloningPlan) {
-    PerfLogger perfLogger = SessionState.getPerfLogger();
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.DESERIALIZE_PLAN);
-    T plan;
-    String serializationType = conf.get(HiveConf.ConfVars.PLAN_SERIALIZATION.varname, "kryo");
-    LOG.info("Deserializing " + planClass.getSimpleName() + " via " + serializationType);
-    if("javaXML".equalsIgnoreCase(serializationType)) {
-      plan = deserializeObjectByJavaXML(in);
-    } else {
-      if(cloningPlan) {
-        plan = deserializeObjectByKryo(cloningQueryPlanKryo.get(), in, planClass);
-      } else {
-        plan = deserializeObjectByKryo(runtimeSerializationKryo.get(), in, planClass);
-      }
-    }
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.DESERIALIZE_PLAN);
-    return plan;
-  }
-  /**
-   * Deserializes the plan.
-   * @param in The stream to read from.
-   * @param planClass class of plan
-   * @param conf configuration
-   * @return The plan, such as QueryPlan, MapredWork, etc.
-   */
-  public static <T> T deserializePlan(InputStream in, Class<T> planClass, Configuration conf) {
-    return deserializePlan(in, planClass, conf, false);
-  }
-
-  /**
-   * Clones using the powers of XML. Do not use unless necessary.
-   * @param plan The plan.
-   * @return The clone.
-   */
-  public static MapredWork clonePlan(MapredWork plan) {
-    // TODO: need proper clone. Meanwhile, let's at least keep this horror in one place
-    PerfLogger perfLogger = SessionState.getPerfLogger();
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.CLONE_PLAN);
-    ByteArrayOutputStream baos = new ByteArrayOutputStream(4096);
-    Configuration conf = new HiveConf();
-    serializePlan(plan, baos, conf, true);
-    MapredWork newPlan = deserializePlan(new ByteArrayInputStream(baos.toByteArray()),
-        MapredWork.class, conf, true);
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.CLONE_PLAN);
-    return newPlan;
-  }
-
-  /**
-   * Clones using the powers of XML. Do not use unless necessary.
-   * @param plan The plan.
-   * @return The clone.
-   */
-  public static BaseWork cloneBaseWork(BaseWork plan) {
-    PerfLogger perfLogger = SessionState.getPerfLogger();
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.CLONE_PLAN);
-    ByteArrayOutputStream baos = new ByteArrayOutputStream(4096);
-    Configuration conf = new HiveConf();
-    serializePlan(plan, baos, conf, true);
-    BaseWork newPlan = deserializePlan(new ByteArrayInputStream(baos.toByteArray()),
-        plan.getClass(), conf, true);
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.CLONE_PLAN);
-    return newPlan;
-  }
-
-  /**
-   * Serialize the object. This helper function mainly makes sure that enums,
-   * counters, etc are handled properly.
-   */
-  private static void serializeObjectByJavaXML(Object plan, OutputStream out) {
-    XMLEncoder e = new XMLEncoder(out);
-    e.setExceptionListener(new ExceptionListener() {
-      @Override
-      public void exceptionThrown(Exception e) {
-        LOG.warn(org.apache.hadoop.util.StringUtils.stringifyException(e));
-        throw new RuntimeException("Cannot serialize object", e);
-      }
-    });
-    // workaround for java 1.5
-    e.setPersistenceDelegate(ExpressionTypes.class, new EnumDelegate());
-    e.setPersistenceDelegate(GroupByDesc.Mode.class, new EnumDelegate());
-    e.setPersistenceDelegate(java.sql.Date.class, new DatePersistenceDelegate());
-    e.setPersistenceDelegate(Timestamp.class, new TimestampPersistenceDelegate());
-
-    e.setPersistenceDelegate(org.datanucleus.store.types.backed.Map.class, new MapDelegate());
-    e.setPersistenceDelegate(org.datanucleus.store.types.backed.List.class, new ListDelegate());
-    e.setPersistenceDelegate(CommonToken.class, new CommonTokenDelegate());
-    e.setPersistenceDelegate(Path.class, new PathDelegate());
-
-    e.writeObject(plan);
-    e.close();
-  }
-
-  /**
-   * @param plan Usually of type MapredWork, MapredLocalWork etc.
-   * @param out stream in which serialized plan is written into
-   */
-  private static void serializeObjectByKryo(Kryo kryo, Object plan, OutputStream out) {
-    Output output = new Output(out);
-    kryo.setClassLoader(getSessionSpecifiedClassLoader());
-    kryo.writeObject(output, plan);
-    output.close();
-  }
-
-  /**
-   * De-serialize an object. This helper function mainly makes sure that enums,
-   * counters, etc are handled properly.
-   */
-  @SuppressWarnings("unchecked")
-  private static <T> T deserializeObjectByJavaXML(InputStream in) {
-    XMLDecoder d = null;
-    try {
-      d = new XMLDecoder(in, null, null);
-      return (T) d.readObject();
-    } finally {
-      if (null != d) {
-        d.close();
-      }
-    }
-  }
-
-  private static <T> T deserializeObjectByKryo(Kryo kryo, InputStream in, Class<T> clazz ) {
-    Input inp = new Input(in);
-    kryo.setClassLoader(getSessionSpecifiedClassLoader());
-    T t = kryo.readObject(inp,clazz);
-    inp.close();
-    return t;
-  }
-
-  // Kryo is not thread-safe,
-  // Also new Kryo() is expensive, so we want to do it just once.
-  public static ThreadLocal<Kryo>
-      runtimeSerializationKryo = new ThreadLocal<Kryo>() {
-    @Override
-    protected Kryo initialValue() {
-      Kryo kryo = new Kryo();
-      kryo.setClassLoader(Thread.currentThread().getContextClassLoader());
-      kryo.register(java.sql.Date.class, new SqlDateSerializer());
-      kryo.register(java.sql.Timestamp.class, new TimestampSerializer());
-      kryo.register(Path.class, new PathSerializer());
-      kryo.register( Arrays.asList( "" ).getClass(), new ArraysAsListSerializer() );
-      ((Kryo.DefaultInstantiatorStrategy) kryo.getInstantiatorStrategy()).setFallbackInstantiatorStrategy(
-          new StdInstantiatorStrategy());
-      removeField(kryo, Operator.class, "colExprMap");
-      removeField(kryo, AbstractOperatorDesc.class, "statistics");
-      kryo.register(MapWork.class);
-      kryo.register(ReduceWork.class);
-      kryo.register(TableDesc.class);
-      kryo.register(UnionOperator.class);
-      kryo.register(FileSinkOperator.class);
-      kryo.register(HiveIgnoreKeyTextOutputFormat.class);
-      kryo.register(StandardConstantListObjectInspector.class);
-      kryo.register(StandardConstantMapObjectInspector.class);
-      kryo.register(StandardConstantStructObjectInspector.class);
-      kryo.register(SequenceFileInputFormat.class);
-      kryo.register(HiveSequenceFileOutputFormat.class);
-      return kryo;
-    };
-  };
-  @SuppressWarnings("rawtypes")
-  protected static void removeField(Kryo kryo, Class type, String fieldName) {
-    FieldSerializer fld = new FieldSerializer(kryo, type);
-    fld.removeField(fieldName);
-    kryo.register(type, fld);
-  }
-
-  public static ThreadLocal<Kryo> sparkSerializationKryo = new ThreadLocal<Kryo>() {
-    @Override
-    protected synchronized Kryo initialValue() {
-      Kryo kryo = new Kryo();
-      kryo.setClassLoader(Thread.currentThread().getContextClassLoader());
-      kryo.register(java.sql.Date.class, new SqlDateSerializer());
-      kryo.register(java.sql.Timestamp.class, new TimestampSerializer());
-      kryo.register(Path.class, new PathSerializer());
-      kryo.register( Arrays.asList( "" ).getClass(), new ArraysAsListSerializer() );
-      ((Kryo.DefaultInstantiatorStrategy) kryo.getInstantiatorStrategy()).setFallbackInstantiatorStrategy(new StdInstantiatorStrategy());
-      removeField(kryo, Operator.class, "colExprMap");
-      removeField(kryo, ColumnInfo.class, "objectInspector");
-      removeField(kryo, AbstractOperatorDesc.class, "statistics");
-      kryo.register(SparkEdgeProperty.class);
-      kryo.register(MapWork.class);
-      kryo.register(ReduceWork.class);
-      kryo.register(SparkWork.class);
-      kryo.register(TableDesc.class);
-      kryo.register(Pair.class);
-      kryo.register(UnionOperator.class);
-      kryo.register(FileSinkOperator.class);
-      kryo.register(HiveIgnoreKeyTextOutputFormat.class);
-      kryo.register(StandardConstantListObjectInspector.class);
-      kryo.register(StandardConstantMapObjectInspector.class);
-      kryo.register(StandardConstantStructObjectInspector.class);
-      kryo.register(SequenceFileInputFormat.class);
-      kryo.register(HiveSequenceFileOutputFormat.class);
-      return kryo;
-    };
-  };
-
-  private static ThreadLocal<Kryo> cloningQueryPlanKryo = new ThreadLocal<Kryo>() {
-    @Override
-    protected Kryo initialValue() {
-      Kryo kryo = new Kryo();
-      kryo.setClassLoader(Thread.currentThread().getContextClassLoader());
-      kryo.register(CommonToken.class, new CommonTokenSerializer());
-      kryo.register(java.sql.Date.class, new SqlDateSerializer());
-      kryo.register(java.sql.Timestamp.class, new TimestampSerializer());
-      kryo.register(Path.class, new PathSerializer());
-      kryo.register( Arrays.asList( "" ).getClass(), new ArraysAsListSerializer() );
-      ((Kryo.DefaultInstantiatorStrategy) kryo.getInstantiatorStrategy()).setFallbackInstantiatorStrategy(
-          new StdInstantiatorStrategy());
-      removeField(kryo, Operator.class, "colExprMap");
-      removeField(kryo, AbstractOperatorDesc.class, "statistics");
-      kryo.register(MapWork.class);
-      kryo.register(ReduceWork.class);
-      kryo.register(TableDesc.class);
-      kryo.register(UnionOperator.class);
-      kryo.register(FileSinkOperator.class);
-      kryo.register(HiveIgnoreKeyTextOutputFormat.class);
-      kryo.register(StandardConstantListObjectInspector.class);
-      kryo.register(StandardConstantMapObjectInspector.class);
-      kryo.register(StandardConstantStructObjectInspector.class);
-      kryo.register(SequenceFileInputFormat.class);
-      kryo.register(HiveSequenceFileOutputFormat.class);
-      return kryo;
-    };
-  };
-
-  /**
-   * A kryo {@link Serializer} for lists created via {@link Arrays#asList(Object...)}.
-   * <p>
-   * Note: This serializer does not support cyclic references, so if one of the objects
-   * gets set the list as attribute this might cause an error during deserialization.
-   * </p>
-   *
-   * This is from kryo-serializers package. Added explicitly to avoid classpath issues.
-   */
-  private static class ArraysAsListSerializer extends com.esotericsoftware.kryo.Serializer<List<?>> {
-
-    private Field _arrayField;
-
-    public ArraysAsListSerializer() {
-      try {
-        _arrayField = Class.forName( "java.util.Arrays$ArrayList" ).getDeclaredField( "a" );
-        _arrayField.setAccessible( true );
-      } catch ( final Exception e ) {
-        throw new RuntimeException( e );
-      }
-      // Immutable causes #copy(obj) to return the original object
-      setImmutable(true);
-    }
-
-    @Override
-    public List<?> read(final Kryo kryo, final Input input, final Class<List<?>> type) {
-      final int length = input.readInt(true);
-      Class<?> componentType = kryo.readClass( input ).getType();
-      if (componentType.isPrimitive()) {
-        componentType = getPrimitiveWrapperClass(componentType);
-      }
-      try {
-        final Object items = Array.newInstance( componentType, length );
-        for( int i = 0; i < length; i++ ) {
-          Array.set(items, i, kryo.readClassAndObject( input ));
-        }
-        return Arrays.asList( (Object[])items );
-      } catch ( final Exception e ) {
-        throw new RuntimeException( e );
-      }
-    }
-
-    @Override
-    public void write(final Kryo kryo, final Output output, final List<?> obj) {
-      try {
-        final Object[] array = (Object[]) _arrayField.get( obj );
-        output.writeInt(array.length, true);
-        final Class<?> componentType = array.getClass().getComponentType();
-        kryo.writeClass( output, componentType );
-        for( final Object item : array ) {
-          kryo.writeClassAndObject( output, item );
-        }
-      } catch ( final RuntimeException e ) {
-        // Don't eat and wrap RuntimeExceptions because the ObjectBuffer.write...
-        // handles SerializationException specifically (resizing the buffer)...
-        throw e;
-      } catch ( final Exception e ) {
-        throw new RuntimeException( e );
-      }
-    }
-
-    private Class<?> getPrimitiveWrapperClass(final Class<?> c) {
-      if (c.isPrimitive()) {
-        if (c.equals(Long.TYPE)) {
-          return Long.class;
-        } else if (c.equals(Integer.TYPE)) {
-          return Integer.class;
-        } else if (c.equals(Double.TYPE)) {
-          return Double.class;
-        } else if (c.equals(Float.TYPE)) {
-          return Float.class;
-        } else if (c.equals(Boolean.TYPE)) {
-          return Boolean.class;
-        } else if (c.equals(Character.TYPE)) {
-          return Character.class;
-        } else if (c.equals(Short.TYPE)) {
-          return Short.class;
-        } else if (c.equals(Byte.TYPE)) {
-          return Byte.class;
-        }
-      }
-      return c;
     }
   }
 
@@ -2411,6 +1751,19 @@ public final class Utilities {
         return result;
     }
 
+  private static boolean useExistingClassLoader(ClassLoader cl) {
+    if (!(cl instanceof UDFClassLoader)) {
+      // Cannot use the same classloader if it is not an instance of {@code UDFClassLoader}
+      return false;
+    }
+    final UDFClassLoader udfClassLoader = (UDFClassLoader) cl;
+    if (udfClassLoader.isClosed()) {
+      // The classloader may have been closed, Cannot add to the same instance
+      return false;
+    }
+    return true;
+  }
+
   /**
    * Add new elements to the classpath.
    *
@@ -2418,24 +1771,28 @@ public final class Utilities {
    *          Array of classpath elements
    */
   public static ClassLoader addToClassPath(ClassLoader cloader, String[] newPaths) throws Exception {
-    URLClassLoader loader = (URLClassLoader) cloader;
-    List<URL> curPath = Arrays.asList(loader.getURLs());
-    ArrayList<URL> newPath = new ArrayList<URL>();
-
-    // get a list with the current classpath components
-    for (URL onePath : curPath) {
-      newPath.add(onePath);
+    final URLClassLoader loader = (URLClassLoader) cloader;
+    if (useExistingClassLoader(cloader)) {
+      final UDFClassLoader udfClassLoader = (UDFClassLoader) loader;
+      for (String path : newPaths) {
+        udfClassLoader.addURL(urlFromPathString(path));
+      }
+      return udfClassLoader;
+    } else {
+      return createUDFClassLoader(loader, newPaths);
     }
-    curPath = newPath;
+  }
 
+  public static ClassLoader createUDFClassLoader(URLClassLoader loader, String[] newPaths) {
+    final Set<URL> curPathsSet = Sets.newHashSet(loader.getURLs());
+    final List<URL> curPaths = Lists.newArrayList(curPathsSet);
     for (String onestr : newPaths) {
-      URL oneurl = urlFromPathString(onestr);
-      if (oneurl != null && !curPath.contains(oneurl)) {
-        curPath.add(oneurl);
+      final URL oneurl = urlFromPathString(onestr);
+      if (oneurl != null && !curPathsSet.contains(oneurl)) {
+        curPaths.add(oneurl);
       }
     }
-
-    return new URLClassLoader(curPath.toArray(new URL[0]), loader);
+    return new UDFClassLoader(curPaths.toArray(new URL[0]), loader);
   }
 
   /**
@@ -2456,13 +1813,13 @@ public final class Utilities {
       }
     }
     JavaUtils.closeClassLoader(loader);
-//this loader is closed, remove it from cached registry loaders to avoid remove it again.
+   // This loader is closed, remove it from cached registry loaders to avoid removing it again.
     Registry reg = SessionState.getRegistry();
     if(reg != null) {
       reg.removeFromUDFLoaders(loader);
     }
 
-    loader = new URLClassLoader(newPath.toArray(new URL[0]));
+    loader = new UDFClassLoader(newPath.toArray(new URL[0]));
     curThread.setContextClassLoader(loader);
     SessionState.get().getConf().setClassLoader(loader);
   }

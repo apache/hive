@@ -28,7 +28,6 @@ import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelCollation;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Project;
-import org.apache.calcite.rel.core.RelFactories.ProjectFactory;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
@@ -47,9 +46,8 @@ import com.google.common.collect.ImmutableList;
 
 public class HiveProject extends Project implements HiveRelNode {
 
-  public static final ProjectFactory DEFAULT_PROJECT_FACTORY = new HiveProjectFactoryImpl();
-
   private final List<Integer>        virtualCols;
+  private boolean isSysnthetic;
 
   /**
    * Creates a HiveProject.
@@ -165,10 +163,14 @@ public class HiveProject extends Project implements HiveRelNode {
   }
 
   @Override
-  public Project copy(RelTraitSet traitSet, RelNode input, List<RexNode> exps,
-      RelDataType rowType) {
+  public Project copy(RelTraitSet traitSet, RelNode input, List<RexNode> exps, RelDataType rowType) {
     assert traitSet.containsIfApplicable(HiveRelNode.CONVENTION);
-    return new HiveProject(getCluster(), traitSet, input, exps, rowType, getFlags());
+    HiveProject hp = new HiveProject(getCluster(), traitSet, input, exps, rowType, getFlags());
+    if (this.isSysnthetic()) {
+      hp.setSynthetic();
+    }
+
+    return hp;
   }
 
   @Override
@@ -184,23 +186,14 @@ public class HiveProject extends Project implements HiveRelNode {
     return virtualCols;
   }
 
-  /**
-   * Implementation of {@link ProjectFactory} that returns
-   * {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject}
-   * .
-   */
-  private static class HiveProjectFactoryImpl implements ProjectFactory {
-
-    @Override
-    public RelNode createProject(RelNode child,
-        List<? extends RexNode> childExprs, List<String> fieldNames) {
-      RelOptCluster cluster = child.getCluster();
-      RelDataType rowType = RexUtil.createStructType(cluster.getTypeFactory(), childExprs, fieldNames);
-      RelNode project = HiveProject.create(cluster, child,
-          childExprs, rowType,
-          child.getTraitSet(), Collections.<RelCollation> emptyList());
-
-      return project;
-    }
+  // TODO: this should come through RelBuilder to the constructor as opposed to
+  // set method. This requires calcite change
+  public void setSynthetic() {
+    this.isSysnthetic = true;
   }
+
+  public boolean isSysnthetic() {
+    return isSysnthetic;
+  }
+
 }

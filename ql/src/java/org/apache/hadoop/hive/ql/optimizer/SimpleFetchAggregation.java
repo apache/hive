@@ -51,7 +51,7 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 
 // execute final aggregation stage for simple fetch query on fetch task
-public class SimpleFetchAggregation implements Transform {
+public class SimpleFetchAggregation extends Transform {
 
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {

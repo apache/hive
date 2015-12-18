@@ -48,10 +48,6 @@ import org.apache.hadoop.util.StringUtils;
 
 public abstract class Task<T extends Serializable> implements Serializable, Node {
 
-  static {
-    PTFUtils.makeTransient(Task.class, "fetchSource");
-  }
-
   private static final long serialVersionUID = 1L;
   public transient HashMap<String, Long> taskCounters;
   public transient TaskHandle taskHandle;

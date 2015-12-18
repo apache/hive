@@ -49,3 +49,15 @@ POSTHOOK: query: select * from index_test_db.testtb where id>2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: index_test_db@testtb
 #### A masked pattern was here ####
+PREHOOK: query: use index_test_db
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:index_test_db
+POSTHOOK: query: use index_test_db
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:index_test_db
+PREHOOK: query: drop index id_index on testtb
+PREHOOK: type: DROPINDEX
+PREHOOK: Input: index_test_db@testtb
+POSTHOOK: query: drop index id_index on testtb
+POSTHOOK: type: DROPINDEX
+POSTHOOK: Input: index_test_db@testtb

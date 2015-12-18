@@ -23,13 +23,7 @@ import java.util.EnumSet;
 
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.ReadOption;
-import org.apache.hadoop.hive.shims.HadoopShims.DirectCompressionType;
-import org.apache.hadoop.hive.shims.HadoopShims.DirectDecompressorShim;
 import org.apache.hadoop.io.ByteBufferPool;
-import org.apache.hadoop.io.compress.DirectDecompressor;
-import org.apache.hadoop.io.compress.snappy.SnappyDecompressor.SnappyDirectDecompressor;
-import org.apache.hadoop.io.compress.zlib.ZlibDecompressor.CompressionHeader;
-import org.apache.hadoop.io.compress.zlib.ZlibDecompressor.ZlibDirectDecompressor;
 
 import org.apache.hadoop.hive.shims.HadoopShims.ByteBufferPoolShim;
 import org.apache.hadoop.hive.shims.HadoopShims.ZeroCopyReaderShim;
@@ -89,40 +83,4 @@ class ZeroCopyShims {
     return new ZeroCopyAdapter(in, pool);
   }
 
-  private static final class DirectDecompressorAdapter implements
-      DirectDecompressorShim {
-    private final DirectDecompressor decompressor;
-
-    public DirectDecompressorAdapter(DirectDecompressor decompressor) {
-      this.decompressor = decompressor;
-    }
-
-    public void decompress(ByteBuffer src, ByteBuffer dst) throws IOException {
-      this.decompressor.decompress(src, dst);
-    }
-  }
-
-  public static DirectDecompressorShim getDirectDecompressor(
-      DirectCompressionType codec) {
-    DirectDecompressor decompressor = null;
-    switch (codec) {
-    case ZLIB: {
-      decompressor = new ZlibDirectDecompressor();
-    }
-      break;
-    case ZLIB_NOHEADER: {
-      decompressor = new ZlibDirectDecompressor(CompressionHeader.NO_HEADER, 0);
-    }
-      break;
-    case SNAPPY: {
-      decompressor = new SnappyDirectDecompressor();
-    }
-      break;
-    }
-    if (decompressor != null) {
-      return new DirectDecompressorAdapter(decompressor);
-    }
-    /* not supported */
-    return null;
-  }
 }

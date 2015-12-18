@@ -234,7 +234,7 @@ STAGE PLANS:
   Stage: Stage-8
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        null-subquery2:$hdt$_0-subquery2:$hdt$_1:$hdt$_1:dst_union22_delta 
+        null-subquery2:$hdt$_0-subquery2:$hdt$_1:dst_union22_delta 
           Fetch Operator
             limit: -1
             Partition Description:
@@ -283,7 +283,7 @@ STAGE PLANS:
                     name: default.dst_union22_delta
                   name: default.dst_union22_delta
       Alias -> Map Local Operator Tree:
-        null-subquery2:$hdt$_0-subquery2:$hdt$_1:$hdt$_1:dst_union22_delta 
+        null-subquery2:$hdt$_0-subquery2:$hdt$_1:dst_union22_delta 
           TableScan
             alias: dst_union22_delta
             Statistics: Num rows: 500 Data size: 16936 Basic stats: COMPLETE Column stats: NONE
@@ -774,7 +774,7 @@ STAGE PLANS:
             name: default.dst_union22_delta
       Truncated Path -> Alias:
         /dst_union22/ds=1 [null-subquery2:$hdt$_0-subquery2:$hdt$_0:a]
-        /dst_union22_delta/ds=1 [null-subquery2:$hdt$_0-subquery2:$hdt$_1:$hdt$_1:dst_union22_delta]
+        /dst_union22_delta/ds=1 [null-subquery2:$hdt$_0-subquery2:$hdt$_1:dst_union22_delta]
       Needs Tagging: true
       Reduce Operator Tree:
         Join Operator

@@ -18,12 +18,19 @@
 
 package org.apache.hadoop.hive.ql.io.parquet;
 
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.io.parquet.read.ParquetRecordReaderWrapper;
 import org.apache.hadoop.hive.ql.io.parquet.serde.ArrayWritableObjectInspector;
-import org.apache.hadoop.hive.ql.plan.*;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPGreaterThan;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
@@ -34,16 +41,14 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.JobConf;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 import org.apache.parquet.io.api.RecordConsumer;
 import org.apache.parquet.schema.MessageType;
 import org.apache.parquet.schema.MessageTypeParser;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import com.google.common.collect.Lists;
 
 public class TestParquetRowGroupFilter extends AbstractTestParquetDirect {
 
@@ -96,7 +101,7 @@ public class TestParquetRowGroupFilter extends AbstractTestParquetDirect {
     children.add(columnDesc);
     children.add(constantDesc);
     ExprNodeGenericFuncDesc genericFuncDesc = new ExprNodeGenericFuncDesc(inspector, udf, children);
-    String searchArgumentStr = Utilities.serializeExpression(genericFuncDesc);
+    String searchArgumentStr = SerializationUtilities.serializeExpression(genericFuncDesc);
     conf.set(TableScanDesc.FILTER_EXPR_CONF_STR, searchArgumentStr);
 
     ParquetRecordReaderWrapper recordReader = (ParquetRecordReaderWrapper)
@@ -109,7 +114,7 @@ public class TestParquetRowGroupFilter extends AbstractTestParquetDirect {
     constantDesc = new ExprNodeConstantDesc(100);
     children.set(1, constantDesc);
     genericFuncDesc = new ExprNodeGenericFuncDesc(inspector, udf, children);
-    searchArgumentStr = Utilities.serializeExpression(genericFuncDesc);
+    searchArgumentStr = SerializationUtilities.serializeExpression(genericFuncDesc);
     conf.set(TableScanDesc.FILTER_EXPR_CONF_STR, searchArgumentStr);
 
     recordReader = (ParquetRecordReaderWrapper)

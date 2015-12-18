@@ -291,7 +291,7 @@ abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc impleme
      * The table alias should be subq2:subq1:a which needs to be fetched from topOps.
      */
     if (pGraphContext.getTopOps().containsValue(tso)) {
-      for (Map.Entry<String, Operator<? extends OperatorDesc>> topOpEntry :
+      for (Map.Entry<String, TableScanOperator> topOpEntry :
         this.pGraphContext.getTopOps().entrySet()) {
         if (topOpEntry.getValue() == tso) {
           alias = topOpEntry.getKey();
@@ -444,13 +444,13 @@ abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc impleme
       String selector = HiveConf.getVar(pGraphContext.getConf(),
           HiveConf.ConfVars.HIVE_AUTO_SORTMERGE_JOIN_BIGTABLE_SELECTOR);
       bigTableMatcherClass =
-        (Class<? extends BigTableSelectorForAutoSMJ>) JavaUtils.loadClass(selector);
+        JavaUtils.loadClass(selector);
     } catch (ClassNotFoundException e) {
       throw new SemanticException(e.getMessage());
     }
 
     BigTableSelectorForAutoSMJ bigTableMatcher =
-      (BigTableSelectorForAutoSMJ) ReflectionUtils.newInstance(bigTableMatcherClass, null);
+      ReflectionUtils.newInstance(bigTableMatcherClass, null);
     JoinDesc joinDesc = joinOp.getConf();
     JoinCondDesc[] joinCondns = joinDesc.getConds();
     Set<Integer> joinCandidates = MapJoinProcessor.getBigTableCandidates(joinCondns);

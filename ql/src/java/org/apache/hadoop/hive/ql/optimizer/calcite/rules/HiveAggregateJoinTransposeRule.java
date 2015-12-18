@@ -16,6 +16,14 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
+
 import org.apache.calcite.linq4j.Ord;
 import org.apache.calcite.plan.RelOptCost;
 import org.apache.calcite.plan.RelOptRuleCall;
@@ -38,22 +46,14 @@ import org.apache.calcite.sql.SqlSplittableAggFunction;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.mapping.Mapping;
 import org.apache.calcite.util.mapping.Mappings;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 /**
  * Planner rule that pushes an
@@ -64,8 +64,9 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
 
   /** Extended instance of the rule that can push down aggregate functions. */
   public static final HiveAggregateJoinTransposeRule INSTANCE =
-      new HiveAggregateJoinTransposeRule(HiveAggregate.class, HiveAggregate.HIVE_AGGR_REL_FACTORY,
-          HiveJoin.class, HiveJoin.HIVE_JOIN_FACTORY, HiveProject.DEFAULT_PROJECT_FACTORY, true);
+      new HiveAggregateJoinTransposeRule(HiveAggregate.class, HiveRelFactories.HIVE_AGGREGATE_FACTORY,
+          HiveJoin.class, HiveRelFactories.HIVE_JOIN_FACTORY, HiveRelFactories.HIVE_PROJECT_FACTORY,
+          true);
 
   private final RelFactories.AggregateFactory aggregateFactory;
 

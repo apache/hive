@@ -26,6 +26,7 @@ import java.util.Stack;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
@@ -152,7 +153,7 @@ public final class MapJoinFactory {
       // The map is overloaded to keep track of mapjoins also
       opProcCtx.getOpTaskMap().put(op, currTask);
 
-      Operator<? extends OperatorDesc> currTopOp = opProcCtx.getCurrTopOp();
+      TableScanOperator currTopOp = opProcCtx.getCurrTopOp();
       String currAliasId = opProcCtx.getCurrAliasId();
       GenMapRedUtils.setTaskPlan(currAliasId, currTopOp, currTask, local, opProcCtx);
     }
@@ -170,11 +171,10 @@ public final class MapJoinFactory {
      * @param pos
      *          position of the parent in the stack
      */
-    private static void joinMapJoinPlan(AbstractMapJoinOperator<? extends MapJoinDesc> op,
-        Task<? extends Serializable> oldTask,
+    private static void joinMapJoinPlan(Task<? extends Serializable> oldTask,
         GenMRProcContext opProcCtx, boolean local)
         throws SemanticException {
-      Operator<? extends OperatorDesc> currTopOp = opProcCtx.getCurrTopOp();
+      TableScanOperator currTopOp = opProcCtx.getCurrTopOp();
       GenMapRedUtils.mergeInput(currTopOp, opProcCtx, oldTask, local);
     }
 
@@ -220,7 +220,7 @@ public final class MapJoinFactory {
       } else {
         // The current plan can be thrown away after being merged with the
         // original plan
-        joinMapJoinPlan(mapJoin, oldTask, ctx, local);
+        joinMapJoinPlan(oldTask, ctx, local);
         ctx.setCurrTask(currTask = oldTask);
       }
       MapredWork plan = (MapredWork) currTask.getWork();

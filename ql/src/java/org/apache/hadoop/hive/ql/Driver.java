@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.lang.StringUtils;
@@ -46,7 +47,6 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveVariableSource;
 import org.apache.hadoop.hive.conf.VariableSubstitution;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
-import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
@@ -70,15 +70,10 @@ import org.apache.hadoop.hive.ql.hooks.PreExecute;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
-import org.apache.hadoop.hive.ql.lockmgr.HiveLockMode;
-import org.apache.hadoop.hive.ql.lockmgr.HiveLockObj;
-import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject;
-import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject.HiveLockObjectData;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.AuthorizationException;
-import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -100,10 +95,8 @@ import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzerFactory;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
-import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
@@ -754,48 +747,44 @@ public class Driver implements CommandProcessor {
       SemanticAnalyzer querySem = (SemanticAnalyzer) sem;
       ParseContext parseCtx = querySem.getParseContext();
 
-      for (Map.Entry<String, Operator<? extends OperatorDesc>> topOpMap : querySem
-          .getParseContext().getTopOps().entrySet()) {
-        Operator<? extends OperatorDesc> topOp = topOpMap.getValue();
-        if (topOp instanceof TableScanOperator) {
-          TableScanOperator tableScanOp = (TableScanOperator) topOp;
-          Table tbl = tableScanOp.getConf().getTableMetadata();
-          List<Integer> neededColumnIds = tableScanOp.getNeededColumnIDs();
-          List<FieldSchema> columns = tbl.getCols();
-          List<String> cols = new ArrayList<String>();
-          for (int i = 0; i < neededColumnIds.size(); i++) {
-            cols.add(columns.get(neededColumnIds.get(i)).getName());
-          }
-          //map may not contain all sources, since input list may have been optimized out
-          //or non-existent tho such sources may still be referenced by the TableScanOperator
-          //if it's null then the partition probably doesn't exist so let's use table permission
-          if (tbl.isPartitioned() &&
-              Boolean.TRUE.equals(tableUsePartLevelAuth.get(tbl.getTableName()))) {
-            String alias_id = topOpMap.getKey();
+      for (Map.Entry<String, TableScanOperator> topOpMap : querySem.getParseContext().getTopOps().entrySet()) {
+        TableScanOperator topOp = topOpMap.getValue();
+        TableScanOperator tableScanOp = topOp;
+        Table tbl = tableScanOp.getConf().getTableMetadata();
+        List<Integer> neededColumnIds = tableScanOp.getNeededColumnIDs();
+        List<FieldSchema> columns = tbl.getCols();
+        List<String> cols = new ArrayList<String>();
+        for (int i = 0; i < neededColumnIds.size(); i++) {
+          cols.add(columns.get(neededColumnIds.get(i)).getName());
+        }
+        //map may not contain all sources, since input list may have been optimized out
+        //or non-existent tho such sources may still be referenced by the TableScanOperator
+        //if it's null then the partition probably doesn't exist so let's use table permission
+        if (tbl.isPartitioned() &&
+            Boolean.TRUE.equals(tableUsePartLevelAuth.get(tbl.getTableName()))) {
+          String alias_id = topOpMap.getKey();
 
-            PrunedPartitionList partsList = PartitionPruner.prune(tableScanOp,
-                parseCtx, alias_id);
-            Set<Partition> parts = partsList.getPartitions();
-            for (Partition part : parts) {
-              List<String> existingCols = part2Cols.get(part);
-              if (existingCols == null) {
-                existingCols = new ArrayList<String>();
-              }
-              existingCols.addAll(cols);
-              part2Cols.put(part, existingCols);
-            }
-          } else {
-            List<String> existingCols = tab2Cols.get(tbl);
+          PrunedPartitionList partsList = PartitionPruner.prune(tableScanOp,
+              parseCtx, alias_id);
+          Set<Partition> parts = partsList.getPartitions();
+          for (Partition part : parts) {
+            List<String> existingCols = part2Cols.get(part);
             if (existingCols == null) {
               existingCols = new ArrayList<String>();
             }
             existingCols.addAll(cols);
-            tab2Cols.put(tbl, existingCols);
+            part2Cols.put(part, existingCols);
           }
+        } else {
+          List<String> existingCols = tab2Cols.get(tbl);
+          if (existingCols == null) {
+            existingCols = new ArrayList<String>();
+          }
+          existingCols.addAll(cols);
+          tab2Cols.put(tbl, existingCols);
         }
       }
     }
-
   }
 
   private static void doAuthorizationV2(SessionState ss, HiveOperation op, HashSet<ReadEntity> inputs,
@@ -891,85 +880,6 @@ public class Driver implements CommandProcessor {
    */
   public QueryPlan getPlan() {
     return plan;
-  }
-
-  /**
-   * @param d
-   *          The database to be locked
-   * @param t
-   *          The table to be locked
-   * @param p
-   *          The partition to be locked
-   * @param mode
-   *          The mode of the lock (SHARED/EXCLUSIVE) Get the list of objects to be locked. If a
-   *          partition needs to be locked (in any mode), all its parents should also be locked in
-   *          SHARED mode.
-   */
-  private List<HiveLockObj> getLockObjects(Database d, Table t, Partition p, HiveLockMode mode)
-      throws SemanticException {
-    List<HiveLockObj> locks = new LinkedList<HiveLockObj>();
-
-    HiveLockObjectData lockData =
-      new HiveLockObjectData(plan.getQueryId(),
-                             String.valueOf(System.currentTimeMillis()),
-                             "IMPLICIT",
-                             plan.getQueryStr());
-    if (d != null) {
-      locks.add(new HiveLockObj(new HiveLockObject(d.getName(), lockData), mode));
-      return locks;
-    }
-
-    if (t != null) {
-      locks.add(new HiveLockObj(new HiveLockObject(t.getDbName(), lockData), mode));
-      locks.add(new HiveLockObj(new HiveLockObject(t, lockData), mode));
-      mode = HiveLockMode.SHARED;
-      locks.add(new HiveLockObj(new HiveLockObject(t.getDbName(), lockData), mode));
-      return locks;
-    }
-
-    if (p != null) {
-      locks.add(new HiveLockObj(new HiveLockObject(p.getTable().getDbName(), lockData), mode));
-      if (!(p instanceof DummyPartition)) {
-        locks.add(new HiveLockObj(new HiveLockObject(p, lockData), mode));
-      }
-
-      // All the parents are locked in shared mode
-      mode = HiveLockMode.SHARED;
-
-      // For dummy partitions, only partition name is needed
-      String name = p.getName();
-
-      if (p instanceof DummyPartition) {
-        name = p.getName().split("@")[2];
-      }
-
-      String partialName = "";
-      String[] partns = name.split("/");
-      int len = p instanceof DummyPartition ? partns.length : partns.length - 1;
-      Map<String, String> partialSpec = new LinkedHashMap<String, String>();
-      for (int idx = 0; idx < len; idx++) {
-        String partn = partns[idx];
-        partialName += partn;
-        String[] nameValue = partn.split("=");
-        assert(nameValue.length == 2);
-        partialSpec.put(nameValue[0], nameValue[1]);
-        try {
-          locks.add(new HiveLockObj(
-                      new HiveLockObject(new DummyPartition(p.getTable(), p.getTable().getDbName()
-                                                            + "/" + MetaStoreUtils.encodeTableName(p.getTable().getTableName())
-                                                            + "/" + partialName,
-                                                              partialSpec), lockData), mode));
-          partialName += "/";
-        } catch (HiveException e) {
-          throw new SemanticException(e.getMessage());
-        }
-      }
-
-      locks.add(new HiveLockObj(new HiveLockObject(p.getTable(), lockData), mode));
-      locks.add(new HiveLockObj(new HiveLockObject(p.getTable().getDbName(), lockData), mode));
-    }
-
-    return locks;
   }
 
   // Write the current set of valid transactions into the conf file so that it can be read by
@@ -1219,9 +1129,12 @@ public class Driver implements CommandProcessor {
   private int compileInternal(String command) {
     boolean isParallelEnabled = SessionState.get().isHiveServerQuery() && this.isParallelEnabled;
     int ret;
-    final ReentrantLock compileLock = isParallelEnabled
-        ? SessionState.get().getCompileLock() : globalCompileLock;
-    compileLock.lock();
+    final ReentrantLock compileLock = tryAcquireCompileLock(isParallelEnabled,
+        command);
+    if (compileLock == null) {
+      return ErrorMsg.COMPILE_LOCK_TIMED_OUT.getErrorCode();
+    }
+
     try {
       if (isParallelEnabled && LOG.isDebugEnabled()) {
         LOG.debug("Entering compile: " + command);
@@ -1233,6 +1146,7 @@ public class Driver implements CommandProcessor {
     } finally {
       compileLock.unlock();
     }
+
     if (ret != 0) {
       try {
         releaseLocksAndCommitOrRollback(false, null);
@@ -1242,6 +1156,46 @@ public class Driver implements CommandProcessor {
       }
     }
     return ret;
+  }
+
+  /**
+   * Acquires the compile lock. If the compile lock wait timeout is configured,
+   * it will acquire the lock if it is not held by another thread within the given
+   * waiting time.
+   * @return the ReentrantLock object if the lock was successfully acquired,
+   *         or {@code null} if compile lock wait timeout is configured and
+   *         either the waiting time elapsed before the lock could be acquired
+   *         or if the current thread is interrupted.
+   */
+  private ReentrantLock tryAcquireCompileLock(boolean isParallelEnabled,
+    String command) {
+    final ReentrantLock compileLock = isParallelEnabled ?
+        SessionState.get().getCompileLock() : globalCompileLock;
+    long maxCompileLockWaitTime = HiveConf.getTimeVar(
+          this.conf, ConfVars.HIVE_SERVER2_COMPILE_LOCK_TIMEOUT,
+          TimeUnit.SECONDS);
+    if (maxCompileLockWaitTime > 0) {
+      try {
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Waiting to acquire compile lock: " + command);
+        }
+        if(!compileLock.tryLock(maxCompileLockWaitTime, TimeUnit.SECONDS)) {
+          errorMessage = ErrorMsg.COMPILE_LOCK_TIMED_OUT.getErrorCodedMsg();
+          LOG.error(errorMessage + ": " + command);
+          return null;
+        }
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Interrupted Exception ignored", e);
+        }
+        return null;
+      }
+    } else {
+      compileLock.lock();
+    }
+
+    return compileLock;
   }
 
   private CommandProcessorResponse runInternal(String command, boolean alreadyCompiled)
@@ -1304,7 +1258,7 @@ public class Driver implements CommandProcessor {
       }
       if(!txnManager.isTxnOpen() && plan.getOperation() == HiveOperation.QUERY && !txnManager.getAutoCommit()) {
         //this effectively makes START TRANSACTION optional and supports JDBC setAutoCommit(false) semantics
-        //also, indirectly allows DDL to be executed outside a txn context 
+        //also, indirectly allows DDL to be executed outside a txn context
         startTxnImplicitly = true;
       }
       if(txnManager.getAutoCommit() && plan.getOperation() == HiveOperation.START_TRANSACTION) {
@@ -1381,7 +1335,7 @@ public class Driver implements CommandProcessor {
       releaseLocksAndCommitOrRollback(false, null);
     }
     catch (LockException e) {
-      LOG.error("rollback() FAILED: " + cpr);//make sure not to loose 
+      LOG.error("rollback() FAILED: " + cpr);//make sure not to loose
       handleHiveException(e, 12, "Additional info in hive.log at \"rollback() FAILED\"");
     }
     return cpr;

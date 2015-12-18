@@ -26,10 +26,13 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.ql.io.orc.OrcFile.Version;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.io.Text;
+import org.apache.orc.CompressionKind;
+import org.apache.orc.OrcProto;
+
+import org.apache.orc.StripeInformation;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -228,7 +231,7 @@ public class TestStringDictionary {
     Writer writer = OrcFile.createWriter(
         testFilePath,
         OrcFile.writerOptions(conf).inspector(inspector).compress(CompressionKind.NONE)
-            .version(Version.V_0_11).bufferSize(10000));
+            .version(OrcFile.Version.V_0_11).bufferSize(10000));
     for (int i = 0; i < 20000; i++) {
       writer.addRow(new Text(String.valueOf(i)));
     }

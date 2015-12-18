@@ -72,7 +72,7 @@ import org.apache.hadoop.hive.shims.ShimLoader;
  * where T1, T2 and T3 are bucketized/sorted on the same key 'key', we don't need a reducer
  * to enforce bucketing and sorting
  */
-public class BucketingSortingReduceSinkOptimizer implements Transform {
+public class BucketingSortingReduceSinkOptimizer extends Transform {
 
   public BucketingSortingReduceSinkOptimizer() {
   }

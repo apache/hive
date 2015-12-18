@@ -69,7 +69,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
  * of the bucketing and sorting keys of the underlying table in the same order, the
  * group by can be be performed on the map-side completely.
  */
-public class GroupByOptimizer implements Transform {
+public class GroupByOptimizer extends Transform {
 
   private static final Logger LOG = LoggerFactory.getLogger(GroupByOptimizer.class
       .getName());

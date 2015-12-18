@@ -22,6 +22,7 @@ import java.io.IOException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
@@ -32,18 +33,28 @@ public class HdfsUtils {
   private static final HadoopShims SHIMS = ShimLoader.getHadoopShims();
   private static final Logger LOG = LoggerFactory.getLogger(HdfsUtils.class);
 
-  public static long getFileId(FileSystem fileSystem, Path path) throws IOException {
+  public static Long getFileId(
+      FileSystem fileSystem, Path path, boolean allowSynthetic) throws IOException {
     String pathStr = path.toUri().getPath();
     if (fileSystem instanceof DistributedFileSystem) {
       return SHIMS.getFileId(fileSystem, pathStr);
     }
+    if (!allowSynthetic) {
+      LOG.warn("Cannot get unique file ID from "
+        + fileSystem.getClass().getSimpleName() + "; returning null");
+      return null;
+    }
     // If we are not on DFS, we just hash the file name + size and hope for the best.
     // TODO: we assume it only happens in tests. Fix?
     int nameHash = pathStr.hashCode();
-    long fileSize = fileSystem.getFileStatus(path).getLen();
-    long id = ((fileSize ^ (fileSize >>> 32)) << 32) | ((long)nameHash & 0xffffffffL);
+    FileStatus fs = fileSystem.getFileStatus(path);
+    long fileSize = fs.getLen(), modTime = fs.getModificationTime();
+    int fileSizeHash = (int)(fileSize ^ (fileSize >>> 32)),
+        modTimeHash = (int)(modTime ^ (modTime >>> 32)),
+        combinedHash = modTimeHash ^ fileSizeHash;
+    long id = (((long)nameHash & 0xffffffffL) << 32) | ((long)combinedHash & 0xffffffffL);
     LOG.warn("Cannot get unique file ID from "
-        + fileSystem.getClass().getSimpleName() + "; using " + id + "(" + pathStr
+        + fileSystem.getClass().getSimpleName() + "; using " + id + " (" + pathStr
         + "," + nameHash + "," + fileSize + ")");
     return id;
   }
@@ -55,7 +66,7 @@ public class HdfsUtils {
 
   public static Path getFileIdPath(
       FileSystem fileSystem, Path path, long fileId) {
-    return (fileSystem instanceof DistributedFileSystem)
+    return ((fileSystem instanceof DistributedFileSystem))
         ? new Path(HDFS_ID_PATH_PREFIX + fileId) : path;
   }
 }

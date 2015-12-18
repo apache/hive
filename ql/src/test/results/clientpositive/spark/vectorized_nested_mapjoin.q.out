@@ -16,18 +16,18 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: v1
                   Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ctinyint is not null and csmallint is not null) (type: boolean)
-                    Statistics: Num rows: 3072 Data size: 94309 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ctinyint (type: tinyint), csmallint (type: smallint), cdouble (type: double)
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 3072 Data size: 94309 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
                           0 _col0 (type: tinyint)
@@ -42,11 +42,11 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: csmallint is not null (type: boolean)
-                    Statistics: Num rows: 6144 Data size: 188618 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: csmallint (type: smallint)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 6144 Data size: 188618 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
                           0 _col0 (type: smallint)
@@ -58,35 +58,35 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 3 <- Map 2 (GROUP, 1)
+        Reducer 2 <- Map 1 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
-        Map 2 
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: v1
                   Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ctinyint is not null (type: boolean)
-                    Statistics: Num rows: 6144 Data size: 188618 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ctinyint (type: tinyint)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 6144 Data size: 188618 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
                         keys:
                           0 _col0 (type: tinyint)
                           1 _col0 (type: tinyint)
-                        outputColumnNames: _col1, _col2
+                        outputColumnNames: _col2, _col3
                         input vertices:
-                          0 Map 1
-                        Statistics: Num rows: 6758 Data size: 207479 Basic stats: COMPLETE Column stats: NONE
+                          1 Map 3
+                        Statistics: Num rows: 13516 Data size: 414960 Basic stats: COMPLETE Column stats: NONE
                         Select Operator
-                          expressions: _col1 (type: smallint), _col2 (type: double)
+                          expressions: _col2 (type: smallint), _col3 (type: double)
                           outputColumnNames: _col0, _col1
-                          Statistics: Num rows: 6758 Data size: 207479 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 13516 Data size: 414960 Basic stats: COMPLETE Column stats: NONE
                           Map Join Operator
                             condition map:
                                  Inner Join 0 to 1
@@ -96,7 +96,7 @@ STAGE PLANS:
                             outputColumnNames: _col1
                             input vertices:
                               1 Map 4
-                            Statistics: Num rows: 7433 Data size: 228226 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 14867 Data size: 456456 Basic stats: COMPLETE Column stats: NONE
                             Group By Operator
                               aggregations: sum(_col1)
                               mode: hash
@@ -109,7 +109,7 @@ STAGE PLANS:
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-        Reducer 3 
+        Reducer 2 
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator

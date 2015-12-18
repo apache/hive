@@ -36,10 +36,6 @@ public class ShapeDetails {
   transient RowResolver rr;
   transient TypeCheckCtx typeCheckCtx;
 
-  static {
-    PTFUtils.makeTransient(ShapeDetails.class, "OI", "serde", "rr", "typeCheckCtx");
-  }
-
   public String getSerdeClassName() {
     return serdeClassName;
   }

@@ -24,10 +24,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
-import com.google.common.base.Preconditions;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.spark.SparkUtilities;
@@ -35,6 +35,8 @@ import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+
+import com.google.common.base.Preconditions;
 
 /**
  * This processor triggers on SparkPartitionPruningSinkOperator. For a operator tree like
@@ -105,7 +107,7 @@ public class SplitOpTreeForDPP implements NodeProcessor {
     filterOp.setChildOperators(Utilities.makeList(selOp));
 
     // Now clone the tree above selOp
-    List<Operator<?>> newRoots = Utilities.cloneOperatorTree(context.parseContext.getConf(), roots);
+    List<Operator<?>> newRoots = SerializationUtilities.cloneOperatorTree(roots);
     for (int i = 0; i < roots.size(); i++) {
       TableScanOperator newTs = (TableScanOperator) newRoots.get(i);
       TableScanOperator oldTs = (TableScanOperator) roots.get(i);

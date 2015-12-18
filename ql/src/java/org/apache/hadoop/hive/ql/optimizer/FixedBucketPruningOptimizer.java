@@ -60,7 +60,7 @@ import com.google.common.base.Preconditions;
  * Fixed bucket pruning optimizer goes through all the table scans and annotates them
  * with a bucketing inclusion bit-set.
  */
-public class FixedBucketPruningOptimizer implements Transform {
+public class FixedBucketPruningOptimizer extends Transform {
 
   private static final Log LOG = LogFactory
       .getLog(FixedBucketPruningOptimizer.class.getName());

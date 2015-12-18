@@ -21,16 +21,13 @@ package org.apache.hadoop.hive.ql.exec;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
+import com.esotericsoftware.kryo.KryoException;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -68,6 +65,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hive.common.util.ReflectionUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Map side Join operator implementation.
@@ -515,6 +514,11 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
             if (hashPartitions[i].isHashMapOnDisk()) {
               try {
                 continueProcess(i);     // Re-process spilled data
+              } catch (KryoException ke) {
+                LOG.error("Processing the spilled data failed due to Kryo error!");
+                LOG.error("Cleaning up all spilled data!");
+                cleanupGraceHashJoin();
+                throw new HiveException(ke);
               } catch (Exception e) {
                 throw new HiveException(e);
               }
@@ -656,6 +660,19 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
       process(row, conf.getPosBigTable());
     }
     bigTable.clear();
+  }
+
+  /**
+   * Clean up data participating the join, i.e. in-mem and on-disk files for small table(s) and big table
+   */
+  private void cleanupGraceHashJoin() {
+    for (byte pos = 0; pos < mapJoinTables.length; pos++) {
+      if (pos != conf.getPosBigTable()) {
+        LOG.info("Cleaning up small table data at pos: " + pos);
+        HybridHashTableContainer container = (HybridHashTableContainer) mapJoinTables[pos];
+        container.clear();
+      }
+    }
   }
 
   /**
