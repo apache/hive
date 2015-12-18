@@ -29,7 +29,6 @@ import org.apache.calcite.rel.InvalidRelException;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.AggregateCall;
-import org.apache.calcite.rel.core.RelFactories.AggregateFactory;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
@@ -39,14 +38,9 @@ import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.IntList;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 
 public class HiveAggregate extends Aggregate implements HiveRelNode {
-
-  public static final HiveAggRelFactory HIVE_AGGR_REL_FACTORY = new HiveAggRelFactory();
-
-
 
   public HiveAggregate(RelOptCluster cluster, RelTraitSet traitSet, RelNode child,
       boolean indicator, ImmutableBitSet groupSet, List<ImmutableBitSet> groupSets,
@@ -139,18 +133,4 @@ public class HiveAggregate extends Aggregate implements HiveRelNode {
     return builder.build();
   }
 
-  private static class HiveAggRelFactory implements AggregateFactory {
-
-    @Override
-    public RelNode createAggregate(RelNode child, boolean indicator,
-            ImmutableBitSet groupSet, ImmutableList<ImmutableBitSet> groupSets,
-            List<AggregateCall> aggCalls) {
-      try {
-        return new HiveAggregate(child.getCluster(), child.getTraitSet(), child, indicator,
-                groupSet, groupSets, aggCalls);
-      } catch (InvalidRelException e) {
-          throw new RuntimeException(e);
-      }
-    }
-  }
 }

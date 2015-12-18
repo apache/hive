@@ -29,15 +29,14 @@ import org.apache.calcite.plan.RelOptUtil.InputFinder;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinRelType;
-import org.apache.calcite.rel.core.RelFactories;
 import org.apache.calcite.rel.rules.FilterJoinRule;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlKind;
+import org.apache.calcite.tools.RelBuilderFactory;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 
 public abstract class HiveFilterJoinRule extends FilterJoinRule {
 
@@ -49,8 +48,8 @@ public abstract class HiveFilterJoinRule extends FilterJoinRule {
    * Creates a PushFilterPastJoinRule with an explicit root operand.
    */
   protected HiveFilterJoinRule(RelOptRuleOperand operand, String id, boolean smart,
-      RelFactories.FilterFactory filterFactory, RelFactories.ProjectFactory projectFactory) {
-    super(operand, id, smart, filterFactory, projectFactory);
+      RelBuilderFactory relBuilderFactory) {
+    super(operand, id, smart, relBuilderFactory, TRUE_PREDICATE);
   }
 
   /**
@@ -60,8 +59,7 @@ public abstract class HiveFilterJoinRule extends FilterJoinRule {
   public static class HiveFilterJoinMergeRule extends HiveFilterJoinRule {
     public HiveFilterJoinMergeRule() {
       super(RelOptRule.operand(Filter.class, RelOptRule.operand(Join.class, RelOptRule.any())),
-          "HiveFilterJoinRule:filter", true, HiveFilter.DEFAULT_FILTER_FACTORY,
-          HiveProject.DEFAULT_PROJECT_FACTORY);
+          "HiveFilterJoinRule:filter", true, HiveRelFactories.HIVE_BUILDER);
     }
 
     @Override
@@ -84,7 +82,7 @@ public abstract class HiveFilterJoinRule extends FilterJoinRule {
   public static class HiveFilterJoinTransposeRule extends HiveFilterJoinRule {
     public HiveFilterJoinTransposeRule() {
       super(RelOptRule.operand(Join.class, RelOptRule.any()), "HiveFilterJoinRule:no-filter", true,
-          HiveFilter.DEFAULT_FILTER_FACTORY, HiveProject.DEFAULT_PROJECT_FACTORY);
+          HiveRelFactories.HIVE_BUILDER);
     }
 
     @Override

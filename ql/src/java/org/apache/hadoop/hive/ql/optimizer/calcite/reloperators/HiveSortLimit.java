@@ -24,7 +24,6 @@ import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelCollation;
 import org.apache.calcite.rel.RelCollationTraitDef;
 import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.rel.core.RelFactories;
 import org.apache.calcite.rel.core.Sort;
 import org.apache.calcite.rex.RexNode;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
@@ -32,8 +31,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
 import com.google.common.collect.ImmutableMap;
 
 public class HiveSortLimit extends Sort implements HiveRelNode {
-
-  public static final HiveSortRelFactory HIVE_SORT_REL_FACTORY = new HiveSortRelFactory();
 
   // NOTE: this is to work around Hive Calcite Limitations w.r.t OB.
   // 1. Calcite can not accept expressions in OB; instead it needs to be expressed
@@ -106,18 +103,4 @@ public class HiveSortLimit extends Sort implements HiveRelNode {
     this.ruleCreated = ruleCreated;
   }
 
-  private static class HiveSortRelFactory implements RelFactories.SortFactory {
-
-    @Override
-    public RelNode createSort(RelTraitSet traits, RelNode input, RelCollation collation,
-        RexNode offset, RexNode fetch) {
-      return createSort(input, collation, offset, fetch);
-    }
-
-    @Override
-    public RelNode createSort(RelNode input, RelCollation collation, RexNode offset,
-        RexNode fetch) {
-      return create(input, collation, offset, fetch);
-    }
-  }
 }

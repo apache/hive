@@ -23,10 +23,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.rel.core.RelFactories;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexNode;
@@ -49,19 +47,8 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
   protected static final Log LOG = LogFactory.getLog(HiveRelFieldTrimmer.class);
 
 
-  public HiveRelFieldTrimmer(SqlValidator validator,
-      RelOptCluster cluster,
-      RelFactories.ProjectFactory projectFactory,
-      RelFactories.FilterFactory filterFactory,
-      RelFactories.JoinFactory joinFactory,
-      RelFactories.SemiJoinFactory semiJoinFactory,
-      RelFactories.SortFactory sortFactory,
-      RelFactories.AggregateFactory aggregateFactory,
-      RelFactories.SetOpFactory setOpFactory) {
-    super(validator,
-            RelBuilder.proto(projectFactory, filterFactory, joinFactory,
-                semiJoinFactory, sortFactory, aggregateFactory, setOpFactory)
-            .create(cluster, null));
+  public HiveRelFieldTrimmer(SqlValidator validator, RelBuilder relBuilder) {
+    super(validator, relBuilder);
   }
 
   /**

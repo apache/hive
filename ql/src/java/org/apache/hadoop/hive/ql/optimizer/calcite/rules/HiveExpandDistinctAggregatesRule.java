@@ -16,6 +16,13 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.rel.RelNode;
@@ -30,19 +37,12 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
 import org.apache.calcite.util.Util;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Planner rule that expands distinct aggregates
@@ -70,7 +70,7 @@ public final class HiveExpandDistinctAggregatesRule extends RelOptRule {
   /** The default instance of the rule; operates only on logical expressions. */
   public static final HiveExpandDistinctAggregatesRule INSTANCE =
       new HiveExpandDistinctAggregatesRule(HiveAggregate.class,
-          HiveProject.DEFAULT_PROJECT_FACTORY);
+          HiveRelFactories.HIVE_PROJECT_FACTORY);
 
   private static RelFactories.ProjectFactory projFactory;
 

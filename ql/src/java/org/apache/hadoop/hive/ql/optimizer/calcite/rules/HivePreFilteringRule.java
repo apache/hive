@@ -37,10 +37,10 @@ import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlKind;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.LinkedHashMultimap;
@@ -65,7 +65,7 @@ public class HivePreFilteringRule extends RelOptRule {
 
   private HivePreFilteringRule() {
     super(operand(Filter.class, operand(RelNode.class, any())));
-    this.filterFactory = HiveFilter.DEFAULT_FILTER_FACTORY;
+    this.filterFactory = HiveRelFactories.HIVE_FILTER_FACTORY;
   }
 
   @Override

@@ -28,7 +28,6 @@ import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelCollation;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Project;
-import org.apache.calcite.rel.core.RelFactories.ProjectFactory;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
@@ -46,8 +45,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
 import com.google.common.collect.ImmutableList;
 
 public class HiveProject extends Project implements HiveRelNode {
-
-  public static final ProjectFactory DEFAULT_PROJECT_FACTORY = new HiveProjectFactoryImpl();
 
   private final List<Integer>        virtualCols;
   private boolean isSysnthetic;
@@ -199,23 +196,4 @@ public class HiveProject extends Project implements HiveRelNode {
     return isSysnthetic;
   }
 
-  /**
-   * Implementation of {@link ProjectFactory} that returns
-   * {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject}
-   * .
-   */
-  private static class HiveProjectFactoryImpl implements ProjectFactory {
-
-    @Override
-    public RelNode createProject(RelNode child,
-        List<? extends RexNode> childExprs, List<String> fieldNames) {
-      RelOptCluster cluster = child.getCluster();
-      RelDataType rowType = RexUtil.createStructType(cluster.getTypeFactory(), childExprs, fieldNames);
-      RelTraitSet trait = TraitsUtil.getDefaultTraitSet(cluster, child.getTraitSet());
-      RelNode project = HiveProject.create(cluster, child,
-          childExprs, rowType, trait, Collections.<RelCollation> emptyList());
-
-      return project;
-    }
-  }
 }

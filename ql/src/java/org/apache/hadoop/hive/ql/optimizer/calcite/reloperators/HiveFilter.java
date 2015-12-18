@@ -23,14 +23,11 @@ import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Filter;
-import org.apache.calcite.rel.core.RelFactories.FilterFactory;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rex.RexNode;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
 
 public class HiveFilter extends Filter implements HiveRelNode {
-
-  public static final FilterFactory DEFAULT_FILTER_FACTORY = new HiveFilterFactoryImpl();
 
   public HiveFilter(RelOptCluster cluster, RelTraitSet traits, RelNode child, RexNode condition) {
     super(cluster, TraitsUtil.getDefaultTraitSet(cluster), child, condition);
@@ -51,17 +48,4 @@ public class HiveFilter extends Filter implements HiveRelNode {
     return RelMetadataQuery.getNonCumulativeCost(this);
   }
 
-  /**
-   * Implementation of {@link FilterFactory} that returns
-   * {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter}
-   * .
-   */
-  private static class HiveFilterFactoryImpl implements FilterFactory {
-    @Override
-    public RelNode createFilter(RelNode child, RexNode condition) {
-      RelOptCluster cluster = child.getCluster();
-      HiveFilter filter = new HiveFilter(cluster, TraitsUtil.getDefaultTraitSet(cluster), child, condition);
-      return filter;
-    }
-  }
 }
