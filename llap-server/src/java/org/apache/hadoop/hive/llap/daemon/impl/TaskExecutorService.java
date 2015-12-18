@@ -70,7 +70,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  * run to completion immediately (canFinish = false) are added to pre-emption queue.
  * <p/>
  * When all the executor threads are occupied and wait queue is full, the task scheduler will
- * throw RejectedExecutionException.
+ * return SubmissionState.REJECTED response
  * <p/>
  * Task executor service can be shut down which will terminated all running tasks and reject all
  * new tasks. Shutting down of the task executor service can be done gracefully or immediately.
@@ -316,9 +316,9 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
   }
 
   @Override
-  public void schedule(TaskRunnerCallable task) throws RejectedExecutionException {
+  public SubmissionState schedule(TaskRunnerCallable task) {
     TaskWrapper taskWrapper = new TaskWrapper(task, this);
-
+    SubmissionState result;
     TaskWrapper evictedTask;
     synchronized (lock) {
       // If the queue does not have capacity, it does not throw a Rejection. Instead it will
@@ -328,19 +328,35 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
       // actual executor threads picking up any work. This will lead to unnecessary rejection of tasks.
       // The wait queue should be able to fit at least (waitQueue + currentFreeExecutor slots)
       evictedTask = waitQueue.offer(taskWrapper);
-      if (evictedTask != taskWrapper) {
+
+      // null evicted task means offer accepted
+      // evictedTask is not equal taskWrapper means current task is accepted and it evicted
+      // some other task
+      if (evictedTask == null || evictedTask != taskWrapper) {
         knownTasks.put(taskWrapper.getRequestId(), taskWrapper);
         taskWrapper.setIsInWaitQueue(true);
         if (isDebugEnabled) {
           LOG.debug("{} added to wait queue. Current wait queue size={}", task.getRequestId(),
               waitQueue.size());
         }
+
+        result = evictedTask == null ? SubmissionState.ACCEPTED : SubmissionState.EVICTED_OTHER;
+
+        if (isDebugEnabled && evictedTask != null) {
+          LOG.debug("Eviction: {} {} {}", taskWrapper, result, evictedTask);
+        }
       } else {
         if (isInfoEnabled) {
           LOG.info("wait queue full, size={}. {} not added", waitQueue.size(), task.getRequestId());
         }
         evictedTask.getTaskRunnerCallable().killTask();
-        throw new RejectedExecutionException("Wait queue full");
+
+        result = SubmissionState.REJECTED;
+
+        if (isDebugEnabled) {
+          LOG.debug("{} is {} as wait queue is full", taskWrapper.getRequestId(), result);
+        }
+        return result;
       }
     }
 
@@ -371,6 +387,8 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
     synchronized (lock) {
       lock.notify();
     }
+
+    return result;
   }
 
   @Override

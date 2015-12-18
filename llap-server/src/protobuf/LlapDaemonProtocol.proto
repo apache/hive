@@ -87,7 +87,14 @@ message SubmitWorkRequestProto {
   optional FragmentRuntimeInfo fragment_runtime_info = 10;
 }
 
+enum SubmissionStateProto {
+  ACCEPTED = 1;
+  REJECTED = 2;
+  EVICTED_OTHER = 3;
+}
+
 message SubmitWorkResponseProto {
+  optional SubmissionStateProto submission_state = 1;
 }
 
 message SourceStateUpdatedRequestProto {

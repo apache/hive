@@ -32,16 +32,20 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.configuration.LlapConfiguration;
 import org.apache.hadoop.hive.llap.daemon.ContainerRunner;
 import org.apache.hadoop.hive.llap.daemon.QueryFailedHandler;
-import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryCompleteRequestProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryCompleteResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateUpdatedRequestProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateUpdatedResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.TerminateFragmentRequestProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.TerminateFragmentResponseProto;
 import org.apache.hadoop.hive.llap.daemon.services.impl.LlapWebServices;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
 import org.apache.hadoop.hive.llap.metrics.LlapMetricsSystem;
 import org.apache.hadoop.hive.llap.metrics.MetricsUtils;
+import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.hive.llap.shufflehandler.ShuffleHandler;
 import org.apache.hadoop.metrics2.util.MBeans;
 import org.apache.hadoop.service.CompositeService;
@@ -313,25 +317,25 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
   }
 
   @Override
-  public void submitWork(SubmitWorkRequestProto request) throws
+  public SubmitWorkResponseProto submitWork(SubmitWorkRequestProto request) throws
       IOException {
     numSubmissions.incrementAndGet();
-    containerRunner.submitWork(request);
+    return containerRunner.submitWork(request);
   }
 
   @Override
-  public void sourceStateUpdated(SourceStateUpdatedRequestProto request) {
-    containerRunner.sourceStateUpdated(request);
+  public SourceStateUpdatedResponseProto sourceStateUpdated(SourceStateUpdatedRequestProto request) {
+    return containerRunner.sourceStateUpdated(request);
   }
 
   @Override
-  public void queryComplete(QueryCompleteRequestProto request) {
-    containerRunner.queryComplete(request);
+  public QueryCompleteResponseProto queryComplete(QueryCompleteRequestProto request) {
+    return containerRunner.queryComplete(request);
   }
 
   @Override
-  public void terminateFragment(TerminateFragmentRequestProto request) {
-    containerRunner.terminateFragment(request);
+  public TerminateFragmentResponseProto terminateFragment(TerminateFragmentRequestProto request) {
+    return containerRunner.terminateFragment(request);
   }
 
   @VisibleForTesting

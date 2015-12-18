@@ -16,19 +16,22 @@ package org.apache.hadoop.hive.llap.daemon;
 
 import java.io.IOException;
 
-import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryCompleteRequestProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryCompleteResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateUpdatedRequestProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateUpdatedResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.TerminateFragmentRequestProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.TerminateFragmentResponseProto;
 
 public interface ContainerRunner {
 
-  void submitWork(SubmitWorkRequestProto request) throws IOException;
+  SubmitWorkResponseProto submitWork(SubmitWorkRequestProto request) throws IOException;
 
-  void sourceStateUpdated(SourceStateUpdatedRequestProto request);
+  SourceStateUpdatedResponseProto sourceStateUpdated(SourceStateUpdatedRequestProto request);
 
-  void queryComplete(QueryCompleteRequestProto request);
+  QueryCompleteResponseProto queryComplete(QueryCompleteRequestProto request);
 
-  void terminateFragment(TerminateFragmentRequestProto request);
+  TerminateFragmentResponseProto terminateFragment(TerminateFragmentRequestProto request);
 }

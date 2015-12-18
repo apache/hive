@@ -22,13 +22,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.llap.configuration.LlapConfiguration;
 import org.apache.hadoop.hive.llap.daemon.ContainerRunner;
 import org.apache.hadoop.hive.llap.daemon.FragmentCompletionHandler;
 import org.apache.hadoop.hive.llap.daemon.HistoryLogger;
@@ -39,9 +37,14 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentS
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GroupInputSpecProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.IOSpecProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryCompleteRequestProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryCompleteResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateUpdatedRequestProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateUpdatedResponseProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmissionStateProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.TerminateFragmentRequestProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.TerminateFragmentResponseProto;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
 import org.apache.hadoop.hive.llap.shufflehandler.ShuffleHandler;
 import org.apache.hadoop.hive.ql.exec.tez.TezProcessor;
@@ -62,7 +65,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
-
 // TODO Convert this to a CompositeService
 public class ContainerRunnerImpl extends CompositeService implements ContainerRunner, FragmentCompletionHandler, QueryFailedHandler {
 
@@ -145,7 +147,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
   }
 
   @Override
-  public void submitWork(SubmitWorkRequestProto request) throws IOException {
+  public SubmitWorkResponseProto submitWork(SubmitWorkRequestProto request) throws IOException {
     HistoryLogger.logFragmentStart(request.getApplicationIdString(), request.getContainerIdString(),
         localAddress.get().getHostName(), request.getFragmentSpec().getDagName(),
         request.getFragmentSpec().getVertexName(), request.getFragmentSpec().getFragmentNumber(),
@@ -157,6 +159,8 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
     // TODO Reduce the length of this string. Way too verbose at the moment.
     String ndcContextString = request.getFragmentSpec().getFragmentIdentifierString();
     NDC.push(ndcContextString);
+    Scheduler.SubmissionState submissionState;
+    SubmitWorkResponseProto.Builder responseBuilder = SubmitWorkResponseProto.newBuilder();
     try {
       Map<String, String> env = new HashMap<>();
       // TODO What else is required in this environment map.
@@ -191,7 +195,9 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
 
       Token<JobTokenIdentifier> jobToken = TokenCache.getSessionToken(credentials);
 
-      LOG.debug("Registering request with the ShuffleHandler");
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Registering request with the ShuffleHandler");
+      }
       ShuffleHandler.get()
           .registerDag(request.getApplicationIdString(), dagIdentifier, jobToken,
               request.getUser(), localDirs);
@@ -200,18 +206,27 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
           new LlapExecutionContext(localAddress.get().getHostName(), queryTracker), env,
           credentials, memoryPerExecutor, amReporter, confParams, metrics, killedTaskHandler,
           this);
-      try {
-        executorService.schedule(callable);
-      } catch (RejectedExecutionException e) {
+      submissionState = executorService.schedule(callable);
+
+      if (LOG.isInfoEnabled()) {
+        LOG.info("SubmissionState for {} : {} ", ndcContextString, submissionState);
+      }
+
+      if (submissionState.equals(Scheduler.SubmissionState.REJECTED)) {
         // Stop tracking the fragment and re-throw the error.
         fragmentComplete(fragmentInfo);
-        throw e;
+        return responseBuilder
+            .setSubmissionState(SubmissionStateProto.valueOf(submissionState.name()))
+            .build();
       }
       metrics.incrExecutorTotalRequestsHandled();
       metrics.incrExecutorNumQueuedRequests();
     } finally {
       NDC.pop();
     }
+
+    responseBuilder.setSubmissionState(SubmissionStateProto.valueOf(submissionState.name()));
+    return responseBuilder.build();
   }
 
   private static class LlapExecutionContext extends ExecutionContextImpl
@@ -230,14 +245,15 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
   }
 
   @Override
-  public void sourceStateUpdated(SourceStateUpdatedRequestProto request) {
+  public SourceStateUpdatedResponseProto sourceStateUpdated(SourceStateUpdatedRequestProto request) {
     LOG.info("Processing state update: " + stringifySourceStateUpdateRequest(request));
     queryTracker.registerSourceStateChange(request.getDagName(), request.getSrcName(),
         request.getState());
+    return SourceStateUpdatedResponseProto.getDefaultInstance();
   }
 
   @Override
-  public void queryComplete(QueryCompleteRequestProto request) {
+  public QueryCompleteResponseProto queryComplete(QueryCompleteRequestProto request) {
     LOG.info("Processing queryComplete notification for {}", request.getDagName());
     List<QueryFragmentInfo> knownFragments =
         queryTracker.queryComplete(null, request.getDagName(), request.getDeleteDelay());
@@ -248,12 +264,14 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
           fragmentInfo.getFragmentIdentifierString());
       executorService.killFragment(fragmentInfo.getFragmentIdentifierString());
     }
+    return QueryCompleteResponseProto.getDefaultInstance();
   }
 
   @Override
-  public void terminateFragment(TerminateFragmentRequestProto request) {
+  public TerminateFragmentResponseProto terminateFragment(TerminateFragmentRequestProto request) {
     LOG.info("DBG: Received terminateFragment request for {}", request.getFragmentIdentifierString());
     executorService.killFragment(request.getFragmentIdentifierString());
+    return TerminateFragmentResponseProto.getDefaultInstance();
   }
 
   private String stringifySourceStateUpdateRequest(SourceStateUpdatedRequestProto request) {
