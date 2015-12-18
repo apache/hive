@@ -68,16 +68,22 @@ public class TestSQLStdHiveAccessControllerCLI {
   }
 
   /**
-   * Verify that no exception is thrown if authorization is enabled from hive cli,
+   * Verify that exceptiion is thrown if authorization is enabled from hive cli,
    * when sql std auth is used
    */
   @Test
-  public void testAuthEnable() throws Exception {
+  public void testAuthEnableError() {
     HiveConf processedConf = new HiveConf();
     processedConf.setBoolVar(ConfVars.HIVE_AUTHORIZATION_ENABLED, true);
-    HiveAuthorizerFactory authorizerFactory = new SQLStdHiveAuthorizerFactory();
-    HiveAuthorizer authorizer = authorizerFactory.createHiveAuthorizer(null, processedConf,
-        new HadoopDefaultAuthenticator(), getCLISessionCtx());
+    try {
+      HiveAuthorizerFactory authorizerFactory = new SQLStdHiveAuthorizerFactory();
+      HiveAuthorizer authorizer = authorizerFactory.createHiveAuthorizer(null, processedConf,
+          new HadoopDefaultAuthenticator(), getCLISessionCtx());
+      fail("Exception expected");
+    } catch (HiveAuthzPluginException e) {
+      assertTrue(e.getMessage().contains(
+          "SQL standards based authorization should not be enabled from hive cli"));
+    }
   }
 
 }

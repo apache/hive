@@ -1,4 +1,3 @@
-set hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider;
 -- SORT_BEFORE_DIFF
 
 create table authorization_fail (key int, value string);
