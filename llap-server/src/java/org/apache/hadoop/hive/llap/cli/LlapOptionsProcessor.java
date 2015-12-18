@@ -44,10 +44,11 @@ public class LlapOptionsProcessor {
     private final long cache;
     private final long size;
     private final long xmx;
+    private final String jars;
     private final Properties conf;
 
     public LlapOptions(String name, int instances, String directory, int executors, long cache,
-        long size, long xmx, @Nonnull Properties hiveconf) throws ParseException {
+        long size, long xmx, String jars, @Nonnull Properties hiveconf) throws ParseException {
       if (instances <= 0) {
         throw new ParseException("Invalid configuration: " + instances
             + " (should be greater than 0)");
@@ -59,6 +60,7 @@ public class LlapOptionsProcessor {
       this.cache = cache;
       this.size = size;
       this.xmx = xmx;
+      this.jars = jars;
       this.conf = hiveconf;
     }
 
@@ -88,6 +90,10 @@ public class LlapOptionsProcessor {
 
     public long getXmx() {
       return xmx;
+    }
+
+    public String getAuxJars() {
+      return jars;
     }
 
     public Properties getConfig() {
@@ -134,6 +140,10 @@ public class LlapOptionsProcessor {
     options.addOption(OptionBuilder.hasArg().withArgName("xmx").withLongOpt("xmx")
         .withDescription("working memory size").create('w'));
 
+    options.addOption(OptionBuilder.hasArg().withArgName("auxjars").withLongOpt("auxjars")
+        .withDescription("additional jars to package (by default, JSON and HBase SerDe jars"
+            + " are packaged if available)").create('j'));
+
     // -hiveconf x=y
     options.addOption(OptionBuilder.withValueSeparator().hasArgs(2).withArgName("property=value")
         .withLongOpt("hiveconf").withDescription("Use value for given property").create());
@@ -156,6 +166,7 @@ public class LlapOptionsProcessor {
 
     int instances = Integer.parseInt(commandLine.getOptionValue("instances"));
     String directory = commandLine.getOptionValue("directory");
+    String jars = commandLine.getOptionValue("auxjars");
 
     String name = commandLine.getOptionValue("name", null);
 
@@ -174,7 +185,8 @@ public class LlapOptionsProcessor {
 
     // loglevel, chaosmonkey & args are parsed by the python processor
 
-    return new LlapOptions(name, instances, directory, executors, cache, size, xmx, hiveconf);
+    return new LlapOptions(
+        name, instances, directory, executors, cache, size, xmx, jars, hiveconf);
 
   }
 
