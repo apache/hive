@@ -775,7 +775,8 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public void putFileMetadata(List<Long> fileIds, List<ByteBuffer> metadata) {
+  public void putFileMetadata(
+      List<Long> fileIds, List<ByteBuffer> metadata, FileMetadataExprType type) {
   }
 
   @Override
@@ -802,5 +803,10 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   @Override
   public int getDatabaseCount() throws MetaException {
     return objectStore.getDatabaseCount();
+  }
+
+  @Override
+  public FileMetadataHandler getFileMetadataHandler(FileMetadataExprType type) {
+    return null;
   }
 }

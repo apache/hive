@@ -347,6 +347,10 @@ class ClearFileMetadataResult;
 
 class ClearFileMetadataRequest;
 
+class CacheFileMetadataResult;
+
+class CacheFileMetadataRequest;
+
 class GetAllFunctionsResponse;
 
 class TableMeta;
@@ -5992,28 +5996,41 @@ inline std::ostream& operator<<(std::ostream& out, const PutFileMetadataResult& 
   return out;
 }
 
+typedef struct _PutFileMetadataRequest__isset {
+  _PutFileMetadataRequest__isset() : type(false) {}
+  bool type :1;
+} _PutFileMetadataRequest__isset;
 
 class PutFileMetadataRequest {
  public:
 
   PutFileMetadataRequest(const PutFileMetadataRequest&);
   PutFileMetadataRequest& operator=(const PutFileMetadataRequest&);
-  PutFileMetadataRequest() {
+  PutFileMetadataRequest() : type((FileMetadataExprType::type)0) {
   }
 
   virtual ~PutFileMetadataRequest() throw();
   std::vector<int64_t>  fileIds;
   std::vector<std::string>  metadata;
+  FileMetadataExprType::type type;
+
+  _PutFileMetadataRequest__isset __isset;
 
   void __set_fileIds(const std::vector<int64_t> & val);
 
   void __set_metadata(const std::vector<std::string> & val);
+
+  void __set_type(const FileMetadataExprType::type val);
 
   bool operator == (const PutFileMetadataRequest & rhs) const
   {
     if (!(fileIds == rhs.fileIds))
       return false;
     if (!(metadata == rhs.metadata))
+      return false;
+    if (__isset.type != rhs.__isset.type)
+      return false;
+    else if (__isset.type && !(type == rhs.type))
       return false;
     return true;
   }
@@ -6107,6 +6124,112 @@ class ClearFileMetadataRequest {
 void swap(ClearFileMetadataRequest &a, ClearFileMetadataRequest &b);
 
 inline std::ostream& operator<<(std::ostream& out, const ClearFileMetadataRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class CacheFileMetadataResult {
+ public:
+
+  CacheFileMetadataResult(const CacheFileMetadataResult&);
+  CacheFileMetadataResult& operator=(const CacheFileMetadataResult&);
+  CacheFileMetadataResult() : isSupported(0) {
+  }
+
+  virtual ~CacheFileMetadataResult() throw();
+  bool isSupported;
+
+  void __set_isSupported(const bool val);
+
+  bool operator == (const CacheFileMetadataResult & rhs) const
+  {
+    if (!(isSupported == rhs.isSupported))
+      return false;
+    return true;
+  }
+  bool operator != (const CacheFileMetadataResult &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const CacheFileMetadataResult & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(CacheFileMetadataResult &a, CacheFileMetadataResult &b);
+
+inline std::ostream& operator<<(std::ostream& out, const CacheFileMetadataResult& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _CacheFileMetadataRequest__isset {
+  _CacheFileMetadataRequest__isset() : partName(false), isAllParts(false) {}
+  bool partName :1;
+  bool isAllParts :1;
+} _CacheFileMetadataRequest__isset;
+
+class CacheFileMetadataRequest {
+ public:
+
+  CacheFileMetadataRequest(const CacheFileMetadataRequest&);
+  CacheFileMetadataRequest& operator=(const CacheFileMetadataRequest&);
+  CacheFileMetadataRequest() : dbName(), tblName(), partName(), isAllParts(0) {
+  }
+
+  virtual ~CacheFileMetadataRequest() throw();
+  std::string dbName;
+  std::string tblName;
+  std::string partName;
+  bool isAllParts;
+
+  _CacheFileMetadataRequest__isset __isset;
+
+  void __set_dbName(const std::string& val);
+
+  void __set_tblName(const std::string& val);
+
+  void __set_partName(const std::string& val);
+
+  void __set_isAllParts(const bool val);
+
+  bool operator == (const CacheFileMetadataRequest & rhs) const
+  {
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(tblName == rhs.tblName))
+      return false;
+    if (__isset.partName != rhs.__isset.partName)
+      return false;
+    else if (__isset.partName && !(partName == rhs.partName))
+      return false;
+    if (__isset.isAllParts != rhs.__isset.isAllParts)
+      return false;
+    else if (__isset.isAllParts && !(isAllParts == rhs.isAllParts))
+      return false;
+    return true;
+  }
+  bool operator != (const CacheFileMetadataRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const CacheFileMetadataRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(CacheFileMetadataRequest &a, CacheFileMetadataRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const CacheFileMetadataRequest& obj)
 {
   obj.printTo(out);
   return out;

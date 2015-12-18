@@ -2358,10 +2358,12 @@ class PutFileMetadataRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   FILEIDS = 1
   METADATA = 2
+  TYPE = 3
 
   FIELDS = {
     FILEIDS => {:type => ::Thrift::Types::LIST, :name => 'fileIds', :element => {:type => ::Thrift::Types::I64}},
-    METADATA => {:type => ::Thrift::Types::LIST, :name => 'metadata', :element => {:type => ::Thrift::Types::STRING, :binary => true}}
+    METADATA => {:type => ::Thrift::Types::LIST, :name => 'metadata', :element => {:type => ::Thrift::Types::STRING, :binary => true}},
+    TYPE => {:type => ::Thrift::Types::I32, :name => 'type', :optional => true, :enum_class => ::FileMetadataExprType}
   }
 
   def struct_fields; FIELDS; end
@@ -2369,6 +2371,9 @@ class PutFileMetadataRequest
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field fileIds is unset!') unless @fileIds
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field metadata is unset!') unless @metadata
+    unless @type.nil? || ::FileMetadataExprType::VALID_VALUES.include?(@type)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field type!')
+    end
   end
 
   ::Thrift::Struct.generate_accessors self
@@ -2401,6 +2406,47 @@ class ClearFileMetadataRequest
 
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field fileIds is unset!') unless @fileIds
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class CacheFileMetadataResult
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  ISSUPPORTED = 1
+
+  FIELDS = {
+    ISSUPPORTED => {:type => ::Thrift::Types::BOOL, :name => 'isSupported'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field isSupported is unset!') if @isSupported.nil?
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class CacheFileMetadataRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  DBNAME = 1
+  TBLNAME = 2
+  PARTNAME = 3
+  ISALLPARTS = 4
+
+  FIELDS = {
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+    TBLNAME => {:type => ::Thrift::Types::STRING, :name => 'tblName'},
+    PARTNAME => {:type => ::Thrift::Types::STRING, :name => 'partName', :optional => true},
+    ISALLPARTS => {:type => ::Thrift::Types::BOOL, :name => 'isAllParts', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tblName is unset!') unless @tblName
   end
 
   ::Thrift::Struct.generate_accessors self

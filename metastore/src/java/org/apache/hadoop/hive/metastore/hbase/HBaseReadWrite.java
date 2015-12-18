@@ -86,7 +86,7 @@ import java.util.Set;
 /**
  * Class to manage storing object in and reading them from HBase.
  */
-public class HBaseReadWrite {
+public class HBaseReadWrite implements MetadataStore {
 
   final static String AGGR_STATS_TABLE = "HBMS_AGGR_STATS";
   final static String DB_TABLE = "HBMS_DBS";
@@ -2154,6 +2154,7 @@ public class HBaseReadWrite {
    * @param fileIds file ID list.
    * @return Serialized file metadata.
    */
+  @Override
   public void getFileMetadata(List<Long> fileIds, ByteBuffer[] result) throws IOException {
     byte[][] keys = new byte[fileIds.size()][];
     for (int i = 0; i < fileIds.size(); ++i) {
@@ -2164,15 +2165,64 @@ public class HBaseReadWrite {
 
   /**
    * @param fileIds file ID list.
-   * @param metadata Serialized file metadata.
+   * @param metadataBuffers Serialized file metadatas, one per file ID.
+   * @param addedCols The column names for additional columns created by file-format-specific
+   *                  metadata handler, to be stored in the cache.
+   * @param addedVals The values for addedCols; one value per file ID per added column.
    */
-  void storeFileMetadata(List<Long> fileIds, List<ByteBuffer> metadata)
+  @Override
+  public void storeFileMetadata(List<Long> fileIds, List<ByteBuffer> metadataBuffers,
+      ByteBuffer[] addedCols, ByteBuffer[][] addedVals)
       throws IOException, InterruptedException {
     byte[][] keys = new byte[fileIds.size()][];
     for (int i = 0; i < fileIds.size(); ++i) {
       keys[i] = HBaseUtils.makeLongKey(fileIds.get(i));
     }
-    multiModify(FILE_METADATA_TABLE, keys, CATALOG_CF, CATALOG_COL, metadata);
+    // HBase APIs are weird. To supply bytebuffer value, you have to also have bytebuffer
+    // column name, but not column family. So there. Perhaps we should add these to constants too.
+    ByteBuffer colNameBuf = ByteBuffer.wrap(CATALOG_COL);
+    @SuppressWarnings("deprecation")
+    HTableInterface htab = conn.getHBaseTable(FILE_METADATA_TABLE);
+    List<Row> actions = new ArrayList<>(keys.length);
+    for (int keyIx = 0; keyIx < keys.length; ++keyIx) {
+      ByteBuffer value = (metadataBuffers != null) ? metadataBuffers.get(keyIx) : null;
+      ByteBuffer[] av = addedVals == null ? null : addedVals[keyIx];
+      if (value == null) {
+        actions.add(new Delete(keys[keyIx]));
+        assert av == null;
+      } else {
+        Put p = new Put(keys[keyIx]);
+        p.addColumn(CATALOG_CF, colNameBuf, HConstants.LATEST_TIMESTAMP, value);
+        if (av != null) {
+          assert av.length == addedCols.length;
+          for (int colIx = 0; colIx < addedCols.length; ++colIx) {
+            p.addColumn(STATS_CF, addedCols[colIx], HConstants.LATEST_TIMESTAMP, av[colIx]);
+          }
+        }
+        actions.add(p);
+      }
+    }
+    Object[] results = new Object[keys.length];
+    htab.batch(actions, results);
+    // TODO: should we check results array? we don't care about partial results
+    conn.flush(htab);
+  }
+
+  @Override
+  public void storeFileMetadata(long fileId, ByteBuffer metadata,
+      ByteBuffer[] addedCols, ByteBuffer[] addedVals) throws IOException, InterruptedException {
+    @SuppressWarnings("deprecation")
+    HTableInterface htab = conn.getHBaseTable(FILE_METADATA_TABLE);
+    Put p = new Put(HBaseUtils.makeLongKey(fileId));
+    p.addColumn(CATALOG_CF, ByteBuffer.wrap(CATALOG_COL), HConstants.LATEST_TIMESTAMP, metadata);
+    assert (addedCols == null && addedVals == null) || (addedCols.length == addedVals.length);
+    if (addedCols != null) {
+      for (int i = 0; i < addedCols.length; ++i) {
+        p.addColumn(STATS_CF, addedCols[i], HConstants.LATEST_TIMESTAMP, addedVals[i]);
+      }
+    }
+    htab.put(p);
+    conn.flush(htab);
   }
 
   /**********************************************************************************************

@@ -2199,6 +2199,21 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'clear_file_metadata failed: unknown result')
     end
 
+    def cache_file_metadata(req)
+      send_cache_file_metadata(req)
+      return recv_cache_file_metadata()
+    end
+
+    def send_cache_file_metadata(req)
+      send_message('cache_file_metadata', Cache_file_metadata_args, :req => req)
+    end
+
+    def recv_cache_file_metadata()
+      result = receive_message(Cache_file_metadata_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'cache_file_metadata failed: unknown result')
+    end
+
   end
 
   class Processor < ::FacebookService::Processor 
@@ -3851,6 +3866,13 @@ module ThriftHiveMetastore
       result = Clear_file_metadata_result.new()
       result.success = @handler.clear_file_metadata(args.req)
       write_result(result, oprot, 'clear_file_metadata', seqid)
+    end
+
+    def process_cache_file_metadata(seqid, iprot, oprot)
+      args = read_args(iprot, Cache_file_metadata_args)
+      result = Cache_file_metadata_result.new()
+      result.success = @handler.cache_file_metadata(args.req)
+      write_result(result, oprot, 'cache_file_metadata', seqid)
     end
 
   end
@@ -8821,6 +8843,38 @@ module ThriftHiveMetastore
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::ClearFileMetadataResult}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Cache_file_metadata_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQ = 1
+
+    FIELDS = {
+      REQ => {:type => ::Thrift::Types::STRUCT, :name => 'req', :class => ::CacheFileMetadataRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Cache_file_metadata_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::CacheFileMetadataResult}
     }
 
     def struct_fields; FIELDS; end

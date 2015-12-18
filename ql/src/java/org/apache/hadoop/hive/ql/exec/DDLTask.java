@@ -104,6 +104,7 @@ import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.plan.AlterTableExchangePartition;
 import org.apache.hadoop.hive.ql.plan.AlterTableSimpleDesc;
+import org.apache.hadoop.hive.ql.plan.CacheMetadataDesc;
 import org.apache.hadoop.hive.ql.plan.CreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.CreateIndexDesc;
 import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
@@ -518,11 +519,22 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       if (alterTableExchangePartition != null) {
         return exchangeTablePartition(db, alterTableExchangePartition);
       }
+
+      CacheMetadataDesc cacheMetadataDesc = work.getCacheMetadataDesc();
+      if (cacheMetadataDesc != null) {
+        return cacheMetadata(db, cacheMetadataDesc);
+      }
     } catch (Throwable e) {
       failed(e);
       return 1;
     }
     assert false;
+    return 0;
+  }
+
+  private int cacheMetadata(Hive db, CacheMetadataDesc desc) throws HiveException {
+    db.cacheFileMetadata(desc.getDbName(), desc.getTableName(),
+        desc.getPartName(), desc.isAllParts());
     return 0;
   }
 

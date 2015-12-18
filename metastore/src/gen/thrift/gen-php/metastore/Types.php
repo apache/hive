@@ -14564,6 +14564,10 @@ class PutFileMetadataRequest {
    * @var string[]
    */
   public $metadata = null;
+  /**
+   * @var int
+   */
+  public $type = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -14584,6 +14588,10 @@ class PutFileMetadataRequest {
             'type' => TType::STRING,
             ),
           ),
+        3 => array(
+          'var' => 'type',
+          'type' => TType::I32,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -14592,6 +14600,9 @@ class PutFileMetadataRequest {
       }
       if (isset($vals['metadata'])) {
         $this->metadata = $vals['metadata'];
+      }
+      if (isset($vals['type'])) {
+        $this->type = $vals['type'];
       }
     }
   }
@@ -14649,6 +14660,13 @@ class PutFileMetadataRequest {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 3:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->type);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -14694,6 +14712,11 @@ class PutFileMetadataRequest {
         }
         $output->writeListEnd();
       }
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->type !== null) {
+      $xfer += $output->writeFieldBegin('type', TType::I32, 3);
+      $xfer += $output->writeI32($this->type);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -14845,6 +14868,225 @@ class ClearFileMetadataRequest {
         }
         $output->writeListEnd();
       }
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class CacheFileMetadataResult {
+  static $_TSPEC;
+
+  /**
+   * @var bool
+   */
+  public $isSupported = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'isSupported',
+          'type' => TType::BOOL,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['isSupported'])) {
+        $this->isSupported = $vals['isSupported'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'CacheFileMetadataResult';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->isSupported);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('CacheFileMetadataResult');
+    if ($this->isSupported !== null) {
+      $xfer += $output->writeFieldBegin('isSupported', TType::BOOL, 1);
+      $xfer += $output->writeBool($this->isSupported);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class CacheFileMetadataRequest {
+  static $_TSPEC;
+
+  /**
+   * @var string
+   */
+  public $dbName = null;
+  /**
+   * @var string
+   */
+  public $tblName = null;
+  /**
+   * @var string
+   */
+  public $partName = null;
+  /**
+   * @var bool
+   */
+  public $isAllParts = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'dbName',
+          'type' => TType::STRING,
+          ),
+        2 => array(
+          'var' => 'tblName',
+          'type' => TType::STRING,
+          ),
+        3 => array(
+          'var' => 'partName',
+          'type' => TType::STRING,
+          ),
+        4 => array(
+          'var' => 'isAllParts',
+          'type' => TType::BOOL,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['dbName'])) {
+        $this->dbName = $vals['dbName'];
+      }
+      if (isset($vals['tblName'])) {
+        $this->tblName = $vals['tblName'];
+      }
+      if (isset($vals['partName'])) {
+        $this->partName = $vals['partName'];
+      }
+      if (isset($vals['isAllParts'])) {
+        $this->isAllParts = $vals['isAllParts'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'CacheFileMetadataRequest';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->dbName);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->tblName);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 3:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->partName);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 4:
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->isAllParts);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('CacheFileMetadataRequest');
+    if ($this->dbName !== null) {
+      $xfer += $output->writeFieldBegin('dbName', TType::STRING, 1);
+      $xfer += $output->writeString($this->dbName);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->tblName !== null) {
+      $xfer += $output->writeFieldBegin('tblName', TType::STRING, 2);
+      $xfer += $output->writeString($this->tblName);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->partName !== null) {
+      $xfer += $output->writeFieldBegin('partName', TType::STRING, 3);
+      $xfer += $output->writeString($this->partName);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->isAllParts !== null) {
+      $xfer += $output->writeFieldBegin('isAllParts', TType::BOOL, 4);
+      $xfer += $output->writeBool($this->isAllParts);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

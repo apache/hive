@@ -677,6 +677,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("clear_file_metadata\n");
   }
 
+  void cache_file_metadata(CacheFileMetadataResult& _return, const CacheFileMetadataRequest& req) {
+    // Your implementation goes here
+    printf("cache_file_metadata\n");
+  }
+
 };
 
 int main(int argc, char **argv) {

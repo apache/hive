@@ -91,6 +91,7 @@ public class DDLWork implements Serializable {
    */
   protected HashSet<WriteEntity> outputs;
   private AlterTablePartMergeFilesDesc mergeFilesDesc;
+  private CacheMetadataDesc cacheMetadataDesc;
 
   public DDLWork() {
   }
@@ -508,6 +509,12 @@ public class DDLWork implements Serializable {
       AlterTableExchangePartition alterTableExchangePartition) {
     this(inputs, outputs);
     this.alterTableExchangePartition = alterTableExchangePartition;
+  }
+
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
+      CacheMetadataDesc cacheMetadataDesc) {
+    this(inputs, outputs);
+    this.cacheMetadataDesc = cacheMetadataDesc;
   }
 
     /**
@@ -1137,6 +1144,13 @@ public class DDLWork implements Serializable {
    */
   public AlterTableExchangePartition getAlterTableExchangePartition() {
     return this.alterTableExchangePartition;
+  }
+
+  /**
+   * @return information about the metadata to be cached
+   */
+  public CacheMetadataDesc getCacheMetadataDesc() {
+    return this.cacheMetadataDesc;
   }
 
   /**

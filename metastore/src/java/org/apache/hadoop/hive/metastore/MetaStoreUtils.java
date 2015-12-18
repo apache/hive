@@ -1516,10 +1516,12 @@ public class MetaStoreUtils {
     return listeners;
   }
 
-  public static Class<?> getClass(String rawStoreClassName)
+  @SuppressWarnings("unchecked")
+  public static Class<? extends RawStore> getClass(String rawStoreClassName)
       throws MetaException {
     try {
-      return Class.forName(rawStoreClassName, true, JavaUtils.getClassLoader());
+      return (Class<? extends RawStore>)
+          Class.forName(rawStoreClassName, true, JavaUtils.getClassLoader());
     } catch (ClassNotFoundException e) {
       throw new MetaException(rawStoreClassName + " class not found");
     }

@@ -18,11 +18,11 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 
-import java.nio.ByteBuffer;
 import java.util.List;
 
 /**
@@ -42,12 +42,17 @@ public class MockPartitionExpressionForMetastore implements PartitionExpressionP
   }
 
   @Override
+  public FileMetadataExprType getMetadataType(String inputFormat) {
+    return null;
+  }
+
+  @Override
   public SearchArgument createSarg(byte[] expr) {
     return null;
   }
 
   @Override
-  public ByteBuffer applySargToFileMetadata(SearchArgument sarg, ByteBuffer byteBuffer) {
+  public FileFormatProxy getFileFormatProxy(FileMetadataExprType type) {
     return null;
   }
 }

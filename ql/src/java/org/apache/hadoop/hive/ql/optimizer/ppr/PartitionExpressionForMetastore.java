@@ -18,18 +18,16 @@
 
 package org.apache.hadoop.hive.ql.optimizer.ppr;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
+import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
+
 import java.util.List;
 
-import org.apache.hadoop.hive.metastore.Metastore.SplitInfo;
-import org.apache.hadoop.hive.metastore.Metastore.SplitInfos;
+import org.apache.hadoop.hive.metastore.FileFormatProxy;
 import org.apache.hadoop.hive.metastore.PartitionExpressionProxy;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
+import org.apache.hadoop.hive.ql.io.orc.OrcFileFormatProxy;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
-import org.apache.hadoop.hive.ql.io.orc.ReaderImpl;
-import org.apache.orc.StripeInformation;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -37,7 +35,6 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.orc.OrcProto;
 
 /**
  * The basic implementation of PartitionExpressionProxy that uses ql package classes.
@@ -83,32 +80,29 @@ public class PartitionExpressionForMetastore implements PartitionExpressionProxy
   }
 
   @Override
-  public SearchArgument createSarg(byte[] expr) {
-    return ConvertAstToSearchArg.create(expr);
+  public FileFormatProxy getFileFormatProxy(FileMetadataExprType type) {
+    switch (type) {
+    case ORC_SARG: return new OrcFileFormatProxy();
+    default: throw new RuntimeException("Unsupported format " + type);
+    }
   }
 
   @Override
-  public ByteBuffer applySargToFileMetadata(
-      SearchArgument sarg, ByteBuffer byteBuffer) throws IOException {
-    // TODO: ideally we should store shortened representation of only the necessary fields
-    //       in HBase; it will probably require custom SARG application code.
-    ReaderImpl.FooterInfo fi = ReaderImpl.extractMetaInfoFromFooter(byteBuffer, null);
-    OrcProto.Footer footer = fi.getFooter();
-    int stripeCount = footer.getStripesCount();
-    boolean[] result = OrcInputFormat.pickStripesViaTranslatedSarg(
-        sarg, fi.getFileMetaInfo().getWriterVersion(),
-        footer.getTypesList(), fi.getMetadata(), stripeCount);
-    // For ORC case, send the boundaries of the stripes so we don't have to send the footer.
-    SplitInfos.Builder sb = SplitInfos.newBuilder();
-    List<StripeInformation> stripes = fi.getStripes();
-    boolean isEliminated = true;
-    for (int i = 0; i < result.length; ++i) {
-      if (result != null && !result[i]) continue;
-      isEliminated = false;
-      StripeInformation si = stripes.get(i);
-      sb.addInfos(SplitInfo.newBuilder().setIndex(i)
-          .setOffset(si.getOffset()).setLength(si.getLength()));
+  public FileMetadataExprType getMetadataType(String inputFormat) {
+    try {
+      Class<?> ifClass = Class.forName(inputFormat);
+      if (OrcInputFormat.class.isAssignableFrom(ifClass)) {
+        return FileMetadataExprType.ORC_SARG;
+      }
+      return null;
+    } catch (Throwable t) {
+      LOG.warn("Can't create the class for input format " + inputFormat, t);
+      return null;
     }
-    return isEliminated ? null : ByteBuffer.wrap(sb.build().toByteArray());
+  }
+
+  @Override
+  public SearchArgument createSarg(byte[] expr) {
+    return ConvertAstToSearchArg.create(expr);
   }
 }

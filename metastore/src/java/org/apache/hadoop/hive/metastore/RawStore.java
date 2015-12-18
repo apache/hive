@@ -610,8 +610,10 @@ public interface RawStore extends Configurable {
   /**
    * @param fileIds List of file IDs from the filesystem.
    * @param metadata Metadata buffers corresponding to fileIds in the list.
+   * @param type The type; determines the class that can do additiona processing for metadata.
    */
-  void putFileMetadata(List<Long> fileIds, List<ByteBuffer> metadata) throws MetaException;
+  void putFileMetadata(List<Long> fileIds, List<ByteBuffer> metadata,
+      FileMetadataExprType type) throws MetaException;
 
   /**
    * @return Whether file metadata cache is supported by this implementation.
@@ -634,6 +636,9 @@ public interface RawStore extends Configurable {
   void getFileMetadataByExpr(List<Long> fileIds, FileMetadataExprType type, byte[] expr,
       ByteBuffer[] metadatas, ByteBuffer[] exprResults, boolean[] eliminated)
           throws MetaException;
+
+  /** Gets file metadata handler for the corresponding type. */
+  FileMetadataHandler getFileMetadataHandler(FileMetadataExprType type);
 
   /**
    * Gets total number of tables.

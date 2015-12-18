@@ -7,10 +7,6 @@
 package org.apache.hadoop.hive.metastore.api;
 
 
-import java.util.Map;
-import java.util.HashMap;
-import org.apache.thrift.TEnum;
-
 public enum FileMetadataExprType implements org.apache.thrift.TEnum {
   ORC_SARG(1);
 

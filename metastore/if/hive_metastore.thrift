@@ -756,7 +756,8 @@ struct PutFileMetadataResult {
 // Request type for put_file_metadata
 struct PutFileMetadataRequest {
   1: required list<i64> fileIds,
-  2: required list<binary> metadata
+  2: required list<binary> metadata,
+  3: optional FileMetadataExprType type
 }
 
 // Return type for clear_file_metadata
@@ -766,6 +767,19 @@ struct ClearFileMetadataResult {
 // Request type for clear_file_metadata
 struct ClearFileMetadataRequest {
   1: required list<i64> fileIds
+}
+
+// Return type for cache_file_metadata
+struct CacheFileMetadataResult {
+  1: required bool isSupported
+}
+
+// Request type for cache_file_metadata
+struct CacheFileMetadataRequest {
+  1: required string dbName,
+  2: required string tblName,
+  3: optional string partName,
+  4: optional bool isAllParts
 }
 
 struct GetAllFunctionsResponse {
@@ -1267,6 +1281,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   GetFileMetadataResult get_file_metadata(1:GetFileMetadataRequest req)
   PutFileMetadataResult put_file_metadata(1:PutFileMetadataRequest req)
   ClearFileMetadataResult clear_file_metadata(1:ClearFileMetadataRequest req)
+  CacheFileMetadataResult cache_file_metadata(1:CacheFileMetadataRequest req)
 
 }
 

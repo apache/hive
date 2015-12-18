@@ -1,0 +1,54 @@
+PREHOOK: query: CREATE TABLE many_files(key string, value string)
+partitioned by (ds string)
+clustered by (key) into 4 buckets
+stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@many_files
+POSTHOOK: query: CREATE TABLE many_files(key string, value string)
+partitioned by (ds string)
+clustered by (key) into 4 buckets
+stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@many_files
+PREHOOK: query: insert overwrite table many_files partition (ds='1') select * from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@many_files@ds=1
+POSTHOOK: query: insert overwrite table many_files partition (ds='1') select * from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@many_files@ds=1
+POSTHOOK: Lineage: many_files PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: many_files PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table many_files partition (ds='2') select * from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@many_files@ds=2
+POSTHOOK: query: insert overwrite table many_files partition (ds='2') select * from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@many_files@ds=2
+POSTHOOK: Lineage: many_files PARTITION(ds=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: many_files PARTITION(ds=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+#### A masked pattern was here ####
+PREHOOK: query: analyze table many_files cache metadata
+PREHOOK: type: CACHE_METADATA
+PREHOOK: Input: default@many_files
+POSTHOOK: query: analyze table many_files cache metadata
+POSTHOOK: type: CACHE_METADATA
+POSTHOOK: Input: default@many_files
+PREHOOK: query: select sum(hash(*)) from many_files
+PREHOOK: type: QUERY
+PREHOOK: Input: default@many_files
+PREHOOK: Input: default@many_files@ds=1
+PREHOOK: Input: default@many_files@ds=2
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(hash(*)) from many_files
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@many_files
+POSTHOOK: Input: default@many_files@ds=1
+POSTHOOK: Input: default@many_files@ds=2
+#### A masked pattern was here ####
+73724366848

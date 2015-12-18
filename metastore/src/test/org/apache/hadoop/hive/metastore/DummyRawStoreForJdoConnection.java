@@ -792,7 +792,8 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
-  public void putFileMetadata(List<Long> fileIds, List<ByteBuffer> metadata) {
+  public void putFileMetadata(
+      List<Long> fileIds, List<ByteBuffer> metadata, FileMetadataExprType type) {
   }
 
   @Override
@@ -818,6 +819,11 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   @Override
   public int getDatabaseCount() throws MetaException {
     return 0;
+  }
+
+  @Override
+  public FileMetadataHandler getFileMetadataHandler(FileMetadataExprType type) {
+    return null;
   }
 }
 

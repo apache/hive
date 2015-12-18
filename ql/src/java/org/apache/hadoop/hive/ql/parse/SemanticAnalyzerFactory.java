@@ -110,6 +110,7 @@ public final class SemanticAnalyzerFactory {
     commandType.put(HiveParser.TOK_DESCDATABASE, HiveOperation.DESCDATABASE);
     commandType.put(HiveParser.TOK_ALTERTABLE_SKEWED, HiveOperation.ALTERTABLE_SKEWED);
     commandType.put(HiveParser.TOK_ANALYZE, HiveOperation.ANALYZE_TABLE);
+    commandType.put(HiveParser.TOK_CACHE_METADATA, HiveOperation.CACHE_METADATA);
     commandType.put(HiveParser.TOK_ALTERTABLE_PARTCOLTYPE, HiveOperation.ALTERTABLE_PARTCOLTYPE);
     commandType.put(HiveParser.TOK_SHOW_COMPACTIONS, HiveOperation.SHOW_COMPACTIONS);
     commandType.put(HiveParser.TOK_SHOW_TRANSACTIONS, HiveOperation.SHOW_TRANSACTIONS);
@@ -259,6 +260,7 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_ALTERDATABASE_OWNER:
       case HiveParser.TOK_TRUNCATETABLE:
       case HiveParser.TOK_SHOW_SET_ROLE:
+      case HiveParser.TOK_CACHE_METADATA:
         return new DDLSemanticAnalyzer(conf);
 
       case HiveParser.TOK_CREATEFUNCTION:

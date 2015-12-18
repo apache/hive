@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -81,35 +80,6 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       }
     }
     return rwt;
-  }
-
-  private boolean isPartitionLevelStats(ASTNode tree) {
-    boolean isPartitioned = false;
-    ASTNode child = (ASTNode) tree.getChild(0);
-    if (child.getChildCount() > 1) {
-      child = (ASTNode) child.getChild(1);
-      if (child.getToken().getType() == HiveParser.TOK_PARTSPEC) {
-        isPartitioned = true;
-      }
-    }
-    return isPartitioned;
-  }
-
-  private Table getTable(ASTNode tree) throws SemanticException {
-    String tableName = getUnescapedName((ASTNode) tree.getChild(0).getChild(0));
-    String currentDb = SessionState.get().getCurrentDatabase();
-    String [] names = Utilities.getDbTableName(currentDb, tableName);
-    return getTable(names[0], names[1], true);
-  }
-
-  private Map<String,String> getPartKeyValuePairsFromAST(Table tbl, ASTNode tree,
-      HiveConf hiveConf) throws SemanticException {
-    ASTNode child = ((ASTNode) tree.getChild(0).getChild(1));
-    Map<String,String> partSpec = new HashMap<String, String>();
-    if (child != null) {
-      partSpec = DDLSemanticAnalyzer.getValidatedPartSpec(tbl, child, hiveConf, false);
-    } //otherwise, it is the case of analyze table T compute statistics for columns;
-    return partSpec;
   }
 
   private List<String> getColumnName(ASTNode tree) throws SemanticException{
@@ -405,11 +375,11 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
      * an aggregation.
      */
     if (shouldRewrite(ast)) {
-      tbl = getTable(ast);
+      tbl = AnalyzeCommandUtils.getTable(ast, this);
       colNames = getColumnName(ast);
       // Save away the original AST
       originalTree = ast;
-      boolean isPartitionStats = isPartitionLevelStats(ast);
+      boolean isPartitionStats = AnalyzeCommandUtils.isPartitionLevelStats(ast);
       Map<String,String> partSpec = null;
       checkForPartitionColumns(
           colNames, Utilities.getColumnNamesFromFieldSchema(tbl.getPartitionKeys()));
@@ -420,7 +390,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
 
       if (isPartitionStats) {
         isTableLevel = false;
-        partSpec = getPartKeyValuePairsFromAST(tbl, ast, conf);
+        partSpec = AnalyzeCommandUtils.getPartKeyValuePairsFromAST(tbl, ast, conf);
         handlePartialPartitionSpec(partSpec);
       } else {
         isTableLevel = true;

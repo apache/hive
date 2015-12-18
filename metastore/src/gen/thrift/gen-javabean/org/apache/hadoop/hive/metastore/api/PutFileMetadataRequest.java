@@ -40,6 +40,7 @@ public class PutFileMetadataRequest implements org.apache.thrift.TBase<PutFileMe
 
   private static final org.apache.thrift.protocol.TField FILE_IDS_FIELD_DESC = new org.apache.thrift.protocol.TField("fileIds", org.apache.thrift.protocol.TType.LIST, (short)1);
   private static final org.apache.thrift.protocol.TField METADATA_FIELD_DESC = new org.apache.thrift.protocol.TField("metadata", org.apache.thrift.protocol.TType.LIST, (short)2);
+  private static final org.apache.thrift.protocol.TField TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("type", org.apache.thrift.protocol.TType.I32, (short)3);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -49,11 +50,17 @@ public class PutFileMetadataRequest implements org.apache.thrift.TBase<PutFileMe
 
   private List<Long> fileIds; // required
   private List<ByteBuffer> metadata; // required
+  private FileMetadataExprType type; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     FILE_IDS((short)1, "fileIds"),
-    METADATA((short)2, "metadata");
+    METADATA((short)2, "metadata"),
+    /**
+     *
+     * @see FileMetadataExprType
+     */
+    TYPE((short)3, "type");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -72,6 +79,8 @@ public class PutFileMetadataRequest implements org.apache.thrift.TBase<PutFileMe
           return FILE_IDS;
         case 2: // METADATA
           return METADATA;
+        case 3: // TYPE
+          return TYPE;
         default:
           return null;
       }
@@ -112,6 +121,7 @@ public class PutFileMetadataRequest implements org.apache.thrift.TBase<PutFileMe
   }
 
   // isset id assignments
+  private static final _Fields optionals[] = {_Fields.TYPE};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -121,6 +131,8 @@ public class PutFileMetadataRequest implements org.apache.thrift.TBase<PutFileMe
     tmpMap.put(_Fields.METADATA, new org.apache.thrift.meta_data.FieldMetaData("metadata", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING            , true))));
+    tmpMap.put(_Fields.TYPE, new org.apache.thrift.meta_data.FieldMetaData("type", org.apache.thrift.TFieldRequirementType.OPTIONAL,
+        new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, FileMetadataExprType.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(PutFileMetadataRequest.class, metaDataMap);
   }
@@ -149,6 +161,9 @@ public class PutFileMetadataRequest implements org.apache.thrift.TBase<PutFileMe
       List<ByteBuffer> __this__metadata = new ArrayList<ByteBuffer>(other.metadata);
       this.metadata = __this__metadata;
     }
+    if (other.isSetType()) {
+      this.type = other.type;
+    }
   }
 
   public PutFileMetadataRequest deepCopy() {
@@ -159,6 +174,7 @@ public class PutFileMetadataRequest implements org.apache.thrift.TBase<PutFileMe
   public void clear() {
     this.fileIds = null;
     this.metadata = null;
+    this.type = null;
   }
 
   public int getFileIdsSize() {
@@ -237,6 +253,37 @@ public class PutFileMetadataRequest implements org.apache.thrift.TBase<PutFileMe
     }
   }
 
+  /**
+   *
+   * @see FileMetadataExprType
+   */
+  public FileMetadataExprType getType() {
+    return this.type;
+  }
+
+  /**
+   *
+   * @see FileMetadataExprType
+   */
+  public void setType(FileMetadataExprType type) {
+    this.type = type;
+  }
+
+  public void unsetType() {
+    this.type = null;
+  }
+
+  /** Returns true if field type is set (has been assigned a value) and false otherwise */
+  public boolean isSetType() {
+    return this.type != null;
+  }
+
+  public void setTypeIsSet(boolean value) {
+    if (!value) {
+      this.type = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case FILE_IDS:
@@ -255,6 +302,14 @@ public class PutFileMetadataRequest implements org.apache.thrift.TBase<PutFileMe
       }
       break;
 
+    case TYPE:
+      if (value == null) {
+        unsetType();
+      } else {
+        setType((FileMetadataExprType)value);
+      }
+      break;
+
     }
   }
 
@@ -265,6 +320,9 @@ public class PutFileMetadataRequest implements org.apache.thrift.TBase<PutFileMe
 
     case METADATA:
       return getMetadata();
+
+    case TYPE:
+      return getType();
 
     }
     throw new IllegalStateException();
@@ -281,6 +339,8 @@ public class PutFileMetadataRequest implements org.apache.thrift.TBase<PutFileMe
       return isSetFileIds();
     case METADATA:
       return isSetMetadata();
+    case TYPE:
+      return isSetType();
     }
     throw new IllegalStateException();
   }
@@ -316,6 +376,15 @@ public class PutFileMetadataRequest implements org.apache.thrift.TBase<PutFileMe
         return false;
     }
 
+    boolean this_present_type = true && this.isSetType();
+    boolean that_present_type = true && that.isSetType();
+    if (this_present_type || that_present_type) {
+      if (!(this_present_type && that_present_type))
+        return false;
+      if (!this.type.equals(that.type))
+        return false;
+    }
+
     return true;
   }
 
@@ -332,6 +401,11 @@ public class PutFileMetadataRequest implements org.apache.thrift.TBase<PutFileMe
     list.add(present_metadata);
     if (present_metadata)
       list.add(metadata);
+
+    boolean present_type = true && (isSetType());
+    list.add(present_type);
+    if (present_type)
+      list.add(type.getValue());
 
     return list.hashCode();
   }
@@ -360,6 +434,16 @@ public class PutFileMetadataRequest implements org.apache.thrift.TBase<PutFileMe
     }
     if (isSetMetadata()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.metadata, other.metadata);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetType()).compareTo(other.isSetType());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetType()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.type, other.type);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -399,6 +483,16 @@ public class PutFileMetadataRequest implements org.apache.thrift.TBase<PutFileMe
       org.apache.thrift.TBaseHelper.toString(this.metadata, sb);
     }
     first = false;
+    if (isSetType()) {
+      if (!first) sb.append(", ");
+      sb.append("type:");
+      if (this.type == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.type);
+      }
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -486,6 +580,14 @@ public class PutFileMetadataRequest implements org.apache.thrift.TBase<PutFileMe
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 3: // TYPE
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.type = org.apache.hadoop.hive.metastore.api.FileMetadataExprType.findByValue(iprot.readI32());
+              struct.setTypeIsSet(true);
+            } else {
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -523,6 +625,13 @@ public class PutFileMetadataRequest implements org.apache.thrift.TBase<PutFileMe
         }
         oprot.writeFieldEnd();
       }
+      if (struct.type != null) {
+        if (struct.isSetType()) {
+          oprot.writeFieldBegin(TYPE_FIELD_DESC);
+          oprot.writeI32(struct.type.getValue());
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -554,6 +663,14 @@ public class PutFileMetadataRequest implements org.apache.thrift.TBase<PutFileMe
           oprot.writeBinary(_iter569);
         }
       }
+      BitSet optionals = new BitSet();
+      if (struct.isSetType()) {
+        optionals.set(0);
+      }
+      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetType()) {
+        oprot.writeI32(struct.type.getValue());
+      }
     }
 
     @Override
@@ -581,6 +698,11 @@ public class PutFileMetadataRequest implements org.apache.thrift.TBase<PutFileMe
         }
       }
       struct.setMetadataIsSet(true);
+      BitSet incoming = iprot.readBitSet(1);
+      if (incoming.get(0)) {
+        struct.type = org.apache.hadoop.hive.metastore.api.FileMetadataExprType.findByValue(iprot.readI32());
+        struct.setTypeIsSet(true);
+      }
     }
   }
 

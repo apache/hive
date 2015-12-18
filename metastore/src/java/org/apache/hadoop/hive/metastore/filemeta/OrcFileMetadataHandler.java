@@ -22,42 +22,34 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.FileMetadataHandler;
-import org.apache.hadoop.hive.metastore.PartitionExpressionProxy;
-import org.apache.hadoop.hive.metastore.hbase.HBaseReadWrite;
+import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 
-public class OrcFileMetadataHandler implements FileMetadataHandler {
-  private final Configuration conf;
-  private final PartitionExpressionProxy expressionProxy;
-  private final HBaseReadWrite hbase;
+public class OrcFileMetadataHandler extends FileMetadataHandler {
 
-  public OrcFileMetadataHandler(Configuration conf,
-      PartitionExpressionProxy expressionProxy, HBaseReadWrite hbase) {
-    this.conf = conf;
-    this.expressionProxy = expressionProxy;
-    this.hbase = hbase;
+  @Override
+  protected FileMetadataExprType getType() {
+    return FileMetadataExprType.ORC_SARG;
   }
 
   @Override
   public void getFileMetadataByExpr(List<Long> fileIds, byte[] expr,
       ByteBuffer[] metadatas, ByteBuffer[] results, boolean[] eliminated) throws IOException {
-    SearchArgument sarg = expressionProxy.createSarg(expr);
+    SearchArgument sarg = getExpressionProxy().createSarg(expr);
     // For now, don't push anything into HBase, nor store anything special in HBase
     if (metadatas == null) {
       // null means don't return metadata; we'd need the array anyway for now.
       metadatas = new ByteBuffer[results.length];
     }
-    hbase.getFileMetadata(fileIds, metadatas);
+    getStore().getFileMetadata(fileIds, metadatas);
     for (int i = 0; i < metadatas.length;  ++i) {
       if (metadatas[i] == null) continue;
-      ByteBuffer result = expressionProxy.applySargToFileMetadata(sarg, metadatas[i]);
+      ByteBuffer result = getFileFormatProxy().applySargToMetadata(sarg, metadatas[i]);
       eliminated[i] = (result == null);
       if (!eliminated[i]) {
         results[i] = result;
       }
     }
   }
-
 }

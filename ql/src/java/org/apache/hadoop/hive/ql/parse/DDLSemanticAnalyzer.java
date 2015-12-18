@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -79,10 +80,12 @@ import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.plan.AlterTableExchangePartition;
 import org.apache.hadoop.hive.ql.plan.AlterTableSimpleDesc;
+import org.apache.hadoop.hive.ql.plan.CacheMetadataDesc;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsDesc;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsUpdateWork;
 import org.apache.hadoop.hive.ql.plan.CreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.CreateIndexDesc;
+import org.apache.hadoop.hive.ql.plan.DDLDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.DescDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.DescFunctionDesc;
@@ -492,12 +495,33 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
    case HiveParser.TOK_SHOW_SET_ROLE:
      analyzeSetShowRole(ast);
      break;
-    default:
+   case HiveParser.TOK_CACHE_METADATA:
+     analyzeCacheMetadata(ast);
+     break;
+   default:
       throw new SemanticException("Unsupported command.");
     }
     if (fetchTask != null && !rootTasks.isEmpty()) {
       rootTasks.get(rootTasks.size() - 1).setFetchSource(true);
     }
+  }
+
+  private void analyzeCacheMetadata(ASTNode ast) throws SemanticException {
+    Table tbl = AnalyzeCommandUtils.getTable(ast, this);
+    Map<String,String> partSpec = null;
+    CacheMetadataDesc desc;
+    // In 2 cases out of 3, we could pass the path and type directly to metastore...
+    if (AnalyzeCommandUtils.isPartitionLevelStats(ast)) {
+      partSpec = AnalyzeCommandUtils.getPartKeyValuePairsFromAST(tbl, ast, conf);
+      Partition part = getPartition(tbl, partSpec, true);
+      desc = new CacheMetadataDesc(tbl.getDbName(), tbl.getTableName(), part.getName());
+      inputs.add(new ReadEntity(part));
+    } else {
+      // Should we get all partitions for a partitioned table?
+      desc = new CacheMetadataDesc(tbl.getDbName(), tbl.getTableName(), tbl.isPartitioned());
+      inputs.add(new ReadEntity(tbl));
+    }
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc), conf));
   }
 
   private void analyzeAlterTableUpdateStats(ASTNode ast, String tblName, Map<String, String> partSpec)
@@ -511,7 +535,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       try {
         partName = Warehouse.makePartName(partSpec, false);
       } catch (MetaException e) {
-        // TODO Auto-generated catch block
         throw new SemanticException("partition " + partSpec.toString()
             + " not found");
       }

@@ -3401,4 +3401,17 @@ private void constructOneLBLocationMap(FileStatus fSta,
       throw new HiveException(e);
     }
   }
+
+  public void cacheFileMetadata(
+      String dbName, String tableName, String partName, boolean allParts) throws HiveException {
+    try {
+      boolean willCache = getMSC().cacheFileMetadata(dbName, tableName, partName, allParts);
+      if (!willCache) {
+        throw new HiveException(
+            "Caching file metadata is not supported by metastore or for this file format");
+      }
+    } catch (TException e) {
+      throw new HiveException(e);
+    }
+  }
 };

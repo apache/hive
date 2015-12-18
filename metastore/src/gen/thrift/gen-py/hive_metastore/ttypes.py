@@ -10266,17 +10266,20 @@ class PutFileMetadataRequest:
   Attributes:
    - fileIds
    - metadata
+   - type
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.LIST, 'fileIds', (TType.I64,None), None, ), # 1
     (2, TType.LIST, 'metadata', (TType.STRING,None), None, ), # 2
+    (3, TType.I32, 'type', None, None, ), # 3
   )
 
-  def __init__(self, fileIds=None, metadata=None,):
+  def __init__(self, fileIds=None, metadata=None, type=None,):
     self.fileIds = fileIds
     self.metadata = metadata
+    self.type = type
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -10307,6 +10310,11 @@ class PutFileMetadataRequest:
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.I32:
+          self.type = iprot.readI32()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -10331,6 +10339,10 @@ class PutFileMetadataRequest:
         oprot.writeString(iter507)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
+    if self.type is not None:
+      oprot.writeFieldBegin('type', TType.I32, 3)
+      oprot.writeI32(self.type)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -10346,6 +10358,7 @@ class PutFileMetadataRequest:
     value = 17
     value = (value * 31) ^ hash(self.fileIds)
     value = (value * 31) ^ hash(self.metadata)
+    value = (value * 31) ^ hash(self.type)
     return value
 
   def __repr__(self):
@@ -10467,6 +10480,181 @@ class ClearFileMetadataRequest:
   def __hash__(self):
     value = 17
     value = (value * 31) ^ hash(self.fileIds)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class CacheFileMetadataResult:
+  """
+  Attributes:
+   - isSupported
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.BOOL, 'isSupported', None, None, ), # 1
+  )
+
+  def __init__(self, isSupported=None,):
+    self.isSupported = isSupported
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.BOOL:
+          self.isSupported = iprot.readBool()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('CacheFileMetadataResult')
+    if self.isSupported is not None:
+      oprot.writeFieldBegin('isSupported', TType.BOOL, 1)
+      oprot.writeBool(self.isSupported)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.isSupported is None:
+      raise TProtocol.TProtocolException(message='Required field isSupported is unset!')
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.isSupported)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class CacheFileMetadataRequest:
+  """
+  Attributes:
+   - dbName
+   - tblName
+   - partName
+   - isAllParts
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRING, 'dbName', None, None, ), # 1
+    (2, TType.STRING, 'tblName', None, None, ), # 2
+    (3, TType.STRING, 'partName', None, None, ), # 3
+    (4, TType.BOOL, 'isAllParts', None, None, ), # 4
+  )
+
+  def __init__(self, dbName=None, tblName=None, partName=None, isAllParts=None,):
+    self.dbName = dbName
+    self.tblName = tblName
+    self.partName = partName
+    self.isAllParts = isAllParts
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRING:
+          self.dbName = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.tblName = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.STRING:
+          self.partName = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.BOOL:
+          self.isAllParts = iprot.readBool()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('CacheFileMetadataRequest')
+    if self.dbName is not None:
+      oprot.writeFieldBegin('dbName', TType.STRING, 1)
+      oprot.writeString(self.dbName)
+      oprot.writeFieldEnd()
+    if self.tblName is not None:
+      oprot.writeFieldBegin('tblName', TType.STRING, 2)
+      oprot.writeString(self.tblName)
+      oprot.writeFieldEnd()
+    if self.partName is not None:
+      oprot.writeFieldBegin('partName', TType.STRING, 3)
+      oprot.writeString(self.partName)
+      oprot.writeFieldEnd()
+    if self.isAllParts is not None:
+      oprot.writeFieldBegin('isAllParts', TType.BOOL, 4)
+      oprot.writeBool(self.isAllParts)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.dbName is None:
+      raise TProtocol.TProtocolException(message='Required field dbName is unset!')
+    if self.tblName is None:
+      raise TProtocol.TProtocolException(message='Required field tblName is unset!')
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.dbName)
+    value = (value * 31) ^ hash(self.tblName)
+    value = (value * 31) ^ hash(self.partName)
+    value = (value * 31) ^ hash(self.isAllParts)
     return value
 
   def __repr__(self):

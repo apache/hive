@@ -1509,4 +1509,7 @@ public interface IMetaStoreClient {
   void putFileMetadata(List<Long> fileIds, List<ByteBuffer> metadata) throws TException;
 
   boolean isSameConfObj(HiveConf c);
+
+  boolean cacheFileMetadata(String dbName, String tableName, String partName,
+      boolean allParts) throws TException;
 }

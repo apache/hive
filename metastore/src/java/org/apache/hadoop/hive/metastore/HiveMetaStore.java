@@ -78,6 +78,7 @@ import org.apache.hadoop.hive.metastore.events.PreEventContext;
 import org.apache.hadoop.hive.metastore.events.PreLoadPartitionDoneEvent;
 import org.apache.hadoop.hive.metastore.events.PreReadDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.PreReadTableEvent;
+import org.apache.hadoop.hive.metastore.filemeta.OrcFileMetadataHandler;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.txn.TxnHandler;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -196,13 +197,25 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
   }
 
-  public static class HMSHandler extends FacebookBase implements IHMSHandler {
+  /**
+   * An ugly interface because everything about this file is ugly. RawStore is threadlocal so this
+   * thread-local disease propagates everywhere, and FileMetadataManager cannot just get a RawStore
+   * or handlers to use; it will need to have this method to make thread-local handlers and a
+   * thread-local RawStore.
+   */
+  public interface ThreadLocalRawStore {
+    RawStore getMS() throws MetaException;
+  }
+
+  public static class HMSHandler extends FacebookBase implements IHMSHandler, ThreadLocalRawStore {
     public static final Logger LOG = HiveMetaStore.LOG;
     private String rawStoreClassName;
     private final HiveConf hiveConf; // stores datastore (jpox) properties,
                                      // right now they come from jpox.properties
 
     private static String currentUrl;
+    private FileMetadataManager fileMetadataManager;
+    private PartitionExpressionProxy expressionProxy;
 
     //For Metrics
     private int initDatabaseCount, initTableCount, initPartCount;
@@ -444,6 +457,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         Timer cleaner = new Timer("Metastore Events Cleaner Thread", true);
         cleaner.schedule(new EventCleanerTask(this), cleanFreq, cleanFreq);
       }
+
+      expressionProxy = PartFilterExprUtil.createExpressionProxy(hiveConf);
+      fileMetadataManager = new FileMetadataManager((ThreadLocalRawStore)this, hiveConf);
     }
 
     private String addPrefix(String s) {
@@ -510,6 +526,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
      */
     @InterfaceAudience.LimitedPrivate({"HCATALOG"})
     @InterfaceStability.Evolving
+    @Override
     public RawStore getMS() throws MetaException {
       RawStore ms = threadLocalMS.get();
       if (ms == null) {
@@ -1527,9 +1544,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       boolean trashEnabled = false;
       try {
-	trashEnabled = 0 < hiveConf.getFloat("fs.trash.interval", -1);
+  trashEnabled = 0 < hiveConf.getFloat("fs.trash.interval", -1);
       } catch(NumberFormatException ex) {
-	// nothing to do
+  // nothing to do
       }
 
       if (trashEnabled) {
@@ -5763,7 +5780,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     public PutFileMetadataResult put_file_metadata(PutFileMetadataRequest req) throws TException {
       RawStore ms = getMS();
       if (ms.isFileMetadataSupported()) {
-        ms.putFileMetadata(req.getFileIds(), req.getMetadata());
+        ms.putFileMetadata(req.getFileIds(), req.getMetadata(), req.getType());
       }
       return new PutFileMetadataResult();
     }
@@ -5771,8 +5788,107 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public ClearFileMetadataResult clear_file_metadata(ClearFileMetadataRequest req)
         throws TException {
-      getMS().putFileMetadata(req.getFileIds(), null);
+      getMS().putFileMetadata(req.getFileIds(), null, null);
       return new ClearFileMetadataResult();
+    }
+
+    @Override
+    public CacheFileMetadataResult cache_file_metadata(
+        CacheFileMetadataRequest req) throws TException {
+      RawStore ms = getMS();
+      if (!ms.isFileMetadataSupported()) {
+        return new CacheFileMetadataResult(false);
+      }
+      String dbName = req.getDbName(), tblName = req.getTblName(),
+          partName = req.isSetPartName() ? req.getPartName() : null;
+      boolean isAllPart = req.isSetIsAllParts() && req.isIsAllParts();
+      ms.openTransaction();
+      boolean success = false;
+      try {
+        Table tbl = ms.getTable(dbName, tblName);
+        if (tbl == null) {
+          throw new NoSuchObjectException(dbName + "." + tblName + " not found");
+        }
+        boolean isPartitioned = tbl.isSetPartitionKeys() && tbl.getPartitionKeysSize() > 0;
+        String tableInputFormat = tbl.isSetSd() ? tbl.getSd().getInputFormat() : null;
+        if (!isPartitioned) {
+          if (partName != null || isAllPart) {
+            throw new MetaException("Table is not partitioned");
+          }
+          if (!tbl.isSetSd() || !tbl.getSd().isSetLocation()) {
+            throw new MetaException(
+                "Table does not have storage location; this operation is not supported on views");
+          }
+          FileMetadataExprType type = expressionProxy.getMetadataType(tableInputFormat);
+          if (type == null) {
+            throw new MetaException("The operation is not supported for " + tableInputFormat);
+          }
+          fileMetadataManager.queueCacheMetadata(tbl.getSd().getLocation(), type);
+          success = true;
+        } else {
+          List<String> partNames = null;
+          if (partName != null) {
+            partNames = Lists.newArrayList(partName);
+          } else if (isAllPart) {
+            partNames = ms.listPartitionNames(dbName, tblName, (short)-1);
+          } else {
+            throw new MetaException("Table is partitioned");
+          }
+          int batchSize = HiveConf.getIntVar(
+              hiveConf, ConfVars.METASTORE_BATCH_RETRIEVE_OBJECTS_MAX);
+          int index = 0;
+          int successCount = 0, failCount = 0;
+          HashSet<String> failFormats = null;
+          while (index < partNames.size()) {
+            int currentBatchSize = Math.min(batchSize, partNames.size() - index);
+            List<String> nameBatch = partNames.subList(index, index + currentBatchSize);
+            index += currentBatchSize;
+            List<Partition> parts = ms.getPartitionsByNames(dbName, tblName, nameBatch);
+            for (Partition part : parts) {
+              if (!part.isSetSd() || !part.getSd().isSetLocation()) {
+                throw new MetaException("Partition does not have storage location;" +
+                    " this operation is not supported on views");
+              }
+              String inputFormat = part.getSd().isSetInputFormat()
+                  ? part.getSd().getInputFormat() : tableInputFormat;
+              FileMetadataExprType type = expressionProxy.getMetadataType(inputFormat);
+              if (type == null) {
+                ++failCount;
+                if (failFormats == null) {
+                  failFormats = new HashSet<>();
+                }
+                failFormats.add(inputFormat);
+              } else {
+                ++successCount;
+                fileMetadataManager.queueCacheMetadata(part.getSd().getLocation(), type);
+              }
+            }
+          }
+          success = true; // Regardless of the following exception
+          if (failCount > 0) {
+            String errorMsg = "The operation failed for " + failCount + " partitions and "
+                + "succeeded for " + successCount + " partitions; unsupported formats: ";
+            boolean isFirst = true;
+            for (String s : failFormats) {
+              if (!isFirst) {
+                errorMsg += ", ";
+              }
+              isFirst = false;
+              errorMsg += s;
+            }
+            throw new MetaException(errorMsg);
+          }
+        }
+      } finally {
+        if (success) {
+          if (!ms.commitTransaction()) {
+            throw new MetaException("Failed to commit");
+          }
+        } else {
+          ms.rollbackTransaction();
+        }
+      }
+      return new CacheFileMetadataResult(true);
     }
 
     @VisibleForTesting
@@ -6283,5 +6399,19 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         ".  The system will not handle {} " , houseKeeper.getServiceDescription(),
         ".  Root Cause: ", ex);
     }
+  }
+
+  public static Map<FileMetadataExprType, FileMetadataHandler> createHandlerMap() {
+    Map<FileMetadataExprType, FileMetadataHandler> fmHandlers = new HashMap<>();
+    for (FileMetadataExprType v : FileMetadataExprType.values()) {
+      switch (v) {
+      case ORC_SARG:
+        fmHandlers.put(v, new OrcFileMetadataHandler());
+        break;
+      default:
+        throw new AssertionError("Unsupported type " + v);
+      }
+    }
+    return fmHandlers;
   }
 }

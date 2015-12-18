@@ -7756,23 +7756,29 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public ByteBuffer[] getFileMetadata(List<Long> fileIds) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public void putFileMetadata(List<Long> fileIds, List<ByteBuffer> metadata) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public boolean isFileMetadataSupported() {
     return false;
   }
 
   @Override
+  public ByteBuffer[] getFileMetadata(List<Long> fileIds) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void putFileMetadata(
+      List<Long> fileIds, List<ByteBuffer> metadata, FileMetadataExprType type) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public void getFileMetadataByExpr(List<Long> fileIds, FileMetadataExprType type, byte[] expr,
       ByteBuffer[] metadatas, ByteBuffer[] stripeBitsets, boolean[] eliminated) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public FileMetadataHandler getFileMetadataHandler(FileMetadataExprType type) {
     throw new UnsupportedOperationException();
   }
 
@@ -7803,5 +7809,4 @@ public class ObjectStore implements RawStore, Configurable {
       }
     }
   }
-
 }

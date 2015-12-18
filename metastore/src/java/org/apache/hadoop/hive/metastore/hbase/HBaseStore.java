@@ -67,7 +67,6 @@ import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
-import org.apache.hadoop.hive.metastore.filemeta.OrcFileMetadataHandler;
 import org.apache.hadoop.hive.metastore.hbase.HBaseFilterPlanUtil.PlanResult;
 import org.apache.hadoop.hive.metastore.hbase.HBaseFilterPlanUtil.ScanPlan;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
@@ -80,6 +79,7 @@ import org.apache.thrift.TException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -99,7 +99,7 @@ public class HBaseStore implements RawStore {
   private Configuration conf;
   private int txnNestLevel = 0;
   private PartitionExpressionProxy expressionProxy = null;
-  private Map<FileMetadataExprType, FileMetadataHandler> fmHandlers = new HashMap<>();
+  private Map<FileMetadataExprType, FileMetadataHandler> fmHandlers;
 
   public HBaseStore() {
   }
@@ -2308,23 +2308,29 @@ public class HBaseStore implements RawStore {
     // setConf is being called with new configuration object (though that
     // is not expected to happen, doing it just for safety)
     // TODO: why not re-intialize HBaseReadWrite?
-    if (expressionProxy == null || conf != configuration) {
-      expressionProxy = PartFilterExprUtil.createExpressionProxy(configuration);
-    }
+    Configuration oldConf = conf;
     conf = configuration;
-    createFileMetadataHandlers();
+    if (expressionProxy != null && conf != oldConf) {
+      LOG.warn("Unexpected setConf when we were already configured");
+    }
+    if (expressionProxy == null || conf != oldConf) {
+      expressionProxy = PartFilterExprUtil.createExpressionProxy(conf);
+    }
+    if (conf != oldConf) {
+      fmHandlers = HiveMetaStore.createHandlerMap();
+      configureFileMetadataHandlers(fmHandlers.values());
+    }
   }
 
-  private void createFileMetadataHandlers() {
-    for (FileMetadataExprType v : FileMetadataExprType.values()) {
-      switch (v) {
-      case ORC_SARG:
-        fmHandlers.put(v, new OrcFileMetadataHandler(conf, expressionProxy, getHBase()));
-        break;
-      default:
-        throw new AssertionError("Unsupported type " + v);
-      }
+  private void configureFileMetadataHandlers(Collection<FileMetadataHandler> fmHandlers) {
+    for (FileMetadataHandler fmh : fmHandlers) {
+      fmh.configure(conf, expressionProxy, getHBase());
     }
+  }
+
+  @Override
+  public FileMetadataHandler getFileMetadataHandler(FileMetadataExprType type) {
+    return fmHandlers.get(type);
   }
 
   @Override
@@ -2476,11 +2482,21 @@ public class HBaseStore implements RawStore {
   }
 
   @Override
-  public void putFileMetadata(List<Long> fileIds, List<ByteBuffer> metadata) throws MetaException {
+  public void putFileMetadata(List<Long> fileIds, List<ByteBuffer> metadata,
+      FileMetadataExprType type) throws MetaException {
     openTransaction();
     boolean commit = false;
     try {
-      getHBase().storeFileMetadata(fileIds, metadata);
+      ByteBuffer[][] addedVals = null;
+      ByteBuffer[] addedCols = null;
+      if (type != null) {
+        FileMetadataHandler fmh = fmHandlers.get(type);
+        addedCols = fmh.createAddedCols();
+        if (addedCols != null) {
+          addedVals = fmh.createAddedColVals(metadata);
+        }
+      }
+      getHBase().storeFileMetadata(fileIds, metadata, addedCols, addedVals);
       commit = true;
     } catch (IOException | InterruptedException e) {
       LOG.error("Unable to store file metadata", e);

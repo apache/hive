@@ -200,7 +200,8 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.METASTORE_HBASE_AGGR_STATS_CACHE_ENTRIES,
       HiveConf.ConfVars.METASTORE_HBASE_AGGR_STATS_MEMORY_TTL,
       HiveConf.ConfVars.METASTORE_HBASE_AGGR_STATS_INVALIDATOR_FREQUENCY,
-      HiveConf.ConfVars.METASTORE_HBASE_AGGR_STATS_HBASE_TTL
+      HiveConf.ConfVars.METASTORE_HBASE_AGGR_STATS_HBASE_TTL,
+      HiveConf.ConfVars.METASTORE_HBASE_FILE_METADATA_THREADS
       };
 
   /**
@@ -443,6 +444,8 @@ public class HiveConf extends Configuration {
         new TimeValidator(TimeUnit.SECONDS),
         "Number of seconds stats entries live in HBase cache after they are created.  They may be" +
             " invalided by updates or partition drops before this.  Default is one week."),
+    METASTORE_HBASE_FILE_METADATA_THREADS("hive.metastore.hbase.file.metadata.threads", 1,
+        "Number of threads to use to read file metadata in background to cache it."),
 
     METASTORETHRIFTCONNECTIONRETRIES("hive.metastore.connect.retries", 3,
         "Number of retries while opening a connection to metastore"),

@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.metastore;
 
-import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -25,6 +24,7 @@ import java.util.List;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
@@ -71,12 +71,17 @@ public class TestObjectStore {
     }
 
     @Override
+    public FileMetadataExprType getMetadataType(String inputFormat) {
+      return null;
+    }
+
+    @Override
     public SearchArgument createSarg(byte[] expr) {
       return null;
     }
 
     @Override
-    public ByteBuffer applySargToFileMetadata(SearchArgument sarg, ByteBuffer byteBuffer) {
+    public FileFormatProxy getFileFormatProxy(FileMetadataExprType type) {
       return null;
     }
   }

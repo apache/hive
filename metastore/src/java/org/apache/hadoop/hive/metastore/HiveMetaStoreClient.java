@@ -63,6 +63,8 @@ import org.apache.hadoop.hive.metastore.api.AddPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.AddPartitionsResult;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
+import org.apache.hadoop.hive.metastore.api.CacheFileMetadataRequest;
+import org.apache.hadoop.hive.metastore.api.CacheFileMetadataResult;
 import org.apache.hadoop.hive.metastore.api.CheckLockRequest;
 import org.apache.hadoop.hive.metastore.api.ClearFileMetadataRequest;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -2260,5 +2262,20 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   @Override
   public boolean isSameConfObj(HiveConf c) {
     return conf == c;
+  }
+
+  @Override
+  public boolean cacheFileMetadata(
+      String dbName, String tableName, String partName, boolean allParts) throws TException {
+    CacheFileMetadataRequest req = new CacheFileMetadataRequest();
+    req.setDbName(dbName);
+    req.setTblName(tableName);
+    if (partName != null) {
+      req.setPartName(partName);
+    } else {
+      req.setIsAllParts(allParts);
+    }
+    CacheFileMetadataResult result = client.cache_file_metadata(req);
+    return result.isIsSupported();
   }
 }
