@@ -216,10 +216,16 @@ public interface HiveAuthorizer {
    * {@link HiveAuthorizationTranslator} for details. Return null if no
    * customization is needed. Most implementations are expected to return null.
    *
+   * The java signature of the method makes it necessary to only return Object
+   * type so that older implementations can extend the interface to build
+   * against older versions of Hive that don't include this additional method
+   * and HiveAuthorizationTranslator class. However, if a non null value is
+   * returned, the Object has to be of type HiveAuthorizationTranslator
+   *
    * @return
    * @throws HiveException
    */
-  HiveAuthorizationTranslator getHiveAuthorizationTranslator() throws HiveAuthzPluginException;
+  Object getHiveAuthorizationTranslator() throws HiveAuthzPluginException;
 
 }
 
