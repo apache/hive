@@ -684,7 +684,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     if (authorizer.getHiveAuthorizationTranslator() == null) {
       return defaultAuthorizationTranslator;
     } else {
-      return authorizer.getHiveAuthorizationTranslator();
+      return (HiveAuthorizationTranslator)authorizer.getHiveAuthorizationTranslator();
     }
   }
 
