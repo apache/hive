@@ -37,9 +37,6 @@ import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.plan.PrincipalDesc;
-import org.apache.hadoop.hive.ql.plan.PrivilegeDesc;
-import org.apache.hadoop.hive.ql.plan.PrivilegeObjectDesc;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationUtils;
 import org.apache.hadoop.hive.ql.security.authorization.PrivilegeScope;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAccessController;
@@ -383,19 +380,10 @@ public class HiveV1Authorizer implements HiveAuthorizer {
   }
 
   @Override
-  public List<HivePrincipal> getHivePrincipals(
-      List<PrincipalDesc> principals) throws HiveException {
-    return AuthorizationUtils.getHivePrincipals(principals);
+  public HiveAuthorizationTranslator getHiveAuthorizationTranslator() throws HiveAuthzPluginException {
+    // custom translator is not needed, so return null
+    return null;
   }
 
-  @Override
-  public List<HivePrivilege> getHivePrivileges(List<PrivilegeDesc> privileges) {
-    return AuthorizationUtils.getHivePrivileges(privileges);
-  }
 
-  @Override
-  public HivePrivilegeObject getHivePrivilegeObject(
-      PrivilegeObjectDesc privSubjectDesc) throws HiveException {
-    return AuthorizationUtils.getHivePrivilegeObject(privSubjectDesc);
-  }
 }

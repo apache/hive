@@ -23,10 +23,6 @@ import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPri
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.PrincipalDesc;
-import org.apache.hadoop.hive.ql.plan.PrivilegeDesc;
-import org.apache.hadoop.hive.ql.plan.PrivilegeObjectDesc;
-import org.apache.hadoop.hive.ql.security.authorization.AuthorizationUtils;
 
 /**
  * Convenience implementation of HiveAuthorizer.
@@ -140,20 +136,16 @@ public class HiveAuthorizerImpl implements HiveAuthorizer {
     accessController.applyAuthorizationConfigPolicy(hiveConf);
   }
 
+  /* (non-Javadoc)
+   * @see org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer#getHiveAuthorizationTranslator()
+   *
+   * No customization of this API is done for most Authorization implementations. It is meant 
+   * to be used for special cases in Apache Sentry (incubating)
+   *
+   */
   @Override
-  public List<HivePrincipal> getHivePrincipals(
-      List<PrincipalDesc> principals) throws HiveException {
-    return AuthorizationUtils.getHivePrincipals(principals);
+  public HiveAuthorizationTranslator getHiveAuthorizationTranslator() throws HiveAuthzPluginException{
+    return null;
   }
 
-  @Override
-  public List<HivePrivilege> getHivePrivileges(List<PrivilegeDesc> privileges) {
-    return AuthorizationUtils.getHivePrivileges(privileges);
-  }
-
-  @Override
-  public HivePrivilegeObject getHivePrivilegeObject(
-      PrivilegeObjectDesc privSubjectDesc) throws HiveException {
-    return AuthorizationUtils.getHivePrivilegeObject(privSubjectDesc);
-  }
 }
