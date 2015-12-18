@@ -22,7 +22,6 @@ import static org.apache.hadoop.hive.llap.daemon.impl.TaskExecutorTestHelpers.cr
 import static org.apache.hadoop.hive.llap.daemon.impl.TaskExecutorTestHelpers.createTaskWrapper;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,7 +29,6 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.PriorityBlockingQueue;
-import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -124,28 +122,17 @@ public class TestTaskExecutorService {
       // TODO HIVE-11687. Remove the awaitStart once offer can handle (waitQueueSize + numFreeExecutionSlots)
       // This currently serves to allow the task to be removed from the waitQueue.
       r1.awaitStart();
-      try {
-        taskExecutorService.schedule(r2);
-      } catch (RejectedExecutionException e) {
-        fail("Unexpected rejection with space available in queue");
-      }
-      try {
-        taskExecutorService.schedule(r3);
-      } catch (RejectedExecutionException e) {
-        fail("Unexpected rejection with space available in queue");
-      }
+      Scheduler.SubmissionState submissionState = taskExecutorService.schedule(r2);
+      assertEquals(Scheduler.SubmissionState.ACCEPTED, submissionState);
 
-      try {
-        taskExecutorService.schedule(r4);
-        fail("Expecting a Rejection for non finishable task with a full queue");
-      } catch (RejectedExecutionException e) {
-      }
+      submissionState = taskExecutorService.schedule(r3);
+      assertEquals(Scheduler.SubmissionState.ACCEPTED, submissionState);
 
-      try {
-        taskExecutorService.schedule(r5);
-      } catch (RejectedExecutionException e) {
-        fail("Unexpected rejection for a finishable task");
-      }
+      submissionState = taskExecutorService.schedule(r4);
+      assertEquals(Scheduler.SubmissionState.REJECTED, submissionState);
+
+      submissionState = taskExecutorService.schedule(r5);
+        assertEquals(Scheduler.SubmissionState.EVICTED_OTHER, submissionState);
 
       // Ensure the correct task was preempted.
       assertEquals(true, r3.wasPreempted());

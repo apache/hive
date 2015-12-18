@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -35,7 +34,6 @@ import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.LlapNodeId;
-import org.apache.hadoop.hive.llap.configuration.LlapConfiguration;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryCompleteRequestProto;
@@ -259,6 +257,21 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
         new TaskCommunicator.ExecuteRequestCallback<SubmitWorkResponseProto>() {
           @Override
           public void setResponse(SubmitWorkResponseProto response) {
+            if (response.hasSubmissionState()) {
+              LlapDaemonProtocolProtos.SubmissionStateProto ss = response.getSubmissionState();
+              if (ss.equals(LlapDaemonProtocolProtos.SubmissionStateProto.REJECTED)) {
+                LOG.info(
+                    "Unable to run task: " + taskSpec.getTaskAttemptID() + " on containerId: " +
+                        containerId + ", Service Busy");
+                getContext().taskKilled(taskSpec.getTaskAttemptID(),
+                    TaskAttemptEndReason.EXECUTOR_BUSY, "Service Busy");
+                return;
+              }
+            } else {
+              // TODO: Provide support for reporting errors
+              // This should never happen as server always returns a valid status on success
+              throw new RuntimeException("SubmissionState in response is expected!");
+            }
             LOG.info("Successfully launched task: " + taskSpec.getTaskAttemptID());
           }
 
@@ -270,23 +283,13 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
             }
             if (t instanceof RemoteException) {
               RemoteException re = (RemoteException) t;
-              String message = re.toString();
-              // RejectedExecutions from the remote service treated as KILLED
-              if (message.contains(RejectedExecutionException.class.getName())) {
-                LOG.info(
-                    "Unable to run task: " + taskSpec.getTaskAttemptID() + " on containerId: " +
-                        containerId + ", Service Busy");
-                getContext().taskKilled(taskSpec.getTaskAttemptID(),
-                    TaskAttemptEndReason.EXECUTOR_BUSY, "Service Busy");
-              } else {
-                // All others from the remote service cause the task to FAIL.
-                LOG.info(
-                    "Failed to run task: " + taskSpec.getTaskAttemptID() + " on containerId: " +
-                        containerId, t);
-                getContext()
-                    .taskFailed(taskSpec.getTaskAttemptID(), TaskAttemptEndReason.OTHER,
-                        t.toString());
-              }
+              // All others from the remote service cause the task to FAIL.
+              LOG.info(
+                  "Failed to run task: " + taskSpec.getTaskAttemptID() + " on containerId: " +
+                      containerId, t);
+              getContext()
+                  .taskFailed(taskSpec.getTaskAttemptID(), TaskAttemptEndReason.OTHER,
+                      t.toString());
             } else {
               // Exception from the RPC layer - communication failure, consider as KILLED / service down.
               if (t instanceof IOException) {

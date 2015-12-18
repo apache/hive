@@ -18,19 +18,24 @@
 package org.apache.hadoop.hive.llap.daemon.impl;
 
 import java.util.Set;
-import java.util.concurrent.RejectedExecutionException;
 
 /**
  * Task scheduler interface
  */
 public interface Scheduler<T> {
 
+  enum SubmissionState {
+    ACCEPTED, // request accepted
+    REJECTED, // request rejected as wait queue is full
+    EVICTED_OTHER; // request accepted but evicted other low priority task
+  }
+
   /**
    * Schedule the task or throw RejectedExecutionException if queues are full
    * @param t - task to schedule
-   * @throws RejectedExecutionException
+   * @return SubmissionState
    */
-  void schedule(T t) throws RejectedExecutionException;
+  SubmissionState schedule(T t);
 
   /**
    * Attempt to kill the fragment with the specified fragmentId

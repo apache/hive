@@ -93,33 +93,29 @@ public class LlapDaemonProtocolServerImpl extends AbstractService
                                             SubmitWorkRequestProto request) throws
       ServiceException {
     try {
-      containerRunner.submitWork(request);
+      return containerRunner.submitWork(request);
     } catch (IOException e) {
       throw new ServiceException(e);
     }
-    return SubmitWorkResponseProto.getDefaultInstance();
   }
 
   @Override
   public SourceStateUpdatedResponseProto sourceStateUpdated(RpcController controller,
       SourceStateUpdatedRequestProto request) throws ServiceException {
-    containerRunner.sourceStateUpdated(request);
-    return SourceStateUpdatedResponseProto.getDefaultInstance();
+    return containerRunner.sourceStateUpdated(request);
   }
 
   @Override
   public QueryCompleteResponseProto queryComplete(RpcController controller,
       QueryCompleteRequestProto request) throws ServiceException {
-    containerRunner.queryComplete(request);
-    return QueryCompleteResponseProto.getDefaultInstance();
+    return containerRunner.queryComplete(request);
   }
 
   @Override
   public TerminateFragmentResponseProto terminateFragment(
       RpcController controller,
       TerminateFragmentRequestProto request) throws ServiceException {
-    containerRunner.terminateFragment(request);
-    return TerminateFragmentResponseProto.getDefaultInstance();
+    return containerRunner.terminateFragment(request);
   }
 
   @Override

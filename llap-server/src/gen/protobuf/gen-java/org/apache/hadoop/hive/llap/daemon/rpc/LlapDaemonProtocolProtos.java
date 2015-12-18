@@ -90,6 +90,97 @@ public final class LlapDaemonProtocolProtos {
     // @@protoc_insertion_point(enum_scope:SourceStateProto)
   }
 
+  /**
+   * Protobuf enum {@code SubmissionStateProto}
+   */
+  public enum SubmissionStateProto
+      implements com.google.protobuf.ProtocolMessageEnum {
+    /**
+     * <code>ACCEPTED = 1;</code>
+     */
+    ACCEPTED(0, 1),
+    /**
+     * <code>REJECTED = 2;</code>
+     */
+    REJECTED(1, 2),
+    /**
+     * <code>EVICTED_OTHER = 3;</code>
+     */
+    EVICTED_OTHER(2, 3),
+    ;
+
+    /**
+     * <code>ACCEPTED = 1;</code>
+     */
+    public static final int ACCEPTED_VALUE = 1;
+    /**
+     * <code>REJECTED = 2;</code>
+     */
+    public static final int REJECTED_VALUE = 2;
+    /**
+     * <code>EVICTED_OTHER = 3;</code>
+     */
+    public static final int EVICTED_OTHER_VALUE = 3;
+
+
+    public final int getNumber() { return value; }
+
+    public static SubmissionStateProto valueOf(int value) {
+      switch (value) {
+        case 1: return ACCEPTED;
+        case 2: return REJECTED;
+        case 3: return EVICTED_OTHER;
+        default: return null;
+      }
+    }
+
+    public static com.google.protobuf.Internal.EnumLiteMap<SubmissionStateProto>
+        internalGetValueMap() {
+      return internalValueMap;
+    }
+    private static com.google.protobuf.Internal.EnumLiteMap<SubmissionStateProto>
+        internalValueMap =
+          new com.google.protobuf.Internal.EnumLiteMap<SubmissionStateProto>() {
+            public SubmissionStateProto findValueByNumber(int number) {
+              return SubmissionStateProto.valueOf(number);
+            }
+          };
+
+    public final com.google.protobuf.Descriptors.EnumValueDescriptor
+        getValueDescriptor() {
+      return getDescriptor().getValues().get(index);
+    }
+    public final com.google.protobuf.Descriptors.EnumDescriptor
+        getDescriptorForType() {
+      return getDescriptor();
+    }
+    public static final com.google.protobuf.Descriptors.EnumDescriptor
+        getDescriptor() {
+      return org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.getDescriptor().getEnumTypes().get(1);
+    }
+
+    private static final SubmissionStateProto[] VALUES = values();
+
+    public static SubmissionStateProto valueOf(
+        com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+      if (desc.getType() != getDescriptor()) {
+        throw new java.lang.IllegalArgumentException(
+          "EnumValueDescriptor is not for this type.");
+      }
+      return VALUES[desc.getIndex()];
+    }
+
+    private final int index;
+    private final int value;
+
+    private SubmissionStateProto(int index, int value) {
+      this.index = index;
+      this.value = value;
+    }
+
+    // @@protoc_insertion_point(enum_scope:SubmissionStateProto)
+  }
+
   public interface UserPayloadProtoOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
@@ -8265,6 +8356,16 @@ public final class LlapDaemonProtocolProtos {
 
   public interface SubmitWorkResponseProtoOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
+
+    // optional .SubmissionStateProto submission_state = 1;
+    /**
+     * <code>optional .SubmissionStateProto submission_state = 1;</code>
+     */
+    boolean hasSubmissionState();
+    /**
+     * <code>optional .SubmissionStateProto submission_state = 1;</code>
+     */
+    org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmissionStateProto getSubmissionState();
   }
   /**
    * Protobuf type {@code SubmitWorkResponseProto}
@@ -8299,6 +8400,7 @@ public final class LlapDaemonProtocolProtos {
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       initFields();
+      int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
       try {
@@ -8313,6 +8415,17 @@ public final class LlapDaemonProtocolProtos {
               if (!parseUnknownField(input, unknownFields,
                                      extensionRegistry, tag)) {
                 done = true;
+              }
+              break;
+            }
+            case 8: {
+              int rawValue = input.readEnum();
+              org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmissionStateProto value = org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmissionStateProto.valueOf(rawValue);
+              if (value == null) {
+                unknownFields.mergeVarintField(1, rawValue);
+              } else {
+                bitField0_ |= 0x00000001;
+                submissionState_ = value;
               }
               break;
             }
@@ -8355,7 +8468,25 @@ public final class LlapDaemonProtocolProtos {
       return PARSER;
     }
 
+    private int bitField0_;
+    // optional .SubmissionStateProto submission_state = 1;
+    public static final int SUBMISSION_STATE_FIELD_NUMBER = 1;
+    private org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmissionStateProto submissionState_;
+    /**
+     * <code>optional .SubmissionStateProto submission_state = 1;</code>
+     */
+    public boolean hasSubmissionState() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional .SubmissionStateProto submission_state = 1;</code>
+     */
+    public org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmissionStateProto getSubmissionState() {
+      return submissionState_;
+    }
+
     private void initFields() {
+      submissionState_ = org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmissionStateProto.ACCEPTED;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -8369,6 +8500,9 @@ public final class LlapDaemonProtocolProtos {
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeEnum(1, submissionState_.getNumber());
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -8378,6 +8512,10 @@ public final class LlapDaemonProtocolProtos {
       if (size != -1) return size;
 
       size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeEnumSize(1, submissionState_.getNumber());
+      }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
       return size;
@@ -8401,6 +8539,11 @@ public final class LlapDaemonProtocolProtos {
       org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkResponseProto other = (org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkResponseProto) obj;
 
       boolean result = true;
+      result = result && (hasSubmissionState() == other.hasSubmissionState());
+      if (hasSubmissionState()) {
+        result = result &&
+            (getSubmissionState() == other.getSubmissionState());
+      }
       result = result &&
           getUnknownFields().equals(other.getUnknownFields());
       return result;
@@ -8414,6 +8557,10 @@ public final class LlapDaemonProtocolProtos {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptorForType().hashCode();
+      if (hasSubmissionState()) {
+        hash = (37 * hash) + SUBMISSION_STATE_FIELD_NUMBER;
+        hash = (53 * hash) + hashEnum(getSubmissionState());
+      }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -8523,6 +8670,8 @@ public final class LlapDaemonProtocolProtos {
 
       public Builder clear() {
         super.clear();
+        submissionState_ = org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmissionStateProto.ACCEPTED;
+        bitField0_ = (bitField0_ & ~0x00000001);
         return this;
       }
 
@@ -8549,6 +8698,13 @@ public final class LlapDaemonProtocolProtos {
 
       public org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkResponseProto buildPartial() {
         org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkResponseProto result = new org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkResponseProto(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.submissionState_ = submissionState_;
+        result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
       }
@@ -8564,6 +8720,9 @@ public final class LlapDaemonProtocolProtos {
 
       public Builder mergeFrom(org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkResponseProto other) {
         if (other == org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkResponseProto.getDefaultInstance()) return this;
+        if (other.hasSubmissionState()) {
+          setSubmissionState(other.getSubmissionState());
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
@@ -8587,6 +8746,43 @@ public final class LlapDaemonProtocolProtos {
             mergeFrom(parsedMessage);
           }
         }
+        return this;
+      }
+      private int bitField0_;
+
+      // optional .SubmissionStateProto submission_state = 1;
+      private org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmissionStateProto submissionState_ = org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmissionStateProto.ACCEPTED;
+      /**
+       * <code>optional .SubmissionStateProto submission_state = 1;</code>
+       */
+      public boolean hasSubmissionState() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional .SubmissionStateProto submission_state = 1;</code>
+       */
+      public org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmissionStateProto getSubmissionState() {
+        return submissionState_;
+      }
+      /**
+       * <code>optional .SubmissionStateProto submission_state = 1;</code>
+       */
+      public Builder setSubmissionState(org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmissionStateProto value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000001;
+        submissionState_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .SubmissionStateProto submission_state = 1;</code>
+       */
+      public Builder clearSubmissionState() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        submissionState_ = org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmissionStateProto.ACCEPTED;
+        onChanged();
         return this;
       }
 
@@ -13565,30 +13761,33 @@ public final class LlapDaemonProtocolProtos {
       "ing\030\007 \001(\t\022\032\n\022app_attempt_number\030\010 \001(\005\022)\n" +
       "\rfragment_spec\030\t \001(\0132\022.FragmentSpecProto" +
       "\0223\n\025fragment_runtime_info\030\n \001(\0132\024.Fragme" +
-      "ntRuntimeInfo\"\031\n\027SubmitWorkResponseProto" +
-      "\"f\n\036SourceStateUpdatedRequestProto\022\020\n\010da" +
-      "g_name\030\001 \001(\t\022\020\n\010src_name\030\002 \001(\t\022 \n\005state\030" +
-      "\003 \001(\0162\021.SourceStateProto\"!\n\037SourceStateU" +
-      "pdatedResponseProto\"X\n\031QueryCompleteRequ" +
-      "estProto\022\020\n\010query_id\030\001 \001(\t\022\020\n\010dag_name\030\002" +
-      " \001(\t\022\027\n\014delete_delay\030\003 \001(\003:\0010\"\034\n\032QueryCo",
-      "mpleteResponseProto\"g\n\035TerminateFragment" +
-      "RequestProto\022\020\n\010query_id\030\001 \001(\t\022\020\n\010dag_na" +
-      "me\030\002 \001(\t\022\"\n\032fragment_identifier_string\030\007" +
-      " \001(\t\" \n\036TerminateFragmentResponseProto\"\026" +
-      "\n\024GetTokenRequestProto\"&\n\025GetTokenRespon" +
-      "seProto\022\r\n\005token\030\001 \001(\014*2\n\020SourceStatePro" +
-      "to\022\017\n\013S_SUCCEEDED\020\001\022\r\n\tS_RUNNING\020\0022\316\002\n\022L" +
+      "ntRuntimeInfo\"J\n\027SubmitWorkResponseProto" +
+      "\022/\n\020submission_state\030\001 \001(\0162\025.SubmissionS" +
+      "tateProto\"f\n\036SourceStateUpdatedRequestPr" +
+      "oto\022\020\n\010dag_name\030\001 \001(\t\022\020\n\010src_name\030\002 \001(\t\022" +
+      " \n\005state\030\003 \001(\0162\021.SourceStateProto\"!\n\037Sou" +
+      "rceStateUpdatedResponseProto\"X\n\031QueryCom" +
+      "pleteRequestProto\022\020\n\010query_id\030\001 \001(\t\022\020\n\010d",
+      "ag_name\030\002 \001(\t\022\027\n\014delete_delay\030\003 \001(\003:\0010\"\034" +
+      "\n\032QueryCompleteResponseProto\"g\n\035Terminat" +
+      "eFragmentRequestProto\022\020\n\010query_id\030\001 \001(\t\022" +
+      "\020\n\010dag_name\030\002 \001(\t\022\"\n\032fragment_identifier" +
+      "_string\030\007 \001(\t\" \n\036TerminateFragmentRespon" +
+      "seProto\"\026\n\024GetTokenRequestProto\"&\n\025GetTo" +
+      "kenResponseProto\022\r\n\005token\030\001 \001(\014*2\n\020Sourc" +
+      "eStateProto\022\017\n\013S_SUCCEEDED\020\001\022\r\n\tS_RUNNIN" +
+      "G\020\002*E\n\024SubmissionStateProto\022\014\n\010ACCEPTED\020" +
+      "\001\022\014\n\010REJECTED\020\002\022\021\n\rEVICTED_OTHER\020\0032\316\002\n\022L",
       "lapDaemonProtocol\022?\n\nsubmitWork\022\027.Submit" +
       "WorkRequestProto\032\030.SubmitWorkResponsePro" +
-      "to\022W\n\022sourceStateUpdated\022\037.SourceStateUp",
+      "to\022W\n\022sourceStateUpdated\022\037.SourceStateUp" +
       "datedRequestProto\032 .SourceStateUpdatedRe" +
       "sponseProto\022H\n\rqueryComplete\022\032.QueryComp" +
       "leteRequestProto\032\033.QueryCompleteResponse" +
       "Proto\022T\n\021terminateFragment\022\036.TerminateFr" +
       "agmentRequestProto\032\037.TerminateFragmentRe" +
       "sponseProto2]\n\026LlapManagementProtocol\022C\n" +
-      "\022getDelegationToken\022\025.GetTokenRequestPro" +
+      "\022getDelegationToken\022\025.GetTokenRequestPro",
       "to\032\026.GetTokenResponseProtoBH\n&org.apache" +
       ".hadoop.hive.llap.daemon.rpcB\030LlapDaemon" +
       "ProtocolProtos\210\001\001\240\001\001"
@@ -13645,7 +13844,7 @@ public final class LlapDaemonProtocolProtos {
           internal_static_SubmitWorkResponseProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_SubmitWorkResponseProto_descriptor,
-              new java.lang.String[] { });
+              new java.lang.String[] { "SubmissionState", });
           internal_static_SourceStateUpdatedRequestProto_descriptor =
             getDescriptor().getMessageTypes().get(8);
           internal_static_SourceStateUpdatedRequestProto_fieldAccessorTable = new
