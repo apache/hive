@@ -28,7 +28,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@B
-Warning: Map Join MAPJOIN[11][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[10][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
 PREHOOK: query: explain select * from A join B
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from A join B
@@ -93,7 +93,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[24][bigTable=?] in task 'Stage-5:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[21][bigTable=?] in task 'Stage-5:MAPRED' is a cross product
 PREHOOK: query: explain select * from B d1 join B d2 on d1.key = d2.key join A
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from B d1 join B d2 on d1.key = d2.key join A
@@ -187,7 +187,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[31][bigTable=?] in task 'Stage-5:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[28][bigTable=?] in task 'Stage-5:MAPRED' is a cross product
 PREHOOK: query: explain select * from A join 
          (select d1.key 
           from B d1 join B d2 on d1.key = d2.key 
@@ -323,8 +323,8 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[28][bigTable=?] in task 'Stage-5:MAPRED' is a cross product
-Warning: Map Join MAPJOIN[29][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[26][bigTable=?] in task 'Stage-5:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[27][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
 PREHOOK: query: explain select * from A join (select d1.key from B d1 join B d2 where 1 = 1 group by d1.key) od1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from A join (select d1.key from B d1 join B d2 where 1 = 1 group by d1.key) od1
@@ -446,9 +446,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[50][bigTable=?] in task 'Stage-7:MAPRED' is a cross product
-Warning: Map Join MAPJOIN[43][bigTable=?] in task 'Stage-6:MAPRED' is a cross product
-Warning: Shuffle Join JOIN[25][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-2:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[47][bigTable=?] in task 'Stage-7:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[40][bigTable=?] in task 'Stage-6:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[23][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: explain select * from 
 (select A.key from A group by key) ss join 
 (select d1.key from B d1 join B d2 on d1.key = d2.key where 1 = 1 group by d1.key) od1

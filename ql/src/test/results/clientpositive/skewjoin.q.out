@@ -768,7 +768,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((value is not null and key is not null) and UDFToDouble(substring(value, 5)) is not null) (type: boolean)
+              predicate: (value is not null and key is not null) (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
@@ -783,16 +783,16 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((value is not null and key is not null) and (UDFToDouble(substring(value, 5)) + 1.0) is not null) (type: boolean)
+              predicate: (value is not null and key is not null) (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: _col0 (type: string), (UDFToDouble(substring(_col1, 5)) + 1.0) (type: double)
+                  key expressions: _col0 (type: string), (UDFToDouble(substring(_col1, 5)) + UDFToDouble(1)) (type: double)
                   sort order: ++
-                  Map-reduce partition columns: _col0 (type: string), (UDFToDouble(substring(_col1, 5)) + 1.0) (type: double)
+                  Map-reduce partition columns: _col0 (type: string), (UDFToDouble(substring(_col1, 5)) + UDFToDouble(1)) (type: double)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: string)
       Reduce Operator Tree:
@@ -802,7 +802,7 @@ STAGE PLANS:
           handleSkewJoin: true
           keys:
             0 _col0 (type: string), UDFToDouble(substring(_col1, 5)) (type: double)
-            1 _col0 (type: string), (UDFToDouble(substring(_col1, 5)) + 1.0) (type: double)
+            1 _col0 (type: string), (UDFToDouble(substring(_col1, 5)) + UDFToDouble(1)) (type: double)
           outputColumnNames: _col2, _col3
           Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
           Select Operator
@@ -954,7 +954,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((UDFToDouble(key) < 100.0) and (UDFToDouble(key) < 80.0)) and key is not null) (type: boolean)
+              predicate: ((UDFToDouble(key) < 100.0) and (UDFToDouble(key) < 80.0)) (type: boolean)
               Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
@@ -969,7 +969,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((UDFToDouble(key) < 80.0) and (UDFToDouble(key) < 100.0)) and key is not null) (type: boolean)
+              predicate: ((UDFToDouble(key) < 80.0) and (UDFToDouble(key) < 100.0)) (type: boolean)
               Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)

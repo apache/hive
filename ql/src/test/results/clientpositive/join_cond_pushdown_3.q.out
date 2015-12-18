@@ -287,7 +287,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join JOIN[16][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Stage 'Stage-2:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[14][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: explain select *
 from part p1 join part p2 join part p3 
 where p2.p_partkey = 1 and p3.p_name = p2.p_name

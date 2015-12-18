@@ -36,19 +36,13 @@ import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlKind;
-import org.apache.calcite.sql.SqlOperator;
-import org.apache.calcite.sql.type.SqlTypeName;
-import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinLeafPredicateInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinPredicateInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
-import org.apache.hadoop.hive.ql.optimizer.calcite.translator.SqlFunctionConverter;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
-
-import com.google.common.collect.ImmutableList;
 
 public final class HiveJoinAddNotNullRule extends RelOptRule {
 
@@ -146,9 +140,6 @@ public final class HiveJoinAddNotNullRule extends RelOptRule {
 
     boolean added = false;
 
-    final RelDataType returnType = cluster.getTypeFactory().
-            createSqlType(SqlTypeName.BOOLEAN);
-
     final Map<String,RexNode> newConditions;
     if (input instanceof HiveFilter) {
       newConditions = splitCondition(((HiveFilter) input).getCondition());
@@ -157,23 +148,17 @@ public final class HiveJoinAddNotNullRule extends RelOptRule {
       newConditions = new HashMap<String,RexNode>();
     }
     for (int pos : inputKeyPositions) {
-      try {
-        RelDataType keyType = input.getRowType().getFieldList().get(pos).getType();
-        // Nothing to do if key cannot be null
-        if (!keyType.isNullable()) {
-          continue;
-        }
-        SqlOperator funcCall = SqlFunctionConverter.getCalciteOperator(NOT_NULL_FUNC_NAME,
-                FunctionRegistry.getFunctionInfo(NOT_NULL_FUNC_NAME).getGenericUDF(),
-                ImmutableList.of(keyType), returnType);
-        RexNode cond = rexBuilder.makeCall(funcCall, rexBuilder.makeInputRef(input, pos));
-        String digest = cond.toString();
-        if (!newConditions.containsKey(digest)) {
-          newConditions.put(digest,cond);
-          added = true;
-        }
-      } catch (SemanticException e) {
-        throw new AssertionError(e.getMessage());
+      RelDataType keyType = input.getRowType().getFieldList().get(pos).getType();
+      // Nothing to do if key cannot be null
+      if (!keyType.isNullable()) {
+        continue;
+      }
+      RexNode cond = rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_NULL,
+              rexBuilder.makeInputRef(input, pos));
+      String digest = cond.toString();
+      if (!newConditions.containsKey(digest)) {
+        newConditions.put(digest,cond);
+        added = true;
       }
     }
     // Nothing will be added to the expression

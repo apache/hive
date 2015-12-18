@@ -166,7 +166,7 @@ public class HiveProject extends Project implements HiveRelNode {
   public Project copy(RelTraitSet traitSet, RelNode input, List<RexNode> exps, RelDataType rowType) {
     assert traitSet.containsIfApplicable(HiveRelNode.CONVENTION);
     HiveProject hp = new HiveProject(getCluster(), traitSet, input, exps, rowType, getFlags());
-    if (this.isSysnthetic()) {
+    if (this.isSynthetic()) {
       hp.setSynthetic();
     }
 
@@ -192,7 +192,7 @@ public class HiveProject extends Project implements HiveRelNode {
     this.isSysnthetic = true;
   }
 
-  public boolean isSysnthetic() {
+  public boolean isSynthetic() {
     return isSysnthetic;
   }
 

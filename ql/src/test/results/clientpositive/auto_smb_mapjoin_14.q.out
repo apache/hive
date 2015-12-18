@@ -581,7 +581,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((key < 8) and (key < 6)) and key is not null) (type: boolean)
+              predicate: ((key < 8) and (key < 6)) (type: boolean)
               Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
@@ -701,7 +701,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((key < 8) and (key < 6)) and key is not null) (type: boolean)
+              predicate: ((key < 8) and (key < 6)) (type: boolean)
               Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
@@ -904,14 +904,11 @@ STAGE PLANS:
                 expressions: (key + 1) (type: int)
                 outputColumnNames: _col0
                 Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-                Filter Operator
-                  predicate: _col0 is not null (type: boolean)
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: int)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: int)
-                    Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: a
             Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
@@ -922,14 +919,11 @@ STAGE PLANS:
                 expressions: (key + 1) (type: int)
                 outputColumnNames: _col0
                 Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-                Filter Operator
-                  predicate: _col0 is not null (type: boolean)
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: int)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: int)
-                    Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -1217,7 +1211,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((key < 8) and (key < 6)) and key is not null) (type: boolean)
+              predicate: ((key < 8) and (key < 6)) (type: boolean)
               Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)

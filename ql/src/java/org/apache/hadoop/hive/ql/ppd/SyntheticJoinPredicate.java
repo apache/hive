@@ -105,7 +105,9 @@ public class SyntheticJoinPredicate extends Transform {
   // insert filter operator between target(child) and input(parent)
   private static Operator<FilterDesc> createFilter(Operator<?> target, Operator<?> parent,
       RowSchema parentRS, ExprNodeDesc filterExpr) {
-    Operator<FilterDesc> filter = OperatorFactory.get(new FilterDesc(filterExpr, false),
+    FilterDesc filterDesc = new FilterDesc(filterExpr, false);
+    filterDesc.setSyntheticJoinPredicate(true);
+    Operator<FilterDesc> filter = OperatorFactory.get(filterDesc,
         new RowSchema(parentRS.getSignature()));
     filter.getParentOperators().add(parent);
     filter.getChildOperators().add(target);

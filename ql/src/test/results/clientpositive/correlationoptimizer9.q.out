@@ -54,7 +54,7 @@ STAGE PLANS:
             alias: x
             Statistics: Num rows: 1028 Data size: 22964 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((c1 < 120) and (c1 > 100)) and c1 is not null) (type: boolean)
+              predicate: ((c1 < 120) and (c1 > 100)) (type: boolean)
               Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: c1 (type: int)
@@ -131,7 +131,7 @@ STAGE PLANS:
             alias: x
             Statistics: Num rows: 1028 Data size: 22964 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((c2 > 100) and (c2 < 120)) and c2 is not null) (type: boolean)
+              predicate: ((c2 > 100) and (c2 < 120)) (type: boolean)
               Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: c2 (type: int)
@@ -226,7 +226,7 @@ STAGE PLANS:
             alias: x
             Statistics: Num rows: 1028 Data size: 22964 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((c1 < 120) and (c1 > 100)) and c1 is not null) (type: boolean)
+              predicate: ((c1 < 120) and (c1 > 100)) (type: boolean)
               Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: c1 (type: int)
@@ -248,7 +248,7 @@ STAGE PLANS:
             alias: x
             Statistics: Num rows: 1028 Data size: 22964 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((c2 > 100) and (c2 < 120)) and c2 is not null) (type: boolean)
+              predicate: ((c2 > 100) and (c2 < 120)) (type: boolean)
               Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: c2 (type: int)
@@ -387,7 +387,7 @@ STAGE PLANS:
             alias: x
             Statistics: Num rows: 1028 Data size: 22964 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((c1 < 120) and c3 is not null) and c1 is not null) (type: boolean)
+              predicate: ((c1 < 120) and c3 is not null) (type: boolean)
               Statistics: Num rows: 342 Data size: 7639 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: c1 (type: int), c3 (type: string)
@@ -464,7 +464,7 @@ STAGE PLANS:
             alias: x
             Statistics: Num rows: 1028 Data size: 22964 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((((c2 > 100) and (c1 < 120)) and c3 is not null) and c1 is not null) (type: boolean)
+              predicate: (((c2 > 100) and (c1 < 120)) and c3 is not null) (type: boolean)
               Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: c1 (type: int), c3 (type: string)
@@ -557,7 +557,7 @@ STAGE PLANS:
             alias: x
             Statistics: Num rows: 1028 Data size: 22964 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((c1 < 120) and c3 is not null) and c1 is not null) (type: boolean)
+              predicate: ((c1 < 120) and c3 is not null) (type: boolean)
               Statistics: Num rows: 342 Data size: 7639 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: c1 (type: int), c3 (type: string)
@@ -579,7 +579,7 @@ STAGE PLANS:
             alias: x
             Statistics: Num rows: 1028 Data size: 22964 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((((c2 > 100) and (c1 < 120)) and c3 is not null) and c1 is not null) (type: boolean)
+              predicate: (((c2 > 100) and (c1 < 120)) and c3 is not null) (type: boolean)
               Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: c1 (type: int), c3 (type: string)

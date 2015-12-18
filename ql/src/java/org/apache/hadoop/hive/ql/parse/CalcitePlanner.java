@@ -21,12 +21,12 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.math.BigDecimal;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -143,6 +143,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterProjectTSTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterProjectTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterSetOpTransposeRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterSortTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveInsertExchange4JoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinAddNotNullRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinCommuteRule;
@@ -486,6 +487,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
       profilesCBO.add(ExtendedCBOProfile.WINDOWING_POSTPROCESSING);
     }
     return profilesCBO;
+  }
+
+  @Override
+  boolean isCBOExecuted() {
+    return runCBO;
   }
 
   @Override
@@ -995,6 +1001,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
         calciteOptimizedPlan = hepPlan(calciteOptimizedPlan, false, mdProvider.getMetadataProvider(),
                 HepMatchOrder.BOTTOM_UP, ProjectRemoveRule.INSTANCE,
                 new ProjectMergeRule(false, HiveRelFactories.HIVE_PROJECT_FACTORY));
+        calciteOptimizedPlan = hepPlan(calciteOptimizedPlan, true, mdProvider.getMetadataProvider(),
+            new HiveFilterProjectTSTransposeRule(Filter.class, HiveRelFactories.HIVE_FILTER_FACTORY,
+                    HiveProject.class, HiveRelFactories.HIVE_PROJECT_FACTORY, HiveTableScan.class));
 
         // 8.2.  Introduce exchange operators below join/multijoin operators
         calciteOptimizedPlan = hepPlan(calciteOptimizedPlan, false, mdProvider.getMetadataProvider(),
@@ -1061,10 +1070,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // TODO: Add in ReduceExpressionrules (Constant folding) to below once
       // HIVE-11927 is fixed.
       perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
-      basePlan = hepPlan(basePlan, true, mdProvider, new HiveFilterProjectTransposeRule(
-          Filter.class, HiveRelFactories.HIVE_FILTER_FACTORY, HiveProject.class,
-          HiveRelFactories.HIVE_PROJECT_FACTORY), new HiveFilterSetOpTransposeRule(
-          HiveRelFactories.HIVE_FILTER_FACTORY), HiveFilterJoinRule.JOIN,
+      basePlan = hepPlan(basePlan, true, mdProvider, HiveFilterProjectTransposeRule.INSTANCE_DETERMINISTIC,
+          HiveFilterSetOpTransposeRule.INSTANCE, HiveFilterSortTransposeRule.INSTANCE, HiveFilterJoinRule.JOIN,
           HiveFilterJoinRule.FILTER_ON_JOIN, new HiveFilterAggregateTransposeRule(Filter.class,
               HiveRelFactories.HIVE_FILTER_FACTORY, Aggregate.class), new FilterMergeRule(
               HiveRelFactories.HIVE_FILTER_FACTORY));
@@ -1115,10 +1122,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // TODO: Add in ReduceExpressionrules (Constant folding) to below once
       // HIVE-11927 is fixed.
       perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
-      basePlan = hepPlan(basePlan, true, mdProvider, new HiveFilterProjectTransposeRule(
-          Filter.class, HiveRelFactories.HIVE_FILTER_FACTORY, HiveProject.class,
-          HiveRelFactories.HIVE_PROJECT_FACTORY), new HiveFilterSetOpTransposeRule(
-          HiveRelFactories.HIVE_FILTER_FACTORY), HiveFilterJoinRule.JOIN,
+      basePlan = hepPlan(basePlan, true, mdProvider, HiveFilterProjectTransposeRule.INSTANCE_DETERMINISTIC,
+          HiveFilterSetOpTransposeRule.INSTANCE, HiveFilterSortTransposeRule.INSTANCE, HiveFilterJoinRule.JOIN,
           HiveFilterJoinRule.FILTER_ON_JOIN, new HiveFilterAggregateTransposeRule(Filter.class,
               HiveRelFactories.HIVE_FILTER_FACTORY, Aggregate.class), new FilterMergeRule(
               HiveRelFactories.HIVE_FILTER_FACTORY));

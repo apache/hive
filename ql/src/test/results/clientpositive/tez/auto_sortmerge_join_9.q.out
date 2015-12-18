@@ -840,7 +840,7 @@ STAGE PLANS:
                   alias: a
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((key < 8) and (key < 6)) and key is not null) (type: boolean)
+                    predicate: ((key < 8) and (key < 6)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int)
@@ -871,7 +871,7 @@ STAGE PLANS:
                   alias: b
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((key < 8) and (key < 6)) and key is not null) (type: boolean)
+                    predicate: ((key < 8) and (key < 6)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int)
@@ -992,7 +992,7 @@ STAGE PLANS:
                   alias: a
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((key < 8) and (key < 6)) and key is not null) (type: boolean)
+                    predicate: ((key < 8) and (key < 6)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int)
@@ -1023,7 +1023,7 @@ STAGE PLANS:
                   alias: a
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((key < 8) and (key < 6)) and key is not null) (type: boolean)
+                    predicate: ((key < 8) and (key < 6)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int)
@@ -1258,28 +1258,25 @@ STAGE PLANS:
                       expressions: (key + 1) (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-                      Filter Operator
-                        predicate: _col0 is not null (type: boolean)
-                        Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-                        Map Join Operator
-                          condition map:
-                               Inner Join 0 to 1
-                          keys:
-                            0 _col0 (type: int)
-                            1 _col0 (type: int)
-                          input vertices:
-                            1 Map 3
-                          Statistics: Num rows: 11 Data size: 77 Basic stats: COMPLETE Column stats: NONE
-                          HybridGraceHashJoin: true
-                          Group By Operator
-                            aggregations: count()
-                            mode: hash
-                            outputColumnNames: _col0
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: int)
+                          1 _col0 (type: int)
+                        input vertices:
+                          1 Map 3
+                        Statistics: Num rows: 11 Data size: 77 Basic stats: COMPLETE Column stats: NONE
+                        HybridGraceHashJoin: true
+                        Group By Operator
+                          aggregations: count()
+                          mode: hash
+                          outputColumnNames: _col0
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          Reduce Output Operator
+                            sort order: 
                             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                            Reduce Output Operator
-                              sort order: 
-                              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                              value expressions: _col0 (type: bigint)
+                            value expressions: _col0 (type: bigint)
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -1292,14 +1289,11 @@ STAGE PLANS:
                       expressions: (key + 1) (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-                      Filter Operator
-                        predicate: _col0 is not null (type: boolean)
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: int)
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: int)
-                          Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
               Group By Operator
@@ -1762,7 +1756,7 @@ STAGE PLANS:
                   alias: a
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((key < 8) and (key < 6)) and key is not null) (type: boolean)
+                    predicate: ((key < 8) and (key < 6)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int)
@@ -1793,7 +1787,7 @@ STAGE PLANS:
                   alias: b
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((key < 8) and (key < 6)) and key is not null) (type: boolean)
+                    predicate: ((key < 8) and (key < 6)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int)
@@ -2654,7 +2648,7 @@ STAGE PLANS:
                   alias: a
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((key < 8) and (key < 6)) and key is not null) (type: boolean)
+                    predicate: ((key < 8) and (key < 6)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int)
@@ -2685,7 +2679,7 @@ STAGE PLANS:
                   alias: b
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((key < 8) and (key < 6)) and key is not null) (type: boolean)
+                    predicate: ((key < 8) and (key < 6)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int)
@@ -2806,7 +2800,7 @@ STAGE PLANS:
                   alias: a
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((key < 8) and (key < 6)) and key is not null) (type: boolean)
+                    predicate: ((key < 8) and (key < 6)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int)
@@ -2837,7 +2831,7 @@ STAGE PLANS:
                   alias: a
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((key < 8) and (key < 6)) and key is not null) (type: boolean)
+                    predicate: ((key < 8) and (key < 6)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int)
@@ -3452,7 +3446,7 @@ STAGE PLANS:
                   alias: a
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((key < 8) and (key < 6)) and key is not null) (type: boolean)
+                    predicate: ((key < 8) and (key < 6)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int)
@@ -3483,7 +3477,7 @@ STAGE PLANS:
                   alias: b
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((key < 8) and (key < 6)) and key is not null) (type: boolean)
+                    predicate: ((key < 8) and (key < 6)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int)

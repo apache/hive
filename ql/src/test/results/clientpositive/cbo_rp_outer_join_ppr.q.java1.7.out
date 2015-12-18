@@ -398,13 +398,13 @@ STAGE PLANS:
             1 key (type: string)
           outputColumnNames: key, value, key0, value0
           Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-          Filter Operator
-            isSamplingPred: false
-            predicate: ((((UDFToDouble(key) > 10.0) and (UDFToDouble(key) < 20.0)) and (UDFToDouble(key0) > 15.0)) and (UDFToDouble(key0) < 25.0)) (type: boolean)
-            Statistics: Num rows: 27 Data size: 286 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: key (type: string), value (type: string), key0 (type: string), value0 (type: string)
-              outputColumnNames: key, value, key0, value0
+          Select Operator
+            expressions: key (type: string), value (type: string), key0 (type: string), value0 (type: string)
+            outputColumnNames: key, value, key0, value0
+            Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              isSamplingPred: false
+              predicate: ((UDFToDouble(key) > 10.0) and (UDFToDouble(key) < 20.0) and (UDFToDouble(key0) > 15.0) and (UDFToDouble(key0) < 25.0)) (type: boolean)
               Statistics: Num rows: 27 Data size: 286 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
@@ -780,13 +780,13 @@ STAGE PLANS:
             1 key (type: string)
           outputColumnNames: key, value, key0, value0
           Statistics: Num rows: 122 Data size: 1296 Basic stats: COMPLETE Column stats: NONE
-          Filter Operator
-            isSamplingPred: false
-            predicate: ((UDFToDouble(key) > 10.0) and (UDFToDouble(key) < 20.0)) (type: boolean)
-            Statistics: Num rows: 13 Data size: 138 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: key (type: string), value (type: string), key0 (type: string), value0 (type: string)
-              outputColumnNames: key, value, key0, value0
+          Select Operator
+            expressions: key (type: string), value (type: string), key0 (type: string), value0 (type: string)
+            outputColumnNames: key, value, key0, value0
+            Statistics: Num rows: 122 Data size: 1296 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              isSamplingPred: false
+              predicate: ((UDFToDouble(key) > 10.0) and (UDFToDouble(key) < 20.0)) (type: boolean)
               Statistics: Num rows: 13 Data size: 138 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false

@@ -973,7 +973,7 @@ STAGE PLANS:
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: (((((UDFToDouble(key) > 10.0) and (UDFToDouble(key) < 20.0)) and (UDFToDouble(key) > 15.0)) and (UDFToDouble(key) < 25.0)) and key is not null) (type: boolean)
+              predicate: ((((UDFToDouble(key) > 10.0) and (UDFToDouble(key) < 20.0)) and (UDFToDouble(key) > 15.0)) and (UDFToDouble(key) < 25.0)) (type: boolean)
               Statistics: Num rows: 6 Data size: 63 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
@@ -993,7 +993,7 @@ STAGE PLANS:
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: (((((UDFToDouble(key) > 15.0) and (UDFToDouble(key) < 25.0)) and (UDFToDouble(key) < 20.0)) and (UDFToDouble(key) > 10.0)) and key is not null) (type: boolean)
+              predicate: ((((UDFToDouble(key) > 15.0) and (UDFToDouble(key) < 25.0)) and (UDFToDouble(key) < 20.0)) and (UDFToDouble(key) > 10.0)) (type: boolean)
               Statistics: Num rows: 12 Data size: 127 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)

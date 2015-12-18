@@ -39,39 +39,33 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((((((((key <> '11') and (key > '0')) and ((value <> 'val_500') or (key > '1'))) and (key < '400')) and (key <> '12')) and (key <> '4')) and (key <> '13')) and (key <> '1')) and key is not null) (type: boolean)
+              predicate: ((((((((key <> '11') and (key > '0')) and ((value <> 'val_500') or (key > '1'))) and (key < '400')) and (key <> '12')) and (key <> '4')) and (key <> '13')) and (key <> '1')) (type: boolean)
               Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
                 Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
-                Filter Operator
-                  predicate: _col0 is not null (type: boolean)
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((((((key <> '12') and (key <> '4')) and (key <> '11')) and (key > '0')) and (key < '400')) and key is not null) (type: boolean)
+              predicate: (((((key <> '12') and (key <> '4')) and (key <> '11')) and (key > '0')) and (key < '400')) (type: boolean)
               Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
-                Filter Operator
-                  predicate: _col0 is not null (type: boolean)
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col1 (type: string)
+                  value expressions: _col1 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -88,15 +82,12 @@ STAGE PLANS:
               expressions: _col0 (type: string), _col2 (type: string)
               outputColumnNames: _col0, _col2
               Statistics: Num rows: 60 Data size: 642 Basic stats: COMPLETE Column stats: NONE
-              Filter Operator
-                predicate: _col0 is not null (type: boolean)
-                Statistics: Num rows: 60 Data size: 642 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+              File Output Operator
+                compressed: false
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-1
     Map Reduce
@@ -105,20 +96,17 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((((((((key <> '13') and (key <> '1')) and (key <> '11')) and (key > '0')) and (key < '400')) and (key <> '12')) and (key <> '4')) and key is not null) (type: boolean)
+              predicate: (((((((key <> '13') and (key <> '1')) and (key <> '11')) and (key > '0')) and (key < '400')) and (key <> '12')) and (key <> '4')) (type: boolean)
               Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
                 Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
-                Filter Operator
-                  predicate: _col0 is not null (type: boolean)
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: string)
@@ -1791,7 +1779,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((((((((key <> '11') and (key > '0')) and ((value <> 'val_500') or (key > '1'))) and (key < '400')) and (key <> '12')) and (key <> '4')) and (key <> '13')) and (key <> '1')) and key is not null) (type: boolean)
+              predicate: ((((((((key <> '11') and (key > '0')) and ((value <> 'val_500') or (key > '1'))) and (key < '400')) and (key <> '12')) and (key <> '4')) and (key <> '13')) and (key <> '1')) (type: boolean)
               Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
@@ -1806,7 +1794,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((((((key <> '12') and (key <> '4')) and (key <> '11')) and (key > '0')) and (key < '400')) and key is not null) (type: boolean)
+              predicate: (((((key <> '12') and (key <> '4')) and (key <> '11')) and (key > '0')) and (key < '400')) (type: boolean)
               Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
@@ -1848,7 +1836,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((((((((key <> '13') and (key <> '1')) and (key <> '11')) and (key > '0')) and (key < '400')) and (key <> '12')) and (key <> '4')) and key is not null) (type: boolean)
+              predicate: (((((((key <> '13') and (key <> '1')) and (key <> '11')) and (key > '0')) and (key < '400')) and (key <> '12')) and (key <> '4')) (type: boolean)
               Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)

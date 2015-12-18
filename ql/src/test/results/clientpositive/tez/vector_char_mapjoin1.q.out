@@ -257,7 +257,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col1 (type: char(20))
                         Statistics: Num rows: 3 Data size: 294 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col0 (type: int), _col1 (type: char(10))
+                        value expressions: _col0 (type: int)
             Execution mode: vectorized
         Map 2 
             Map Operator Tree:
@@ -352,7 +352,7 @@ STAGE PLANS:
                   alias: a
                   Statistics: Num rows: 3 Data size: 294 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (c2 is not null and UDFToString(c2) is not null) (type: boolean)
+                    predicate: c2 is not null (type: boolean)
                     Statistics: Num rows: 3 Data size: 294 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: c1 (type: int), c2 (type: char(10))

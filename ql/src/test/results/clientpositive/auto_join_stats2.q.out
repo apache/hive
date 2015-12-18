@@ -60,7 +60,7 @@ STAGE PLANS:
             alias: smalltable
             Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key is not null and UDFToDouble(key) is not null) (type: boolean)
+              predicate: key is not null (type: boolean)
               Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
@@ -92,24 +92,21 @@ STAGE PLANS:
                     1 _col0 (type: string)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (UDFToDouble(_col0) + UDFToDouble(_col1)) is not null (type: boolean)
-                    Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      keys:
-                        0 (UDFToDouble(_col0) + UDFToDouble(_col1)) (type: double)
-                        1 UDFToDouble(_col0) (type: double)
-                      outputColumnNames: _col0, _col1, _col2
+                  Map Join Operator
+                    condition map:
+                         Inner Join 0 to 1
+                    keys:
+                      0 (UDFToDouble(_col0) + UDFToDouble(_col1)) (type: double)
+                      1 UDFToDouble(_col0) (type: double)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 605 Data size: 6427 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
                       Statistics: Num rows: 605 Data size: 6427 Basic stats: COMPLETE Column stats: NONE
-                      File Output Operator
-                        compressed: false
-                        Statistics: Num rows: 605 Data size: 6427 Basic stats: COMPLETE Column stats: NONE
-                        table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Local Work:
         Map Reduce Local Work
 
@@ -198,7 +195,7 @@ STAGE PLANS:
             alias: smalltable
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key is not null and UDFToDouble(key) is not null) (type: boolean)
+              predicate: key is not null (type: boolean)
               Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
@@ -213,7 +210,7 @@ STAGE PLANS:
             alias: smalltable2
             Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key is not null and UDFToDouble(key) is not null) (type: boolean)
+              predicate: key is not null (type: boolean)
               Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
@@ -245,9 +242,14 @@ STAGE PLANS:
                     1 _col0 (type: string)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (UDFToDouble(_col0) + UDFToDouble(_col1)) is not null (type: boolean)
-                    Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+                  Map Join Operator
+                    condition map:
+                         Inner Join 0 to 1
+                    keys:
+                      0 (UDFToDouble(_col0) + UDFToDouble(_col1)) (type: double)
+                      1 UDFToDouble(_col0) (type: double)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 605 Data size: 6427 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
@@ -255,25 +257,14 @@ STAGE PLANS:
                         0 (UDFToDouble(_col0) + UDFToDouble(_col1)) (type: double)
                         1 UDFToDouble(_col0) (type: double)
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 605 Data size: 6427 Basic stats: COMPLETE Column stats: NONE
-                      Filter Operator
-                        predicate: (UDFToDouble(_col0) + UDFToDouble(_col1)) is not null (type: boolean)
-                        Statistics: Num rows: 605 Data size: 6427 Basic stats: COMPLETE Column stats: NONE
-                        Map Join Operator
-                          condition map:
-                               Inner Join 0 to 1
-                          keys:
-                            0 (UDFToDouble(_col0) + UDFToDouble(_col1)) (type: double)
-                            1 UDFToDouble(_col0) (type: double)
-                          outputColumnNames: _col0, _col1, _col2
-                          Statistics: Num rows: 665 Data size: 7069 Basic stats: COMPLETE Column stats: NONE
-                          File Output Operator
-                            compressed: false
-                            Statistics: Num rows: 665 Data size: 7069 Basic stats: COMPLETE Column stats: NONE
-                            table:
-                                input format: org.apache.hadoop.mapred.TextInputFormat
-                                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      Statistics: Num rows: 665 Data size: 7069 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 665 Data size: 7069 Basic stats: COMPLETE Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Local Work:
         Map Reduce Local Work
 

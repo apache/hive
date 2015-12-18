@@ -178,13 +178,10 @@ STAGE PLANS:
                 expressions: s (type: string), (dt - CAST( ts AS DATE)) (type: interval_day_time)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1000 Data size: 458448 Basic stats: COMPLETE Column stats: NONE
-                Filter Operator
-                  predicate: _col1 is not null (type: boolean)
-                  Statistics: Num rows: 1000 Data size: 458448 Basic stats: COMPLETE Column stats: NONE
-                  HashTable Sink Operator
-                    keys:
-                      0 _col1 (type: interval_day_time), _col0 (type: string)
-                      1 _col1 (type: interval_day_time), _col0 (type: string)
+                HashTable Sink Operator
+                  keys:
+                    0 _col1 (type: interval_day_time), _col0 (type: string)
+                    1 _col1 (type: interval_day_time), _col0 (type: string)
 
   Stage: Stage-3
     Map Reduce
@@ -199,28 +196,25 @@ STAGE PLANS:
                 expressions: s (type: string), (dt - CAST( ts AS DATE)) (type: interval_day_time)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1000 Data size: 460264 Basic stats: COMPLETE Column stats: NONE
-                Filter Operator
-                  predicate: _col1 is not null (type: boolean)
-                  Statistics: Num rows: 1000 Data size: 460264 Basic stats: COMPLETE Column stats: NONE
-                  Map Join Operator
-                    condition map:
-                         Inner Join 0 to 1
-                    keys:
-                      0 _col1 (type: interval_day_time), _col0 (type: string)
-                      1 _col1 (type: interval_day_time), _col0 (type: string)
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col1 (type: interval_day_time), _col0 (type: string)
+                    1 _col1 (type: interval_day_time), _col0 (type: string)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 1100 Data size: 506290 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: _col0 (type: string), _col2 (type: string), _col1 (type: interval_day_time)
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 1100 Data size: 506290 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: _col0 (type: string), _col2 (type: string), _col1 (type: interval_day_time)
-                      outputColumnNames: _col0, _col1, _col2
+                    File Output Operator
+                      compressed: false
                       Statistics: Num rows: 1100 Data size: 506290 Basic stats: COMPLETE Column stats: NONE
-                      File Output Operator
-                        compressed: false
-                        Statistics: Num rows: 1100 Data size: 506290 Basic stats: COMPLETE Column stats: NONE
-                        table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Execution mode: vectorized
       Local Work:
         Map Reduce Local Work

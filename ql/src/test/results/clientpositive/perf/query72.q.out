@@ -23,302 +23,302 @@ Stage-0
       limit:100
       Stage-1
          Reducer 13
-         File Output Operator [FS_90]
+         File Output Operator [FS_74]
             compressed:false
             Statistics:Num rows: 100 Data size: 143600 Basic stats: COMPLETE Column stats: NONE
             table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
-            Limit [LIM_89]
+            Limit [LIM_73]
                Number of rows:100
                Statistics:Num rows: 100 Data size: 143600 Basic stats: COMPLETE Column stats: NONE
-               Select Operator [SEL_88]
+               Select Operator [SEL_72]
                |  outputColumnNames:["_col0","_col1","_col2","_col3","_col4","_col5"]
                |  Statistics:Num rows: 165056 Data size: 237066834 Basic stats: COMPLETE Column stats: NONE
                |<-Reducer 12 [SIMPLE_EDGE]
-                  Reduce Output Operator [RS_87]
+                  Reduce Output Operator [RS_71]
                      key expressions:_col5 (type: bigint), _col0 (type: string), _col1 (type: string), _col2 (type: int)
                      sort order:-+++
                      Statistics:Num rows: 165056 Data size: 237066834 Basic stats: COMPLETE Column stats: NONE
                      value expressions:_col3 (type: bigint), _col4 (type: bigint)
-                     Group By Operator [GBY_85]
+                     Group By Operator [GBY_69]
                      |  aggregations:["count(VALUE._col0)","count(VALUE._col1)","count(VALUE._col2)"]
                      |  keys:KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: int)
                      |  outputColumnNames:["_col0","_col1","_col2","_col3","_col4","_col5"]
                      |  Statistics:Num rows: 165056 Data size: 237066834 Basic stats: COMPLETE Column stats: NONE
                      |<-Reducer 11 [SIMPLE_EDGE]
-                        Reduce Output Operator [RS_84]
+                        Reduce Output Operator [RS_68]
                            key expressions:_col0 (type: string), _col1 (type: string), _col2 (type: int)
                            Map-reduce partition columns:_col0 (type: string), _col1 (type: string), _col2 (type: int)
                            sort order:+++
                            Statistics:Num rows: 330112 Data size: 474133669 Basic stats: COMPLETE Column stats: NONE
                            value expressions:_col3 (type: bigint), _col4 (type: bigint), _col5 (type: bigint)
-                           Group By Operator [GBY_83]
+                           Group By Operator [GBY_67]
                               aggregations:["count(_col3)","count(_col4)","count()"]
                               keys:_col0 (type: string), _col1 (type: string), _col2 (type: int)
                               outputColumnNames:["_col0","_col1","_col2","_col3","_col4","_col5"]
                               Statistics:Num rows: 330112 Data size: 474133669 Basic stats: COMPLETE Column stats: NONE
-                              Select Operator [SEL_81]
+                              Select Operator [SEL_65]
                                  outputColumnNames:["_col0","_col1","_col2","_col3","_col4"]
                                  Statistics:Num rows: 330112 Data size: 474133669 Basic stats: COMPLETE Column stats: NONE
-                                 Merge Join Operator [MERGEJOIN_159]
+                                 Merge Join Operator [MERGEJOIN_141]
                                  |  condition map:[{"":"Left Outer Join0 to 1"}]
                                  |  keys:{"0":"_col4 (type: int), _col6 (type: int)","1":"_col0 (type: int), _col1 (type: int)"}
                                  |  outputColumnNames:["_col13","_col15","_col22","_col28"]
                                  |  Statistics:Num rows: 330112 Data size: 474133669 Basic stats: COMPLETE Column stats: NONE
                                  |<-Map 23 [SIMPLE_EDGE]
-                                 |  Reduce Output Operator [RS_79]
+                                 |  Reduce Output Operator [RS_63]
                                  |     key expressions:_col0 (type: int), _col1 (type: int)
                                  |     Map-reduce partition columns:_col0 (type: int), _col1 (type: int)
                                  |     sort order:++
                                  |     Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                                 |     Select Operator [SEL_74]
+                                 |     Select Operator [SEL_58]
                                  |        outputColumnNames:["_col0","_col1"]
                                  |        Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                                 |        TableScan [TS_73]
+                                 |        TableScan [TS_57]
                                  |           alias:catalog_returns
                                  |           Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                                  |<-Reducer 10 [SIMPLE_EDGE]
-                                    Reduce Output Operator [RS_78]
+                                    Reduce Output Operator [RS_62]
                                        key expressions:_col4 (type: int), _col6 (type: int)
                                        Map-reduce partition columns:_col4 (type: int), _col6 (type: int)
                                        sort order:++
                                        Statistics:Num rows: 300102 Data size: 431030599 Basic stats: COMPLETE Column stats: NONE
                                        value expressions:_col13 (type: string), _col15 (type: string), _col22 (type: int), _col28 (type: int)
-                                       Merge Join Operator [MERGEJOIN_158]
+                                       Merge Join Operator [MERGEJOIN_140]
                                        |  condition map:[{"":"Left Outer Join0 to 1"}]
                                        |  keys:{"0":"_col5 (type: int)","1":"_col0 (type: int)"}
                                        |  outputColumnNames:["_col4","_col6","_col13","_col15","_col22","_col28"]
                                        |  Statistics:Num rows: 300102 Data size: 431030599 Basic stats: COMPLETE Column stats: NONE
                                        |<-Map 22 [SIMPLE_EDGE]
-                                       |  Reduce Output Operator [RS_76]
+                                       |  Reduce Output Operator [RS_60]
                                        |     key expressions:_col0 (type: int)
                                        |     Map-reduce partition columns:_col0 (type: int)
                                        |     sort order:+
                                        |     Statistics:Num rows: 2300 Data size: 2713420 Basic stats: COMPLETE Column stats: NONE
-                                       |     Select Operator [SEL_72]
+                                       |     Select Operator [SEL_56]
                                        |        outputColumnNames:["_col0"]
                                        |        Statistics:Num rows: 2300 Data size: 2713420 Basic stats: COMPLETE Column stats: NONE
-                                       |        TableScan [TS_71]
+                                       |        TableScan [TS_55]
                                        |           alias:promotion
                                        |           Statistics:Num rows: 2300 Data size: 2713420 Basic stats: COMPLETE Column stats: NONE
                                        |<-Reducer 9 [SIMPLE_EDGE]
-                                          Reduce Output Operator [RS_75]
+                                          Reduce Output Operator [RS_59]
                                              key expressions:_col5 (type: int)
                                              Map-reduce partition columns:_col5 (type: int)
                                              sort order:+
                                              Statistics:Num rows: 272820 Data size: 391845991 Basic stats: COMPLETE Column stats: NONE
                                              value expressions:_col4 (type: int), _col6 (type: int), _col13 (type: string), _col15 (type: string), _col22 (type: int)
-                                             Select Operator [SEL_70]
+                                             Select Operator [SEL_54]
                                                 outputColumnNames:["_col13","_col15","_col22","_col4","_col5","_col6"]
                                                 Statistics:Num rows: 272820 Data size: 391845991 Basic stats: COMPLETE Column stats: NONE
-                                                Filter Operator [FIL_137]
+                                                Filter Operator [FIL_53]
                                                    predicate:(UDFToDouble(_col27) > (UDFToDouble(_col21) + 5.0)) (type: boolean)
                                                    Statistics:Num rows: 272820 Data size: 391845991 Basic stats: COMPLETE Column stats: NONE
-                                                   Merge Join Operator [MERGEJOIN_157]
+                                                   Merge Join Operator [MERGEJOIN_139]
                                                    |  condition map:[{"":"Inner Join 0 to 1"}]
                                                    |  keys:{"0":"_col1 (type: int)","1":"_col0 (type: int)"}
                                                    |  outputColumnNames:["_col4","_col5","_col6","_col13","_col15","_col21","_col22","_col27"]
                                                    |  Statistics:Num rows: 818460 Data size: 1175537975 Basic stats: COMPLETE Column stats: NONE
                                                    |<-Map 21 [SIMPLE_EDGE]
-                                                   |  Reduce Output Operator [RS_67]
+                                                   |  Reduce Output Operator [RS_51]
                                                    |     key expressions:_col0 (type: int)
                                                    |     Map-reduce partition columns:_col0 (type: int)
                                                    |     sort order:+
                                                    |     Statistics:Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                                                    |     value expressions:_col1 (type: string)
-                                                   |     Select Operator [SEL_33]
+                                                   |     Select Operator [SEL_31]
                                                    |        outputColumnNames:["_col0","_col1"]
                                                    |        Statistics:Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
-                                                   |        Filter Operator [FIL_147]
+                                                   |        Filter Operator [FIL_129]
                                                    |           predicate:d_date_sk is not null (type: boolean)
                                                    |           Statistics:Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
-                                                   |           TableScan [TS_31]
+                                                   |           TableScan [TS_29]
                                                    |              alias:d1
                                                    |              Statistics:Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                                                    |<-Reducer 8 [SIMPLE_EDGE]
-                                                      Reduce Output Operator [RS_65]
+                                                      Reduce Output Operator [RS_50]
                                                          key expressions:_col1 (type: int)
                                                          Map-reduce partition columns:_col1 (type: int)
                                                          sort order:+
                                                          Statistics:Num rows: 744055 Data size: 1068670864 Basic stats: COMPLETE Column stats: NONE
                                                          value expressions:_col4 (type: int), _col5 (type: int), _col6 (type: int), _col13 (type: string), _col15 (type: string), _col21 (type: string), _col22 (type: int)
-                                                         Merge Join Operator [MERGEJOIN_156]
+                                                         Merge Join Operator [MERGEJOIN_138]
                                                          |  condition map:[{"":"Inner Join 0 to 1"}]
                                                          |  keys:{"0":"_col8 (type: int), _col22 (type: int)","1":"_col0 (type: int), _col1 (type: int)"}
                                                          |  outputColumnNames:["_col1","_col4","_col5","_col6","_col13","_col15","_col21","_col22"]
                                                          |  Statistics:Num rows: 744055 Data size: 1068670864 Basic stats: COMPLETE Column stats: NONE
                                                          |<-Map 20 [SIMPLE_EDGE]
-                                                         |  Reduce Output Operator [RS_62]
+                                                         |  Reduce Output Operator [RS_48]
                                                          |     key expressions:_col0 (type: int), _col1 (type: int)
                                                          |     Map-reduce partition columns:_col0 (type: int), _col1 (type: int)
                                                          |     sort order:++
                                                          |     Statistics:Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
-                                                         |     Select Operator [SEL_30]
+                                                         |     Select Operator [SEL_28]
                                                          |        outputColumnNames:["_col0","_col1"]
                                                          |        Statistics:Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
-                                                         |        Filter Operator [FIL_146]
+                                                         |        Filter Operator [FIL_128]
                                                          |           predicate:(d_week_seq is not null and d_date_sk is not null) (type: boolean)
                                                          |           Statistics:Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
-                                                         |           TableScan [TS_28]
+                                                         |           TableScan [TS_26]
                                                          |              alias:d1
                                                          |              Statistics:Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                                                          |<-Reducer 7 [SIMPLE_EDGE]
-                                                            Reduce Output Operator [RS_60]
+                                                            Reduce Output Operator [RS_47]
                                                                key expressions:_col8 (type: int), _col22 (type: int)
                                                                Map-reduce partition columns:_col8 (type: int), _col22 (type: int)
                                                                sort order:++
                                                                Statistics:Num rows: 676414 Data size: 971518947 Basic stats: COMPLETE Column stats: NONE
                                                                value expressions:_col1 (type: int), _col4 (type: int), _col5 (type: int), _col6 (type: int), _col13 (type: string), _col15 (type: string), _col21 (type: string)
-                                                               Merge Join Operator [MERGEJOIN_155]
+                                                               Merge Join Operator [MERGEJOIN_137]
                                                                |  condition map:[{"":"Inner Join 0 to 1"}]
                                                                |  keys:{"0":"_col0 (type: int)","1":"_col0 (type: int)"}
                                                                |  outputColumnNames:["_col1","_col4","_col5","_col6","_col8","_col13","_col15","_col21","_col22"]
                                                                |  Statistics:Num rows: 676414 Data size: 971518947 Basic stats: COMPLETE Column stats: NONE
                                                                |<-Map 19 [SIMPLE_EDGE]
-                                                               |  Reduce Output Operator [RS_57]
+                                                               |  Reduce Output Operator [RS_45]
                                                                |     key expressions:_col0 (type: int)
                                                                |     Map-reduce partition columns:_col0 (type: int)
                                                                |     sort order:+
                                                                |     Statistics:Num rows: 36524 Data size: 40870356 Basic stats: COMPLETE Column stats: NONE
                                                                |     value expressions:_col1 (type: string), _col2 (type: int)
-                                                               |     Select Operator [SEL_27]
+                                                               |     Select Operator [SEL_25]
                                                                |        outputColumnNames:["_col0","_col1","_col2"]
                                                                |        Statistics:Num rows: 36524 Data size: 40870356 Basic stats: COMPLETE Column stats: NONE
-                                                               |        Filter Operator [FIL_145]
+                                                               |        Filter Operator [FIL_127]
                                                                |           predicate:((d_date_sk is not null and (d_year = 2001)) and d_week_seq is not null) (type: boolean)
                                                                |           Statistics:Num rows: 36524 Data size: 40870356 Basic stats: COMPLETE Column stats: NONE
-                                                               |           TableScan [TS_25]
+                                                               |           TableScan [TS_23]
                                                                |              alias:d1
                                                                |              Statistics:Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                                                                |<-Reducer 6 [SIMPLE_EDGE]
-                                                                  Reduce Output Operator [RS_55]
+                                                                  Reduce Output Operator [RS_44]
                                                                      key expressions:_col0 (type: int)
                                                                      Map-reduce partition columns:_col0 (type: int)
                                                                      sort order:+
                                                                      Statistics:Num rows: 614922 Data size: 883199024 Basic stats: COMPLETE Column stats: NONE
                                                                      value expressions:_col1 (type: int), _col4 (type: int), _col5 (type: int), _col6 (type: int), _col8 (type: int), _col13 (type: string), _col15 (type: string)
-                                                                     Merge Join Operator [MERGEJOIN_154]
+                                                                     Merge Join Operator [MERGEJOIN_136]
                                                                      |  condition map:[{"":"Inner Join 0 to 1"}]
                                                                      |  keys:{"0":"_col3 (type: int)","1":"_col0 (type: int)"}
                                                                      |  outputColumnNames:["_col0","_col1","_col4","_col5","_col6","_col8","_col13","_col15"]
                                                                      |  Statistics:Num rows: 614922 Data size: 883199024 Basic stats: COMPLETE Column stats: NONE
                                                                      |<-Map 18 [SIMPLE_EDGE]
-                                                                     |  Reduce Output Operator [RS_52]
+                                                                     |  Reduce Output Operator [RS_42]
                                                                      |     key expressions:_col0 (type: int)
                                                                      |     Map-reduce partition columns:_col0 (type: int)
                                                                      |     sort order:+
                                                                      |     Statistics:Num rows: 3600 Data size: 385200 Basic stats: COMPLETE Column stats: NONE
-                                                                     |     Select Operator [SEL_24]
+                                                                     |     Select Operator [SEL_22]
                                                                      |        outputColumnNames:["_col0"]
                                                                      |        Statistics:Num rows: 3600 Data size: 385200 Basic stats: COMPLETE Column stats: NONE
-                                                                     |        Filter Operator [FIL_144]
+                                                                     |        Filter Operator [FIL_126]
                                                                      |           predicate:((hd_buy_potential = '1001-5000') and hd_demo_sk is not null) (type: boolean)
                                                                      |           Statistics:Num rows: 3600 Data size: 385200 Basic stats: COMPLETE Column stats: NONE
-                                                                     |           TableScan [TS_22]
+                                                                     |           TableScan [TS_20]
                                                                      |              alias:household_demographics
                                                                      |              Statistics:Num rows: 7200 Data size: 770400 Basic stats: COMPLETE Column stats: NONE
                                                                      |<-Reducer 5 [SIMPLE_EDGE]
-                                                                        Reduce Output Operator [RS_50]
+                                                                        Reduce Output Operator [RS_41]
                                                                            key expressions:_col3 (type: int)
                                                                            Map-reduce partition columns:_col3 (type: int)
                                                                            sort order:+
                                                                            Statistics:Num rows: 559020 Data size: 802908187 Basic stats: COMPLETE Column stats: NONE
                                                                            value expressions:_col0 (type: int), _col1 (type: int), _col4 (type: int), _col5 (type: int), _col6 (type: int), _col8 (type: int), _col13 (type: string), _col15 (type: string)
-                                                                           Merge Join Operator [MERGEJOIN_153]
+                                                                           Merge Join Operator [MERGEJOIN_135]
                                                                            |  condition map:[{"":"Inner Join 0 to 1"}]
                                                                            |  keys:{"0":"_col2 (type: int)","1":"_col0 (type: int)"}
                                                                            |  outputColumnNames:["_col0","_col1","_col3","_col4","_col5","_col6","_col8","_col13","_col15"]
                                                                            |  Statistics:Num rows: 559020 Data size: 802908187 Basic stats: COMPLETE Column stats: NONE
                                                                            |<-Map 17 [SIMPLE_EDGE]
-                                                                           |  Reduce Output Operator [RS_47]
+                                                                           |  Reduce Output Operator [RS_39]
                                                                            |     key expressions:_col0 (type: int)
                                                                            |     Map-reduce partition columns:_col0 (type: int)
                                                                            |     sort order:+
                                                                            |     Statistics:Num rows: 9900 Data size: 3585529 Basic stats: COMPLETE Column stats: NONE
-                                                                           |     Select Operator [SEL_21]
+                                                                           |     Select Operator [SEL_19]
                                                                            |        outputColumnNames:["_col0"]
                                                                            |        Statistics:Num rows: 9900 Data size: 3585529 Basic stats: COMPLETE Column stats: NONE
-                                                                           |        Filter Operator [FIL_143]
+                                                                           |        Filter Operator [FIL_125]
                                                                            |           predicate:((cd_marital_status = 'M') and cd_demo_sk is not null) (type: boolean)
                                                                            |           Statistics:Num rows: 9900 Data size: 3585529 Basic stats: COMPLETE Column stats: NONE
-                                                                           |           TableScan [TS_19]
+                                                                           |           TableScan [TS_17]
                                                                            |              alias:customer_demographics
                                                                            |              Statistics:Num rows: 19800 Data size: 7171059 Basic stats: COMPLETE Column stats: NONE
                                                                            |<-Reducer 4 [SIMPLE_EDGE]
-                                                                              Reduce Output Operator [RS_45]
+                                                                              Reduce Output Operator [RS_38]
                                                                                  key expressions:_col2 (type: int)
                                                                                  Map-reduce partition columns:_col2 (type: int)
                                                                                  sort order:+
                                                                                  Statistics:Num rows: 508200 Data size: 729916518 Basic stats: COMPLETE Column stats: NONE
                                                                                  value expressions:_col0 (type: int), _col1 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: int), _col6 (type: int), _col8 (type: int), _col13 (type: string), _col15 (type: string)
-                                                                                 Merge Join Operator [MERGEJOIN_152]
+                                                                                 Merge Join Operator [MERGEJOIN_134]
                                                                                  |  condition map:[{"":"Inner Join 0 to 1"}]
                                                                                  |  keys:{"0":"_col4 (type: int)","1":"_col0 (type: int)"}
                                                                                  |  outputColumnNames:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col8","_col13","_col15"]
                                                                                  |  Statistics:Num rows: 508200 Data size: 729916518 Basic stats: COMPLETE Column stats: NONE
                                                                                  |<-Map 16 [SIMPLE_EDGE]
-                                                                                 |  Reduce Output Operator [RS_42]
+                                                                                 |  Reduce Output Operator [RS_36]
                                                                                  |     key expressions:_col0 (type: int)
                                                                                  |     Map-reduce partition columns:_col0 (type: int)
                                                                                  |     sort order:+
                                                                                  |     Statistics:Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                                                                                  |     value expressions:_col1 (type: string)
-                                                                                 |     Select Operator [SEL_18]
+                                                                                 |     Select Operator [SEL_16]
                                                                                  |        outputColumnNames:["_col0","_col1"]
                                                                                  |        Statistics:Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
-                                                                                 |        Filter Operator [FIL_142]
+                                                                                 |        Filter Operator [FIL_124]
                                                                                  |           predicate:i_item_sk is not null (type: boolean)
                                                                                  |           Statistics:Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
-                                                                                 |           TableScan [TS_16]
+                                                                                 |           TableScan [TS_14]
                                                                                  |              alias:item
                                                                                  |              Statistics:Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                                                                                  |<-Reducer 3 [SIMPLE_EDGE]
-                                                                                    Reduce Output Operator [RS_40]
+                                                                                    Reduce Output Operator [RS_35]
                                                                                        key expressions:_col4 (type: int)
                                                                                        Map-reduce partition columns:_col4 (type: int)
                                                                                        sort order:+
                                                                                        Statistics:Num rows: 29 Data size: 30582 Basic stats: COMPLETE Column stats: NONE
                                                                                        value expressions:_col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col5 (type: int), _col6 (type: int), _col8 (type: int), _col13 (type: string)
-                                                                                       Merge Join Operator [MERGEJOIN_151]
+                                                                                       Merge Join Operator [MERGEJOIN_133]
                                                                                        |  condition map:[{"":"Inner Join 0 to 1"}]
                                                                                        |  keys:{"0":"_col10 (type: int)","1":"_col0 (type: int)"}
                                                                                        |  outputColumnNames:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col8","_col13"]
                                                                                        |  Statistics:Num rows: 29 Data size: 30582 Basic stats: COMPLETE Column stats: NONE
                                                                                        |<-Map 15 [SIMPLE_EDGE]
-                                                                                       |  Reduce Output Operator [RS_37]
+                                                                                       |  Reduce Output Operator [RS_33]
                                                                                        |     key expressions:_col0 (type: int)
                                                                                        |     Map-reduce partition columns:_col0 (type: int)
                                                                                        |     sort order:+
                                                                                        |     Statistics:Num rows: 27 Data size: 27802 Basic stats: COMPLETE Column stats: NONE
                                                                                        |     value expressions:_col1 (type: string)
-                                                                                       |     Select Operator [SEL_15]
+                                                                                       |     Select Operator [SEL_13]
                                                                                        |        outputColumnNames:["_col0","_col1"]
                                                                                        |        Statistics:Num rows: 27 Data size: 27802 Basic stats: COMPLETE Column stats: NONE
-                                                                                       |        Filter Operator [FIL_141]
+                                                                                       |        Filter Operator [FIL_123]
                                                                                        |           predicate:w_warehouse_sk is not null (type: boolean)
                                                                                        |           Statistics:Num rows: 27 Data size: 27802 Basic stats: COMPLETE Column stats: NONE
-                                                                                       |           TableScan [TS_13]
+                                                                                       |           TableScan [TS_11]
                                                                                        |              alias:warehouse
                                                                                        |              Statistics:Num rows: 27 Data size: 27802 Basic stats: COMPLETE Column stats: NONE
                                                                                        |<-Reducer 2 [SIMPLE_EDGE]
-                                                                                          Reduce Output Operator [RS_35]
+                                                                                          Reduce Output Operator [RS_32]
                                                                                              key expressions:_col10 (type: int)
                                                                                              Map-reduce partition columns:_col10 (type: int)
                                                                                              sort order:+
                                                                                              Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                                                                                              value expressions:_col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: int), _col6 (type: int), _col8 (type: int)
-                                                                                             Select Operator [SEL_12]
+                                                                                             Select Operator [SEL_10]
                                                                                                 outputColumnNames:["_col0","_col1","_col10","_col2","_col3","_col4","_col5","_col6","_col8"]
                                                                                                 Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                                                                                                Filter Operator [FIL_138]
+                                                                                                Filter Operator [FIL_9]
                                                                                                    predicate:(_col11 < _col7) (type: boolean)
                                                                                                    Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                                                                                                   Merge Join Operator [MERGEJOIN_150]
+                                                                                                   Merge Join Operator [MERGEJOIN_132]
                                                                                                    |  condition map:[{"":"Inner Join 0 to 1"}]
                                                                                                    |  keys:{"0":"_col4 (type: int)","1":"_col1 (type: int)"}
                                                                                                    |  outputColumnNames:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col10","_col11"]
                                                                                                    |  Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                                                                                                    |<-Map 1 [SIMPLE_EDGE]
-                                                                                                   |  Reduce Output Operator [RS_7]
+                                                                                                   |  Reduce Output Operator [RS_6]
                                                                                                    |     key expressions:_col4 (type: int)
                                                                                                    |     Map-reduce partition columns:_col4 (type: int)
                                                                                                    |     sort order:+
@@ -327,14 +327,14 @@ Stage-0
                                                                                                    |     Select Operator [SEL_2]
                                                                                                    |        outputColumnNames:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7"]
                                                                                                    |        Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                                                                                                   |        Filter Operator [FIL_139]
+                                                                                                   |        Filter Operator [FIL_121]
                                                                                                    |           predicate:((((cs_item_sk is not null and cs_bill_cdemo_sk is not null) and cs_bill_hdemo_sk is not null) and cs_sold_date_sk is not null) and cs_ship_date_sk is not null) (type: boolean)
                                                                                                    |           Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                                                                                                    |           TableScan [TS_0]
                                                                                                    |              alias:catalog_sales
                                                                                                    |              Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                                                                                                    |<-Map 14 [SIMPLE_EDGE]
-                                                                                                      Reduce Output Operator [RS_9]
+                                                                                                      Reduce Output Operator [RS_7]
                                                                                                          key expressions:_col1 (type: int)
                                                                                                          Map-reduce partition columns:_col1 (type: int)
                                                                                                          sort order:+
@@ -343,7 +343,7 @@ Stage-0
                                                                                                          Select Operator [SEL_5]
                                                                                                             outputColumnNames:["_col0","_col1","_col2","_col3"]
                                                                                                             Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                                                                                                            Filter Operator [FIL_140]
+                                                                                                            Filter Operator [FIL_122]
                                                                                                                predicate:((inv_item_sk is not null and inv_warehouse_sk is not null) and inv_date_sk is not null) (type: boolean)
                                                                                                                Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                                                                                                                TableScan [TS_3]
