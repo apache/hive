@@ -234,6 +234,23 @@
 </property>
 
 <property>
+  <name>test.var.hiveconf.property</name>
+  <value>${hive.exec.default.partition.name}</value>
+  <description>Test hiveconf property substitution</description>
+</property>
+
+<property>
+  <name>test.property1</name>
+  <value>value1</value>
+  <description>Test property defined in hive-site.xml only</description>
+</property>
+
+<property>
+  <name>hive.test.dummystats.aggregator</name>
+  <value>value2</value>
+</property>
+
+<property>
   <name>hive.fetch.task.conversion</name>
   <value>minimal</value>
 </property>
