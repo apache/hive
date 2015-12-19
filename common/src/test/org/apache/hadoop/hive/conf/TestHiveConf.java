@@ -80,13 +80,13 @@ public class TestHiveConf {
     checkHiveConf(ConfVars.HIVESKEWJOINKEY.varname, "100000");
 
     // ConfVar overridden in in hive-site.xml
-    checkHadoopConf(ConfVars.METASTORE_CONNECTION_DRIVER.varname, null);
-    checkConfVar(ConfVars.METASTORE_CONNECTION_DRIVER, "org.apache.derby.jdbc.EmbeddedDriver");
-    checkHiveConf(ConfVars.METASTORE_CONNECTION_DRIVER.varname, "hive-site.xml");
+    checkHadoopConf(ConfVars.HIVETESTMODEDUMMYSTATAGGR.varname, null);
+    checkConfVar(ConfVars.HIVETESTMODEDUMMYSTATAGGR, "");
+    checkHiveConf(ConfVars.HIVETESTMODEDUMMYSTATAGGR.varname, "value2");
 
     // Property defined in hive-site.xml only
     checkHadoopConf("test.property1", null);
-    checkHiveConf("test.property1", "hive-site.xml");
+    checkHiveConf("test.property1", "value1");
 
     // Test HiveConf property variable substitution in hive-site.xml
     checkHiveConf("test.var.hiveconf.property", ConfVars.DEFAULTPARTITIONNAME.getDefaultValue());
