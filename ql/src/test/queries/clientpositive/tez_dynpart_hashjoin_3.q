@@ -1,6 +1,6 @@
-set hive.optimize.limitjointranspose=true;
-set hive.optimize.limitjointranspose.reductionpercentage=0.1f;
-set hive.optimize.limitjointranspose.reductiontuples=100;
+set hive.optimize.limittranspose=true;
+set hive.optimize.limittranspose.reductionpercentage=0.1f;
+set hive.optimize.limittranspose.reductiontuples=100;
 set hive.explain.user=false;
 set hive.auto.convert.join=false;
 set hive.optimize.dynamic.partition.hashjoin=false;

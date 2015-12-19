@@ -159,6 +159,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSortJoinReduceRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSortMergeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSortProjectTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSortRemoveRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSortUnionReduceRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveWindowingFixRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.HiveOpConverter;
@@ -1086,16 +1087,17 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // NOTE: We run this after PPD to support old style join syntax.
       // Ex: select * from R1 left outer join R2 where ((R1.x=R2.x) and R1.y<10) or
       // ((R1.x=R2.x) and R1.z=10)) and rand(1) < 0.1 order by R1.x limit 10
-      if (conf.getBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_LIMIT_JOIN_TRANSPOSE)) {
+      if (conf.getBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_LIMIT_TRANSPOSE)) {
         perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
         // This should be a cost based decision, but till we enable the extended cost
         // model, we will use the given value for the variable
         final float reductionProportion = HiveConf.getFloatVar(conf,
-            HiveConf.ConfVars.HIVE_OPTIMIZE_LIMIT_JOIN_TRANSPOSE_REDUCTION_PERCENTAGE);
+            HiveConf.ConfVars.HIVE_OPTIMIZE_LIMIT_TRANSPOSE_REDUCTION_PERCENTAGE);
         final long reductionTuples = HiveConf.getLongVar(conf,
-            HiveConf.ConfVars.HIVE_OPTIMIZE_LIMIT_JOIN_TRANSPOSE_REDUCTION_TUPLES);
+            HiveConf.ConfVars.HIVE_OPTIMIZE_LIMIT_TRANSPOSE_REDUCTION_TUPLES);
         basePlan = hepPlan(basePlan, true, mdProvider, HiveSortMergeRule.INSTANCE,
-            HiveSortProjectTransposeRule.INSTANCE, HiveSortJoinReduceRule.INSTANCE);
+            HiveSortProjectTransposeRule.INSTANCE, HiveSortJoinReduceRule.INSTANCE,
+            HiveSortUnionReduceRule.INSTANCE);
         basePlan = hepPlan(basePlan, true, mdProvider, HepMatchOrder.BOTTOM_UP,
             new HiveSortRemoveRule(reductionProportion, reductionTuples),
             HiveProjectSortTransposeRule.INSTANCE);
