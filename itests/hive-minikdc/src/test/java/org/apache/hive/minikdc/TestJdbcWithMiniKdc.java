@@ -18,10 +18,6 @@
 
 package org.apache.hive.minikdc;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -45,6 +41,8 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 public class TestJdbcWithMiniKdc {
   // Need to hive.server2.session.hook to SessionHookTest in hive-site
@@ -123,6 +121,30 @@ public class TestJdbcWithMiniKdc {
       // expected error
       assertEquals("08S01", e.getSQLState().trim());
     }
+  }
+
+  /***
+   * Test isValid() method
+   * @throws Exception
+   */
+  @Test
+  public void testIsValid() throws Exception {
+    miniHiveKdc.loginUser(MiniHiveKdc.HIVE_TEST_SUPER_USER);
+    hs2Conn = DriverManager.getConnection(miniHS2.getJdbcURL());
+    assertTrue(hs2Conn.isValid(1000));
+    hs2Conn.close();
+  }
+
+  /***
+   * Negative test isValid() method
+   * @throws Exception
+   */
+  @Test
+  public void testIsValidNeg() throws Exception {
+    miniHiveKdc.loginUser(MiniHiveKdc.HIVE_TEST_SUPER_USER);
+    hs2Conn = DriverManager.getConnection(miniHS2.getJdbcURL());
+    hs2Conn.close();
+    assertFalse(hs2Conn.isValid(1000));
   }
 
   /***
