@@ -1025,8 +1025,18 @@ public class HiveConnection implements java.sql.Connection {
 
   @Override
   public boolean isValid(int timeout) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    if (timeout < 0) {
+      throw new SQLException("timeout value was negative");
+    }
+    boolean rc = false;
+    try {
+      String productName = new HiveDatabaseMetaData(this, client, sessHandle)
+              .getDatabaseProductName();
+      rc = true;
+    } catch (SQLException e) {
+      // IGNORE
+    }
+    return rc;
   }
 
   /*
