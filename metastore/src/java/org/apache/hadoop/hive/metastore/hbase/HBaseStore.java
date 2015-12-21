@@ -758,21 +758,6 @@ public class HBaseStore implements RawStore {
     }
   }
 
-  @Override
-  public int getNumPartitionsByFilter(String dbName, String tblName, String filter)
-    throws MetaException, NoSuchObjectException {
-    final ExpressionTree exprTree = (filter != null && !filter.isEmpty()) ? PartFilterExprUtil
-      .getFilterParser(filter).tree : ExpressionTree.EMPTY_TREE;
-    List<Partition> result = new ArrayList<Partition>();
-    boolean commit = false;
-    openTransaction();
-    try {
-      return getPartitionsByFilter(dbName, tblName, filter, Short.MAX_VALUE).size();
-    } finally {
-      commitOrRoleBack(commit);
-    }
-  }
-
   /**
    * Gets the partition names from a table, pruned using an expression.
    * @param table Table.

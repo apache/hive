@@ -4559,25 +4559,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
-    public int get_num_partitions_by_filter(final String dbName,
-                                            final String tblName, final String filter)
-            throws MetaException, NoSuchObjectException, TException {
-      startTableFunction("get_num_partitions_by_filter", dbName, tblName);
-
-      int ret = -1;
-      Exception ex = null;
-      try {
-        ret = getMS().getNumPartitionsByFilter(dbName, tblName, filter);
-      } catch (Exception e) {
-        ex = e;
-        rethrowException(e);
-      } finally {
-        endFunction("get_num_partitions_by_filter", ret != -1, ex, tblName);
-      }
-      return ret;
-    }
-
-    @Override
     public List<Partition> get_partitions_by_names(final String dbName,
         final String tblName, final List<String> partNames)
         throws MetaException, NoSuchObjectException, TException {

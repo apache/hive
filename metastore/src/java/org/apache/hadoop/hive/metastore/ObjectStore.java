@@ -2279,7 +2279,6 @@ public class ObjectStore implements RawStore, Configurable {
         }
         return result;
       }
-
       @Override
       protected List<Partition> getJdoResult(
           GetHelper<List<Partition>> ctx) throws MetaException, NoSuchObjectException {
@@ -2364,12 +2363,6 @@ public class ObjectStore implements RawStore, Configurable {
     List<Partition> results = convertToParts(mparts);
     query.closeAll();
     return results;
-  }
-
-
-  private Integer getNumPartitionsViaOrmFilter(Table table, ExpressionTree tree, boolean isValidatedFilter)
-    throws MetaException {
-    return getPartitionsViaOrmFilter(table, tree, (short) -1, isValidatedFilter).size();
   }
 
   /**
@@ -2651,36 +2644,6 @@ public class ObjectStore implements RawStore, Configurable {
     protected String describeResult() {
       return "statistics for " + (results == null ? 0 : results.getStatsObjSize()) + " columns";
     }
-  }
-
-  @Override
-  public int getNumPartitionsByFilter(String dbName, String tblName,
-                                      String filter) throws MetaException, NoSuchObjectException {
-    return getNumPartitionsByFilterInternal(dbName, tblName, filter,
-      true, true);
-  }
-
-  protected int getNumPartitionsByFilterInternal(String dbName, String tblName,
-                                                 String filter, boolean allowSql, boolean allowJdo)
-    throws MetaException, NoSuchObjectException {
-    final ExpressionTree tree = (filter != null && !filter.isEmpty())
-      ? PartFilterExprUtil.getFilterParser(filter).tree : ExpressionTree.EMPTY_TREE;
-    return new GetHelper<Integer>(dbName, tblName, allowSql, allowJdo) {
-      @Override
-      protected String describeResult() {
-        return null;
-      }
-
-      @Override
-      protected Integer getSqlResult(GetHelper<Integer> ctx) throws MetaException {
-        return directSql.getNumPartitionsViaSqlFilter(ctx.getTable(), tree);
-      }
-      @Override
-      protected Integer getJdoResult(
-        GetHelper<Integer> ctx) throws MetaException, NoSuchObjectException {
-        return getNumPartitionsViaOrmFilter(ctx.getTable(), tree, true);
-      }
-    }.run(true);
   }
 
   protected List<Partition> getPartitionsByFilterInternal(String dbName, String tblName,
