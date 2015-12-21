@@ -2476,6 +2476,13 @@ public class HiveConf extends Configuration {
       "The number of tasks the AM TaskScheduler will try allocating per node. 0 indicates that\n" +
       "this should be picked up from the Registry. -1 indicates unlimited capacity; positive\n" +
       "values indicate a specific bound.", "llap.task.scheduler.num.schedulable.tasks.per.node"),
+    LLAP_TASK_SCHEDULER_LOCALITY_DELAY(
+        "hive.llap.task.scheduler.locality.delay", "0ms",
+        new TimeValidator(TimeUnit.MILLISECONDS, -1l, true, Long.MAX_VALUE, true),
+        "Amount of time to wait before allocating a request which contains location information," +
+            " to a location other than the ones requested. Set to -1 for an infinite delay, 0" +
+            "for a no delay. Currently these are the only two supported values"
+    ),
     LLAP_DAEMON_TASK_SCHEDULER_WAIT_QUEUE_SIZE("hive.llap.daemon.task.scheduler.wait.queue.size",
       10, "LLAP scheduler maximum queue size.", "llap.daemon.task.scheduler.wait.queue.size"),
     LLAP_DAEMON_WAIT_QUEUE_COMPARATOR_CLASS_NAME(
