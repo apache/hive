@@ -20,6 +20,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -108,8 +109,6 @@ public class TestLlapTaskSchedulerService {
     }
   }
 
-  // TODO Add a test to ensure the correct task is being preempted, and the completion for the specific
-  // task triggers the next task to be scheduled.
 
   @Test(timeout=5000)
   public void testPreemption() throws InterruptedException, IOException {
@@ -123,11 +122,11 @@ public class TestLlapTaskSchedulerService {
       Object task1 = "task1";
       Object clientCookie1 = "cookie1";
       Object task2 = "task2";
-      Object clientCookie2 = "cookie1";
+      Object clientCookie2 = "cookie2";
       Object task3 = "task3";
-      Object clientCookie3 = "cookie1";
+      Object clientCookie3 = "cookie3";
       Object task4 = "task4";
-      Object clientCookie4 = "cookie1";
+      Object clientCookie4 = "cookie4";
 
       tsWrapper.controlScheduler(true);
       tsWrapper.allocateTask(task1, hosts, priority2, clientCookie1);
@@ -309,6 +308,231 @@ public class TestLlapTaskSchedulerService {
     }
   }
 
+  @Test (timeout = 5000)
+  public void testForceLocalityTest1() throws IOException, InterruptedException {
+    // 2 hosts. 2 per host. 5 requests at the same priority.
+    // First 3 on host1, Next at host2, Last with no host.
+    // Third request on host1 should not be allocated immediately.
+    forceLocalityTest1(true);
+
+  }
+
+  @Test (timeout = 5000)
+  public void testNoForceLocalityCounterTest1() throws IOException, InterruptedException {
+    // 2 hosts. 2 per host. 5 requests at the same priority.
+    // First 3 on host1, Next at host2, Last with no host.
+    // Third should allocate on host2, 4th on host2, 5th will wait.
+
+    forceLocalityTest1(false);
+  }
+
+  private void forceLocalityTest1(boolean forceLocality) throws IOException, InterruptedException {
+    Priority priority1 = Priority.newInstance(1);
+
+    String[] hosts = new String[] {HOST1, HOST2};
+
+    String[] hostsH1 = new String[] {HOST1};
+    String[] hostsH2 = new String[] {HOST2};
+
+    TestTaskSchedulerServiceWrapper tsWrapper = new TestTaskSchedulerServiceWrapper(2000, hosts, 1, 1, (forceLocality ? -1l : 0l));
+
+    try {
+      Object task1 = "task1";
+      Object clientCookie1 = "cookie1";
+      Object task2 = "task2";
+      Object clientCookie2 = "cookie2";
+      Object task3 = "task3";
+      Object clientCookie3 = "cookie3";
+      Object task4 = "task4";
+      Object clientCookie4 = "cookie4";
+      Object task5 = "task5";
+      Object clientCookie5 = "cookie5";
+
+      tsWrapper.controlScheduler(true);
+      //H1 - should allocate
+      tsWrapper.allocateTask(task1, hostsH1, priority1, clientCookie1);
+      //H1 - should allocate
+      tsWrapper.allocateTask(task2, hostsH1, priority1, clientCookie2);
+      //H1 - no capacity if force, should allocate otherwise
+      tsWrapper.allocateTask(task3, hostsH1, priority1, clientCookie3);
+      //H2 - should allocate
+      tsWrapper.allocateTask(task4, hostsH2, priority1, clientCookie4);
+      //No location - should allocate if force, no capacity otherwise
+      tsWrapper.allocateTask(task5, null, priority1, clientCookie5);
+
+      while (true) {
+        tsWrapper.signalSchedulerRun();
+        tsWrapper.awaitSchedulerRun();
+        if (tsWrapper.ts.dagStats.numTotalAllocations == 4) {
+          break;
+        }
+      }
+
+      // Verify no preemption requests - since everything is at the same priority
+      verify(tsWrapper.mockAppCallback, never()).preemptContainer(any(ContainerId.class));
+      ArgumentCaptor<Object> argumentCaptor = ArgumentCaptor.forClass(Object.class);
+      verify(tsWrapper.mockAppCallback, times(4)).taskAllocated(argumentCaptor.capture(), any(Object.class), any(Container.class));
+      assertEquals(4, argumentCaptor.getAllValues().size());
+      assertEquals(task1, argumentCaptor.getAllValues().get(0));
+      assertEquals(task2, argumentCaptor.getAllValues().get(1));
+      if (forceLocality) {
+        // task3 not allocated
+        assertEquals(task4, argumentCaptor.getAllValues().get(2));
+        assertEquals(task5, argumentCaptor.getAllValues().get(3));
+      } else {
+        assertEquals(task3, argumentCaptor.getAllValues().get(2));
+        assertEquals(task4, argumentCaptor.getAllValues().get(3));
+      }
+
+      //Complete one task on host1.
+      tsWrapper.deallocateTask(task1, true, null);
+
+      reset(tsWrapper.mockAppCallback);
+
+      // Try scheduling again.
+      while (true) {
+        tsWrapper.signalSchedulerRun();
+        tsWrapper.awaitSchedulerRun();
+        if (tsWrapper.ts.dagStats.numTotalAllocations == 5) {
+          break;
+        }
+      }
+      verify(tsWrapper.mockAppCallback, never()).preemptContainer(any(ContainerId.class));
+      argumentCaptor = ArgumentCaptor.forClass(Object.class);
+      verify(tsWrapper.mockAppCallback, times(1)).taskAllocated(argumentCaptor.capture(), any(Object.class), any(Container.class));
+      assertEquals(1, argumentCaptor.getAllValues().size());
+      if (forceLocality) {
+        assertEquals(task3, argumentCaptor.getAllValues().get(0));
+      } else {
+        assertEquals(task5, argumentCaptor.getAllValues().get(0));
+      }
+
+    } finally {
+      tsWrapper.shutdown();
+    }
+  }
+
+  @Test(timeout = 5000)
+  public void testForcedLocalityUnknownHost() throws IOException, InterruptedException {
+    Priority priority1 = Priority.newInstance(1);
+
+    String[] hostsKnown = new String[]{HOST1};
+    String[] hostsUnknown = new String[]{HOST2};
+
+    TestTaskSchedulerServiceWrapper tsWrapper =
+        new TestTaskSchedulerServiceWrapper(2000, hostsKnown, 1, 1, -1l);
+    try {
+      Object task1 = "task1";
+      Object clientCookie1 = "cookie1";
+
+      Object task2 = "task2";
+      Object clientCookie2 = "cookie2";
+
+      tsWrapper.controlScheduler(true);
+      // Should allocate since H2 is not known.
+      tsWrapper.allocateTask(task1, hostsUnknown, priority1, clientCookie1);
+      tsWrapper.allocateTask(task2, hostsKnown, priority1, clientCookie2);
+
+
+      while (true) {
+        tsWrapper.signalSchedulerRun();
+        tsWrapper.awaitSchedulerRun();
+        if (tsWrapper.ts.dagStats.numTotalAllocations == 2) {
+          break;
+        }
+      }
+
+      ArgumentCaptor<Object> argumentCaptor = ArgumentCaptor.forClass(Object.class);
+      verify(tsWrapper.mockAppCallback, times(2))
+          .taskAllocated(argumentCaptor.capture(), any(Object.class), any(Container.class));
+      assertEquals(2, argumentCaptor.getAllValues().size());
+      assertEquals(task1, argumentCaptor.getAllValues().get(0));
+      assertEquals(task2, argumentCaptor.getAllValues().get(1));
+
+
+    } finally {
+      tsWrapper.shutdown();
+    }
+  }
+
+
+  @Test(timeout = 5000)
+  public void testForcedLocalityPreemption() throws IOException, InterruptedException {
+    Priority priority1 = Priority.newInstance(1);
+    Priority priority2 = Priority.newInstance(2);
+    String [] hosts = new String[] {HOST1, HOST2};
+
+    String [] hostsH1 = new String[] {HOST1};
+    String [] hostsH2 = new String[] {HOST2};
+
+    TestTaskSchedulerServiceWrapper tsWrapper = new TestTaskSchedulerServiceWrapper(2000, hosts, 1, 1, -1l);
+
+    // Fill up host1 with p2 tasks.
+    // Leave host2 empty
+    // Try running p1 task on host1 - should preempt
+
+    try {
+      Object task1 = "task1";
+      Object clientCookie1 = "cookie1";
+      Object task2 = "task2";
+      Object clientCookie2 = "cookie2";
+      Object task3 = "task3";
+      Object clientCookie3 = "cookie3";
+      Object task4 = "task4";
+      Object clientCookie4 = "cookie4";
+
+      tsWrapper.controlScheduler(true);
+      tsWrapper.allocateTask(task1, hostsH1, priority2, clientCookie1);
+      tsWrapper.allocateTask(task2, hostsH1, priority2, clientCookie2);
+      // This request at a lower priority should not affect anything.
+      tsWrapper.allocateTask(task3, hostsH1, priority2, clientCookie3);
+      while (true) {
+        tsWrapper.signalSchedulerRun();
+        tsWrapper.awaitSchedulerRun();
+        if (tsWrapper.ts.dagStats.numLocalAllocations == 2) {
+          break;
+        }
+      }
+
+      verify(tsWrapper.mockAppCallback, never()).preemptContainer(any(ContainerId.class));
+      ArgumentCaptor<Object> argumentCaptor = ArgumentCaptor.forClass(Object.class);
+      verify(tsWrapper.mockAppCallback, times(2))
+          .taskAllocated(argumentCaptor.capture(), any(Object.class), any(Container.class));
+      assertEquals(2, argumentCaptor.getAllValues().size());
+      assertEquals(task1, argumentCaptor.getAllValues().get(0));
+      assertEquals(task2, argumentCaptor.getAllValues().get(1));
+
+      reset(tsWrapper.mockAppCallback);
+      // Allocate t4 at higher priority. t3 should not be allocated,
+      // and a preemption should be attempted on host1, despite host2 having available capacity
+      tsWrapper.allocateTask(task4, hostsH1, priority1, clientCookie4);
+
+      while (true) {
+        tsWrapper.signalSchedulerRun();
+        tsWrapper.awaitSchedulerRun();
+        if (tsWrapper.ts.dagStats.numPreemptedTasks == 1) {
+          break;
+        }
+      }
+      verify(tsWrapper.mockAppCallback).preemptContainer(any(ContainerId.class));
+
+      tsWrapper.deallocateTask(task1, false, TaskAttemptEndReason.INTERNAL_PREEMPTION);
+
+      while (true) {
+        tsWrapper.signalSchedulerRun();
+        tsWrapper.awaitSchedulerRun();
+        if (tsWrapper.ts.dagStats.numTotalAllocations == 3) {
+          break;
+        }
+      }
+      verify(tsWrapper.mockAppCallback, times(1)).taskAllocated(eq(task4),
+          eq(clientCookie4), any(Container.class));
+
+    } finally {
+      tsWrapper.shutdown();
+    }
+  }
+
   private static class TestTaskSchedulerServiceWrapper {
     static final Resource resource = Resource.newInstance(1024, 1);
     Configuration conf;
@@ -329,6 +553,11 @@ public class TestLlapTaskSchedulerService {
 
     TestTaskSchedulerServiceWrapper(long disableTimeoutMillis, String[] hosts, int numExecutors, int waitQueueSize) throws
         IOException, InterruptedException {
+      this(disableTimeoutMillis, hosts, numExecutors, waitQueueSize, 0l);
+    }
+
+    TestTaskSchedulerServiceWrapper(long disableTimeoutMillis, String[] hosts, int numExecutors, int waitQueueSize, long localityDelayMs) throws
+        IOException, InterruptedException {
       conf = new Configuration();
       conf.setStrings(ConfVars.LLAP_DAEMON_SERVICE_HOSTS.varname, hosts);
       conf.setInt(ConfVars.LLAP_DAEMON_NUM_EXECUTORS.varname, numExecutors);
@@ -336,6 +565,7 @@ public class TestLlapTaskSchedulerService {
       conf.set(ConfVars.LLAP_TASK_SCHEDULER_NODE_REENABLE_MIN_TIMEOUT_MS.varname,
           disableTimeoutMillis + "ms");
       conf.setBoolean(LlapFixedRegistryImpl.FIXED_REGISTRY_RESOLVE_HOST_NAMES, false);
+      conf.setLong(ConfVars.LLAP_TASK_SCHEDULER_LOCALITY_DELAY.varname, localityDelayMs);
 
       doReturn(appAttemptId).when(mockAppCallback).getApplicationAttemptId();
       doReturn(11111l).when(mockAppCallback).getCustomClusterIdentifier();
