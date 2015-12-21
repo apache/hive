@@ -15,22 +15,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.apache.hadoop.hive.llap.io.decode;
-
-import java.util.List;
-
-import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
-import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
-import org.apache.hadoop.hive.ql.io.orc.encoded.Consumer;
-import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
-import org.apache.hadoop.mapred.FileSplit;
+package org.apache.hadoop.hive.ql.io;
 
 /**
- * Entry point used by LlapInputFormat to create read pipeline to get data.
+ * Split that is aware that it could be executed in LLAP. Allows LlapInputFormat to do
+ * a last-minute check to see of LLAP IO pipeline should be used for this particular split.
+ * By default, there is no such check - whatever is sent in is attempted with LLAP IO.
  */
-public interface ColumnVectorProducer {
-  ReadPipeline createReadPipeline(Consumer<ColumnVectorBatch> consumer, FileSplit split,
-      List<Integer> columnIds, SearchArgument sarg, String[] columnNames,
-      QueryFragmentCounters counters);
+public interface LlapAwareSplit {
+  boolean canUseLlapIo();
 }

@@ -161,14 +161,14 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   private volatile boolean isPaused = false;
 
   public OrcEncodedDataReader(LowLevelCache lowLevelCache, Cache<OrcCacheKey> cache,
-      OrcMetadataCache metadataCache, Configuration conf, InputSplit split,
+      OrcMetadataCache metadataCache, Configuration conf, FileSplit split,
       List<Integer> columnIds, SearchArgument sarg, String[] columnNames,
       OrcEncodedDataConsumer consumer, QueryFragmentCounters counters) {
     this.lowLevelCache = lowLevelCache;
     this.metadataCache = metadataCache;
     this.cache = cache;
     this.conf = conf;
-    this.split = (FileSplit)split;
+    this.split = split;
     this.columnIds = columnIds;
     if (this.columnIds != null) {
       Collections.sort(this.columnIds);
