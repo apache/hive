@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 @Explain(displayName = "Limit", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class LimitDesc extends AbstractOperatorDesc {
   private static final long serialVersionUID = 1L;
+  private int offset = 0;
   private int limit;
   private int leastRows = -1;
 
@@ -35,6 +36,24 @@ public class LimitDesc extends AbstractOperatorDesc {
 
   public LimitDesc(final int limit) {
     this.limit = limit;
+  }
+
+  public LimitDesc(final int offset, final int limit) {
+    this.offset = offset;
+    this.limit = limit;
+  }
+
+  /**
+   * not to print the offset if it is 0 we need to turn null.
+   * use Integer instead of int.
+   */
+  @Explain(displayName = "Offset of rows", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public Integer getOffset() {
+    return (offset == 0) ? null : new Integer(offset);
+  }
+
+  public void setOffset(Integer offset) {
+    this.offset = offset;
   }
 
   @Explain(displayName = "Number of rows", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })

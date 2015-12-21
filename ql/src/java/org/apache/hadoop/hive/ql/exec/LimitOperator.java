@@ -34,6 +34,7 @@ public class LimitOperator extends Operator<LimitDesc> implements Serializable {
   private static final long serialVersionUID = 1L;
 
   protected transient int limit;
+  protected transient int offset;
   protected transient int leastRow;
   protected transient int currCount;
   protected transient boolean isMap;
@@ -43,14 +44,17 @@ public class LimitOperator extends Operator<LimitDesc> implements Serializable {
     super.initializeOp(hconf);
     limit = conf.getLimit();
     leastRow = conf.getLeastRows();
+    offset = (conf.getOffset() == null) ? 0 : conf.getOffset();
     currCount = 0;
     isMap = hconf.getBoolean("mapred.task.is.map", true);
   }
 
   @Override
   public void process(Object row, int tag) throws HiveException {
-    if (currCount < limit) {
+    if (offset <= currCount && currCount < (offset + limit)) {
       forward(row, inputObjInspectors[tag]);
+      currCount++;
+    } else if (offset > currCount) {
       currCount++;
     } else {
       setDone(true);

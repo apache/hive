@@ -42,12 +42,30 @@ public class VectorLimitOperator extends LimitOperator  {
   public void process(Object row, int tag) throws HiveException {
     VectorizedRowBatch batch = (VectorizedRowBatch) row;
 
-    if (currCount < limit) {
-      batch.size = Math.min(batch.size, limit - currCount);
+    if (currCount + batch.size < offset) {
+      currCount += batch.size;
+    } else if (currCount >= offset + limit) {
+      setDone(true);
+    } else {
+      int skipSize = 0;
+      if (currCount < offset) {
+        skipSize = offset - currCount;
+      }
+      //skip skipSize rows of batch
+      batch.size = Math.min(batch.size, offset + limit - currCount);
+      if (batch.selectedInUse == false) {
+        batch.selectedInUse = true;
+        batch.selected = new int[batch.size];
+        for (int i = 0; i < batch.size - skipSize; i++) {
+          batch.selected[i] = skipSize + i;
+        }
+      } else {
+        for (int i = 0; i < batch.size - skipSize; i++) {
+          batch.selected[i] = batch.selected[skipSize + i];
+        }
+      }
       forward(row, inputObjInspectors[tag]);
       currCount += batch.size;
-    } else {
-      setDone(true);
     }
   }
 }

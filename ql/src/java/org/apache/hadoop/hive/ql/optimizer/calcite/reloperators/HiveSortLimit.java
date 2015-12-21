@@ -83,6 +83,10 @@ public class HiveSortLimit extends Sort implements HiveRelNode {
     return fetch;
   }
 
+  public RexNode getOffsetExpr() {
+    return offset;
+  }
+
   public void setInputRefToCallMap(ImmutableMap<Integer, RexNode> refToCall) {
     this.mapOfInputRefToRexCall = refToCall;
   }

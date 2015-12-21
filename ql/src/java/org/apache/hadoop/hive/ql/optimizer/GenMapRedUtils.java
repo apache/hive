@@ -544,7 +544,8 @@ public final class GenMapRedUtils {
       } else {
         long sizePerRow = HiveConf.getLongVar(parseCtx.getConf(),
             HiveConf.ConfVars.HIVELIMITMAXROWSIZE);
-        sizeNeeded = parseCtx.getGlobalLimitCtx().getGlobalLimit() * sizePerRow;
+        sizeNeeded = (parseCtx.getGlobalLimitCtx().getGlobalOffset()
+            + parseCtx.getGlobalLimitCtx().getGlobalLimit()) * sizePerRow;
         // for the optimization that reduce number of input file, we limit number
         // of files allowed. If more than specific number of files have to be
         // selected, we skip this optimization. Since having too many files as
