@@ -22,7 +22,6 @@ import java.util.List;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
  * Convenience implementation of HiveAuthorizer.
@@ -134,18 +133,6 @@ public class HiveAuthorizerImpl extends AbstractHiveAuthorizer {
   @Override
   public void applyAuthorizationConfigPolicy(HiveConf hiveConf) throws HiveAuthzPluginException {
     accessController.applyAuthorizationConfigPolicy(hiveConf);
-  }
-
-  /* (non-Javadoc)
-   * @see org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer#getHiveAuthorizationTranslator()
-   *
-   * No customization of this API is done for most Authorization implementations. It is meant 
-   * to be used for special cases in Apache Sentry (incubating)
-   *
-   */
-  @Override
-  public HiveAuthorizationTranslator getHiveAuthorizationTranslator() throws HiveAuthzPluginException{
-    return null;
   }
 
 }

@@ -30,7 +30,9 @@ public abstract class AbstractHiveAuthorizer implements HiveAuthorizer {
    * @see org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer#getHiveAuthorizationTranslator()
    */
   @Override
-  public Object getHiveAuthorizationTranslator() throws HiveAuthzPluginException {
+  public HiveAuthorizationTranslator getHiveAuthorizationTranslator() throws HiveAuthzPluginException {
+    // No customization of this API is done for most Authorization implementations. It is meant 
+    // to be used for special cases in Apache Sentry (incubating)
     // null is to be returned when no customization is needed for the translator
     // see javadoc in interface for details.
     return null;
