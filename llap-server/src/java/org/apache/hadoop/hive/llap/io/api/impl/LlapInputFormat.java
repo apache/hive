@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
 import org.apache.hadoop.hive.llap.DebugUtils;
 import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
@@ -33,12 +35,14 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
+import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
+import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat.AvoidSplitCombination;
+import org.apache.hadoop.hive.ql.io.LlapAwareSplit;
 import org.apache.hadoop.hive.ql.io.SelfDescribingInputFormatInterface;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Consumer;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.io.NullWritable;
@@ -55,11 +59,12 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 
-public class LlapInputFormat
-  implements InputFormat<NullWritable, VectorizedRowBatch>, VectorizedInputFormatInterface,
-  SelfDescribingInputFormatInterface {
+public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowBatch>,
+    VectorizedInputFormatInterface, SelfDescribingInputFormatInterface,
+    AvoidSplitCombination {
   @SuppressWarnings("rawtypes")
   private final InputFormat sourceInputFormat;
+  private final AvoidSplitCombination sourceASC;
   private final ColumnVectorProducer cvp;
   private final ListeningExecutorService executor;
   private final String hostName;
@@ -73,16 +78,29 @@ public class LlapInputFormat
     this.executor = executor;
     this.cvp = cvp;
     this.sourceInputFormat = sourceInputFormat;
+    this.sourceASC = (sourceInputFormat instanceof AvoidSplitCombination)
+        ? (AvoidSplitCombination)sourceInputFormat : null;
     this.hostName = HiveStringUtils.getHostname();
   }
 
   @Override
   public RecordReader<NullWritable, VectorizedRowBatch> getRecordReader(
       InputSplit split, JobConf job, Reporter reporter) throws IOException {
+    boolean useLlapIo = true;
+    if (split instanceof LlapAwareSplit) {
+      useLlapIo = ((LlapAwareSplit)split).canUseLlapIo();
+    }
+    if (!useLlapIo) {
+      LlapIoImpl.LOG.warn("Not using LLAP IO for an unsupported split: " + split);
+      @SuppressWarnings("unchecked")
+      RecordReader<NullWritable, VectorizedRowBatch> rr =
+          sourceInputFormat.getRecordReader(split, job, reporter);
+      return rr;
+    }
     boolean isVectorMode = Utilities.isVectorMode(job);
     if (!isVectorMode) {
-      LlapIoImpl.LOG.error("No llap in non-vectorized mode");
-      throw new UnsupportedOperationException("No llap in non-vectorized mode");
+      LlapIoImpl.LOG.error("No LLAP IO in non-vectorized mode");
+      throw new UnsupportedOperationException("No LLAP IO in non-vectorized mode");
     }
     FileSplit fileSplit = (FileSplit)split;
     reporter.setStatus(fileSplit.toString());
@@ -102,7 +120,7 @@ public class LlapInputFormat
 
   private class LlapRecordReader
       implements RecordReader<NullWritable, VectorizedRowBatch>, Consumer<ColumnVectorBatch> {
-    private final InputSplit split;
+    private final FileSplit split;
     private final List<Integer> columnIds;
     private final SearchArgument sarg;
     private final String[] columnNames;
@@ -140,7 +158,7 @@ public class LlapInputFormat
       int partitionColumnCount = rbCtx.getPartitionColumnCount();
       if (partitionColumnCount > 0) {
         partitionValues = new Object[partitionColumnCount];
-        rbCtx.getPartitionValues(rbCtx, job, split, partitionValues);
+        VectorizedRowBatchCtx.getPartitionValues(rbCtx, job, split, partitionValues);
       } else {
         partitionValues = null;
       }
@@ -327,5 +345,10 @@ public class LlapInputFormat
       // TODO: plumb progress info thru the reader if we can get metadata from loader first.
       return 0.0f;
     }
+  }
+
+  @Override
+  public boolean shouldSkipCombine(Path path, Configuration conf) throws IOException {
+    return sourceASC == null ? false : sourceASC.shouldSkipCombine(path, conf);
   }
 }

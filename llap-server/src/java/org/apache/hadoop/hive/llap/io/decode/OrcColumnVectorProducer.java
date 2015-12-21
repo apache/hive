@@ -35,7 +35,7 @@ import org.apache.hadoop.hive.llap.metrics.LlapDaemonQueueMetrics;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Consumer;
 import org.apache.hadoop.hive.ql.io.orc.encoded.OrcCacheKey;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
-import org.apache.hadoop.mapred.InputSplit;
+import org.apache.hadoop.mapred.FileSplit;
 
 public class OrcColumnVectorProducer implements ColumnVectorProducer {
 
@@ -65,7 +65,7 @@ public class OrcColumnVectorProducer implements ColumnVectorProducer {
 
   @Override
   public ReadPipeline createReadPipeline(
-      Consumer<ColumnVectorBatch> consumer, InputSplit split,
+      Consumer<ColumnVectorBatch> consumer, FileSplit split,
       List<Integer> columnIds, SearchArgument sarg, String[] columnNames,
       QueryFragmentCounters counters) {
     cacheMetrics.incrCacheReadRequests();

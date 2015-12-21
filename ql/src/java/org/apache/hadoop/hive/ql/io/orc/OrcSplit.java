@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.ColumnarSplit;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
+import org.apache.hadoop.hive.ql.io.LlapAwareSplit;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.WritableUtils;
 import org.apache.hadoop.mapred.FileSplit;
@@ -41,9 +42,7 @@ import org.apache.hadoop.mapred.FileSplit;
  * OrcFileSplit. Holds file meta info
  *
  */
-public class OrcSplit extends FileSplit implements ColumnarSplit {
-  private static final Logger LOG = LoggerFactory.getLogger(OrcSplit.class);
-
+public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit {
   private FileMetaInfo fileMetaInfo;
   private boolean hasFooter;
   private boolean isOriginal;
@@ -58,7 +57,7 @@ public class OrcSplit extends FileSplit implements ColumnarSplit {
   static final int ORIGINAL_FLAG = 2;
   static final int FOOTER_FLAG = 1;
 
-  protected OrcSplit(){
+  protected OrcSplit() {
     //The FileSplit() constructor in hadoop 0.20 and 1.x is package private so can't use it.
     //This constructor is used to create the object and then call readFields()
     // so just pass nulls to this super constructor.
@@ -185,5 +184,17 @@ public class OrcSplit extends FileSplit implements ColumnarSplit {
   @Override
   public long getColumnarProjectionSize() {
     return projColsUncompressedSize;
+  }
+
+  @Override
+  public boolean canUseLlapIo() {
+    return isOriginal && (deltas == null || deltas.isEmpty());
+  }
+
+  @Override
+  public String toString() {
+    return "OrcSplit [" + getPath() + ", start=" + getStart() + ", length=" + getLength()
+        + ", isOriginal=" + isOriginal + ", hasBase=" + hasBase + ", deltas="
+        + (deltas == null ? 0 : deltas.size()) + "]";
   }
 }

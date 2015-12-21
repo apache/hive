@@ -1,0 +1,307 @@
+PREHOOK: query: DROP TABLE orc_llap
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE orc_llap
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE orc_llap (
+    cint INT,
+    cbigint BIGINT,
+    cfloat FLOAT,
+    cdouble DOUBLE)
+partitioned by (csmallint smallint)
+clustered by (cint) into 2 buckets stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_llap
+POSTHOOK: query: CREATE TABLE orc_llap (
+    cint INT,
+    cbigint BIGINT,
+    cfloat FLOAT,
+    cdouble DOUBLE)
+partitioned by (csmallint smallint)
+clustered by (cint) into 2 buckets stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_llap
+PREHOOK: query: insert into table orc_llap partition (csmallint = 1)
+select cint, cbigint, cfloat, cdouble from alltypesorc order by cdouble asc limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@orc_llap@csmallint=1
+POSTHOOK: query: insert into table orc_llap partition (csmallint = 1)
+select cint, cbigint, cfloat, cdouble from alltypesorc order by cdouble asc limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@orc_llap@csmallint=1
+POSTHOOK: Lineage: orc_llap PARTITION(csmallint=1).cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_llap PARTITION(csmallint=1).cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_llap PARTITION(csmallint=1).cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_llap PARTITION(csmallint=1).cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+PREHOOK: query: insert into table orc_llap partition (csmallint = 2)
+select cint, cbigint, cfloat, cdouble from alltypesorc order by cdouble asc limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@orc_llap@csmallint=2
+POSTHOOK: query: insert into table orc_llap partition (csmallint = 2)
+select cint, cbigint, cfloat, cdouble from alltypesorc order by cdouble asc limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@orc_llap@csmallint=2
+POSTHOOK: Lineage: orc_llap PARTITION(csmallint=2).cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_llap PARTITION(csmallint=2).cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_llap PARTITION(csmallint=2).cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_llap PARTITION(csmallint=2).cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+PREHOOK: query: alter table orc_llap SET TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@orc_llap
+PREHOOK: Output: default@orc_llap
+POSTHOOK: query: alter table orc_llap SET TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@orc_llap
+POSTHOOK: Output: default@orc_llap
+PREHOOK: query: insert into table orc_llap partition (csmallint = 3)
+select cint, cbigint, cfloat, cdouble from alltypesorc order by cdouble desc limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@orc_llap@csmallint=3
+POSTHOOK: query: insert into table orc_llap partition (csmallint = 3)
+select cint, cbigint, cfloat, cdouble from alltypesorc order by cdouble desc limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@orc_llap@csmallint=3
+POSTHOOK: Lineage: orc_llap PARTITION(csmallint=3).cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_llap PARTITION(csmallint=3).cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_llap PARTITION(csmallint=3).cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_llap PARTITION(csmallint=3).cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+PREHOOK: query: explain
+select cint, csmallint, cbigint from orc_llap where cint is not null order
+by csmallint, cint
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select cint, csmallint, cbigint from orc_llap where cint is not null order
+by csmallint, cint
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: orc_llap
+            filterExpr: cint is not null (type: boolean)
+            Statistics: Num rows: 30 Data size: 416 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: cint is not null (type: boolean)
+              Statistics: Num rows: 30 Data size: 416 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: cint (type: int), csmallint (type: smallint), cbigint (type: bigint)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 30 Data size: 416 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col1 (type: smallint), _col0 (type: int)
+                  sort order: ++
+                  Statistics: Num rows: 30 Data size: 416 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col2 (type: bigint)
+      Execution mode: vectorized
+      LLAP IO: may be used (ACID table)
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey1 (type: int), KEY.reducesinkkey0 (type: smallint), VALUE._col0 (type: bigint)
+          outputColumnNames: _col0, _col1, _col2
+          Statistics: Num rows: 30 Data size: 416 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 30 Data size: 416 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select cint, csmallint, cbigint from orc_llap where cint is not null order
+by csmallint, cint
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_llap
+PREHOOK: Input: default@orc_llap@csmallint=1
+PREHOOK: Input: default@orc_llap@csmallint=2
+PREHOOK: Input: default@orc_llap@csmallint=3
+#### A masked pattern was here ####
+POSTHOOK: query: select cint, csmallint, cbigint from orc_llap where cint is not null order
+by csmallint, cint
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_llap
+POSTHOOK: Input: default@orc_llap@csmallint=1
+POSTHOOK: Input: default@orc_llap@csmallint=2
+POSTHOOK: Input: default@orc_llap@csmallint=3
+#### A masked pattern was here ####
+-285355633	1	-1241163445
+-109813638	1	-58941842
+164554497	1	1161977292
+199879534	1	123351087
+246423894	1	-1645852809
+354670578	1	562841852
+455419170	1	1108177470
+665801232	1	480783141
+708885482	1	-1645852809
+-285355633	2	-1241163445
+-109813638	2	-58941842
+164554497	2	1161977292
+199879534	2	123351087
+246423894	2	-1645852809
+354670578	2	562841852
+455419170	2	1108177470
+665801232	2	480783141
+708885482	2	-1645852809
+-923308739	3	-1887561756
+-3728	3	-1887561756
+762	3	-1645852809
+6981	3	-1887561756
+253665376	3	NULL
+497728223	3	-1887561756
+528534767	3	NULL
+528534767	3	NULL
+528534767	3	NULL
+528534767	3	NULL
+PREHOOK: query: insert into table orc_llap partition (csmallint = 1) values (1, 1, 1, 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__1
+PREHOOK: Output: default@orc_llap@csmallint=1
+POSTHOOK: query: insert into table orc_llap partition (csmallint = 1) values (1, 1, 1, 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__1
+POSTHOOK: Output: default@orc_llap@csmallint=1
+POSTHOOK: Lineage: orc_llap PARTITION(csmallint=1).cbigint EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: orc_llap PARTITION(csmallint=1).cdouble EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: orc_llap PARTITION(csmallint=1).cfloat EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: orc_llap PARTITION(csmallint=1).cint EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: update orc_llap set cbigint = 2 where cint = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_llap
+PREHOOK: Input: default@orc_llap@csmallint=1
+PREHOOK: Input: default@orc_llap@csmallint=2
+PREHOOK: Input: default@orc_llap@csmallint=3
+PREHOOK: Output: default@orc_llap@csmallint=1
+PREHOOK: Output: default@orc_llap@csmallint=2
+PREHOOK: Output: default@orc_llap@csmallint=3
+POSTHOOK: query: update orc_llap set cbigint = 2 where cint = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_llap
+POSTHOOK: Input: default@orc_llap@csmallint=1
+POSTHOOK: Input: default@orc_llap@csmallint=2
+POSTHOOK: Input: default@orc_llap@csmallint=3
+POSTHOOK: Output: default@orc_llap@csmallint=1
+POSTHOOK: Output: default@orc_llap@csmallint=2
+POSTHOOK: Output: default@orc_llap@csmallint=3
+PREHOOK: query: explain
+select cint, csmallint, cbigint from orc_llap where cint is not null order
+by csmallint, cint
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select cint, csmallint, cbigint from orc_llap where cint is not null order
+by csmallint, cint
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: orc_llap
+            filterExpr: cint is not null (type: boolean)
+            Statistics: Num rows: 31 Data size: 416 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: cint is not null (type: boolean)
+              Statistics: Num rows: 31 Data size: 416 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: cint (type: int), csmallint (type: smallint), cbigint (type: bigint)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 31 Data size: 416 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col1 (type: smallint), _col0 (type: int)
+                  sort order: ++
+                  Statistics: Num rows: 31 Data size: 416 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col2 (type: bigint)
+      Execution mode: vectorized
+      LLAP IO: may be used (ACID table)
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey1 (type: int), KEY.reducesinkkey0 (type: smallint), VALUE._col0 (type: bigint)
+          outputColumnNames: _col0, _col1, _col2
+          Statistics: Num rows: 31 Data size: 416 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 31 Data size: 416 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select cint, csmallint, cbigint from orc_llap where cint is not null order
+by csmallint, cint
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_llap
+PREHOOK: Input: default@orc_llap@csmallint=1
+PREHOOK: Input: default@orc_llap@csmallint=2
+PREHOOK: Input: default@orc_llap@csmallint=3
+#### A masked pattern was here ####
+POSTHOOK: query: select cint, csmallint, cbigint from orc_llap where cint is not null order
+by csmallint, cint
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_llap
+POSTHOOK: Input: default@orc_llap@csmallint=1
+POSTHOOK: Input: default@orc_llap@csmallint=2
+POSTHOOK: Input: default@orc_llap@csmallint=3
+#### A masked pattern was here ####
+-285355633	1	-1241163445
+-109813638	1	-58941842
+1	1	2
+164554497	1	1161977292
+199879534	1	123351087
+246423894	1	-1645852809
+354670578	1	562841852
+455419170	1	1108177470
+665801232	1	480783141
+708885482	1	-1645852809
+-285355633	2	-1241163445
+-109813638	2	-58941842
+164554497	2	1161977292
+199879534	2	123351087
+246423894	2	-1645852809
+354670578	2	562841852
+455419170	2	1108177470
+665801232	2	480783141
+708885482	2	-1645852809
+-923308739	3	-1887561756
+-3728	3	-1887561756
+762	3	-1645852809
+6981	3	-1887561756
+253665376	3	NULL
+497728223	3	-1887561756
+528534767	3	NULL
+528534767	3	NULL
+528534767	3	NULL
+528534767	3	NULL
+PREHOOK: query: DROP TABLE orc_llap
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@orc_llap
+PREHOOK: Output: default@orc_llap
+POSTHOOK: query: DROP TABLE orc_llap
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@orc_llap
+POSTHOOK: Output: default@orc_llap

@@ -12190,12 +12190,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   public static boolean isAcidTable(Table tab) {
     if (tab == null) return false;
     if (!SessionState.get().getTxnMgr().supportsAcid()) return false;
-    String tableIsTransactional =
-        tab.getProperty(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
-    if(tableIsTransactional == null) {
-      tableIsTransactional = tab.getProperty(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL.toUpperCase());
-    }
-    return tableIsTransactional != null && tableIsTransactional.equalsIgnoreCase("true");
+    return AcidUtils.isTablePropertyTransactional(tab.getParameters());
   }
 
   private boolean isAcidOutputFormat(Class<? extends OutputFormat> of) {
