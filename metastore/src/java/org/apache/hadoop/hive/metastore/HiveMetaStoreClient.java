@@ -1204,7 +1204,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     return !r.isSetHasUnknownPartitions() || r.isHasUnknownPartitions(); // Assume the worst.
   }
 
-
   /**
    * @param name
    * @return the database
@@ -1393,6 +1392,24 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
       throws MetaException, TException, NoSuchObjectException {
     return filterHook.filterPartitionNames(db_name, tbl_name,
         client.get_partition_names_ps(db_name, tbl_name, part_vals, max_parts));
+  }
+
+  /**
+   * Get number of partitions matching specified filter
+   * @param db_name the database name
+   * @param tbl_name the table name
+   * @param filter the filter string,
+   *    for example "part1 = \"p1_abc\" and part2 <= "\p2_test\"". Filtering can
+   *    be done only on string partition keys.
+   * @return number of partitions
+   * @throws MetaException
+   * @throws NoSuchObjectException
+   * @throws TException
+   */
+  public int getNumPartitionsByFilter(String db_name, String tbl_name,
+                                      String filter) throws MetaException,
+          NoSuchObjectException, TException {
+    return client.get_num_partitions_by_filter(db_name, tbl_name, filter);
   }
 
   @Override

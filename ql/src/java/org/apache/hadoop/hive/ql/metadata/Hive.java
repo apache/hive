@@ -2373,6 +2373,30 @@ private void constructOneLBLocationMap(FileStatus fSta,
     return hasUnknownParts;
   }
 
+  /**
+   * Get a number of Partitions by filter.
+   * @param tbl The table containing the partitions.
+   * @param filter A string represent partition predicates.
+   * @return the number of partitions satisfying the partition predicates.
+   * @throws HiveException
+   * @throws MetaException
+   * @throws NoSuchObjectException
+   * @throws TException
+   */
+  public int getNumPartitionsByFilter(Table tbl, String filter)
+    throws HiveException, MetaException, NoSuchObjectException, TException {
+
+    if (!tbl.isPartitioned()) {
+      throw new HiveException("Partition spec should only be supplied for a " +
+        "partitioned table");
+    }
+
+    int numParts = getMSC().getNumPartitionsByFilter(
+      tbl.getDbName(), tbl.getTableName(), filter);
+
+    return numParts;
+  }
+
   public void validatePartitionNameCharacters(List<String> partVals) throws HiveException {
     try {
       getMSC().validatePartitionNameCharacters(partVals);
