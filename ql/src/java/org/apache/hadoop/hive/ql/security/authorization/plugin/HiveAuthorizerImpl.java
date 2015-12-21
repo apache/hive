@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
  */
 @LimitedPrivate(value = { "" })
 @Evolving
-public class HiveAuthorizerImpl implements HiveAuthorizer {
+public class HiveAuthorizerImpl extends AbstractHiveAuthorizer {
   HiveAccessController accessController;
   HiveAuthorizationValidator authValidator;
 
