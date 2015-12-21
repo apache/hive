@@ -32,7 +32,7 @@ POSTHOOK: Lineage: t1.id1 SIMPLE []
 POSTHOOK: Lineage: t1.id2 SIMPLE []
 POSTHOOK: Lineage: t2.d SIMPLE []
 POSTHOOK: Lineage: t2.id SIMPLE []
-Warning: Shuffle Join JOIN[17][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Stage-2:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[15][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: explain
 select a.*,b.d d1,c.d d2 from
   t1 a join t2 b on (a.id1 = b.id)
@@ -148,7 +148,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join JOIN[17][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Stage-2:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[15][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: explain
 select * from (
 select a.*,b.d d1,c.d d2 from
@@ -271,7 +271,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join JOIN[17][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Stage-2:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[15][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: select * from (
 select a.*,b.d d1,c.d d2 from
   t1 a join t2 b on (a.id1 = b.id)

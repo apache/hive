@@ -209,7 +209,7 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                       Filter Operator
-                        predicate: (_col1 is not null and UDFToDouble(_col1) is not null) (type: boolean)
+                        predicate: _col1 is not null (type: boolean)
                         Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: UDFToDouble(_col1) (type: double)
@@ -223,7 +223,7 @@ STAGE PLANS:
                   alias: src
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (value is not null and UDFToDouble(value) is not null) (type: boolean)
+                    predicate: value is not null (type: boolean)
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: value (type: string)

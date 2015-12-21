@@ -22,8 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.HiveOpConverterPostProc;
 import org.apache.hadoop.hive.ql.optimizer.correlation.CorrelationOptimizer;
@@ -40,7 +38,10 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.ppd.PredicatePushDown;
 import org.apache.hadoop.hive.ql.ppd.PredicateTransitivePropagate;
+import org.apache.hadoop.hive.ql.ppd.SimplePredicatePushDown;
 import org.apache.hadoop.hive.ql.ppd.SyntheticJoinPredicate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
@@ -91,18 +92,25 @@ public class Optimizer {
         transformations.add(new PartitionColumnsSeparator());
     }
 
-    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTPPD)) {
+    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTPPD) &&
+            !pctx.getContext().isCboSucceeded()) {
       transformations.add(new PredicateTransitivePropagate());
       if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTCONSTANTPROPAGATION)) {
         transformations.add(new ConstantPropagate());
       }
       transformations.add(new SyntheticJoinPredicate());
       transformations.add(new PredicatePushDown());
+    } else if (pctx.getContext().isCboSucceeded()) {
+      if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTCONSTANTPROPAGATION)) {
+        transformations.add(new ConstantPropagate());
+      }
+      transformations.add(new SyntheticJoinPredicate());
+      transformations.add(new SimplePredicatePushDown());
     }
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTCONSTANTPROPAGATION)) {
       // We run constant propagation twice because after predicate pushdown, filter expressions
       // are combined and may become eligible for reduction (like is not null filter).
-        transformations.add(new ConstantPropagate());
+      transformations.add(new ConstantPropagate());
     }
 
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTPPD)) {

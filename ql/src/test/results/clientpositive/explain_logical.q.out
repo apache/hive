@@ -361,19 +361,19 @@ $hdt$_0:s1
   TableScan (TS_0)
     alias: s1
     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-    Filter Operator (FIL_13)
+    Filter Operator (FIL_11)
       predicate: key is not null (type: boolean)
       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
       Select Operator (SEL_2)
         expressions: key (type: string)
         outputColumnNames: _col0
         Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-        Reduce Output Operator (RS_7)
+        Reduce Output Operator (RS_6)
           key expressions: _col0 (type: string)
           sort order: +
           Map-reduce partition columns: _col0 (type: string)
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-          Join Operator (JOIN_10)
+          Join Operator (JOIN_8)
             condition map:
                  Inner Join 0 to 1
             keys:
@@ -381,11 +381,11 @@ $hdt$_0:s1
               1 _col0 (type: string)
             outputColumnNames: _col0, _col2
             Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-            Select Operator (SEL_11)
+            Select Operator (SEL_9)
               expressions: _col0 (type: string), _col2 (type: string)
               outputColumnNames: _col0, _col1
               Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-              File Output Operator (FS_12)
+              File Output Operator (FS_10)
                 compressed: false
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 table:
@@ -396,20 +396,20 @@ $hdt$_1:s2
   TableScan (TS_3)
     alias: s2
     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-    Filter Operator (FIL_14)
+    Filter Operator (FIL_12)
       predicate: key is not null (type: boolean)
       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
       Select Operator (SEL_5)
         expressions: key (type: string), value (type: string)
         outputColumnNames: _col0, _col1
         Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-        Reduce Output Operator (RS_9)
+        Reduce Output Operator (RS_7)
           key expressions: _col0 (type: string)
           sort order: +
           Map-reduce partition columns: _col0 (type: string)
           Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
           value expressions: _col1 (type: string)
-          Join Operator (JOIN_10)
+          Join Operator (JOIN_8)
             condition map:
                  Inner Join 0 to 1
             keys:
@@ -507,19 +507,19 @@ $hdt$_0:srcpart
   TableScan (TS_0)
     alias: srcpart
     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-    Filter Operator (FIL_13)
+    Filter Operator (FIL_11)
       predicate: key is not null (type: boolean)
       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
       Select Operator (SEL_2)
         expressions: key (type: string)
         outputColumnNames: _col0
         Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-        Reduce Output Operator (RS_7)
+        Reduce Output Operator (RS_6)
           key expressions: _col0 (type: string)
           sort order: +
           Map-reduce partition columns: _col0 (type: string)
           Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-          Join Operator (JOIN_10)
+          Join Operator (JOIN_8)
             condition map:
                  Inner Join 0 to 1
             keys:
@@ -527,11 +527,11 @@ $hdt$_0:srcpart
               1 _col0 (type: string)
             outputColumnNames: _col0, _col2
             Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-            Select Operator (SEL_11)
+            Select Operator (SEL_9)
               expressions: _col0 (type: string), _col2 (type: string)
               outputColumnNames: _col0, _col1
               Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-              File Output Operator (FS_12)
+              File Output Operator (FS_10)
                 compressed: false
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 table:
@@ -542,20 +542,20 @@ $hdt$_1:src2
   TableScan (TS_3)
     alias: src2
     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-    Filter Operator (FIL_14)
+    Filter Operator (FIL_12)
       predicate: key is not null (type: boolean)
       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
       Select Operator (SEL_5)
         expressions: key (type: string), value (type: string)
         outputColumnNames: _col0, _col1
         Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-        Reduce Output Operator (RS_9)
+        Reduce Output Operator (RS_7)
           key expressions: _col0 (type: string)
           sort order: +
           Map-reduce partition columns: _col0 (type: string)
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           value expressions: _col1 (type: string)
-          Join Operator (JOIN_10)
+          Join Operator (JOIN_8)
             condition map:
                  Inner Join 0 to 1
             keys:
@@ -589,20 +589,20 @@ $hdt$_0:srcpart
   TableScan (TS_0)
     alias: srcpart
     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-    Filter Operator (FIL_18)
+    Filter Operator (FIL_15)
       predicate: key is not null (type: boolean)
       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
       Select Operator (SEL_2)
         expressions: key (type: string), value (type: string)
         outputColumnNames: _col0, _col1
         Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-        Reduce Output Operator (RS_10)
+        Reduce Output Operator (RS_9)
           key expressions: _col0 (type: string)
           sort order: +
           Map-reduce partition columns: _col0 (type: string)
           Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
           value expressions: _col1 (type: string)
-          Join Operator (JOIN_15)
+          Join Operator (JOIN_12)
             condition map:
                  Inner Join 0 to 1
                  Inner Join 0 to 2
@@ -612,11 +612,11 @@ $hdt$_0:srcpart
               2 _col0 (type: string)
             outputColumnNames: _col1, _col2, _col4
             Statistics: Num rows: 4400 Data size: 46745 Basic stats: COMPLETE Column stats: NONE
-            Select Operator (SEL_16)
+            Select Operator (SEL_13)
               expressions: _col2 (type: string), _col1 (type: string), _col4 (type: string)
               outputColumnNames: _col0, _col1, _col2
               Statistics: Num rows: 4400 Data size: 46745 Basic stats: COMPLETE Column stats: NONE
-              File Output Operator (FS_17)
+              File Output Operator (FS_14)
                 compressed: false
                 Statistics: Num rows: 4400 Data size: 46745 Basic stats: COMPLETE Column stats: NONE
                 table:
@@ -627,19 +627,19 @@ $hdt$_1:src
   TableScan (TS_3)
     alias: src
     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-    Filter Operator (FIL_19)
+    Filter Operator (FIL_16)
       predicate: key is not null (type: boolean)
       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
       Select Operator (SEL_5)
         expressions: key (type: string)
         outputColumnNames: _col0
         Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-        Reduce Output Operator (RS_12)
+        Reduce Output Operator (RS_10)
           key expressions: _col0 (type: string)
           sort order: +
           Map-reduce partition columns: _col0 (type: string)
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-          Join Operator (JOIN_15)
+          Join Operator (JOIN_12)
             condition map:
                  Inner Join 0 to 1
                  Inner Join 0 to 2
@@ -653,20 +653,20 @@ $hdt$_2:src
   TableScan (TS_6)
     alias: src
     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-    Filter Operator (FIL_20)
+    Filter Operator (FIL_17)
       predicate: key is not null (type: boolean)
       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
       Select Operator (SEL_8)
         expressions: key (type: string), value (type: string)
         outputColumnNames: _col0, _col1
         Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-        Reduce Output Operator (RS_14)
+        Reduce Output Operator (RS_11)
           key expressions: _col0 (type: string)
           sort order: +
           Map-reduce partition columns: _col0 (type: string)
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           value expressions: _col1 (type: string)
-          Join Operator (JOIN_15)
+          Join Operator (JOIN_12)
             condition map:
                  Inner Join 0 to 1
                  Inner Join 0 to 2
@@ -804,7 +804,7 @@ $hdt$_0:src
   TableScan (TS_0)
     alias: src
     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-    Filter Operator (FIL_19)
+    Filter Operator (FIL_17)
       predicate: key is not null (type: boolean)
       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
       Group By Operator (GBY_3)
@@ -825,13 +825,13 @@ $hdt$_0:src
             mode: mergepartial
             outputColumnNames: _col0, _col1
             Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator (RS_11)
+            Reduce Output Operator (RS_10)
               key expressions: _col0 (type: string)
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col1 (type: bigint)
-              Join Operator (JOIN_14)
+              Join Operator (JOIN_12)
                 condition map:
                      Inner Join 0 to 1
                 keys:
@@ -839,20 +839,20 @@ $hdt$_0:src
                   1 _col0 (type: string)
                 outputColumnNames: _col0, _col1, _col3
                 Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                Select Operator (SEL_15)
+                Select Operator (SEL_13)
                   expressions: _col0 (type: string), _col1 (type: bigint), _col3 (type: string)
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator (RS_16)
+                  Reduce Output Operator (RS_14)
                     key expressions: _col0 (type: string)
                     sort order: +
                     Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col1 (type: bigint), _col2 (type: string)
-                    Select Operator (SEL_17)
+                    Select Operator (SEL_15)
                       expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: bigint), VALUE._col1 (type: string)
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                      File Output Operator (FS_18)
+                      File Output Operator (FS_16)
                         compressed: false
                         Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                         table:
@@ -863,20 +863,20 @@ $hdt$_1:src
   TableScan (TS_7)
     alias: src
     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-    Filter Operator (FIL_20)
+    Filter Operator (FIL_18)
       predicate: key is not null (type: boolean)
       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
       Select Operator (SEL_9)
         expressions: key (type: string), value (type: string)
         outputColumnNames: _col0, _col1
         Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-        Reduce Output Operator (RS_13)
+        Reduce Output Operator (RS_11)
           key expressions: _col0 (type: string)
           sort order: +
           Map-reduce partition columns: _col0 (type: string)
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           value expressions: _col1 (type: string)
-          Join Operator (JOIN_14)
+          Join Operator (JOIN_12)
             condition map:
                  Inner Join 0 to 1
             keys:

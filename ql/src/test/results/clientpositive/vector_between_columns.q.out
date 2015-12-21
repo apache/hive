@@ -60,7 +60,7 @@ POSTHOOK: Input: default@tint_txt
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@TINT
 tint_txt.rnum	tint_txt.cint
-Warning: Map Join MAPJOIN[13][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[11][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
 PREHOOK: query: -- We DO NOT expect the following to vectorized because the BETWEEN range expressions
 -- are not constants.  We currently do not support the range expressions being columns.
 explain
@@ -139,7 +139,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[13][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[11][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
 PREHOOK: query: select tint.rnum, tsint.rnum from tint , tsint where tint.cint between tsint.csint and tsint.csint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tint

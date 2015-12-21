@@ -268,7 +268,7 @@ STAGE PLANS:
                   alias: a
                   Statistics: Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (key is not null and UDFToDouble(key) is not null) (type: boolean)
+                    predicate: key is not null (type: boolean)
                     Statistics: Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int), value (type: string)
@@ -291,7 +291,7 @@ STAGE PLANS:
                   alias: b
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (key is not null and UDFToDouble(key) is not null) (type: boolean)
+                    predicate: key is not null (type: boolean)
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -349,7 +349,7 @@ STAGE PLANS:
                   alias: tab_part
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((key > 2) and (key > 1)) and key is not null) (type: boolean)
+                    predicate: ((key > 2) and (key > 1)) (type: boolean)
                     Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int)
@@ -372,7 +372,7 @@ STAGE PLANS:
                   alias: tab_part
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((key > 1) and (key > 2)) and key is not null) (type: boolean)
+                    predicate: ((key > 1) and (key > 2)) (type: boolean)
                     Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int)
@@ -670,7 +670,7 @@ STAGE PLANS:
                   alias: tab
                   Statistics: Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (value is not null and UDFToDouble(value) is not null) (type: boolean)
+                    predicate: value is not null (type: boolean)
                     Statistics: Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       keys: value (type: string)
@@ -706,7 +706,7 @@ STAGE PLANS:
                   alias: tab
                   Statistics: Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (key is not null and UDFToDouble(key) is not null) (type: boolean)
+                    predicate: key is not null (type: boolean)
                     Statistics: Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int), value (type: string)

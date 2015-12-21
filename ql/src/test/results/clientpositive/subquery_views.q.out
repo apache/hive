@@ -220,7 +220,7 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((value > 'val_11') and key is not null) (type: boolean)
+              predicate: (value > 'val_11') (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string), key (type: string)
@@ -375,7 +375,7 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((value > 'val_11') and (key < '11')) and key is not null) (type: boolean)
+              predicate: ((value > 'val_11') and (key < '11')) (type: boolean)
               Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string), key (type: string)

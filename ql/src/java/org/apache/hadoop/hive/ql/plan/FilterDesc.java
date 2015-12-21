@@ -80,6 +80,7 @@ public class FilterDesc extends AbstractOperatorDesc {
   private static final long serialVersionUID = 1L;
   private org.apache.hadoop.hive.ql.plan.ExprNodeDesc predicate;
   private boolean isSamplingPred;
+  private boolean syntheticJoinPredicate;
   private transient SampleDesc sampleDescr;
   //Is this a filter that should perform a comparison for sorted searches
   private boolean isSortedFilter;
@@ -161,6 +162,14 @@ public class FilterDesc extends AbstractOperatorDesc {
 
   public void setGenerated(boolean isGenerated) {
     this.isGenerated = isGenerated;
+  }
+
+  public boolean isSyntheticJoinPredicate() {
+    return syntheticJoinPredicate;
+  }
+
+  public void setSyntheticJoinPredicate(boolean syntheticJoinPredicate) {
+    this.syntheticJoinPredicate = syntheticJoinPredicate;
   }
 
   @Override

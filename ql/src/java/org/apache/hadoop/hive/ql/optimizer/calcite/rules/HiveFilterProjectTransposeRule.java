@@ -25,23 +25,37 @@ import org.apache.calcite.rel.core.RelFactories.ProjectFactory;
 import org.apache.calcite.rel.rules.FilterProjectTransposeRule;
 import org.apache.calcite.rex.RexNode;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 
 public class HiveFilterProjectTransposeRule extends FilterProjectTransposeRule {
 
+  public static final HiveFilterProjectTransposeRule INSTANCE_DETERMINISTIC =
+          new HiveFilterProjectTransposeRule(Filter.class, HiveRelFactories.HIVE_FILTER_FACTORY,
+          HiveProject.class, HiveRelFactories.HIVE_PROJECT_FACTORY, true);
+
+  public static final HiveFilterProjectTransposeRule INSTANCE =
+          new HiveFilterProjectTransposeRule(Filter.class, HiveRelFactories.HIVE_FILTER_FACTORY,
+          HiveProject.class, HiveRelFactories.HIVE_PROJECT_FACTORY, false);
+
+  private final boolean onlyDeterministic;
+
   public HiveFilterProjectTransposeRule(Class<? extends Filter> filterClass,
       FilterFactory filterFactory, Class<? extends Project> projectClass,
-      ProjectFactory projectFactory) {
+      ProjectFactory projectFactory, boolean onlyDeterministic) {
     super(filterClass, filterFactory, projectClass, projectFactory);
+    this.onlyDeterministic = onlyDeterministic;
   }
 
   @Override
   public boolean matches(RelOptRuleCall call) {
     final Filter filterRel = call.rel(0);
     RexNode condition = filterRel.getCondition();
-    if (!HiveCalciteUtil.isDeterministic(condition)) {
+    if (this.onlyDeterministic && !HiveCalciteUtil.isDeterministic(condition)) {
       return false;
     }
 
     return super.matches(call);
   }
+
 }

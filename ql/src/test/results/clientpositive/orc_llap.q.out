@@ -121,7 +121,7 @@ POSTHOOK: Output: default@orc_llap_small
 POSTHOOK: Lineage: orc_llap_small.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
 POSTHOOK: Lineage: orc_llap_small.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
 POSTHOOK: Lineage: orc_llap_small.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
-Warning: Map Join MAPJOIN[18][bigTable=?] in task 'Stage-2:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[17][bigTable=?] in task 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: -- Cross join with no projection - do it on small table
 explain
 select count(1) from orc_llap_small y join orc_llap_small x
@@ -202,7 +202,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[18][bigTable=?] in task 'Stage-2:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[17][bigTable=?] in task 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: select count(1) from orc_llap_small y join orc_llap_small x
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_llap_small
@@ -636,7 +636,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@llap_temp_table
 #### A masked pattern was here ####
 -735462183586256
-Warning: Map Join MAPJOIN[12][bigTable=?] in task 'Stage-4:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[11][bigTable=?] in task 'Stage-4:MAPRED' is a cross product
 PREHOOK: query: -- multi-stripe test
 insert into table orc_llap
 select ctinyint + i, csmallint + i, cint + i, cbigint + i, cfloat + i, cdouble + i, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2

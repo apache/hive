@@ -490,7 +490,7 @@ STAGE PLANS:
                   alias: srcpart
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((value > 'val_450') and key is not null) and value is not null) (type: boolean)
+                    predicate: ((value > 'val_450') and key is not null) (type: boolean)
                     Statistics: Num rows: 666 Data size: 7075 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), value (type: string)

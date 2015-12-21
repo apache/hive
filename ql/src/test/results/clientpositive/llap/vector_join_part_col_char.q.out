@@ -157,7 +157,7 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col2 (type: char(50))
                       Statistics: Num rows: 2 Data size: 203 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col0 (type: string), _col1 (type: int), _col2 (type: char(5))
+                      value expressions: _col0 (type: string), _col1 (type: int)
             Execution mode: vectorized, llap
         Reducer 2 
             Execution mode: llap

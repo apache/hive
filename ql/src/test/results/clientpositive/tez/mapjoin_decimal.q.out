@@ -139,7 +139,6 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: decimal(6,2))
                         Statistics: Num rows: 1049 Data size: 117488 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col0 (type: decimal(4,0))
         Reducer 2 
             Reduce Operator Tree:
               Select Operator

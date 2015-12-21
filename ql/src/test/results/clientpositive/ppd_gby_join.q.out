@@ -35,38 +35,32 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((((((key > '1') and (key > '20')) and ((value < 'val_50') or (key > '2'))) and (key < '400')) and (key > '2')) and (key <> '4')) and key is not null) (type: boolean)
+              predicate: ((((((key > '1') and (key > '20')) and ((value < 'val_50') or (key > '2'))) and (key < '400')) and (key > '2')) and (key <> '4')) (type: boolean)
               Statistics: Num rows: 4 Data size: 42 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
                 Statistics: Num rows: 4 Data size: 42 Basic stats: COMPLETE Column stats: NONE
-                Filter Operator
-                  predicate: _col0 is not null (type: boolean)
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 4 Data size: 42 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 4 Data size: 42 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((((((key > '2') and (key <> '4')) and (key > '1')) and (key > '20')) and (key < '400')) and key is not null) (type: boolean)
+              predicate: (((((key > '2') and (key <> '4')) and (key > '1')) and (key > '20')) and (key < '400')) (type: boolean)
               Statistics: Num rows: 6 Data size: 63 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 63 Basic stats: COMPLETE Column stats: NONE
-                Filter Operator
-                  predicate: _col0 is not null (type: boolean)
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 6 Data size: 63 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 6 Data size: 63 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -311,7 +305,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((((((key > '1') and (key > '20')) and ((value < 'val_50') or (key > '2'))) and (key < '400')) and (key > '2')) and (key <> '4')) and key is not null) (type: boolean)
+              predicate: ((((((key > '1') and (key > '20')) and ((value < 'val_50') or (key > '2'))) and (key < '400')) and (key > '2')) and (key <> '4')) (type: boolean)
               Statistics: Num rows: 4 Data size: 42 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
@@ -326,7 +320,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((((((key > '2') and (key <> '4')) and (key > '1')) and (key > '20')) and (key < '400')) and key is not null) (type: boolean)
+              predicate: (((((key > '2') and (key <> '4')) and (key > '1')) and (key > '20')) and (key < '400')) (type: boolean)
               Statistics: Num rows: 6 Data size: 63 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)

@@ -179,7 +179,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[11][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[10][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
 PREHOOK: query: explain select src.key from src join src src2
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select src.key from src join src src2
@@ -242,7 +242,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[11][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[10][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
 PREHOOK: query: explain select src.key from src cross join src src2
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select src.key from src cross join src src2

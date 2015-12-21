@@ -2711,7 +2711,7 @@ NULL	NULL	NULL	98	val_98	2008-04-08	98	val_98	2008-04-08
 NULL	NULL	NULL	98	val_98	2008-04-08	98	val_98	2008-04-08
 NULL	NULL	NULL	98	val_98	2008-04-08	98	val_98	2008-04-08
 NULL	NULL	NULL	98	val_98	2008-04-08	98	val_98	2008-04-08
-Warning: Shuffle Join MERGEJOIN[20][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[19][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select * from
 (select * from tab where tab.key = 0)a
 join

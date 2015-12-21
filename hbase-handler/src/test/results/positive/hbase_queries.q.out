@@ -121,7 +121,7 @@ STAGE PLANS:
             alias: hbase_table_1
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (key is not null and UDFToDouble(key) is not null) (type: boolean)
+              predicate: key is not null (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: key (type: int)
@@ -136,7 +136,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key is not null and UDFToDouble(key) is not null) (type: boolean)
+              predicate: key is not null (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
@@ -272,7 +272,7 @@ STAGE PLANS:
             alias: hbase_table_1
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (((100 < key) and (key < 120)) and key is not null) (type: boolean)
+              predicate: ((100 < key) and (key < 120)) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: key (type: int)
@@ -287,7 +287,7 @@ STAGE PLANS:
             alias: hbase_table_2
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (((key < 120) and (100 < key)) and key is not null) (type: boolean)
+              predicate: ((key < 120) and (100 < key)) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: key (type: int), value (type: string)
@@ -494,7 +494,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key is not null and UDFToDouble(key) is not null) (type: boolean)
+              predicate: key is not null (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count(key)
@@ -529,7 +529,7 @@ STAGE PLANS:
             alias: hbase_table_1
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (key is not null and UDFToDouble(key) is not null) (type: boolean)
+              predicate: key is not null (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: key (type: int), value (type: string)

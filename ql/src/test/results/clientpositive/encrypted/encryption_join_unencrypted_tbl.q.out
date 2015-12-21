@@ -586,7 +586,7 @@ STAGE PLANS:
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: (key is not null and UDFToDouble(key) is not null) (type: boolean)
+              predicate: key is not null (type: boolean)
               Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
@@ -606,7 +606,7 @@ STAGE PLANS:
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: (key is not null and UDFToDouble(key) is not null) (type: boolean)
+              predicate: key is not null (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), value (type: string)

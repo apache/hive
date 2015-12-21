@@ -398,7 +398,7 @@ STAGE PLANS:
           Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             isSamplingPred: false
-            predicate: ((((UDFToDouble(_col0) > 10.0) and (UDFToDouble(_col0) < 20.0)) and (UDFToDouble(_col2) > 15.0)) and (UDFToDouble(_col2) < 25.0)) (type: boolean)
+            predicate: ((UDFToDouble(_col0) > 10.0) and (UDFToDouble(_col0) < 20.0) and (UDFToDouble(_col2) > 15.0) and (UDFToDouble(_col2) < 25.0)) (type: boolean)
             Statistics: Num rows: 27 Data size: 286 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
@@ -867,7 +867,7 @@ STAGE PLANS:
           Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             isSamplingPred: false
-            predicate: ((((UDFToDouble(_col0) > 10.0) and (UDFToDouble(_col0) < 20.0)) and (UDFToDouble(_col3) > 15.0)) and (UDFToDouble(_col3) < 25.0)) (type: boolean)
+            predicate: ((UDFToDouble(_col0) > 10.0) and (UDFToDouble(_col0) < 20.0) and (UDFToDouble(_col3) > 15.0) and (UDFToDouble(_col3) < 25.0)) (type: boolean)
             Statistics: Num rows: 27 Data size: 286 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col0 (type: string), _col1 (type: string), _col3 (type: string), _col4 (type: string)

@@ -193,7 +193,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[18][bigTable=?] in task 'Map 1' is a cross product
+Warning: Map Join MAPJOIN[17][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: SELECT sum(hash(*))
 FROM hundredorc t1 JOIN hundredorc t2 ON t2.bin = t2.bin
 PREHOOK: type: QUERY

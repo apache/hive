@@ -277,7 +277,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
-Operator:JOIN_10
+Operator:JOIN_8
 Table:default@t1
 Keys:key
 Table:default@t2
@@ -296,7 +296,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
-Operator:JOIN_10
+Operator:JOIN_8
 Table:default@t1
 Keys:key,val
 Table:default@t2
@@ -330,7 +330,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
-Operator:JOIN_10
+Operator:JOIN_8
 Table:default@t1
 Keys:key
 Table:default@t2
@@ -351,7 +351,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
-Operator:JOIN_10
+Operator:JOIN_8
 Table:default@t1
 Keys:val
 Table:default@t2
@@ -369,7 +369,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
-Operator:JOIN_10
+Operator:JOIN_8
 Table:default@t1
 Keys:val
 Table:default@t2
@@ -390,7 +390,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
-Operator:JOIN_10
+Operator:JOIN_8
 Table:default@t1
 Keys:val
 Table:default@t2
@@ -411,7 +411,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
-Operator:JOIN_10
+Operator:JOIN_8
 Table:default@t1
 Keys:val,key
 Table:default@t2
@@ -435,7 +435,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
-Operator:JOIN_10
+Operator:JOIN_8
 Table:default@t1
 Keys:key
 Table:default@t2
@@ -472,7 +472,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
-Operator:JOIN_10
+Operator:JOIN_8
 Table:default@t1
 Keys:val,key
 Table:default@t2
@@ -503,13 +503,13 @@ PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
 #### A masked pattern was here ####
-Operator:JOIN_10
+Operator:JOIN_8
 Table:default@t1
 Keys:val,key
 Table:default@t2
 Keys:key
 
-Operator:GBY_18
+Operator:GBY_16
 Table:default@t3
 Keys:val
 
@@ -541,7 +541,7 @@ PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
 #### A masked pattern was here ####
-Operator:JOIN_10
+Operator:JOIN_8
 Table:default@t1
 Keys:val,key
 Table:default@t2

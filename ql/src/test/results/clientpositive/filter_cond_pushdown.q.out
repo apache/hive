@@ -283,7 +283,7 @@ STAGE PLANS:
             alias: t2
             Statistics: Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key is not null and UDFToDouble(key) is not null) (type: boolean)
+              predicate: key is not null (type: boolean)
               Statistics: Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), c_int (type: int), c_float (type: float)

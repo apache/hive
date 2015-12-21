@@ -52,7 +52,7 @@ STAGE PLANS:
             alias: src11
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (((key1 > '9') and value1 is not null) and key1 is not null) (type: boolean)
+              predicate: ((key1 > '9') and value1 is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: key1 (type: string), value1 (type: string)
@@ -67,7 +67,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((key > '9') and value is not null) and key is not null) (type: boolean)
+              predicate: ((key > '9') and value is not null) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
@@ -122,7 +122,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((key > '9') and value is not null) and key is not null) (type: boolean)
+              predicate: ((key > '9') and value is not null) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
@@ -137,7 +137,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((key > '9') and value is not null) and key is not null) (type: boolean)
+              predicate: ((key > '9') and value is not null) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
@@ -549,7 +549,7 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((key > '9') and value is not null) and key is not null) (type: boolean)
+              predicate: ((key > '9') and value is not null) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 keys: key (type: string), value (type: string)
@@ -586,7 +586,7 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((key > '9') and value is not null) and key is not null) (type: boolean)
+              predicate: ((key > '9') and value is not null) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
@@ -748,13 +748,13 @@ STAGE PLANS:
           Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: _col1 (type: string), _col2 (type: bigint)
-            outputColumnNames: _col1, _col2
+            outputColumnNames: _col0, _col2
             Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: _col2 is not null (type: boolean)
               Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: _col2 (type: bigint), _col1 (type: string)
+                expressions: _col2 (type: bigint), _col0 (type: string)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator

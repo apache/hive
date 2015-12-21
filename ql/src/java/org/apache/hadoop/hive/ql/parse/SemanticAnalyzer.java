@@ -7565,7 +7565,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     for (int i = 0; i < srcOps.length; i++) {
       // generate a ReduceSink operator for the join
       String[] srcs = baseSrc[i] != null ? new String[] {baseSrc[i]} : joinTree.getLeftAliases();
-      srcOps[i] = genNotNullFilterForJoinSourcePlan(qb, srcOps[i], joinTree, joinKeys[i]);
+      if (!isCBOExecuted()) {
+        srcOps[i] = genNotNullFilterForJoinSourcePlan(qb, srcOps[i], joinTree, joinKeys[i]);
+      }
       srcOps[i] = genJoinReduceSinkChild(qb, joinKeys[i], srcOps[i], srcs, joinTree.getNextTag());
     }
 
@@ -8433,6 +8435,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     return new ObjectPair(res, tgtToNodeExprMap);
+  }
+
+  boolean isCBOExecuted() {
+    return false;
   }
 
   boolean continueJoinMerge() {

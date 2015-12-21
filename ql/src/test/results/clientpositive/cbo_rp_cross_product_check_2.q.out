@@ -327,8 +327,8 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[23][bigTable=?] in task 'Stage-5:MAPRED' is a cross product
-Warning: Map Join MAPJOIN[24][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[22][bigTable=?] in task 'Stage-5:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[23][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
 PREHOOK: query: explain select * from A join (select d1.key from B d1 join B d2 where 1 = 1 group by d1.key) od1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from A join (select d1.key from B d1 join B d2 where 1 = 1 group by d1.key) od1

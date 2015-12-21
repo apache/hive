@@ -58,7 +58,7 @@ public class HiveFilterProjectTSTransposeRule extends RelOptRule {
     // 2. If ProjectRel is not synthetic then PPD would have already pushed
     // relevant pieces down and hence no point in running PPD again.
     // 3. For synthetic Projects we don't care about non deterministic UDFs
-    if (!projRel.isSysnthetic()) {
+    if (!projRel.isSynthetic()) {
       return false;
     }
 

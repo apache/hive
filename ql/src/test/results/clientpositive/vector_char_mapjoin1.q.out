@@ -362,7 +362,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 3 Data size: 294 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (c2 is not null and UDFToString(c2) is not null) (type: boolean)
+              predicate: c2 is not null (type: boolean)
               Statistics: Num rows: 3 Data size: 294 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: c1 (type: int), c2 (type: char(10))

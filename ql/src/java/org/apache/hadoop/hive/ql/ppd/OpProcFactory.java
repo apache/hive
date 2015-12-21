@@ -28,8 +28,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
@@ -39,6 +37,7 @@ import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.PTFOperator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
+import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.Node;
@@ -75,6 +74,8 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.JobConf;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Operator factory for predicate pushdown processing of operator graph Each
@@ -400,6 +401,11 @@ public final class OpProcFactory {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
+      return process(nd, stack, procCtx, false, nodeOutputs);
+    }
+
+    Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+            boolean onlySyntheticJoinPredicate, Object... nodeOutputs) throws SemanticException {
       LOG.info("Processing for " + nd.getName() + "("
           + ((Operator) nd).getIdentifier() + ")");
 
@@ -411,7 +417,9 @@ public final class OpProcFactory {
       // Don't push a sampling predicate since createFilter() always creates filter
       // with isSamplePred = false. Also, the filterop with sampling pred is always
       // a child of TableScan, so there is no need to push this predicate.
-      if (ewi == null && !((FilterOperator)op).getConf().getIsSamplingPred()) {
+      if (ewi == null && !((FilterOperator)op).getConf().getIsSamplingPred()
+              && (!onlySyntheticJoinPredicate
+                      || ((FilterOperator)op).getConf().isSyntheticJoinPredicate())) {
         // get pushdown predicates for this operator's predicate
         ExprNodeDesc predicate = (((FilterOperator) nd).getConf()).getPredicate();
         ewi = ExprWalkerProcFactory.extractPushdownPreds(owi, op, predicate);
@@ -444,6 +452,38 @@ public final class OpProcFactory {
         }
       }
       return null;
+    }
+  }
+
+  public static class SimpleFilterPPD extends FilterPPD implements NodeProcessor {
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+        Object... nodeOutputs) throws SemanticException {
+      FilterOperator filterOp = (FilterOperator) nd;
+      // We try to push the full Filter predicate iff:
+      // - the Filter is on top of a TableScan, or
+      // - the Filter is on top of a PTF (between PTF and Filter, there might be Select operators)
+      // Otherwise, we push only the synthetic join predicates
+      // Note : pushing Filter on top of PTF is necessary so the LimitPushdownOptimizer for Rank
+      // functions gets enabled
+      boolean parentTableScan = filterOp.getParentOperators().get(0) instanceof TableScanOperator;
+      boolean ancestorPTF = false;
+      if (!parentTableScan) {
+        Operator<?> parent = filterOp;
+        while (true) {
+          assert parent.getParentOperators().size() == 1;
+          parent = parent.getParentOperators().get(0);
+          if (parent instanceof SelectOperator) {
+            continue;
+          } else if (parent instanceof PTFOperator) {
+            ancestorPTF = true;
+            break;
+          } else {
+            break;
+          }
+        }
+      }
+      return process(nd, stack, procCtx, !parentTableScan && !ancestorPTF, nodeOutputs);
     }
   }
 
@@ -969,6 +1009,10 @@ public final class OpProcFactory {
 
   public static NodeProcessor getFilterProc() {
     return new FilterPPD();
+  }
+
+  public static NodeProcessor getFilterSyntheticJoinPredicateProc() {
+    return new SimpleFilterPPD();
   }
 
   public static NodeProcessor getJoinProc() {

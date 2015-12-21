@@ -459,7 +459,7 @@ STAGE PLANS:
                   alias: test_table1
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((key < 8) and ((key = 0) or (key = 5))) and key is not null) (type: boolean)
+                    predicate: ((key < 8) and ((key = 0) or (key = 5))) (type: boolean)
                     Statistics: Num rows: 2 Data size: 14 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int), value (type: string)
@@ -484,7 +484,7 @@ STAGE PLANS:
                   alias: test_table2
                   Statistics: Num rows: 84 Data size: 736 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((key < 8) and ((key = 0) or (key = 5))) and key is not null) (type: boolean)
+                    predicate: ((key < 8) and ((key = 0) or (key = 5))) (type: boolean)
                     Statistics: Num rows: 28 Data size: 245 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int), value (type: string)
