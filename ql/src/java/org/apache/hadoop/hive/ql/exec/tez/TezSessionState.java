@@ -315,7 +315,12 @@ public class TezSessionState {
       FutureTask<TezClient> sessionFuture = new FutureTask<>(new Callable<TezClient>() {
         @Override
         public TezClient call() throws Exception {
-          return startSessionAndContainers(session, conf, commonLocalResources, tezConfig, true);
+          try {
+            return startSessionAndContainers(session, conf, commonLocalResources, tezConfig, true);
+          } catch (Throwable t) {
+            LOG.error("Failed to start Tez session", t);
+            throw (t instanceof Exception) ? (Exception)t : new Exception(t);
+          }
         }
       });
       new Thread(sessionFuture, "Tez session start thread").start();
@@ -341,9 +346,7 @@ public class TezSessionState {
           session.preWarm(prewarmVertex);
         } catch (IOException ie) {
           if (!isOnThread && ie.getMessage().contains("Interrupted while waiting")) {
-            if (LOG.isDebugEnabled()) {
-              LOG.debug("Hive Prewarm threw an exception ", ie);
-            }
+            LOG.warn("Hive Prewarm threw an exception ", ie);
           } else {
             throw ie;
           }
@@ -483,11 +486,14 @@ public class TezSessionState {
       try {
         session = sessionFuture.get();
       } catch (InterruptedException e) {
+        console.printInfo("Interrupted while waiting for the session");
         Thread.currentThread().interrupt();
         return null;
       } catch (ExecutionException e) {
+        console.printInfo("Failed to get session");
         throw new RuntimeException(e);
       } catch (CancellationException e) {
+        console.printInfo("Cancelled while waiting for the session");
         return null;
       }
     }
