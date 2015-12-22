@@ -376,8 +376,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       TableDesc table = part.getTableDesc();
       TableScanOperator tableScan = null;
 
-      List<String> aliases =
-          mrwork.getPathToAliases().get(dir.toUri().toString());
+      List<String> aliases = mrwork.getPathToAliases().get(dir.toString());
 
       // Make filter pushdown information available to getSplits.
       if ((aliases != null) && (aliases.size() == 1)) {
@@ -394,6 +393,11 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
           // push down filters
           pushFilters(newjob, tableScan);
         }
+      } else {
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("aliases: " + aliases + " pathToAliases: " + mrwork.getPathToAliases() +
+              " dir: " + dir);
+        }
       }
 
       if (!currentDirs.isEmpty() &&
@@ -405,7 +409,15 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       }
 
       if (!currentDirs.isEmpty()) {
-        LOG.info("Generating splits");
+        if (LOG.isInfoEnabled()) {
+          LOG.info("Generating splits as currentDirs is not empty. currentDirs: " + currentDirs);
+        }
+
+        // set columns to read in conf
+        if (pushDownProjection) {
+          pushProjection(newjob, readColumnsBuffer, readColumnNamesBuffer);
+        }
+
         addSplitsForGroup(currentDirs, currentTableScan, newjob,
             getInputFormatFromCache(currentInputFormatClass, job),
             currentInputFormatClass, currentDirs.size()*(numSplits / dirs.length),
@@ -418,16 +430,16 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       currentTable = table;
       currentInputFormatClass = inputFormatClass;
     }
+
+    // set columns to read in conf
     if (pushDownProjection) {
-      newjob.setBoolean(ColumnProjectionUtils.READ_ALL_COLUMNS, false);
-      newjob.set(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, readColumnsBuffer.toString());
-      newjob.set(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR, readColumnNamesBuffer.toString());
-      LOG.info(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR + "=" + readColumnsBuffer.toString());
-      LOG.info(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR + "=" + readColumnNamesBuffer.toString());
+      pushProjection(newjob, readColumnsBuffer, readColumnNamesBuffer);
     }
 
     if (dirs.length != 0) {
-      LOG.info("Generating splits");
+      if (LOG.isInfoEnabled()) {
+        LOG.info("Generating splits for dirs: " + dirs);
+      }
       addSplitsForGroup(currentDirs, currentTableScan, newjob,
           getInputFormatFromCache(currentInputFormatClass, job),
           currentInputFormatClass, currentDirs.size()*(numSplits / dirs.length),
@@ -435,9 +447,27 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     }
 
     Utilities.clearWorkMapForConf(job);
-    LOG.info("number of splits " + result.size());
+    if (LOG.isInfoEnabled()) {
+      LOG.info("number of splits " + result.size());
+    }
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);
     return result.toArray(new HiveInputSplit[result.size()]);
+  }
+
+  private void pushProjection(final JobConf newjob, final StringBuilder readColumnsBuffer,
+      final StringBuilder readColumnNamesBuffer) {
+    String readColIds = readColumnsBuffer.toString();
+    String readColNames = readColumnNamesBuffer.toString();
+    boolean readAllColumns = readColIds.isEmpty() ? true : false;
+    newjob.setBoolean(ColumnProjectionUtils.READ_ALL_COLUMNS, readAllColumns);
+    newjob.set(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, readColIds);
+    newjob.set(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR, readColNames);
+
+    if (LOG.isInfoEnabled()) {
+      LOG.info(ColumnProjectionUtils.READ_ALL_COLUMNS + " = " + readAllColumns);
+      LOG.info(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR + " = " + readColIds);
+      LOG.info(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR + " = " + readColNames);
+    }
   }
 
   protected static PartitionDesc getPartitionDescFromPath(
