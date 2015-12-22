@@ -117,10 +117,10 @@ public class PerfLogger {
    * @param method method or ID that identifies this perf log element.
    */
   public void PerfLogBegin(String callerName, String method) {
+    long startTime = System.currentTimeMillis();
+    startTimes.put(method, new Long(startTime));
     if (LOG.isDebugEnabled()) {
-      long startTime = System.currentTimeMillis();
       LOG.debug("<PERFLOG method=" + method + " from=" + callerName + ">");
-      startTimes.put(method, new Long(startTime));
       beginMetrics(method);
     }
   }
@@ -141,20 +141,18 @@ public class PerfLogger {
    * @return long duration  the difference between now and startTime, or -1 if startTime is null
    */
   public long PerfLogEnd(String callerName, String method, String additionalInfo) {
+    Long startTime = startTimes.get(method);
+    long endTime = System.currentTimeMillis();
+    endTimes.put(method, new Long(endTime));
+    long duration = startTime == null ? -1 : endTime - startTime.longValue();
+
     if (LOG.isDebugEnabled()) {
-      Long startTime = startTimes.get(method);
-      long endTime = System.currentTimeMillis();
-      long duration = -1;
-
-      endTimes.put(method, new Long(endTime));
-
       StringBuilder sb = new StringBuilder("</PERFLOG method=").append(method);
       if (startTime != null) {
         sb.append(" start=").append(startTime);
       }
       sb.append(" end=").append(endTime);
       if (startTime != null) {
-        duration = endTime - startTime.longValue();
         sb.append(" duration=").append(duration);
       }
       sb.append(" from=").append(callerName);
@@ -165,10 +163,8 @@ public class PerfLogger {
       LOG.debug(sb.toString());
 
       endMetrics(method);
-
-      return duration;
     }
-    return -1;
+    return duration;
   }
 
   public Long getStartTime(String method) {

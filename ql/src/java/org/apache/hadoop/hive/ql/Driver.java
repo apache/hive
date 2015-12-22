@@ -375,6 +375,22 @@ public class Driver implements CommandProcessor {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.COMPILE);
 
+    command = new VariableSubstitution(new HiveVariableSource() {
+      @Override
+      public Map<String, String> getHiveVariable() {
+        return SessionState.get().getHiveVariables();
+      }
+    }).substitute(conf, command);
+
+    String queryStr = command;
+
+    try {
+      // command should be redacted to avoid to logging sensitive data
+      queryStr = HookUtils.redactLogString(conf, command);
+    } catch (Exception e) {
+      LOG.warn("WARNING! Query command could not be redacted." + e);
+    }
+
     //holder for parent command type/string when executing reentrant queries
     QueryState queryState = new QueryState();
 
@@ -394,6 +410,8 @@ public class Driver implements CommandProcessor {
       queryId = QueryPlan.makeQueryId();
       conf.setVar(HiveConf.ConfVars.HIVEQUERYID, queryId);
     }
+
+    LOG.info("Compiling command(queryId=" + queryId + "): " + queryStr);
 
     SessionState.get().setupQueryCurrentTimestamp();
 
@@ -415,12 +433,6 @@ public class Driver implements CommandProcessor {
       };
       ShutdownHookManager.addShutdownHook(shutdownRunner, SHUTDOWN_HOOK_PRIORITY);
 
-      command = new VariableSubstitution(new HiveVariableSource() {
-        @Override
-        public Map<String, String> getHiveVariable() {
-          return SessionState.get().getHiveVariables();
-        }
-      }).substitute(conf, command);
       ctx = new Context(conf);
       ctx.setTryCount(getTryCount());
       ctx.setCmd(command);
@@ -472,10 +484,6 @@ public class Driver implements CommandProcessor {
       // validate the plan
       sem.validate();
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.ANALYZE);
-
-      // Command should be redacted before passing it to the QueryPlan in order
-      // to avoid returning sensitive data
-      String queryStr = HookUtils.redactLogString(conf, command);
 
       // get the output schema
       schema = getSchema(sem, conf);
@@ -540,9 +548,10 @@ public class Driver implements CommandProcessor {
       return error.getErrorCode();//todo: this is bad if returned as cmd shell exit
       // since it exceeds valid range of shell return values
     } finally {
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.COMPILE);
+      double duration = perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.COMPILE)/1000.00;
       dumpMetaCallTimingWithoutEx("compilation");
       restoreSession(queryState);
+      LOG.info("Completed compiling command(queryId=" + queryId + "); Time taken: " + duration + " seconds");
     }
   }
 
@@ -1217,19 +1226,12 @@ public class Driver implements CommandProcessor {
 
   private static final ReentrantLock globalCompileLock = new ReentrantLock();
   private int compileInternal(String command) {
-    boolean isParallelEnabled = SessionState.get().isHiveServerQuery() && this.isParallelEnabled;
     int ret;
     final ReentrantLock compileLock = isParallelEnabled
         ? SessionState.get().getCompileLock() : globalCompileLock;
     compileLock.lock();
     try {
-      if (isParallelEnabled && LOG.isDebugEnabled()) {
-        LOG.debug("Entering compile: " + command);
-      }
       ret = compile(command);
-      if (isParallelEnabled && LOG.isDebugEnabled()) {
-        LOG.debug("Done with compile: " + command);
-      }
     } finally {
       compileLock.unlock();
     }
@@ -1473,7 +1475,7 @@ public class Driver implements CommandProcessor {
     maxthreads = HiveConf.getIntVar(conf, HiveConf.ConfVars.EXECPARALLETHREADNUMBER);
 
     try {
-      LOG.info("Starting command(queryId=" + queryId + "): " + queryStr);
+      LOG.info("Executing command(queryId=" + queryId + "): " + queryStr);
       // compile and execute can get called from different threads in case of HS2
       // so clear timing in this thread's Hive object before proceeding.
       Hive.get().clearMetaCallTiming();
@@ -1709,7 +1711,7 @@ public class Driver implements CommandProcessor {
         conf.set(MRJobConfig.JOB_NAME, "");
       }
       dumpMetaCallTimingWithoutEx("execution");
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.DRIVER_EXECUTE);
+      double duration = perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.DRIVER_EXECUTE)/1000.00;
 
       Map<String, MapRedStats> stats = SessionState.get().getMapRedStats();
       if (stats != null && !stats.isEmpty()) {
@@ -1721,6 +1723,7 @@ public class Driver implements CommandProcessor {
         }
         console.printInfo("Total MapReduce CPU Time Spent: " + Utilities.formatMsecToStr(totalCpu));
       }
+      LOG.info("Completed executing command(queryId=" + queryId + "); Time taken: " + duration + " seconds");
     }
     plan.setDone();
 
