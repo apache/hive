@@ -105,8 +105,7 @@ public class SQLOperation extends ExecuteStatementOperation {
       // For now, we disable the test attempts.
       driver.setTryCount(Integer.MAX_VALUE);
 
-      String subStatement = new VariableSubstitution().substitute(sqlOperationConf, statement);
-      response = driver.compileAndRespond(subStatement);
+      response = driver.compileAndRespond(statement);
       if (0 != response.getResponseCode()) {
         throw toSQLException("Error while compiling statement", response);
       }

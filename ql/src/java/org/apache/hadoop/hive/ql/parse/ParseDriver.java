@@ -180,9 +180,11 @@ public class ParseDriver {
    *
    * @return parsed AST
    */
-  public ASTNode parse(String command, Context ctx, boolean setTokenRewriteStream) 
+  public ASTNode parse(String command, Context ctx, boolean setTokenRewriteStream)
       throws ParseException {
-    LOG.info("Parsing command: " + command);
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Parsing command: " + command);
+    }
 
     HiveLexerX lexer = new HiveLexerX(new ANTLRNoCaseStringStream(command));
     TokenRewriteStream tokens = new TokenRewriteStream(lexer);
@@ -206,7 +208,7 @@ public class ParseDriver {
     }
 
     if (lexer.getErrors().size() == 0 && parser.errors.size() == 0) {
-      LOG.info("Parse Completed");
+      LOG.debug("Parse Completed");
     } else if (lexer.getErrors().size() != 0) {
       throw new ParseException(lexer.getErrors());
     } else {
@@ -230,7 +232,9 @@ public class ParseDriver {
    * translation process.
    */
   public ASTNode parseSelect(String command, Context ctx) throws ParseException {
-    LOG.info("Parsing command: " + command);
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Parsing command: " + command);
+    }
 
     HiveLexerX lexer = new HiveLexerX(new ANTLRNoCaseStringStream(command));
     TokenRewriteStream tokens = new TokenRewriteStream(lexer);
@@ -248,7 +252,7 @@ public class ParseDriver {
     }
 
     if (lexer.getErrors().size() == 0 && parser.errors.size() == 0) {
-      LOG.info("Parse Completed");
+      LOG.debug("Parse Completed");
     } else if (lexer.getErrors().size() != 0) {
       throw new ParseException(lexer.getErrors());
     } else {

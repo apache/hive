@@ -42,11 +42,12 @@ public class TestOperationLoggingAPIWithMr extends OperationLoggingAPITestBase{
   public static void setUpBeforeClass() throws Exception {
     tableName  = "testOperationLoggingAPIWithMr_table";
     expectedLogsVerbose = new String[]{
-      "Parsing command",
-      "Parse Completed",
+      "Compiling command",
+      "Completed compiling command",
       "Starting Semantic Analysis",
       "Semantic Analysis Completed",
-      "Starting command"
+      "Executing command",
+      "Completed executing command"
     };
     expectedLogsExecution = new String[]{
       "Number of reduce tasks determined at compile time",

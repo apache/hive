@@ -18,11 +18,12 @@ public class TestOperationLoggingAPIWithTez extends OperationLoggingAPITestBase 
   public static void setUpBeforeClass() throws Exception {
     tableName = "testOperationLoggingAPIWithTez_table";
     expectedLogsVerbose = new String[]{
-      "Parsing command",
-      "Parse Completed",
+      "Compiling command",
+      "Completed compiling command",
       "Starting Semantic Analysis",
       "Semantic Analysis Completed",
-      "Starting command"
+      "Executing command",
+      "Completed executing command"
     };
     expectedLogsExecution = new String[]{
       "Executing on YARN cluster with App id",

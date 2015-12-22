@@ -674,7 +674,7 @@ public class TestBeeLineWithArgs {
     final String SCRIPT_TEXT = "set hive.support.concurrency = false;\n" +
         "!set silent true\n" +
         "select count(*) from " + tableName + ";\n";
-    final String EXPECTED_PATTERN = "Parsing command";
+    final String EXPECTED_PATTERN = "Executing command";
     testScriptFile(SCRIPT_TEXT, EXPECTED_PATTERN, false, getBaseArgs(miniHS2.getBaseJdbcURL()));
   }
 

@@ -131,9 +131,8 @@ public class PerfLogger {
   public long PerfLogEnd(String callerName, String method) {
     Long startTime = startTimes.get(method);
     long endTime = System.currentTimeMillis();
-    long duration = -1;
-
     endTimes.put(method, new Long(endTime));
+    long duration = startTime == null ? -1 : endTime - startTime.longValue();
 
     StringBuilder sb = new StringBuilder("</PERFLOG method=").append(method);
     if (startTime != null) {
@@ -141,7 +140,6 @@ public class PerfLogger {
     }
     sb.append(" end=").append(endTime);
     if (startTime != null) {
-      duration = endTime - startTime.longValue();
       sb.append(" duration=").append(duration);
     }
     sb.append(" from=").append(callerName).append(">");
@@ -156,7 +154,6 @@ public class PerfLogger {
    * @param _log
    */
   public void close(Log _log, QueryPlan queryPlan) {
-
   }
 
   public Long getStartTime(String method) {
