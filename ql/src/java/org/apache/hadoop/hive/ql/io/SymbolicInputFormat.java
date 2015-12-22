@@ -75,8 +75,11 @@ public class SymbolicInputFormat implements ReworkMapredInputFormat {
             while ((line = reader.readLine()) != null) {
               // no check for the line? How to check?
               // if the line is invalid for any reason, the job will fail.
-              toAddPathToPart.put(line, partDesc);
-              pathToAliases.put(line, aliases);
+              FileStatus[] matches = fileSystem.globStatus(new Path(line));
+              for(FileStatus fileStatus :matches) {
+                 toAddPathToPart.put(fileStatus.getPath().toUri().getPath(), partDesc);
+                 pathToAliases.put(fileStatus.getPath().toUri().getPath(), aliases);
+              }
             }
           } finally {
             org.apache.hadoop.io.IOUtils.closeStream(reader);
