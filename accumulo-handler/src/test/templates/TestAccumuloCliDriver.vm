@@ -26,6 +26,7 @@ import java.util.*;
 
 import org.apache.hadoop.hive.accumulo.AccumuloQTestUtil;
 import org.apache.hadoop.hive.accumulo.AccumuloTestSetup;
+import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
@@ -34,6 +35,12 @@ public class $className extends TestCase {
   private static final String HIVE_ROOT = AccumuloQTestUtil.ensurePathEndsInSlash(System.getProperty("hive.root"));
   private AccumuloQTestUtil qt;
   private AccumuloTestSetup setup;
+
+  public static class TestAccumuloCliDriverAddTestFromQFiles implements QTestUtil.SuiteAddTestFunctor {
+    public void addTestToSuite(TestSuite suite, Object setup, String tName) {
+      suite.addTest(new $className("testCliDriver_"+tName, (AccumuloTestSetup)setup));
+    }
+  }
 
   public $className(String name, AccumuloTestSetup setup) {
     super(name);
@@ -83,16 +90,12 @@ public class $className extends TestCase {
         }
       }
     }
+
     TestSuite suite = new TestSuite();
     AccumuloTestSetup setup = new AccumuloTestSetup(suite);
-#foreach ($qf in $qfiles)
-  #set ($fname = $qf.getName())
-  #set ($eidx = $fname.indexOf('.'))
-  #set ($tname = $fname.substring(0, $eidx))
-    if(qFilesToExecute.isEmpty() || qFilesToExecute.contains("$fname")) {
-      suite.addTest(new $className("testCliDriver_$tname", setup));
-    }
-#end
+
+    QTestUtil.addTestsToSuiteFromQfileNames("$qFileNamesFile", qFilesToExecute,
+      suite, setup, new TestAccumuloCliDriverAddTestFromQFiles());
     return setup;
   }
 
