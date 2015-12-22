@@ -246,10 +246,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: ds (string)
                             Target Input: srcpart
                             Partition key expr: ds
                             Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                            Target column: ds
                             Target Vertex: Map 1
             Execution mode: vectorized
         Reducer 2 
@@ -497,10 +497,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: ds (string)
                             Target Input: srcpart
                             Partition key expr: ds
                             Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                            Target column: ds
                             Target Vertex: Map 1
             Execution mode: vectorized
         Map 6 
@@ -531,10 +531,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: hr (string)
                             Target Input: srcpart
                             Partition key expr: hr
                             Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
-                            Target column: hr
                             Target Vertex: Map 1
             Execution mode: vectorized
         Reducer 2 
@@ -837,10 +837,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: ds (string)
                             Target Input: srcpart
                             Partition key expr: ds
                             Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
-                            Target column: ds
                             Target Vertex: Map 1
                       Select Operator
                         expressions: _col2 (type: string)
@@ -852,10 +852,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: hr (string)
                             Target Input: srcpart
                             Partition key expr: hr
                             Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
-                            Target column: hr
                             Target Vertex: Map 1
             Execution mode: vectorized
         Reducer 2 
@@ -1098,10 +1098,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: ds (string)
                             Target Input: srcpart
                             Partition key expr: ds
                             Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                            Target column: ds
                             Target Vertex: Map 1
             Execution mode: vectorized
         Reducer 2 
@@ -1342,10 +1342,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: hr (string)
                             Target Input: srcpart
                             Partition key expr: UDFToDouble(hr)
                             Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
-                            Target column: hr
                             Target Vertex: Map 1
             Execution mode: vectorized
         Reducer 2 
@@ -1466,10 +1466,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: hr (string)
                             Target Input: srcpart
                             Partition key expr: (UDFToDouble(hr) * 2.0)
                             Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
-                            Target column: hr
                             Target Vertex: Map 1
             Execution mode: vectorized
         Reducer 2 
@@ -1821,10 +1821,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: hr (string)
                             Target Input: srcpart
                             Partition key expr: UDFToString((UDFToDouble(hr) * 2.0))
                             Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
-                            Target column: hr
                             Target Vertex: Map 1
             Execution mode: vectorized
         Reducer 2 
@@ -2009,10 +2009,10 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Dynamic Partitioning Event Operator
+                      Target column: ds (string)
                       Target Input: srcpart
                       Partition key expr: ds
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                      Target column: ds
                       Target Vertex: Map 1
 
   Stage: Stage-0
@@ -2227,10 +2227,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: ds (string)
                             Target Input: srcpart
                             Partition key expr: ds
                             Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
-                            Target column: ds
                             Target Vertex: Map 1
                       Select Operator
                         expressions: _col2 (type: string)
@@ -2242,10 +2242,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: hr (string)
                             Target Input: srcpart
                             Partition key expr: hr
                             Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
-                            Target column: hr
                             Target Vertex: Map 1
             Execution mode: vectorized
         Reducer 2 
@@ -2368,10 +2368,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: ds (string)
                             Target Input: srcpart
                             Partition key expr: ds
                             Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                            Target column: ds
                             Target Vertex: Map 1
             Execution mode: vectorized
         Reducer 2 
@@ -2458,10 +2458,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: ds (string)
                             Target Input: srcpart
                             Partition key expr: ds
                             Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                            Target column: ds
                             Target Vertex: Map 4
             Execution mode: vectorized
         Map 4 
@@ -2578,10 +2578,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: ds (string)
                             Target Input: srcpart
                             Partition key expr: ds
                             Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                            Target column: ds
                             Target Vertex: Map 1
             Execution mode: vectorized
         Reducer 2 
@@ -2687,10 +2687,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: ds (string)
                             Target Input: srcpart
                             Partition key expr: ds
                             Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                            Target column: ds
                             Target Vertex: Map 1
             Execution mode: vectorized
         Map 6 
@@ -3061,10 +3061,10 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
+                          Target column: ds (string)
                           Target Input: srcpart
                           Partition key expr: ds
                           Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
-                          Target column: ds
                           Target Vertex: Map 1
         Reducer 8 
             Execution mode: vectorized
@@ -3097,10 +3097,10 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
+                          Target column: ds (string)
                           Target Input: srcpart
                           Partition key expr: ds
                           Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
-                          Target column: ds
                           Target Vertex: Map 1
         Union 6 
             Vertex: Union 6
@@ -3263,10 +3263,10 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
+                          Target column: ds (string)
                           Target Input: srcpart
                           Partition key expr: ds
                           Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
-                          Target column: ds
                           Target Vertex: Map 1
         Reducer 8 
             Execution mode: vectorized
@@ -3299,10 +3299,10 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
+                          Target column: ds (string)
                           Target Input: srcpart
                           Partition key expr: ds
                           Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
-                          Target column: ds
                           Target Vertex: Map 1
         Union 6 
             Vertex: Union 6
@@ -3449,10 +3449,10 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
+                          Target column: ds (string)
                           Target Input: srcpart
                           Partition key expr: ds
                           Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
-                          Target column: ds
                           Target Vertex: Map 1
                     Select Operator
                       expressions: _col0 (type: string)
@@ -3464,10 +3464,10 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
+                          Target column: ds (string)
                           Target Input: srcpart
                           Partition key expr: ds
                           Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
-                          Target column: ds
                           Target Vertex: Map 5
         Reducer 2 
             Execution mode: vectorized
@@ -3543,10 +3543,10 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
+                          Target column: ds (string)
                           Target Input: srcpart
                           Partition key expr: ds
                           Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
-                          Target column: ds
                           Target Vertex: Map 1
                     Select Operator
                       expressions: _col0 (type: string)
@@ -3558,10 +3558,10 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
+                          Target column: ds (string)
                           Target Input: srcpart
                           Partition key expr: ds
                           Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
-                          Target column: ds
                           Target Vertex: Map 5
         Union 3 
             Vertex: Union 3
@@ -3669,10 +3669,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: ds (string)
                             Target Input: srcpart
                             Partition key expr: ds
                             Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                            Target column: ds
                             Target Vertex: Map 1
             Execution mode: vectorized
         Reducer 2 
@@ -3816,10 +3816,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: ds (string)
                             Target Input: srcpart
                             Partition key expr: ds
                             Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                            Target column: ds
                             Target Vertex: Map 1
             Execution mode: vectorized
         Map 4 
@@ -3850,10 +3850,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: hr (string)
                             Target Input: srcpart
                             Partition key expr: hr
                             Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
-                            Target column: hr
                             Target Vertex: Map 1
             Execution mode: vectorized
         Reducer 2 
@@ -3986,10 +3986,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: ds (string)
                             Target Input: srcpart
                             Partition key expr: ds
                             Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
-                            Target column: ds
                             Target Vertex: Map 1
                       Select Operator
                         expressions: _col2 (type: string)
@@ -4001,10 +4001,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: hr (string)
                             Target Input: srcpart
                             Partition key expr: hr
                             Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
-                            Target column: hr
                             Target Vertex: Map 1
             Execution mode: vectorized
         Reducer 2 
@@ -4134,10 +4134,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: ds (string)
                             Target Input: srcpart
                             Partition key expr: ds
                             Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                            Target column: ds
                             Target Vertex: Map 1
             Execution mode: vectorized
         Reducer 2 
@@ -4243,10 +4243,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: hr (string)
                             Target Input: srcpart
                             Partition key expr: UDFToDouble(hr)
                             Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
-                            Target column: hr
                             Target Vertex: Map 1
             Execution mode: vectorized
         Reducer 2 
@@ -4363,10 +4363,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: hr (string)
                             Target Input: srcpart
                             Partition key expr: (UDFToDouble(hr) * 2.0)
                             Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
-                            Target column: hr
                             Target Vertex: Map 1
             Execution mode: vectorized
         Reducer 2 
@@ -4630,10 +4630,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: ds (string)
                             Target Input: srcpart
                             Partition key expr: ds
                             Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                            Target column: ds
                             Target Vertex: Map 1
             Execution mode: vectorized
         Reducer 2 
@@ -4916,10 +4916,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: ds (string)
                             Target Input: srcpart
                             Partition key expr: ds
                             Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                            Target column: ds
                             Target Vertex: Map 1
             Execution mode: vectorized
         Map 4 
@@ -5240,10 +5240,10 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
+                          Target column: ds (string)
                           Target Input: srcpart
                           Partition key expr: ds
                           Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
-                          Target column: ds
                           Target Vertex: Map 1
         Reducer 7 
             Execution mode: vectorized
@@ -5276,10 +5276,10 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
+                          Target column: ds (string)
                           Target Input: srcpart
                           Partition key expr: ds
                           Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
-                          Target column: ds
                           Target Vertex: Map 1
         Union 5 
             Vertex: Union 5
@@ -5417,10 +5417,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 2 Data size: 720 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: ds (string)
                             Target Input: srcpart_orc
                             Partition key expr: ds
                             Statistics: Num rows: 2 Data size: 720 Basic stats: COMPLETE Column stats: NONE
-                            Target column: ds
                             Target Vertex: Map 1
                       Select Operator
                         expressions: UDFToDouble(_col2) (type: double)
@@ -5432,10 +5432,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 2 Data size: 720 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: hr (int)
                             Target Input: srcpart_orc
                             Partition key expr: UDFToDouble(hr)
                             Statistics: Num rows: 2 Data size: 720 Basic stats: COMPLETE Column stats: NONE
-                            Target column: hr
                             Target Vertex: Map 1
         Reducer 2 
             Reduce Operator Tree:

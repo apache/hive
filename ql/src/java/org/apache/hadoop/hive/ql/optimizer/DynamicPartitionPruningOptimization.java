@@ -200,6 +200,7 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
         Table table = ts.getConf().getTableMetadata();
 
         if (table != null && table.isPartitionKey(column)) {
+	  String columnType = table.getPartColByName(column).getType();
           String alias = ts.getConf().getAlias();
           PrunedPartitionList plist = parseContext.getPrunedPartitions(alias, ts);
           if (LOG.isDebugEnabled()) {
@@ -213,7 +214,7 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
           }
           if (plist == null || plist.getPartitions().size() != 0) {
             LOG.info("Dynamic partitioning: " + table.getCompleteName() + "." + column);
-            generateEventOperatorPlan(ctx, parseContext, ts, column);
+            generateEventOperatorPlan(ctx, parseContext, ts, column, columnType);
           } else {
             // all partitions have been statically removed
             LOG.debug("No partition pruning necessary.");
@@ -269,7 +270,7 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
   }
 
   private void generateEventOperatorPlan(DynamicListContext ctx, ParseContext parseContext,
-      TableScanOperator ts, String column) {
+      TableScanOperator ts, String column, String columnType) {
 
     // we will put a fork in the plan at the source of the reduce sink
     Operator<? extends OperatorDesc> parentOfRS = ctx.generator.getParentOperators().get(0);
@@ -329,6 +330,7 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
       eventDesc.setTable(PlanUtils.getReduceValueTableDesc(PlanUtils
           .getFieldSchemasFromColumnList(keyExprs, "key")));
       eventDesc.setTargetColumnName(column);
+      eventDesc.setTargetColumnType(columnType);
       eventDesc.setPartKey(partKey);
       OperatorFactory.getAndMakeChild(eventDesc, groupByOp);
     } else {

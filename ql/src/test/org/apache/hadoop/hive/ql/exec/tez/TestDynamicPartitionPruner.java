@@ -454,6 +454,7 @@ public class TestDynamicPartitionPruner {
 
     Map<String, List<TableDesc>> tableMap = new HashMap<>();
     Map<String, List<String>> columnMap = new HashMap<>();
+    Map<String, List<String>> typeMap = new HashMap<>();
     Map<String, List<ExprNodeDesc>> exprMap = new HashMap<>();
 
     int count = 0;
@@ -474,6 +475,13 @@ public class TestDynamicPartitionPruner {
         }
         columnList.add(testSource.vertexName + "c_" + count + "_" + i);
 
+	List<String> typeList = typeMap.get(testSource.vertexName);
+        if (typeList == null) {
+          typeList = new LinkedList<>();
+          typeMap.put(testSource.vertexName, typeList);
+        }
+        typeList.add("string");
+
         List<ExprNodeDesc> exprNodeDescList = exprMap.get(testSource.vertexName);
         if (exprNodeDescList == null) {
           exprNodeDescList = new LinkedList<>();
@@ -488,6 +496,7 @@ public class TestDynamicPartitionPruner {
     doReturn(tableMap).when(mapWork).getEventSourceTableDescMap();
     doReturn(columnMap).when(mapWork).getEventSourceColumnNameMap();
     doReturn(exprMap).when(mapWork).getEventSourcePartKeyExprMap();
+    doReturn(typeMap).when(mapWork).getEventSourceColumnTypeMap();
     return mapWork;
   }
 
@@ -510,10 +519,10 @@ public class TestDynamicPartitionPruner {
     }
 
     @Override
-    protected SourceInfo createSourceInfo(TableDesc t, ExprNodeDesc partKeyExpr, String columnName,
+    protected SourceInfo createSourceInfo(TableDesc t, ExprNodeDesc partKeyExpr, String columnName, String columnType,
                                           JobConf jobConf) throws
         SerDeException {
-      return new SourceInfo(t, partKeyExpr, columnName, jobConf, null);
+      return new SourceInfo(t, partKeyExpr, columnName, columnType, jobConf, null);
     }
 
     @Override

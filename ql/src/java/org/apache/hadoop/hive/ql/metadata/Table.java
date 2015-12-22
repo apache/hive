@@ -484,13 +484,17 @@ public class Table implements Serializable {
     return partKeys;
   }
 
-  public boolean isPartitionKey(String colName) {
+  public FieldSchema getPartColByName(String colName) {
     for (FieldSchema key : getPartCols()) {
       if (key.getName().toLowerCase().equals(colName)) {
-        return true;
+        return key;
       }
     }
-    return false;
+    return null;
+  }
+
+  public boolean isPartitionKey(String colName) {
+    return getPartColByName(colName) == null ? false : true;
   }
 
   // TODO merge this with getBucketCols function
