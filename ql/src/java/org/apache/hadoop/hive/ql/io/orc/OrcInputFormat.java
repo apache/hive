@@ -414,7 +414,11 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
 
   private static String[] extractNeededColNames(
       List<OrcProto.Type> types, Configuration conf, boolean[] include, boolean isOriginal) {
-    return extractNeededColNames(types, getNeededColumnNamesString(conf), include, isOriginal);
+    String colNames = getNeededColumnNamesString(conf);
+    if (colNames == null) {
+      return null;
+    }
+    return extractNeededColNames(types, colNames, include, isOriginal);
   }
 
   private static String[] extractNeededColNames(
@@ -1068,10 +1072,13 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       // we can't eliminate stripes if there are deltas because the
       // deltas may change the rows making them match the predicate.
       if ((deltas == null || deltas.isEmpty()) && context.sarg != null) {
-        SearchArgument sarg = ConvertAstToSearchArg.createFromConf(context.conf);
         String[] colNames = extractNeededColNames(types, context.conf, includedCols, isOriginal);
-        includeStripe = pickStripes(context.sarg, colNames, writerVersion, isOriginal,
-            stripeStats, stripes.size(), file.getPath());
+        if (colNames == null) {
+          LOG.warn("Skipping split elimination for {} as column names is null", file.getPath());
+        } else {
+          includeStripe = pickStripes(context.sarg, colNames, writerVersion, isOriginal,
+              stripeStats, stripes.size(), file.getPath());
+        }
       }
 
       // if we didn't have predicate pushdown, read everything
