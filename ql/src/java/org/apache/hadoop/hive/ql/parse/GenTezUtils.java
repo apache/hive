@@ -422,6 +422,12 @@ public class GenTezUtils {
     List<String> columns = work.getEventSourceColumnNameMap().get(sourceName);
     columns.add(eventDesc.getTargetColumnName());
 
+    if (!work.getEventSourceColumnTypeMap().containsKey(sourceName)) {
+      work.getEventSourceColumnTypeMap().put(sourceName, new LinkedList<String>());
+    }
+    List<String> columnTypes = work.getEventSourceColumnTypeMap().get(sourceName);
+    columnTypes.add(eventDesc.getTargetColumnType());
+
     // store partition key expr in map-work
     if (!work.getEventSourcePartKeyExprMap().containsKey(sourceName)) {
       work.getEventSourcePartKeyExprMap().put(sourceName, new LinkedList<ExprNodeDesc>());

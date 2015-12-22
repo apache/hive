@@ -920,10 +920,10 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
                       Dynamic Partitioning Event Operator
+                        Target column: ds (string)
                         Target Input: a2
                         Partition key expr: ds
                         Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
-                        Target column: ds
                         Target Vertex: Map 1
 
   Stage: Stage-0

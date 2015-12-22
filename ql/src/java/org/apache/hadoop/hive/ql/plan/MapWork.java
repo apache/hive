@@ -124,6 +124,8 @@ public class MapWork extends BaseWork {
       new LinkedHashMap<String, List<TableDesc>>();
   private Map<String, List<String>> eventSourceColumnNameMap =
       new LinkedHashMap<String, List<String>>();
+  private Map<String, List<String>> eventSourceColumnTypeMap =
+      new LinkedHashMap<String, List<String>>();
   private Map<String, List<ExprNodeDesc>> eventSourcePartKeyExprMap =
       new LinkedHashMap<String, List<ExprNodeDesc>>();
 
@@ -582,6 +584,10 @@ public class MapWork extends BaseWork {
 
   public Map<String, List<String>> getEventSourceColumnNameMap() {
     return eventSourceColumnNameMap;
+  }
+
+  public Map<String, List<String>> getEventSourceColumnTypeMap() {
+    return eventSourceColumnTypeMap;
   }
 
   public Map<String, List<ExprNodeDesc>> getEventSourcePartKeyExprMap() {

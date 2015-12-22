@@ -248,10 +248,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: ds (string)
                             Target Input: srcpart
                             Partition key expr: ds
                             Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                            Target column: ds
                             Target Vertex: Map 1
             Execution mode: llap
         Reducer 2 
@@ -438,6 +438,245 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 1000
+PREHOOK: query: -- single column, single key, udf with typechange
+EXPLAIN select count(*) from srcpart join srcpart_date on (day(srcpart.ds) = day(srcpart_date.ds)) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: type: QUERY
+POSTHOOK: query: -- single column, single key, udf with typechange
+EXPLAIN select count(*) from srcpart join srcpart_date on (day(srcpart.ds) = day(srcpart_date.ds)) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart
+                  filterExpr: ds is not null (type: boolean)
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: ds (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: day(_col0) (type: int)
+                      sort order: +
+                      Map-reduce partition columns: day(_col0) (type: int)
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: llap
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart_date
+                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
+                  Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ds (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: day(_col0) (type: int)
+                        sort order: +
+                        Map-reduce partition columns: day(_col0) (type: int)
+                        Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: day(_col0) (type: int)
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          keys: _col0 (type: int)
+                          mode: hash
+                          outputColumnNames: _col0
+                          Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                          Dynamic Partitioning Event Operator
+                            Target column: ds (string)
+                            Target Input: srcpart
+                            Partition key expr: day(ds)
+                            Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                            Target Vertex: Map 1
+            Execution mode: llap
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 day(_col0) (type: int)
+                  1 day(_col0) (type: int)
+                Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: bigint)
+        Reducer 3 
+            Execution mode: uber
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from srcpart join srcpart_date on (day(srcpart.ds) = day(srcpart_date.ds)) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from srcpart join srcpart_date on (day(srcpart.ds) = day(srcpart_date.ds)) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date
+#### A masked pattern was here ####
+1000
+PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date on (day(srcpart.ds) = day(srcpart_date.ds)) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date on (day(srcpart.ds) = day(srcpart_date.ds)) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart
+                  filterExpr: ds is not null (type: boolean)
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: ds (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: day(_col0) (type: int)
+                      sort order: +
+                      Map-reduce partition columns: day(_col0) (type: int)
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: llap
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart_date
+                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
+                  Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ds (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: day(_col0) (type: int)
+                        sort order: +
+                        Map-reduce partition columns: day(_col0) (type: int)
+                        Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: llap
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 day(_col0) (type: int)
+                  1 day(_col0) (type: int)
+                Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: bigint)
+        Reducer 3 
+            Execution mode: uber
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from srcpart join srcpart_date on (day(srcpart.ds) = day(srcpart_date.ds)) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from srcpart join srcpart_date on (day(srcpart.ds) = day(srcpart_date.ds)) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date
+#### A masked pattern was here ####
+1000
 PREHOOK: query: -- multiple sources, single key
 EXPLAIN select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
 where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11
@@ -503,10 +742,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: ds (string)
                             Target Input: srcpart
                             Partition key expr: ds
                             Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                            Target column: ds
                             Target Vertex: Map 1
             Execution mode: llap
         Map 6 
@@ -537,10 +776,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: hr (string)
                             Target Input: srcpart
                             Partition key expr: hr
                             Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                            Target column: hr
                             Target Vertex: Map 1
             Execution mode: llap
         Reducer 2 
@@ -849,10 +1088,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: ds (string)
                             Target Input: srcpart
                             Partition key expr: ds
                             Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
-                            Target column: ds
                             Target Vertex: Map 1
                       Select Operator
                         expressions: _col2 (type: string)
@@ -864,10 +1103,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: hr (string)
                             Target Input: srcpart
                             Partition key expr: hr
                             Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
-                            Target column: hr
                             Target Vertex: Map 1
             Execution mode: llap
         Reducer 2 
@@ -1114,10 +1353,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: ds (string)
                             Target Input: srcpart
                             Partition key expr: ds
                             Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                            Target column: ds
                             Target Vertex: Map 1
             Execution mode: llap
         Reducer 2 
@@ -1362,10 +1601,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: hr (string)
                             Target Input: srcpart
                             Partition key expr: UDFToDouble(hr)
                             Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-                            Target column: hr
                             Target Vertex: Map 1
             Execution mode: llap
         Reducer 2 
@@ -1488,10 +1727,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: hr (string)
                             Target Input: srcpart
                             Partition key expr: (UDFToDouble(hr) * 2.0)
                             Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-                            Target column: hr
                             Target Vertex: Map 1
             Execution mode: llap
         Reducer 2 
@@ -1849,10 +2088,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: hr (string)
                             Target Input: srcpart
                             Partition key expr: UDFToString((UDFToDouble(hr) * 2.0))
                             Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-                            Target column: hr
                             Target Vertex: Map 1
             Execution mode: llap
         Reducer 2 
@@ -2041,10 +2280,10 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Dynamic Partitioning Event Operator
+                      Target column: ds (string)
                       Target Input: srcpart
                       Partition key expr: ds
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                      Target column: ds
                       Target Vertex: Map 1
 
   Stage: Stage-0
@@ -2262,10 +2501,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: ds (string)
                             Target Input: srcpart
                             Partition key expr: ds
                             Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
-                            Target column: ds
                             Target Vertex: Map 1
                       Select Operator
                         expressions: _col2 (type: string)
@@ -2277,10 +2516,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: hr (string)
                             Target Input: srcpart
                             Partition key expr: hr
                             Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
-                            Target column: hr
                             Target Vertex: Map 1
             Execution mode: llap
         Reducer 2 
@@ -2405,10 +2644,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: ds (string)
                             Target Input: srcpart
                             Partition key expr: ds
                             Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                            Target column: ds
                             Target Vertex: Map 1
             Execution mode: llap
         Reducer 2 
@@ -2496,10 +2735,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: ds (string)
                             Target Input: srcpart
                             Partition key expr: ds
                             Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                            Target column: ds
                             Target Vertex: Map 4
             Execution mode: llap
         Map 4 
@@ -2619,10 +2858,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: ds (string)
                             Target Input: srcpart
                             Partition key expr: ds
                             Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                            Target column: ds
                             Target Vertex: Map 1
             Execution mode: llap
         Reducer 2 
@@ -2730,10 +2969,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: ds (string)
                             Target Input: srcpart
                             Partition key expr: ds
                             Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                            Target column: ds
                             Target Vertex: Map 1
             Execution mode: llap
         Map 6 
@@ -3112,10 +3351,10 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
+                          Target column: ds (string)
                           Target Input: srcpart
                           Partition key expr: ds
                           Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
-                          Target column: ds
                           Target Vertex: Map 1
         Reducer 8 
             Execution mode: uber
@@ -3148,10 +3387,10 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
+                          Target column: ds (string)
                           Target Input: srcpart
                           Partition key expr: ds
                           Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
-                          Target column: ds
                           Target Vertex: Map 1
         Union 6 
             Vertex: Union 6
@@ -3318,10 +3557,10 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
+                          Target column: ds (string)
                           Target Input: srcpart
                           Partition key expr: ds
                           Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
-                          Target column: ds
                           Target Vertex: Map 1
         Reducer 8 
             Execution mode: uber
@@ -3354,10 +3593,10 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
+                          Target column: ds (string)
                           Target Input: srcpart
                           Partition key expr: ds
                           Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
-                          Target column: ds
                           Target Vertex: Map 1
         Union 6 
             Vertex: Union 6
@@ -3508,10 +3747,10 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
+                          Target column: ds (string)
                           Target Input: srcpart
                           Partition key expr: ds
                           Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
-                          Target column: ds
                           Target Vertex: Map 1
                     Select Operator
                       expressions: _col0 (type: string)
@@ -3523,10 +3762,10 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
+                          Target column: ds (string)
                           Target Input: srcpart
                           Partition key expr: ds
                           Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
-                          Target column: ds
                           Target Vertex: Map 5
         Reducer 2 
             Execution mode: uber
@@ -3603,10 +3842,10 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
+                          Target column: ds (string)
                           Target Input: srcpart
                           Partition key expr: ds
                           Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
-                          Target column: ds
                           Target Vertex: Map 1
                     Select Operator
                       expressions: _col0 (type: string)
@@ -3618,10 +3857,10 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
+                          Target column: ds (string)
                           Target Input: srcpart
                           Partition key expr: ds
                           Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
-                          Target column: ds
                           Target Vertex: Map 5
         Union 3 
             Vertex: Union 3
@@ -3730,10 +3969,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: ds (string)
                             Target Input: srcpart
                             Partition key expr: ds
                             Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                            Target column: ds
                             Target Vertex: Map 1
             Execution mode: llap
         Reducer 2 
@@ -3788,6 +4027,129 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
+1000
+PREHOOK: query: -- single column, single key, udf with typechange
+EXPLAIN select count(*) from srcpart join srcpart_date on (day(srcpart.ds) = day(srcpart_date.ds)) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: type: QUERY
+POSTHOOK: query: -- single column, single key, udf with typechange
+EXPLAIN select count(*) from srcpart join srcpart_date on (day(srcpart.ds) = day(srcpart_date.ds)) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Map 1 <- Map 3 (BROADCAST_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart
+                  filterExpr: ds is not null (type: boolean)
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: ds (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
+                      condition map:
+                           Inner Join 0 to 1
+                      keys:
+                        0 day(_col0) (type: int)
+                        1 day(_col0) (type: int)
+                      input vertices:
+                        1 Map 3
+                      Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
+                      HybridGraceHashJoin: true
+                      Group By Operator
+                        aggregations: count()
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: llap
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart_date
+                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
+                  Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ds (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: day(_col0) (type: int)
+                        sort order: +
+                        Map-reduce partition columns: day(_col0) (type: int)
+                        Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: day(_col0) (type: int)
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          keys: _col0 (type: int)
+                          mode: hash
+                          outputColumnNames: _col0
+                          Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                          Dynamic Partitioning Event Operator
+                            Target column: ds (string)
+                            Target Input: srcpart
+                            Partition key expr: day(ds)
+                            Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                            Target Vertex: Map 1
+            Execution mode: llap
+        Reducer 2 
+            Execution mode: uber
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from srcpart join srcpart_date on (day(srcpart.ds) = day(srcpart_date.ds)) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from srcpart join srcpart_date on (day(srcpart.ds) = day(srcpart_date.ds)) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date
 #### A masked pattern was here ####
 1000
 PREHOOK: query: -- multiple sources, single key
@@ -3878,10 +4240,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: ds (string)
                             Target Input: srcpart
                             Partition key expr: ds
                             Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                            Target column: ds
                             Target Vertex: Map 1
             Execution mode: llap
         Map 4 
@@ -3912,10 +4274,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: hr (string)
                             Target Input: srcpart
                             Partition key expr: hr
                             Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                            Target column: hr
                             Target Vertex: Map 1
             Execution mode: llap
         Reducer 2 
@@ -4049,10 +4411,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: ds (string)
                             Target Input: srcpart
                             Partition key expr: ds
                             Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
-                            Target column: ds
                             Target Vertex: Map 1
                       Select Operator
                         expressions: _col2 (type: string)
@@ -4064,10 +4426,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: hr (string)
                             Target Input: srcpart
                             Partition key expr: hr
                             Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
-                            Target column: hr
                             Target Vertex: Map 1
             Execution mode: llap
         Reducer 2 
@@ -4198,10 +4560,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: ds (string)
                             Target Input: srcpart
                             Partition key expr: ds
                             Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                            Target column: ds
                             Target Vertex: Map 1
             Execution mode: llap
         Reducer 2 
@@ -4308,10 +4670,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: hr (string)
                             Target Input: srcpart
                             Partition key expr: UDFToDouble(hr)
                             Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-                            Target column: hr
                             Target Vertex: Map 1
             Execution mode: llap
         Reducer 2 
@@ -4429,10 +4791,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: hr (string)
                             Target Input: srcpart
                             Partition key expr: (UDFToDouble(hr) * 2.0)
                             Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-                            Target column: hr
                             Target Vertex: Map 1
             Execution mode: llap
         Reducer 2 
@@ -4699,10 +5061,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: ds (string)
                             Target Input: srcpart
                             Partition key expr: ds
                             Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                            Target column: ds
                             Target Vertex: Map 1
             Execution mode: llap
         Reducer 2 
@@ -4988,10 +5350,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: ds (string)
                             Target Input: srcpart
                             Partition key expr: ds
                             Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                            Target column: ds
                             Target Vertex: Map 1
             Execution mode: llap
         Map 4 
@@ -5315,10 +5677,10 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
+                          Target column: ds (string)
                           Target Input: srcpart
                           Partition key expr: ds
                           Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
-                          Target column: ds
                           Target Vertex: Map 1
         Reducer 7 
             Execution mode: uber
@@ -5351,10 +5713,10 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
+                          Target column: ds (string)
                           Target Input: srcpart
                           Partition key expr: ds
                           Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
-                          Target column: ds
                           Target Vertex: Map 1
         Union 5 
             Vertex: Union 5
@@ -5493,10 +5855,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 2 Data size: 54 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: ds (string)
                             Target Input: srcpart_orc
                             Partition key expr: ds
                             Statistics: Num rows: 2 Data size: 54 Basic stats: COMPLETE Column stats: NONE
-                            Target column: ds
                             Target Vertex: Map 1
                       Select Operator
                         expressions: UDFToDouble(_col2) (type: double)
@@ -5508,10 +5870,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 2 Data size: 54 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: hr (int)
                             Target Input: srcpart_orc
                             Partition key expr: UDFToDouble(hr)
                             Statistics: Num rows: 2 Data size: 54 Basic stats: COMPLETE Column stats: NONE
-                            Target column: hr
                             Target Vertex: Map 1
             Execution mode: llap
         Reducer 2 

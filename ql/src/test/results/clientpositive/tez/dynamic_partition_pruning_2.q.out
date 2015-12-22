@@ -226,10 +226,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: dim_shops_id (int)
                             Target Input: agg
                             Partition key expr: dim_shops_id
                             Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                            Target column: dim_shops_id
                             Target Vertex: Map 1
         Reducer 2 
             Reduce Operator Tree:
@@ -752,10 +752,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: dim_shops_id (int)
                             Target Input: agg
                             Partition key expr: dim_shops_id
                             Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                            Target column: dim_shops_id
                             Target Vertex: Map 1
         Reducer 2 
             Reduce Operator Tree:
@@ -900,10 +900,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: dim_shops_id (int)
                             Target Input: agg_01
                             Partition key expr: dim_shops_id
                             Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                            Target column: dim_shops_id
                             Target Vertex: Map 1
         Map 4 
             Map Operator Tree:
@@ -961,10 +961,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
+                            Target column: dim_shops_id (int)
                             Target Input: agg_01
                             Partition key expr: dim_shops_id
                             Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                            Target column: dim_shops_id
                             Target Vertex: Map 4
         Union 2 
             Vertex: Union 2

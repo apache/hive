@@ -18,12 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
-
-import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
-
-import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -171,20 +165,24 @@ public class DynamicPartitionPruner {
       List<TableDesc> tables = work.getEventSourceTableDescMap().get(s);
       // Real column name - on which the operation is being performed
       List<String> columnNames = work.getEventSourceColumnNameMap().get(s);
+      // Column type
+      List<String> columnTypes = work.getEventSourceColumnTypeMap().get(s);
       // Expression for the operation. e.g. N^2 > 10
       List<ExprNodeDesc> partKeyExprs = work.getEventSourcePartKeyExprMap().get(s);
       // eventSourceTableDesc, eventSourceColumnName, evenSourcePartKeyExpr move in lock-step.
       // One entry is added to each at the same time
 
       Iterator<String> cit = columnNames.iterator();
+      Iterator<String> typit = columnTypes.iterator();
       Iterator<ExprNodeDesc> pit = partKeyExprs.iterator();
       // A single source can process multiple columns, and will send an event for each of them.
       for (TableDesc t : tables) {
         numExpectedEventsPerSource.get(s).decrement();
         ++sourceInfoCount;
         String columnName = cit.next();
+	String columnType = typit.next();
         ExprNodeDesc partKeyExpr = pit.next();
-        SourceInfo si = createSourceInfo(t, partKeyExpr, columnName, jobConf);
+        SourceInfo si = createSourceInfo(t, partKeyExpr, columnName, columnType, jobConf);
         if (!sourceInfoMap.containsKey(s)) {
           sourceInfoMap.put(s, new ArrayList<SourceInfo>());
         }
@@ -248,35 +246,23 @@ public class DynamicPartitionPruner {
       LOG.debug(sb.toString());
     }
 
-    ObjectInspector targetOi = findTargetOi(si.partKey, si.columnName);
-    Converter converter = ObjectInspectorConverters.getConverter(
-            PrimitiveObjectInspectorFactory.javaStringObjectInspector, targetOi);
+    ObjectInspector oi =
+        PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(TypeInfoFactory
+            .getPrimitiveTypeInfo(si.columnType));
 
-    StructObjectInspector soi = ObjectInspectorFactory.getStandardStructObjectInspector(
-            Collections.singletonList(columnName), Collections.singletonList(targetOi));
+    Converter converter =
+        ObjectInspectorConverters.getConverter(
+            PrimitiveObjectInspectorFactory.javaStringObjectInspector, oi);
+
+    StructObjectInspector soi =
+        ObjectInspectorFactory.getStandardStructObjectInspector(
+            Collections.singletonList(columnName), Collections.singletonList(oi));
 
     @SuppressWarnings("rawtypes")
     ExprNodeEvaluator eval = ExprNodeEvaluatorFactory.get(si.partKey);
-    eval.initialize(soi); // We expect the row with just the relevant column.
+    eval.initialize(soi);
 
     applyFilterToPartitions(converter, eval, columnName, values);
-  }
-
-  private ObjectInspector findTargetOi(ExprNodeDesc expr, String columnName) {
-    if (expr instanceof ExprNodeColumnDesc) {
-      ExprNodeColumnDesc colExpr = (ExprNodeColumnDesc)expr;
-      // TODO: this is not necessarily going to work for all cases. At least, table name is needed.
-      //       Also it's not clear if this is going to work with subquery columns and such.
-      if (columnName.equals(colExpr.getColumn())) {
-        return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
-            (PrimitiveTypeInfo)colExpr.getTypeInfo());
-      }
-    }
-    for (ExprNodeDesc child : expr.getChildren()) {
-      ObjectInspector oi = findTargetOi(child, columnName);
-      if (oi != null) return oi;
-    }
-    return null;
   }
 
   @SuppressWarnings("rawtypes")
@@ -322,9 +308,9 @@ public class DynamicPartitionPruner {
 
   @VisibleForTesting
   protected SourceInfo createSourceInfo(TableDesc t, ExprNodeDesc partKeyExpr, String columnName,
-                                        JobConf jobConf) throws
+                                        String columnType, JobConf jobConf) throws
       SerDeException {
-    return new SourceInfo(t, partKeyExpr, columnName, jobConf);
+    return new SourceInfo(t, partKeyExpr, columnName, columnType, jobConf);
 
   }
 
@@ -341,18 +327,20 @@ public class DynamicPartitionPruner {
     /* Whether to skipPruning - depends on the payload from an event which may signal skip - if the event payload is too large */
     public AtomicBoolean skipPruning = new AtomicBoolean();
     public final String columnName;
+    public final String columnType;
 
     @VisibleForTesting // Only used for testing.
-    SourceInfo(TableDesc table, ExprNodeDesc partKey, String columnName, JobConf jobConf, Object forTesting) {
+    SourceInfo(TableDesc table, ExprNodeDesc partKey, String columnName, String columnType, JobConf jobConf, Object forTesting) {
       this.partKey = partKey;
       this.columnName = columnName;
+      this.columnType = columnType;
       this.deserializer = null;
       this.soi = null;
       this.field = null;
       this.fieldInspector = null;
     }
 
-    public SourceInfo(TableDesc table, ExprNodeDesc partKey, String columnName, JobConf jobConf)
+    public SourceInfo(TableDesc table, ExprNodeDesc partKey, String columnName, String columnType, JobConf jobConf)
         throws SerDeException {
 
       this.skipPruning.set(false);
@@ -360,6 +348,7 @@ public class DynamicPartitionPruner {
       this.partKey = partKey;
 
       this.columnName = columnName;
+      this.columnType = columnType;
 
       deserializer = ReflectionUtils.newInstance(table.getDeserializerClass(), null);
       deserializer.initialize(jobConf, table.getProperties());
