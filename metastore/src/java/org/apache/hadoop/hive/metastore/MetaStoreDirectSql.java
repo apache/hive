@@ -385,6 +385,20 @@ class MetaStoreDirectSql {
         isViewTable, sqlFilter, params, joins, max);
   }
 
+  public int getNumPartitionsViaSqlFilter(Table table, ExpressionTree tree) throws MetaException {
+    List<Object> params = new ArrayList<Object>();
+    List<String>joins = new ArrayList<String>();
+    // Derby and Oracle do not interpret filters ANSI-properly in some cases and need a workaround.
+    boolean dbHasJoinCastBug = (dbType == DB.DERBY || dbType == DB.ORACLE);
+    String sqlFilter = PartitionFilterGenerator.generateSqlFilter(
+        table, tree, params, joins, dbHasJoinCastBug, defaultPartName);
+    if (sqlFilter == null) {
+      return 0; // Cannot make SQL filter to push down.
+    }
+    return getNumPartitionsViaSqlFilterInternal(table.getDbName(), table.getTableName(), sqlFilter, params, joins);
+  }
+
+
   /**
    * Gets all partitions of a table by using direct SQL queries.
    * @param dbName Metastore db name.
@@ -806,6 +820,39 @@ class MetaStoreDirectSql {
 
     return orderedResult;
   }
+
+  private int getNumPartitionsViaSqlFilterInternal(String dbName, String tblName,
+                                                   String sqlFilter, List<Object> paramsForFilter,
+                                                   List<String> joinsForFilter) throws MetaException {
+    boolean doTrace = LOG.isDebugEnabled();
+    dbName = dbName.toLowerCase();
+    tblName = tblName.toLowerCase();
+
+    // Get number of partitions by doing count on PART_ID.
+    String queryText = "select count(\"PARTITIONS\".\"PART_ID\") from \"PARTITIONS\""
+      + "  inner join \"TBLS\" on \"PARTITIONS\".\"TBL_ID\" = \"TBLS\".\"TBL_ID\" "
+      + "    and \"TBLS\".\"TBL_NAME\" = ? "
+      + "  inner join \"DBS\" on \"TBLS\".\"DB_ID\" = \"DBS\".\"DB_ID\" "
+      + "     and \"DBS\".\"NAME\" = ? "
+      + join(joinsForFilter, ' ')
+      + (sqlFilter == null ? "" : (" where " + sqlFilter));
+
+    Object[] params = new Object[paramsForFilter.size() + 2];
+    params[0] = tblName;
+    params[1] = dbName;
+    for (int i = 0; i < paramsForFilter.size(); ++i) {
+      params[i + 2] = paramsForFilter.get(i);
+    }
+
+    long start = doTrace ? System.nanoTime() : 0;
+    Query query = pm.newQuery("javax.jdo.query.SQL", queryText);
+    @SuppressWarnings("unchecked")
+    int sqlResult = extractSqlInt(query.executeWithArray(params));
+    long queryTime = doTrace ? System.nanoTime() : 0;
+    timingTrace(doTrace, queryText, start, queryTime);
+    return sqlResult;
+  }
+
 
   private void timingTrace(boolean doTrace, String queryText, long start, long queryTime) {
     if (!doTrace) return;

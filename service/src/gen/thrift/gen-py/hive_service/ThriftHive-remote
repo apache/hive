@@ -91,6 +91,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('   get_partitions_by_filter(string db_name, string tbl_name, string filter, i16 max_parts)')
   print('   get_part_specs_by_filter(string db_name, string tbl_name, string filter, i32 max_parts)')
   print('  PartitionsByExprResult get_partitions_by_expr(PartitionsByExprRequest req)')
+  print('  i32 get_num_partitions_by_filter(string db_name, string tbl_name, string filter)')
   print('   get_partitions_by_names(string db_name, string tbl_name,  names)')
   print('  void alter_partition(string db_name, string tbl_name, Partition new_part)')
   print('  void alter_partitions(string db_name, string tbl_name,  new_parts)')
@@ -635,6 +636,12 @@ elif cmd == 'get_partitions_by_expr':
     print('get_partitions_by_expr requires 1 args')
     sys.exit(1)
   pp.pprint(client.get_partitions_by_expr(eval(args[0]),))
+
+elif cmd == 'get_num_partitions_by_filter':
+  if len(args) != 3:
+    print('get_num_partitions_by_filter requires 3 args')
+    sys.exit(1)
+  pp.pprint(client.get_num_partitions_by_filter(args[0],args[1],args[2],))
 
 elif cmd == 'get_partitions_by_names':
   if len(args) != 3:

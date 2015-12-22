@@ -112,7 +112,7 @@ public class CacheFileMetadataResult implements org.apache.thrift.TBase<CacheFil
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.IS_SUPPORTED, new org.apache.thrift.meta_data.FieldMetaData("isSupported", org.apache.thrift.TFieldRequirementType.REQUIRED,
+    tmpMap.put(_Fields.IS_SUPPORTED, new org.apache.thrift.meta_data.FieldMetaData("isSupported", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(CacheFileMetadataResult.class, metaDataMap);
@@ -327,7 +327,7 @@ public class CacheFileMetadataResult implements org.apache.thrift.TBase<CacheFil
       while (true)
       {
         schemeField = iprot.readFieldBegin();
-        if (schemeField.type == org.apache.thrift.protocol.TType.STOP) {
+        if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (schemeField.id) {
@@ -335,7 +335,7 @@ public class CacheFileMetadataResult implements org.apache.thrift.TBase<CacheFil
             if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
               struct.isSupported = iprot.readBool();
               struct.setIsSupportedIsSet(true);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
@@ -384,3 +384,4 @@ public class CacheFileMetadataResult implements org.apache.thrift.TBase<CacheFil
   }
 
 }
+

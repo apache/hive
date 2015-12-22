@@ -128,13 +128,13 @@ public class CacheFileMetadataRequest implements org.apache.thrift.TBase<CacheFi
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("dbName", org.apache.thrift.TFieldRequirementType.REQUIRED,
+    tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("dbName", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tblName", org.apache.thrift.TFieldRequirementType.REQUIRED,
+    tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tblName", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.PART_NAME, new org.apache.thrift.meta_data.FieldMetaData("partName", org.apache.thrift.TFieldRequirementType.OPTIONAL,
+    tmpMap.put(_Fields.PART_NAME, new org.apache.thrift.meta_data.FieldMetaData("partName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.IS_ALL_PARTS, new org.apache.thrift.meta_data.FieldMetaData("isAllParts", org.apache.thrift.TFieldRequirementType.OPTIONAL,
+    tmpMap.put(_Fields.IS_ALL_PARTS, new org.apache.thrift.meta_data.FieldMetaData("isAllParts", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(CacheFileMetadataRequest.class, metaDataMap);
@@ -574,7 +574,7 @@ public class CacheFileMetadataRequest implements org.apache.thrift.TBase<CacheFi
       while (true)
       {
         schemeField = iprot.readFieldBegin();
-        if (schemeField.type == org.apache.thrift.protocol.TType.STOP) {
+        if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (schemeField.id) {
@@ -582,7 +582,7 @@ public class CacheFileMetadataRequest implements org.apache.thrift.TBase<CacheFi
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.dbName = iprot.readString();
               struct.setDbNameIsSet(true);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
@@ -590,7 +590,7 @@ public class CacheFileMetadataRequest implements org.apache.thrift.TBase<CacheFi
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.tblName = iprot.readString();
               struct.setTblNameIsSet(true);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
@@ -598,7 +598,7 @@ public class CacheFileMetadataRequest implements org.apache.thrift.TBase<CacheFi
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.partName = iprot.readString();
               struct.setPartNameIsSet(true);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
@@ -606,7 +606,7 @@ public class CacheFileMetadataRequest implements org.apache.thrift.TBase<CacheFi
             if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
               struct.isAllParts = iprot.readBool();
               struct.setIsAllPartsIsSet(true);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
@@ -700,3 +700,4 @@ public class CacheFileMetadataRequest implements org.apache.thrift.TBase<CacheFi
   }
 
 }
+

@@ -223,6 +223,9 @@ public interface RawStore extends Configurable {
       byte[] expr, String defaultPartitionName, short maxParts, List<Partition> result)
       throws TException;
 
+  public abstract int getNumPartitionsByFilter(String dbName, String tblName, String filter)
+    throws MetaException, NoSuchObjectException;
+
   public abstract List<Partition> getPartitionsByNames(
       String dbName, String tblName, List<String> partNames)
       throws MetaException, NoSuchObjectException;

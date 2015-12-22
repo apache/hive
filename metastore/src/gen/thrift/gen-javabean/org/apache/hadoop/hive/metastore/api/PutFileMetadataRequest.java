@@ -57,7 +57,7 @@ public class PutFileMetadataRequest implements org.apache.thrift.TBase<PutFileMe
     FILE_IDS((short)1, "fileIds"),
     METADATA((short)2, "metadata"),
     /**
-     *
+     * 
      * @see FileMetadataExprType
      */
     TYPE((short)3, "type");
@@ -131,7 +131,7 @@ public class PutFileMetadataRequest implements org.apache.thrift.TBase<PutFileMe
     tmpMap.put(_Fields.METADATA, new org.apache.thrift.meta_data.FieldMetaData("metadata", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING            , true))));
-    tmpMap.put(_Fields.TYPE, new org.apache.thrift.meta_data.FieldMetaData("type", org.apache.thrift.TFieldRequirementType.OPTIONAL,
+    tmpMap.put(_Fields.TYPE, new org.apache.thrift.meta_data.FieldMetaData("type", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, FileMetadataExprType.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(PutFileMetadataRequest.class, metaDataMap);
@@ -254,7 +254,7 @@ public class PutFileMetadataRequest implements org.apache.thrift.TBase<PutFileMe
   }
 
   /**
-   *
+   * 
    * @see FileMetadataExprType
    */
   public FileMetadataExprType getType() {
@@ -262,7 +262,7 @@ public class PutFileMetadataRequest implements org.apache.thrift.TBase<PutFileMe
   }
 
   /**
-   *
+   * 
    * @see FileMetadataExprType
    */
   public void setType(FileMetadataExprType type) {
@@ -584,7 +584,7 @@ public class PutFileMetadataRequest implements org.apache.thrift.TBase<PutFileMe
             if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
               struct.type = org.apache.hadoop.hive.metastore.api.FileMetadataExprType.findByValue(iprot.readI32());
               struct.setTypeIsSet(true);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
