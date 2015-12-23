@@ -22,8 +22,10 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -79,6 +81,9 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
 
   private static final Logger LOG = LoggerFactory.getLogger(LlapTaskCommunicator.class);
 
+  private static final boolean isInfoEnabled = LOG.isInfoEnabled();
+  private static final boolean isDebugEnabed = LOG.isDebugEnabled();
+
   private final SubmitWorkRequestProto BASE_SUBMIT_WORK_REQUEST;
   private final ConcurrentMap<String, ByteBuffer> credentialMap;
 
@@ -88,10 +93,16 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
   private final SourceStateTracker sourceStateTracker;
   private final Set<LlapNodeId> nodesForQuery = new HashSet<>();
 
-  private TaskCommunicator communicator;
+  private LlapDaemonProtocolClientProxy communicator;
   private long deleteDelayOnDagComplete;
   private final LlapTaskUmbilicalProtocol umbilical;
   private final Token<LlapTokenIdentifier> token;
+
+  // These two structures track the list of known nodes, and the list of nodes which are sending in keep-alive heartbeats.
+  // Primarily for debugging purposes a.t.m, since there's some unexplained TASK_TIMEOUTS which are currently being observed.
+  private final ConcurrentMap<LlapNodeId, Long> knownNodeMap = new ConcurrentHashMap<>();
+  private final ConcurrentMap<LlapNodeId, PingingNodeInfo> pingedNodeMap = new ConcurrentHashMap<>();
+
 
   private volatile String currentDagName;
 
@@ -131,7 +142,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     super.initialize();
     Configuration conf = getConf();
     int numThreads = HiveConf.getIntVar(conf, ConfVars.LLAP_DAEMON_COMMUNICATOR_NUM_THREADS);
-    this.communicator = new TaskCommunicator(numThreads, conf, token);
+    this.communicator = new LlapDaemonProtocolClientProxy(numThreads, conf, token);
     this.deleteDelayOnDagComplete = HiveConf.getTimeVar(
         conf, ConfVars.LLAP_FILE_CLEANUP_DELAY_SECONDS, TimeUnit.SECONDS);
     LOG.info("Running LlapTaskCommunicator with "
@@ -235,6 +246,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     }
 
     LlapNodeId nodeId = LlapNodeId.getInstance(host, port);
+    registerKnownNode(nodeId);
     entityTracker.registerTaskAttempt(containerId, taskSpec.getTaskAttemptID(), host, port);
     nodesForQuery.add(nodeId);
 
@@ -254,7 +266,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     getContext()
         .taskStartedRemotely(taskSpec.getTaskAttemptID(), containerId);
     communicator.sendSubmitWork(requestProto, host, port,
-        new TaskCommunicator.ExecuteRequestCallback<SubmitWorkResponseProto>() {
+        new LlapDaemonProtocolClientProxy.ExecuteRequestCallback<SubmitWorkResponseProto>() {
           @Override
           public void setResponse(SubmitWorkResponseProto response) {
             if (response.hasSubmissionState()) {
@@ -333,14 +345,14 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     LOG.info(
         "DBG: Attempting to send terminateRequest for fragment {} due to internal preemption invoked by {}",
         taskAttemptId.toString(), invokedByContainerEnd ? "containerEnd" : "taskEnd");
-    LlapNodeId nodeId = entityTracker.getNodeIfForTaskAttempt(taskAttemptId);
+    LlapNodeId nodeId = entityTracker.getNodeIdForTaskAttempt(taskAttemptId);
     // NodeId can be null if the task gets unregistered due to failure / being killed by the daemon itself
     if (nodeId != null) {
       TerminateFragmentRequestProto request =
           TerminateFragmentRequestProto.newBuilder().setDagName(currentDagName)
               .setFragmentIdentifierString(taskAttemptId.toString()).build();
       communicator.sendTerminateFragment(request, nodeId.getHostname(), nodeId.getPort(),
-          new TaskCommunicator.ExecuteRequestCallback<TerminateFragmentResponseProto>() {
+          new LlapDaemonProtocolClientProxy.ExecuteRequestCallback<TerminateFragmentResponseProto>() {
             @Override
             public void setResponse(TerminateFragmentResponseProto response) {
             }
@@ -365,7 +377,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     for (final LlapNodeId llapNodeId : nodesForQuery) {
       LOG.info("Sending dagComplete message for {}, to {}", dagName, llapNodeId);
       communicator.sendQueryComplete(request, llapNodeId.getHostname(), llapNodeId.getPort(),
-          new TaskCommunicator.ExecuteRequestCallback<LlapDaemonProtocolProtos.QueryCompleteResponseProto>() {
+          new LlapDaemonProtocolClientProxy.ExecuteRequestCallback<LlapDaemonProtocolProtos.QueryCompleteResponseProto>() {
             @Override
             public void setResponse(LlapDaemonProtocolProtos.QueryCompleteResponseProto response) {
             }
@@ -391,7 +403,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
   public void sendStateUpdate(final String host, final int port,
                               final SourceStateUpdatedRequestProto request) {
     communicator.sendSourceStateUpdate(request, host, port,
-        new TaskCommunicator.ExecuteRequestCallback<SourceStateUpdatedResponseProto>() {
+        new LlapDaemonProtocolClientProxy.ExecuteRequestCallback<SourceStateUpdatedResponseProto>() {
           @Override
           public void setResponse(SourceStateUpdatedResponseProto response) {
           }
@@ -409,6 +421,79 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
   }
 
 
+  private static class PingingNodeInfo {
+    final AtomicLong logTimestamp;
+    final AtomicInteger pingCount;
+
+    PingingNodeInfo(long currentTs) {
+      logTimestamp = new AtomicLong(currentTs);
+      pingCount = new AtomicInteger(1);
+    }
+  }
+
+  public void registerKnownNode(LlapNodeId nodeId) {
+    Long old = knownNodeMap.putIfAbsent(nodeId,
+        TimeUnit.MILLISECONDS.convert(System.nanoTime(), TimeUnit.NANOSECONDS));
+    if (old == null) {
+      if (isInfoEnabled) {
+        LOG.info("Added new known node: {}", nodeId);
+      }
+    }
+  }
+
+  public void registerPingingNode(LlapNodeId nodeId) {
+    long currentTs = TimeUnit.MILLISECONDS.convert(System.nanoTime(), TimeUnit.NANOSECONDS);
+    PingingNodeInfo ni = new PingingNodeInfo(currentTs);
+    PingingNodeInfo old = pingedNodeMap.put(nodeId, ni);
+    if (old == null) {
+      if (isInfoEnabled) {
+        LOG.info("Added new pinging node: [{}]", nodeId);
+      }
+    } else {
+      old.pingCount.incrementAndGet();
+    }
+    // The node should always be known by this point. Log occasionally if it is not known.
+    if (!knownNodeMap.containsKey(nodeId)) {
+      if (old == null) {
+        // First time this is seen. Log it.
+        LOG.warn("Received ping from unknownNode: [{}], count={}", nodeId, ni.pingCount.get());
+      } else {
+        // Pinged before. Log only occasionally.
+        if (currentTs > old.logTimestamp.get() + 5000l) { // 5 seconds elapsed. Log again.
+          LOG.warn("Received ping from unknownNode: [{}], count={}", nodeId, old.pingCount.get());
+          old.logTimestamp.set(currentTs);
+        }
+      }
+
+    }
+  }
+
+
+  private final AtomicLong nodeNotFoundLogTime = new AtomicLong(0);
+
+  void nodePinged(String hostname, int port) {
+    LlapNodeId nodeId = LlapNodeId.getInstance(hostname, port);
+    registerPingingNode(nodeId);
+    BiMap<ContainerId, TezTaskAttemptID> biMap =
+        entityTracker.getContainerAttemptMapForNode(nodeId);
+    if (biMap != null) {
+      synchronized (biMap) {
+        for (Map.Entry<ContainerId, TezTaskAttemptID> entry : biMap.entrySet()) {
+          getContext().taskAlive(entry.getValue());
+          getContext().containerAlive(entry.getKey());
+        }
+      }
+    } else {
+      long currentTs = TimeUnit.MILLISECONDS.convert(System.nanoTime(), TimeUnit.NANOSECONDS);
+      if (currentTs > nodeNotFoundLogTime.get() + 5000l) {
+        LOG.warn("Received ping from node without any registered tasks or containers: " + hostname +
+            ":" + port +
+            ". Could be caused by pre-emption by the AM," +
+            " or a mismatched hostname. Enable debug logging for mismatched host names");
+        nodeNotFoundLogTime.set(currentTs);
+      }
+    }
+  }
 
   private void resetCurrentDag(String newDagName) {
     // Working on the assumption that a single DAG runs at a time per AM.
@@ -454,6 +539,8 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     return ByteBuffer.wrap(containerTokens_dob.getData(), 0, containerTokens_dob.getLength());
   }
 
+
+
   protected class LlapTaskUmbilicalProtocolImpl implements LlapTaskUmbilicalProtocol {
 
     private final TezTaskUmbilicalProtocol tezUmbilical;
@@ -475,7 +562,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
 
     @Override
     public void nodeHeartbeat(Text hostname, int port) throws IOException {
-      entityTracker.nodePinged(hostname.toString(), port);
+      nodePinged(hostname.toString(), port);
       if (LOG.isDebugEnabled()) {
         LOG.debug("Received heartbeat from [" + hostname + ":" + port +"]");
       }
@@ -502,10 +589,17 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     }
   }
 
-  private final class EntityTracker {
-    private final ConcurrentMap<TezTaskAttemptID, LlapNodeId> attemptToNodeMap = new ConcurrentHashMap<>();
-    private final ConcurrentMap<ContainerId, LlapNodeId> containerToNodeMap = new ConcurrentHashMap<>();
-    private final ConcurrentMap<LlapNodeId, BiMap<ContainerId, TezTaskAttemptID>> nodeMap = new ConcurrentHashMap<>();
+  /**
+   * Track the association between known containers and taskAttempts, along with the nodes they are assigned to.
+   */
+  @VisibleForTesting
+  static final class EntityTracker {
+    @VisibleForTesting
+    final ConcurrentMap<TezTaskAttemptID, LlapNodeId> attemptToNodeMap = new ConcurrentHashMap<>();
+    @VisibleForTesting
+    final ConcurrentMap<ContainerId, LlapNodeId> containerToNodeMap = new ConcurrentHashMap<>();
+    @VisibleForTesting
+    final ConcurrentMap<LlapNodeId, BiMap<ContainerId, TezTaskAttemptID>> nodeMap = new ConcurrentHashMap<>();
 
     void registerTaskAttempt(ContainerId containerId, TezTaskAttemptID taskAttemptId, String host, int port) {
       if (LOG.isDebugEnabled()) {
@@ -513,6 +607,10 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
       }
       LlapNodeId llapNodeId = LlapNodeId.getInstance(host, port);
       attemptToNodeMap.putIfAbsent(taskAttemptId, llapNodeId);
+
+      registerContainer(containerId, host, port);
+
+      // nodeMap registration.
       BiMap<ContainerId, TezTaskAttemptID> tmpMap = HashBiMap.create();
       BiMap<ContainerId, TezTaskAttemptID> old = nodeMap.putIfAbsent(llapNodeId, tmpMap);
       BiMap<ContainerId, TezTaskAttemptID> usedInstance;
@@ -538,10 +636,9 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
         synchronized(bMap) {
           matched = bMap.inverse().remove(attemptId);
         }
-      }
-      // Removing here. Registration into the map has to make sure to put
-      if (bMap.isEmpty()) {
-        nodeMap.remove(llapNodeId);
+        if (bMap.isEmpty()) {
+          nodeMap.remove(llapNodeId);
+        }
       }
 
       // Remove the container mapping
@@ -552,23 +649,29 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     }
 
     void registerContainer(ContainerId containerId, String hostname, int port) {
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Registering " + containerId + " for node: " + hostname + ":" + port);
+      }
       containerToNodeMap.putIfAbsent(containerId, LlapNodeId.getInstance(hostname, port));
+      // nodeMap registration is not required, since there's no taskId association.
     }
 
     LlapNodeId getNodeIdForContainer(ContainerId containerId) {
       return containerToNodeMap.get(containerId);
     }
 
-    LlapNodeId getNodeIfForTaskAttempt(TezTaskAttemptID taskAttemptId) {
+    LlapNodeId getNodeIdForTaskAttempt(TezTaskAttemptID taskAttemptId) {
       return attemptToNodeMap.get(taskAttemptId);
     }
 
     ContainerId getContainerIdForAttempt(TezTaskAttemptID taskAttemptId) {
-      LlapNodeId llapNodeId = getNodeIfForTaskAttempt(taskAttemptId);
+      LlapNodeId llapNodeId = getNodeIdForTaskAttempt(taskAttemptId);
       if (llapNodeId != null) {
         BiMap<TezTaskAttemptID, ContainerId> bMap = nodeMap.get(llapNodeId).inverse();
         if (bMap != null) {
-          return bMap.get(taskAttemptId);
+          synchronized (bMap) {
+            return bMap.get(taskAttemptId);
+          }
         } else {
           return null;
         }
@@ -582,7 +685,9 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
       if (llapNodeId != null) {
         BiMap<ContainerId, TezTaskAttemptID> bMap = nodeMap.get(llapNodeId);
         if (bMap != null) {
-          return bMap.get(containerId);
+          synchronized (bMap) {
+            return bMap.get(containerId);
+          }
         } else {
           return null;
         }
@@ -604,10 +709,9 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
         synchronized(bMap) {
           matched = bMap.remove(containerId);
         }
-      }
-      // Removing here. Registration into the map has to make sure to put
-      if (bMap.isEmpty()) {
-        nodeMap.remove(llapNodeId);
+        if (bMap.isEmpty()) {
+          nodeMap.remove(llapNodeId);
+        }
       }
 
       // Remove the container mapping
@@ -616,25 +720,20 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
       }
     }
 
-    private final AtomicLong nodeNotFoundLogTime = new AtomicLong(0);
-    void nodePinged(String hostname, int port) {
-      LlapNodeId nodeId = LlapNodeId.getInstance(hostname, port);
-      BiMap<ContainerId, TezTaskAttemptID> biMap = nodeMap.get(nodeId);
-      if (biMap != null) {
-        synchronized(biMap) {
-          for (Map.Entry<ContainerId, TezTaskAttemptID> entry : biMap.entrySet()) {
-            getContext().taskAlive(entry.getValue());
-            getContext().containerAlive(entry.getKey());
-          }
-        }
-      } else {
-        if (System.currentTimeMillis() > nodeNotFoundLogTime.get() + 5000l) {
-          LOG.warn("Received ping from unknown node: " + hostname + ":" + port +
-              ". Could be caused by pre-emption by the AM," +
-              " or a mismatched hostname. Enable debug logging for mismatched host names");
-          nodeNotFoundLogTime.set(System.currentTimeMillis());
-        }
-      }
+    /**
+     * Return a {@link BiMap} containing container->taskAttemptId mapping for the host specified.
+     * </p>
+     * <p/>
+     * This method return the internal structure used by the EntityTracker. Users must synchronize
+     * on the structure to ensure correct usage.
+     *
+     * @param llapNodeId
+     * @return
+     */
+    BiMap<ContainerId, TezTaskAttemptID> getContainerAttemptMapForNode(LlapNodeId llapNodeId) {
+      BiMap<ContainerId, TezTaskAttemptID> biMap = nodeMap.get(llapNodeId);
+      return biMap;
     }
+
   }
 }
