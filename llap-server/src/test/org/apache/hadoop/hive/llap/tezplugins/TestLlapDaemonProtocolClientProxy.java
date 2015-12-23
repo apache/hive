@@ -28,7 +28,7 @@ import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.hadoop.hive.llap.LlapNodeId;
 import org.junit.Test;
 
-public class TestTaskCommunicator {
+public class TestLlapDaemonProtocolClientProxy {
 
   @Test (timeout = 5000)
   public void testMultipleNodes() {
@@ -38,8 +38,8 @@ public class TestTaskCommunicator {
     LlapNodeId nodeId2 = LlapNodeId.getInstance("host2", 1025);
 
     Message mockMessage = mock(Message.class);
-    TaskCommunicator.ExecuteRequestCallback mockExecuteRequestCallback = mock(
-        TaskCommunicator.ExecuteRequestCallback.class);
+    LlapDaemonProtocolClientProxy.ExecuteRequestCallback mockExecuteRequestCallback = mock(
+        LlapDaemonProtocolClientProxy.ExecuteRequestCallback.class);
 
     // Request two messages
     requestManager.queueRequest(
@@ -66,8 +66,8 @@ public class TestTaskCommunicator {
     LlapNodeId nodeId1 = LlapNodeId.getInstance("host1", 1025);
 
     Message mockMessage = mock(Message.class);
-    TaskCommunicator.ExecuteRequestCallback mockExecuteRequestCallback = mock(
-        TaskCommunicator.ExecuteRequestCallback.class);
+    LlapDaemonProtocolClientProxy.ExecuteRequestCallback mockExecuteRequestCallback = mock(
+        LlapDaemonProtocolClientProxy.ExecuteRequestCallback.class);
 
     // First request for host.
     requestManager.queueRequest(
@@ -101,7 +101,7 @@ public class TestTaskCommunicator {
   }
 
 
-  static class RequestManagerForTest extends TaskCommunicator.RequestManager {
+  static class RequestManagerForTest extends LlapDaemonProtocolClientProxy.RequestManager {
 
     int numSubmissionsCounters = 0;
     private Map<LlapNodeId, MutableInt> numInvocationsPerNode = new HashMap<>();
@@ -110,7 +110,7 @@ public class TestTaskCommunicator {
       super(numThreads);
     }
 
-    protected void submitToExecutor(TaskCommunicator.CallableRequest request, LlapNodeId nodeId) {
+    protected void submitToExecutor(LlapDaemonProtocolClientProxy.CallableRequest request, LlapNodeId nodeId) {
       numSubmissionsCounters++;
       MutableInt nodeCount = numInvocationsPerNode.get(nodeId);
       if (nodeCount == null) {
@@ -127,10 +127,10 @@ public class TestTaskCommunicator {
 
   }
 
-  static class CallableRequestForTest extends TaskCommunicator.CallableRequest<Message, Message> {
+  static class CallableRequestForTest extends LlapDaemonProtocolClientProxy.CallableRequest<Message, Message> {
 
     protected CallableRequestForTest(LlapNodeId nodeId, Message message,
-                                     TaskCommunicator.ExecuteRequestCallback<Message> callback) {
+                                     LlapDaemonProtocolClientProxy.ExecuteRequestCallback<Message> callback) {
       super(nodeId, message, callback);
     }
 

@@ -16,8 +16,6 @@ package org.apache.hadoop.hive.llap.tezplugins;
 
 import javax.net.SocketFactory;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.security.PrivilegedAction;
 import java.util.HashSet;
@@ -49,7 +47,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.LlapNodeId;
-import org.apache.hadoop.hive.llap.configuration.LlapConfiguration;
 import org.apache.hadoop.hive.llap.daemon.LlapDaemonProtocolBlockingPB;
 import org.apache.hadoop.hive.llap.daemon.impl.LlapDaemonProtocolClientImpl;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryCompleteRequestProto;
@@ -71,9 +68,9 @@ import org.apache.hadoop.service.AbstractService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class TaskCommunicator extends AbstractService {
+public class LlapDaemonProtocolClientProxy extends AbstractService {
 
-  private static final Logger LOG = LoggerFactory.getLogger(TaskCommunicator.class);
+  private static final Logger LOG = LoggerFactory.getLogger(LlapDaemonProtocolClientProxy.class);
 
   private final ConcurrentMap<String, LlapDaemonProtocolBlockingPB> hostProxies;
 
@@ -85,9 +82,9 @@ public class TaskCommunicator extends AbstractService {
   private volatile ListenableFuture<Void> requestManagerFuture;
   private final Token<LlapTokenIdentifier> llapToken;
 
-  public TaskCommunicator(
+  public LlapDaemonProtocolClientProxy(
       int numThreads, Configuration conf, Token<LlapTokenIdentifier> llapToken) {
-    super(TaskCommunicator.class.getSimpleName());
+    super(LlapDaemonProtocolClientProxy.class.getSimpleName());
     this.hostProxies = new ConcurrentHashMap<>();
     this.socketFactory = NetUtils.getDefaultSocketFactory(conf);
     this.llapToken = llapToken;
