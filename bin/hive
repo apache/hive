@@ -171,6 +171,9 @@ fi
 # supress the HADOOP_HOME warnings in 1.x.x
 export HADOOP_HOME_WARN_SUPPRESS=true 
 
+# to make sure log4j2.x and jline jars are loaded ahead of the jars pulled by hadoop
+export HADOOP_USER_CLASSPATH_FIRST=true
+
 # pass classpath to hadoop
 if [ "$HADOOP_CLASSPATH" != "" ]; then
   export HADOOP_CLASSPATH="${CLASSPATH}:${HADOOP_CLASSPATH}"
