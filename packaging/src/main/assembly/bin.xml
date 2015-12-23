@@ -67,6 +67,9 @@
       <useProjectArtifact>false</useProjectArtifact>
       <useStrictFiltering>true</useStrictFiltering>
       <useTransitiveFiltering>true</useTransitiveFiltering>
+      <excludes>
+        <exclude>org.apache.hadoop:*</exclude>
+      </excludes>
       <includes>
         <include>org.apache.hive.hcatalog:hive-webhcat:*</include>
       </includes>
