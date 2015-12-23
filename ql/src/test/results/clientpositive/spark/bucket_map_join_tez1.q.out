@@ -1567,7 +1567,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket_mapjoin
 POSTHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
 POSTHOOK: Output: default@tab@ds=2008-04-08
-POSTHOOK: Lineage: tab PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin)srcbucket_mapjoin.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tab PARTITION(ds=2008-04-08).key SIMPLE []
 POSTHOOK: Lineage: tab PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin)srcbucket_mapjoin.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: explain
 select count(*)
@@ -1688,7 +1688,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket_mapjoin
 POSTHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
 POSTHOOK: Output: default@tab@ds=2008-04-08
-POSTHOOK: Lineage: tab PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin)srcbucket_mapjoin.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tab PARTITION(ds=2008-04-08).key SIMPLE []
 POSTHOOK: Lineage: tab PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin)srcbucket_mapjoin.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: explain
 select count(*)

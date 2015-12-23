@@ -690,12 +690,10 @@ STAGE PLANS:
               predicate: (x = 484) (type: boolean)
               Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: 484 (type: int)
-                outputColumnNames: _col0
                 Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count(1)
-                  keys: _col0 (type: int)
+                  keys: 484 (type: int)
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -766,28 +764,32 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            GlobalTableId: 0
-#### A masked pattern was here ####
-            NumFilesPerFileSink: 1
+          Select Operator
+            expressions: 484 (type: int), _col1 (type: bigint)
+            outputColumnNames: _col0, _col1
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
 #### A masked pattern was here ####
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                properties:
-                  columns _col0,_col1
-                  columns.types int:bigint
-                  escape.delim \
-                  hive.serialization.extend.additional.nesting.levels true
-                  serialization.escape.crlf true
-                  serialization.format 1
-                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            TotalFiles: 1
-            GatherStats: false
-            MultiFileSpray: false
+              NumFilesPerFileSink: 1
+              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+#### A masked pattern was here ####
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    columns _col0,_col1
+                    columns.types int:bigint
+                    escape.delim \
+                    hive.serialization.extend.additional.nesting.levels true
+                    serialization.escape.crlf true
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              TotalFiles: 1
+              GatherStats: false
+              MultiFileSpray: false
 
   Stage: Stage-0
     Fetch Operator

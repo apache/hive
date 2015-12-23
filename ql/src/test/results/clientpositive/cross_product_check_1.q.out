@@ -326,8 +326,8 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join JOIN[19][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
-Warning: Shuffle Join JOIN[10][tables = [$hdt$_1, $hdt$_2]] in Stage 'Stage-2:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[18][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[9][tables = [$hdt$_1, $hdt$_2]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: explain select * from A join (select d1.key from B d1 join B d2 where 1 = 1  group by d1.key) od1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from A join (select d1.key from B d1 join B d2 where 1 = 1  group by d1.key) od1

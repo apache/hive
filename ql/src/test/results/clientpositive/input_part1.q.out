@@ -365,8 +365,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@dest1
-POSTHOOK: Lineage: dest1.ds SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.hr SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Lineage: dest1.ds SIMPLE []
+POSTHOOK: Lineage: dest1.hr SIMPLE []
 POSTHOOK: Lineage: dest1.key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: SELECT dest1.* FROM dest1

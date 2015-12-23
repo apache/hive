@@ -101,11 +101,11 @@ STAGE PLANS:
               predicate: (!@#$%^&*()_q = '1') (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
-                expressions: x+1 (type: string), y&y (type: string), '1' (type: string)
-                outputColumnNames: x+1, y&y, !@#$%^&*()_q
+                expressions: x+1 (type: string), y&y (type: string)
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
-                  keys: x+1 (type: string), y&y (type: string), !@#$%^&*()_q (type: string)
+                  keys: _col0 (type: string), _col1 (type: string), '1' (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
@@ -120,13 +120,17 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-          File Output Operator
-            compressed: false
+          Select Operator
+            expressions: _col0 (type: string), _col1 (type: string), '1' (type: string)
+            outputColumnNames: _col0, _col1, _col2
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -156,11 +160,11 @@ STAGE PLANS:
               predicate: (!@#$%^&*()_q = '1') (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
-                expressions: x+1 (type: string), y&y (type: string), '1' (type: string)
-                outputColumnNames: x+1, y&y, !@#$%^&*()_q
+                expressions: x+1 (type: string), y&y (type: string)
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
-                  keys: x+1 (type: string), y&y (type: string), !@#$%^&*()_q (type: string)
+                  keys: _col0 (type: string), _col1 (type: string), '1' (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
@@ -187,27 +191,27 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             Reduce Output Operator
-              key expressions: _col2 (type: string), _col1 (type: string)
+              key expressions: '1' (type: string), _col1 (type: string)
               sort order: ++
-              Map-reduce partition columns: _col2 (type: string)
+              Map-reduce partition columns: '1' (type: string)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               value expressions: _col0 (type: string)
       Reduce Operator Tree:
         Select Operator
-          expressions: VALUE._col0 (type: string), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string)
-          outputColumnNames: _col0, _col1, _col2
+          expressions: VALUE._col0 (type: string), KEY.reducesinkkey1 (type: string)
+          outputColumnNames: _col0, _col1
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           PTF Operator
             Function definitions:
                 Input definition
                   input alias: ptf_0
-                  output shape: _col0: string, _col1: string, _col2: string
+                  output shape: _col0: string, _col1: string
                   type: WINDOWING
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
                   order by: _col1
-                  partition by: _col2
+                  partition by: '1'
                   raw input shape:
                   window functions:
                       window function definition
@@ -219,7 +223,7 @@ STAGE PLANS:
                         isPivotResult: true
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
-              expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), rank_window_0 (type: int)
+              expressions: _col0 (type: string), _col1 (type: string), '1' (type: string), rank_window_0 (type: int)
               outputColumnNames: _col0, _col1, _col2, _col3
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               File Output Operator
@@ -260,11 +264,11 @@ STAGE PLANS:
               predicate: (!@#$%^&*()_q = '1') (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
-                expressions: x+1 (type: string), y&y (type: string), '1' (type: string)
-                outputColumnNames: x+1, y&y, !@#$%^&*()_q
+                expressions: x+1 (type: string), y&y (type: string)
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
-                  keys: x+1 (type: string), y&y (type: string), !@#$%^&*()_q (type: string)
+                  keys: _col0 (type: string), _col1 (type: string), '1' (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
@@ -291,27 +295,27 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             Reduce Output Operator
-              key expressions: _col2 (type: string), _col1 (type: string)
+              key expressions: '1' (type: string), _col1 (type: string)
               sort order: ++
-              Map-reduce partition columns: _col2 (type: string)
+              Map-reduce partition columns: '1' (type: string)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               value expressions: _col0 (type: string)
       Reduce Operator Tree:
         Select Operator
-          expressions: VALUE._col0 (type: string), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string)
-          outputColumnNames: _col0, _col1, _col2
+          expressions: VALUE._col0 (type: string), KEY.reducesinkkey1 (type: string)
+          outputColumnNames: _col0, _col1
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           PTF Operator
             Function definitions:
                 Input definition
                   input alias: ptf_0
-                  output shape: _col0: string, _col1: string, _col2: string
+                  output shape: _col0: string, _col1: string
                   type: WINDOWING
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
                   order by: _col1
-                  partition by: _col2
+                  partition by: '1'
                   raw input shape:
                   window functions:
                       window function definition
@@ -323,7 +327,7 @@ STAGE PLANS:
                         isPivotResult: true
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
-              expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), rank_window_0 (type: int)
+              expressions: _col0 (type: string), _col1 (type: string), '1' (type: string), rank_window_0 (type: int)
               outputColumnNames: _col0, _col1, _col2, _col3
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               File Output Operator

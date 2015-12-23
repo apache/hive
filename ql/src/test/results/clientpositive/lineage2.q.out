@@ -402,7 +402,7 @@ PREHOOK: query: select 3 * 5 from dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
 #### A masked pattern was here ####
-{"version":"1.0","engine":"mr","database":"default","hash":"753abad4d55afd3df34fdc73abfcd44d","queryText":"select 3 * 5 from dest1","edges":[{"sources":[],"targets":[0],"expression":"(3 * 5)","edgeType":"PROJECTION"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"c0"}]}
+{"version":"1.0","engine":"mr","database":"default","hash":"753abad4d55afd3df34fdc73abfcd44d","queryText":"select 3 * 5 from dest1","edges":[{"sources":[],"targets":[0],"expression":"15","edgeType":"PROJECTION"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"c0"}]}
 15
 15
 15

@@ -1,4 +1,4 @@
-Warning: Shuffle Join JOIN[18][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: -- non agg, non corr
 explain
 select * 
@@ -151,7 +151,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join JOIN[18][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: select * 
 from src 
 where src.key not in  ( select key from src s1 where s1.key > '2')
@@ -285,7 +285,7 @@ POSTHOOK: Input: default@src
 199	val_199
 199	val_199
 2	val_2
-Warning: Shuffle Join JOIN[28][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[27][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: -- non agg, corr
 explain
 select p_mfgr, b.p_name, p_size 
@@ -530,7 +530,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join JOIN[28][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[27][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: select p_mfgr, b.p_name, p_size 
 from part b 
 where b.p_name not in 
@@ -569,7 +569,7 @@ Manufacturer#4	almond azure aquamarine papaya violet	12
 Manufacturer#5	almond antique blue firebrick mint	31
 Manufacturer#5	almond aquamarine dodger light gainsboro	46
 Manufacturer#5	almond azure blanched chiffon midnight	23
-Warning: Shuffle Join JOIN[39][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[38][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: -- agg, non corr
 explain
 select p_name, p_size 
@@ -851,7 +851,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join JOIN[39][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[38][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: select p_name, p_size 
 from 
 part where part.p_size not in 
@@ -898,7 +898,7 @@ almond aquamarine sandy cyan gainsboro	18
 almond aquamarine yellow dodger mint	7
 almond azure aquamarine papaya violet	12
 almond azure blanched chiffon midnight	23
-Warning: Shuffle Join JOIN[38][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[37][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: -- agg, corr
 explain
 select p_mfgr, p_name, p_size 
@@ -1212,7 +1212,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join JOIN[38][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[37][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: select p_mfgr, p_name, p_size 
 from part b where b.p_size not in 
   (select min(p_size) 
@@ -1288,7 +1288,7 @@ POSTHOOK: Input: default@lineitem
 139636	1
 175839	1
 182052	1
-Warning: Shuffle Join JOIN[18][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: -- alternate not in syntax
 select * 
 from src 

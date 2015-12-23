@@ -150,10 +150,32 @@ class ASTBuilder {
 
     switch (sqlType) {
     case BINARY:
-      ByteString bs = (ByteString) literal.getValue();
-      val = bs.byteAt(0);
-      type = HiveParser.BigintLiteral;
+    case DATE:
+    case TIME:
+    case TIMESTAMP:
+    case INTERVAL_YEAR_MONTH:
+    case INTERVAL_DAY_TIME:
+      if (literal.getValue() == null) {
+        return ASTBuilder.construct(HiveParser.TOK_NULL, "TOK_NULL").node();
+      }
       break;
+    case TINYINT:
+    case SMALLINT:
+    case INTEGER:
+    case BIGINT:
+    case DOUBLE:
+    case DECIMAL:
+    case FLOAT:
+    case REAL:
+    case VARCHAR:
+    case CHAR:
+    case BOOLEAN:
+      if (literal.getValue3() == null) {
+        return ASTBuilder.construct(HiveParser.TOK_NULL, "TOK_NULL").node();
+      }
+    }
+
+    switch (sqlType) {
     case TINYINT:
       if (useTypeQualInLiteral) {
         val = literal.getValue3() + "Y";
@@ -244,6 +266,8 @@ class ASTBuilder {
       type = HiveParser.TOK_NULL;
       break;
 
+    //binary type should not be seen.
+    case BINARY:
     default:
       throw new RuntimeException("Unsupported Type: " + sqlType);
     }

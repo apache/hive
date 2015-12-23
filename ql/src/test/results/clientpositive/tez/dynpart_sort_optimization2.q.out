@@ -1630,7 +1630,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: UDFToInteger(_col1) (type: int), UDFToInteger(_col2) (type: int), _col0 (type: string)
+                  expressions: UDFToInteger(_col1) (type: int), UDFToInteger(_col2) (type: int), 'day' (type: string)
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
@@ -1724,6 +1724,7 @@ STAGE PLANS:
     Tez
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1744,7 +1745,7 @@ STAGE PLANS:
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string)
                         sort order: ++
-                        Map-reduce partition columns: _col0 (type: string)
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col2 (type: bigint)
         Reducer 2 
@@ -1757,17 +1758,30 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: UDFToInteger(_col1) (type: int), UDFToInteger(_col2) (type: int), _col0 (type: string)
+                  expressions: UDFToInteger(_col1) (type: int), UDFToInteger(_col2) (type: int), 'day' (type: string)
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                  File Output Operator
-                    compressed: false
+                  Reduce Output Operator
+                    key expressions: _col2 (type: string)
+                    sort order: +
+                    Map-reduce partition columns: _col2 (type: string)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    table:
-                        input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
-                        serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                        name: default.hive13_dp1
+                    value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+        Reducer 3 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: int), VALUE._col1 (type: int), VALUE._col2 (type: string)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                      serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                      name: default.hive13_dp1
 
   Stage: Stage-2
     Dependency Collection

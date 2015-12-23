@@ -68,7 +68,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pcr_t1
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
 POSTHOOK: Output: default@pcr_t2
-POSTHOOK: Lineage: pcr_t2.ds SIMPLE [(pcr_t1)pcr_t1.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: pcr_t2.ds SIMPLE []
 POSTHOOK: Lineage: pcr_t2.key SIMPLE [(pcr_t1)pcr_t1.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: pcr_t2.value SIMPLE [(pcr_t1)pcr_t1.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: from pcr_t1
@@ -83,8 +83,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pcr_t1
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
 POSTHOOK: Output: default@pcr_t2
-POSTHOOK: Lineage: pcr_t2.ds SIMPLE [(pcr_t1)pcr_t1.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: pcr_t2.key SIMPLE [(pcr_t1)pcr_t1.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: pcr_t2.ds SIMPLE []
+POSTHOOK: Lineage: pcr_t2.key SIMPLE []
 POSTHOOK: Lineage: pcr_t2.value SIMPLE [(pcr_t1)pcr_t1.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: explain extended
 select key, value, ds

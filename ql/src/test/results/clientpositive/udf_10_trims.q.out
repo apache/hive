@@ -117,4 +117,4 @@ WHERE src.key = 86
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1
-POSTHOOK: Lineage: dest1.c1 EXPRESSION []
+POSTHOOK: Lineage: dest1.c1 SIMPLE []

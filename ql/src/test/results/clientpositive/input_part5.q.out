@@ -114,7 +114,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@tmptable
 POSTHOOK: Lineage: tmptable.ds SIMPLE [(srcpart)x.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: tmptable.hr SIMPLE [(srcpart)x.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: tmptable.hr SIMPLE []
 POSTHOOK: Lineage: tmptable.key SIMPLE [(srcpart)x.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmptable.value SIMPLE [(srcpart)x.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select * from tmptable x sort by x.key,x.value,x.ds,x.hr

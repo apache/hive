@@ -137,10 +137,10 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 2 Data size: 204 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
+                          Target column: gpa (char(5))
                           Target Input: c2
                           Partition key expr: gpa
                           Statistics: Num rows: 2 Data size: 204 Basic stats: COMPLETE Column stats: NONE
-                          Target column: gpa
                           Target Vertex: Map 3
             Execution mode: vectorized, llap
         Map 3 

@@ -46,12 +46,9 @@ import org.apache.calcite.sql.parser.SqlParserPos;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.ConversionUtil;
 import org.apache.calcite.util.NlsString;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.Decimal128;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
-import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -69,8 +66,8 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseBinary;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseNumeric;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFTimestamp;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToBinary;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToChar;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToDate;
@@ -91,8 +88,6 @@ import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
 
 public class RexNodeConverter {
-  private static final Logger LOG = LoggerFactory.getLogger(RexNodeConverter.class);
-
   private static class InputCtx {
     private final RelDataType                   calciteInpDataType;
     private final ImmutableMap<String, Integer> hiveNameToPosMap;
@@ -111,6 +106,11 @@ public class RexNodeConverter {
   private final RelOptCluster           cluster;
   private final ImmutableList<InputCtx> inputCtxs;
   private final boolean                 flattenExpr;
+
+  //Constructor used by HiveRexExecutorImpl
+  public RexNodeConverter(RelOptCluster cluster) {
+    this(cluster, new ArrayList<InputCtx>(), false);
+  }
 
   public RexNodeConverter(RelOptCluster cluster, RelDataType inpDataType,
       ImmutableMap<String, Integer> nameToPosMap, int offset, boolean flattenExpr) {
@@ -259,6 +259,9 @@ public class RexNodeConverter {
       GenericUDF udf = func.getGenericUDF();
       if ((udf instanceof GenericUDFToChar) || (udf instanceof GenericUDFToVarchar)
           || (udf instanceof GenericUDFToDecimal) || (udf instanceof GenericUDFToDate)
+          // Calcite can not specify the scale for timestamp. As a result, all
+          // the millisecond part will be lost
+          || (udf instanceof GenericUDFTimestamp)
           || (udf instanceof GenericUDFToBinary) || castExprUsingUDFBridge(udf)) {
         castExpr = cluster.getRexBuilder().makeAbstractCast(
             TypeConverter.convert(func.getTypeInfo(), cluster.getTypeFactory()),
@@ -321,6 +324,10 @@ public class RexNodeConverter {
         coi);
 
     RexNode calciteLiteral = null;
+    // If value is null, the type should also be VOID.
+    if (value == null) {
+      hiveTypeCategory = PrimitiveCategory.VOID;
+    }
     // TODO: Verify if we need to use ConstantObjectInspector to unwrap data
     switch (hiveTypeCategory) {
     case BOOLEAN:
@@ -378,6 +385,10 @@ public class RexNodeConverter {
       calciteLiteral = rexBuilder.makeApproxLiteral(new BigDecimal((Float) value), calciteDataType);
       break;
     case DOUBLE:
+      // TODO: The best solution is to support NaN in expression reduction.
+      if (Double.isNaN((Double) value)) {
+        throw new CalciteSemanticException("NaN", UnsupportedFeature.Invalid_decimal);
+      }
       calciteLiteral = rexBuilder.makeApproxLiteral(new BigDecimal((Double) value), calciteDataType);
       break;
     case CHAR:
@@ -417,14 +428,22 @@ public class RexNodeConverter {
           new SqlIntervalQualifier(TimeUnit.YEAR, TimeUnit.MONTH, new SqlParserPos(1,1)));
       break;
     case INTERVAL_DAY_TIME:
+      // Calcite RexBuilder L525 divides value by the multiplier.
+      // Need to get CAlCITE-1020 in.
+      throw new CalciteSemanticException("INTERVAL_DAY_TIME is not well supported",
+          UnsupportedFeature.Invalid_interval);
       // Calcite day-time interval is millis value as BigDecimal
       // Seconds converted to millis
-      BigDecimal secsValueBd = BigDecimal.valueOf(((HiveIntervalDayTime) value).getTotalSeconds() * 1000);
-      // Nanos converted to millis
-      BigDecimal nanosValueBd = BigDecimal.valueOf(((HiveIntervalDayTime) value).getNanos(), 6);
-      calciteLiteral = rexBuilder.makeIntervalLiteral(secsValueBd.add(nanosValueBd),
-          new SqlIntervalQualifier(TimeUnit.DAY, TimeUnit.SECOND, new SqlParserPos(1,1)));
-      break;
+      // BigDecimal secsValueBd = BigDecimal
+      // .valueOf(((HiveIntervalDayTime) value).getTotalSeconds() * 1000);
+      // // Nanos converted to millis
+      // BigDecimal nanosValueBd = BigDecimal.valueOf(((HiveIntervalDayTime)
+      // value).getNanos(), 6);
+      // calciteLiteral =
+      // rexBuilder.makeIntervalLiteral(secsValueBd.add(nanosValueBd),
+      // new SqlIntervalQualifier(TimeUnit.MILLISECOND, null, new
+      // SqlParserPos(1, 1)));
+      // break;
     case VOID:
       calciteLiteral = cluster.getRexBuilder().makeLiteral(null,
           cluster.getTypeFactory().createSqlType(SqlTypeName.NULL), true);
@@ -436,11 +455,6 @@ public class RexNodeConverter {
     }
 
     return calciteLiteral;
-  }
-
-  private RexNode createNullLiteral(ExprNodeDesc expr) throws CalciteSemanticException {
-    return cluster.getRexBuilder().makeNullLiteral(
-        TypeConverter.convert(expr.getTypeInfo(), cluster.getTypeFactory()).getSqlTypeName());
   }
 
   public static RexNode convert(RelOptCluster cluster, ExprNodeDesc joinCondnExprNode,
