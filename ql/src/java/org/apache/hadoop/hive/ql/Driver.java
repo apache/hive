@@ -420,6 +420,8 @@ public class Driver implements CommandProcessor {
       final HiveTxnManager txnManager = SessionState.get().initTxnMgr(conf);
       // In case when user Ctrl-C twice to kill Hive CLI JVM, we want to release locks
 
+      // if compile is being called multiple times, clear the old shutdownhook
+      ShutdownHookManager.removeShutdownHook(shutdownRunner);
       shutdownRunner = new Runnable() {
         @Override
         public void run() {
@@ -1955,10 +1957,8 @@ public class Driver implements CommandProcessor {
         LOG.warn("Exception when releasing locking in destroy: " +
             e.getMessage());
       }
-      if (shutdownRunner != null) {
-        ShutdownHookManager.removeShutdownHook(shutdownRunner);
-      }
     }
+    ShutdownHookManager.removeShutdownHook(shutdownRunner);
   }
 
   public org.apache.hadoop.hive.ql.plan.api.Query getQueryPlan() throws IOException {
