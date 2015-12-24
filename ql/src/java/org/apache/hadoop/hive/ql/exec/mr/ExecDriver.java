@@ -423,7 +423,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       if (HiveConf.getVar(job, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")
           && ss != null) {
         TezSessionState session = ss.getTezSession();
-        TezSessionPoolManager.getInstance().close(session, true);
+        TezSessionPoolManager.getInstance().closeIfNotDefault(session, true);
       }
 
       // Finally SUBMIT the JOB!

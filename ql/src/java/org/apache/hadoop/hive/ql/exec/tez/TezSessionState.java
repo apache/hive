@@ -18,6 +18,8 @@
 package org.apache.hadoop.hive.ql.exec.tez;
 
 
+import java.util.Collection;
+
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -115,6 +117,11 @@ public class TezSessionState {
     this.utils = utils;
   }
 
+  public String toString() {
+    return "sessionId=" + sessionId + ", queueName=" + queueName + ", user=" + user
+        + ", doAs=" + doAsEnabled + ", isOpen=" + isOpen();
+  }
+
   /**
    * Constructor. We do not automatically connect, because we only want to
    * load tez classes when the user has tez installed.
@@ -168,7 +175,8 @@ public class TezSessionState {
 
   public void open(HiveConf conf)
       throws IOException, LoginException, URISyntaxException, TezException {
-    open(conf, null);
+    Set<String> noFiles = null;
+    open(conf, noFiles, null);
   }
 
   /**
@@ -182,17 +190,31 @@ public class TezSessionState {
    */
   public void open(HiveConf conf, String[] additionalFiles)
     throws IOException, LoginException, IllegalArgumentException, URISyntaxException, TezException {
-    openInternal(conf, additionalFiles, false, null);
+    openInternal(conf, setFromArray(additionalFiles), false, null, null);
+  }
+
+  private static Set<String> setFromArray(String[] additionalFiles) {
+    if (additionalFiles == null) return null;
+    Set<String> files = new HashSet<>();
+    for (String originalFile : additionalFiles) {
+      files.add(originalFile);
+    }
+    return files;
   }
 
   public void beginOpen(HiveConf conf, String[] additionalFiles, LogHelper console)
     throws IOException, LoginException, IllegalArgumentException, URISyntaxException, TezException {
-    openInternal(conf, additionalFiles, true, console);
+    openInternal(conf, setFromArray(additionalFiles), true, console, null);
   }
 
-  private void openInternal(
-      final HiveConf conf, String[] additionalFiles, boolean isAsync, LogHelper console)
-          throws IOException, LoginException, IllegalArgumentException, URISyntaxException, TezException {
+  public void open(HiveConf conf, Collection<String> additionalFiles, Path scratchDir)
+      throws LoginException, IOException, URISyntaxException, TezException {
+    openInternal(conf, additionalFiles, false, null, scratchDir);
+  }
+
+  protected void openInternal(final HiveConf conf, Collection<String> additionalFiles,
+      boolean isAsync, LogHelper console, Path scratchDir) throws IOException, LoginException,
+        IllegalArgumentException, URISyntaxException, TezException {
     this.conf = conf;
     this.queueName = conf.get("tez.queue.name");
     this.doAsEnabled = conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS);
@@ -205,13 +227,11 @@ public class TezSessionState {
     LOG.info("User of session id " + sessionId + " is " + user);
 
     // create the tez tmp dir
-    tezScratchDir = createTezDir(sessionId);
+    tezScratchDir = scratchDir == null ? createTezDir(sessionId) : scratchDir;
 
     additionalFilesNotFromConf.clear();
     if (additionalFiles != null) {
-      for (String originalFile : additionalFiles) {
-        additionalFilesNotFromConf.add(originalFile);
-      }
+      additionalFilesNotFromConf.addAll(additionalFiles);
     }
 
     refreshLocalResourcesFromConf(conf);
@@ -459,6 +479,10 @@ public class TezSessionState {
     localizedResources.clear();
   }
 
+  public Set<String> getAdditionalFilesNotFromConf() {
+    return additionalFilesNotFromConf;
+  }
+
   private void closeClient(TezClient client) throws TezException,
       IOException {
     try {
@@ -512,9 +536,7 @@ public class TezSessionState {
    * createTezDir creates a temporary directory in the scratchDir folder to
    * be used with Tez. Assumes scratchDir exists.
    */
-  private Path createTezDir(String sessionId)
-    throws IOException {
-
+  private Path createTezDir(String sessionId) throws IOException {
     // tez needs its own scratch dir (per session)
     Path tezDir = new Path(SessionState.get().getHdfsScratchDirURIString(), TEZ_DIR);
     tezDir = new Path(tezDir, sessionId);

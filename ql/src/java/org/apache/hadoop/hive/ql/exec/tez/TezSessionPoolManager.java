@@ -18,21 +18,40 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
+import com.google.common.annotations.VisibleForTesting;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
+
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
+import java.util.Set;
+
+import javax.security.auth.login.LoginException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.tez.dag.api.TezException;
 
 /**
  * This class is for managing multiple tez sessions particularly when
@@ -44,14 +63,29 @@ import org.apache.hadoop.security.UserGroupInformation;
 public class TezSessionPoolManager {
 
   private static final Logger LOG = LoggerFactory.getLogger(TezSessionPoolManager.class);
+  private static final Random rdm = new Random();
 
-  private BlockingQueue<TezSessionState> defaultQueuePool;
+  private BlockingQueue<TezSessionPoolSession> defaultQueuePool;
+
+  /** Priority queue sorted by expiration time of live sessions that could be expired. */
+  private PriorityBlockingQueue<TezSessionPoolSession> expirationQueue;
+  /** The background restart queue that is populated when expiration is triggered by a foreground
+   * thread (i.e. getting or returning a session), to avoid delaying it. */
+  private BlockingQueue<TezSessionPoolSession> restartQueue;
+  private Thread expirationThread;
+  private Thread restartThread;
+
+
   private Semaphore llapQueue;
   private int blockingQueueLength = -1;
   private HiveConf initConf = null;
   int numConcurrentLlapQueries = -1;
+  private long sessionLifetimeMs = 0;
+  private long sessionLifetimeJitterMs = 0;
 
   private boolean inited = false;
+
+
 
   private static TezSessionPoolManager sessionPool = null;
 
@@ -74,25 +108,57 @@ public class TezSessionPoolManager {
     this.inited = true;
     for (int i = 0; i < blockingQueueLength; i++) {
       HiveConf newConf = new HiveConf(initConf);
-      TezSessionState sessionState = defaultQueuePool.take();
+      TezSessionPoolSession sessionState = defaultQueuePool.take();
+      boolean isUsable = sessionState.tryUse();
+      if (!isUsable) throw new IOException(sessionState + " is not usable at pool startup");
       newConf.set("tez.queue.name", sessionState.getQueueName());
       sessionState.open(newConf);
-      openSessions.add(sessionState);
-      defaultQueuePool.put(sessionState);
+      if (sessionState.returnAfterUse()) {
+        defaultQueuePool.put(sessionState);
+      }
+    }
+    if (expirationThread != null) {
+      expirationThread.start();
+      restartThread.start();
     }
   }
 
   public void setupPool(HiveConf conf) throws InterruptedException {
-
     String defaultQueues = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_SERVER2_TEZ_DEFAULT_QUEUES);
-    int numSessions = conf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_TEZ_SESSIONS_PER_DEFAULT_QUEUE);
-    numConcurrentLlapQueries =
-        conf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_LLAP_CONCURRENT_QUERIES);
+    int numSessions = conf.getIntVar(ConfVars.HIVE_SERVER2_TEZ_SESSIONS_PER_DEFAULT_QUEUE);
+    numConcurrentLlapQueries = conf.getIntVar(ConfVars.HIVE_SERVER2_LLAP_CONCURRENT_QUERIES);
+    sessionLifetimeMs = conf.getTimeVar(
+        ConfVars.HIVE_SERVER2_TEZ_SESSION_LIFETIME, TimeUnit.MILLISECONDS);
+    if (sessionLifetimeMs != 0) {
+      sessionLifetimeJitterMs = conf.getTimeVar(
+          ConfVars.HIVE_SERVER2_TEZ_SESSION_LIFETIME_JITTER, TimeUnit.MILLISECONDS);
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Starting session expiration threads; session lifetime is "
+            + sessionLifetimeMs + " + [0, " + sessionLifetimeJitterMs + ") ms");
+      }
+      expirationQueue = new PriorityBlockingQueue<>(11, new Comparator<TezSessionPoolSession>() {
+        public int compare(TezSessionPoolSession o1, TezSessionPoolSession o2) {
+          assert o1.expirationNs != null && o2.expirationNs != null;
+          return o1.expirationNs.compareTo(o2.expirationNs);
+        }
+      });
+      restartQueue = new LinkedBlockingQueue<>();
+      expirationThread = new Thread(new Runnable() {
+        public void run() {
+          runExpirationThread();
+        }
+      }, "TezSessionPool-expiration");
+      restartThread = new Thread(new Runnable() {
+        public void run() {
+          runRestartThread();
+        }
+      }, "TezSessionPool-cleanup");
+    }
 
     // the list of queues is a comma separated list.
     String defaultQueueList[] = defaultQueues.split(",");
-    defaultQueuePool =
-        new ArrayBlockingQueue<TezSessionState>(numSessions * defaultQueueList.length);
+    defaultQueuePool = new ArrayBlockingQueue<TezSessionPoolSession>(
+        numSessions * defaultQueueList.length);
     llapQueue = new Semaphore(numConcurrentLlapQueries, true);
 
     this.initConf = conf;
@@ -108,15 +174,23 @@ public class TezSessionPoolManager {
         if (queue.length() == 0) {
           continue;
         }
-        TezSessionState sessionState = createSession(TezSessionState.makeSessionId());
-        sessionState.setQueueName(queue);
-        sessionState.setDefault();
-        LOG.info("Created new tez session for queue: " + queue +
-            " with session id: " + sessionState.getSessionId());
-        defaultQueuePool.put(sessionState);
+        defaultQueuePool.put(createAndInitSession(queue, true));
         blockingQueueLength++;
       }
     }
+  }
+
+  private TezSessionPoolSession createAndInitSession(String queue, boolean isDefault) {
+    TezSessionPoolSession sessionState = createSession(TezSessionState.makeSessionId());
+    if (queue != null) {
+      sessionState.setQueueName(queue);
+    }
+    if (isDefault) {
+      sessionState.setDefault();
+    }
+    LOG.info("Created new tez session for queue: " + queue +
+        " with session id: " + sessionState.getSessionId());
+    return sessionState;
   }
 
   private TezSessionState getSession(HiveConf conf, boolean doOpen,
@@ -143,7 +217,11 @@ public class TezSessionPoolManager {
     }
 
     LOG.info("Choosing a session from the defaultQueuePool");
-    return defaultQueuePool.take();
+    while (true) {
+      TezSessionPoolSession result = defaultQueuePool.take();
+      if (result.tryUse()) return result;
+      LOG.info("Couldn't use a session [" + result + "]; attempting another one");
+    }
   }
 
   /**
@@ -155,19 +233,15 @@ public class TezSessionPoolManager {
    */
   private TezSessionState getNewSessionState(HiveConf conf,
       String queueName, boolean doOpen) throws Exception {
-    TezSessionState retTezSessionState = createSession(TezSessionState.makeSessionId());
+    TezSessionPoolSession retTezSessionState = createAndInitSession(queueName, false);
     if (queueName != null) {
       conf.set("tez.queue.name", queueName);
     }
-    String what = "Created";
     if (doOpen) {
       retTezSessionState.open(conf);
-      openSessions.add(retTezSessionState);
-      what = "Started";
+      LOG.info("Started a new session for queue: " + queueName +
+          " session id: " + retTezSessionState.getSessionId());
     }
-
-    LOG.info(what + " a new session for queue: " + queueName +
-        " session id: " + retTezSessionState.getSessionId());
     return retTezSessionState;
   }
 
@@ -176,24 +250,27 @@ public class TezSessionPoolManager {
     if (llap && (this.numConcurrentLlapQueries > 0)) {
       llapQueue.release();
     }
-    if (tezSessionState.isDefault()) {
+    if (tezSessionState.isDefault() && tezSessionState instanceof TezSessionPoolSession) {
       LOG.info("The session " + tezSessionState.getSessionId()
           + " belongs to the pool. Put it back in");
       SessionState sessionState = SessionState.get();
       if (sessionState != null) {
         sessionState.setTezSession(null);
       }
-      defaultQueuePool.put(tezSessionState);
+      TezSessionPoolSession poolSession = (TezSessionPoolSession)tezSessionState;
+      if (poolSession.returnAfterUse()) {
+        defaultQueuePool.put(poolSession);
+      }
     }
     // non default session nothing changes. The user can continue to use the existing
     // session in the SessionState
   }
 
-  public void close(TezSessionState tezSessionState, boolean keepTmpDir) throws Exception {
+  public void closeIfNotDefault(
+      TezSessionState tezSessionState, boolean keepTmpDir) throws Exception {
     LOG.info("Closing tez session default? " + tezSessionState.isDefault());
     if (!tezSessionState.isDefault()) {
       tezSessionState.close(keepTmpDir);
-      openSessions.remove(tezSessionState);
     }
   }
 
@@ -211,6 +288,13 @@ public class TezSessionPoolManager {
         iter.remove();
       }
     }
+
+    if (expirationThread != null) {
+      expirationThread.interrupt();
+    }
+    if (restartThread != null) {
+      restartThread.interrupt();
+    }
   }
 
   /**
@@ -225,11 +309,10 @@ public class TezSessionPoolManager {
     LOG.warn("We are closing a " + (tezSessionState.isDefault() ? "default" : "non-default")
         + " session because of retry failure.");
     tezSessionState.close(false);
-    openSessions.remove(tezSessionState);
   }
 
-  protected TezSessionState createSession(String sessionId) {
-    return new TezSessionState(sessionId);
+  protected TezSessionPoolSession createSession(String sessionId) {
+    return new TezSessionPoolSession(sessionId, this);
   }
 
   public TezSessionState getSession(TezSessionState session, HiveConf conf, boolean doOpen,
@@ -303,15 +386,10 @@ public class TezSessionPoolManager {
     }
 
     if (session != null) {
-      close(session, false);
+      closeIfNotDefault(session, false);
     }
 
     return getSession(conf, doOpen, forceCreate);
-  }
-
-  public void closeAndOpen(TezSessionState sessionState, HiveConf conf, boolean keepTmpDir)
-      throws Exception {
-    closeAndOpen(sessionState, conf, null, keepTmpDir);
   }
 
   public void closeAndOpen(TezSessionState sessionState, HiveConf conf,
@@ -320,12 +398,240 @@ public class TezSessionPoolManager {
     if (sessionConf != null && sessionConf.get("tez.queue.name") != null) {
       conf.set("tez.queue.name", sessionConf.get("tez.queue.name"));
     }
-    close(sessionState, keepTmpDir);
+    closeIfNotDefault(sessionState, keepTmpDir);
     sessionState.open(conf, additionalFiles);
-    openSessions.add(sessionState);
   }
 
   public List<TezSessionState> getOpenSessions() {
     return openSessions;
+  }
+
+  private void closeAndReopen(TezSessionPoolSession oldSession) throws Exception {
+    String queueName = oldSession.getQueueName();
+    HiveConf conf = oldSession.getConf();
+    Path scratchDir = oldSession.getTezScratchDir();
+    boolean isDefault = oldSession.isDefault();
+    Set<String> additionalFiles = oldSession.getAdditionalFilesNotFromConf();
+    try {
+      oldSession.close(false);
+      defaultQueuePool.remove(oldSession);  // Make sure it's removed.
+    } finally {
+      TezSessionPoolSession newSession = createAndInitSession(queueName, isDefault);
+      newSession.open(conf, additionalFiles, scratchDir);
+      defaultQueuePool.put(newSession);
+    }
+  }
+
+  /** Logic for the thread that restarts the sessions expired during foreground operations. */
+  private void runRestartThread() {
+    try {
+      while (true) {
+        TezSessionPoolSession next = restartQueue.take();
+        LOG.info("Restarting the expired session [" + next + "]");
+        try {
+          closeAndReopen(next);
+        } catch (InterruptedException ie) {
+          throw ie;
+        } catch (Exception e) {
+          LOG.error("Failed to close or restart a session, ignoring", e);
+        }
+      }
+    } catch (InterruptedException e) {
+      LOG.info("Restart thread is exiting due to an interruption");
+    }
+  }
+
+  /** Logic for the thread that tracks session expiration and restarts sessions in background. */
+  private void runExpirationThread() {
+    try {
+      while (true) {
+        TezSessionPoolSession nextToExpire = null;
+        while (true) {
+          // Restart the sessions until one of them refuses to restart.
+          nextToExpire = expirationQueue.take();
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("Seeing if we can expire [" + nextToExpire + "]");
+          }
+          try {
+            if (!nextToExpire.tryExpire(false)) break;
+          } catch (Exception e) {
+            // Reopen happens even when close fails, so there's not much to do here.
+            LOG.error("Failed to expire session " + nextToExpire + "; ignoring", e);
+            nextToExpire = null;
+            break; // Not strictly necessary; do the whole queue check again.
+          }
+          LOG.info("Tez session [" + nextToExpire + "] has expired");
+        }
+        if (nextToExpire != null && LOG.isDebugEnabled()) {
+          LOG.debug("[" + nextToExpire + "] is not ready to expire; adding it back");
+        }
+
+        // See addToExpirationQueue for why we re-check the queue.
+        synchronized (expirationQueue) {
+          // Add back the non-expired session. No need to notify, we are the only ones waiting.
+          if (nextToExpire != null) {
+            expirationQueue.add(nextToExpire);
+          }
+          nextToExpire = expirationQueue.peek();
+          if (nextToExpire != null) {
+            // Add some margin to the wait to avoid rechecking close to the boundary.
+            long timeToWaitMs = 10 + (nextToExpire.expirationNs - System.nanoTime()) / 1000000L;
+            timeToWaitMs = Math.max(1, timeToWaitMs);
+            if (LOG.isDebugEnabled()) {
+              LOG.debug("Waiting for ~" + timeToWaitMs + "ms to expire [" + nextToExpire + "]");
+            }
+            expirationQueue.wait(timeToWaitMs);
+          } else if (LOG.isDebugEnabled()) {
+            // Don't wait if empty - go to take() above, that will wait for us.
+            LOG.debug("Expiration queue is empty");
+          }
+        }
+      }
+    } catch (InterruptedException e) {
+      LOG.info("Expiration thread is exiting due to an interruption");
+    }
+  }
+
+  /**
+   * TezSession that keeps track of expiration and use.
+   * It has 3 states - not in use, in use, and expired. When in the pool, it is not in use;
+   * use and expiration may compete to take the session out of the pool and change it to the
+   * corresponding states. When someone tries to get a session, they check for expiration time;
+   * if it's time, the expiration is triggered; in that case, or if it was already triggered, the
+   * caller gets a different session. When the session is in use when it expires, the expiration
+   * thread ignores it and lets the return to the pool take care of the expiration.
+   * */
+  @VisibleForTesting
+  static class TezSessionPoolSession extends TezSessionState {
+    private static final int STATE_NONE = 0, STATE_IN_USE = 1, STATE_EXPIRED = 2;
+
+    private final AtomicInteger sessionState = new AtomicInteger(STATE_NONE);
+    private Long expirationNs;
+    private final TezSessionPoolManager parent; // Static class allows us to be used in tests.
+
+    public TezSessionPoolSession(String sessionId, TezSessionPoolManager parent) {
+      super(sessionId);
+      this.parent = parent;
+    }
+
+    @Override
+    public void close(boolean keepTmpDir) throws Exception {
+      try {
+        super.close(keepTmpDir);
+      } finally {
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Closed a pool session [" + this + "]");
+        }
+        openSessions.remove(this);
+        if (parent.expirationQueue != null) {
+          parent.expirationQueue.remove(this);
+        }
+      }
+    }
+
+    @Override
+    protected void openInternal(HiveConf conf, Collection<String> additionalFiles,
+        boolean isAsync, LogHelper console, Path scratchDir)
+            throws IOException, LoginException, URISyntaxException, TezException {
+      super.openInternal(conf, additionalFiles, isAsync, console, scratchDir);
+      openSessions.add(this);
+      if (parent.expirationQueue != null) {
+        long jitterModMs = (long)(parent.sessionLifetimeJitterMs * rdm.nextFloat());
+        expirationNs = System.nanoTime() + (parent.sessionLifetimeMs + jitterModMs) * 1000000L;
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Adding a pool session [" + this + "] to expiration queue");
+        }
+        parent.addToExpirationQueue(this);
+      }
+    }
+
+    @Override
+    public String toString() {
+      if (expirationNs == null) return super.toString();
+      long expiresInMs = (expirationNs - System.nanoTime()) / 1000000L;
+      return super.toString() + ", expires in " + expiresInMs + "ms";
+    }
+
+    /**
+     * Tries to use this session. When the session is in use, it will not expire.
+     * @return true if the session can be used; false if it has already expired.
+     */
+    public boolean tryUse() throws Exception {
+      while (true) {
+        int oldValue = sessionState.get();
+        if (oldValue == STATE_IN_USE) throw new AssertionError(this + " is already in use");
+        if (oldValue == STATE_EXPIRED) return false;
+        int finalState = shouldExpire() ? STATE_EXPIRED : STATE_IN_USE;
+        if (sessionState.compareAndSet(STATE_NONE, finalState)) {
+          if (finalState == STATE_IN_USE) return true;
+          closeAndRestartExpiredSession(true); // Restart asynchronously, don't block the caller.
+          return false;
+        }
+      }
+    }
+
+    /**
+     * Notifies the session that it's no longer in use. If the session has expired while in use,
+     * this method will take care of the expiration.
+     * @return True if the session was returned, false if it was restarted.
+     */
+    public boolean returnAfterUse() throws Exception {
+      int finalState = shouldExpire() ? STATE_EXPIRED : STATE_NONE;
+      if (!sessionState.compareAndSet(STATE_IN_USE, finalState)) {
+        throw new AssertionError("Unexpected state change; currently " + sessionState.get());
+      }
+      if (finalState == STATE_NONE) return true;
+      closeAndRestartExpiredSession(true);
+      return false;
+    }
+
+    /**
+     * Tries to expire and restart the session.
+     * @param isAsync Whether the restart should happen asynchronously.
+     * @return True if the session was, or will be restarted.
+     */
+    public boolean tryExpire(boolean isAsync) throws Exception {
+      if (expirationNs == null) return true;
+      if (!shouldExpire()) return false;
+      while (true) {
+        if (sessionState.get() != STATE_NONE) return true; // returnAfterUse will take care of this
+        if (sessionState.compareAndSet(STATE_NONE, STATE_EXPIRED)) {
+          closeAndRestartExpiredSession(isAsync);
+          return true;
+        }
+      }
+    }
+
+    private void closeAndRestartExpiredSession(boolean async) throws Exception {
+      if (async) {
+        parent.restartQueue.add(this);
+      } else {
+        parent.closeAndReopen(this);
+      }
+    }
+
+    private boolean shouldExpire() {
+      return expirationNs != null && (System.nanoTime() - expirationNs) >= 0;
+    }
+  }
+
+  private void addToExpirationQueue(TezSessionPoolSession session) {
+    // Expiration queue is synchronized and notified upon when adding elements. Without jitter, we
+    // wouldn't need this, and could simple look at the first element and sleep for the wait time.
+    // However, when many things are added at once, it may happen that we will see the one that
+    // expires later first, and will sleep past the earlier expiration times. When we wake up we
+    // may kill many sessions at once. To avoid this, we will add to queue under lock and recheck
+    // time before we wait. We don't have to worry about removals; at worst we'd wake up in vain.
+    // Example: expirations of 1:03:00, 1:00:00, 1:02:00 are added (in this order due to jitter).
+    // If the expiration threads sees that 1:03 first, it will sleep for 1:03, then wake up and
+    // kill all 3 sessions at once because they all have expired, removing any effect from jitter.
+    // Instead, expiration thread rechecks the first queue item and waits on the queue. If nothing
+    // is added to the queue, the item examined is still the earliest to be expired. If someone
+    // adds to the queue while it is waiting, it will notify the thread and it would wake up and
+    // recheck the queue.
+    synchronized (expirationQueue) {
+      expirationQueue.add(session);
+      expirationQueue.notifyAll();
+    }
   }
 }

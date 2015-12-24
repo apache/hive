@@ -20,9 +20,7 @@ package org.apache.hadoop.hive.ql.exec.tez;
 
 import static org.junit.Assert.*;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -46,8 +44,8 @@ public class TestTezSessionPool {
     }
 
     @Override
-    public TezSessionState createSession(String sessionId) {
-      return new SampleTezSessionState(sessionId);
+    public TezSessionPoolManager.TezSessionPoolSession createSession(String sessionId) {
+      return new SampleTezSessionState(sessionId, this);
     }
   }
 
@@ -212,10 +210,11 @@ public class TestTezSessionPool {
     TezSessionState session = Mockito.mock(TezSessionState.class);
     Mockito.when(session.isDefault()).thenReturn(false);
 
-    poolManager.closeAndOpen(session, conf, false);
+    poolManager.closeAndOpen(session, conf, null, false);
 
     Mockito.verify(session).close(false);
-    Mockito.verify(session).open(conf, null);
+    String[] files = null;
+    Mockito.verify(session).open(conf, files);
   }
 
   @Test
