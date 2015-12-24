@@ -338,6 +338,8 @@ public class Vectorizer implements PhysicalPlanResolver {
 
     String[] scratchTypeNameArray;
 
+    Set<Operator<? extends OperatorDesc>> nonVectorizedOps;
+
     VectorTaskColumnInfo() {
       partitionColumnCount = 0;
     }
@@ -353,6 +355,14 @@ public class Vectorizer implements PhysicalPlanResolver {
     }
     public void setScratchTypeNameArray(String[] scratchTypeNameArray) {
       this.scratchTypeNameArray = scratchTypeNameArray;
+    }
+
+    public void setNonVectorizedOps(Set<Operator<? extends OperatorDesc>> nonVectorizedOps) {
+      this.nonVectorizedOps = nonVectorizedOps;
+    }
+
+    public Set<Operator<? extends OperatorDesc>> getNonVectorizedOps() {
+      return nonVectorizedOps;
     }
 
     public void transferToBaseWork(BaseWork baseWork) {
@@ -701,6 +711,7 @@ public class Vectorizer implements PhysicalPlanResolver {
           }
         }
       }
+      vectorTaskColumnInfo.setNonVectorizedOps(vnp.getNonVectorizedOps());
       return true;
     }
 
@@ -819,6 +830,7 @@ public class Vectorizer implements PhysicalPlanResolver {
           }
         }
       }
+      vectorTaskColumnInfo.setNonVectorizedOps(vnp.getNonVectorizedOps());
       return true;
     }
 
@@ -863,6 +875,14 @@ public class Vectorizer implements PhysicalPlanResolver {
     private final MapWork mapWork;
     private final boolean isTez;
 
+    // Children of Vectorized GROUPBY that outputs rows instead of vectorized row batchs.
+    protected final Set<Operator<? extends OperatorDesc>> nonVectorizedOps =
+        new HashSet<Operator<? extends OperatorDesc>>();
+
+    public Set<Operator<? extends OperatorDesc>> getNonVectorizedOps() {
+      return nonVectorizedOps;
+    }
+
     public MapWorkValidationNodeProcessor(MapWork mapWork, boolean isTez) {
       this.mapWork = mapWork;
       this.isTez = isTez;
@@ -873,7 +893,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         Object... nodeOutputs) throws SemanticException {
       for (Node n : stack) {
         Operator<? extends OperatorDesc> op = (Operator<? extends OperatorDesc>) n;
-        if (nonVectorizableChildOfGroupBy(op)) {
+        if (nonVectorizedOps.contains(op)) {
           return new Boolean(true);
         }
         boolean ret;
@@ -886,6 +906,12 @@ public class Vectorizer implements PhysicalPlanResolver {
           LOG.info("MapWork Operator: " + op.getName() + " could not be vectorized.");
           return new Boolean(false);
         }
+        // When Vectorized GROUPBY outputs rows instead of vectorized row batches, we don't
+        // vectorize the operators below it.
+        if (isVectorizedGroupByThatOutputsRows(op)) {
+          addOperatorChildrenToSet(op, nonVectorizedOps);
+          return new Boolean(true);
+        }
       }
       return new Boolean(true);
     }
@@ -893,18 +919,36 @@ public class Vectorizer implements PhysicalPlanResolver {
 
   class ReduceWorkValidationNodeProcessor implements NodeProcessor {
 
+    // Children of Vectorized GROUPBY that outputs rows instead of vectorized row batchs.
+    protected final Set<Operator<? extends OperatorDesc>> nonVectorizedOps =
+        new HashSet<Operator<? extends OperatorDesc>>();
+
+    public Set<Operator<? extends OperatorDesc>> getNonVectorizeOps() {
+      return nonVectorizedOps;
+    }
+
+    public Set<Operator<? extends OperatorDesc>> getNonVectorizedOps() {
+      return nonVectorizedOps;
+    }
+
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       for (Node n : stack) {
         Operator<? extends OperatorDesc> op = (Operator<? extends OperatorDesc>) n;
-        if (nonVectorizableChildOfGroupBy(op)) {
+        if (nonVectorizedOps.contains(op)) {
           return new Boolean(true);
         }
         boolean ret = validateReduceWorkOperator(op);
         if (!ret) {
           LOG.info("ReduceWork Operator: " + op.getName() + " could not be vectorized.");
           return new Boolean(false);
+        }
+        // When Vectorized GROUPBY outputs rows instead of vectorized row batches, we don't
+        // vectorize the operators below it.
+        if (isVectorizedGroupByThatOutputsRows(op)) {
+          addOperatorChildrenToSet(op, nonVectorizedOps);
+          return new Boolean(true);
         }
       }
       return new Boolean(true);
@@ -918,7 +962,10 @@ public class Vectorizer implements PhysicalPlanResolver {
     // The vectorization context for the Map or Reduce task.
     protected VectorizationContext taskVectorizationContext;
 
-    VectorizationNodeProcessor() {
+    protected final Set<Operator<? extends OperatorDesc>> nonVectorizedOps;
+
+    VectorizationNodeProcessor(Set<Operator<? extends OperatorDesc>> nonVectorizedOps) {
+      this.nonVectorizedOps = nonVectorizedOps;
     }
 
     public String[] getVectorScratchColumnTypeNames() {
@@ -997,7 +1044,7 @@ public class Vectorizer implements PhysicalPlanResolver {
 
     public MapWorkVectorizationNodeProcessor(MapWork mWork, boolean isTez,
         VectorTaskColumnInfo vectorTaskColumnInfo) {
-      super();
+      super(vectorTaskColumnInfo.getNonVectorizedOps());
       this.mWork = mWork;
       this.vectorTaskColumnInfo = vectorTaskColumnInfo;
       this.isTez = isTez;
@@ -1008,6 +1055,9 @@ public class Vectorizer implements PhysicalPlanResolver {
         Object... nodeOutputs) throws SemanticException {
 
       Operator<? extends OperatorDesc> op = (Operator<? extends OperatorDesc>) nd;
+      if (nonVectorizedOps.contains(op)) {
+        return null;
+      }
 
       VectorizationContext vContext = null;
 
@@ -1029,16 +1079,6 @@ public class Vectorizer implements PhysicalPlanResolver {
       if (LOG.isDebugEnabled()) {
         LOG.debug("MapWorkVectorizationNodeProcessor process operator " + op.getName()
             + " using vectorization context" + vContext.toString());
-      }
-
-      // When Vectorized GROUPBY outputs rows instead of vectorized row batchs, we don't
-      // vectorize the operators below it.
-      if (nonVectorizableChildOfGroupBy(op)) {
-        // No need to vectorize
-        if (!opsDone.contains(op)) {
-            opsDone.add(op);
-          }
-        return null;
       }
 
       Operator<? extends OperatorDesc> vectorOp = doVectorize(op, vContext, isTez);
@@ -1070,7 +1110,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     public ReduceWorkVectorizationNodeProcessor(VectorTaskColumnInfo vectorTaskColumnInfo,
             boolean isTez) {
 
-      super();
+      super(vectorTaskColumnInfo.getNonVectorizedOps());
       this.vectorTaskColumnInfo =  vectorTaskColumnInfo;
       rootVectorOp = null;
       this.isTez = isTez;
@@ -1081,6 +1121,9 @@ public class Vectorizer implements PhysicalPlanResolver {
         Object... nodeOutputs) throws SemanticException {
 
       Operator<? extends OperatorDesc> op = (Operator<? extends OperatorDesc>) nd;
+      if (nonVectorizedOps.contains(op)) {
+        return null;
+      }
 
       VectorizationContext vContext = null;
 
@@ -1109,16 +1152,6 @@ public class Vectorizer implements PhysicalPlanResolver {
 
       assert vContext != null;
       LOG.info("ReduceWorkVectorizationNodeProcessor process operator " + op.getName() + " using vectorization context" + vContext.toString());
-
-      // When Vectorized GROUPBY outputs rows instead of vectorized row batchs, we don't
-      // vectorize the operators below it.
-      if (nonVectorizableChildOfGroupBy(op)) {
-        // No need to vectorize
-        if (!opsDone.contains(op)) {
-          opsDone.add(op);
-        }
-        return null;
-      }
 
       Operator<? extends OperatorDesc> vectorOp = doVectorize(op, vContext, isTez);
 
@@ -1267,19 +1300,23 @@ public class Vectorizer implements PhysicalPlanResolver {
     return ret;
   }
 
-  public Boolean nonVectorizableChildOfGroupBy(Operator<? extends OperatorDesc> op) {
-    Operator<? extends OperatorDesc> currentOp = op;
-    while (currentOp.getParentOperators().size() > 0) {
-      currentOp = currentOp.getParentOperators().get(0);
-      if (currentOp.getType().equals(OperatorType.GROUPBY)) {
-        GroupByDesc desc = (GroupByDesc)currentOp.getConf();
-        boolean isVectorOutput = desc.getVectorDesc().isVectorOutput();
-        if (isVectorOutput) {
-          // This GROUP BY does vectorize its output.
-          return false;
-        }
-        return true;
+  private void addOperatorChildrenToSet(Operator<? extends OperatorDesc> op,
+      Set<Operator<? extends OperatorDesc>> nonVectorizedOps) {
+    for (Operator<? extends OperatorDesc> childOp : op.getChildOperators()) {
+      if (!nonVectorizedOps.contains(childOp)) {
+        nonVectorizedOps.add(childOp);
+        addOperatorChildrenToSet(childOp, nonVectorizedOps);
       }
+    }
+  }
+
+  // When Vectorized GROUPBY outputs rows instead of vectorized row batchs, we don't
+  // vectorize the operators below it.
+   private Boolean isVectorizedGroupByThatOutputsRows(Operator<? extends OperatorDesc> op)
+      throws SemanticException {
+    if (op.getType().equals(OperatorType.GROUPBY)) {
+      GroupByDesc desc = (GroupByDesc) op.getConf();
+      return !desc.getVectorDesc().isVectorOutput();
     }
     return false;
   }
