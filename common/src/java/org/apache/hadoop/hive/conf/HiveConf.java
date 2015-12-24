@@ -1885,10 +1885,18 @@ public class HiveConf extends Configuration {
         "A positive integer that determines the number of Tez sessions that should be\n" +
         "launched on each of the queues specified by \"hive.server2.tez.default.queues\".\n" +
         "Determines the parallelism on each queue."),
-    HIVE_SERVER2_TEZ_INITIALIZE_DEFAULT_SESSIONS("hive.server2.tez.initialize.default.sessions", false,
+    HIVE_SERVER2_TEZ_INITIALIZE_DEFAULT_SESSIONS("hive.server2.tez.initialize.default.sessions",
+        false,
         "This flag is used in HiveServer2 to enable a user to use HiveServer2 without\n" +
         "turning on Tez for HiveServer2. The user could potentially want to run queries\n" +
         "over Tez without the pool of sessions."),
+    HIVE_SERVER2_TEZ_SESSION_LIFETIME("hive.server2.tez.session.lifetime", "162h",
+        new TimeValidator(TimeUnit.HOURS),
+        "The lifetime of the Tez sessions launched by HS2 when default sessions are enabled.\n" +
+        "Set to 0 to disable session expiration."),
+    HIVE_SERVER2_TEZ_SESSION_LIFETIME_JITTER("hive.server2.tez.session.lifetime.jitter", "3h",
+        new TimeValidator(TimeUnit.HOURS),
+        "The jitter for Tez session lifetime; prevents all the sessions from restarting at once."),
 
     // Operation log configuration
     HIVE_SERVER2_LOGGING_OPERATION_ENABLED("hive.server2.logging.operation.enabled", true,
