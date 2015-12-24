@@ -35,6 +35,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
+import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.plan.AbstractOperatorDesc;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
@@ -91,6 +92,7 @@ public class SerializationUtilities {
       kryo.register(StandardConstantMapObjectInspector.class);
       kryo.register(StandardConstantStructObjectInspector.class);
       kryo.register(SequenceFileInputFormat.class);
+      kryo.register(RCFileInputFormat.class);
       kryo.register(HiveSequenceFileOutputFormat.class);
       kryo.register(SparkEdgeProperty.class);
       kryo.register(SparkWork.class);
