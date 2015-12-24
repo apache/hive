@@ -568,7 +568,11 @@ public final class ConstantPropagateProcFactory {
          children.set(i, ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPEqual(),
              Lists.newArrayList(children.get(i),newExprs.get(foundUDFInFirst ? 1 : 0))));
        }
-       return caseOrWhenexpr;
+       // after constant folding of child expression the return type of UDFWhen might have changed,
+       // so recreate the expression
+       ExprNodeGenericFuncDesc newCaseOrWhenExpr = ExprNodeGenericFuncDesc.newInstance(childUDF,
+           caseOrWhenexpr.getFuncText(), children);
+       return newCaseOrWhenExpr;
      } else if (childUDF instanceof GenericUDFCase) {
        for (i = 2; i < children.size(); i+=2) {
          children.set(i, ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPEqual(),
@@ -579,7 +583,11 @@ public final class ConstantPropagateProcFactory {
           children.set(i, ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPEqual(),
               Lists.newArrayList(children.get(i),newExprs.get(foundUDFInFirst ? 1 : 0))));
         }
-        return caseOrWhenexpr;
+       // after constant folding of child expression the return type of UDFCase might have changed,
+       // so recreate the expression
+       ExprNodeGenericFuncDesc newCaseOrWhenExpr = ExprNodeGenericFuncDesc.newInstance(childUDF,
+           caseOrWhenexpr.getFuncText(), children);
+       return newCaseOrWhenExpr;
      } else {
        // cant happen
        return null;

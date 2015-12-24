@@ -137,7 +137,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: CASE (key) WHEN ('238') THEN (true) WHEN ('94') THEN (true) ELSE (false) END (type: int)
+              predicate: CASE (key) WHEN ('238') THEN (true) WHEN ('94') THEN (true) ELSE (false) END (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
@@ -209,7 +209,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: CASE (key) WHEN ('238') THEN (CASE WHEN ((key <> '238')) THEN (true) WHEN ((key = '23')) THEN (true) END) END (type: int)
+              predicate: CASE (key) WHEN ('238') THEN (CASE WHEN ((key <> '238')) THEN (true) WHEN ((key = '23')) THEN (true) END) END (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
