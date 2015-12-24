@@ -892,8 +892,19 @@ select count(i) from test_count;
 
 select count(i) from test_count;
 
-create table alltypesnull like alltypesorc;
-alter table alltypesnull set fileformat textfile;
+CREATE TABLE alltypesnull(
+    ctinyint TINYINT,
+    csmallint SMALLINT,
+    cint INT,
+    cbigint BIGINT,
+    cfloat FLOAT,
+    cdouble DOUBLE,
+    cstring1 STRING,
+    cstring2 STRING,
+    ctimestamp1 TIMESTAMP,
+    ctimestamp2 TIMESTAMP,
+    cboolean1 BOOLEAN,
+    cboolean2 BOOLEAN);
 
 insert into table alltypesnull select null, null, null, null, null, null, null, null, null, null, null, null from alltypesorc;
 

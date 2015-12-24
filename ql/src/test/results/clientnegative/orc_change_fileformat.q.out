@@ -1,0 +1,13 @@
+PREHOOK: query: create table src_orc (key tinyint, val string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_orc
+POSTHOOK: query: create table src_orc (key tinyint, val string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_orc
+PREHOOK: query: alter table src_orc set fileformat textfile
+PREHOOK: type: ALTERTABLE_FILEFORMAT
+PREHOOK: Input: default@src_orc
+PREHOOK: Output: default@src_orc
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Changing file format (from ORC) is not supported for table default.src_orc

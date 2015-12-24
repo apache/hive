@@ -169,15 +169,6 @@ POSTHOOK: query: alter table T5 set fileformat orc
 POSTHOOK: type: ALTERTABLE_FILEFORMAT
 POSTHOOK: Input: default@t5
 POSTHOOK: Output: default@t5
-PREHOOK: query: alter table T4 partition (ds='tomorrow') set fileformat RCFILE
-PREHOOK: type: ALTERPARTITION_FILEFORMAT
-PREHOOK: Input: default@t4
-PREHOOK: Output: default@t4@ds=tomorrow
-POSTHOOK: query: alter table T4 partition (ds='tomorrow') set fileformat RCFILE
-POSTHOOK: type: ALTERPARTITION_FILEFORMAT
-POSTHOOK: Input: default@t4
-POSTHOOK: Input: default@t4@ds=tomorrow
-POSTHOOK: Output: default@t4@ds=tomorrow
 PREHOOK: query: create table T7 (a string, b int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

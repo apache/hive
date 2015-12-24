@@ -2910,21 +2910,37 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_count
 #### A masked pattern was here ####
 0
-PREHOOK: query: create table alltypesnull like alltypesorc
+PREHOOK: query: CREATE TABLE alltypesnull(
+    ctinyint TINYINT,
+    csmallint SMALLINT,
+    cint INT,
+    cbigint BIGINT,
+    cfloat FLOAT,
+    cdouble DOUBLE,
+    cstring1 STRING,
+    cstring2 STRING,
+    ctimestamp1 TIMESTAMP,
+    ctimestamp2 TIMESTAMP,
+    cboolean1 BOOLEAN,
+    cboolean2 BOOLEAN)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@alltypesnull
-POSTHOOK: query: create table alltypesnull like alltypesorc
+POSTHOOK: query: CREATE TABLE alltypesnull(
+    ctinyint TINYINT,
+    csmallint SMALLINT,
+    cint INT,
+    cbigint BIGINT,
+    cfloat FLOAT,
+    cdouble DOUBLE,
+    cstring1 STRING,
+    cstring2 STRING,
+    ctimestamp1 TIMESTAMP,
+    ctimestamp2 TIMESTAMP,
+    cboolean1 BOOLEAN,
+    cboolean2 BOOLEAN)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@alltypesnull
-PREHOOK: query: alter table alltypesnull set fileformat textfile
-PREHOOK: type: ALTERTABLE_FILEFORMAT
-PREHOOK: Input: default@alltypesnull
-PREHOOK: Output: default@alltypesnull
-POSTHOOK: query: alter table alltypesnull set fileformat textfile
-POSTHOOK: type: ALTERTABLE_FILEFORMAT
-POSTHOOK: Input: default@alltypesnull
 POSTHOOK: Output: default@alltypesnull
 PREHOOK: query: insert into table alltypesnull select null, null, null, null, null, null, null, null, null, null, null, null from alltypesorc
 PREHOOK: type: QUERY

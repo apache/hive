@@ -1,0 +1,211 @@
+PREHOOK: query: create table src_orc (key smallint, val string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_orc
+POSTHOOK: query: create table src_orc (key smallint, val string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_orc
+PREHOOK: query: create table src_orc2 (key smallint, val string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_orc2
+POSTHOOK: query: create table src_orc2 (key smallint, val string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_orc2
+PREHOOK: query: -- integer type widening
+insert overwrite table src_orc select * from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@src_orc
+POSTHOOK: query: -- integer type widening
+insert overwrite table src_orc select * from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@src_orc
+POSTHOOK: Lineage: src_orc.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_orc.val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select sum(hash(*)) from src_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_orc
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(hash(*)) from src_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_orc
+#### A masked pattern was here ####
+36214430891
+PREHOOK: query: alter table src_orc change key key smallint
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@src_orc
+PREHOOK: Output: default@src_orc
+POSTHOOK: query: alter table src_orc change key key smallint
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@src_orc
+POSTHOOK: Output: default@src_orc
+PREHOOK: query: select sum(hash(*)) from src_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_orc
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(hash(*)) from src_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_orc
+#### A masked pattern was here ####
+36214430891
+PREHOOK: query: alter table src_orc change key key int
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@src_orc
+PREHOOK: Output: default@src_orc
+POSTHOOK: query: alter table src_orc change key key int
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@src_orc
+POSTHOOK: Output: default@src_orc
+PREHOOK: query: select sum(hash(*)) from src_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_orc
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(hash(*)) from src_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_orc
+#### A masked pattern was here ####
+36214430891
+PREHOOK: query: alter table src_orc change key key bigint
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@src_orc
+PREHOOK: Output: default@src_orc
+POSTHOOK: query: alter table src_orc change key key bigint
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@src_orc
+POSTHOOK: Output: default@src_orc
+PREHOOK: query: select sum(hash(*)) from src_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_orc
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(hash(*)) from src_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_orc
+#### A masked pattern was here ####
+36214430891
+PREHOOK: query: -- replace columns for adding columns and type widening
+insert overwrite table src_orc2 select * from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@src_orc2
+POSTHOOK: query: -- replace columns for adding columns and type widening
+insert overwrite table src_orc2 select * from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@src_orc2
+POSTHOOK: Lineage: src_orc2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_orc2.val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select sum(hash(*)) from src_orc2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_orc2
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(hash(*)) from src_orc2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_orc2
+#### A masked pattern was here ####
+36214430891
+PREHOOK: query: alter table src_orc2 replace columns (k smallint, v string)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@src_orc2
+PREHOOK: Output: default@src_orc2
+POSTHOOK: query: alter table src_orc2 replace columns (k smallint, v string)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@src_orc2
+POSTHOOK: Output: default@src_orc2
+PREHOOK: query: select sum(hash(*)) from src_orc2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_orc2
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(hash(*)) from src_orc2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_orc2
+#### A masked pattern was here ####
+36214430891
+PREHOOK: query: alter table src_orc2 replace columns (k int, v string)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@src_orc2
+PREHOOK: Output: default@src_orc2
+POSTHOOK: query: alter table src_orc2 replace columns (k int, v string)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@src_orc2
+POSTHOOK: Output: default@src_orc2
+PREHOOK: query: select sum(hash(*)) from src_orc2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_orc2
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(hash(*)) from src_orc2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_orc2
+#### A masked pattern was here ####
+36214430891
+PREHOOK: query: alter table src_orc2 replace columns (k bigint, v string)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@src_orc2
+PREHOOK: Output: default@src_orc2
+POSTHOOK: query: alter table src_orc2 replace columns (k bigint, v string)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@src_orc2
+POSTHOOK: Output: default@src_orc2
+PREHOOK: query: select sum(hash(*)) from src_orc2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_orc2
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(hash(*)) from src_orc2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_orc2
+#### A masked pattern was here ####
+36214430891
+PREHOOK: query: alter table src_orc2 replace columns (k bigint, v string, z int)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@src_orc2
+PREHOOK: Output: default@src_orc2
+POSTHOOK: query: alter table src_orc2 replace columns (k bigint, v string, z int)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@src_orc2
+POSTHOOK: Output: default@src_orc2
+PREHOOK: query: select sum(hash(*)) from src_orc2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_orc2
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(hash(*)) from src_orc2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_orc2
+#### A masked pattern was here ####
+-586749626187
+PREHOOK: query: alter table src_orc2 replace columns (k bigint, v string, z bigint)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@src_orc2
+PREHOOK: Output: default@src_orc2
+POSTHOOK: query: alter table src_orc2 replace columns (k bigint, v string, z bigint)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@src_orc2
+POSTHOOK: Output: default@src_orc2
+PREHOOK: query: select sum(hash(*)) from src_orc2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_orc2
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(hash(*)) from src_orc2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_orc2
+#### A masked pattern was here ####
+-586749626187
+PREHOOK: query: alter table src_orc2 replace columns (k bigint, v string, z bigint, y float)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@src_orc2
+PREHOOK: Output: default@src_orc2
+POSTHOOK: query: alter table src_orc2 replace columns (k bigint, v string, z bigint, y float)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@src_orc2
+POSTHOOK: Output: default@src_orc2
+PREHOOK: query: select sum(hash(*)) from src_orc2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_orc2
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(hash(*)) from src_orc2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_orc2
+#### A masked pattern was here ####
+-700131582485

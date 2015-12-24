@@ -41,7 +41,6 @@ alter table T4 add partition (ds='tomorrow');
 
 create table T5 (a string, b int);
 alter table T5 set fileformat orc;
-alter table T4 partition (ds='tomorrow') set fileformat RCFILE;
 
 create table T7 (a string, b int);
 alter table T7 set location 'file:///tmp';
