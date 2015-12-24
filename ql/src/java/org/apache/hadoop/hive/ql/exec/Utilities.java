@@ -215,6 +215,7 @@ public final class Utilities {
   public static final String MAPRED_MAPPER_CLASS = "mapred.mapper.class";
   public static final String MAPRED_REDUCER_CLASS = "mapred.reducer.class";
   public static final String HIVE_ADDED_JARS = "hive.added.jars";
+  public static final String VECTOR_MODE = "VECTOR_MODE";
   public static String MAPNAME = "Map ";
   public static String REDUCENAME = "Reducer ";
 
@@ -3238,12 +3239,18 @@ public final class Utilities {
    * but vectorization disallowed eg. for FetchOperator execution.
    */
   public static boolean isVectorMode(Configuration conf) {
-    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED) &&
-        Utilities.getPlanPath(conf) != null && Utilities
-        .getMapWork(conf).getVectorMode()) {
-      return true;
+    if (conf.get(VECTOR_MODE) != null) {
+      // this code path is necessary, because with HS2 and client
+      // side split generation we end up not finding the map work.
+      // This is because of thread local madness (tez split
+      // generation is multi-threaded - HS2 plan cache uses thread
+      // locals).
+      return conf.getBoolean(VECTOR_MODE, false);
+    } else {
+      return HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED)
+        && Utilities.getPlanPath(conf) != null
+        && Utilities.getMapWork(conf).getVectorMode();
     }
-    return false;
   }
 
   /**
