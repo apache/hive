@@ -207,6 +207,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     if (conf.getVar(HiveConf.ConfVars.METASTOREURIS) != null) {
       String metastoreUrisString[] = conf.getVar(
           HiveConf.ConfVars.METASTOREURIS).split(",");
+      // shuffle the metastore uris, so the request can be balanced to metastores
+      Collections.shuffle(Arrays.asList(metastoreUrisString));
       metastoreUris = new URI[metastoreUrisString.length];
       try {
         int i = 0;
