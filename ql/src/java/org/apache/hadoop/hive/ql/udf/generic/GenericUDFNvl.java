@@ -64,11 +64,11 @@ public class GenericUDFNvl extends GenericUDF{
   @Override
   public String getDisplayString(String[] children) {
     StringBuilder sb = new StringBuilder();
-    sb.append("if ");
+    sb.append("NVL(");
     sb.append(children[0]);
-    sb.append(" is null ");
-    sb.append("returns");
+    sb.append(',');
     sb.append(children[1]);
+    sb.append(')');
     return sb.toString() ;
   }
 
