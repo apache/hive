@@ -70,7 +70,7 @@ STAGE PLANS:
         TableScan
           alias: alltypesorc
           Select Operator
-            expressions: cfloat (type: float), if cfloat is null returns1 (type: float)
+            expressions: cfloat (type: float), NVL(cfloat,1) (type: float)
             outputColumnNames: _col0, _col1
             Limit
               Number of rows: 10
