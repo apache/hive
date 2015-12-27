@@ -101,10 +101,10 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key = '238') (type: boolean)
+              predicate: NVL((key = '238'),false) (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: '238' (type: string)
+                expressions: key (type: string)
                 outputColumnNames: _col0
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
@@ -173,10 +173,10 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key = '238') (type: boolean)
+              predicate: NVL((key = '238'),false) (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: '238' (type: string)
+                expressions: key (type: string)
                 outputColumnNames: _col0
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
