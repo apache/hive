@@ -26,7 +26,14 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 
 /**
- * Interface for hive authorization plugins.
+ * Interface for hive authorization plugins. Plugins will be better shielded from changes
+ * to this interface by extending AbstractHiveAuthorizer instead of extending this
+ * interface directly.
+ *
+ * Note that this interface is for limited use by specific apache projects, including
+ * Apache Ranger (formerly known as Argus), and Apache Sentry, and is subject to
+ * change across releases.
+ *
  * Used by the DDLTasks for access control statement,
  * and for checking authorization from Driver.doAuthorization()
  *

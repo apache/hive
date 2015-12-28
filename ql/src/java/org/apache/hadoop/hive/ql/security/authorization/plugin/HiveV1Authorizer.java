@@ -42,7 +42,7 @@ import org.apache.hadoop.hive.ql.security.authorization.PrivilegeScope;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAccessController;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
-public class HiveV1Authorizer implements HiveAuthorizer {
+public class HiveV1Authorizer extends AbstractHiveAuthorizer {
 
   private final HiveConf conf;
   private final Hive hive;
@@ -378,12 +378,5 @@ public class HiveV1Authorizer implements HiveAuthorizer {
     // do no filtering in old authorizer
     return listObjs;
   }
-
-  @Override
-  public HiveAuthorizationTranslator getHiveAuthorizationTranslator() throws HiveAuthzPluginException {
-    // custom translator is not needed, so return null
-    return null;
-  }
-
 
 }
