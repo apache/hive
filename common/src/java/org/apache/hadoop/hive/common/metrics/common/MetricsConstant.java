@@ -44,7 +44,11 @@ public class MetricsConstant {
   public static final String INIT_TOTAL_TABLES = "init_total_count_tables";
   public static final String INIT_TOTAL_PARTITIONS = "init_total_count_partitions";
 
-  public static final String DELTA_TOTAL_DATABASES = "delta_total_count_dbs";
-  public static final String DELTA_TOTAL_TABLES = "delta_total_count_tables";
-  public static final String DELTA_TOTAL_PARTITIONS = "delta_total_count_partitions";
+  public static final String CREATE_TOTAL_DATABASES = "create_total_count_dbs";
+  public static final String CREATE_TOTAL_TABLES = "create_total_count_tables";
+  public static final String CREATE_TOTAL_PARTITIONS = "create_total_count_partitions";
+
+  public static final String DELETE_TOTAL_DATABASES = "delete_total_count_dbs";
+  public static final String DELETE_TOTAL_TABLES = "delete_total_count_tables";
+  public static final String DELETE_TOTAL_PARTITIONS = "delete_total_count_partitions";
 }
