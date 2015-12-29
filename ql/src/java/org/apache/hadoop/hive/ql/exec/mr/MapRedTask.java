@@ -228,7 +228,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
       hadoopOpts = sb.toString();
       // Inherit the environment variables
       String[] env;
-      Map<String, String> variables = new HashMap(System.getenv());
+      Map<String, String> variables = new HashMap<String, String>(System.getenv());
       // The user can specify the hadoop memory
 
       if (ShimLoader.getHadoopShims().isLocalMode(conf)) {
