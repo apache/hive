@@ -433,6 +433,9 @@ public enum ErrorMsg {
   CANNOT_CHANGE_COLUMN_TYPE(10312, "Changing from type {0} to {1} is not supported for column {2}. SerDe may be incompatible", true),
   REPLACE_CANNOT_DROP_COLUMNS(10313, "Replacing columns cannot drop columns for table {0}. SerDe may be incompatible", true),
   REPLACE_UNSUPPORTED_TYPE_CONVERSION(10314, "Replacing columns with unsupported type conversion (from {0} to {1}) for column {2}. SerDe may be incompatible", true),
+  HIVE_GROUPING_SETS_AGGR_NOMAPAGGR_MULTIGBY(10315,
+      "Grouping sets aggregations (with rollups or cubes) are not allowed when " +
+      "HIVEMULTIGROUPBYSINGLEREDUCER is turned on. Set hive.multigroupby.singlereducer=false if you want to use grouping sets"),
   //========================== 20000 range starts here ========================//
   SCRIPT_INIT_ERROR(20000, "Unable to initialize custom script."),
   SCRIPT_IO_ERROR(20001, "An error occurred while reading or writing to your custom script. "

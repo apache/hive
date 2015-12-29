@@ -5374,6 +5374,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     List<ExprNodeDesc.ExprNodeDescEqualityWrapper> whereExpressions =
         new ArrayList<ExprNodeDesc.ExprNodeDescEqualityWrapper>();
     for (String dest : dests) {
+      ObjectPair<List<ASTNode>, List<Integer>> grpByExprsGroupingSets =
+          getGroupByGroupingSetsForClause(parseInfo, dest);
+
+      List<Integer> groupingSets = grpByExprsGroupingSets.getSecond();
+      if (!groupingSets.isEmpty()) {
+        throw new SemanticException(ErrorMsg.HIVE_GROUPING_SETS_AGGR_NOMAPAGGR_MULTIGBY.getMsg());
+      }
+      
       ASTNode whereExpr = parseInfo.getWhrForClause(dest);
 
       if (whereExpr != null) {
