@@ -55,14 +55,15 @@ public class TestOperationLoggingAPI {
   private final String sql = "select * from " + tableName;
   private final String sqlCntStar = "select count(*) from " + tableName;
   private final String[] expectedLogs = {
-    "Parsing command",
-    "Parse Completed",
     "Starting Semantic Analysis"
   };
   private final String[] expectedLogsExecution = {
+    "Compiling command",
+    "Completed compiling command",
     "Total jobs",
     "Semantic Analysis Completed",
-    "Starting command",
+    "Executing command",
+    "Completed executing command",
     "Number of reduce tasks determined at compile time",
     "number of splits",
     "Submitting tokens for job",

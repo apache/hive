@@ -2352,11 +2352,11 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
   public void testGetQueryLog() throws Exception {
     // Prepare
     String[] expectedLogs = {
-        "Parsing command",
-        "Parse Completed",
+        "Compiling command",
+        "Completed compiling command",
         "Starting Semantic Analysis",
         "Semantic Analysis Completed",
-        "Starting command"
+        "Executing command"
     };
     String sql = "select count(*) from " + tableName;
 
