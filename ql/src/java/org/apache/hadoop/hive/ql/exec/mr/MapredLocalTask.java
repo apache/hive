@@ -17,6 +17,11 @@
  */
 package org.apache.hadoop.hive.ql.exec.mr;
 
+import static org.apache.hadoop.hive.ql.exec.mr.MapRedTask.HADOOP_CLIENT_OPTS;
+import static org.apache.hadoop.hive.ql.exec.mr.MapRedTask.HADOOP_MEM_KEY;
+import static org.apache.hadoop.hive.ql.exec.mr.MapRedTask.HADOOP_OPTS_KEY;
+import static org.apache.hadoop.hive.ql.exec.mr.MapRedTask.HIVE_SYS_PROP;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -82,13 +87,13 @@ import org.apache.hive.common.util.StreamPrinter;
  */
 public class MapredLocalTask extends Task<MapredLocalWork> implements Serializable {
 
+  private static final long serialVersionUID = 1L;
+
   private final Map<String, FetchOperator> fetchOperators = new HashMap<String, FetchOperator>();
   protected HadoopJobExecHelper jobExecHelper;
   private JobConf job;
   public static transient final Log l4j = LogFactory.getLog(MapredLocalTask.class);
-  static final String HADOOP_MEM_KEY = "HADOOP_HEAPSIZE";
-  static final String HADOOP_OPTS_KEY = "HADOOP_OPTS";
-  static final String[] HIVE_SYS_PROP = {"build.dir", "build.dir.hive", "hive.query.id"};
+  static final String HIVE_LOCAL_TASK_CHILD_OPTS_KEY = "HIVE_LOCAL_TASK_CHILD_OPTS";
   public static MemoryMXBean memoryMXBean;
   private static final Log LOG = LogFactory.getLog(MapredLocalTask.class);
 
@@ -212,7 +217,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
       hadoopOpts = sb.toString();
       // Inherit the environment variables
       String[] env;
-      Map<String, String> variables = new HashMap(System.getenv());
+      Map<String, String> variables = new HashMap<String, String>(System.getenv());
       // The user can specify the hadoop memory
 
       // if ("local".equals(conf.getVar(HiveConf.ConfVars.HADOOPJT))) {
@@ -274,6 +279,24 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
         // intended user
         secureDoAs = new SecureCmdDoAs(conf);
         secureDoAs.addEnv(variables);
+      }
+
+      // If HIVE_LOCAL_TASK_CHILD_OPTS is set, child VM environment setting
+      // HADOOP_CLIENT_OPTS will be replaced with HIVE_LOCAL_TASK_CHILD_OPTS.
+      // HADOOP_OPTS is updated too since HADOOP_CLIENT_OPTS is appended
+      // to HADOOP_OPTS in most cases. This way, the local task JVM can
+      // have different settings from those of HiveServer2.
+      if (variables.containsKey(HIVE_LOCAL_TASK_CHILD_OPTS_KEY)) {
+        String childOpts = variables.get(HIVE_LOCAL_TASK_CHILD_OPTS_KEY);
+        if (childOpts == null) {
+          childOpts = "";
+        }
+        String clientOpts = variables.put(HADOOP_CLIENT_OPTS, childOpts);
+        String tmp = variables.get(HADOOP_OPTS_KEY);
+        if (tmp != null && !StringUtils.isBlank(clientOpts)) {
+          tmp = tmp.replace(clientOpts, childOpts);
+          variables.put(HADOOP_OPTS_KEY, tmp);
+        }
       }
 
       env = new String[variables.size()];
