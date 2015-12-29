@@ -201,7 +201,7 @@ public class Commands {
         return def;
       }
       throw new IllegalArgumentException(beeLine.loc("arg-usage",
-          new Object[] {ret.length == 0 ? "" : ret[0],
+          new Object[] {ret == null || ret.length == 0 ? "" : ret[0],
               paramname}));
     }
     return ret[1];
