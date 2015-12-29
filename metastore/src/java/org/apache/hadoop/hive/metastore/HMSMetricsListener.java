@@ -49,7 +49,7 @@ public class HMSMetricsListener extends MetaStoreEventListener {
   public void onCreateDatabase(CreateDatabaseEvent dbEvent) throws MetaException {
     if (metrics != null) {
       try {
-        metrics.incrementCounter(MetricsConstant.DELTA_TOTAL_DATABASES);
+        metrics.incrementCounter(MetricsConstant.CREATE_TOTAL_DATABASES);
       } catch (IOException e) {
         LOGGER.warn("Error updating metadata metrics", e);
       }
@@ -60,7 +60,7 @@ public class HMSMetricsListener extends MetaStoreEventListener {
   public void onDropDatabase(DropDatabaseEvent dbEvent) throws MetaException {
     if (metrics != null) {
       try {
-        metrics.decrementCounter(MetricsConstant.DELTA_TOTAL_DATABASES);
+        metrics.incrementCounter(MetricsConstant.DELETE_TOTAL_DATABASES);
       } catch (IOException e) {
         LOGGER.warn("Error updating metadata metrics", e);
       }
@@ -71,7 +71,7 @@ public class HMSMetricsListener extends MetaStoreEventListener {
   public void onCreateTable(CreateTableEvent tableEvent) throws MetaException {
     if (metrics != null) {
       try {
-        metrics.incrementCounter(MetricsConstant.DELTA_TOTAL_TABLES);
+        metrics.incrementCounter(MetricsConstant.CREATE_TOTAL_TABLES);
       } catch (IOException e) {
         LOGGER.warn("Error updating metadata metrics", e);
       }
@@ -82,7 +82,7 @@ public class HMSMetricsListener extends MetaStoreEventListener {
   public void onDropTable(DropTableEvent tableEvent) throws MetaException {
     if (metrics != null) {
       try {
-        metrics.decrementCounter(MetricsConstant.DELTA_TOTAL_TABLES);
+        metrics.incrementCounter(MetricsConstant.DELETE_TOTAL_TABLES);
       } catch (IOException e) {
         LOGGER.warn("Error updating metadata metrics", e);
       }
@@ -93,7 +93,7 @@ public class HMSMetricsListener extends MetaStoreEventListener {
   public void onDropPartition(DropPartitionEvent partitionEvent) throws MetaException {
     if (metrics != null) {
       try {
-        metrics.decrementCounter(MetricsConstant.DELTA_TOTAL_PARTITIONS);
+        metrics.incrementCounter(MetricsConstant.DELETE_TOTAL_PARTITIONS);
       } catch (IOException e) {
         LOGGER.warn("Error updating metadata metrics", e);
       }
@@ -104,7 +104,7 @@ public class HMSMetricsListener extends MetaStoreEventListener {
   public void onAddPartition(AddPartitionEvent partitionEvent) throws MetaException {
     if (metrics != null) {
       try {
-        metrics.incrementCounter(MetricsConstant.DELTA_TOTAL_PARTITIONS);
+        metrics.incrementCounter(MetricsConstant.CREATE_TOTAL_PARTITIONS);
       } catch (IOException e) {
         LOGGER.warn("Error updating metadata metrics", e);
       }
