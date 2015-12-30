@@ -36,9 +36,11 @@ public abstract class GenericUDFBasePad extends GenericUDF {
   private transient Converter converter3;
   private Text result = new Text();
   private String udfName;
+  private StringBuilder builder;
 
   public GenericUDFBasePad(String _udfName) {
     this.udfName = _udfName;
+    this.builder = new StringBuilder();
   }
 
   @Override
@@ -68,17 +70,10 @@ public abstract class GenericUDFBasePad extends GenericUDF {
       return null;
     }
     int len = lenW.get();
+    builder.setLength(0);
 
-    byte[] data = result.getBytes();
-    if (data.length < len) {
-      data = new byte[len];
-    }
-
-    byte[] txt = str.getBytes();
-    byte[] padTxt = pad.getBytes();
-
-    performOp(data, txt, padTxt, len, str, pad);
-    result.set(data, 0, len);
+    performOp(builder, len, str.toString(), pad.toString());
+    result.set(builder.toString());
     return result;
   }
 
@@ -87,8 +82,8 @@ public abstract class GenericUDFBasePad extends GenericUDF {
     return getStandardDisplayString(udfName, children);
   }
 
-  protected abstract void performOp(byte[] data, byte[] txt, byte[] padTxt, int len, Text str,
-      Text pad);
+  protected abstract void performOp(
+      StringBuilder builder, int len, String str, String pad);
 
   // Convert input arguments to Text, if necessary.
   private Converter checkTextArguments(ObjectInspector[] arguments, int i)

@@ -38,19 +38,17 @@ public class GenericUDFRpad extends GenericUDFBasePad {
   }
 
   @Override
-  protected void performOp(byte[] data, byte[] txt, byte[] padTxt, int len, Text str, Text pad) {
-    int pos;
+  protected void performOp(
+      StringBuilder builder, int len, String str, String pad) {
+    int pos = str.length();
     // Copy the text
-    for (pos = 0; pos < str.getLength() && pos < len; pos++) {
-      data[pos] = txt[pos];
-    }
+    builder.append(str, 0, pos);
 
     // Copy the padding
     while (pos < len) {
-      for (int i = 0; i < pad.getLength() && i < len - pos; i++) {
-        data[pos + i] = padTxt[i];
-      }
-      pos += pad.getLength();
+      builder.append(pad);
+      pos += pad.length();
     }
+    builder.setLength(len);
   }
 }
