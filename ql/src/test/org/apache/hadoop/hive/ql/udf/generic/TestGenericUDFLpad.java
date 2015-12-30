@@ -41,6 +41,8 @@ public class TestGenericUDFLpad extends TestCase {
     udf.initialize(arguments);
     runAndVerify("hi", 5, "??", "???hi", udf);
     runAndVerify("hi", 1, "??", "h", udf);
+    runAndVerify("ｈｉ", 5, "？？", "？？？ｈｉ", udf);
+    runAndVerify("ｈｉ", 1, "？？", "ｈ", udf);
   }
 
   private void runAndVerify(String str, int len, String pad, String expResult, GenericUDF udf)
