@@ -31,7 +31,7 @@ public class ExpressionTree {
   public enum Operator {OR, AND, NOT, LEAF, CONSTANT}
   private final Operator operator;
   private final List<ExpressionTree> children;
-  private final int leaf;
+  private int leaf;
   private final SearchArgument.TruthValue constant;
 
   ExpressionTree() {
@@ -152,5 +152,9 @@ public class ExpressionTree {
 
   public int getLeaf() {
     return leaf;
+  }
+
+  public void setLeaf(int leaf) {
+    this.leaf = leaf;
   }
 }

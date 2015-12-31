@@ -1,0 +1,62 @@
+PREHOOK: query: CREATE TABLE tbl1(id INT) STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl1
+POSTHOOK: query: CREATE TABLE tbl1(id INT) STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl1
+PREHOOK: query: INSERT INTO tbl1 VALUES(1), (2)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__1
+PREHOOK: Output: default@tbl1
+POSTHOOK: query: INSERT INTO tbl1 VALUES(1), (2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__1
+POSTHOOK: Output: default@tbl1
+POSTHOOK: Lineage: tbl1.id EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: CREATE TABLE tbl2(id INT, value STRING) STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl2
+POSTHOOK: query: CREATE TABLE tbl2(id INT, value STRING) STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl2
+PREHOOK: query: INSERT INTO tbl2 VALUES(1, 'value1')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__2
+PREHOOK: Output: default@tbl2
+POSTHOOK: query: INSERT INTO tbl2 VALUES(1, 'value1')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__2
+POSTHOOK: Output: default@tbl2
+POSTHOOK: Lineage: tbl2.id EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: tbl2.value SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: INSERT INTO tbl2 VALUES(1, 'value2')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__3
+PREHOOK: Output: default@tbl2
+POSTHOOK: query: INSERT INTO tbl2 VALUES(1, 'value2')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__3
+POSTHOOK: Output: default@tbl2
+POSTHOOK: Lineage: tbl2.id EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: tbl2.value SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: select tbl1.id, t1.value, t2.value
+FROM tbl1
+JOIN (SELECT * FROM tbl2 WHERE value='value1') t1 ON tbl1.id=t1.id
+JOIN (SELECT * FROM tbl2 WHERE value='value2') t2 ON tbl1.id=t2.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1
+PREHOOK: Input: default@tbl2
+#### A masked pattern was here ####
+POSTHOOK: query: select tbl1.id, t1.value, t2.value
+FROM tbl1
+JOIN (SELECT * FROM tbl2 WHERE value='value1') t1 ON tbl1.id=t1.id
+JOIN (SELECT * FROM tbl2 WHERE value='value2') t2 ON tbl1.id=t2.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1
+POSTHOOK: Input: default@tbl2
+#### A masked pattern was here ####
+1	value1	value2

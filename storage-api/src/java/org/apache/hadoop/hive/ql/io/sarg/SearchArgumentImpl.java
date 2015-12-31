@@ -24,8 +24,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
 
 /**
  * The implementation of SearchArguments.
@@ -429,15 +433,28 @@ final class SearchArgumentImpl implements SearchArgument {
      * @return the fixed root
      */
     static ExpressionTree rewriteLeaves(ExpressionTree root,
-                                        int[] leafReorder) {
-      if (root.getOperator() == ExpressionTree.Operator.LEAF) {
-        return new ExpressionTree(leafReorder[root.getLeaf()]);
-      } else if (root.getChildren() != null){
-        List<ExpressionTree> children = root.getChildren();
-        for(int i=0; i < children.size(); ++i) {
-          children.set(i, rewriteLeaves(children.get(i), leafReorder));
+                              int[] leafReorder) {
+      // The leaves could be shared in the tree. Use Set to remove the duplicates.
+      Set<ExpressionTree> leaves = new HashSet<ExpressionTree>();
+      Queue<ExpressionTree> nodes = new LinkedList<ExpressionTree>();
+      nodes.add(root);
+
+      while(!nodes.isEmpty()) {
+        ExpressionTree node = nodes.remove();
+        if (node.getOperator() == ExpressionTree.Operator.LEAF) {
+          leaves.add(node);
+        } else {
+          if (node.getChildren() != null){
+            nodes.addAll(node.getChildren());
+          }
         }
       }
+
+      // Update the leaf in place
+      for(ExpressionTree leaf : leaves) {
+        leaf.setLeaf(leafReorder[leaf.getLeaf()]);
+      }
+
       return root;
     }
 
