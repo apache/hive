@@ -144,16 +144,16 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: a (type: int)
-                      outputColumnNames: _col0
+                      outputColumnNames: a
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
-                        keys: _col0 (type: int)
+                        keys: a (type: int)
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                         Spark HashTable Sink Operator
                           keys:
-                            0 _col0 (type: int)
+                            0 c (type: int)
                             1 _col0 (type: int)
             Local Work:
               Map Reduce Local Work
@@ -171,27 +171,23 @@ STAGE PLANS:
                   Filter Operator
                     predicate: (c > 2) (type: boolean)
                     Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: c (type: int)
+                    Map Join Operator
+                      condition map:
+                           Left Semi Join 0 to 1
+                      keys:
+                        0 c (type: int)
+                        1 _col0 (type: int)
                       outputColumnNames: _col0
+                      input vertices:
+                        1 Map 2
                       Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
-                      Map Join Operator
-                        condition map:
-                             Left Semi Join 0 to 1
-                        keys:
-                          0 _col0 (type: int)
-                          1 _col0 (type: int)
-                        outputColumnNames: _col0
-                        input vertices:
-                          1 Map 2
+                      File Output Operator
+                        compressed: false
                         Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
-                        File Output Operator
-                          compressed: false
-                          Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
-                          table:
-                              input format: org.apache.hadoop.mapred.TextInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Local Work:
               Map Reduce Local Work
             Execution mode: vectorized

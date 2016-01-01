@@ -27,7 +27,7 @@ POSTHOOK: query: insert into emptyavro select count(*) from emptyavro
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@emptyavro
 POSTHOOK: Output: default@emptyavro
-POSTHOOK: Lineage: emptyavro.a EXPRESSION [(emptyavro)emptyavro.null, ]
+POSTHOOK: Lineage: emptyavro.a EXPRESSION []
 PREHOOK: query: select count(*) from emptyavro
 PREHOOK: type: QUERY
 PREHOOK: Input: default@emptyavro

@@ -251,10 +251,10 @@ STAGE PLANS:
                   alias: src
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                     Reduce Output Operator
                       sort order: 
-                      Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
 
   Stage: Stage-0
     Fetch Operator
@@ -310,10 +310,10 @@ STAGE PLANS:
                   alias: src
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                     Reduce Output Operator
                       sort order: 
-                      Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
 
   Stage: Stage-0
     Fetch Operator

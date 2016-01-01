@@ -308,6 +308,7 @@ NULL	NULL	12	35	NULL	NULL
 NULL	NULL	48	NULL	NULL	NULL
 NULL	NULL	NULL	40	NULL	NULL
 BYad/CYbc/RASCgl63S7Ww==
+Warning: Shuffle Join JOIN[5][tables = [a, b]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b RIGHT OUTER JOIN myinput1 c ON a.value = b.value and b.value = c.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value AND c.key > 40 AND c.value > 50 AND c.key = c.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
@@ -347,6 +348,7 @@ NULL	NULL	12	35	NULL	NULL
 NULL	NULL	48	NULL	NULL	NULL
 NULL	NULL	NULL	40	NULL	NULL
 BYad/CYbc/RASCgl63S7Ww==
+Warning: Shuffle Join JOIN[5][tables = [a, b]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b RIGHT OUTER JOIN myinput1 c ON a.value = b.value and b.key = c.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value AND c.key > 40 AND c.value > 50 AND c.key = c.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
@@ -998,6 +1000,7 @@ POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
 100	100	100	100	100	100
 WPjT9iK+FjpywFhoiQ0jvw==
+Warning: Shuffle Join JOIN[8][tables = [a, b]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b RIGHT OUTER JOIN myinput1 c ON a.value = b.value and b.value = c.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value AND c.key > 40 AND c.value > 50 AND c.key = c.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
@@ -1028,6 +1031,7 @@ POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
 100	100	100	100	100	100
 WPjT9iK+FjpywFhoiQ0jvw==
+Warning: Shuffle Join JOIN[8][tables = [a, b]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b RIGHT OUTER JOIN myinput1 c ON a.value = b.value and b.key = c.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value AND c.key > 40 AND c.value > 50 AND c.key = c.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1

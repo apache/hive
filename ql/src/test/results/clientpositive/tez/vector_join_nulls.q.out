@@ -184,6 +184,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
 3113558
+Warning: Map Join MAPJOIN[19][bigTable=a] in task 'Map 1' is a cross product
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a LEFT OUTER JOIN myinput1 b RIGHT OUTER JOIN myinput1 c ON a.value = b.value and b.value = c.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1

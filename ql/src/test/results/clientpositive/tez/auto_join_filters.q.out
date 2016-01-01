@@ -216,6 +216,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
 3080335
+Warning: Map Join MAPJOIN[26][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a LEFT OUTER JOIN myinput1 b RIGHT OUTER JOIN myinput1 c ON a.value = b.value and b.value = c.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value AND c.key > 40 AND c.value > 50 AND c.key = c.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
@@ -243,6 +244,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
 3080335
+Warning: Map Join MAPJOIN[26][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a LEFT OUTER JOIN myinput1 b RIGHT OUTER JOIN myinput1 c ON a.value = b.value and b.key = c.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value AND c.key > 40 AND c.value > 50 AND c.key = c.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
@@ -502,6 +504,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
 3078400
+Warning: Map Join MAPJOIN[30][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a LEFT OUTER JOIN myinput1 b RIGHT OUTER JOIN myinput1 c ON a.value = b.value and b.value = c.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value AND c.key > 40 AND c.value > 50 AND c.key = c.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
@@ -529,6 +532,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
 3078400
+Warning: Map Join MAPJOIN[30][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a LEFT OUTER JOIN myinput1 b RIGHT OUTER JOIN myinput1 c ON a.value = b.value and b.key = c.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value AND c.key > 40 AND c.value > 50 AND c.key = c.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1

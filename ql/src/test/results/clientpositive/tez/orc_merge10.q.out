@@ -552,11 +552,11 @@ PREHOOK: Input: default@orcfile_merge1@ds=1/part=0
 #### A masked pattern was here ####
 -- BEGIN ORC FILE DUMP --
 #### A masked pattern was here ####
-File Version: 0.12 with HIVE_4243
+File Version: 0.12 with HIVE_8732
 Rows: 242
 Compression: SNAPPY
 Compression size: 4096
-Type: struct<key:int,value:string>
+Type: struct<_col0:int,_col1:string>
 
 Stripe Statistics:
   Stripe 1:
@@ -615,7 +615,7 @@ Stripes:
     Row group indices for column 1:
       Entry 0: count: 74 hasNull: false min: 2 max: 493 sum: 19663 positions: 0,0,0
 
-File length: 2393 bytes
+File length: 2394 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________
@@ -629,11 +629,11 @@ PREHOOK: Input: default@orcfile_merge1c@ds=1/part=0
 #### A masked pattern was here ####
 -- BEGIN ORC FILE DUMP --
 #### A masked pattern was here ####
-File Version: 0.12 with HIVE_4243
+File Version: 0.12 with HIVE_8732
 Rows: 242
 Compression: SNAPPY
 Compression size: 4096
-Type: struct<key:int,value:string>
+Type: struct<_col0:int,_col1:string>
 
 Stripe Statistics:
   Stripe 1:
@@ -692,7 +692,7 @@ Stripes:
     Row group indices for column 1:
       Entry 0: count: 74 hasNull: false min: 2 max: 493 sum: 19663 positions: 0,0,0
 
-File length: 2393 bytes
+File length: 2394 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________

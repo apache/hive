@@ -183,7 +183,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[11][bigTable=?] in task 'Stage-1:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[7][bigTable=src] in task 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: explain select src.key from src join src src2
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select src.key from src join src src2
@@ -201,14 +201,12 @@ STAGE PLANS:
         Map 2 
             Map Operator Tree:
                 TableScan
-                  alias: src
+                  alias: src2
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
-                    Spark HashTable Sink Operator
-                      keys:
-                        0 
-                        1 
+                  Spark HashTable Sink Operator
+                    keys:
+                      0 
+                      1 
             Local Work:
               Map Reduce Local Work
 
@@ -221,27 +219,23 @@ STAGE PLANS:
                 TableScan
                   alias: src
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: key (type: string)
+                  Map Join Operator
+                    condition map:
+                         Inner Join 0 to 1
+                    keys:
+                      0 
+                      1 
                     outputColumnNames: _col0
-                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      keys:
-                        0 
-                        1 
-                      outputColumnNames: _col0
-                      input vertices:
-                        1 Map 2
+                    input vertices:
+                      1 Map 2
+                    Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
                       Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                      File Output Operator
-                        compressed: false
-                        Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                        table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Local Work:
               Map Reduce Local Work
 
@@ -251,7 +245,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[11][bigTable=?] in task 'Stage-1:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[7][bigTable=src] in task 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: explain select src.key from src cross join src src2
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select src.key from src cross join src src2
@@ -269,14 +263,12 @@ STAGE PLANS:
         Map 2 
             Map Operator Tree:
                 TableScan
-                  alias: src
+                  alias: src2
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
-                    Spark HashTable Sink Operator
-                      keys:
-                        0 
-                        1 
+                  Spark HashTable Sink Operator
+                    keys:
+                      0 
+                      1 
             Local Work:
               Map Reduce Local Work
 
@@ -289,27 +281,23 @@ STAGE PLANS:
                 TableScan
                   alias: src
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: key (type: string)
+                  Map Join Operator
+                    condition map:
+                         Inner Join 0 to 1
+                    keys:
+                      0 
+                      1 
                     outputColumnNames: _col0
-                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      keys:
-                        0 
-                        1 
-                      outputColumnNames: _col0
-                      input vertices:
-                        1 Map 2
+                    input vertices:
+                      1 Map 2
+                    Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
                       Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                      File Output Operator
-                        compressed: false
-                        Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                        table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Local Work:
               Map Reduce Local Work
 
@@ -336,19 +324,15 @@ STAGE PLANS:
         Map 2 
             Map Operator Tree:
                 TableScan
-                  alias: src
+                  alias: src2
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: key (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                      Spark HashTable Sink Operator
-                        keys:
-                          0 _col0 (type: string)
-                          1 _col0 (type: string)
+                    Spark HashTable Sink Operator
+                      keys:
+                        0 key (type: string)
+                        1 key (type: string)
             Local Work:
               Map Reduce Local Work
 
@@ -364,27 +348,23 @@ STAGE PLANS:
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: key (type: string)
+                    Map Join Operator
+                      condition map:
+                           Inner Join 0 to 1
+                      keys:
+                        0 key (type: string)
+                        1 key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                      Map Join Operator
-                        condition map:
-                             Inner Join 0 to 1
-                        keys:
-                          0 _col0 (type: string)
-                          1 _col0 (type: string)
-                        outputColumnNames: _col0
-                        input vertices:
-                          1 Map 2
+                      input vertices:
+                        1 Map 2
+                      Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
                         Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
-                        File Output Operator
-                          compressed: false
-                          Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
-                          table:
-                              input format: org.apache.hadoop.mapred.TextInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Local Work:
               Map Reduce Local Work
 
