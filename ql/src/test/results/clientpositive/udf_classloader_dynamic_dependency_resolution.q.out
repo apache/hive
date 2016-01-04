@@ -1,0 +1,39 @@
+PREHOOK: query: CREATE TEMPORARY FUNCTION f1 AS 'hive.it.custom.udfs.UDF1'
+PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: f1
+POSTHOOK: query: CREATE TEMPORARY FUNCTION f1 AS 'hive.it.custom.udfs.UDF1'
+POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: f1
+PREHOOK: query: CREATE TEMPORARY FUNCTION f2 AS 'hive.it.custom.udfs.UDF2'
+PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: f2
+POSTHOOK: query: CREATE TEMPORARY FUNCTION f2 AS 'hive.it.custom.udfs.UDF2'
+POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: f2
+PREHOOK: query: SELECT f1(*), f2(*) FROM SRC limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT f1(*), f2(*) FROM SRC limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+UDF1	UDF2
+PREHOOK: query: SELECT f1(*) FROM SRC limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT f1(*) FROM SRC limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+UDF1
+PREHOOK: query: SELECT f2(*) FROM SRC limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT f2(*) FROM SRC limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+UDF2
