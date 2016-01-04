@@ -56,6 +56,7 @@ public class $className extends TestCase {
   }
 
   static {
+    System.setProperty("datanucleus.schema.autoCreateAll", "true");
     MiniClusterType miniMR = MiniClusterType.valueForString("$clusterMode");
     String hiveConfDir = "$hiveConfDir";
     String initScript = "$initScript";

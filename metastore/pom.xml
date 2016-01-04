@@ -122,6 +122,11 @@
       <version>${jdo-api.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.datanucleus</groupId>
+      <artifactId>javax.jdo</artifactId>
+      <version>${datanucleus-jdo.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.antlr</groupId>
       <artifactId>antlr-runtime</artifactId>
       <version>${antlr.version}</version>

@@ -107,9 +107,10 @@
     <avro.version>1.7.7</avro.version>
     <bonecp.version>0.8.0.RELEASE</bonecp.version>
     <calcite.version>1.5.0</calcite.version>
-    <datanucleus-api-jdo.version>3.2.6</datanucleus-api-jdo.version>
-    <datanucleus-core.version>3.2.10</datanucleus-core.version>
-    <datanucleus-rdbms.version>3.2.9</datanucleus-rdbms.version>
+    <datanucleus-api-jdo.version>4.2.1</datanucleus-api-jdo.version>
+    <datanucleus-core.version>4.1.6</datanucleus-core.version>
+    <datanucleus-rdbms.version>4.1.7</datanucleus-rdbms.version>
+    <datanucleus-jdo.version>3.2.0-m3</datanucleus-jdo.version>
     <commons-cli.version>1.2</commons-cli.version>
     <commons-codec.version>1.4</commons-codec.version>
     <commons-collections.version>3.2.2</commons-collections.version>
@@ -574,6 +575,11 @@
         <groupId>org.datanucleus</groupId>
         <artifactId>datanucleus-rdbms</artifactId>
         <version>${datanucleus-rdbms.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.datanucleus</groupId>
+        <artifactId>javax.jdo</artifactId>
+        <version>${datanucleus-jdo.version}</version>
       </dependency>
       <dependency>
         <groupId>org.iq80.snappy</groupId>

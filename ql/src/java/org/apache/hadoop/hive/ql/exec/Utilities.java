@@ -3579,4 +3579,6 @@ public final class Utilities {
 
     return rowObjectInspector;
   }
+
+
 }
