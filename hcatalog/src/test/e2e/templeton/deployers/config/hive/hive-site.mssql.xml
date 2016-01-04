@@ -45,7 +45,7 @@
         <value>com.microsoft.sqlserver.jdbc.SQLServerDriver</value>
     </property>
     <property>
-        <name>datanucleus.autoCreateSchema</name>
+        <name>datanucleus.schema.autoCreateAll</name>
         <value>false</value>
     </property>
     <!--

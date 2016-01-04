@@ -77,7 +77,7 @@ Upgrading from 0.11.0 to 0.13.0
    
 2) Make sure you have
    <property>
-     <name>datanucleus.autoCreateSchema</name>
+     <name>datanucleus.schema.autoCreateAll</name>
      <value>true</value>
    </property>
    in your hive-site.xml.  This will cause DataNucleus to create

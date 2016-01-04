@@ -51,8 +51,7 @@ public class TestMetastoreVersion extends TestCase {
     // reset defaults
     ObjectStore.setSchemaVerified(false);
     System.setProperty(HiveConf.ConfVars.METASTORE_SCHEMA_VERIFICATION.toString(), "false");
-    System.setProperty(HiveConf.ConfVars.METASTORE_AUTO_CREATE_SCHEMA.toString(), "true");
-    System.setProperty(HiveConf.ConfVars.METASTORE_FIXED_DATASTORE.toString(), "false");
+    System.setProperty(HiveConf.ConfVars.METASTORE_AUTO_CREATE_ALL.toString(), "true");
     hiveConf = new HiveConf(this.getClass());
     System.setProperty("hive.support.concurrency", "false");
     System.setProperty("hive.metastore.event.listeners",
@@ -81,8 +80,7 @@ public class TestMetastoreVersion extends TestCase {
     System.clearProperty(HiveConf.ConfVars.METASTORE_SCHEMA_VERIFICATION.toString());
     hiveConf = new HiveConf(this.getClass());
     assertFalse(hiveConf.getBoolVar(HiveConf.ConfVars.METASTORE_SCHEMA_VERIFICATION));
-    assertTrue(hiveConf.getBoolVar(HiveConf.ConfVars.METASTORE_AUTO_CREATE_SCHEMA));
-    assertFalse(hiveConf.getBoolVar(HiveConf.ConfVars.METASTORE_FIXED_DATASTORE));
+    assertTrue(hiveConf.getBoolVar(HiveConf.ConfVars.METASTORE_AUTO_CREATE_ALL));
   }
 
   /***
@@ -93,8 +91,7 @@ public class TestMetastoreVersion extends TestCase {
     System.setProperty(HiveConf.ConfVars.METASTORE_SCHEMA_VERIFICATION.toString(), "true");
     hiveConf = new HiveConf(this.getClass());
     assertTrue(hiveConf.getBoolVar(HiveConf.ConfVars.METASTORE_SCHEMA_VERIFICATION));
-    assertFalse(hiveConf.getBoolVar(HiveConf.ConfVars.METASTORE_AUTO_CREATE_SCHEMA));
-    assertTrue(hiveConf.getBoolVar(HiveConf.ConfVars.METASTORE_FIXED_DATASTORE));
+    assertFalse(hiveConf.getBoolVar(HiveConf.ConfVars.METASTORE_AUTO_CREATE_ALL));
 
     // session creation should fail since the schema didn't get created
     try {
