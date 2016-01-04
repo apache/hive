@@ -57,6 +57,8 @@ public class GenericUDTFJSONTuple extends GenericUDTF {
   static {
     // Allows for unescaped ASCII control characters in JSON values
     JSON_FACTORY.enable(Feature.ALLOW_UNQUOTED_CONTROL_CHARS);
+    // Enabled to accept quoting of all character backslash qooting mechanism
+    JSON_FACTORY.enable(Feature.ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER);
   }
   private static final ObjectMapper MAPPER = new ObjectMapper(JSON_FACTORY);
   private static final JavaType MAP_TYPE = TypeFactory.fromClass(Map.class);
