@@ -74,6 +74,8 @@ public class GenericUDFDate extends GenericUDF {
     inputType = argumentOI.getPrimitiveCategory();
     ObjectInspector outputOI = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
     switch (inputType) {
+    case VOID:
+      break;
     case CHAR:
     case VARCHAR:
     case STRING:
@@ -103,6 +105,8 @@ public class GenericUDFDate extends GenericUDF {
     }
 
     switch (inputType) {
+    case VOID:
+      throw new UDFArgumentException("TO_DATE() received non-null object of VOID type");
     case STRING:
       Date date;
       String dateString = textConverter.convert(arguments[0].get()).toString();
