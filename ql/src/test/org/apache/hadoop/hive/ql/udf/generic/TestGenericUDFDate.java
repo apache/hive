@@ -23,6 +23,7 @@ import java.sql.Timestamp;
 
 import junit.framework.TestCase;
 
+import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredJavaObject;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredObject;
@@ -87,6 +88,28 @@ public class TestGenericUDFDate extends TestCase {
     DeferredObject[] nullArgs = { new DeferredJavaObject(null) };
     output = (Text) udf.evaluate(nullArgs);
     assertNull("to_date() with null DATE", output);
+  }
+
+  public void testVoidToDate() throws HiveException {
+    GenericUDFDate udf = new GenericUDFDate();
+    ObjectInspector valueOI = PrimitiveObjectInspectorFactory.writableVoidObjectInspector;
+    ObjectInspector[] arguments = {valueOI};
+
+    udf.initialize(arguments);
+    DeferredObject[] args = { new DeferredJavaObject(null) };
+    Text output = (Text) udf.evaluate(args);
+
+    // Try with null VOID
+    assertNull("to_date() with null DATE ", output);
+
+    // Try with erroneously generated VOID
+    DeferredObject[] junkArgs = { new DeferredJavaObject(new Text("2015-11-22")) };
+    try {
+      udf.evaluate(junkArgs);
+      fail("to_date() test with VOID non-null failed");
+    } catch (UDFArgumentException udfae) {
+      assertEquals("TO_DATE() received non-null object of VOID type", udfae.getMessage());
+    }
   }
 
 }
