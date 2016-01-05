@@ -156,7 +156,7 @@ public class HiveServer2 extends CompositeService {
                 ConfVars.HIVE_SERVER2_WEBUI_SPNEGO_PRINCIPAL);
             String spnegoKeytab = hiveConf.getVar(
                 ConfVars.HIVE_SERVER2_WEBUI_SPNEGO_KEYTAB);
-            if (Strings.isBlank(spnegoPrincipal) || Strings.isBlank(spnegoKeytab)) {
+            if (Strings.isNullOrEmpty(spnegoPrincipal) || Strings.isNullOrEmpty(spnegoKeytab)) {
               throw new IllegalArgumentException(
                 ConfVars.HIVE_SERVER2_WEBUI_SPNEGO_PRINCIPAL.varname
                   + "/" + ConfVars.HIVE_SERVER2_WEBUI_SPNEGO_KEYTAB.varname
