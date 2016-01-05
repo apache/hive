@@ -186,22 +186,24 @@ public class ReduceSinkDeDuplication extends Transform {
       List<Operator<?>> parents = pJoin.getParentOperators();
       ReduceSinkOperator[] pRSs = parents.toArray(new ReduceSinkOperator[parents.size()]);
       ReduceSinkDesc cRSc = cRS.getConf();
-      ReduceSinkDesc pRS0c = pRSs[0].getConf();
-      if (cRSc.getKeyCols().size() < pRS0c.getKeyCols().size()) {
-        return false;
-      }
-      if (cRSc.getPartitionCols().size() != pRS0c.getPartitionCols().size()) {
-        return false;
-      }
-      Integer moveReducerNumTo = checkNumReducer(cRSc.getNumReducers(), pRS0c.getNumReducers());
-      if (moveReducerNumTo == null ||
-          moveReducerNumTo > 0 && cRSc.getNumReducers() < minReducer) {
-        return false;
-      }
+      for (ReduceSinkOperator pRSNs : pRSs) {
+        ReduceSinkDesc pRSNc = pRSNs.getConf();
+        if (cRSc.getKeyCols().size() < pRSNc.getKeyCols().size()) {
+          return false;
+        }
+        if (cRSc.getPartitionCols().size() != pRSNc.getPartitionCols().size()) {
+          return false;
+        }
+        Integer moveReducerNumTo = checkNumReducer(cRSc.getNumReducers(), pRSNc.getNumReducers());
+        if (moveReducerNumTo == null ||
+            moveReducerNumTo > 0 && cRSc.getNumReducers() < minReducer) {
+          return false;
+        }
 
-      Integer moveRSOrderTo = checkOrder(cRSc.getOrder(), pRS0c.getOrder());
-      if (moveRSOrderTo == null) {
-        return false;
+        Integer moveRSOrderTo = checkOrder(cRSc.getOrder(), pRSNc.getOrder());
+        if (moveRSOrderTo == null) {
+          return false;
+        }
       }
 
       boolean[] sorted = CorrelationUtilities.getSortedTags(pJoin);
@@ -231,11 +233,10 @@ public class ReduceSinkDeDuplication extends Transform {
         }
       }
 
-      if (moveReducerNumTo > 0) {
-        for (ReduceSinkOperator pRS : pRSs) {
-          pRS.getConf().setNumReducers(cRS.getConf().getNumReducers());
-        }
+      for (ReduceSinkOperator pRS : pRSs) {
+        pRS.getConf().setNumReducers(cRS.getConf().getNumReducers());
       }
+
       return true;
     }
 
