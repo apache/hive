@@ -988,6 +988,7 @@ public class BeeLine implements Closeable {
       InputStream inputStreamAppendedNewline = new SequenceInputStream(inputStream,
           new ByteArrayInputStream((new String("\n")).getBytes()));
       consoleReader = new ConsoleReader(inputStreamAppendedNewline, getOutputStream());
+      consoleReader.setCopyPasteDetection(true); // jline will detect if <tab> is regular character
     } else {
       consoleReader = new ConsoleReader();
     }
