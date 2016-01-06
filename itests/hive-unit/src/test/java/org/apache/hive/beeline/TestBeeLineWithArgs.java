@@ -323,6 +323,14 @@ public class TestBeeLineWithArgs {
   }
 
   @Test
+  public void testTabInScriptFile() throws Throwable {
+    List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
+    final String SCRIPT_TEXT = "CREATE\tTABLE IF NOT EXISTS testTabInScriptFile\n(id\tint);\nSHOW TABLES;";
+    final String EXPECTED_PATTERN = "testTabInScriptFile";
+    testScriptFile(SCRIPT_TEXT, EXPECTED_PATTERN, true, argList);
+  }
+
+  @Test
   public void testBeelineShellCommand() throws Throwable {
     List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
     final String SCRIPT_TEXT = "!sh echo \"hello world.\" > hw.txt\n!sh cat hw.txt\n!rm hw.txt";
