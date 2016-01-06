@@ -4642,8 +4642,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ExprNodeDesc grpByExprNode = genExprNodeDesc(grpbyExpr,
           groupByInputRowResolver);
 
-      if (ExprNodeDescUtils.indexOf(grpByExprNode, groupByKeys) >= 0) {
-        // Skip duplicated grouping keys
+      if ((grpByExprNode instanceof ExprNodeColumnDesc) && ExprNodeDescUtils.indexOf(grpByExprNode, groupByKeys) >= 0) {
+        // Skip duplicated grouping keys, it happens when define column alias.
         grpByExprs.remove(i--);
         continue;
       }
