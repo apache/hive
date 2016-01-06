@@ -2337,21 +2337,25 @@ public class HiveConf extends Configuration {
         true,
         "Updates tez job execution progress in-place in the terminal."),
     LLAP_IO_ENABLED("hive.llap.io.enabled", false, "Whether the LLAP IO layer is enabled."),
-    LLAP_LOW_LEVEL_CACHE("hive.llap.io.use.lowlevel.cache", true, "Must always be true for now"),
-    LLAP_ORC_CACHE_MIN_ALLOC("hive.llap.io.cache.orc.alloc.min", 128 * 1024,
-        "Minimum allocation possible from LLAP low-level cache for ORC. Allocations below that\n" +
-        "will be padded to minimum allocation. Should generally be the same as expected ORC\n" +
-        "compression buffer size, or next lowest power of 2. Must be power of 2."),
-    LLAP_ORC_CACHE_MAX_ALLOC("hive.llap.io.cache.orc.alloc.max", 16 * 1024 * 1024,
-        "Maximum allocation possible from LLAP low-level cache for ORC. Should be as large as\n" +
-        "the largest expected ORC compression buffer size. Must be power of 2."),
-    LLAP_ORC_CACHE_ARENA_COUNT("hive.llap.io.cache.orc.arena.count", 8,
+    LLAP_IO_MEMORY_MODE("hive.llap.io.memory.mode", "cache",
+        new StringSet("cache", "allocator", "none"),
+        "LLAP IO memory usage; 'cache' (the default) uses data and metadata cache with a\n" +
+        "custom off-heap allocator, 'allocator' uses the custom allocator without the caches,\n" +
+        "'none' doesn't use either (this mode may result in significant performance degradation)"),
+    LLAP_ALLOCATOR_MIN_ALLOC("hive.llap.io.allocator.alloc.min", 128 * 1024,
+        "Minimum allocation possible from LLAP buddy allocator. Allocations below that are\n" +
+        "padded to minimum allocation. For ORC, should generally be the same as the expected\n" +
+        "compression buffer size, or next lowest power of 2. Must be a power of 2."),
+    LLAP_ALLOCATOR_MAX_ALLOC("hive.llap.io.allocator.alloc.max", 16 * 1024 * 1024,
+        "Maximum allocation possible from LLAP buddy allocator. For ORC, should be as large as\n" +
+        "the largest expected ORC compression buffer size. Must be a power of 2."),
+    LLAP_ALLOCATOR_ARENA_COUNT("hive.llap.io.allocator.arena.count", 8,
         "Arena count for LLAP low-level cache; cache will be allocated in the steps of\n" +
         "(size/arena_count) bytes. This size must be <= 1Gb and >= max allocation; if it is\n" +
         "not the case, an adjusted size will be used. Using powers of 2 is recommended."),
-    LLAP_ORC_CACHE_MAX_SIZE("hive.llap.io.cache.orc.size", 1024L * 1024 * 1024,
-        "Maximum size for ORC low-level cache; must be a multiple of arena size."),
-    LLAP_ORC_CACHE_ALLOCATE_DIRECT("hive.llap.io.cache.direct", true,
+    LLAP_IO_MEMORY_MAX_SIZE("hive.llap.io.memory.size", 1024L * 1024 * 1024,
+        "Maximum size for IO allocator or ORC low-level cache.", "hive.llap.io.cache.orc.size"),
+    LLAP_ALLOCATOR_DIRECT("hive.llap.io.allocator.direct", true,
         "Whether ORC low-level cache should use direct allocation."),
     LLAP_USE_LRFU("hive.llap.io.use.lrfu", false,
         "Whether ORC low-level cache should use LRFU cache policy instead of default (FIFO)."),

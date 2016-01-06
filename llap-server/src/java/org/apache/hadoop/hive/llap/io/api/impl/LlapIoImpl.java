@@ -28,8 +28,10 @@ import javax.management.ObjectName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.io.Allocator;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.cache.BuddyAllocator;
+import org.apache.hadoop.hive.llap.cache.BufferUsageManager;
 import org.apache.hadoop.hive.llap.cache.Cache;
 import org.apache.hadoop.hive.llap.cache.EvictionAwareAllocator;
 import org.apache.hadoop.hive.llap.cache.EvictionDispatcher;
@@ -38,7 +40,8 @@ import org.apache.hadoop.hive.llap.cache.LowLevelCacheMemoryManager;
 import org.apache.hadoop.hive.llap.cache.LowLevelCachePolicy;
 import org.apache.hadoop.hive.llap.cache.LowLevelFifoCachePolicy;
 import org.apache.hadoop.hive.llap.cache.LowLevelLrfuCachePolicy;
-import org.apache.hadoop.hive.llap.cache.NoopCache;
+import org.apache.hadoop.hive.llap.cache.SimpleAllocator;
+import org.apache.hadoop.hive.llap.cache.SimpleBufferManager;
 import org.apache.hadoop.hive.llap.io.api.LlapIo;
 import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer;
 import org.apache.hadoop.hive.llap.io.decode.OrcColumnVectorProducer;
@@ -59,19 +62,21 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
   public static final Logger LOG = LoggerFactory.getLogger(LlapIoImpl.class);
   public static final LogLevels LOGL = new LogLevels(LOG);
+  private static final String MODE_CACHE = "cache", MODE_ALLOCATOR = "allocator";
 
   private final ColumnVectorProducer cvp;
   private final ListeningExecutorService executor;
   private LlapDaemonCacheMetrics cacheMetrics;
   private LlapDaemonQueueMetrics queueMetrics;
   private ObjectName buddyAllocatorMXBean;
-  private EvictionAwareAllocator allocator;
+  private Allocator allocator;
 
   private LlapIoImpl(Configuration conf) throws IOException {
-    boolean useLowLevelCache = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_LOW_LEVEL_CACHE);
-    // High-level cache not supported yet.
+    String ioMode = HiveConf.getVar(conf, HiveConf.ConfVars.LLAP_IO_MEMORY_MODE);
+    boolean useLowLevelCache = LlapIoImpl.MODE_CACHE.equalsIgnoreCase(ioMode),
+        useAllocOnly = !useLowLevelCache && LlapIoImpl.MODE_ALLOCATOR.equalsIgnoreCase(ioMode);
     if (LOGL.isInfoEnabled()) {
-      LOG.info("Initializing LLAP IO" + (useLowLevelCache ? " with low level cache" : ""));
+      LOG.info("Initializing LLAP IO in " + ioMode + " mode");
     }
 
     String displayName = "LlapDaemonCacheMetrics-" + MetricsUtils.getHostName();
@@ -86,35 +91,47 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
     LOG.info("Started llap daemon metrics with displayName: " + displayName +
         " sessionId: " + sessionId);
 
-    Cache<OrcCacheKey> cache = useLowLevelCache ? null : new NoopCache<OrcCacheKey>();
-    boolean useLrfu = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_USE_LRFU);
-    LowLevelCachePolicy cachePolicy =
-        useLrfu ? new LowLevelLrfuCachePolicy(conf) : new LowLevelFifoCachePolicy(conf);
-    LowLevelCacheMemoryManager memManager = new LowLevelCacheMemoryManager(
-        conf, cachePolicy, cacheMetrics);
-    // Memory manager uses cache policy to trigger evictions.
-    OrcMetadataCache metadataCache = new OrcMetadataCache(memManager, cachePolicy);
+    Cache<OrcCacheKey> cache = null; // High-level cache is not implemented or supported.
+
+    OrcMetadataCache metadataCache = null;
     LowLevelCacheImpl orcCache = null;
+    BufferUsageManager bufferManager = null;
     if (useLowLevelCache) {
-      // Allocator uses memory manager to request memory.
-      allocator = new BuddyAllocator(conf, memManager, cacheMetrics);
-      // Cache uses allocator to allocate and deallocate.
+      // Memory manager uses cache policy to trigger evictions, so create the policy first.
+      boolean useLrfu = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_USE_LRFU);
+      LowLevelCachePolicy cachePolicy =
+          useLrfu ? new LowLevelLrfuCachePolicy(conf) : new LowLevelFifoCachePolicy(conf);
+      // Allocator uses memory manager to request memory, so create the manager next.
+      LowLevelCacheMemoryManager memManager = new LowLevelCacheMemoryManager(
+          conf, cachePolicy, cacheMetrics);
+      // Cache uses allocator to allocate and deallocate, create allocator and then caches.
+      EvictionAwareAllocator allocator = new BuddyAllocator(conf, memManager, cacheMetrics);
+      this.allocator = allocator;
       orcCache = new LowLevelCacheImpl(cacheMetrics, cachePolicy, allocator, true);
+      metadataCache = new OrcMetadataCache(memManager, cachePolicy);
       // And finally cache policy uses cache to notify it of eviction. The cycle is complete!
       cachePolicy.setEvictionListener(new EvictionDispatcher(orcCache, metadataCache));
       cachePolicy.setParentDebugDumper(orcCache);
-      orcCache.init();
+      orcCache.init(); // Start the cache threads.
+      bufferManager = orcCache; // Cache also serves as buffer manager.
     } else {
-      cachePolicy.setEvictionListener(new EvictionDispatcher(null, metadataCache));
+      if (useAllocOnly) {
+        LowLevelCacheMemoryManager memManager = new LowLevelCacheMemoryManager(
+            conf, null, cacheMetrics);
+        allocator = new BuddyAllocator(conf, memManager, cacheMetrics);
+      } else {
+        allocator = new SimpleAllocator(conf);
+      }
+      bufferManager = new SimpleBufferManager(allocator, cacheMetrics);
     }
-    // Arbitrary thread pool. Listening is used for unhandled errors for now (TODO: remove?)
+    // IO thread pool. Listening is used for unhandled errors for now (TODO: remove?)
     int numThreads = HiveConf.getIntVar(conf, HiveConf.ConfVars.LLAP_IO_THREADPOOL_SIZE);
     executor = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(numThreads,
         new ThreadFactoryBuilder().setNameFormat("IO-Elevator-Thread-%d").setDaemon(true).build()));
 
     // TODO: this should depends on input format and be in a map, or something.
-    this.cvp = new OrcColumnVectorProducer(metadataCache, orcCache, cache, conf, cacheMetrics,
-        queueMetrics);
+    this.cvp = new OrcColumnVectorProducer(
+        metadataCache, orcCache, bufferManager, cache, conf, cacheMetrics, queueMetrics);
     if (LOGL.isInfoEnabled()) {
       LOG.info("LLAP IO initialized");
     }

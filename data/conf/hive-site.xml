@@ -293,7 +293,7 @@
 
 
 <property>
-  <name>hive.llap.io.cache.direct</name>
+  <name>hive.llap.io.allocator.direct</name>
   <value>false</value>
 </property>
 

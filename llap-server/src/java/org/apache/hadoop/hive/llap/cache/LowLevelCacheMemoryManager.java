@@ -39,13 +39,14 @@ public class LowLevelCacheMemoryManager implements MemoryManager {
 
   public LowLevelCacheMemoryManager(Configuration conf, LowLevelCachePolicy evictor,
       LlapDaemonCacheMetrics metrics) {
-    this.maxSize = HiveConf.getLongVar(conf, ConfVars.LLAP_ORC_CACHE_MAX_SIZE);
+    this.maxSize = HiveConf.getLongVar(conf, ConfVars.LLAP_IO_MEMORY_MAX_SIZE);
     this.evictor = evictor;
     this.usedMemory = new AtomicLong(0);
     this.metrics = metrics;
     metrics.setCacheCapacityTotal(maxSize);
     if (LlapIoImpl.LOGL.isInfoEnabled()) {
-      LlapIoImpl.LOG.info("Cache memory manager initialized with max size " + maxSize);
+      LlapIoImpl.LOG.info("Memory manager initialized with max size " + maxSize + " and "
+          + ((evictor == null) ? "no " : "") + "ability to evict blocks");
     }
   }
 
@@ -65,6 +66,7 @@ public class LowLevelCacheMemoryManager implements MemoryManager {
         }
         continue;
       }
+      if (evictor == null) return false;
       // TODO: for one-block case, we could move notification for the last block out of the loop.
       long evicted = evictor.evictSomeBlocks(remainingToReserve);
       if (evicted == 0) {
@@ -107,6 +109,7 @@ public class LowLevelCacheMemoryManager implements MemoryManager {
 
   @Override
   public void forceReservedMemory(int memoryToEvict) {
+    if (evictor == null) return;
     while (memoryToEvict > 0) {
       long evicted = evictor.evictSomeBlocks(memoryToEvict);
       if (evicted == 0) return;
@@ -126,6 +129,7 @@ public class LowLevelCacheMemoryManager implements MemoryManager {
 
   @Override
   public String debugDumpForOom() {
+    if (evictor == null) return null;
     return "cache state\n" + evictor.debugDumpForOom();
   }
 

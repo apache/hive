@@ -282,10 +282,10 @@ public class TestBuddyAllocator {
 
   private Configuration createConf(int min, int max, int arena, int total) {
     Configuration conf = new Configuration();
-    conf.setInt(ConfVars.LLAP_ORC_CACHE_MIN_ALLOC.varname, min);
-    conf.setInt(ConfVars.LLAP_ORC_CACHE_MAX_ALLOC.varname, max);
-    conf.setInt(ConfVars.LLAP_ORC_CACHE_ARENA_COUNT.varname, total/arena);
-    conf.setLong(ConfVars.LLAP_ORC_CACHE_MAX_SIZE.varname, total);
+    conf.setInt(ConfVars.LLAP_ALLOCATOR_MIN_ALLOC.varname, min);
+    conf.setInt(ConfVars.LLAP_ALLOCATOR_MAX_ALLOC.varname, max);
+    conf.setInt(ConfVars.LLAP_ALLOCATOR_ARENA_COUNT.varname, total/arena);
+    conf.setLong(ConfVars.LLAP_IO_MEMORY_MAX_SIZE.varname, total);
     return conf;
   }
 }
