@@ -236,7 +236,7 @@ public class TezTask extends Task<TezWork> {
           ctx.clear();
         } catch (Exception e) {
           /*best effort*/
-          LOG.warn("Failed to clean up after tez job");
+          LOG.warn("Failed to clean up after tez job", e);
         }
       }
       // need to either move tmp files or remove them
@@ -498,7 +498,21 @@ public class TezTask extends Task<TezWork> {
         console.printError(mesg, "\n" + StringUtils.stringifyException(e));
       }
     }
+    closeDagClientWithoutEx();
     return rc;
+  }
+
+  /**
+   * Close DagClient, log warning if it throws any exception.
+   * We don't want to fail query if that function fails.
+   */
+  private void closeDagClientWithoutEx(){
+    try {
+      dagClient.close();
+      dagClient = null;
+    } catch (Exception e) {
+      LOG.warn("Failed to close DagClient", e);
+    }
   }
 
   @Override
@@ -564,8 +578,9 @@ public class TezTask extends Task<TezWork> {
         LOG.info("Waiting for Tez task to shut down: " + this);
         dagClient.waitForCompletion();
       } catch (Exception ex) {
-        LOG.info("Failed to shut down TezTask" + this, ex);
+        LOG.warn("Failed to shut down TezTask" + this, ex);
       }
+      closeDagClientWithoutEx();
     }
   }
 
