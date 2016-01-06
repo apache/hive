@@ -322,7 +322,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
               || e instanceof CalciteSemanticException) {
             reAnalyzeAST = true;
           } else if (e instanceof SemanticException) {
-            throw (SemanticException) e;
+            // although, its likely to be a valid exception, we will retry
+            // with cbo off anyway.
+            reAnalyzeAST = true;
           } else if (e instanceof RuntimeException) {
             throw (RuntimeException) e;
           } else {
@@ -895,26 +897,26 @@ public class CalcitePlanner extends SemanticAnalyzer {
           list.add(mdProvider.getMetadataProvider());
           RelTraitSet desiredTraits = cluster
               .traitSetOf(HiveRelNode.CONVENTION, RelCollations.EMPTY);
-  
+
           HepProgramBuilder hepPgmBldr = new HepProgramBuilder().addMatchOrder(HepMatchOrder.BOTTOM_UP);
           hepPgmBldr.addRuleInstance(new JoinToMultiJoinRule(HiveJoin.class));
           hepPgmBldr.addRuleInstance(new LoptOptimizeJoinRule(HiveRelFactories.HIVE_JOIN_FACTORY,
               HiveRelFactories.HIVE_PROJECT_FACTORY, HiveRelFactories.HIVE_FILTER_FACTORY));
-  
+
           HepProgram hepPgm = hepPgmBldr.build();
           HepPlanner hepPlanner = new HepPlanner(hepPgm);
-  
+
           hepPlanner.registerMetadataProviders(list);
           RelMetadataProvider chainedProvider = ChainedRelMetadataProvider.of(list);
           cluster.setMetadataProvider(new CachingRelMetadataProvider(chainedProvider, hepPlanner));
-  
+
           RelNode rootRel = calcitePreCboPlan;
           hepPlanner.setRoot(rootRel);
           if (!calcitePreCboPlan.getTraitSet().equals(desiredTraits)) {
             rootRel = hepPlanner.changeTraits(calcitePreCboPlan, desiredTraits);
           }
           hepPlanner.setRoot(rootRel);
-  
+
           calciteOptimizedPlan = hepPlanner.findBestExp();
         } catch (Exception e) {
           boolean isMissingStats = noColsMissingStats.get() > 0;
