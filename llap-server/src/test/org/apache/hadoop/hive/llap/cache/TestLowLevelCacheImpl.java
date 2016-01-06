@@ -348,7 +348,7 @@ public class TestLowLevelCacheImpl {
                 ++gets;
                 LlapDataBuffer result = (LlapDataBuffer)((CacheChunk)iter).getBuffer();
                 assertEquals(makeFakeArenaIndex(fileIndex, offsets[j]), result.arenaIndex);
-                cache.releaseBuffer(result);
+                cache.decRefBuffer(result);
                 iter = iter.next;
               }
             } else {
@@ -378,7 +378,7 @@ public class TestLowLevelCacheImpl {
                   assertEquals(makeFakeArenaIndex(fileIndex, offsets[j]), buf.arenaIndex);
                 }
                 maskVal >>= 1;
-                cache.releaseBuffer(buf);
+                cache.decRefBuffer(buf);
               }
             }
           }
@@ -411,7 +411,7 @@ public class TestLowLevelCacheImpl {
             DiskRange r = results[index];
             if (r instanceof CacheChunk) {
               LlapDataBuffer result = (LlapDataBuffer)((CacheChunk)r).getBuffer();
-              cache.releaseBuffer(result);
+              cache.decRefBuffer(result);
               if (victim == null && result.invalidate()) {
                 ++evictions;
                 victim = result;

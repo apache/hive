@@ -145,7 +145,7 @@ public class LlapServiceDriver {
         Preconditions.checkArgument(options.getXmx() < options.getSize(),
             "Working memory has to be smaller than the container sizing");
       }
-      if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_ORC_CACHE_ALLOCATE_DIRECT)) {
+      if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_ALLOCATOR_DIRECT)) {
         Preconditions.checkArgument(options.getXmx() + options.getCache() < options.getSize(),
             "Working memory + cache has to be smaller than the containing sizing ");
       }
@@ -165,7 +165,7 @@ public class LlapServiceDriver {
     }
 
     if (options.getCache() != -1) {
-      conf.setLong(HiveConf.ConfVars.LLAP_ORC_CACHE_MAX_SIZE.varname, options.getCache());
+      conf.setLong(HiveConf.ConfVars.LLAP_IO_MEMORY_MAX_SIZE.varname, options.getCache());
     }
 
     if (options.getXmx() != -1) {
@@ -278,11 +278,11 @@ public class LlapServiceDriver {
     configs.put(ConfVars.LLAP_DAEMON_YARN_CONTAINER_MB.varname, HiveConf.getIntVar(conf,
         ConfVars.LLAP_DAEMON_YARN_CONTAINER_MB));
 
-    configs.put(HiveConf.ConfVars.LLAP_ORC_CACHE_MAX_SIZE.varname,
-        HiveConf.getLongVar(conf, HiveConf.ConfVars.LLAP_ORC_CACHE_MAX_SIZE));
+    configs.put(HiveConf.ConfVars.LLAP_IO_MEMORY_MAX_SIZE.varname,
+        HiveConf.getLongVar(conf, HiveConf.ConfVars.LLAP_IO_MEMORY_MAX_SIZE));
 
-    configs.put(HiveConf.ConfVars.LLAP_ORC_CACHE_ALLOCATE_DIRECT.varname,
-        HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_ORC_CACHE_ALLOCATE_DIRECT));
+    configs.put(HiveConf.ConfVars.LLAP_ALLOCATOR_DIRECT.varname,
+        HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_ALLOCATOR_DIRECT));
 
     configs.put(ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB.varname, HiveConf.getIntVar(conf,
         ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB));

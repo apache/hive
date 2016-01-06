@@ -46,11 +46,11 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
   private static final int MAX_ARENA_SIZE = 1024*1024*1024;
   public BuddyAllocator(Configuration conf, MemoryManager memoryManager,
       LlapDaemonCacheMetrics metrics) {
-    isDirect = HiveConf.getBoolVar(conf, ConfVars.LLAP_ORC_CACHE_ALLOCATE_DIRECT);
-    minAllocation = HiveConf.getIntVar(conf, ConfVars.LLAP_ORC_CACHE_MIN_ALLOC);
-    maxAllocation = HiveConf.getIntVar(conf, ConfVars.LLAP_ORC_CACHE_MAX_ALLOC);
-    int arenaCount = HiveConf.getIntVar(conf, ConfVars.LLAP_ORC_CACHE_ARENA_COUNT);
-    long maxSizeVal = HiveConf.getLongVar(conf, ConfVars.LLAP_ORC_CACHE_MAX_SIZE);
+    isDirect = HiveConf.getBoolVar(conf, ConfVars.LLAP_ALLOCATOR_DIRECT);
+    minAllocation = HiveConf.getIntVar(conf, ConfVars.LLAP_ALLOCATOR_MIN_ALLOC);
+    maxAllocation = HiveConf.getIntVar(conf, ConfVars.LLAP_ALLOCATOR_MAX_ALLOC);
+    int arenaCount = HiveConf.getIntVar(conf, ConfVars.LLAP_ALLOCATOR_ARENA_COUNT);
+    long maxSizeVal = HiveConf.getLongVar(conf, ConfVars.LLAP_IO_MEMORY_MAX_SIZE);
     int arenaSizeVal = (arenaCount == 0) ? MAX_ARENA_SIZE : (int)(maxSizeVal / arenaCount);
     arenaSizeVal = Math.max(maxAllocation, Math.min(arenaSizeVal, MAX_ARENA_SIZE));
     if (LlapIoImpl.LOG.isInfoEnabled()) {

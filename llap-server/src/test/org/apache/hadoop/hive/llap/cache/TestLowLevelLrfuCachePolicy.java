@@ -145,8 +145,8 @@ public class TestLowLevelLrfuCachePolicy {
 
   private Configuration createConf(int min, int heapSize, Double lambda) {
     Configuration conf = new Configuration();
-    conf.setInt(HiveConf.ConfVars.LLAP_ORC_CACHE_MIN_ALLOC.varname, min);
-    conf.setInt(HiveConf.ConfVars.LLAP_ORC_CACHE_MAX_SIZE.varname, heapSize);
+    conf.setInt(HiveConf.ConfVars.LLAP_ALLOCATOR_MIN_ALLOC.varname, min);
+    conf.setInt(HiveConf.ConfVars.LLAP_IO_MEMORY_MAX_SIZE.varname, heapSize);
     if (lambda != null) {
       conf.setDouble(HiveConf.ConfVars.LLAP_LRFU_LAMBDA.varname, lambda.doubleValue());
     }

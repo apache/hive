@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
 import org.apache.hadoop.hive.llap.DebugUtils;
+import org.apache.hadoop.hive.llap.cache.BufferUsageManager;
 import org.apache.hadoop.hive.llap.cache.Cache;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
@@ -133,6 +134,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
 
   private final OrcMetadataCache metadataCache;
   private final LowLevelCache lowLevelCache;
+  private final BufferUsageManager bufferManager;
   private final Configuration conf;
   private final Cache<OrcCacheKey> cache;
   private final FileSplit split;
@@ -160,12 +162,13 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   @SuppressWarnings("unused")
   private volatile boolean isPaused = false;
 
-  public OrcEncodedDataReader(LowLevelCache lowLevelCache, Cache<OrcCacheKey> cache,
-      OrcMetadataCache metadataCache, Configuration conf, FileSplit split,
-      List<Integer> columnIds, SearchArgument sarg, String[] columnNames,
+  public OrcEncodedDataReader(LowLevelCache lowLevelCache, BufferUsageManager bufferManager,
+      Cache<OrcCacheKey> cache, OrcMetadataCache metadataCache, Configuration conf,
+      FileSplit split, List<Integer> columnIds, SearchArgument sarg, String[] columnNames,
       OrcEncodedDataConsumer consumer, QueryFragmentCounters counters) {
     this.lowLevelCache = lowLevelCache;
     this.metadataCache = metadataCache;
+    this.bufferManager = bufferManager;
     this.cache = cache;
     this.conf = conf;
     this.split = split;
@@ -382,7 +385,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
         if (stripeMetadatas != null) {
           stripeMetadata = stripeMetadatas.get(stripeIxMod);
         } else {
-          if (hasFileId) {
+          if (hasFileId && metadataCache != null) {
             stripeKey.stripeIx = stripeIx;
             stripeMetadata = metadataCache.getStripeMetadata(stripeKey);
           }
@@ -394,7 +397,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
             stripeMetadata = new OrcStripeMetadata(
                 stripeKey, metadataReader, stripe, stripeIncludes, sargColumns);
             counters.incrTimeCounter(Counter.HDFS_TIME_US, startTimeHdfs);
-            if (hasFileId) {
+            if (hasFileId && metadataCache != null) {
               stripeMetadata = metadataCache.putStripeMetadata(stripeMetadata);
               if (DebugUtils.isTraceOrcEnabled()) {
                 LlapIoImpl.LOG.info("Caching stripe " + stripeKey.stripeIx
@@ -510,11 +513,11 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   private void validateFileMetadata() throws IOException {
     if (fileMetadata.getCompressionKind() == CompressionKind.NONE) return;
     int bufferSize = fileMetadata.getCompressionBufferSize();
-    int minAllocSize = HiveConf.getIntVar(conf, HiveConf.ConfVars.LLAP_ORC_CACHE_MIN_ALLOC);
+    int minAllocSize = HiveConf.getIntVar(conf, HiveConf.ConfVars.LLAP_ALLOCATOR_MIN_ALLOC);
     if (bufferSize < minAllocSize) {
       LOG.warn("ORC compression buffer size (" + bufferSize + ") is smaller than LLAP low-level "
             + "cache minimum allocation size (" + minAllocSize + "). Decrease the value for "
-            + HiveConf.ConfVars.LLAP_ORC_CACHE_MIN_ALLOC.toString() + " to avoid wasting memory");
+            + HiveConf.ConfVars.LLAP_ALLOCATOR_MIN_ALLOC.toString() + " to avoid wasting memory");
     }
   }
 
@@ -617,18 +620,20 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
    */
   private OrcFileMetadata getOrReadFileMetadata() throws IOException {
     OrcFileMetadata metadata = null;
-    if (fileId != null) {
+    if (fileId != null && metadataCache != null) {
       metadata = metadataCache.getFileMetadata(fileId);
       if (metadata != null) {
         counters.incrCounter(Counter.METADATA_CACHE_HIT);
         return metadata;
+      } else {
+        counters.incrCounter(Counter.METADATA_CACHE_MISS);
       }
-      counters.incrCounter(Counter.METADATA_CACHE_MISS);
     }
     ensureOrcReader();
     // We assume this call doesn't touch HDFS because everything is already read; don't add time.
     metadata = new OrcFileMetadata(fileId != null ? fileId : 0, orcReader);
-    return (fileId == null) ? metadata : metadataCache.putFileMetadata(metadata);
+    if (fileId == null || metadataCache == null) return metadata;
+    return metadataCache.putFileMetadata(metadata);
   }
 
   /**
@@ -643,7 +648,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     for (int stripeIxMod = 0; stripeIxMod < readState.length; ++stripeIxMod) {
       OrcStripeMetadata value = null;
       int stripeIx = stripeIxMod + stripeIxFrom;
-      if (hasFileId) {
+      if (hasFileId && metadataCache != null) {
         stripeKey.stripeIx = stripeIx;
         value = metadataCache.getStripeMetadata(stripeKey);
       }
@@ -655,7 +660,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
           long startTime = counters.startTimeCounter();
           value = new OrcStripeMetadata(stripeKey, metadataReader, si, globalInc, sargColumns);
           counters.incrTimeCounter(Counter.HDFS_TIME_US, startTime);
-          if (hasFileId) {
+          if (hasFileId && metadataCache != null) {
             value = metadataCache.putStripeMetadata(value);
             if (DebugUtils.isTraceOrcEnabled()) {
               LlapIoImpl.LOG.info("Caching stripe " + stripeKey.stripeIx
@@ -701,7 +706,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
             LlapIoImpl.LOG.info("Unlocking " + buf + " at the end of processing");
           }
         }
-        lowLevelCache.releaseBuffers(data.getCacheBuffers());
+        bufferManager.decRefBuffers(data.getCacheBuffers());
         CSD_POOL.offer(data);
       }
     }
@@ -939,7 +944,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
 
     public DataWrapperForOrc() {
       boolean useZeroCopy = (conf != null) && OrcConf.USE_ZEROCOPY.getBoolean(conf);
-      if (useZeroCopy && !lowLevelCache.getAllocator().isDirectAlloc()) {
+      if (useZeroCopy && !getAllocator().isDirectAlloc()) {
         throw new UnsupportedOperationException("Cannot use zero-copy reader with non-direct cache "
             + "buffers; either disable zero-copy or enable direct cache allocation");
       }
@@ -949,30 +954,31 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     @Override
     public DiskRangeList getFileData(long fileId, DiskRangeList range,
         long baseOffset, DiskRangeListFactory factory, BooleanRef gotAllData) {
-      return lowLevelCache.getFileData(fileId, range, baseOffset, factory, counters, gotAllData);
+      return (lowLevelCache == null) ? range : lowLevelCache.getFileData(
+          fileId, range, baseOffset, factory, counters, gotAllData);
     }
 
     @Override
     public long[] putFileData(long fileId, DiskRange[] ranges,
         MemoryBuffer[] data, long baseOffset) {
-      return lowLevelCache.putFileData(
+      return (lowLevelCache == null) ? null : lowLevelCache.putFileData(
           fileId, ranges, data, baseOffset, Priority.NORMAL, counters);
     }
 
     @Override
     public void releaseBuffer(MemoryBuffer buffer) {
-      lowLevelCache.releaseBuffer(buffer);
+      bufferManager.decRefBuffer(buffer);
     }
 
     @Override
     public void reuseBuffer(MemoryBuffer buffer) {
-      boolean isReused = lowLevelCache.reuseBuffer(buffer);
+      boolean isReused = bufferManager.incRefBuffer(buffer);
       assert isReused;
     }
 
     @Override
     public Allocator getAllocator() {
-      return lowLevelCache.getAllocator();
+      return bufferManager.getAllocator();
     }
 
     @Override

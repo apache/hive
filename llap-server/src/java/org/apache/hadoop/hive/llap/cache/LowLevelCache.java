@@ -18,9 +18,6 @@
 
 package org.apache.hadoop.hive.llap.cache;
 
-import java.util.List;
-
-import org.apache.hadoop.hive.common.io.Allocator;
 import org.apache.hadoop.hive.common.io.DiskRange;
 import org.apache.hadoop.hive.common.io.DiskRangeList;
 import org.apache.hadoop.hive.common.io.DataCache.BooleanRef;
@@ -62,15 +59,4 @@ public interface LowLevelCache {
    */
   long[] putFileData(long fileId, DiskRange[] ranges, MemoryBuffer[] chunks,
       long baseOffset, Priority priority, LowLevelCacheCounters qfCounters);
-
-  Allocator getAllocator();
-
-  /**
-   * Releases the buffer returned by getFileData.
-   */
-  void releaseBuffer(MemoryBuffer buffer);
-
-  void releaseBuffers(List<MemoryBuffer> cacheBuffers);
-
-  boolean reuseBuffer(MemoryBuffer buffer);
 }

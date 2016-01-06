@@ -38,7 +38,7 @@ import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 
 import com.google.common.annotations.VisibleForTesting;
 
-public class LowLevelCacheImpl implements LowLevelCache, LlapOomDebugDump {
+public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, LlapOomDebugDump {
   private static final int DEFAULT_CLEANUP_INTERVAL = 600;
   private final EvictionAwareAllocator allocator;
   private final AtomicInteger newEvictions = new AtomicInteger(0);
@@ -334,12 +334,12 @@ public class LowLevelCacheImpl implements LowLevelCache, LlapOomDebugDump {
   }
 
   @Override
-  public void releaseBuffer(MemoryBuffer buffer) {
+  public void decRefBuffer(MemoryBuffer buffer) {
     unlockBuffer((LlapDataBuffer)buffer, true);
   }
 
   @Override
-  public void releaseBuffers(List<MemoryBuffer> cacheBuffers) {
+  public void decRefBuffers(List<MemoryBuffer> cacheBuffers) {
     for (MemoryBuffer b : cacheBuffers) {
       unlockBuffer((LlapDataBuffer)b, true);
     }
@@ -502,7 +502,7 @@ public class LowLevelCacheImpl implements LowLevelCache, LlapOomDebugDump {
   }
 
   @Override
-  public boolean reuseBuffer(MemoryBuffer buffer) {
+  public boolean incRefBuffer(MemoryBuffer buffer) {
     // notifyReused implies that buffer is already locked; it's also called once for new
     // buffers that are not cached yet. Don't notify cache policy.
     return lockBuffer(((LlapDataBuffer)buffer), false);
