@@ -40,6 +40,14 @@ public class TestBeeLineHistory {
     PrintWriter writer = new PrintWriter(fileName);
     writer.println("select 1;");
     writer.println("select 2;");
+    writer.println("select 3;");
+    writer.println("select 4;");
+    writer.println("select 5;");
+    writer.println("select 6;");
+    writer.println("select 7;");
+    writer.println("select 8;");
+    writer.println("select 9;");
+    writer.println("select 10;");
     writer.close();
   }
 
@@ -54,7 +62,23 @@ public class TestBeeLineHistory {
     beeline.dispatch("!history");
     String output = os.toString("UTF-8");
     int numHistories = output.split("\n").length;
-    Assert.assertEquals(numHistories, 2);
+    Assert.assertEquals(numHistories, 10);
+    beeline.close();
+  }
+
+  @Test
+  public void testHistory() throws Exception {
+    ByteArrayOutputStream os = new ByteArrayOutputStream();
+    PrintStream ops = new PrintStream(os);
+    BeeLine beeline = new BeeLine();
+    beeline.getOpts().setHistoryFile(fileName);
+    beeline.setOutputStream(ops);
+    beeline.getConsoleReader(null);
+    beeline.dispatch("!history");
+    String output = os.toString("UTF-8");
+    String[] tmp = output.split("\n");
+    Assert.assertTrue(tmp[0].equals("1     : select 1;"));
+    Assert.assertTrue(tmp[9].equals("10    : select 10;"));
     beeline.close();
   }
 

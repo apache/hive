@@ -179,10 +179,12 @@ public class Commands {
 
   public boolean history(String line) {
     Iterator hist = beeLine.getConsoleReader().getHistory().entries();
-    int index = 1;
+    String[] tmp;
     while(hist.hasNext()){
-      beeLine.output(beeLine.getColorBuffer().pad(index + ".", 6)
-          .append(hist.next().toString()));
+      tmp = hist.next().toString().split(":", 2);
+      tmp[0] = Integer.toString(Integer.parseInt(tmp[0]) + 1);
+      beeLine.output(beeLine.getColorBuffer().pad(tmp[0], 6)
+          .append(":" + tmp[1]));
     }
     return true;
   }
