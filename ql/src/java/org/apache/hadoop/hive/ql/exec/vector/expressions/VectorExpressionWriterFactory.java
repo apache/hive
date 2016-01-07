@@ -1212,7 +1212,8 @@ public final class VectorExpressionWriterFactory {
     ArrayList<String> columnNames = new ArrayList<String>();
     int i = 0;
     for(StructField field : fields) {
-      ObjectInspector fieldObjInsp = field.getFieldObjectInspector();
+      ObjectInspector fieldObjInsp = TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(
+                TypeInfoUtils.getTypeInfoFromObjectInspector(field.getFieldObjectInspector()));
       writers[i] = VectorExpressionWriterFactory.
                 genVectorExpressionWritable(fieldObjInsp);
       columnNames.add(field.getFieldName());
