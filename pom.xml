@@ -139,6 +139,7 @@
     <jackson.new.version>2.4.2</jackson.new.version>
     <jasper.version>5.5.23</jasper.version>
     <javaewah.version>0.3.2</javaewah.version>
+    <javax-servlet.version>3.0.0.v201112011016</javax-servlet.version>
     <javolution.version>5.5.1</javolution.version>
     <jdo-api.version>3.0.1</jdo-api.version>
     <jetty.version>7.6.0.v20120127</jetty.version>
