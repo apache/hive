@@ -19,15 +19,23 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.rel.core.Filter;
-import org.apache.calcite.rel.core.RelFactories.FilterFactory;
 import org.apache.calcite.rel.rules.FilterSetOpTransposeRule;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.tools.RelBuilderFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
+
 
 public class HiveFilterSetOpTransposeRule extends FilterSetOpTransposeRule {
 
-  public HiveFilterSetOpTransposeRule(FilterFactory filterFactory) {
-    super(filterFactory);
+  public static final HiveFilterSetOpTransposeRule INSTANCE =
+          new HiveFilterSetOpTransposeRule(HiveRelFactories.HIVE_BUILDER);
+
+  /**
+   * Creates a HiveFilterSetOpTransposeRule.
+   */
+  private HiveFilterSetOpTransposeRule(RelBuilderFactory relBuilderFactory) {
+    super(relBuilderFactory);
   }
 
   @Override
