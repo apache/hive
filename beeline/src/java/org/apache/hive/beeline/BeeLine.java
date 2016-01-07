@@ -1031,10 +1031,7 @@ public class BeeLine implements Closeable {
       // now load in the previous history
       if (hist != null) {
         History h = consoleReader.getHistory();
-        if (h instanceof FileHistory) {
-          ((FileHistory) consoleReader.getHistory()).load(new ByteArrayInputStream(hist
-              .toByteArray()));
-        } else {
+        if (!(h instanceof FileHistory)) {
           consoleReader.getHistory().add(hist.toString());
         }
       }
