@@ -28,6 +28,8 @@ import java.util.concurrent.TimeoutException;
 
 import javax.security.auth.login.LoginException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -42,10 +44,8 @@ import org.apache.hive.service.ServiceException;
 import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.cli.operation.Operation;
 import org.apache.hive.service.cli.session.SessionManager;
-import org.apache.hive.service.rpc.thrift.TProtocolVersion;
+import org.apache.hive.service.cli.thrift.TProtocolVersion;
 import org.apache.hive.service.server.HiveServer2;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * CLIService.

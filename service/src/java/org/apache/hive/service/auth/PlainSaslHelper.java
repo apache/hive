@@ -20,7 +20,6 @@ package org.apache.hive.service.auth;
 import java.io.IOException;
 import java.security.Security;
 import java.util.HashMap;
-
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
@@ -33,8 +32,8 @@ import javax.security.sasl.SaslException;
 
 import org.apache.hive.service.auth.AuthenticationProviderFactory.AuthMethods;
 import org.apache.hive.service.auth.PlainSaslServer.SaslPlainProvider;
+import org.apache.hive.service.cli.thrift.TCLIService.Iface;
 import org.apache.hive.service.cli.thrift.ThriftCLIService;
-import org.apache.hive.service.rpc.thrift.TCLIService.Iface;
 import org.apache.thrift.TProcessor;
 import org.apache.thrift.TProcessorFactory;
 import org.apache.thrift.transport.TSaslClientTransport;

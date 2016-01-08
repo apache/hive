@@ -30,8 +30,6 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.jdbc.HttpBasicAuthInterceptor;
 import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.auth.HiveAuthFactory.AuthTypes;
-import org.apache.hive.service.rpc.thrift.TCLIService;
-import org.apache.hive.service.rpc.thrift.TOpenSessionReq;
 import org.apache.http.HttpException;
 import org.apache.http.HttpRequest;
 import org.apache.http.client.CookieStore;

@@ -21,7 +21,6 @@ package org.apache.hive.jdbc;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.List;
-
 import org.apache.hive.service.cli.Type;
 
 /**

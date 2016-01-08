@@ -47,7 +47,7 @@ import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.SessionHandle;
 import org.apache.hive.service.cli.operation.Operation;
 import org.apache.hive.service.cli.operation.OperationManager;
-import org.apache.hive.service.rpc.thrift.TProtocolVersion;
+import org.apache.hive.service.cli.thrift.TProtocolVersion;
 import org.apache.hive.service.server.HiveServer2;
 import org.apache.hive.service.server.ThreadFactoryWithGarbageCleanup;
 import org.slf4j.Logger;

@@ -95,11 +95,6 @@
       <artifactId>jersey-servlet</artifactId>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>org.apache.hive</groupId>
-      <artifactId>hive-service-rpc</artifactId>
-      <version>${project.version}</version>
-    </dependency>
   </dependencies>
 
   <build>
