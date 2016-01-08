@@ -67,6 +67,7 @@ import org.apache.hadoop.hive.ql.hooks.HookContext;
 import org.apache.hadoop.hive.ql.hooks.HookUtils;
 import org.apache.hadoop.hive.ql.hooks.PostExecute;
 import org.apache.hadoop.hive.ql.hooks.PreExecute;
+import org.apache.hadoop.hive.ql.hooks.PreParseHook;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
@@ -375,6 +376,16 @@ public class Driver implements CommandProcessor {
       }
     }).substitute(conf, command);
 
+    try {
+    	List<PreParseHook> preParseHooks = getHooks(HiveConf.ConfVars.HIVE_PRE_PARSE_HOOKS,
+    			PreParseHook.class);
+    	for (PreParseHook preParseHook : preParseHooks) {
+    		command = preParseHook.getCustomCommand(ctx, command);
+    	}
+    } catch (Exception e) {
+    	LOG.warn("WARNING! Query command could not be customized by pre parse hook. "  + e);
+    }
+    
     String queryStr = command;
 
     try {

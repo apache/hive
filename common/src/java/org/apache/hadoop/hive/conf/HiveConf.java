@@ -1813,6 +1813,9 @@ public class HiveConf extends Configuration {
     HIVE_DRIVER_RUN_HOOKS("hive.exec.driver.run.hooks", "",
         "A comma separated list of hooks which implement HiveDriverRunHook. Will be run at the beginning " +
         "and end of Driver.run, these will be run in the order specified."),
+    HIVE_PRE_PARSE_HOOKS("hive.exec.driver.preparse.hooks", "",
+                "A comma separated list of hooks which implement PreParseHook. Will be run after variable  " +
+                "substitution of Driver.compile, these will be run in the order specified."),        
     HIVE_DDL_OUTPUT_FORMAT("hive.ddl.output.format", null,
         "The data format to use for DDL output.  One of \"text\" (for human\n" +
         "readable text) or \"json\" (for a json object)."),
