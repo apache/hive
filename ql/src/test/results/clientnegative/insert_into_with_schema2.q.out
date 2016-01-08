@@ -32,4 +32,4 @@ POSTHOOK: query: create table target1(x int, y int, z int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:x314n
 POSTHOOK: Output: x314n@target1
-FAILED: SemanticException 0:0 Expected 3 columns for insclause-0/x314n@target1; select produces 2 columns. Error encountered near token 'source.s2'
+FAILED: SemanticException 0:0 Expected 3 columns for insclause-0/x314n@target1; select produces 2 columns. Error encountered near token 'TOK_ALLCOLREF'

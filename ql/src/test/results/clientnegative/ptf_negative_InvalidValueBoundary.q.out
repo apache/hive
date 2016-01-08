@@ -1,1 +1,2 @@
-FAILED: SemanticException [Error 10004]: Line 8:43 Invalid table alias or column reference 'p_complex': (possible column names are: p_partkey, p_name, p_mfgr, p_brand, p_type, p_size, p_container, p_retailprice, p_comment)
+FAILED: SemanticException Failed to breakup Windowing invocations into Groups. At least 1 group must only depend on input columns. Also check for circular dependencies.
+Underlying error: org.apache.hadoop.hive.ql.parse.SemanticException: Line 8:43 Invalid table alias or column reference 'p_complex': (possible column names are: p_partkey, p_name, p_mfgr, p_brand, p_type, p_size, p_container, p_retailprice, p_comment)
