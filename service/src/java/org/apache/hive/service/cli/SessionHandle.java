@@ -20,8 +20,8 @@ package org.apache.hive.service.cli;
 
 import java.util.UUID;
 
-import org.apache.hive.service.cli.thrift.TProtocolVersion;
-import org.apache.hive.service.cli.thrift.TSessionHandle;
+import org.apache.hive.service.rpc.thrift.TProtocolVersion;
+import org.apache.hive.service.rpc.thrift.TSessionHandle;
 
 
 /**

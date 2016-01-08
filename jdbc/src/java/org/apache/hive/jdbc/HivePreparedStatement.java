@@ -43,8 +43,8 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Scanner;
 
-import org.apache.hive.service.cli.thrift.TCLIService;
-import org.apache.hive.service.cli.thrift.TSessionHandle;
+import org.apache.hive.service.rpc.thrift.TCLIService;
+import org.apache.hive.service.rpc.thrift.TSessionHandle;
 
 /**
  * HivePreparedStatement.

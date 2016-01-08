@@ -47,6 +47,7 @@
     <module>orc</module>
     <module>ql</module>
     <module>serde</module>
+    <module>service-rpc</module>
     <module>service</module>
     <module>llap-server</module>
     <module>llap-client</module>

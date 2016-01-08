@@ -18,42 +18,42 @@
 
 package org.apache.hive.jdbc;
 
-import static org.apache.hive.service.cli.thrift.TCLIServiceConstants.TYPE_NAMES;
+import static org.apache.hive.service.rpc.thrift.TCLIServiceConstants.TYPE_NAMES;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
-import java.sql.Statement;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.RowSetFactory;
 import org.apache.hive.service.cli.TableSchema;
-import org.apache.hive.service.cli.thrift.TCLIService;
-import org.apache.hive.service.cli.thrift.TCLIServiceConstants;
-import org.apache.hive.service.cli.thrift.TCloseOperationReq;
-import org.apache.hive.service.cli.thrift.TCloseOperationResp;
-import org.apache.hive.service.cli.thrift.TColumnDesc;
-import org.apache.hive.service.cli.thrift.TFetchOrientation;
-import org.apache.hive.service.cli.thrift.TFetchResultsReq;
-import org.apache.hive.service.cli.thrift.TFetchResultsResp;
-import org.apache.hive.service.cli.thrift.TGetResultSetMetadataReq;
-import org.apache.hive.service.cli.thrift.TGetResultSetMetadataResp;
-import org.apache.hive.service.cli.thrift.TOperationHandle;
-import org.apache.hive.service.cli.thrift.TPrimitiveTypeEntry;
-import org.apache.hive.service.cli.thrift.TProtocolVersion;
-import org.apache.hive.service.cli.thrift.TRowSet;
-import org.apache.hive.service.cli.thrift.TSessionHandle;
-import org.apache.hive.service.cli.thrift.TTableSchema;
-import org.apache.hive.service.cli.thrift.TTypeQualifierValue;
-import org.apache.hive.service.cli.thrift.TTypeQualifiers;
+import org.apache.hive.service.rpc.thrift.TCLIService;
+import org.apache.hive.service.rpc.thrift.TCLIServiceConstants;
+import org.apache.hive.service.rpc.thrift.TCloseOperationReq;
+import org.apache.hive.service.rpc.thrift.TCloseOperationResp;
+import org.apache.hive.service.rpc.thrift.TColumnDesc;
+import org.apache.hive.service.rpc.thrift.TFetchOrientation;
+import org.apache.hive.service.rpc.thrift.TFetchResultsReq;
+import org.apache.hive.service.rpc.thrift.TFetchResultsResp;
+import org.apache.hive.service.rpc.thrift.TGetResultSetMetadataReq;
+import org.apache.hive.service.rpc.thrift.TGetResultSetMetadataResp;
+import org.apache.hive.service.rpc.thrift.TOperationHandle;
+import org.apache.hive.service.rpc.thrift.TPrimitiveTypeEntry;
+import org.apache.hive.service.rpc.thrift.TProtocolVersion;
+import org.apache.hive.service.rpc.thrift.TRowSet;
+import org.apache.hive.service.rpc.thrift.TSessionHandle;
+import org.apache.hive.service.rpc.thrift.TTableSchema;
+import org.apache.hive.service.rpc.thrift.TTypeQualifierValue;
+import org.apache.hive.service.rpc.thrift.TTypeQualifiers;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * HiveQueryResultSet.

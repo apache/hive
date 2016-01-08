@@ -30,8 +30,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.hive.service.cli.HiveSQLException;
-import org.apache.hive.service.cli.thrift.TStatus;
-import org.apache.hive.service.cli.thrift.TStatusCode;
+import org.apache.hive.service.rpc.thrift.TStatus;
+import org.apache.hive.service.rpc.thrift.TStatusCode;
 import org.apache.http.client.CookieStore;
 import org.apache.http.cookie.Cookie;
 import org.slf4j.Logger;
