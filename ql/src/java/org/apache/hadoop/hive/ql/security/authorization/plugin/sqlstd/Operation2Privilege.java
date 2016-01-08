@@ -256,6 +256,8 @@ public class Operation2Privilege {
 
     op2Priv.put(HiveOperationType.ANALYZE_TABLE, PrivRequirement.newIOPrivRequirement
 (arr(SQLPrivTypeGrant.SELECT_NOGRANT, SQLPrivTypeGrant.INSERT_NOGRANT), null));
+    op2Priv.put(HiveOperationType.CACHE_METADATA, PrivRequirement.newIOPrivRequirement
+(arr(SQLPrivTypeGrant.SELECT_NOGRANT, SQLPrivTypeGrant.INSERT_NOGRANT), null));
     op2Priv.put(HiveOperationType.SHOWDATABASES, PrivRequirement.newIOPrivRequirement
 (null, null));
     op2Priv.put(HiveOperationType.SHOWTABLES, PrivRequirement.newIOPrivRequirement
