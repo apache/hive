@@ -32,10 +32,12 @@ import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.SetOp;
 import org.apache.calcite.rel.core.Sort;
+import org.apache.calcite.rel.core.Window.RexWinAggCall;
 import org.apache.calcite.rel.rules.MultiJoin;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.rex.RexOver;
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.util.Pair;
 import org.slf4j.Logger;
@@ -293,6 +295,18 @@ public class PlanModifierForASTConv {
         || parent instanceof Aggregate
         || (parent instanceof Filter && ((Aggregate) gbNode).getGroupSet().isEmpty())) {
       validParent = false;
+    }
+
+    if (parent instanceof Project) {
+      for (RexNode child : parent.getChildExps()) {
+        if (child instanceof RexOver || child instanceof RexWinAggCall) {
+          // Hive can't handle select rank() over(order by sum(c1)/sum(c2)) from t1 group by c3
+          // but can handle    select rank() over (order by c4) from
+          // (select sum(c1)/sum(c2)  as c4 from t1 group by c3) t2;
+          // so introduce a project on top of this gby.
+          return false;
+        }
+      }
     }
 
     return validParent;
