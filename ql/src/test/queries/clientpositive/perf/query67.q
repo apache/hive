@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 explain 
 select  *
 from (select i_category
