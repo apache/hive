@@ -232,7 +232,22 @@
 
 <property>
   <name>spark.executor.memory</name>
-  <value>512m</value>
+  <value>1g</value>
+</property>
+
+<property>
+  <name>spark.yarn.executor.memoryOverhead</name>
+  <value>256</value>
+</property>
+
+<property>
+  <name>spark.driver.memory</name>
+  <value>1g</value>
+</property>
+
+<property>
+  <name>spark.yarn.driver.memoryOverhead</name>
+  <value>256</value>
 </property>
 
 <property>
