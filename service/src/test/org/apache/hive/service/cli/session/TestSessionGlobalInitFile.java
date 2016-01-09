@@ -124,13 +124,13 @@ public class TestSessionGlobalInitFile extends TestCase {
    */
   private void doTestSessionGlobalInitFile() throws Exception {
 
-    OperationManager operationManager = service.getService().getSessionManager().getOperationManager();
-    
+    OperationManager operationManager = service.getService().getSessionManager()
+        .getOperationManager();
     SessionHandle sessionHandle = client.openSession(null, null, null);
 
     Assert.assertEquals("Verifying all operations used for init file are closed",
         0, operationManager.getOperations().size());
-    
+
     verifyInitProperty("a", "1", sessionHandle);
     verifyInitProperty("b", "1", sessionHandle);
     verifyInitProperty("c", "1", sessionHandle);
@@ -146,8 +146,7 @@ public class TestSessionGlobalInitFile extends TestCase {
     Assert.assertEquals("Verifying all operations used for checks are closed",
         0, operationManager.getOperations().size());
     client.closeSession(sessionHandle);
-    
-    
+
   }
 
   @Test
