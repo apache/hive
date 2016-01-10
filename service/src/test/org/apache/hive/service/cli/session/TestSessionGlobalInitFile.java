@@ -128,6 +128,7 @@ public class TestSessionGlobalInitFile extends TestCase {
         .getOperationManager();
     SessionHandle sessionHandle = client.openSession(null, null, null);
 
+    // ensure there is no operation related object leak
     Assert.assertEquals("Verifying all operations used for init file are closed",
         0, operationManager.getOperations().size());
 
