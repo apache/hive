@@ -215,6 +215,7 @@ public class LlapDaemonProtocolServerImpl extends AbstractService
     return server;
   }
 
+
   @Override
   public GetTokenResponseProto getDelegationToken(RpcController controller,
       GetTokenRequestProto request) throws ServiceException {

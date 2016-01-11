@@ -2397,9 +2397,10 @@ public class HiveConf extends Configuration {
         "ZooKeeper for ZooKeeper SecretManager."),
     LLAP_ZKSM_ZK_CONNECTION_STRING("hive.llap.zk.sm.connectionString", "",
         "ZooKeeper connection string for ZooKeeper SecretManager."),
-    LLAP_SECURITY_ACL("hive.llap.daemon.service.acl", "*", "The ACL for LLAP daemon."),
-    LLAP_MANAGEMENT_ACL("hive.llap.management.service.acl", "*",
-        "The ACL for LLAP daemon management."),
+    // Note: do not rename to ..service.acl; Hadoop generates .hosts setting name from this,
+    // resulting in a collision with existing hive.llap.daemon.service.hosts and bizarre errors.
+    LLAP_SECURITY_ACL("hive.llap.daemon.acl", "*", "The ACL for LLAP daemon."),
+    LLAP_MANAGEMENT_ACL("hive.llap.management.acl", "*", "The ACL for LLAP daemon management."),
     // Hadoop DelegationTokenManager default is 1 week.
     LLAP_DELEGATION_TOKEN_LIFETIME("hive.llap.daemon.delegation.token.lifetime", "14d",
          new TimeValidator(TimeUnit.SECONDS),
