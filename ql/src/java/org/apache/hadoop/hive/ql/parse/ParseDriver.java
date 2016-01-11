@@ -261,4 +261,29 @@ public class ParseDriver {
 
     return (ASTNode) r.getTree();
   }
+  public ASTNode parseExpression(String command) throws ParseException {
+    LOG.info("Parsing expression: " + command);
+
+    HiveLexerX lexer = new HiveLexerX(new ANTLRNoCaseStringStream(command));
+    TokenRewriteStream tokens = new TokenRewriteStream(lexer);
+    HiveParser parser = new HiveParser(tokens);
+    parser.setTreeAdaptor(adaptor);
+    HiveParser_IdentifiersParser.expression_return r = null;
+    try {
+      r = parser.expression();
+    } catch (RecognitionException e) {
+      e.printStackTrace();
+      throw new ParseException(parser.errors);
+    }
+
+    if (lexer.getErrors().size() == 0 && parser.errors.size() == 0) {
+      LOG.info("Parse Completed");
+    } else if (lexer.getErrors().size() != 0) {
+      throw new ParseException(lexer.getErrors());
+    } else {
+      throw new ParseException(parser.errors);
+    }
+
+    return (ASTNode) r.getTree();
+  }
 }
