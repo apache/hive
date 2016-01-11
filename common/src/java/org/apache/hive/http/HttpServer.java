@@ -372,6 +372,7 @@ public class HttpServer {
 
     addServlet("jmx", "/jmx", JMXJsonServlet.class);
     addServlet("conf", "/conf", ConfServlet.class);
+    addServlet("stacks", "/stacks", StackServlet.class);
 
     ServletContextHandler staticCtx =
       new ServletContextHandler(contexts, "/static");
