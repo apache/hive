@@ -104,10 +104,6 @@ public class LazySerDeParameters implements LazyObjectInspectorParameters {
         needsEscape[b & 0xFF] = true;         // Converts the negative byte into positive index
       }
 
-      // '\r' and '\n' are reserved and can't be used for escape chars and separators
-      if (needsEscape['\r'] || needsEscape['\n']) {
-        throw new SerDeException("\\r and \\n cannot be used as escaping characters or separators");
-      }
       boolean isEscapeCRLF = Boolean.valueOf(tbl.getProperty(serdeConstants.SERIALIZATION_ESCAPE_CRLF));
       if (isEscapeCRLF) {
         needsEscape['\r'] = true;
