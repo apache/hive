@@ -19,6 +19,8 @@
 package org.apache.hive.service.cli.operation;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -277,6 +279,10 @@ public class OperationManager extends AbstractService {
     fieldSchema.setType("string");
     schema.addToFieldSchemas(fieldSchema);
     return schema;
+  }
+
+  public Collection<Operation> getOperations() {
+    return Collections.unmodifiableCollection(handleToOperation.values());
   }
 
   public OperationLog getOperationLogByThread() {
