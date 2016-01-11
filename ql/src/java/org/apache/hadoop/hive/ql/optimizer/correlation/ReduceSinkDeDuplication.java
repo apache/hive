@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.optimizer.Transform;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
@@ -388,6 +389,18 @@ public class ReduceSinkDeDuplication extends Transform {
      */
     private Integer checkExprs(List<ExprNodeDesc> ckeys, List<ExprNodeDesc> pkeys,
         ReduceSinkOperator cRS, ReduceSinkOperator pRS) throws SemanticException {
+      // If ckeys or pkeys have constant node expressions avoid the merge.
+      for (ExprNodeDesc ck : ckeys) {
+        if (ck instanceof ExprNodeConstantDesc) {
+          return null;
+        }
+      }
+      for (ExprNodeDesc pk : pkeys) {
+        if (pk instanceof ExprNodeConstantDesc) {
+          return null;
+        }
+      }
+
       Integer moveKeyColTo = 0;
       if (ckeys == null || ckeys.isEmpty()) {
         if (pkeys != null && !pkeys.isEmpty()) {

@@ -42,9 +42,9 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                       Reduce Output Operator
-                        key expressions: _col0 (type: int), _col1 (type: int)
+                        key expressions: 1 (type: int), _col1 (type: int)
                         sort order: ++
-                        Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
+                        Map-reduce partition columns: 1 (type: int), _col1 (type: int)
                         Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           TableScan
             alias: c
@@ -68,13 +68,13 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                       Reduce Output Operator
-                        key expressions: _col0 (type: int), _col1 (type: int)
+                        key expressions: 1 (type: int), _col1 (type: int)
                         sort order: ++
-                        Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
+                        Map-reduce partition columns: 1 (type: int), _col1 (type: int)
                         Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
-          keys: KEY._col0 (type: int), KEY._col1 (type: int)
+          keys: 1 (type: int), KEY._col1 (type: int)
           mode: mergepartial
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE

@@ -35,13 +35,13 @@ Stage-0
                         Statistics:Num rows: 127050 Data size: 182479129 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator [GBY_19]
                         |  aggregations:["sum(VALUE._col0)"]
-                        |  keys:KEY._col0 (type: int), KEY._col1 (type: int), KEY._col2 (type: string)
+                        |  keys:1998 (type: int), KEY._col1 (type: int), KEY._col2 (type: string)
                         |  outputColumnNames:["_col0","_col1","_col2","_col3"]
                         |  Statistics:Num rows: 127050 Data size: 182479129 Basic stats: COMPLETE Column stats: NONE
                         |<-Reducer 3 [SIMPLE_EDGE]
                            Reduce Output Operator [RS_18]
-                              key expressions:_col0 (type: int), _col1 (type: int), _col2 (type: string)
-                              Map-reduce partition columns:_col0 (type: int), _col1 (type: int), _col2 (type: string)
+                              key expressions:1998 (type: int), _col1 (type: int), _col2 (type: string)
+                              Map-reduce partition columns:1998 (type: int), _col1 (type: int), _col2 (type: string)
                               sort order:+++
                               Statistics:Num rows: 254100 Data size: 364958258 Basic stats: COMPLETE Column stats: NONE
                               value expressions:_col3 (type: decimal(17,2))
