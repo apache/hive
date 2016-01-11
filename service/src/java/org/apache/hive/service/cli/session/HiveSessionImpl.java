@@ -152,11 +152,20 @@ public class HiveSessionImpl implements HiveSession {
     protected int processCmd(String cmd) {
       int rc = 0;
       String cmd_trimed = cmd.trim();
+      OperationHandle opHandle = null;
       try {
-        executeStatementInternal(cmd_trimed, null, false);
+        //execute in sync mode
+        opHandle = executeStatementInternal(cmd_trimed, null, false);
       } catch (HiveSQLException e) {
-        rc = -1;
-        LOG.warn("Failed to execute HQL command in global .hiverc file.", e);
+        LOG.warn("Failed to execute command in global .hiverc file.", e);
+        return -1;
+      }
+      if (opHandle != null) {
+        try {
+          closeOperation(opHandle);
+        } catch (HiveSQLException e) {
+          LOG.warn("Failed to close operation for command in .hiverc file.", e);
+        }
       }
       return rc;
     }
