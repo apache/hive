@@ -22,19 +22,19 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.service.cli.CLIService;
-import org.apache.hive.service.cli.ICLIService;
 import org.apache.hive.service.cli.OperationHandle;
 import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.SessionHandle;
+import org.apache.hive.service.cli.operation.OperationManager;
 import org.apache.hive.service.cli.thrift.ThriftBinaryCLIService;
 import org.apache.hive.service.cli.thrift.ThriftCLIServiceClient;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -58,7 +58,7 @@ public class TestSessionGlobalInitFile extends TestCase {
       cliService.start();
     }
 
-    public ICLIService getService() {
+    public CLIService getService() {
       return cliService;
     }
   }
@@ -123,7 +123,14 @@ public class TestSessionGlobalInitFile extends TestCase {
    * setting property.
    */
   private void doTestSessionGlobalInitFile() throws Exception {
+
+    OperationManager operationManager = service.getService().getSessionManager()
+        .getOperationManager();
     SessionHandle sessionHandle = client.openSession(null, null, null);
+
+    // ensure there is no operation related object leak
+    Assert.assertEquals("Verifying all operations used for init file are closed",
+        0, operationManager.getOperations().size());
 
     verifyInitProperty("a", "1", sessionHandle);
     verifyInitProperty("b", "1", sessionHandle);
@@ -137,7 +144,10 @@ public class TestSessionGlobalInitFile extends TestCase {
      */
     // Assert.assertEquals("expected uri", api.getAddedResource("jar"));
 
+    Assert.assertEquals("Verifying all operations used for checks are closed",
+        0, operationManager.getOperations().size());
     client.closeSession(sessionHandle);
+
   }
 
   @Test
@@ -175,5 +185,6 @@ public class TestSessionGlobalInitFile extends TestCase {
     Assert.assertEquals(1, rowSet.numRows());
     // we know rowSet has only one element
     Assert.assertEquals(key + "=" + value, rowSet.iterator().next()[0]);
+    client.closeOperation(operationHandle);
   }
 }
