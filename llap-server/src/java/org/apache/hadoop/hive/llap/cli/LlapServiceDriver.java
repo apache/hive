@@ -18,10 +18,9 @@
 
 package org.apache.hadoop.hive.llap.cli;
 
+import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -49,6 +48,10 @@ public class LlapServiceDriver {
   protected static final Logger LOG = LoggerFactory.getLogger(LlapServiceDriver.class.getName());
   private static final String[] DEFAULT_AUX_CLASSES = new String[] {
     "org.apache.hive.hcatalog.data.JsonSerDe", "org.apache.hadoop.hive.hbase.HBaseSerDe" };
+  private static final String[] NEEDED_CONFIGS = {
+    "tez-site.xml", "hive-site.xml", "llap-daemon-site.xml", "core-site.xml" };
+  private static final String[] OPTIONAL_CONFIGS = { "ssl-server.xml" };
+
 
   private final Configuration conf;
 
@@ -115,17 +118,16 @@ public class LlapServiceDriver {
     FileSystem fs = FileSystem.get(conf);
     FileSystem lfs = FileSystem.getLocal(conf).getRawFileSystem();
 
-    String[] neededConfig =
-        { "tez-site.xml", "hive-site.xml", "llap-daemon-site.xml", "core-site.xml" };
-
     // needed so that the file is actually loaded into configuration.
-    for (String f : neededConfig) {
+    for (String f : NEEDED_CONFIGS) {
       conf.addResource(f);
       if (conf.getResource(f) == null) {
         throw new Exception("Unable to find required config file: " + f);
       }
     }
-
+    for (String f : OPTIONAL_CONFIGS) {
+      conf.addResource(f);
+    }
     conf.reloadConfiguration();
 
     if (options.getName() != null) {
@@ -251,22 +253,14 @@ public class LlapServiceDriver {
     Path confPath = new Path(tmpDir, "conf");
     lfs.mkdirs(confPath);
 
-    for (String f : neededConfig) {
-      if (f.equals("llap-daemon-site.xml")) {
-        FSDataOutputStream confStream = lfs.create(new Path(confPath, f));
-
-        Configuration copy = resolve(conf, "llap-daemon-site.xml");
-
-        for (Entry<Object, Object> props : options.getConfig().entrySet()) {
-          // overrides
-          copy.set((String) props.getKey(), (String) props.getValue());
-        }
-
-        copy.writeXml(confStream);
-        confStream.close();
-      } else {
-        // they will be file:// URLs
-        lfs.copyFromLocalFile(new Path(conf.getResource(f).toString()), confPath);
+    for (String f : NEEDED_CONFIGS) {
+      copyConfig(options, lfs, confPath, f);
+    }
+    for (String f : OPTIONAL_CONFIGS) {
+      try {
+        copyConfig(options, lfs, confPath, f);
+      } catch (Throwable t) {
+        LOG.info("Error getting an optional config " + f + "; ignoring: " + t.getMessage());
       }
     }
 
@@ -310,6 +304,26 @@ public class LlapServiceDriver {
 
     if (LOG.isDebugEnabled()) {
       LOG.debug("Exiting successfully");
+    }
+  }
+
+  private void copyConfig(
+      LlapOptions options, FileSystem lfs, Path confPath, String f) throws IOException {
+    if (f.equals("llap-daemon-site.xml")) {
+      FSDataOutputStream confStream = lfs.create(new Path(confPath, f));
+
+      Configuration copy = resolve(conf, "llap-daemon-site.xml");
+
+      for (Entry<Object, Object> props : options.getConfig().entrySet()) {
+        // overrides
+        copy.set((String) props.getKey(), (String) props.getValue());
+      }
+
+      copy.writeXml(confStream);
+      confStream.close();
+    } else {
+      // they will be file:// URLs
+      lfs.copyFromLocalFile(new Path(conf.getResource(f).toString()), confPath);
     }
   }
 }

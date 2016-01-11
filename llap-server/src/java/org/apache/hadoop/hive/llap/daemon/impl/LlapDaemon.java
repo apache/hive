@@ -258,7 +258,11 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
   public void shutdown() {
     LOG.info("LlapDaemon shutdown invoked");
     if (llapDaemonInfoBean != null) {
-      MBeans.unregister(llapDaemonInfoBean);
+      try {
+        MBeans.unregister(llapDaemonInfoBean);
+      } catch (Throwable ex) {
+        LOG.info("Error unregistering the bean; ignoring", ex);
+      }
     }
 
     if (pauseMonitor != null) {

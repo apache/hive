@@ -43,7 +43,6 @@ public class LlapWebServices extends AbstractService {
 
   @Override
   public void serviceInit(Configuration conf) {
-
     this.conf = new Configuration(conf);
     this.conf.addResource(YarnConfiguration.YARN_SITE_CONFIGURATION_FILE);
 
@@ -55,7 +54,6 @@ public class LlapWebServices extends AbstractService {
   @Override
   public void serviceStart() throws Exception {
     String bindAddress = "0.0.0.0";
-    Configuration conf = getConfig();
     if (UserGroupInformation.isSecurityEnabled()
         && HiveConf.getBoolVar(conf, ConfVars.LLAP_WEB_AUTO_AUTH)) {
       conf.set("hadoop.http.authentication.type", "kerberos");
