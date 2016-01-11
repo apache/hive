@@ -131,7 +131,6 @@ public class BinarySortableSerDe extends AbstractSerDe {
 
   boolean[] columnSortOrderIsDesc;
 
-  private static byte[] decimalBuffer = null;
   public static Charset decimalCharSet = Charset.forName("US-ASCII");
 
   @Override
@@ -426,9 +425,7 @@ public class BinarySortableSerDe extends AbstractSerDe {
           length++;
         } while (true);
 
-        if(decimalBuffer == null || decimalBuffer.length < length) {
-          decimalBuffer = new byte[length];
-        }
+        final byte[] decimalBuffer = new byte[length];
 
         buffer.seek(start);
         for (int i = 0; i < length; ++i) {
