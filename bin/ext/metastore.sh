@@ -22,7 +22,7 @@ metastore() {
   if $cygwin; then
     HIVE_LIB=`cygpath -w "$HIVE_LIB"`
   fi
-  JAR=${HIVE_LIB}/hive-service-*.jar
+  JAR=${HIVE_LIB}/hive-metastore-*.jar
 
   # hadoop 20 or newer - skip the aux_jars option and hiveconf
 

@@ -18,13 +18,12 @@
 
 package org.apache.hive.service.cli.operation;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.hadoop.hive.metastore.TableType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * HiveTableTypeMapping.

@@ -17,11 +17,11 @@
  */
 package org.apache.hive.jdbc;
 
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
 import java.sql.SQLException;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
 public class HiveStatementTest {
 

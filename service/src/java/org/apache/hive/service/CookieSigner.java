@@ -18,12 +18,12 @@
 
 package org.apache.hive.service;
 
-import org.apache.commons.codec.binary.Base64;
-import org.slf4j.LoggerFactory;
-import org.slf4j.Logger;
-
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+
+import org.apache.commons.codec.binary.Base64;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The cookie signer generates a signature based on SHA digest

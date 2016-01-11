@@ -21,7 +21,7 @@ package org.apache.hive.service.cli;
 import java.sql.DatabaseMetaData;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
-import org.apache.hive.service.cli.thrift.TTypeId;
+import org.apache.hive.service.rpc.thrift.TTypeId;
 
 /**
  * Type.

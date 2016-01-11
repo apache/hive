@@ -19,7 +19,7 @@
 package org.apache.hive.service.cli;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hive.service.cli.thrift.TColumnDesc;
+import org.apache.hive.service.rpc.thrift.TColumnDesc;
 
 
 /**

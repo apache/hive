@@ -27,14 +27,14 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
-import org.apache.hive.service.cli.thrift.TBoolValue;
-import org.apache.hive.service.cli.thrift.TByteValue;
-import org.apache.hive.service.cli.thrift.TColumnValue;
-import org.apache.hive.service.cli.thrift.TDoubleValue;
-import org.apache.hive.service.cli.thrift.TI16Value;
-import org.apache.hive.service.cli.thrift.TI32Value;
-import org.apache.hive.service.cli.thrift.TI64Value;
-import org.apache.hive.service.cli.thrift.TStringValue;
+import org.apache.hive.service.rpc.thrift.TBoolValue;
+import org.apache.hive.service.rpc.thrift.TByteValue;
+import org.apache.hive.service.rpc.thrift.TColumnValue;
+import org.apache.hive.service.rpc.thrift.TDoubleValue;
+import org.apache.hive.service.rpc.thrift.TI16Value;
+import org.apache.hive.service.rpc.thrift.TI32Value;
+import org.apache.hive.service.rpc.thrift.TI64Value;
+import org.apache.hive.service.rpc.thrift.TStringValue;
 
 /**
  * Protocols before HIVE_CLI_SERVICE_PROTOCOL_V6 (used by RowBasedSet)

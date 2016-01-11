@@ -20,9 +20,6 @@ package org.apache.hive.service.cli;
 import java.util.List;
 import java.util.Map;
 
-
-
-
 import org.apache.hive.service.auth.HiveAuthFactory;
 
 public interface ICLIService {
