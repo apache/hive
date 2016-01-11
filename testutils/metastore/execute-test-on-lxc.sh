@@ -92,7 +92,7 @@ lxc_prepare() {
 	echo "Downloading hive source code from SVN, branch='$BRANCH' ..."
 
 	lxc-attach -n $1 -- apt-get update
-	lxc-attach -n $1 -- apt-get install -y patch git
+	lxc-attach -n $1 -- apt-get install -y patch git wget curl
 
 	tmpfile=$(mktemp)
 	cat>$tmpfile<<EOF
