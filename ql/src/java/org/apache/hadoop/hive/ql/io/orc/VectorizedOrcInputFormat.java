@@ -63,10 +63,18 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
     VectorizedOrcRecordReader(Reader file, Configuration conf,
         FileSplit fileSplit) throws IOException {
 
+      // if HiveCombineInputFormat gives us FileSplits instead of OrcSplits,
+      // we know it is not ACID. (see a check in CombineHiveInputFormat.getSplits() that assures this).
+      //
+      // Why would an ACID table reach here instead of VectorizedOrcAcidRowReader?
+      // OrcInputFormat.getRecordReader will use this reader for original files that have no deltas.
+      //
+      boolean isAcid = (fileSplit instanceof OrcSplit);
+
       /**
        * Do we have schema on read in the configuration variables?
        */
-      TypeDescription schema = OrcInputFormat.getDesiredRowTypeDescr(conf);
+      TypeDescription schema = OrcInputFormat.getDesiredRowTypeDescr(conf, isAcid);
 
       List<OrcProto.Type> types = file.getTypes();
       Reader.Options options = new Reader.Options();

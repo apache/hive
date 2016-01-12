@@ -3526,6 +3526,10 @@ public final class Utilities {
     return statsTmpDirs;
   }
 
+  public static boolean isSchemaEvolutionEnabled(Configuration conf, boolean isAcid) {
+    return isAcid || HiveConf.getBoolVar(conf, ConfVars.HIVE_SCHEMA_EVOLUTION);
+  }
+
   public static boolean isInputFileFormatSelfDescribing(PartitionDesc pd) {
     Class<?> inputFormatClass = pd.getInputFileFormatClass();
     return SelfDescribingInputFormatInterface.class.isAssignableFrom(inputFormatClass);

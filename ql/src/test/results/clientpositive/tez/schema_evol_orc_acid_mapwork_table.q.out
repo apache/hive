@@ -1,6 +1,7 @@
 PREHOOK: query: -- SORT_QUERY_RESULTS
 --
 -- FILE VARIATION: ORC, ACID Non-Vectorized, MapWork, Table
+-- *IMPORTANT NOTE* We set hive.exec.schema.evolution=false above since schema evolution is always used for ACID.
 --
 --
 -- SECTION VARIATION: ALTER TABLE ADD COLUMNS ... STATIC INSERT
@@ -12,6 +13,7 @@ PREHOOK: Output: default@table1
 POSTHOOK: query: -- SORT_QUERY_RESULTS
 --
 -- FILE VARIATION: ORC, ACID Non-Vectorized, MapWork, Table
+-- *IMPORTANT NOTE* We set hive.exec.schema.evolution=false above since schema evolution is always used for ACID.
 --
 --
 -- SECTION VARIATION: ALTER TABLE ADD COLUMNS ... STATIC INSERT

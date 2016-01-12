@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.MapOperator.MapOpCtx;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -205,7 +206,8 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
     opCtx.deserializer = pd.getDeserializer(hconf);
 
     StructObjectInspector partRawRowObjectInspector;
-    if (Utilities.isInputFileFormatSelfDescribing(pd)) {
+    boolean isAcid = AcidUtils.isTablePropertyTransactional(td.getProperties());
+    if (Utilities.isSchemaEvolutionEnabled(hconf, isAcid) && Utilities.isInputFileFormatSelfDescribing(pd)) {
       partRawRowObjectInspector = tableRowOI;
     } else {
       partRawRowObjectInspector =
@@ -313,7 +315,8 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
         Deserializer partDeserializer = pd.getDeserializer(hconf);
 
         StructObjectInspector partRawRowObjectInspector;
-        if (Utilities.isInputFileFormatSelfDescribing(pd)) {
+        boolean isAcid = AcidUtils.isTablePropertyTransactional(tableDesc.getProperties());
+        if (Utilities.isSchemaEvolutionEnabled(hconf, isAcid) && Utilities.isInputFileFormatSelfDescribing(pd)) {
           Deserializer tblDeserializer = tableDesc.getDeserializer(hconf);
           partRawRowObjectInspector = (StructObjectInspector) tblDeserializer.getObjectInspector();
         } else {

@@ -447,7 +447,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
     this.length = options.getLength();
     this.validTxnList = validTxnList;
 
-    TypeDescription typeDescr = OrcInputFormat.getDesiredRowTypeDescr(conf);
+    TypeDescription typeDescr = OrcInputFormat.getDesiredRowTypeDescr(conf, /* isAcid */ true);
     if (typeDescr == null) {
       throw new IOException(ErrorMsg.SCHEMA_REQUIRED_TO_READ_ACID_TABLES.getErrorCodedMsg());
     }

@@ -2,7 +2,7 @@ set hive.mapred.mode=nonstrict;
 set hive.cli.print.header=true;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
-
+SET hive.exec.schema.evolution=false;
 SET hive.vectorized.execution.enabled=true;
 set hive.fetch.task.conversion=none;
 set hive.exec.dynamic.partition.mode=nonstrict;
@@ -11,6 +11,7 @@ set hive.exec.dynamic.partition.mode=nonstrict;
 -- SORT_QUERY_RESULTS
 --
 -- FILE VARIATION: ORC, ACID Vectorized, MapWork, Partitioned
+-- *IMPORTANT NOTE* We set hive.exec.schema.evolution=false above since schema evolution is always used for ACID.
 --
 --
 -- SECTION VARIATION: ALTER TABLE ADD COLUMNS ... STATIC INSERT

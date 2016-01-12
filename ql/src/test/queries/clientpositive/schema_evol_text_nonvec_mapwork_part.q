@@ -1,5 +1,6 @@
 set hive.mapred.mode=nonstrict;
 set hive.cli.print.header=true;
+SET hive.exec.schema.evolution=true;
 SET hive.vectorized.execution.enabled=false;
 set hive.fetch.task.conversion=none;
 set hive.exec.dynamic.partition.mode=nonstrict;

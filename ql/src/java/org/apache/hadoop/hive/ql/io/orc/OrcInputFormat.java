@@ -39,6 +39,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.codec.binary.Hex;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.BaseCharTypeInfo;
@@ -249,8 +250,11 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
 
     /**
      * Do we have schema on read in the configuration variables?
+     *
+     * NOTE: This code path is NOT used by ACID.  OrcInputFormat.getRecordReader intercepts for
+     * ACID tables creates raw record merger, etc.
      */
-    TypeDescription schema = getDesiredRowTypeDescr(conf);
+    TypeDescription schema = getDesiredRowTypeDescr(conf, /* isAcid */ false);
 
     Reader.Options options = new Reader.Options().range(offset, length);
     options.schema(schema);
@@ -1523,7 +1527,10 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     /**
      * Do we have schema on read in the configuration variables?
      */
-    TypeDescription schema = getDesiredRowTypeDescr(conf);
+    TypeDescription schema = getDesiredRowTypeDescr(conf, /* isAcid */ true);
+    if (schema == null) {
+      throw new IOException(ErrorMsg.SCHEMA_REQUIRED_TO_READ_ACID_TABLES.getErrorCodedMsg());
+    }
 
     final Reader reader;
     final int bucket;
@@ -2051,7 +2058,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
   }
 
 
-  public static TypeDescription getDesiredRowTypeDescr(Configuration conf) {
+  public static TypeDescription getDesiredRowTypeDescr(Configuration conf, boolean isAcid) {
 
     String columnNameProperty = null;
     String columnTypeProperty = null;
@@ -2060,7 +2067,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     ArrayList<TypeDescription> schemaEvolutionTypeDescrs = null;
 
     boolean haveSchemaEvolutionProperties = false;
-    if (HiveConf.getBoolVar(conf, ConfVars.HIVE_SCHEMA_EVOLUTION)) {
+    if (isAcid || HiveConf.getBoolVar(conf, ConfVars.HIVE_SCHEMA_EVOLUTION) ) {
 
       columnNameProperty = conf.get(IOConstants.SCHEMA_EVOLUTION_COLUMNS);
       columnTypeProperty = conf.get(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES);
@@ -2082,7 +2089,14 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       }
     }
 
-    if (!haveSchemaEvolutionProperties) {
+    if (haveSchemaEvolutionProperties) {
+      LOG.info("Using schema evolution configuration variables schema.evolution.columns " +
+          schemaEvolutionColumnNames.toString() +
+          " / schema.evolution.columns.types " +
+          schemaEvolutionTypeDescrs.toString() +
+          " (isAcid " + isAcid + ")");
+
+    } else {
 
       // Try regular properties;
       columnNameProperty = conf.get(serdeConstants.LIST_COLUMNS);
@@ -2100,6 +2114,11 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       if (schemaEvolutionTypeDescrs.size() != schemaEvolutionColumnNames.size()) {
         return null;
       }
+      LOG.info("Using column configuration variables columns " +
+              schemaEvolutionColumnNames.toString() +
+              " / columns.types " +
+              schemaEvolutionTypeDescrs.toString() +
+              " (isAcid " + isAcid + ")");
     }
 
     // Desired schema does not include virtual columns or partition columns.

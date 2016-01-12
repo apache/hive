@@ -1,4 +1,5 @@
 set hive.cli.print.header=true;
+SET hive.exec.schema.evolution=true;
 SET hive.vectorized.execution.enabled=true;
 set hive.fetch.task.conversion=none;
 
