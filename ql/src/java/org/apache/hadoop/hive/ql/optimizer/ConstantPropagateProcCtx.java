@@ -172,12 +172,29 @@ public class ConstantPropagateProcCtx implements NodeProcessorCtx {
       Map<ColumnInfo, ExprNodeDesc> c = opToConstantExprs.get(parent);
       for (Entry<ColumnInfo, ExprNodeDesc> e : c.entrySet()) {
         ColumnInfo ci = e.getKey();
-        ColumnInfo rci = null;
         ExprNodeDesc constant = e.getValue();
-        rci = resolve(ci, rs, parent.getSchema());
+        boolean resolved = false;
+        ColumnInfo rci = resolve(ci, rs, parent.getSchema());
+
         if (rci != null) {
           constants.put(rci, constant);
-        } else {
+          resolved = true;
+        }
+        if (!resolved &&
+            op.getColumnExprMap() != null && op.getColumnExprMap().entrySet() != null) {
+          for (Entry<String, ExprNodeDesc> entry : op.getColumnExprMap().entrySet()) {
+            if (entry.getValue().isSame(constant)) {
+              ColumnInfo rsColumnInfo = rs.getColumnInfo(entry.getKey());
+              if (rsColumnInfo == null) {
+                continue;
+              }
+              constants.put(rsColumnInfo, constant);
+              resolved = true;
+            }
+          }
+        }
+
+        if (!resolved) {
           LOG.debug("Can't resolve " + ci.getTabAlias() + "." + ci.getAlias() +
                   "(" + ci.getInternalName() + ") from rs:" + rs);
         }

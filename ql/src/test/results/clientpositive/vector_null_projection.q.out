@@ -111,9 +111,9 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                     Reduce Output Operator
-                      key expressions: _col0 (type: void)
+                      key expressions: null (type: void)
                       sort order: +
-                      Map-reduce partition columns: _col0 (type: void)
+                      Map-reduce partition columns: null (type: void)
                       Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
           TableScan
             alias: b
@@ -130,23 +130,27 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                     Reduce Output Operator
-                      key expressions: _col0 (type: void)
+                      key expressions: null (type: void)
                       sort order: +
-                      Map-reduce partition columns: _col0 (type: void)
+                      Map-reduce partition columns: null (type: void)
                       Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
       Reduce Operator Tree:
         Group By Operator
-          keys: KEY._col0 (type: void)
+          keys: null (type: void)
           mode: mergepartial
           outputColumnNames: _col0
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-          File Output Operator
-            compressed: false
+          Select Operator
+            expressions: null (type: void)
+            outputColumnNames: _col0
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
