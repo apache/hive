@@ -24,6 +24,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
+import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -35,6 +36,10 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.hive.hcatalog.common.HCatUtil;
+import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
+import org.apache.hive.hcatalog.data.schema.HCatSchema;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -47,6 +52,8 @@ import java.util.Map;
  *  the supplied storage artifacts are for a file-based storage system.
  */
 public class FosterStorageHandler extends DefaultStorageHandler {
+
+  private static final Logger LOG = LoggerFactory.getLogger(FosterStorageHandler.class);
 
   public Configuration conf;
   /** The directory under which data is initially written for a non partitioned table */
@@ -98,6 +105,36 @@ public class FosterStorageHandler extends DefaultStorageHandler {
   @Override
   public void configureInputJobProperties(TableDesc tableDesc,
                       Map<String, String> jobProperties) {
+
+    try {
+      Map<String, String> tableProperties = tableDesc.getJobProperties();
+
+      String jobInfoProperty = tableProperties.get(HCatConstants.HCAT_KEY_JOB_INFO);
+      if (jobInfoProperty != null) {
+
+        InputJobInfo inputJobInfo = (InputJobInfo) HCatUtil.deserialize(jobInfoProperty);
+
+        HCatTableInfo tableInfo = inputJobInfo.getTableInfo();
+        HCatSchema dataColumns = tableInfo.getDataColumns();
+        List<HCatFieldSchema> dataFields = dataColumns.getFields();
+        StringBuilder columnNamesSb = new StringBuilder();
+        StringBuilder typeNamesSb = new StringBuilder();
+        for (HCatFieldSchema dataField : dataFields) {
+        if (columnNamesSb.length() > 0) {
+            columnNamesSb.append(",");
+            typeNamesSb.append(":");
+          }
+          columnNamesSb.append(dataField.getName());
+          typeNamesSb.append(dataField.getTypeString());
+        }
+        jobProperties.put(IOConstants.SCHEMA_EVOLUTION_COLUMNS, columnNamesSb.toString());
+        jobProperties.put(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, typeNamesSb.toString());
+
+      }
+    } catch (IOException e) {
+      throw new IllegalStateException("Failed to set output path", e);
+    }
+
   }
 
   @Override

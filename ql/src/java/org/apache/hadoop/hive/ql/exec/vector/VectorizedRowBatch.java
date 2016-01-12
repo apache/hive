@@ -45,6 +45,10 @@ public class VectorizedRowBatch implements Writable {
   public int[] projectedColumns;
   public int projectionSize;
 
+  private int dataColumnCount;
+  private int partitionColumnCount;
+
+
   /*
    * If no filtering has been applied yet, selectedInUse is false,
    * meaning that all rows qualify. If it is true, then the selected[] array
@@ -94,6 +98,22 @@ public class VectorizedRowBatch implements Writable {
     for (int i = 0; i < numCols; i++) {
       projectedColumns[i] = i;
     }
+
+    dataColumnCount = -1;
+    partitionColumnCount = -1;
+  }
+
+  public void setPartitionInfo(int dataColumnCount, int partitionColumnCount) {
+    this.dataColumnCount = dataColumnCount;
+    this.partitionColumnCount = partitionColumnCount;
+  }
+
+  public int getDataColumnCount() {
+    return dataColumnCount;
+  }
+
+  public int getPartitionColumnCount() {
+    return partitionColumnCount;
   }
 
   /**

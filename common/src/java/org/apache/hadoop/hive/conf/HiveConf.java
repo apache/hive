@@ -910,6 +910,10 @@ public class HiveConf extends Configuration {
         "The threshold for the input file size of the small tables; if the file size is smaller \n" +
         "than this threshold, it will try to convert the common join into map join"),
 
+
+    HIVE_SCHEMA_EVOLUTION("hive.exec.schema.evolution", false,
+        "Use schema evolution to convert self-describing file format's data to the schema desired by the reader."),
+
     HIVESAMPLERANDOMNUM("hive.sample.seednumber", 0,
         "A number used to percentage sampling. By changing this number, user will change the subsets of data sampled."),
 

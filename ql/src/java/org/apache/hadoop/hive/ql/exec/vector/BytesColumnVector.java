@@ -18,11 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
-import java.util.Arrays;
-
-import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.Writable;
 
 /**
  * This class supports string and binary data by value reference -- i.e. each field is
@@ -50,9 +45,6 @@ public class BytesColumnVector extends ColumnVector {
   public int[] length;
   private byte[] buffer;   // optional buffer to use when actually copying in data
   private int nextFree;    // next free position in buffer
-
-  // Reusable text object
-  private final Text textObject = new Text();
 
   // Estimate that there will be 16 bytes per entry
   static final int DEFAULT_BUFFER_SIZE = 16 * VectorizedRowBatch.DEFAULT_SIZE;
@@ -165,6 +157,19 @@ public class BytesColumnVector extends ColumnVector {
   }
 
   /**
+   * Set a field by actually copying in to a local buffer.
+   * If you must actually copy data in to the array, use this method.
+   * DO NOT USE this method unless it's not practical to set data by reference with setRef().
+   * Setting data by reference tends to run a lot faster than copying data in.
+   *
+   * @param elementNum index within column vector to set
+   * @param sourceBuf container of source data
+   */
+  public void setVal(int elementNum, byte[] sourceBuf) {
+    setVal(elementNum, sourceBuf, 0, sourceBuf.length);
+  }
+
+  /**
    * Set a field to the concatenation of two string values. Result data is copied
    * into the internal buffer.
    *
@@ -213,22 +218,6 @@ public class BytesColumnVector extends ColumnVector {
     byte[] newBuffer = new byte[newLength];
     System.arraycopy(buffer, 0, newBuffer, 0, nextFree);
     buffer = newBuffer;
-  }
-
-  @Override
-  public Writable getWritableObject(int index) {
-    if (this.isRepeating) {
-      index = 0;
-    }
-    Writable result = null;
-    if (!isNull[index] && vector[index] != null) {
-      textObject.clear();
-      textObject.append(vector[index], start[index], length[index]);
-      result = textObject;
-    } else {
-      result = NullWritable.get();
-    }
-    return result;
   }
 
   /** Copy the current object contents into the output. Only copy selected entries,
@@ -294,7 +283,7 @@ public class BytesColumnVector extends ColumnVector {
 
       // Only copy data values if entry is not null. The string value
       // at position 0 is undefined if the position 0 value is null.
-      if (noNulls || (!noNulls && !isNull[0])) {
+      if (noNulls || !isNull[0]) {
 
         // loops start at position 1 because position 0 is already set
         if (selectedInUse) {
@@ -320,14 +309,70 @@ public class BytesColumnVector extends ColumnVector {
     setRef(0, value, 0, value.length);
   }
 
+  // Fill the column vector with nulls
+  public void fillWithNulls() {
+    noNulls = false;
+    isRepeating = true;
+    vector[0] = null;
+    isNull[0] = true;
+  }
+
   @Override
   public void setElement(int outElementNum, int inputElementNum, ColumnVector inputVector) {
-    BytesColumnVector in = (BytesColumnVector) inputVector;
-    setVal(outElementNum, in.vector[inputElementNum], in.start[inputElementNum], in.length[inputElementNum]);
+    if (inputVector.isRepeating) {
+      inputElementNum = 0;
+    }
+    if (inputVector.noNulls || !inputVector.isNull[inputElementNum]) {
+      isNull[outElementNum] = false;
+      BytesColumnVector in = (BytesColumnVector) inputVector;
+      setVal(outElementNum, in.vector[inputElementNum],
+          in.start[inputElementNum], in.length[inputElementNum]);
+    } else {
+      isNull[outElementNum] = true;
+      noNulls = false;
+    }
   }
 
   @Override
   public void init() {
     initBuffer(0);
+  }
+
+  @Override
+  public void stringifyValue(StringBuilder buffer, int row) {
+    if (isRepeating) {
+      row = 0;
+    }
+    if (noNulls || !isNull[row]) {
+      buffer.append('"');
+      buffer.append(new String(this.buffer, start[row], length[row]));
+      buffer.append('"');
+    } else {
+      buffer.append("null");
+    }
+  }
+
+  @Override
+  public void ensureSize(int size, boolean preserveData) {
+    if (size > vector.length) {
+      super.ensureSize(size, preserveData);
+      int[] oldStart = start;
+      start = new int[size];
+      int[] oldLength = length;
+      length = new int[size];
+      byte[][] oldVector = vector;
+      vector = new byte[size][];
+      if (preserveData) {
+        if (isRepeating) {
+          vector[0] = oldVector[0];
+          start[0] = oldStart[0];
+          length[0] = oldLength[0];
+        } else {
+          System.arraycopy(oldVector, 0, vector, 0, oldVector.length);
+          System.arraycopy(oldStart, 0, start, 0 , oldStart.length);
+          System.arraycopy(oldLength, 0, length, 0, oldLength.length);
+        }
+      }
+    }
   }
 }

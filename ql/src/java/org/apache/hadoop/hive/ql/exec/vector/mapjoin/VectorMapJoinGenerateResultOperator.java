@@ -47,6 +47,8 @@ import org.apache.hadoop.hive.serde2.lazybinary.fast.LazyBinaryDeserializeRead;
 import org.apache.hadoop.hive.serde2.lazybinary.fast.LazyBinarySerializeWrite;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 
 /**
@@ -73,7 +75,9 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
   private static final Log LOG = LogFactory.getLog(VectorMapJoinGenerateResultOperator.class.getName());
   private static final String CLASS_NAME = VectorMapJoinGenerateResultOperator.class.getName();
 
-  private transient PrimitiveTypeInfo[] bigTablePrimitiveTypeInfos;
+  //------------------------------------------------------------------------------------------------
+
+  private transient TypeInfo[] bigTableTypeInfos;
 
   private transient VectorSerializeRow bigTableVectorSerializeRow;
 
@@ -394,14 +398,14 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
 
   private void setupSpillSerDe(VectorizedRowBatch batch) throws HiveException {
 
-    PrimitiveTypeInfo[] inputObjInspectorsTypeInfos =
-        VectorizedBatchUtil.primitiveTypeInfosFromStructObjectInspector(
+    TypeInfo[] inputObjInspectorsTypeInfos =
+        VectorizedBatchUtil.typeInfosFromStructObjectInspector(
                (StructObjectInspector) inputObjInspectors[posBigTable]);
 
     List<Integer> projectedColumns = vContext.getProjectedColumns();
     int projectionSize = vContext.getProjectedColumns().size();
 
-    List<PrimitiveTypeInfo> typeInfoList = new ArrayList<PrimitiveTypeInfo>();
+    List<TypeInfo> typeInfoList = new ArrayList<TypeInfo>();
     List<Integer> noNullsProjectionList = new ArrayList<Integer>();
     for (int i = 0; i < projectionSize; i++) {
       int projectedColumn = projectedColumns.get(i);
@@ -413,17 +417,19 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
 
     int[] noNullsProjection = ArrayUtils.toPrimitive(noNullsProjectionList.toArray(new Integer[0]));
     int noNullsProjectionSize = noNullsProjection.length;
-    bigTablePrimitiveTypeInfos = typeInfoList.toArray(new PrimitiveTypeInfo[0]);
+    bigTableTypeInfos = typeInfoList.toArray(new TypeInfo[0]);
 
     bigTableVectorSerializeRow =
-            new VectorSerializeRow(new LazyBinarySerializeWrite(noNullsProjectionSize));
+            new VectorSerializeRow(
+                new LazyBinarySerializeWrite(noNullsProjectionSize));
 
     bigTableVectorSerializeRow.init(
-                bigTablePrimitiveTypeInfos,
-                noNullsProjectionList);
+                bigTableTypeInfos,
+                noNullsProjection);
 
-    bigTableVectorDeserializeRow = new VectorDeserializeRow(
-            new LazyBinaryDeserializeRead(bigTablePrimitiveTypeInfos));
+    bigTableVectorDeserializeRow =
+        new VectorDeserializeRow(
+            new LazyBinaryDeserializeRead(bigTableTypeInfos));
 
     bigTableVectorDeserializeRow.init(noNullsProjection);
   }

@@ -760,9 +760,45 @@ public final class TypeInfoUtils {
     return result;
   }
 
+  public static ArrayList<TypeInfo> typeInfosFromStructObjectInspector(
+      StructObjectInspector structObjectInspector) {
+
+    List<? extends StructField> fields = structObjectInspector.getAllStructFieldRefs();
+    ArrayList<TypeInfo> typeInfoList = new ArrayList<TypeInfo>(fields.size());
+
+    for(StructField field : fields) {
+      TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(
+          field.getFieldObjectInspector().getTypeName());
+      typeInfoList.add(typeInfo);
+    }
+    return typeInfoList;
+  }
+
+  public static ArrayList<TypeInfo> typeInfosFromTypeNames(List<String> typeNames) {
+
+    ArrayList<TypeInfo> result = new ArrayList<TypeInfo>(typeNames.size());
+
+    for(int i = 0; i < typeNames.size(); i++) {
+      TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(typeNames.get(i));
+      result.add(typeInfo);
+    }
+    return result;
+  }
+
   public static ArrayList<TypeInfo> getTypeInfosFromTypeString(String typeString) {
     TypeInfoParser parser = new TypeInfoParser(typeString);
     return parser.parseTypeInfos();
+  }
+
+  public static String getTypesString(List<TypeInfo> typeInfos) {
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < typeInfos.size(); i++) {
+      if (i > 0) {
+        sb.append(":");
+      }
+      sb.append(typeInfos.get(i).getTypeName());
+    }
+    return sb.toString();
   }
 
   public static TypeInfo getTypeInfoFromTypeString(String typeString) {

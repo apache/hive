@@ -70,12 +70,32 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
 
   private String defaultPartitionName;
 
+  /**
+   * These values are saved during MapWork, FetchWork, etc preparation and later added to the the
+   * JobConf of each task.
+   */
+  private String schemaEvolutionColumns;
+  private String schemaEvolutionColumnsTypes;
+
   public TableDesc getTableDesc() {
     return tableDesc;
   }
 
   public void setTableDesc(TableDesc tableDesc) {
     this.tableDesc = tableDesc;
+  }
+
+  public void setSchemaEvolution(String schemaEvolutionColumns, String schemaEvolutionColumnsTypes) {
+    this.schemaEvolutionColumns = schemaEvolutionColumns;
+    this.schemaEvolutionColumnsTypes = schemaEvolutionColumnsTypes;
+  }
+
+  public String getSchemaEvolutionColumns() {
+    return schemaEvolutionColumns;
+  }
+
+  public String getSchemaEvolutionColumnsTypes() {
+    return schemaEvolutionColumnsTypes;
   }
 
   /**

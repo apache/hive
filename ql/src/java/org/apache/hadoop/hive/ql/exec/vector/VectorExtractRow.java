@@ -468,6 +468,9 @@ public abstract class VectorExtractRow {
         int start = colVector.start[adjustedIndex];
         int length = colVector.length[adjustedIndex];
 
+        if (value == null) {
+          LOG.info("null string entry: batchIndex " + batchIndex + " columnIndex " + columnIndex);
+        }
         // Use org.apache.hadoop.io.Text as our helper to go from byte[] to String.
         text.set(value, start, length);
 
@@ -727,9 +730,9 @@ public abstract class VectorExtractRow {
   }
 
   public void extractRow(int batchIndex, Object[] objects) {
-    int i = 0;
-    for (Extractor extracter : extracters) {
-      objects[i++] = extracter.extract(batchIndex);
+    for (int i = 0; i < extracters.length; i++) {
+      Extractor extracter = extracters[i];
+      objects[i] = extracter.extract(batchIndex);
     }
   }
 }

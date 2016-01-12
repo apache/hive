@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.io.orc;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
@@ -27,14 +26,12 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.io.SelfDescribingInputFormatInterface;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.FileSplit;
@@ -47,7 +44,8 @@ import org.apache.hadoop.mapred.Reporter;
  * A MapReduce/Hive input format for ORC files.
  */
 public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, VectorizedRowBatch>
-    implements InputFormatChecker, VectorizedInputFormatInterface {
+    implements InputFormatChecker, VectorizedInputFormatInterface,
+    SelfDescribingInputFormatInterface {
 
   static class VectorizedOrcRecordReader
       implements RecordReader<NullWritable, VectorizedRowBatch> {
@@ -56,12 +54,29 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
     private final long length;
     private float progress = 0.0f;
     private VectorizedRowBatchCtx rbCtx;
+    private final boolean[] columnsToIncludeTruncated;
+    private final Object[] partitionValues;
     private boolean addPartitionCols = true;
 
     VectorizedOrcRecordReader(Reader file, Configuration conf,
         FileSplit fileSplit) throws IOException {
+
+      // if HiveCombineInputFormat gives us FileSplits instead of OrcSplits,
+      // we know it is not ACID. (see a check in CombineHiveInputFormat.getSplits() that assures this).
+      //
+      // Why would an ACID table reach here instead of VectorizedOrcAcidRowReader?
+      // OrcInputFormat.getRecordReader will use this reader for original files that have no deltas.
+      //
+      boolean isAcid = (fileSplit instanceof OrcSplit);
+
+      /**
+       * Do we have schema on read in the configuration variables?
+       */
+      TypeDescription schema = OrcUtils.getDesiredRowTypeDescr(conf, isAcid);
+
       List<OrcProto.Type> types = file.getTypes();
       Reader.Options options = new Reader.Options();
+      options.schema(schema);
       this.offset = fileSplit.getStart();
       this.length = fileSplit.getLength();
       options.range(offset, length);
@@ -69,11 +84,17 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
       OrcInputFormat.setSearchArgument(options, types, conf, true);
 
       this.reader = file.rowsOptions(options);
-      try {
-        rbCtx = new VectorizedRowBatchCtx();
-        rbCtx.init(conf, fileSplit);
-      } catch (Exception e) {
-        throw new RuntimeException(e);
+
+      rbCtx = Utilities.getVectorizedRowBatchCtx(conf);
+
+      columnsToIncludeTruncated = rbCtx.getColumnsToIncludeTruncated(conf);
+
+      int partitionColumnCount = rbCtx.getPartitionColumnCount();
+      if (partitionColumnCount > 0) {
+        partitionValues = new Object[partitionColumnCount];
+        rbCtx.getPartitionValues(rbCtx, conf, fileSplit, partitionValues);
+      } else {
+        partitionValues = null;
       }
     }
 
@@ -90,7 +111,9 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
         // as this does not call CreateValue for each new RecordReader it creates, this check is
         // required in next()
         if (addPartitionCols) {
-          rbCtx.addPartitionColsToBatch(value);
+          if (partitionValues != null) {
+            rbCtx.addPartitionColsToBatch(value, partitionValues);
+          }
           addPartitionCols = false;
         }
         reader.nextBatch(value);
@@ -108,11 +131,7 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
 
     @Override
     public VectorizedRowBatch createValue() {
-      try {
-        return rbCtx.createVectorizedRowBatch();
-      } catch (HiveException e) {
-        throw new RuntimeException("Error creating a batch", e);
-      }
+      return rbCtx.createVectorizedRowBatch(columnsToIncludeTruncated);
     }
 
     @Override

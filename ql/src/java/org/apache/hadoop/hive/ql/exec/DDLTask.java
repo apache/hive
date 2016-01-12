@@ -48,6 +48,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 
 import org.apache.commons.lang.StringEscapeUtils;
@@ -97,9 +98,12 @@ import org.apache.hadoop.hive.ql.exec.ArchiveUtils.PartSpecInfo;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.io.merge.MergeFileTask;
 import org.apache.hadoop.hive.ql.io.merge.MergeFileWork;
+import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
+import org.apache.hadoop.hive.ql.io.orc.OrcSerde;
 import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
 import org.apache.hadoop.hive.ql.io.rcfile.truncate.ColumnTruncateTask;
 import org.apache.hadoop.hive.ql.io.rcfile.truncate.ColumnTruncateWork;
@@ -3291,6 +3295,14 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return 0;
   }
 
+  private boolean isSchemaEvolutionEnabled(Table tbl) {
+    boolean isAcid = AcidUtils.isTablePropertyTransactional(tbl.getMetadata());
+    if (isAcid || HiveConf.getBoolVar(conf, ConfVars.HIVE_SCHEMA_EVOLUTION)) {
+      return true;
+    }
+    return false;
+  }
+
   private int alterTableOrSinglePartition(AlterTableDesc alterTbl, Table tbl, Partition part)
       throws HiveException {
 
@@ -3336,6 +3348,13 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       String comment = alterTbl.getNewColComment();
       boolean first = alterTbl.getFirst();
       String afterCol = alterTbl.getAfterCol();
+      // if orc table, restrict reordering columns as it will break schema evolution
+      boolean isOrcSchemaEvolution =
+          sd.getInputFormat().equals(OrcInputFormat.class.getName()) &&
+          isSchemaEvolutionEnabled(tbl);
+      if (isOrcSchemaEvolution && (first || (afterCol != null && !afterCol.trim().isEmpty()))) {
+        throw new HiveException(ErrorMsg.CANNOT_REORDER_COLUMNS, alterTbl.getOldName());
+      }
       FieldSchema column = null;
 
       boolean found = false;
@@ -3352,6 +3371,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
             && !oldColName.equalsIgnoreCase(oldName)) {
           throw new HiveException(ErrorMsg.DUPLICATE_COLUMN_NAMES, newName);
         } else if (oldColName.equalsIgnoreCase(oldName)) {
+          // if orc table, restrict changing column types. Only integer type promotion is supported.
+          // smallint -> int -> bigint
+          if (isOrcSchemaEvolution && !isSupportedTypeChange(col.getType(), type)) {
+            throw new HiveException(ErrorMsg.CANNOT_CHANGE_COLUMN_TYPE, col.getType(), type,
+                newName);
+          }
           col.setName(newName);
           if (type != null && !type.trim().equals("")) {
             col.setType(type);
@@ -3403,8 +3428,30 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           && !serializationLib.equals(LazySimpleSerDe.class.getName())
           && !serializationLib.equals(ColumnarSerDe.class.getName())
           && !serializationLib.equals(DynamicSerDe.class.getName())
-          && !serializationLib.equals(ParquetHiveSerDe.class.getName())) {
+          && !serializationLib.equals(ParquetHiveSerDe.class.getName())
+          && !serializationLib.equals(OrcSerde.class.getName())) {
         throw new HiveException(ErrorMsg.CANNOT_REPLACE_COLUMNS, alterTbl.getOldName());
+      }
+      final boolean isOrcSchemaEvolution =
+          serializationLib.equals(OrcSerde.class.getName()) &&
+          isSchemaEvolutionEnabled(tbl);
+      // adding columns and limited integer type promotion is supported for ORC schema evolution
+      if (isOrcSchemaEvolution) {
+        final List<FieldSchema> existingCols = sd.getCols();
+        final List<FieldSchema> replaceCols = alterTbl.getNewCols();
+
+        if (replaceCols.size() < existingCols.size()) {
+          throw new HiveException(ErrorMsg.REPLACE_CANNOT_DROP_COLUMNS, alterTbl.getOldName());
+        }
+
+        for (int i = 0; i < existingCols.size(); i++) {
+          final String currentColType = existingCols.get(i).getType().toLowerCase().trim();
+          final String newColType = replaceCols.get(i).getType().toLowerCase().trim();
+          if (!isSupportedTypeChange(currentColType, newColType)) {
+            throw new HiveException(ErrorMsg.REPLACE_UNSUPPORTED_TYPE_CONVERSION, currentColType,
+                newColType, replaceCols.get(i).getName());
+          }
+        }
       }
       sd.setCols(alterTbl.getNewCols());
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDPROPS) {
@@ -3420,6 +3467,14 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDSERDE) {
       StorageDescriptor sd = (part == null ? tbl.getTTable().getSd() : part.getTPartition().getSd());
       String serdeName = alterTbl.getSerdeName();
+      String oldSerdeName = sd.getSerdeInfo().getSerializationLib();
+      // if orc table, restrict changing the serde as it can break schema evolution
+      if (isSchemaEvolutionEnabled(tbl) &&
+          oldSerdeName.equalsIgnoreCase(OrcSerde.class.getName()) &&
+          !serdeName.equalsIgnoreCase(OrcSerde.class.getName())) {
+        throw new HiveException(ErrorMsg.CANNOT_CHANGE_SERDE, OrcSerde.class.getSimpleName(),
+            alterTbl.getOldName());
+      }
       sd.getSerdeInfo().setSerializationLib(serdeName);
       if ((alterTbl.getProps() != null) && (alterTbl.getProps().size() > 0)) {
         sd.getSerdeInfo().getParameters().putAll(alterTbl.getProps());
@@ -3434,6 +3489,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDFILEFORMAT) {
       StorageDescriptor sd = (part == null ? tbl.getTTable().getSd() : part.getTPartition().getSd());
+      // if orc table, restrict changing the file format as it can break schema evolution
+      if (isSchemaEvolutionEnabled(tbl) &&
+          sd.getInputFormat().equals(OrcInputFormat.class.getName())
+          && !alterTbl.getInputFormat().equals(OrcInputFormat.class.getName())) {
+        throw new HiveException(ErrorMsg.CANNOT_CHANGE_FILEFORMAT, "ORC", alterTbl.getOldName());
+      }
       sd.setInputFormat(alterTbl.getInputFormat());
       sd.setOutputFormat(alterTbl.getOutputFormat());
       if (alterTbl.getSerdeName() != null) {
@@ -3554,6 +3615,45 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     return 0;
   }
+
+  // don't change the order of enums as ordinal values are used to check for valid type promotions
+  enum PromotableTypes {
+    SMALLINT,
+    INT,
+    BIGINT;
+
+    static List<String> types() {
+      return ImmutableList.of(SMALLINT.toString().toLowerCase(),
+          INT.toString().toLowerCase(), BIGINT.toString().toLowerCase());
+    }
+  }
+
+  // for ORC, only supported type promotions are smallint -> int -> bigint. No other
+  // type promotions are supported at this point
+  private boolean isSupportedTypeChange(String currentType, String newType) {
+    if (currentType != null && newType != null) {
+      currentType = currentType.toLowerCase().trim();
+      newType = newType.toLowerCase().trim();
+      // no type change
+      if (currentType.equals(newType)) {
+        return true;
+      }
+      if (PromotableTypes.types().contains(currentType)
+          && PromotableTypes.types().contains(newType)) {
+        PromotableTypes pCurrentType = PromotableTypes.valueOf(currentType.toUpperCase());
+        PromotableTypes pNewType = PromotableTypes.valueOf(newType.toUpperCase());
+        if (pNewType.ordinal() >= pCurrentType.ordinal()) {
+          return true;
+        } else {
+          return false;
+        }
+      } else {
+        return false;
+      }
+    }
+    return true;
+  }
+
   /**
    * Drop a given table or some partitions. DropTableDesc is currently used for both.
    *

@@ -38,8 +38,10 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.MapOperator.MapOpCtx;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.exec.tez.MapRecordProcessor;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
+import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.plan.MapWork;
@@ -63,6 +65,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.util.StringUtils;
 
@@ -200,8 +203,14 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
     opCtx.partName = String.valueOf(partSpec);
     opCtx.deserializer = pd.getDeserializer(hconf);
 
-    StructObjectInspector partRawRowObjectInspector =
-        (StructObjectInspector) opCtx.deserializer.getObjectInspector();
+    StructObjectInspector partRawRowObjectInspector;
+    boolean isAcid = AcidUtils.isTablePropertyTransactional(td.getProperties());
+    if (Utilities.isSchemaEvolutionEnabled(hconf, isAcid) && Utilities.isInputFileFormatSelfDescribing(pd)) {
+      partRawRowObjectInspector = tableRowOI;
+    } else {
+      partRawRowObjectInspector =
+          (StructObjectInspector) opCtx.deserializer.getObjectInspector();
+    }
 
     opCtx.partTblObjectInspectorConverter =
         ObjectInspectorConverters.getConverter(partRawRowObjectInspector, tableRowOI);
@@ -302,8 +311,16 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
         PartitionDesc pd = conf.getPathToPartitionInfo().get(onefile);
         TableDesc tableDesc = pd.getTableDesc();
         Deserializer partDeserializer = pd.getDeserializer(hconf);
-        StructObjectInspector partRawRowObjectInspector =
-            (StructObjectInspector) partDeserializer.getObjectInspector();
+
+        StructObjectInspector partRawRowObjectInspector;
+        boolean isAcid = AcidUtils.isTablePropertyTransactional(tableDesc.getProperties());
+        if (Utilities.isSchemaEvolutionEnabled(hconf, isAcid) && Utilities.isInputFileFormatSelfDescribing(pd)) {
+          Deserializer tblDeserializer = tableDesc.getDeserializer(hconf);
+          partRawRowObjectInspector = (StructObjectInspector) tblDeserializer.getObjectInspector();
+        } else {
+          partRawRowObjectInspector =
+              (StructObjectInspector) partDeserializer.getObjectInspector();
+        }
 
         StructObjectInspector tblRawRowObjectInspector = tableDescOI.get(tableDesc);
         if ((tblRawRowObjectInspector == null) ||

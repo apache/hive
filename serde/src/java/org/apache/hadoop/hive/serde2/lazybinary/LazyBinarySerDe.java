@@ -311,6 +311,35 @@ public class LazyBinarySerDe extends AbstractSerDe {
     public boolean value;
   }
 
+  private static void writeDateToByteStream(RandomAccessOutput byteStream,
+                                            DateWritable date) {
+    LazyBinaryUtils.writeVInt(byteStream, date.getDays());
+  }
+
+  public static void setFromBytes(byte[] bytes, int offset, int length,
+                                  HiveDecimalWritable dec) {
+    LazyBinaryUtils.VInt vInt = new LazyBinaryUtils.VInt();
+    LazyBinaryUtils.readVInt(bytes, offset, vInt);
+    int scale = vInt.value;
+    offset += vInt.length;
+    LazyBinaryUtils.readVInt(bytes, offset, vInt);
+    offset += vInt.length;
+    byte[] internalStorage = dec.getInternalStorage();
+    if (internalStorage.length != vInt.value) {
+      internalStorage = new byte[vInt.value];
+    }
+    System.arraycopy(bytes, offset, internalStorage, 0, vInt.value);
+    dec.set(internalStorage, scale);
+  }
+
+  public static void writeToByteStream(RandomAccessOutput byteStream,
+                                       HiveDecimalWritable dec) {
+    LazyBinaryUtils.writeVInt(byteStream, dec.getScale());
+    byte[] internalStorage = dec.getInternalStorage();
+    LazyBinaryUtils.writeVInt(byteStream, internalStorage.length);
+    byteStream.write(internalStorage, 0, internalStorage.length);
+  }
+
   /**
    * A recursive function that serialize an object to a byte buffer based on its
    * object inspector.

@@ -59,6 +59,7 @@ import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
@@ -66,9 +67,11 @@ import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat.SplitStrategy;
+import org.apache.hadoop.hive.ql.io.orc.TestOrcRawRecordMerger.MyRow;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -189,6 +192,7 @@ public class TestInputOutputFormat {
       builder.append("}");
       return builder.toString();
     }
+
   }
 
   public static class BigRowField implements StructField {
@@ -331,6 +335,7 @@ public class TestInputOutputFormat {
     public Category getCategory() {
       return Category.STRUCT;
     }
+
   }
 
   public static class MyRow implements Writable {
@@ -350,6 +355,15 @@ public class TestInputOutputFormat {
     public void readFields(DataInput dataInput) throws IOException {
      throw new UnsupportedOperationException("no read");
     }
+
+
+    static String getColumnNamesProperty() {
+      return "x,y";
+    }
+    static String getColumnTypesProperty() {
+      return "int:int";
+    }
+
   }
 
   @Rule
@@ -1130,6 +1144,8 @@ public class TestInputOutputFormat {
 
 
     // read the whole file
+    conf.set("columns", MyRow.getColumnNamesProperty());
+    conf.set("columns.types", MyRow.getColumnTypesProperty());
     org.apache.hadoop.mapred.RecordReader reader =
         in.getRecordReader(splits[0], conf, Reporter.NULL);
     Object key = reader.createKey();
@@ -1250,6 +1266,8 @@ public class TestInputOutputFormat {
     InputSplit[] splits = in.getSplits(conf, 1);
     assertEquals(1, splits.length);
     ColumnProjectionUtils.appendReadColumns(conf, Collections.singletonList(1));
+    conf.set("columns", "z,r");
+    conf.set("columns.types", "int:struct<x:int,y:int>");
     org.apache.hadoop.mapred.RecordReader reader =
         in.getRecordReader(splits[0], conf, Reporter.NULL);
     Object key = reader.createKey();
@@ -1330,6 +1348,14 @@ public class TestInputOutputFormat {
     public void readFields(DataInput dataInput) throws IOException {
       throw new UnsupportedOperationException("no read");
     }
+
+    static String getColumnNamesProperty() {
+      return "str,str2";
+    }
+    static String getColumnTypesProperty() {
+      return "string:string";
+    }
+
   }
 
   @Test
@@ -1365,6 +1391,8 @@ public class TestInputOutputFormat {
     assertEquals(1, splits.length);
 
     // read the whole file
+    conf.set("columns", StringRow.getColumnNamesProperty());
+    conf.set("columns.types", StringRow.getColumnTypesProperty());
     org.apache.hadoop.mapred.RecordReader reader =
         in.getRecordReader(splits[0], conf, Reporter.NULL);
     Object key = reader.createKey();
@@ -1405,6 +1433,7 @@ public class TestInputOutputFormat {
    * @param isVectorized should run vectorized
    * @return a JobConf that contains the necessary information
    * @throws IOException
+   * @throws HiveException
    */
   JobConf createMockExecutionEnvironment(Path workDir,
                                          Path warehouseDir,
@@ -1412,9 +1441,9 @@ public class TestInputOutputFormat {
                                          ObjectInspector objectInspector,
                                          boolean isVectorized,
                                          int partitions
-                                         ) throws IOException {
-    Utilities.clearWorkMap();
+                                         ) throws IOException, HiveException {
     JobConf conf = new JobConf();
+    Utilities.clearWorkMap();
     conf.set("hive.exec.plan", workDir.toString());
     conf.set("mapred.job.tracker", "local");
     conf.set("hive.vectorized.execution.enabled", Boolean.toString(isVectorized));
@@ -1467,6 +1496,11 @@ public class TestInputOutputFormat {
 
     MapWork mapWork = new MapWork();
     mapWork.setVectorMode(isVectorized);
+    if (isVectorized) {
+      VectorizedRowBatchCtx vectorizedRowBatchCtx = new VectorizedRowBatchCtx();
+      vectorizedRowBatchCtx.init(structOI, new String[0]);
+      mapWork.setVectorizedRowBatchCtx(vectorizedRowBatchCtx);
+    }
     mapWork.setUseBucketizedHiveInputFormat(false);
     LinkedHashMap<String, ArrayList<String>> aliasMap =
         new LinkedHashMap<String, ArrayList<String>>();
@@ -1529,6 +1563,8 @@ public class TestInputOutputFormat {
     InputSplit[] splits = inputFormat.getSplits(conf, 10);
     assertEquals(1, splits.length);
 
+    conf.set("columns", MyRow.getColumnNamesProperty());
+    conf.set("columns.types", MyRow.getColumnTypesProperty());
     org.apache.hadoop.mapred.RecordReader<NullWritable, VectorizedRowBatch>
         reader = inputFormat.getRecordReader(splits[0], conf, Reporter.NULL);
     NullWritable key = reader.createKey();
@@ -1578,6 +1614,8 @@ public class TestInputOutputFormat {
     InputSplit[] splits = inputFormat.getSplits(conf, 10);
     assertEquals(1, splits.length);
 
+    conf.set("columns", MyRow.getColumnNamesProperty());
+    conf.set("columns.types", MyRow.getColumnTypesProperty());
     org.apache.hadoop.mapred.RecordReader<NullWritable, VectorizedRowBatch>
         reader = inputFormat.getRecordReader(splits[0], conf, Reporter.NULL);
     NullWritable key = reader.createKey();
@@ -1646,8 +1684,11 @@ public class TestInputOutputFormat {
       assertEquals("checking long " + i, i, longColumn.vector[i]);
       assertEquals("checking float " + i, i, floatColumn.vector[i], 0.0001);
       assertEquals("checking double " + i, i, doubleCoulmn.vector[i], 0.0001);
+      Text strValue = new Text();
+      strValue.set(stringColumn.vector[i], stringColumn.start[i],
+          stringColumn.length[i]);
       assertEquals("checking string " + i, new Text(Long.toHexString(i)),
-          stringColumn.getWritableObject(i));
+          strValue);
       assertEquals("checking decimal " + i, HiveDecimal.create(i),
           decimalColumn.vector[i].getHiveDecimal());
       assertEquals("checking date " + i, i, dateColumn.vector[i]);
@@ -1718,6 +1759,8 @@ public class TestInputOutputFormat {
     assertTrue(3 >= split.getLocations().length);
 
     // read split
+    conf.set("columns", MyRow.getColumnNamesProperty());
+    conf.set("columns.types", MyRow.getColumnTypesProperty());
     org.apache.hadoop.mapred.RecordReader<CombineHiveKey, OrcStruct> reader =
         inputFormat.getRecordReader(split, conf, Reporter.NULL);
     CombineHiveKey key = reader.createKey();

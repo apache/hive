@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableHiveDecim
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.io.Text;
 
@@ -62,7 +63,7 @@ import org.apache.hadoop.io.Text;
 public class BinarySortableDeserializeRead implements DeserializeRead {
   public static final Log LOG = LogFactory.getLog(BinarySortableDeserializeRead.class.getName());
 
-  private PrimitiveTypeInfo[] primitiveTypeInfos;
+  private TypeInfo[] typeInfos;
 
   // The sort order (ascending/descending) for each field. Set to true when descending (invert).
   private boolean[] columnSortOrderIsDesc;
@@ -94,14 +95,14 @@ public class BinarySortableDeserializeRead implements DeserializeRead {
     this(primitiveTypeInfos, null);
   }
 
-  public BinarySortableDeserializeRead(PrimitiveTypeInfo[] primitiveTypeInfos,
+  public BinarySortableDeserializeRead(TypeInfo[] typeInfos,
           boolean[] columnSortOrderIsDesc) {
-    this.primitiveTypeInfos = primitiveTypeInfos;
-    fieldCount = primitiveTypeInfos.length;
+    this.typeInfos = typeInfos;
+    fieldCount = typeInfos.length;
     if (columnSortOrderIsDesc != null) {
       this.columnSortOrderIsDesc = columnSortOrderIsDesc;
     } else {
-      this.columnSortOrderIsDesc = new boolean[primitiveTypeInfos.length];
+      this.columnSortOrderIsDesc = new boolean[typeInfos.length];
       Arrays.fill(this.columnSortOrderIsDesc, false);
     }
     inputByteBuffer = new InputByteBuffer();
@@ -117,8 +118,8 @@ public class BinarySortableDeserializeRead implements DeserializeRead {
   /*
    * The primitive type information for all fields.
    */
-  public PrimitiveTypeInfo[] primitiveTypeInfos() {
-    return primitiveTypeInfos;
+  public TypeInfo[] typeInfos() {
+    return typeInfos;
   }
 
   /*
@@ -176,7 +177,7 @@ public class BinarySortableDeserializeRead implements DeserializeRead {
 
     // We have a field and are positioned to it.
 
-    if (primitiveTypeInfos[fieldIndex].getPrimitiveCategory() != PrimitiveCategory.DECIMAL) {
+    if (((PrimitiveTypeInfo) typeInfos[fieldIndex]).getPrimitiveCategory() != PrimitiveCategory.DECIMAL) {
       return false;
     }
 
@@ -375,7 +376,7 @@ public class BinarySortableDeserializeRead implements DeserializeRead {
             (BinarySortableReadHiveCharResults) readHiveCharResults;
 
     if (!binarySortableReadHiveCharResults.isInit()) {
-      binarySortableReadHiveCharResults.init((CharTypeInfo) primitiveTypeInfos[fieldIndex]);
+      binarySortableReadHiveCharResults.init((CharTypeInfo) typeInfos[fieldIndex]);
     }
 
     HiveCharWritable hiveCharWritable = binarySortableReadHiveCharResults.getHiveCharWritable();
@@ -416,7 +417,7 @@ public class BinarySortableDeserializeRead implements DeserializeRead {
     BinarySortableReadHiveVarcharResults binarySortableReadHiveVarcharResults = (BinarySortableReadHiveVarcharResults) readHiveVarcharResults;
 
     if (!binarySortableReadHiveVarcharResults.isInit()) {
-      binarySortableReadHiveVarcharResults.init((VarcharTypeInfo) primitiveTypeInfos[fieldIndex]);
+      binarySortableReadHiveVarcharResults.init((VarcharTypeInfo) typeInfos[fieldIndex]);
     }
 
     HiveVarcharWritable hiveVarcharWritable = binarySortableReadHiveVarcharResults.getHiveVarcharWritable();
@@ -733,7 +734,7 @@ public class BinarySortableDeserializeRead implements DeserializeRead {
     }
     tempHiveDecimalWritable.set(bd);
 
-    saveDecimalTypeInfo = (DecimalTypeInfo) primitiveTypeInfos[fieldIndex];
+    saveDecimalTypeInfo = (DecimalTypeInfo) typeInfos[fieldIndex];
 
     int precision = saveDecimalTypeInfo.getPrecision();
     int scale = saveDecimalTypeInfo.getScale();

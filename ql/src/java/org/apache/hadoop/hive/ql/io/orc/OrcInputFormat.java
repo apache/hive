@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
@@ -53,7 +54,9 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
+import org.apache.hadoop.hive.ql.io.SelfDescribingInputFormatInterface;
 import org.apache.hadoop.hive.ql.io.StatsProvidingRecordReader;
+import org.apache.hadoop.hive.ql.io.orc.OrcProto.Type;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
@@ -103,7 +106,8 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  */
 public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
   InputFormatChecker, VectorizedInputFormatInterface,
-    AcidInputFormat<NullWritable, OrcStruct>, CombineHiveInputFormat.AvoidSplitCombination {
+  SelfDescribingInputFormatInterface, AcidInputFormat<NullWritable, OrcStruct>,
+  CombineHiveInputFormat.AvoidSplitCombination {
 
   static enum SplitStrategyKind{
     HYBRID,
@@ -222,7 +226,17 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
                                                   Configuration conf,
                                                   long offset, long length
                                                   ) throws IOException {
+
+    /**
+     * Do we have schema on read in the configuration variables?
+     *
+     * NOTE: This code path is NOT used by ACID.  OrcInputFormat.getRecordReader intercepts for
+     * ACID tables creates raw record merger, etc.
+     */
+    TypeDescription schema = OrcUtils.getDesiredRowTypeDescr(conf, /* isAcid */ false);
+
     Reader.Options options = new Reader.Options().range(offset, length);
+    options.schema(schema);
     boolean isOriginal = isOriginal(file);
     List<OrcProto.Type> types = file.getTypes();
     options.include(genIncludedColumns(types, conf, isOriginal));
@@ -1167,7 +1181,8 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
 
     if (vectorMode) {
       return (org.apache.hadoop.mapred.RecordReader)
-          new VectorizedOrcAcidRowReader(inner, conf, (FileSplit) inputSplit);
+          new VectorizedOrcAcidRowReader(inner, conf,
+              Utilities.getMapWork(conf).getVectorizedRowBatchCtx(), (FileSplit) inputSplit);
     }
     return new NullKeyRecordReader(inner, conf);
   }
@@ -1218,10 +1233,14 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     }
   }
 
+  // The schema type description does not include the ACID fields (i.e. it is the
+  // non-ACID original schema).
+  private static boolean SCHEMA_TYPES_IS_ORIGINAL = true;
 
   @Override
   public RowReader<OrcStruct> getReader(InputSplit inputSplit,
-                                        Options options) throws IOException {
+                                        Options options)
+                                            throws IOException {
     final OrcSplit split = (OrcSplit) inputSplit;
     final Path path = split.getPath();
     Path root;
@@ -1236,36 +1255,33 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     }
     final Path[] deltas = AcidUtils.deserializeDeltas(root, split.getDeltas());
     final Configuration conf = options.getConfiguration();
+
+
+    /**
+     * Do we have schema on read in the configuration variables?
+     */
+    TypeDescription schema = OrcUtils.getDesiredRowTypeDescr(conf, /* isAcid */ true);
+    if (schema == null) {
+      throw new IOException(ErrorMsg.SCHEMA_REQUIRED_TO_READ_ACID_TABLES.getErrorCodedMsg());
+    }
+
     final Reader reader;
     final int bucket;
-    Reader.Options readOptions = new Reader.Options();
+    Reader.Options readOptions = new Reader.Options().schema(schema);
     readOptions.range(split.getStart(), split.getLength());
+
+    // TODO: Convert genIncludedColumns and setSearchArgument to use TypeDescription.
+    final List<Type> schemaTypes = OrcUtils.getOrcTypes(schema);
+    readOptions.include(genIncludedColumns(schemaTypes, conf, SCHEMA_TYPES_IS_ORIGINAL));
+    setSearchArgument(readOptions, schemaTypes, conf, SCHEMA_TYPES_IS_ORIGINAL);
+
     if (split.hasBase()) {
       bucket = AcidUtils.parseBaseBucketFilename(split.getPath(), conf)
           .getBucket();
       reader = OrcFile.createReader(path, OrcFile.readerOptions(conf));
-      final List<OrcProto.Type> types = reader.getTypes();
-      readOptions.include(genIncludedColumns(types, conf, split.isOriginal()));
-      setSearchArgument(readOptions, types, conf, split.isOriginal());
     } else {
       bucket = (int) split.getStart();
       reader = null;
-      if(deltas != null && deltas.length > 0) {
-        Path bucketPath = AcidUtils.createBucketFile(deltas[0], bucket);
-        OrcFile.ReaderOptions readerOptions = OrcFile.readerOptions(conf);
-        FileSystem fs = readerOptions.getFilesystem();
-        if(fs == null) {
-          fs = path.getFileSystem(options.getConfiguration());
-        }
-        if(fs.exists(bucketPath)) {
-        /* w/o schema evolution (which ACID doesn't support yet) all delta
-        files have the same schema, so choosing the 1st one*/
-          final List<OrcProto.Type> types =
-            OrcFile.createReader(bucketPath, readerOptions).getTypes();
-          readOptions.include(genIncludedColumns(types, conf, split.isOriginal()));
-          setSearchArgument(readOptions, types, conf, split.isOriginal());
-        }
-      }
     }
     String txnString = conf.get(ValidTxnList.VALID_TXNS_KEY,
                                 Long.MAX_VALUE + ":");
@@ -1278,9 +1294,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
 
       @Override
       public ObjectInspector getObjectInspector() {
-        return ((StructObjectInspector) records.getObjectInspector())
-            .getAllStructFieldRefs().get(OrcRecordUpdater.ROW)
-            .getFieldObjectInspector();
+        return OrcStruct.createObjectInspector(0, schemaTypes);
       }
 
       @Override
@@ -1366,6 +1380,5 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     return new OrcRawRecordMerger(conf, collapseEvents, reader, isOriginal,
         bucket, validTxnList, new Reader.Options(), deltaDirectory);
   }
-
 
 }

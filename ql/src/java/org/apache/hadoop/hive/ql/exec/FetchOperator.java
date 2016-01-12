@@ -133,6 +133,10 @@ public class FetchOperator implements Serializable {
     this.job = job;
     this.work = work;
     this.operator = operator;
+    if (operator instanceof TableScanOperator) {
+      Utilities.addTableSchemaToConf(job,
+          (TableScanOperator) operator);
+    }
     this.vcCols = vcCols;
     this.hasVC = vcCols != null && !vcCols.isEmpty();
     this.isStatReader = work.getTblDesc() == null;
@@ -598,6 +602,10 @@ public class FetchOperator implements Serializable {
   }
 
   private boolean needConversion(PartitionDesc partitionDesc) {
+    boolean isAcid = AcidUtils.isTablePropertyTransactional(partitionDesc.getTableDesc().getProperties());
+    if (Utilities.isSchemaEvolutionEnabled(job, isAcid) && Utilities.isInputFileFormatSelfDescribing(partitionDesc)) {
+      return false;
+    }
     return needConversion(partitionDesc.getTableDesc(), Arrays.asList(partitionDesc));
   }
 

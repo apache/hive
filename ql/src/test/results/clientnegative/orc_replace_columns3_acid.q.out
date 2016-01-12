@@ -1,0 +1,21 @@
+PREHOOK: query: create table src_orc (key smallint, val string) stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_orc
+POSTHOOK: query: create table src_orc (key smallint, val string) stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_orc
+PREHOOK: query: alter table src_orc replace columns (k int, val string, z smallint)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@src_orc
+PREHOOK: Output: default@src_orc
+POSTHOOK: query: alter table src_orc replace columns (k int, val string, z smallint)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@src_orc
+POSTHOOK: Output: default@src_orc
+PREHOOK: query: alter table src_orc replace columns (k int, val string, z tinyint)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@src_orc
+PREHOOK: Output: default@src_orc
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Replacing columns with unsupported type conversion (from smallint to tinyint) for column z. SerDe may be incompatible

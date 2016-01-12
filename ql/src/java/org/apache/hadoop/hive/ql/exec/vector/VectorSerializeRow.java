@@ -22,8 +22,6 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.List;
 
-import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
-import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -604,13 +602,13 @@ public class VectorSerializeRow {
     }
   }
 
-  public void init(PrimitiveTypeInfo[] primitiveTypeInfos, List<Integer> columnMap)
+  public void init(TypeInfo[] typeInfos, int[] columnMap)
       throws HiveException {
 
-    writers = new Writer[primitiveTypeInfos.length];
-    for (int i = 0; i < primitiveTypeInfos.length; i++) {
-      int columnIndex = columnMap.get(i);
-      Writer writer = createWriter(primitiveTypeInfos[i], columnIndex);
+    writers = new Writer[typeInfos.length];
+    for (int i = 0; i < typeInfos.length; i++) {
+      int columnIndex = columnMap[i];
+      Writer writer = createWriter(typeInfos[i], columnIndex);
       writers[i] = writer;
     }
   }

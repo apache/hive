@@ -17,11 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.exec.vector;
 
+import java.io.IOException;
 import java.util.Arrays;
-
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.io.Writable;
 
 /**
  * This class represents a nullable int column vector.
@@ -36,7 +33,6 @@ import org.apache.hadoop.io.Writable;
  */
 public class LongColumnVector extends ColumnVector {
   public long[] vector;
-  private final LongWritable writableObj = new LongWritable();
   public static final long NULL_VALUE = 1;
 
   /**
@@ -50,24 +46,11 @@ public class LongColumnVector extends ColumnVector {
   /**
    * Don't use this except for testing purposes.
    *
-   * @param len
+   * @param len the number of rows
    */
   public LongColumnVector(int len) {
     super(len);
     vector = new long[len];
-  }
-
-  @Override
-  public Writable getWritableObject(int index) {
-    if (this.isRepeating) {
-      index = 0;
-    }
-    if (!noNulls && isNull[index]) {
-      return NullWritable.get();
-    } else {
-      writableObj.set(vector[index]);
-      return writableObj;
-    }
   }
 
   // Copy the current object contents into the output. Only copy selected entries,
@@ -141,7 +124,9 @@ public class LongColumnVector extends ColumnVector {
       }
     }
     else {
-      System.arraycopy(vector, 0, output.vector, 0, size);
+      for(int i = 0; i < size; ++i) {
+        output.vector[i] = vector[i];
+      }
     }
 
     // Copy nulls over if needed
@@ -163,6 +148,14 @@ public class LongColumnVector extends ColumnVector {
     noNulls = true;
     isRepeating = true;
     vector[0] = value;
+  }
+
+  // Fill the column vector with nulls
+  public void fillWithNulls() {
+    noNulls = false;
+    isRepeating = true;
+    vector[0] = NULL_VALUE;
+    isNull[0] = true;
   }
 
   // Simplify vector by brute-force flattening noNulls and isRepeating
@@ -188,6 +181,44 @@ public class LongColumnVector extends ColumnVector {
 
   @Override
   public void setElement(int outElementNum, int inputElementNum, ColumnVector inputVector) {
-    vector[outElementNum] = ((LongColumnVector) inputVector).vector[inputElementNum];
+    if (inputVector.isRepeating) {
+      inputElementNum = 0;
+    }
+    if (inputVector.noNulls || !inputVector.isNull[inputElementNum]) {
+      isNull[outElementNum] = false;
+      vector[outElementNum] =
+          ((LongColumnVector) inputVector).vector[inputElementNum];
+    } else {
+      isNull[outElementNum] = true;
+      noNulls = false;
+    }
+  }
+
+  @Override
+  public void stringifyValue(StringBuilder buffer, int row) {
+    if (isRepeating) {
+      row = 0;
+    }
+    if (noNulls || !isNull[row]) {
+      buffer.append(vector[row]);
+    } else {
+      buffer.append("null");
+    }
+  }
+
+  @Override
+  public void ensureSize(int size, boolean preserveData) {
+    if (size > vector.length) {
+      super.ensureSize(size, preserveData);
+      long[] oldArray = vector;
+      vector = new long[size];
+      if (preserveData) {
+        if (isRepeating) {
+          vector[0] = oldArray[0];
+        } else {
+          System.arraycopy(oldArray, 0, vector, 0 , oldArray.length);
+        }
+      }
+    }
   }
 }

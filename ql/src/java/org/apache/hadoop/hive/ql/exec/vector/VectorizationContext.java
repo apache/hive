@@ -145,6 +145,8 @@ public class VectorizationContext {
 
   VectorExpressionDescriptor vMap;
 
+  private List<String> initialColumnNames;
+
   private List<Integer> projectedColumns;
   private List<String> projectionColumnNames;
   private Map<String, Integer> projectionColumnMap;
@@ -158,7 +160,11 @@ public class VectorizationContext {
   public VectorizationContext(String contextName, List<String> initialColumnNames) {
     this.contextName = contextName;
     level = 0;
-    LOG.info("VectorizationContext consructor contextName " + contextName + " level " + level + " initialColumnNames " + initialColumnNames.toString());
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("VectorizationContext consructor contextName " + contextName + " level "
+          + level + " initialColumnNames " + initialColumnNames);
+    }
+    this.initialColumnNames = initialColumnNames;
     this.projectionColumnNames = initialColumnNames;
 
     projectedColumns = new ArrayList<Integer>();
@@ -178,8 +184,11 @@ public class VectorizationContext {
   public VectorizationContext(String contextName) {
     this.contextName = contextName;
     level = 0;
-    LOG.info("VectorizationContext consructor contextName " + contextName + " level " + level);
-      projectedColumns = new ArrayList<Integer>();
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("VectorizationContext consructor contextName " + contextName + " level " + level);
+    }
+    initialColumnNames = new ArrayList<String>();
+    projectedColumns = new ArrayList<Integer>();
     projectionColumnNames = new ArrayList<String>();
     projectionColumnMap = new HashMap<String, Integer>();
     this.ocm = new OutputColumnManager(0);
@@ -194,6 +203,7 @@ public class VectorizationContext {
     this.contextName = contextName;
     level = vContext.level + 1;
     LOG.info("VectorizationContext consructor reference contextName " + contextName + " level " + level);
+    this.initialColumnNames = vContext.initialColumnNames;
     this.projectedColumns = new ArrayList<Integer>();
     this.projectionColumnNames = new ArrayList<String>();
     this.projectionColumnMap = new HashMap<String, Integer>();
@@ -206,6 +216,7 @@ public class VectorizationContext {
   // Add an initial column to a vectorization context when
   // a vectorized row batch is being created.
   public void addInitialColumn(String columnName) {
+    initialColumnNames.add(columnName);
     int index = projectedColumns.size();
     projectedColumns.add(index);
     projectionColumnNames.add(columnName);
@@ -232,6 +243,10 @@ public class VectorizationContext {
     projectedColumns.add(vectorBatchColIndex);
     projectionColumnNames.add(columnName);
     projectionColumnMap.put(columnName, vectorBatchColIndex);
+  }
+
+  public List<String> getInitialColumnNames() {
+    return initialColumnNames;
   }
 
   public List<Integer> getProjectedColumns() {
@@ -2303,36 +2318,51 @@ public class VectorizationContext {
   }
 
   public static ColumnVector.Type getColumnVectorTypeFromTypeInfo(TypeInfo typeInfo) throws HiveException {
-    PrimitiveTypeInfo primitiveTypeInfo = (PrimitiveTypeInfo) typeInfo;
-    PrimitiveCategory primitiveCategory = primitiveTypeInfo.getPrimitiveCategory();
+    switch (typeInfo.getCategory()) {
+      case STRUCT:
+        return Type.STRUCT;
+      case UNION:
+        return Type.UNION;
+      case LIST:
+        return Type.LIST;
+      case MAP:
+        return Type.MAP;
+      case PRIMITIVE: {
+        PrimitiveTypeInfo primitiveTypeInfo = (PrimitiveTypeInfo) typeInfo;
+        PrimitiveCategory primitiveCategory = primitiveTypeInfo.getPrimitiveCategory();
 
-    switch (primitiveCategory) {
-    case BOOLEAN:
-    case BYTE:
-    case SHORT:
-    case INT:
-    case LONG:
-    case DATE:
-    case TIMESTAMP:
-    case INTERVAL_YEAR_MONTH:
-    case INTERVAL_DAY_TIME:
-      return ColumnVector.Type.LONG;
+        switch (primitiveCategory) {
+          case BOOLEAN:
+          case BYTE:
+          case SHORT:
+          case INT:
+          case LONG:
+          case DATE:
+          case TIMESTAMP:
+          case INTERVAL_YEAR_MONTH:
+          case INTERVAL_DAY_TIME:
+            return ColumnVector.Type.LONG;
 
-    case FLOAT:
-    case DOUBLE:
-      return ColumnVector.Type.DOUBLE;
+          case FLOAT:
+          case DOUBLE:
+            return ColumnVector.Type.DOUBLE;
 
-    case STRING:
-    case CHAR:
-    case VARCHAR:
-    case BINARY:
-      return ColumnVector.Type.BYTES;
+          case STRING:
+          case CHAR:
+          case VARCHAR:
+          case BINARY:
+            return ColumnVector.Type.BYTES;
 
-    case DECIMAL:
-      return ColumnVector.Type.DECIMAL;
+          case DECIMAL:
+            return ColumnVector.Type.DECIMAL;
 
-    default:
-      throw new HiveException("Unexpected primitive type category " + primitiveCategory);
+          default:
+            throw new RuntimeException("Unexpected primitive type category " + primitiveCategory);
+        }
+      }
+      default:
+        throw new RuntimeException("Unexpected type category " +
+            typeInfo.getCategory());
     }
   }
 
@@ -2442,13 +2472,16 @@ public class VectorizationContext {
     return firstOutputColumnIndex;
   }
 
-  public Map<Integer, String> getScratchColumnTypeMap() {
-    Map<Integer, String> map = new HashMap<Integer, String>();
+  public String[] getScratchColumnTypeNames() {
+    String[] result = new String[ocm.outputColCount];
     for (int i = 0; i < ocm.outputColCount; i++) {
-      String type = ocm.outputColumnsTypes[i];
-      map.put(i+this.firstOutputColumnIndex, type);
+      String typeName = ocm.outputColumnsTypes[i];
+      if (typeName.equalsIgnoreCase("long")) {
+        typeName = "bigint";   // Convert our synonym to a real Hive type name.
+      }
+      result[i] =  typeName;
     }
-    return map;
+    return result;
   }
 
   @Override
@@ -2468,9 +2501,7 @@ public class VectorizationContext {
     }
     sb.append("sorted projectionColumnMap ").append(sortedColumnMap).append(", ");
 
-    Map<Integer, String> sortedScratchColumnTypeMap = new TreeMap<Integer, String>(comparerInteger);
-    sortedScratchColumnTypeMap.putAll(getScratchColumnTypeMap());
-    sb.append("sorted scratchColumnTypeMap ").append(sortedScratchColumnTypeMap);
+    sb.append("scratchColumnTypeNames ").append(getScratchColumnTypeNames().toString());
 
     return sb.toString();
   }

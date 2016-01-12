@@ -1,3 +1,4 @@
+set hive.metastore.disallow.incompatible.col.type.changes=false;
 create table if not exists alltypes (
  bo boolean,
  ti tinyint,
@@ -51,22 +52,10 @@ alter table alltypes_orc change si si bigint;
 alter table alltypes_orc change i i bigint;
 select * from alltypes_orc;
 
-alter table alltypes_orc change l l array<bigint>;
-select * from alltypes_orc;
-
 set hive.vectorized.execution.enabled=true;
 set hive.fetch.task.conversion=none;
-alter table alltypes_orc change si si smallint;
-alter table alltypes_orc change i i int;
 
 explain select ti, si, i, bi from alltypes_orc;
-select ti, si, i, bi from alltypes_orc;
-
-alter table alltypes_orc change si si int;
-select ti, si, i, bi from alltypes_orc;
-
-alter table alltypes_orc change si si bigint;
-alter table alltypes_orc change i i bigint;
 select ti, si, i, bi from alltypes_orc;
 
 set hive.exec.dynamic.partition.mode=nonstrict;
@@ -77,3 +66,4 @@ select * from src_part_orc limit 10;
 
 alter table src_part_orc change key key bigint;
 select * from src_part_orc limit 10;
+reset hive.metastore.disallow.incompatible.col.type.changes;

@@ -18,11 +18,13 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
+import static org.junit.Assert.assertEquals;
 import java.io.File;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Random;
+import org.apache.hadoop.io.Text;
 
 import junit.framework.Assert;
 
@@ -30,15 +32,23 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.io.BooleanWritable;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.NullWritable;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -149,42 +159,61 @@ public class TestVectorizedORCReader {
         row = (OrcStruct) rr.next(row);
         for (int j = 0; j < batch.cols.length; j++) {
           Object a = (row.getFieldValue(j));
-          Object b = batch.cols[j].getWritableObject(i);
-          // Boolean values are stores a 1's and 0's, so convert and compare
-          if (a instanceof BooleanWritable) {
+          ColumnVector cv = batch.cols[j];
+          // if the value is repeating, use row 0
+          int rowId = cv.isRepeating ? 0 : i;
+
+          // make sure the null flag agrees
+          if (a == null) {
+            Assert.assertEquals(true, !cv.noNulls && cv.isNull[rowId]);
+          } else if (a instanceof BooleanWritable) {
+
+            // Boolean values are stores a 1's and 0's, so convert and compare
             Long temp = (long) (((BooleanWritable) a).get() ? 1 : 0);
-            Assert.assertEquals(true, temp.toString().equals(b.toString()));
-            continue;
-          }
-          // Timestamps are stored as long, so convert and compare
-          if (a instanceof TimestampWritable) {
+            long b = ((LongColumnVector) cv).vector[rowId];
+            Assert.assertEquals(temp.toString(), Long.toString(b));
+          } else if (a instanceof TimestampWritable) {
+            // Timestamps are stored as long, so convert and compare
             TimestampWritable t = ((TimestampWritable) a);
             // Timestamp.getTime() is overriden and is 
             // long time = super.getTime();
             // return (time + (nanos / 1000000));
             Long timeInNanoSec = (t.getTimestamp().getTime() * 1000000)
                 + (t.getTimestamp().getNanos() % 1000000);
-            Assert.assertEquals(true, timeInNanoSec.toString().equals(b.toString()));
-            continue;
-          }
+            long b = ((LongColumnVector) cv).vector[rowId];
+            Assert.assertEquals(timeInNanoSec.toString(), Long.toString(b));
 
-          // Dates are stored as long, so convert and compare
-          if (a instanceof DateWritable) {
+          } else if (a instanceof DateWritable) {
+            // Dates are stored as long, so convert and compare
+
             DateWritable adt = (DateWritable) a;
-            Assert.assertEquals(adt.get().getTime(), DateWritable.daysToMillis((int) ((LongWritable) b).get()));
-            continue;
-          }
+            long b = ((LongColumnVector) cv).vector[rowId];
+            Assert.assertEquals(adt.get().getTime(),
+                DateWritable.daysToMillis((int) b));
 
-          // Decimals are stored as BigInteger, so convert and compare
-          if (a instanceof HiveDecimalWritable) {
+          } else if (a instanceof HiveDecimalWritable) {
+            // Decimals are stored as BigInteger, so convert and compare
             HiveDecimalWritable dec = (HiveDecimalWritable) a;
+            HiveDecimalWritable b = ((DecimalColumnVector) cv).vector[i];
             Assert.assertEquals(dec, b);
-          }
 
-          if (null == a) {
-            Assert.assertEquals(true, (b == null || (b instanceof NullWritable)));
+          } else if (a instanceof DoubleWritable) {
+
+            double b = ((DoubleColumnVector) cv).vector[rowId];
+            assertEquals(a.toString(), Double.toString(b));
+          } else if (a instanceof Text) {
+            BytesColumnVector bcv = (BytesColumnVector) cv;
+            Text b = new Text();
+            b.set(bcv.vector[rowId], bcv.start[rowId], bcv.length[rowId]);
+            assertEquals(a, b);
+          } else if (a instanceof IntWritable ||
+              a instanceof LongWritable ||
+              a instanceof ByteWritable ||
+              a instanceof ShortWritable) {
+            assertEquals(a.toString(),
+                Long.toString(((LongColumnVector) cv).vector[rowId]));
           } else {
-            Assert.assertEquals(true, b.toString().equals(a.toString()));
+            assertEquals("huh", a.getClass().getName());
           }
         }
       }

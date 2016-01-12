@@ -814,7 +814,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
           outputFieldNames, objectInspectors);
       if (isVectorOutput) {
         vrbCtx = new VectorizedRowBatchCtx();
-        vrbCtx.init(vOutContext.getScratchColumnTypeMap(), (StructObjectInspector) outputObjInspector);
+        vrbCtx.init((StructObjectInspector) outputObjInspector, vOutContext.getScratchColumnTypeNames());
         outputBatch = vrbCtx.createVectorizedRowBatch();
         vectorAssignRowSameBatch = new VectorAssignRowSameBatch();
         vectorAssignRowSameBatch.init((StructObjectInspector) outputObjInspector, vOutContext.getProjectedColumns());

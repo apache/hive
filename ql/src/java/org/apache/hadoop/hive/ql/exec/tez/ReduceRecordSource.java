@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorDeserializeRow;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedBatchUtil;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
@@ -51,7 +52,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
-import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.mapred.JobConf;
@@ -123,7 +123,7 @@ public class ReduceRecordSource implements RecordSource {
 
   void init(JobConf jconf, Operator<?> reducer, boolean vectorized, TableDesc keyTableDesc,
       TableDesc valueTableDesc, Reader reader, boolean handleGroupKey, byte tag,
-      Map<Integer, String> vectorScratchColumnTypeMap)
+      VectorizedRowBatchCtx batchContext)
       throws Exception {
 
     ObjectInspector keyObjectInspector;
@@ -174,10 +174,9 @@ public class ReduceRecordSource implements RecordSource {
             .asList(VectorExpressionWriterFactory
                 .genVectorStructExpressionWritables(valueStructInspectors)));
 
-        ObjectPair<VectorizedRowBatch, StandardStructObjectInspector> pair =
-            VectorizedBatchUtil.constructVectorizedRowBatch(keyStructInspector, valueStructInspectors, vectorScratchColumnTypeMap);
-        rowObjectInspector = pair.getSecond();
-        batch = pair.getFirst();
+        rowObjectInspector = Utilities.constructVectorizedReduceRowOI(keyStructInspector,
+            valueStructInspectors);
+        batch = batchContext.createVectorizedRowBatch();
 
         // Setup vectorized deserialization for the key and value.
         BinarySortableSerDe binarySortableSerDe = (BinarySortableSerDe) inputKeyDeserializer;
@@ -185,7 +184,7 @@ public class ReduceRecordSource implements RecordSource {
         keyBinarySortableDeserializeToRow =
                   new VectorDeserializeRow(
                         new BinarySortableDeserializeRead(
-                                  VectorizedBatchUtil.primitiveTypeInfosFromStructObjectInspector(
+                                  VectorizedBatchUtil.typeInfosFromStructObjectInspector(
                                       keyStructInspector),
                                   binarySortableSerDe.getSortOrders()));
         keyBinarySortableDeserializeToRow.init(0);
@@ -195,7 +194,7 @@ public class ReduceRecordSource implements RecordSource {
           valueLazyBinaryDeserializeToRow =
                   new VectorDeserializeRow(
                         new LazyBinaryDeserializeRead(
-                                  VectorizedBatchUtil.primitiveTypeInfosFromStructObjectInspector(
+                            VectorizedBatchUtil.typeInfosFromStructObjectInspector(
                                        valueStructInspectors)));
           valueLazyBinaryDeserializeToRow.init(firstValueColumnOffset);
 
