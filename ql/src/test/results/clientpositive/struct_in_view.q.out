@@ -116,3 +116,79 @@ POSTHOOK: query: drop view vs2
 POSTHOOK: type: DROPVIEW
 POSTHOOK: Input: default@vs2
 POSTHOOK: Output: default@vs2
+PREHOOK: query: create view v as select named_struct('key', 1).key from src limit 1
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v
+POSTHOOK: query: create view v as select named_struct('key', 1).key from src limit 1
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@v
+PREHOOK: query: desc extended v
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@v
+POSTHOOK: query: desc extended v
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@v
+key                 	int                 	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: select * from v
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@v
+#### A masked pattern was here ####
+POSTHOOK: query: select * from v
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@v
+#### A masked pattern was here ####
+1
+PREHOOK: query: drop view v
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@v
+PREHOOK: Output: default@v
+POSTHOOK: query: drop view v
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@v
+POSTHOOK: Output: default@v
+PREHOOK: query: create view v as select named_struct('end', 1).`end` from src limit 1
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v
+POSTHOOK: query: create view v as select named_struct('end', 1).`end` from src limit 1
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@v
+PREHOOK: query: desc extended v
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@v
+POSTHOOK: query: desc extended v
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@v
+end                 	int                 	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: select * from v
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@v
+#### A masked pattern was here ####
+POSTHOOK: query: select * from v
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@v
+#### A masked pattern was here ####
+1
+PREHOOK: query: drop view v
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@v
+PREHOOK: Output: default@v
+POSTHOOK: query: drop view v
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@v
+POSTHOOK: Output: default@v
