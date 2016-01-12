@@ -26,3 +26,19 @@ drop view vs1;
 
 drop view vs2;
 
+create view v as select named_struct('key', 1).key from src limit 1;
+
+desc extended v;
+
+select * from v;
+
+drop view v;
+
+create view v as select named_struct('end', 1).`end` from src limit 1;
+
+desc extended v;
+
+select * from v;
+
+drop view v;
+
