@@ -25,8 +25,11 @@ echo "####################################################"
 echo "Executing script for Derby SQL: $1"
 echo "####################################################"
 
+JAVA_PATH=($(readlink /etc/alternatives/java))
+JAVA_PATH=`dirname $JAVA_PATH`
+
 export DERBY_HOME=/usr/share/javadb
-export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
+export JAVA_HOME=$JAVA_PATH/..
 export PATH=$PATH:$DERBY_HOME/bin:$JAVA_HOME/bin
 export CLASSPATH=$CLASSPATH:$DERBY_HOME/lib/derby.jar:$DERBY_HOME/lib/derbytools.jar:$DERBY_HOME/lib/derbyclient.jar
 
