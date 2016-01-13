@@ -18,7 +18,9 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 
@@ -196,14 +198,21 @@ public class SubQueryUtils {
   }
 
   private static void findSubQueries(ASTNode node, List<ASTNode> subQueries) {
-    switch(node.getType()) {
-    case HiveParser.TOK_SUBQUERY_EXPR:
-      subQueries.add(node);
-      break;
-    default:
-      int childCount = node.getChildCount();
-      for(int i=0; i < childCount; i++) {
-        findSubQueries((ASTNode) node.getChild(i), subQueries);
+    Deque<ASTNode> stack = new ArrayDeque<ASTNode>();
+    stack.push(node);
+
+    while (!stack.isEmpty()) {
+      ASTNode next = stack.pop();
+
+      switch(next.getType()) {
+        case HiveParser.TOK_SUBQUERY_EXPR:
+          subQueries.add(next);
+          break;
+        default:
+          int childCount = next.getChildCount();
+          for(int i = childCount - 1; i >= 0; i--) {
+            stack.push((ASTNode) next.getChild(i));
+          }
       }
     }
   }
