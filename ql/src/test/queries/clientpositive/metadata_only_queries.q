@@ -93,6 +93,12 @@ select min(i), '1' as one, max(i), min(b), max(b), min(f), max(f), 3+4.0 as thre
 
 explain select count(ts) from stats_tbl_part;
 
+explain select count('1') from stats_tbl group by '1';
+select count('1') from stats_tbl group by '1';
+
+explain select count('1') from stats_tbl_part group by '1';
+select count('1') from stats_tbl_part group by '1';
+
 drop table stats_tbl;
 drop table stats_tbl_part;
 

@@ -65,6 +65,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
+import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCount;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMax;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMin;
@@ -199,6 +200,21 @@ public class StatsOptimizer extends Transform {
       }
     }
 
+    private boolean hasNullOrConstantGbyKey(GroupByOperator gbyOp) {
+      GroupByDesc gbyDesc = gbyOp.getConf();
+      // If the Group by operator has null key
+      if (gbyDesc.getOutputColumnNames().size() ==
+        gbyDesc.getAggregators().size()) {
+        return true;
+      }
+      for (ExprNodeDesc en :gbyDesc.getKeys()) {
+        if (!(en instanceof ExprNodeConstantDesc)) {
+          return false;
+        }
+      }
+      return true;
+    }
+
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
@@ -227,8 +243,7 @@ public class StatsOptimizer extends Transform {
         // Since we have done an exact match on TS-SEL-GBY-RS-GBY-(SEL)-FS
         // we need not to do any instanceof checks for following.
         GroupByOperator pgbyOp = (GroupByOperator)stack.get(2);
-        if (pgbyOp.getConf().getOutputColumnNames().size() !=
-            pgbyOp.getConf().getAggregators().size()) {
+        if (!hasNullOrConstantGbyKey(pgbyOp)) {
           return null;
         }
         ReduceSinkOperator rsOp = (ReduceSinkOperator)stack.get(3);
@@ -238,8 +253,7 @@ public class StatsOptimizer extends Transform {
         }
 
         GroupByOperator cgbyOp = (GroupByOperator)stack.get(4);
-        if (cgbyOp.getConf().getOutputColumnNames().size() !=
-            cgbyOp.getConf().getAggregators().size()) {
+        if (!hasNullOrConstantGbyKey(cgbyOp)) {
           return null;
         }
         Operator<?> last = (Operator<?>) stack.get(5);
