@@ -2925,7 +2925,8 @@ public class HiveConf extends Configuration {
   private boolean isSparkRelatedConfig(String name) {
     boolean result = false;
     if (name.startsWith("spark")) { // Spark property.
-      result = true;
+      // for now we don't support changing spark app name on the fly
+      result = !name.equals("spark.app.name");
     } else if (name.startsWith("yarn")) { // YARN property in Spark on YARN mode.
       String sparkMaster = get("spark.master");
       if (sparkMaster != null &&

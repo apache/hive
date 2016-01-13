@@ -72,7 +72,12 @@ public class HiveSparkClientFactory {
 
     // set default spark configurations.
     sparkConf.put("spark.master", SPARK_DEFAULT_MASTER);
-    sparkConf.put("spark.app.name", SPARK_DEFAULT_APP_NAME);
+    final String appNameKey = "spark.app.name";
+    String appName = hiveConf.get(appNameKey);
+    if (appName == null) {
+      appName = SPARK_DEFAULT_APP_NAME;
+    }
+    sparkConf.put(appNameKey, appName);
     sparkConf.put("spark.serializer", SPARK_DEFAULT_SERIALIZER);
     sparkConf.put("spark.kryo.referenceTracking", SPARK_DEFAULT_REFERENCE_TRACKING);
 
