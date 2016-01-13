@@ -33,11 +33,11 @@ public class ColumnBasedSet implements RowSet {
 
   private long startOffset;
 
-  private final Type[] types; // non-null only for writing (server-side)
+  private final TypeDescriptor[] descriptors; // non-null only for writing (server-side)
   private final List<Column> columns;
 
   public ColumnBasedSet(TableSchema schema) {
-    types = schema.toTypes();
+    descriptors = schema.toTypeDescriptors();
     columns = new ArrayList<Column>();
     for (ColumnDescriptor colDesc : schema.getColumnDescriptors()) {
       columns.add(new Column(colDesc.getType()));
@@ -45,7 +45,7 @@ public class ColumnBasedSet implements RowSet {
   }
 
   public ColumnBasedSet(TRowSet tRowSet) {
-    types = null;
+    descriptors = null;
     columns = new ArrayList<Column>();
     for (TColumn tvalue : tRowSet.getColumns()) {
       columns.add(new Column(tvalue));
@@ -53,8 +53,8 @@ public class ColumnBasedSet implements RowSet {
     startOffset = tRowSet.getStartRowOffset();
   }
 
-  private ColumnBasedSet(Type[] types, List<Column> columns, long startOffset) {
-    this.types = types;
+  private ColumnBasedSet(TypeDescriptor[] descriptors, List<Column> columns, long startOffset) {
+    this.descriptors = descriptors;
     this.columns = columns;
     this.startOffset = startOffset;
   }
@@ -62,7 +62,7 @@ public class ColumnBasedSet implements RowSet {
   @Override
   public ColumnBasedSet addRow(Object[] fields) {
     for (int i = 0; i < fields.length; i++) {
-      columns.get(i).addValue(types[i], fields[i]);
+      columns.get(i).addValue(descriptors[i], fields[i]);
     }
     return this;
   }
@@ -89,7 +89,7 @@ public class ColumnBasedSet implements RowSet {
     for (int i = 0; i < columns.size(); i++) {
       subset.add(columns.get(i).extractSubset(0, numRows));
     }
-    ColumnBasedSet result = new ColumnBasedSet(types, subset, startOffset);
+    ColumnBasedSet result = new ColumnBasedSet(descriptors, subset, startOffset);
     startOffset += numRows;
     return result;
   }

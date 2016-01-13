@@ -42,6 +42,8 @@ import com.google.common.primitives.Ints;
 import com.google.common.primitives.Longs;
 import com.google.common.primitives.Shorts;
 
+import org.apache.hadoop.hive.common.type.HiveDecimal;
+
 /**
  * Column.
  */
@@ -325,6 +327,14 @@ public class Column extends AbstractList {
 
   private static final ByteBuffer EMPTY_BINARY = ByteBuffer.allocate(0);
   private static final String EMPTY_STRING = "";
+
+  public void addValue(TypeDescriptor typeDescriptor, Object field) {
+    if (field != null && typeDescriptor.getType() == Type.DECIMAL_TYPE) {
+      int scale = typeDescriptor.getDecimalDigits();
+      field = ((HiveDecimal) field).toFormatString(scale);
+    }
+    addValue(typeDescriptor.getType(), field);
+  }
 
   public void addValue(Type type, Object field) {
     switch (type) {
