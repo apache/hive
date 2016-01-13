@@ -293,7 +293,7 @@ public abstract class CompactorTest {
       if (bucket == 0 && !allBucketsPresent) continue; // skip one
       Path partFile = null;
       if (type == FileType.LEGACY) {
-        partFile = new Path(location, String.format(AcidUtils.BUCKET_DIGITS, bucket) + "_0");
+        partFile = new Path(location, String.format(AcidUtils.LEGACY_FILE_BUCKET_DIGITS, bucket) + "_0");
       } else {
         Path dir = new Path(location, filename);
         fs.mkdirs(dir);
@@ -337,7 +337,7 @@ public abstract class CompactorTest {
           FileSystem fs = p.getFileSystem(conf);
           if (fs.exists(p)) filesToRead.add(p);
         } else {
-          filesToRead.add(new Path(baseDirectory, "00000_0"));
+          filesToRead.add(new Path(baseDirectory, "000000_0"));
 
         }
       }

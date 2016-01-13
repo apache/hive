@@ -43,10 +43,10 @@ public class TestAcidUtils {
     Configuration conf = new Configuration();
     AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf)
         .setOldStyle(true).bucket(1);
-    assertEquals("/tmp/00001_0",
+    assertEquals("/tmp/000001_0",
         AcidUtils.createFilename(p, options).toString());
     options.bucket(123);
-    assertEquals("/tmp/00123_0",
+    assertEquals("/tmp/000123_0",
       AcidUtils.createFilename(p, options).toString());
     options.bucket(23)
         .minimumTransactionId(100)
@@ -227,10 +227,9 @@ public class TestAcidUtils {
     Path part = new MockPath(fs, "/tbl/part1");
     AcidUtils.Directory dir =
         AcidUtils.getAcidState(part, conf, new ValidReadTxnList("150:"));
-    // The two original buckets won't be in the obsolete list because we don't look at those
-    // until we have determined there is no base.
+    // Obsolete list should include the two original bucket files, and the old base dir
     List<FileStatus> obsolete = dir.getObsolete();
-    assertEquals(1, obsolete.size());
+    assertEquals(3, obsolete.size());
     assertEquals("mock:/tbl/part1/base_5", obsolete.get(0).getPath().toString());
     assertEquals("mock:/tbl/part1/base_10", dir.getBaseDirectory().toString());
   }

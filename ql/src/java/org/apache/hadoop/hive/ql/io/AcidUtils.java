@@ -72,6 +72,7 @@ public class AcidUtils {
     }
   };
   public static final String BUCKET_DIGITS = "%05d";
+  public static final String LEGACY_FILE_BUCKET_DIGITS = "%06d";
   public static final String DELTA_DIGITS = "%07d";
   /**
    * 10K statements per tx.  Probably overkill ... since that many delta files
@@ -83,7 +84,7 @@ public class AcidUtils {
    */
   public static final int MAX_STATEMENTS_PER_TXN = 10000;
   public static final Pattern BUCKET_DIGIT_PATTERN = Pattern.compile("[0-9]{5}$");
-  public static final Pattern LEGACY_BUCKET_DIGIT_PATTERN = Pattern.compile("^[0-9]{5}");
+  public static final Pattern   LEGACY_BUCKET_DIGIT_PATTERN = Pattern.compile("^[0-9]{6}");
   public static final PathFilter originalBucketFilter = new PathFilter() {
     @Override
     public boolean accept(Path path) {
@@ -148,7 +149,7 @@ public class AcidUtils {
                                     AcidOutputFormat.Options options) {
     String subdir;
     if (options.getOldStyle()) {
-      return new Path(directory, String.format(BUCKET_DIGITS,
+      return new Path(directory, String.format(LEGACY_FILE_BUCKET_DIGITS,
           options.getBucket()) + "_0");
     } else if (options.isWritingBase()) {
       subdir = BASE_PREFIX + String.format(DELTA_DIGITS,
@@ -496,6 +497,9 @@ public class AcidUtils {
 
     // If we have a base, the original files are obsolete.
     if (bestBase.status != null) {
+      for (HdfsFileStatusWithId fswid : original) {
+        obsolete.add(fswid.getFileStatus());
+      }
       // remove the entries so we don't get confused later and think we should
       // use them.
       original.clear();
