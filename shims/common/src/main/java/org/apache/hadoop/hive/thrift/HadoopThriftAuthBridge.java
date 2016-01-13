@@ -26,7 +26,6 @@ import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Random;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -45,6 +44,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.hive.thrift.client.TUGIAssumingTransport;
 import org.apache.hadoop.security.SaslRpcServer;
@@ -367,7 +367,7 @@ public abstract class HadoopThriftAuthBridge {
      * @param saslProps Map of SASL properties
      */
 
-    public TTransportFactory createTransportFactory(Map<String, String> saslProps, int authMaxRetries)
+    public TTransportFactory createTransportFactory(Map<String, String> saslProps)
         throws TTransportException {
       // Parse out the kerberos principal, host, realm.
       String kerberosName = realUgi.getUserName();
@@ -386,7 +386,7 @@ public abstract class HadoopThriftAuthBridge {
           null, SaslRpcServer.SASL_DEFAULT_REALM,
           saslProps, new SaslDigestCallbackHandler(secretManager));
 
-      return new TUGIAssumingTransportFactory(transFactory, realUgi, authMaxRetries);
+      return new TUGIAssumingTransportFactory(transFactory, realUgi);
     }
 
     /**
@@ -721,14 +721,12 @@ public abstract class HadoopThriftAuthBridge {
     static class TUGIAssumingTransportFactory extends TTransportFactory {
       private final UserGroupInformation ugi;
       private final TTransportFactory wrapped;
-      private final int authMaxRetries;
 
-      public TUGIAssumingTransportFactory(TTransportFactory wrapped, UserGroupInformation ugi, int authMaxRetries) {
+      public TUGIAssumingTransportFactory(TTransportFactory wrapped, UserGroupInformation ugi) {
         assert wrapped != null;
         assert ugi != null;
         this.wrapped = wrapped;
         this.ugi = ugi;
-        this.authMaxRetries = authMaxRetries;
       }
 
 
@@ -737,28 +735,7 @@ public abstract class HadoopThriftAuthBridge {
         return ugi.doAs(new PrivilegedAction<TTransport>() {
           @Override
           public TTransport run() {
-            // Retry the authentication after sleeping for random microseconds
-            short numRetries = 0;
-            Random rand = new Random();
-
-            while (true) {
-              try {
-                return wrapped.getTransport(trans);
-              } catch(RuntimeException e) {
-                if (e.getCause() instanceof TTransportException) {
-                  if (++numRetries < authMaxRetries) {
-                    LOG.warn(e.getMessage());
-                    try {
-                      Thread.sleep(rand.nextInt(1000));
-                    } catch (InterruptedException ie) {
-                    }
-                    continue;
-                  }
-                }
-
-                throw e;
-              }
-            }
+            return wrapped.getTransport(trans);
           }
         });
       }

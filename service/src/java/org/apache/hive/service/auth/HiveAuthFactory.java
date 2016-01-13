@@ -140,8 +140,7 @@ public class HiveAuthFactory {
     TTransportFactory transportFactory;
     if (authTypeStr.equalsIgnoreCase(AuthTypes.KERBEROS.getAuthName())) {
       try {
-        int authMaxRetries = conf.getIntVar(ConfVars.HIVE_SERVER2_THRIFT_AUTH_MAX_RETRIES);
-        transportFactory = saslServer.createTransportFactory(getSaslProperties(), authMaxRetries);
+        transportFactory = saslServer.createTransportFactory(getSaslProperties());
       } catch (TTransportException e) {
         throw new LoginException(e.getMessage());
       }

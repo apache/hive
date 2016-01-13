@@ -1951,10 +1951,6 @@ public class HiveConf extends Configuration {
         "HttpOnly attribute of the HS2 generated cookie."),
 
     // binary transport settings
-    HIVE_SERVER2_THRIFT_AUTH_MAX_RETRIES("hive.server2.thrift.auth.max.retries", 1,
-        "Number of maximum retries to authenticate HS2 server or HMS server against Kerberos service.\n"
-        + "This is to mitigate some false alarm auth issues, such that concurrent query executions\n"
-        + "against single HS2 server may fail to authenticate due to 'Request is a replay'."),
     HIVE_SERVER2_THRIFT_PORT("hive.server2.thrift.port", 10000,
         "Port number of HiveServer2 Thrift interface when hive.server2.transport.mode is 'binary'."),
     HIVE_SERVER2_THRIFT_SASL_QOP("hive.server2.thrift.sasl.qop", "auth",

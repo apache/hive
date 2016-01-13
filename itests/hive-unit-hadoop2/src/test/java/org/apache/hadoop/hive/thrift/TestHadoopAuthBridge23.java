@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.thrift;
 
 
 import junit.framework.TestCase;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -42,12 +41,8 @@ import org.apache.hadoop.security.token.delegation.AbstractDelegationTokenSecret
 import org.apache.hadoop.security.token.delegation.DelegationKey;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.transport.TSaslServerTransport;
-import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.apache.thrift.transport.TTransportFactory;
-import org.junit.Test;
-import org.mockito.Mockito;
-import static org.mockito.Mockito.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -83,7 +78,7 @@ public class TestHadoopAuthBridge23 extends TestCase {
         super();
       }
       @Override
-      public TTransportFactory createTransportFactory(Map<String, String> saslProps, int authMaxRetries)
+      public TTransportFactory createTransportFactory(Map<String, String> saslProps)
       throws TTransportException {
         TSaslServerTransport.Factory transFactory =
           new TSaslServerTransport.Factory();
@@ -92,7 +87,7 @@ public class TestHadoopAuthBridge23 extends TestCase {
             saslProps,
             new SaslDigestCallbackHandler(secretManager));
 
-        return new TUGIAssumingTransportFactory(transFactory, realUgi, authMaxRetries);
+        return new TUGIAssumingTransportFactory(transFactory, realUgi);
       }
       static DelegationTokenStore TOKEN_STORE = new MemoryTokenStore();
 
@@ -233,51 +228,6 @@ public class TestHadoopAuthBridge23 extends TestCase {
     UserGroupInformation clientUgi = UserGroupInformation.getCurrentUser();
     obtainTokenAndAddIntoUGI(clientUgi, null);
     obtainTokenAndAddIntoUGI(clientUgi, "tokenForFooTablePartition");
-  }
-
-  /**
-   * Verifies that the expected result returned after 2 unsuccessful retries
-   * @throws Exception
-   */
-  @Test
-  public void testRetryGetTransport() throws Exception {
-    TTransport inputTransport = Mockito.mock(TTransport.class);
-    TTransport expectedTransport = Mockito.mock(TTransport.class);
-    TTransportFactory mockWrapped = Mockito.mock(TTransportFactory.class);
-    UserGroupInformation ugi = UserGroupInformation.getCurrentUser();
-    when(mockWrapped.getTransport(any(TTransport.class)))
-    .thenThrow(new RuntimeException(new TTransportException()))
-    .thenThrow(new RuntimeException(new TTransportException()))
-    .thenReturn(expectedTransport);
-
-    TTransportFactory factory = new HadoopThriftAuthBridge.Server.TUGIAssumingTransportFactory(mockWrapped, ugi, 3);
-    TTransport transport = factory.getTransport(inputTransport);
-
-    assertEquals(expectedTransport, transport);
-    verify(mockWrapped, times(3)).getTransport(any(TTransport.class));
-  }
-
-  /**
-   * Verifies exception is thrown after 3 unsuccessful retries
-   * @throws Exception
-   */
-  @Test
-  public void testRetryGetTransport2() throws Exception {
-    Exception expectedException = new RuntimeException(new TTransportException());
-    TTransport inputTransport = Mockito.mock(TTransport.class);
-    TTransportFactory mockWrapped = Mockito.mock(TTransportFactory.class);
-    UserGroupInformation ugi = UserGroupInformation.getCurrentUser();
-    when(mockWrapped.getTransport(any(TTransport.class)))
-    .thenThrow(expectedException);
-
-    try {
-      TTransportFactory factory = new HadoopThriftAuthBridge.Server.TUGIAssumingTransportFactory(mockWrapped, ugi, 3);
-      factory.getTransport(inputTransport);
-    } catch(Exception e) {
-      assertEquals(expectedException, e);
-    } finally {
-      verify(mockWrapped, times(3)).getTransport(any(TTransport.class));
-    }
   }
 
   public void testMetastoreProxyUser() throws Exception {
