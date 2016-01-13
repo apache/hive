@@ -1443,7 +1443,7 @@ public class StatsUtils {
   public static long getDataSizeFromColumnStats(long numRows, List<ColStatistics> colStats) {
     long result = 0;
 
-    if (numRows <= 0) {
+    if (numRows <= 0 || colStats == null || colStats.isEmpty()) {
       return result;
     }
 

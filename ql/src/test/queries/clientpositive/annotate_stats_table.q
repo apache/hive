@@ -51,3 +51,6 @@ explain select deptid from emp_orc;
 
 -- basicStatState: COMPLETE colStatState: COMPLETE
 explain select lastname,deptid from emp_orc;
+
+create table tmp as select 1;
+explain create table tmp as select 1;
