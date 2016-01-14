@@ -179,7 +179,7 @@ public class Initiator extends CompactorThread {
                                             CompactionInfo ci) {
     if (compactions.getCompacts() != null) {
       for (ShowCompactResponseElement e : compactions.getCompacts()) {
-        if (!e.getState().equals(TxnHandler.CLEANING_RESPONSE) &&
+         if ((e.getState().equals(TxnHandler.WORKING_RESPONSE) || e.getState().equals(TxnHandler.INITIATED_RESPONSE)) &&
             e.getDbname().equals(ci.dbname) &&
             e.getTablename().equals(ci.tableName) &&
             (e.getPartitionname() == null && ci.partName == null ||

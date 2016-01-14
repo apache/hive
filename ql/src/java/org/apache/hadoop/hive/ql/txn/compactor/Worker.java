@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import org.apache.hadoop.hive.metastore.txn.ValidCompactorTxnList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.ValidTxnList;
@@ -136,6 +137,7 @@ public class Worker extends CompactorThread {
         final ValidTxnList txns =
             CompactionTxnHandler.createValidCompactTxnList(txnHandler.getOpenTxnsInfo());
         LOG.debug("ValidCompactTxnList: " + txns.writeToString());
+        txnHandler.setCompactionHighestTxnId(ci, txns.getHighWatermark());
         final StringBuilder jobName = new StringBuilder(name);
         jobName.append("-compactor-");
         jobName.append(ci.getFullPartitionName());

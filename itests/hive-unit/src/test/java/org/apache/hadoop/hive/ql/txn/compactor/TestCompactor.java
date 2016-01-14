@@ -790,6 +790,63 @@ public class TestCompactor {
     }
   }
 
+  /**
+   * HIVE-12352 has details
+   * @throws Exception
+   */
+  @Test
+  public void writeBetweenWorkerAndCleaner() throws Exception {
+    String tblName = "HIVE12352";
+    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
+      " CLUSTERED BY(a) INTO 1 BUCKETS" + //currently ACID requires table to be bucketed
+      " STORED AS ORC  TBLPROPERTIES ('transactional'='true')", driver);
+
+    //create some data
+    executeStatementOnDriver("insert into " + tblName + " values(1, 'foo'),(2, 'bar'),(3, 'baz')", driver);
+    executeStatementOnDriver("update " + tblName + " set b = 'blah' where a = 3", driver);
+
+    //run Worker to execute compaction
+    CompactionTxnHandler txnHandler = new CompactionTxnHandler(conf);
+    txnHandler.compact(new CompactionRequest("default", tblName, CompactionType.MINOR));
+    Worker t = new Worker();
+    t.setThreadId((int) t.getId());
+    t.setHiveConf(conf);
+    AtomicBoolean stop = new AtomicBoolean(true);
+    AtomicBoolean looped = new AtomicBoolean();
+    t.init(stop, looped);
+    t.run();
+
+    //delete something, but make sure txn is rolled back
+    conf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, true);
+    executeStatementOnDriver("delete from " + tblName + " where a = 1", driver);
+    conf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, false);
+
+    List<String> expected = new ArrayList<>();
+    expected.add("1\tfoo");
+    expected.add("2\tbar");
+    expected.add("3\tblah");
+    Assert.assertEquals("", expected,
+      execSelectAndDumpData("select a,b from " + tblName + " order by a", driver, "writeBetweenWorkerAndCleaner()"));
+
+    //run Cleaner
+    Cleaner c = new Cleaner();
+    c.setThreadId((int)c.getId());
+    c.setHiveConf(conf);
+    c.init(stop, new AtomicBoolean());
+    c.run();
+
+    //this seems odd, but we wan to make sure that to run CompactionTxnHandler.cleanEmptyAbortedTxns()
+    Initiator i = new Initiator();
+    i.setThreadId((int)i.getId());
+    i.setHiveConf(conf);
+    i.init(stop, new AtomicBoolean());
+    i.run();
+
+    //check that aborted operation didn't become committed
+    Assert.assertEquals("", expected,
+      execSelectAndDumpData("select a,b from " + tblName + " order by a", driver, "writeBetweenWorkerAndCleaner()"));
+  }
   @Test
   public void majorCompactAfterAbort() throws Exception {
     String dbName = "default";
@@ -934,7 +991,7 @@ public class TestCompactor {
   /**
    * convenience method to execute a select stmt and dump results to log file
    */
-  private static void execSelectAndDumpData(String selectStmt, Driver driver, String msg)
+  private static List<String> execSelectAndDumpData(String selectStmt, Driver driver, String msg)
     throws  Exception {
     executeStatementOnDriver(selectStmt, driver);
     ArrayList<String> valuesReadFromHiveDriver = new ArrayList<String>();
@@ -944,6 +1001,7 @@ public class TestCompactor {
     for(String row : valuesReadFromHiveDriver) {
       LOG.debug(" rowIdx=" + rowIdx++ + ":" + row);
     }
+    return valuesReadFromHiveDriver;
   }
   /**
    * Execute Hive CLI statement

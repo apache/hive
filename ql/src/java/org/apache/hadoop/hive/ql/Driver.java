@@ -1012,7 +1012,12 @@ public class Driver implements CommandProcessor {
     // releasing the locks.
     if (txnMgr.isTxnOpen()) {
       if (commit) {
-        txnMgr.commitTxn();//both commit & rollback clear ALL locks for this tx
+        if(conf.getBoolVar(ConfVars.HIVE_IN_TEST) && conf.getBoolVar(ConfVars.HIVETESTMODEROLLBACKTXN)) {
+          txnMgr.rollbackTxn();
+        }
+        else {
+          txnMgr.commitTxn();//both commit & rollback clear ALL locks for this tx
+        }
       } else {
         txnMgr.rollbackTxn();
       }

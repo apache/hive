@@ -276,7 +276,7 @@ public class CompactionTxnHandler extends TxnHandler {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
         String s = "select cq_id, cq_database, cq_table, cq_partition, " +
-          "cq_type, cq_run_as from COMPACTION_QUEUE where cq_state = '" + READY_FOR_CLEANING + "'";
+          "cq_type, cq_run_as, cq_highest_txn_id from COMPACTION_QUEUE where cq_state = '" + READY_FOR_CLEANING + "'";
         LOG.debug("Going to execute query <" + s + ">");
         rs = stmt.executeQuery(s);
         while (rs.next()) {
@@ -291,6 +291,8 @@ public class CompactionTxnHandler extends TxnHandler {
             default: throw new MetaException("Unexpected compaction type " + rs.getString(5));
           }
           info.runAs = rs.getString(6);
+          long highestTxnId = rs.getLong(7);
+          info.highestTxnId = rs.wasNull() ? null : highestTxnId;
           rc.add(info);
         }
         LOG.debug("Going to rollback");
@@ -315,17 +317,6 @@ public class CompactionTxnHandler extends TxnHandler {
    * This will remove an entry from the queue after
    * it has been compacted.
    * 
-   * todo: Worker will start with DB in state X (wrt this partition).
-   * while it's working more txns will happen, against partition it's compacting.
-   * then this will delete state up to X and since then.  There may be new delta files created
-   * between compaction starting and cleaning.  These will not be compacted until more
-   * transactions happen.  So this ideally should only delete
-   * up to TXN_ID that was compacted (i.e. HWM in Worker?)  Then this can also run
-   * at READ_COMMITTED.  So this means we'd want to store HWM in COMPACTION_QUEUE when
-   * Worker picks up the job.
-   * 
-   * Also, by using this method when Worker fails, we prevent future compactions from
-   * running until more data is written to table or compaction is invoked explicitly
    * @param info info on the compaction entry to remove
    */
   public void markCleaned(CompactionInfo info) throws MetaException {
@@ -349,11 +340,15 @@ public class CompactionTxnHandler extends TxnHandler {
         }
 
         // Remove entries from completed_txn_components as well, so we don't start looking there
-        // again.
+        // again but only up to the highest txn ID include in this compaction job.
+        //highestTxnId will be NULL in upgrade scenarios
         s = "delete from COMPLETED_TXN_COMPONENTS where ctc_database = '" + info.dbname + "' and " +
           "ctc_table = '" + info.tableName + "'";
         if (info.partName != null) {
           s += " and ctc_partition = '" + info.partName + "'";
+        }
+        if(info.highestTxnId != null) {
+          s += " and ctc_txnid <= " + info.highestTxnId;
         }
         LOG.debug("Going to execute update <" + s + ">");
         if (stmt.executeUpdate(s) < 1) {
@@ -363,7 +358,7 @@ public class CompactionTxnHandler extends TxnHandler {
 
         s = "select distinct txn_id from TXNS, TXN_COMPONENTS where txn_id = tc_txnid and txn_state = '" +
           TXN_ABORTED + "' and tc_database = '" + info.dbname + "' and tc_table = '" +
-          info.tableName + "'";
+          info.tableName + "'" + (info.highestTxnId == null ? "" : " and txn_id <= " + info.highestTxnId);
         if (info.partName != null) s += " and tc_partition = '" + info.partName + "'";
         LOG.debug("Going to execute update <" + s + ">");
         rs = stmt.executeQuery(s);
@@ -419,7 +414,9 @@ public class CompactionTxnHandler extends TxnHandler {
   }
 
   /**
-   * Clean up aborted transactions from txns that have no components in txn_components.
+   * Clean up aborted transactions from txns that have no components in txn_components.  The reson such
+   * txns exist can be that now work was done in this txn (e.g. Streaming opened TransactionBatch and
+   * abandoned it w/o doing any work) or due to {@link #markCleaned(CompactionInfo)} being called.
    */
   public void cleanEmptyAbortedTxns() throws MetaException {
     try {
@@ -625,7 +622,9 @@ public class CompactionTxnHandler extends TxnHandler {
   /**
    * Transform a {@link org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse} to a
    * {@link org.apache.hadoop.hive.common.ValidTxnList}.  This assumes that the caller intends to
-   * compact the files, and thus treats only open transactions as invalid.
+   * compact the files, and thus treats only open transactions as invalid.  Additionally any
+   * txnId > highestOpenTxnId is also invalid.  This is avoid creating something like
+   * delta_17_120 where txnId 80, for example, is still open.
    * @param txns txn list from the metastore
    * @return a valid txn list.
    */
@@ -638,7 +637,36 @@ public class CompactionTxnHandler extends TxnHandler {
       if (txn.getState() == TxnState.OPEN) minOpenTxn = Math.min(minOpenTxn, txn.getId());
       exceptions[i++] = txn.getId();
     }
-    return new ValidCompactorTxnList(exceptions, minOpenTxn, highWater);
+    highWater = minOpenTxn == Long.MAX_VALUE ? highWater : minOpenTxn - 1;
+    return new ValidCompactorTxnList(exceptions, -1, highWater);
+  }
+  /**
+   * Record the highest txn id that the {@code ci} compaction job will pay attention to.
+   */
+  public void setCompactionHighestTxnId(CompactionInfo ci, long highestTxnId) throws MetaException {
+    Connection dbConn = null;
+    Statement stmt = null;
+    try {
+      try {
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        stmt = dbConn.createStatement();
+        int updCount = stmt.executeUpdate("UPDATE COMPACTION_QUEUE SET CQ_HIGHEST_TXN_ID = " + highestTxnId +
+          " WHERE CQ_ID = " + ci.id);
+        if(updCount != 1) {
+          throw new IllegalStateException("Could not find record in COMPACTION_QUEUE for " + ci);
+        }
+        dbConn.commit();
+      } catch (SQLException e) {
+        rollbackDBConn(dbConn);
+        checkRetryable(dbConn, e, "setCompactionHighestTxnId(" + ci + "," + highestTxnId + ")");
+        throw new MetaException("Unable to connect to transaction database " +
+          StringUtils.stringifyException(e));
+      } finally {
+        close(null, stmt, dbConn);
+      }
+    } catch (RetryException ex) {
+      setCompactionHighestTxnId(ci, highestTxnId);
+    }
   }
 }
 
