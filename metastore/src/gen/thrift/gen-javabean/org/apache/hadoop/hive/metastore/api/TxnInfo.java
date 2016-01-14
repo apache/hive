@@ -42,6 +42,9 @@ public class TxnInfo implements org.apache.thrift.TBase<TxnInfo, TxnInfo._Fields
   private static final org.apache.thrift.protocol.TField STATE_FIELD_DESC = new org.apache.thrift.protocol.TField("state", org.apache.thrift.protocol.TType.I32, (short)2);
   private static final org.apache.thrift.protocol.TField USER_FIELD_DESC = new org.apache.thrift.protocol.TField("user", org.apache.thrift.protocol.TType.STRING, (short)3);
   private static final org.apache.thrift.protocol.TField HOSTNAME_FIELD_DESC = new org.apache.thrift.protocol.TField("hostname", org.apache.thrift.protocol.TType.STRING, (short)4);
+  private static final org.apache.thrift.protocol.TField AGENT_INFO_FIELD_DESC = new org.apache.thrift.protocol.TField("agentInfo", org.apache.thrift.protocol.TType.STRING, (short)5);
+  private static final org.apache.thrift.protocol.TField HEARTBEAT_COUNT_FIELD_DESC = new org.apache.thrift.protocol.TField("heartbeatCount", org.apache.thrift.protocol.TType.I32, (short)6);
+  private static final org.apache.thrift.protocol.TField META_INFO_FIELD_DESC = new org.apache.thrift.protocol.TField("metaInfo", org.apache.thrift.protocol.TType.STRING, (short)7);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -53,6 +56,9 @@ public class TxnInfo implements org.apache.thrift.TBase<TxnInfo, TxnInfo._Fields
   private TxnState state; // required
   private String user; // required
   private String hostname; // required
+  private String agentInfo; // optional
+  private int heartbeatCount; // optional
+  private String metaInfo; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -63,7 +69,10 @@ public class TxnInfo implements org.apache.thrift.TBase<TxnInfo, TxnInfo._Fields
      */
     STATE((short)2, "state"),
     USER((short)3, "user"),
-    HOSTNAME((short)4, "hostname");
+    HOSTNAME((short)4, "hostname"),
+    AGENT_INFO((short)5, "agentInfo"),
+    HEARTBEAT_COUNT((short)6, "heartbeatCount"),
+    META_INFO((short)7, "metaInfo");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -86,6 +95,12 @@ public class TxnInfo implements org.apache.thrift.TBase<TxnInfo, TxnInfo._Fields
           return USER;
         case 4: // HOSTNAME
           return HOSTNAME;
+        case 5: // AGENT_INFO
+          return AGENT_INFO;
+        case 6: // HEARTBEAT_COUNT
+          return HEARTBEAT_COUNT;
+        case 7: // META_INFO
+          return META_INFO;
         default:
           return null;
       }
@@ -127,7 +142,9 @@ public class TxnInfo implements org.apache.thrift.TBase<TxnInfo, TxnInfo._Fields
 
   // isset id assignments
   private static final int __ID_ISSET_ID = 0;
+  private static final int __HEARTBEATCOUNT_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
+  private static final _Fields optionals[] = {_Fields.AGENT_INFO,_Fields.HEARTBEAT_COUNT,_Fields.META_INFO};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -139,11 +156,21 @@ public class TxnInfo implements org.apache.thrift.TBase<TxnInfo, TxnInfo._Fields
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.HOSTNAME, new org.apache.thrift.meta_data.FieldMetaData("hostname", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.AGENT_INFO, new org.apache.thrift.meta_data.FieldMetaData("agentInfo", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.HEARTBEAT_COUNT, new org.apache.thrift.meta_data.FieldMetaData("heartbeatCount", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+    tmpMap.put(_Fields.META_INFO, new org.apache.thrift.meta_data.FieldMetaData("metaInfo", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(TxnInfo.class, metaDataMap);
   }
 
   public TxnInfo() {
+    this.agentInfo = "Unknown";
+
+    this.heartbeatCount = 0;
+
   }
 
   public TxnInfo(
@@ -175,6 +202,13 @@ public class TxnInfo implements org.apache.thrift.TBase<TxnInfo, TxnInfo._Fields
     if (other.isSetHostname()) {
       this.hostname = other.hostname;
     }
+    if (other.isSetAgentInfo()) {
+      this.agentInfo = other.agentInfo;
+    }
+    this.heartbeatCount = other.heartbeatCount;
+    if (other.isSetMetaInfo()) {
+      this.metaInfo = other.metaInfo;
+    }
   }
 
   public TxnInfo deepCopy() {
@@ -188,6 +222,11 @@ public class TxnInfo implements org.apache.thrift.TBase<TxnInfo, TxnInfo._Fields
     this.state = null;
     this.user = null;
     this.hostname = null;
+    this.agentInfo = "Unknown";
+
+    this.heartbeatCount = 0;
+
+    this.metaInfo = null;
   }
 
   public long getId() {
@@ -289,6 +328,74 @@ public class TxnInfo implements org.apache.thrift.TBase<TxnInfo, TxnInfo._Fields
     }
   }
 
+  public String getAgentInfo() {
+    return this.agentInfo;
+  }
+
+  public void setAgentInfo(String agentInfo) {
+    this.agentInfo = agentInfo;
+  }
+
+  public void unsetAgentInfo() {
+    this.agentInfo = null;
+  }
+
+  /** Returns true if field agentInfo is set (has been assigned a value) and false otherwise */
+  public boolean isSetAgentInfo() {
+    return this.agentInfo != null;
+  }
+
+  public void setAgentInfoIsSet(boolean value) {
+    if (!value) {
+      this.agentInfo = null;
+    }
+  }
+
+  public int getHeartbeatCount() {
+    return this.heartbeatCount;
+  }
+
+  public void setHeartbeatCount(int heartbeatCount) {
+    this.heartbeatCount = heartbeatCount;
+    setHeartbeatCountIsSet(true);
+  }
+
+  public void unsetHeartbeatCount() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __HEARTBEATCOUNT_ISSET_ID);
+  }
+
+  /** Returns true if field heartbeatCount is set (has been assigned a value) and false otherwise */
+  public boolean isSetHeartbeatCount() {
+    return EncodingUtils.testBit(__isset_bitfield, __HEARTBEATCOUNT_ISSET_ID);
+  }
+
+  public void setHeartbeatCountIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __HEARTBEATCOUNT_ISSET_ID, value);
+  }
+
+  public String getMetaInfo() {
+    return this.metaInfo;
+  }
+
+  public void setMetaInfo(String metaInfo) {
+    this.metaInfo = metaInfo;
+  }
+
+  public void unsetMetaInfo() {
+    this.metaInfo = null;
+  }
+
+  /** Returns true if field metaInfo is set (has been assigned a value) and false otherwise */
+  public boolean isSetMetaInfo() {
+    return this.metaInfo != null;
+  }
+
+  public void setMetaInfoIsSet(boolean value) {
+    if (!value) {
+      this.metaInfo = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case ID:
@@ -323,6 +430,30 @@ public class TxnInfo implements org.apache.thrift.TBase<TxnInfo, TxnInfo._Fields
       }
       break;
 
+    case AGENT_INFO:
+      if (value == null) {
+        unsetAgentInfo();
+      } else {
+        setAgentInfo((String)value);
+      }
+      break;
+
+    case HEARTBEAT_COUNT:
+      if (value == null) {
+        unsetHeartbeatCount();
+      } else {
+        setHeartbeatCount((Integer)value);
+      }
+      break;
+
+    case META_INFO:
+      if (value == null) {
+        unsetMetaInfo();
+      } else {
+        setMetaInfo((String)value);
+      }
+      break;
+
     }
   }
 
@@ -339,6 +470,15 @@ public class TxnInfo implements org.apache.thrift.TBase<TxnInfo, TxnInfo._Fields
 
     case HOSTNAME:
       return getHostname();
+
+    case AGENT_INFO:
+      return getAgentInfo();
+
+    case HEARTBEAT_COUNT:
+      return getHeartbeatCount();
+
+    case META_INFO:
+      return getMetaInfo();
 
     }
     throw new IllegalStateException();
@@ -359,6 +499,12 @@ public class TxnInfo implements org.apache.thrift.TBase<TxnInfo, TxnInfo._Fields
       return isSetUser();
     case HOSTNAME:
       return isSetHostname();
+    case AGENT_INFO:
+      return isSetAgentInfo();
+    case HEARTBEAT_COUNT:
+      return isSetHeartbeatCount();
+    case META_INFO:
+      return isSetMetaInfo();
     }
     throw new IllegalStateException();
   }
@@ -412,6 +558,33 @@ public class TxnInfo implements org.apache.thrift.TBase<TxnInfo, TxnInfo._Fields
         return false;
     }
 
+    boolean this_present_agentInfo = true && this.isSetAgentInfo();
+    boolean that_present_agentInfo = true && that.isSetAgentInfo();
+    if (this_present_agentInfo || that_present_agentInfo) {
+      if (!(this_present_agentInfo && that_present_agentInfo))
+        return false;
+      if (!this.agentInfo.equals(that.agentInfo))
+        return false;
+    }
+
+    boolean this_present_heartbeatCount = true && this.isSetHeartbeatCount();
+    boolean that_present_heartbeatCount = true && that.isSetHeartbeatCount();
+    if (this_present_heartbeatCount || that_present_heartbeatCount) {
+      if (!(this_present_heartbeatCount && that_present_heartbeatCount))
+        return false;
+      if (this.heartbeatCount != that.heartbeatCount)
+        return false;
+    }
+
+    boolean this_present_metaInfo = true && this.isSetMetaInfo();
+    boolean that_present_metaInfo = true && that.isSetMetaInfo();
+    if (this_present_metaInfo || that_present_metaInfo) {
+      if (!(this_present_metaInfo && that_present_metaInfo))
+        return false;
+      if (!this.metaInfo.equals(that.metaInfo))
+        return false;
+    }
+
     return true;
   }
 
@@ -438,6 +611,21 @@ public class TxnInfo implements org.apache.thrift.TBase<TxnInfo, TxnInfo._Fields
     list.add(present_hostname);
     if (present_hostname)
       list.add(hostname);
+
+    boolean present_agentInfo = true && (isSetAgentInfo());
+    list.add(present_agentInfo);
+    if (present_agentInfo)
+      list.add(agentInfo);
+
+    boolean present_heartbeatCount = true && (isSetHeartbeatCount());
+    list.add(present_heartbeatCount);
+    if (present_heartbeatCount)
+      list.add(heartbeatCount);
+
+    boolean present_metaInfo = true && (isSetMetaInfo());
+    list.add(present_metaInfo);
+    if (present_metaInfo)
+      list.add(metaInfo);
 
     return list.hashCode();
   }
@@ -490,6 +678,36 @@ public class TxnInfo implements org.apache.thrift.TBase<TxnInfo, TxnInfo._Fields
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetAgentInfo()).compareTo(other.isSetAgentInfo());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetAgentInfo()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.agentInfo, other.agentInfo);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetHeartbeatCount()).compareTo(other.isSetHeartbeatCount());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetHeartbeatCount()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.heartbeatCount, other.heartbeatCount);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetMetaInfo()).compareTo(other.isSetMetaInfo());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetMetaInfo()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.metaInfo, other.metaInfo);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -537,6 +755,32 @@ public class TxnInfo implements org.apache.thrift.TBase<TxnInfo, TxnInfo._Fields
       sb.append(this.hostname);
     }
     first = false;
+    if (isSetAgentInfo()) {
+      if (!first) sb.append(", ");
+      sb.append("agentInfo:");
+      if (this.agentInfo == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.agentInfo);
+      }
+      first = false;
+    }
+    if (isSetHeartbeatCount()) {
+      if (!first) sb.append(", ");
+      sb.append("heartbeatCount:");
+      sb.append(this.heartbeatCount);
+      first = false;
+    }
+    if (isSetMetaInfo()) {
+      if (!first) sb.append(", ");
+      sb.append("metaInfo:");
+      if (this.metaInfo == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.metaInfo);
+      }
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -630,6 +874,30 @@ public class TxnInfo implements org.apache.thrift.TBase<TxnInfo, TxnInfo._Fields
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 5: // AGENT_INFO
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.agentInfo = iprot.readString();
+              struct.setAgentInfoIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 6: // HEARTBEAT_COUNT
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.heartbeatCount = iprot.readI32();
+              struct.setHeartbeatCountIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 7: // META_INFO
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.metaInfo = iprot.readString();
+              struct.setMetaInfoIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -661,6 +929,25 @@ public class TxnInfo implements org.apache.thrift.TBase<TxnInfo, TxnInfo._Fields
         oprot.writeString(struct.hostname);
         oprot.writeFieldEnd();
       }
+      if (struct.agentInfo != null) {
+        if (struct.isSetAgentInfo()) {
+          oprot.writeFieldBegin(AGENT_INFO_FIELD_DESC);
+          oprot.writeString(struct.agentInfo);
+          oprot.writeFieldEnd();
+        }
+      }
+      if (struct.isSetHeartbeatCount()) {
+        oprot.writeFieldBegin(HEARTBEAT_COUNT_FIELD_DESC);
+        oprot.writeI32(struct.heartbeatCount);
+        oprot.writeFieldEnd();
+      }
+      if (struct.metaInfo != null) {
+        if (struct.isSetMetaInfo()) {
+          oprot.writeFieldBegin(META_INFO_FIELD_DESC);
+          oprot.writeString(struct.metaInfo);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -682,6 +969,26 @@ public class TxnInfo implements org.apache.thrift.TBase<TxnInfo, TxnInfo._Fields
       oprot.writeI32(struct.state.getValue());
       oprot.writeString(struct.user);
       oprot.writeString(struct.hostname);
+      BitSet optionals = new BitSet();
+      if (struct.isSetAgentInfo()) {
+        optionals.set(0);
+      }
+      if (struct.isSetHeartbeatCount()) {
+        optionals.set(1);
+      }
+      if (struct.isSetMetaInfo()) {
+        optionals.set(2);
+      }
+      oprot.writeBitSet(optionals, 3);
+      if (struct.isSetAgentInfo()) {
+        oprot.writeString(struct.agentInfo);
+      }
+      if (struct.isSetHeartbeatCount()) {
+        oprot.writeI32(struct.heartbeatCount);
+      }
+      if (struct.isSetMetaInfo()) {
+        oprot.writeString(struct.metaInfo);
+      }
     }
 
     @Override
@@ -695,6 +1002,19 @@ public class TxnInfo implements org.apache.thrift.TBase<TxnInfo, TxnInfo._Fields
       struct.setUserIsSet(true);
       struct.hostname = iprot.readString();
       struct.setHostnameIsSet(true);
+      BitSet incoming = iprot.readBitSet(3);
+      if (incoming.get(0)) {
+        struct.agentInfo = iprot.readString();
+        struct.setAgentInfoIsSet(true);
+      }
+      if (incoming.get(1)) {
+        struct.heartbeatCount = iprot.readI32();
+        struct.setHeartbeatCountIsSet(true);
+      }
+      if (incoming.get(2)) {
+        struct.metaInfo = iprot.readString();
+        struct.setMetaInfoIsSet(true);
+      }
     }
   }
 

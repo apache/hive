@@ -39,6 +39,8 @@ public class CheckLockRequest implements org.apache.thrift.TBase<CheckLockReques
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("CheckLockRequest");
 
   private static final org.apache.thrift.protocol.TField LOCKID_FIELD_DESC = new org.apache.thrift.protocol.TField("lockid", org.apache.thrift.protocol.TType.I64, (short)1);
+  private static final org.apache.thrift.protocol.TField TXNID_FIELD_DESC = new org.apache.thrift.protocol.TField("txnid", org.apache.thrift.protocol.TType.I64, (short)2);
+  private static final org.apache.thrift.protocol.TField ELAPSED_MS_FIELD_DESC = new org.apache.thrift.protocol.TField("elapsed_ms", org.apache.thrift.protocol.TType.I64, (short)3);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -47,10 +49,14 @@ public class CheckLockRequest implements org.apache.thrift.TBase<CheckLockReques
   }
 
   private long lockid; // required
+  private long txnid; // optional
+  private long elapsed_ms; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    LOCKID((short)1, "lockid");
+    LOCKID((short)1, "lockid"),
+    TXNID((short)2, "txnid"),
+    ELAPSED_MS((short)3, "elapsed_ms");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -67,6 +73,10 @@ public class CheckLockRequest implements org.apache.thrift.TBase<CheckLockReques
       switch(fieldId) {
         case 1: // LOCKID
           return LOCKID;
+        case 2: // TXNID
+          return TXNID;
+        case 3: // ELAPSED_MS
+          return ELAPSED_MS;
         default:
           return null;
       }
@@ -108,11 +118,18 @@ public class CheckLockRequest implements org.apache.thrift.TBase<CheckLockReques
 
   // isset id assignments
   private static final int __LOCKID_ISSET_ID = 0;
+  private static final int __TXNID_ISSET_ID = 1;
+  private static final int __ELAPSED_MS_ISSET_ID = 2;
   private byte __isset_bitfield = 0;
+  private static final _Fields optionals[] = {_Fields.TXNID,_Fields.ELAPSED_MS};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.LOCKID, new org.apache.thrift.meta_data.FieldMetaData("lockid", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.TXNID, new org.apache.thrift.meta_data.FieldMetaData("txnid", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.ELAPSED_MS, new org.apache.thrift.meta_data.FieldMetaData("elapsed_ms", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(CheckLockRequest.class, metaDataMap);
@@ -135,6 +152,8 @@ public class CheckLockRequest implements org.apache.thrift.TBase<CheckLockReques
   public CheckLockRequest(CheckLockRequest other) {
     __isset_bitfield = other.__isset_bitfield;
     this.lockid = other.lockid;
+    this.txnid = other.txnid;
+    this.elapsed_ms = other.elapsed_ms;
   }
 
   public CheckLockRequest deepCopy() {
@@ -145,6 +164,10 @@ public class CheckLockRequest implements org.apache.thrift.TBase<CheckLockReques
   public void clear() {
     setLockidIsSet(false);
     this.lockid = 0;
+    setTxnidIsSet(false);
+    this.txnid = 0;
+    setElapsed_msIsSet(false);
+    this.elapsed_ms = 0;
   }
 
   public long getLockid() {
@@ -169,6 +192,50 @@ public class CheckLockRequest implements org.apache.thrift.TBase<CheckLockReques
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __LOCKID_ISSET_ID, value);
   }
 
+  public long getTxnid() {
+    return this.txnid;
+  }
+
+  public void setTxnid(long txnid) {
+    this.txnid = txnid;
+    setTxnidIsSet(true);
+  }
+
+  public void unsetTxnid() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __TXNID_ISSET_ID);
+  }
+
+  /** Returns true if field txnid is set (has been assigned a value) and false otherwise */
+  public boolean isSetTxnid() {
+    return EncodingUtils.testBit(__isset_bitfield, __TXNID_ISSET_ID);
+  }
+
+  public void setTxnidIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __TXNID_ISSET_ID, value);
+  }
+
+  public long getElapsed_ms() {
+    return this.elapsed_ms;
+  }
+
+  public void setElapsed_ms(long elapsed_ms) {
+    this.elapsed_ms = elapsed_ms;
+    setElapsed_msIsSet(true);
+  }
+
+  public void unsetElapsed_ms() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __ELAPSED_MS_ISSET_ID);
+  }
+
+  /** Returns true if field elapsed_ms is set (has been assigned a value) and false otherwise */
+  public boolean isSetElapsed_ms() {
+    return EncodingUtils.testBit(__isset_bitfield, __ELAPSED_MS_ISSET_ID);
+  }
+
+  public void setElapsed_msIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __ELAPSED_MS_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case LOCKID:
@@ -179,6 +246,22 @@ public class CheckLockRequest implements org.apache.thrift.TBase<CheckLockReques
       }
       break;
 
+    case TXNID:
+      if (value == null) {
+        unsetTxnid();
+      } else {
+        setTxnid((Long)value);
+      }
+      break;
+
+    case ELAPSED_MS:
+      if (value == null) {
+        unsetElapsed_ms();
+      } else {
+        setElapsed_ms((Long)value);
+      }
+      break;
+
     }
   }
 
@@ -186,6 +269,12 @@ public class CheckLockRequest implements org.apache.thrift.TBase<CheckLockReques
     switch (field) {
     case LOCKID:
       return getLockid();
+
+    case TXNID:
+      return getTxnid();
+
+    case ELAPSED_MS:
+      return getElapsed_ms();
 
     }
     throw new IllegalStateException();
@@ -200,6 +289,10 @@ public class CheckLockRequest implements org.apache.thrift.TBase<CheckLockReques
     switch (field) {
     case LOCKID:
       return isSetLockid();
+    case TXNID:
+      return isSetTxnid();
+    case ELAPSED_MS:
+      return isSetElapsed_ms();
     }
     throw new IllegalStateException();
   }
@@ -226,6 +319,24 @@ public class CheckLockRequest implements org.apache.thrift.TBase<CheckLockReques
         return false;
     }
 
+    boolean this_present_txnid = true && this.isSetTxnid();
+    boolean that_present_txnid = true && that.isSetTxnid();
+    if (this_present_txnid || that_present_txnid) {
+      if (!(this_present_txnid && that_present_txnid))
+        return false;
+      if (this.txnid != that.txnid)
+        return false;
+    }
+
+    boolean this_present_elapsed_ms = true && this.isSetElapsed_ms();
+    boolean that_present_elapsed_ms = true && that.isSetElapsed_ms();
+    if (this_present_elapsed_ms || that_present_elapsed_ms) {
+      if (!(this_present_elapsed_ms && that_present_elapsed_ms))
+        return false;
+      if (this.elapsed_ms != that.elapsed_ms)
+        return false;
+    }
+
     return true;
   }
 
@@ -237,6 +348,16 @@ public class CheckLockRequest implements org.apache.thrift.TBase<CheckLockReques
     list.add(present_lockid);
     if (present_lockid)
       list.add(lockid);
+
+    boolean present_txnid = true && (isSetTxnid());
+    list.add(present_txnid);
+    if (present_txnid)
+      list.add(txnid);
+
+    boolean present_elapsed_ms = true && (isSetElapsed_ms());
+    list.add(present_elapsed_ms);
+    if (present_elapsed_ms)
+      list.add(elapsed_ms);
 
     return list.hashCode();
   }
@@ -255,6 +376,26 @@ public class CheckLockRequest implements org.apache.thrift.TBase<CheckLockReques
     }
     if (isSetLockid()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.lockid, other.lockid);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetTxnid()).compareTo(other.isSetTxnid());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetTxnid()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.txnid, other.txnid);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetElapsed_ms()).compareTo(other.isSetElapsed_ms());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetElapsed_ms()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.elapsed_ms, other.elapsed_ms);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -282,6 +423,18 @@ public class CheckLockRequest implements org.apache.thrift.TBase<CheckLockReques
     sb.append("lockid:");
     sb.append(this.lockid);
     first = false;
+    if (isSetTxnid()) {
+      if (!first) sb.append(", ");
+      sb.append("txnid:");
+      sb.append(this.txnid);
+      first = false;
+    }
+    if (isSetElapsed_ms()) {
+      if (!first) sb.append(", ");
+      sb.append("elapsed_ms:");
+      sb.append(this.elapsed_ms);
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -339,6 +492,22 @@ public class CheckLockRequest implements org.apache.thrift.TBase<CheckLockReques
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 2: // TXNID
+            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+              struct.txnid = iprot.readI64();
+              struct.setTxnidIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 3: // ELAPSED_MS
+            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+              struct.elapsed_ms = iprot.readI64();
+              struct.setElapsed_msIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -355,6 +524,16 @@ public class CheckLockRequest implements org.apache.thrift.TBase<CheckLockReques
       oprot.writeFieldBegin(LOCKID_FIELD_DESC);
       oprot.writeI64(struct.lockid);
       oprot.writeFieldEnd();
+      if (struct.isSetTxnid()) {
+        oprot.writeFieldBegin(TXNID_FIELD_DESC);
+        oprot.writeI64(struct.txnid);
+        oprot.writeFieldEnd();
+      }
+      if (struct.isSetElapsed_ms()) {
+        oprot.writeFieldBegin(ELAPSED_MS_FIELD_DESC);
+        oprot.writeI64(struct.elapsed_ms);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -373,6 +552,20 @@ public class CheckLockRequest implements org.apache.thrift.TBase<CheckLockReques
     public void write(org.apache.thrift.protocol.TProtocol prot, CheckLockRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
       oprot.writeI64(struct.lockid);
+      BitSet optionals = new BitSet();
+      if (struct.isSetTxnid()) {
+        optionals.set(0);
+      }
+      if (struct.isSetElapsed_ms()) {
+        optionals.set(1);
+      }
+      oprot.writeBitSet(optionals, 2);
+      if (struct.isSetTxnid()) {
+        oprot.writeI64(struct.txnid);
+      }
+      if (struct.isSetElapsed_ms()) {
+        oprot.writeI64(struct.elapsed_ms);
+      }
     }
 
     @Override
@@ -380,6 +573,15 @@ public class CheckLockRequest implements org.apache.thrift.TBase<CheckLockReques
       TTupleProtocol iprot = (TTupleProtocol) prot;
       struct.lockid = iprot.readI64();
       struct.setLockidIsSet(true);
+      BitSet incoming = iprot.readBitSet(2);
+      if (incoming.get(0)) {
+        struct.txnid = iprot.readI64();
+        struct.setTxnidIsSet(true);
+      }
+      if (incoming.get(1)) {
+        struct.elapsed_ms = iprot.readI64();
+        struct.setElapsed_msIsSet(true);
+      }
     }
   }
 

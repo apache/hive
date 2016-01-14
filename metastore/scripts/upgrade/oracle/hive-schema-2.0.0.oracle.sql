@@ -780,7 +780,7 @@ CREATE INDEX FUNC_RU_N49 ON FUNC_RU (FUNC_ID);
 ------------------------------
 -- Transaction and lock tables
 ------------------------------
-@hive-txn-schema-0.13.0.oracle.sql;
+@hive-txn-schema-2.0.0.oracle.sql;
 
 -- -----------------------------------------------------------------
 -- Record schema version. Should be the last step in the init script

@@ -42,6 +42,7 @@ public class LockRequest implements org.apache.thrift.TBase<LockRequest, LockReq
   private static final org.apache.thrift.protocol.TField TXNID_FIELD_DESC = new org.apache.thrift.protocol.TField("txnid", org.apache.thrift.protocol.TType.I64, (short)2);
   private static final org.apache.thrift.protocol.TField USER_FIELD_DESC = new org.apache.thrift.protocol.TField("user", org.apache.thrift.protocol.TType.STRING, (short)3);
   private static final org.apache.thrift.protocol.TField HOSTNAME_FIELD_DESC = new org.apache.thrift.protocol.TField("hostname", org.apache.thrift.protocol.TType.STRING, (short)4);
+  private static final org.apache.thrift.protocol.TField AGENT_INFO_FIELD_DESC = new org.apache.thrift.protocol.TField("agentInfo", org.apache.thrift.protocol.TType.STRING, (short)5);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -53,13 +54,15 @@ public class LockRequest implements org.apache.thrift.TBase<LockRequest, LockReq
   private long txnid; // optional
   private String user; // required
   private String hostname; // required
+  private String agentInfo; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     COMPONENT((short)1, "component"),
     TXNID((short)2, "txnid"),
     USER((short)3, "user"),
-    HOSTNAME((short)4, "hostname");
+    HOSTNAME((short)4, "hostname"),
+    AGENT_INFO((short)5, "agentInfo");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -82,6 +85,8 @@ public class LockRequest implements org.apache.thrift.TBase<LockRequest, LockReq
           return USER;
         case 4: // HOSTNAME
           return HOSTNAME;
+        case 5: // AGENT_INFO
+          return AGENT_INFO;
         default:
           return null;
       }
@@ -124,7 +129,7 @@ public class LockRequest implements org.apache.thrift.TBase<LockRequest, LockReq
   // isset id assignments
   private static final int __TXNID_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.TXNID};
+  private static final _Fields optionals[] = {_Fields.TXNID,_Fields.AGENT_INFO};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -137,11 +142,15 @@ public class LockRequest implements org.apache.thrift.TBase<LockRequest, LockReq
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.HOSTNAME, new org.apache.thrift.meta_data.FieldMetaData("hostname", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.AGENT_INFO, new org.apache.thrift.meta_data.FieldMetaData("agentInfo", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(LockRequest.class, metaDataMap);
   }
 
   public LockRequest() {
+    this.agentInfo = "Unknown";
+
   }
 
   public LockRequest(
@@ -174,6 +183,9 @@ public class LockRequest implements org.apache.thrift.TBase<LockRequest, LockReq
     if (other.isSetHostname()) {
       this.hostname = other.hostname;
     }
+    if (other.isSetAgentInfo()) {
+      this.agentInfo = other.agentInfo;
+    }
   }
 
   public LockRequest deepCopy() {
@@ -187,6 +199,8 @@ public class LockRequest implements org.apache.thrift.TBase<LockRequest, LockReq
     this.txnid = 0;
     this.user = null;
     this.hostname = null;
+    this.agentInfo = "Unknown";
+
   }
 
   public int getComponentSize() {
@@ -295,6 +309,29 @@ public class LockRequest implements org.apache.thrift.TBase<LockRequest, LockReq
     }
   }
 
+  public String getAgentInfo() {
+    return this.agentInfo;
+  }
+
+  public void setAgentInfo(String agentInfo) {
+    this.agentInfo = agentInfo;
+  }
+
+  public void unsetAgentInfo() {
+    this.agentInfo = null;
+  }
+
+  /** Returns true if field agentInfo is set (has been assigned a value) and false otherwise */
+  public boolean isSetAgentInfo() {
+    return this.agentInfo != null;
+  }
+
+  public void setAgentInfoIsSet(boolean value) {
+    if (!value) {
+      this.agentInfo = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case COMPONENT:
@@ -329,6 +366,14 @@ public class LockRequest implements org.apache.thrift.TBase<LockRequest, LockReq
       }
       break;
 
+    case AGENT_INFO:
+      if (value == null) {
+        unsetAgentInfo();
+      } else {
+        setAgentInfo((String)value);
+      }
+      break;
+
     }
   }
 
@@ -345,6 +390,9 @@ public class LockRequest implements org.apache.thrift.TBase<LockRequest, LockReq
 
     case HOSTNAME:
       return getHostname();
+
+    case AGENT_INFO:
+      return getAgentInfo();
 
     }
     throw new IllegalStateException();
@@ -365,6 +413,8 @@ public class LockRequest implements org.apache.thrift.TBase<LockRequest, LockReq
       return isSetUser();
     case HOSTNAME:
       return isSetHostname();
+    case AGENT_INFO:
+      return isSetAgentInfo();
     }
     throw new IllegalStateException();
   }
@@ -418,6 +468,15 @@ public class LockRequest implements org.apache.thrift.TBase<LockRequest, LockReq
         return false;
     }
 
+    boolean this_present_agentInfo = true && this.isSetAgentInfo();
+    boolean that_present_agentInfo = true && that.isSetAgentInfo();
+    if (this_present_agentInfo || that_present_agentInfo) {
+      if (!(this_present_agentInfo && that_present_agentInfo))
+        return false;
+      if (!this.agentInfo.equals(that.agentInfo))
+        return false;
+    }
+
     return true;
   }
 
@@ -444,6 +503,11 @@ public class LockRequest implements org.apache.thrift.TBase<LockRequest, LockReq
     list.add(present_hostname);
     if (present_hostname)
       list.add(hostname);
+
+    boolean present_agentInfo = true && (isSetAgentInfo());
+    list.add(present_agentInfo);
+    if (present_agentInfo)
+      list.add(agentInfo);
 
     return list.hashCode();
   }
@@ -492,6 +556,16 @@ public class LockRequest implements org.apache.thrift.TBase<LockRequest, LockReq
     }
     if (isSetHostname()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.hostname, other.hostname);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetAgentInfo()).compareTo(other.isSetAgentInfo());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetAgentInfo()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.agentInfo, other.agentInfo);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -545,6 +619,16 @@ public class LockRequest implements org.apache.thrift.TBase<LockRequest, LockReq
       sb.append(this.hostname);
     }
     first = false;
+    if (isSetAgentInfo()) {
+      if (!first) sb.append(", ");
+      sb.append("agentInfo:");
+      if (this.agentInfo == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.agentInfo);
+      }
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -645,6 +729,14 @@ public class LockRequest implements org.apache.thrift.TBase<LockRequest, LockReq
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 5: // AGENT_INFO
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.agentInfo = iprot.readString();
+              struct.setAgentInfoIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -685,6 +777,13 @@ public class LockRequest implements org.apache.thrift.TBase<LockRequest, LockReq
         oprot.writeString(struct.hostname);
         oprot.writeFieldEnd();
       }
+      if (struct.agentInfo != null) {
+        if (struct.isSetAgentInfo()) {
+          oprot.writeFieldBegin(AGENT_INFO_FIELD_DESC);
+          oprot.writeString(struct.agentInfo);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -715,9 +814,15 @@ public class LockRequest implements org.apache.thrift.TBase<LockRequest, LockReq
       if (struct.isSetTxnid()) {
         optionals.set(0);
       }
-      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetAgentInfo()) {
+        optionals.set(1);
+      }
+      oprot.writeBitSet(optionals, 2);
       if (struct.isSetTxnid()) {
         oprot.writeI64(struct.txnid);
+      }
+      if (struct.isSetAgentInfo()) {
+        oprot.writeString(struct.agentInfo);
       }
     }
 
@@ -740,10 +845,14 @@ public class LockRequest implements org.apache.thrift.TBase<LockRequest, LockReq
       struct.setUserIsSet(true);
       struct.hostname = iprot.readString();
       struct.setHostnameIsSet(true);
-      BitSet incoming = iprot.readBitSet(1);
+      BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {
         struct.txnid = iprot.readI64();
         struct.setTxnidIsSet(true);
+      }
+      if (incoming.get(1)) {
+        struct.agentInfo = iprot.readString();
+        struct.setAgentInfoIsSet(true);
       }
     }
   }

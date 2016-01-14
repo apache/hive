@@ -9975,6 +9975,21 @@ void TxnInfo::__set_hostname(const std::string& val) {
   this->hostname = val;
 }
 
+void TxnInfo::__set_agentInfo(const std::string& val) {
+  this->agentInfo = val;
+__isset.agentInfo = true;
+}
+
+void TxnInfo::__set_heartbeatCount(const int32_t val) {
+  this->heartbeatCount = val;
+__isset.heartbeatCount = true;
+}
+
+void TxnInfo::__set_metaInfo(const std::string& val) {
+  this->metaInfo = val;
+__isset.metaInfo = true;
+}
+
 uint32_t TxnInfo::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
@@ -10034,6 +10049,30 @@ uint32_t TxnInfo::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->agentInfo);
+          this->__isset.agentInfo = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 6:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->heartbeatCount);
+          this->__isset.heartbeatCount = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 7:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->metaInfo);
+          this->__isset.metaInfo = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -10075,6 +10114,21 @@ uint32_t TxnInfo::write(::apache::thrift::protocol::TProtocol* oprot) const {
   xfer += oprot->writeString(this->hostname);
   xfer += oprot->writeFieldEnd();
 
+  if (this->__isset.agentInfo) {
+    xfer += oprot->writeFieldBegin("agentInfo", ::apache::thrift::protocol::T_STRING, 5);
+    xfer += oprot->writeString(this->agentInfo);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.heartbeatCount) {
+    xfer += oprot->writeFieldBegin("heartbeatCount", ::apache::thrift::protocol::T_I32, 6);
+    xfer += oprot->writeI32(this->heartbeatCount);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.metaInfo) {
+    xfer += oprot->writeFieldBegin("metaInfo", ::apache::thrift::protocol::T_STRING, 7);
+    xfer += oprot->writeString(this->metaInfo);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -10086,6 +10140,10 @@ void swap(TxnInfo &a, TxnInfo &b) {
   swap(a.state, b.state);
   swap(a.user, b.user);
   swap(a.hostname, b.hostname);
+  swap(a.agentInfo, b.agentInfo);
+  swap(a.heartbeatCount, b.heartbeatCount);
+  swap(a.metaInfo, b.metaInfo);
+  swap(a.__isset, b.__isset);
 }
 
 TxnInfo::TxnInfo(const TxnInfo& other465) {
@@ -10093,12 +10151,20 @@ TxnInfo::TxnInfo(const TxnInfo& other465) {
   state = other465.state;
   user = other465.user;
   hostname = other465.hostname;
+  agentInfo = other465.agentInfo;
+  heartbeatCount = other465.heartbeatCount;
+  metaInfo = other465.metaInfo;
+  __isset = other465.__isset;
 }
 TxnInfo& TxnInfo::operator=(const TxnInfo& other466) {
   id = other466.id;
   state = other466.state;
   user = other466.user;
   hostname = other466.hostname;
+  agentInfo = other466.agentInfo;
+  heartbeatCount = other466.heartbeatCount;
+  metaInfo = other466.metaInfo;
+  __isset = other466.__isset;
   return *this;
 }
 void TxnInfo::printTo(std::ostream& out) const {
@@ -10108,6 +10174,9 @@ void TxnInfo::printTo(std::ostream& out) const {
   out << ", " << "state=" << to_string(state);
   out << ", " << "user=" << to_string(user);
   out << ", " << "hostname=" << to_string(hostname);
+  out << ", " << "agentInfo="; (__isset.agentInfo ? (out << to_string(agentInfo)) : (out << "<null>"));
+  out << ", " << "heartbeatCount="; (__isset.heartbeatCount ? (out << to_string(heartbeatCount)) : (out << "<null>"));
+  out << ", " << "metaInfo="; (__isset.metaInfo ? (out << to_string(metaInfo)) : (out << "<null>"));
   out << ")";
 }
 
@@ -10387,6 +10456,11 @@ void OpenTxnRequest::__set_hostname(const std::string& val) {
   this->hostname = val;
 }
 
+void OpenTxnRequest::__set_agentInfo(const std::string& val) {
+  this->agentInfo = val;
+__isset.agentInfo = true;
+}
+
 uint32_t OpenTxnRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
@@ -10435,6 +10509,14 @@ uint32_t OpenTxnRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->agentInfo);
+          this->__isset.agentInfo = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -10470,6 +10552,11 @@ uint32_t OpenTxnRequest::write(::apache::thrift::protocol::TProtocol* oprot) con
   xfer += oprot->writeString(this->hostname);
   xfer += oprot->writeFieldEnd();
 
+  if (this->__isset.agentInfo) {
+    xfer += oprot->writeFieldBegin("agentInfo", ::apache::thrift::protocol::T_STRING, 4);
+    xfer += oprot->writeString(this->agentInfo);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -10480,17 +10567,23 @@ void swap(OpenTxnRequest &a, OpenTxnRequest &b) {
   swap(a.num_txns, b.num_txns);
   swap(a.user, b.user);
   swap(a.hostname, b.hostname);
+  swap(a.agentInfo, b.agentInfo);
+  swap(a.__isset, b.__isset);
 }
 
 OpenTxnRequest::OpenTxnRequest(const OpenTxnRequest& other484) {
   num_txns = other484.num_txns;
   user = other484.user;
   hostname = other484.hostname;
+  agentInfo = other484.agentInfo;
+  __isset = other484.__isset;
 }
 OpenTxnRequest& OpenTxnRequest::operator=(const OpenTxnRequest& other485) {
   num_txns = other485.num_txns;
   user = other485.user;
   hostname = other485.hostname;
+  agentInfo = other485.agentInfo;
+  __isset = other485.__isset;
   return *this;
 }
 void OpenTxnRequest::printTo(std::ostream& out) const {
@@ -10499,6 +10592,7 @@ void OpenTxnRequest::printTo(std::ostream& out) const {
   out << "num_txns=" << to_string(num_txns);
   out << ", " << "user=" << to_string(user);
   out << ", " << "hostname=" << to_string(hostname);
+  out << ", " << "agentInfo="; (__isset.agentInfo ? (out << to_string(agentInfo)) : (out << "<null>"));
   out << ")";
 }
 
@@ -10985,6 +11079,11 @@ void LockRequest::__set_hostname(const std::string& val) {
   this->hostname = val;
 }
 
+void LockRequest::__set_agentInfo(const std::string& val) {
+  this->agentInfo = val;
+__isset.agentInfo = true;
+}
+
 uint32_t LockRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
@@ -11053,6 +11152,14 @@ uint32_t LockRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->agentInfo);
+          this->__isset.agentInfo = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -11101,6 +11208,11 @@ uint32_t LockRequest::write(::apache::thrift::protocol::TProtocol* oprot) const 
   xfer += oprot->writeString(this->hostname);
   xfer += oprot->writeFieldEnd();
 
+  if (this->__isset.agentInfo) {
+    xfer += oprot->writeFieldBegin("agentInfo", ::apache::thrift::protocol::T_STRING, 5);
+    xfer += oprot->writeString(this->agentInfo);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -11112,6 +11224,7 @@ void swap(LockRequest &a, LockRequest &b) {
   swap(a.txnid, b.txnid);
   swap(a.user, b.user);
   swap(a.hostname, b.hostname);
+  swap(a.agentInfo, b.agentInfo);
   swap(a.__isset, b.__isset);
 }
 
@@ -11120,6 +11233,7 @@ LockRequest::LockRequest(const LockRequest& other508) {
   txnid = other508.txnid;
   user = other508.user;
   hostname = other508.hostname;
+  agentInfo = other508.agentInfo;
   __isset = other508.__isset;
 }
 LockRequest& LockRequest::operator=(const LockRequest& other509) {
@@ -11127,6 +11241,7 @@ LockRequest& LockRequest::operator=(const LockRequest& other509) {
   txnid = other509.txnid;
   user = other509.user;
   hostname = other509.hostname;
+  agentInfo = other509.agentInfo;
   __isset = other509.__isset;
   return *this;
 }
@@ -11137,6 +11252,7 @@ void LockRequest::printTo(std::ostream& out) const {
   out << ", " << "txnid="; (__isset.txnid ? (out << to_string(txnid)) : (out << "<null>"));
   out << ", " << "user=" << to_string(user);
   out << ", " << "hostname=" << to_string(hostname);
+  out << ", " << "agentInfo="; (__isset.agentInfo ? (out << to_string(agentInfo)) : (out << "<null>"));
   out << ")";
 }
 
@@ -11260,6 +11376,16 @@ void CheckLockRequest::__set_lockid(const int64_t val) {
   this->lockid = val;
 }
 
+void CheckLockRequest::__set_txnid(const int64_t val) {
+  this->txnid = val;
+__isset.txnid = true;
+}
+
+void CheckLockRequest::__set_elapsed_ms(const int64_t val) {
+  this->elapsed_ms = val;
+__isset.elapsed_ms = true;
+}
+
 uint32_t CheckLockRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
@@ -11290,6 +11416,22 @@ uint32_t CheckLockRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->txnid);
+          this->__isset.txnid = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->elapsed_ms);
+          this->__isset.elapsed_ms = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -11313,6 +11455,16 @@ uint32_t CheckLockRequest::write(::apache::thrift::protocol::TProtocol* oprot) c
   xfer += oprot->writeI64(this->lockid);
   xfer += oprot->writeFieldEnd();
 
+  if (this->__isset.txnid) {
+    xfer += oprot->writeFieldBegin("txnid", ::apache::thrift::protocol::T_I64, 2);
+    xfer += oprot->writeI64(this->txnid);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.elapsed_ms) {
+    xfer += oprot->writeFieldBegin("elapsed_ms", ::apache::thrift::protocol::T_I64, 3);
+    xfer += oprot->writeI64(this->elapsed_ms);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -11321,19 +11473,30 @@ uint32_t CheckLockRequest::write(::apache::thrift::protocol::TProtocol* oprot) c
 void swap(CheckLockRequest &a, CheckLockRequest &b) {
   using ::std::swap;
   swap(a.lockid, b.lockid);
+  swap(a.txnid, b.txnid);
+  swap(a.elapsed_ms, b.elapsed_ms);
+  swap(a.__isset, b.__isset);
 }
 
 CheckLockRequest::CheckLockRequest(const CheckLockRequest& other513) {
   lockid = other513.lockid;
+  txnid = other513.txnid;
+  elapsed_ms = other513.elapsed_ms;
+  __isset = other513.__isset;
 }
 CheckLockRequest& CheckLockRequest::operator=(const CheckLockRequest& other514) {
   lockid = other514.lockid;
+  txnid = other514.txnid;
+  elapsed_ms = other514.elapsed_ms;
+  __isset = other514.__isset;
   return *this;
 }
 void CheckLockRequest::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
   out << "CheckLockRequest(";
   out << "lockid=" << to_string(lockid);
+  out << ", " << "txnid="; (__isset.txnid ? (out << to_string(txnid)) : (out << "<null>"));
+  out << ", " << "elapsed_ms="; (__isset.elapsed_ms ? (out << to_string(elapsed_ms)) : (out << "<null>"));
   out << ")";
 }
 
@@ -11428,6 +11591,26 @@ ShowLocksRequest::~ShowLocksRequest() throw() {
 }
 
 
+void ShowLocksRequest::__set_dbname(const std::string& val) {
+  this->dbname = val;
+__isset.dbname = true;
+}
+
+void ShowLocksRequest::__set_tablename(const std::string& val) {
+  this->tablename = val;
+__isset.tablename = true;
+}
+
+void ShowLocksRequest::__set_partname(const std::string& val) {
+  this->partname = val;
+__isset.partname = true;
+}
+
+void ShowLocksRequest::__set_isExtended(const bool val) {
+  this->isExtended = val;
+__isset.isExtended = true;
+}
+
 uint32_t ShowLocksRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
@@ -11447,7 +11630,44 @@ uint32_t ShowLocksRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
     if (ftype == ::apache::thrift::protocol::T_STOP) {
       break;
     }
-    xfer += iprot->skip(ftype);
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->dbname);
+          this->__isset.dbname = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->tablename);
+          this->__isset.tablename = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->partname);
+          this->__isset.partname = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->isExtended);
+          this->__isset.isExtended = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
     xfer += iprot->readFieldEnd();
   }
 
@@ -11461,6 +11681,26 @@ uint32_t ShowLocksRequest::write(::apache::thrift::protocol::TProtocol* oprot) c
   apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
   xfer += oprot->writeStructBegin("ShowLocksRequest");
 
+  if (this->__isset.dbname) {
+    xfer += oprot->writeFieldBegin("dbname", ::apache::thrift::protocol::T_STRING, 1);
+    xfer += oprot->writeString(this->dbname);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.tablename) {
+    xfer += oprot->writeFieldBegin("tablename", ::apache::thrift::protocol::T_STRING, 2);
+    xfer += oprot->writeString(this->tablename);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.partname) {
+    xfer += oprot->writeFieldBegin("partname", ::apache::thrift::protocol::T_STRING, 3);
+    xfer += oprot->writeString(this->partname);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.isExtended) {
+    xfer += oprot->writeFieldBegin("isExtended", ::apache::thrift::protocol::T_BOOL, 4);
+    xfer += oprot->writeBool(this->isExtended);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -11468,20 +11708,35 @@ uint32_t ShowLocksRequest::write(::apache::thrift::protocol::TProtocol* oprot) c
 
 void swap(ShowLocksRequest &a, ShowLocksRequest &b) {
   using ::std::swap;
-  (void) a;
-  (void) b;
+  swap(a.dbname, b.dbname);
+  swap(a.tablename, b.tablename);
+  swap(a.partname, b.partname);
+  swap(a.isExtended, b.isExtended);
+  swap(a.__isset, b.__isset);
 }
 
 ShowLocksRequest::ShowLocksRequest(const ShowLocksRequest& other517) {
-  (void) other517;
+  dbname = other517.dbname;
+  tablename = other517.tablename;
+  partname = other517.partname;
+  isExtended = other517.isExtended;
+  __isset = other517.__isset;
 }
 ShowLocksRequest& ShowLocksRequest::operator=(const ShowLocksRequest& other518) {
-  (void) other518;
+  dbname = other518.dbname;
+  tablename = other518.tablename;
+  partname = other518.partname;
+  isExtended = other518.isExtended;
+  __isset = other518.__isset;
   return *this;
 }
 void ShowLocksRequest::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
   out << "ShowLocksRequest(";
+  out << "dbname="; (__isset.dbname ? (out << to_string(dbname)) : (out << "<null>"));
+  out << ", " << "tablename="; (__isset.tablename ? (out << to_string(tablename)) : (out << "<null>"));
+  out << ", " << "partname="; (__isset.partname ? (out << to_string(partname)) : (out << "<null>"));
+  out << ", " << "isExtended="; (__isset.isExtended ? (out << to_string(isExtended)) : (out << "<null>"));
   out << ")";
 }
 
@@ -11536,6 +11791,31 @@ void ShowLocksResponseElement::__set_user(const std::string& val) {
 
 void ShowLocksResponseElement::__set_hostname(const std::string& val) {
   this->hostname = val;
+}
+
+void ShowLocksResponseElement::__set_heartbeatCount(const int32_t val) {
+  this->heartbeatCount = val;
+__isset.heartbeatCount = true;
+}
+
+void ShowLocksResponseElement::__set_agentInfo(const std::string& val) {
+  this->agentInfo = val;
+__isset.agentInfo = true;
+}
+
+void ShowLocksResponseElement::__set_blockedByExtId(const int64_t val) {
+  this->blockedByExtId = val;
+__isset.blockedByExtId = true;
+}
+
+void ShowLocksResponseElement::__set_blockedByIntId(const int64_t val) {
+  this->blockedByIntId = val;
+__isset.blockedByIntId = true;
+}
+
+void ShowLocksResponseElement::__set_lockIdInternal(const int64_t val) {
+  this->lockIdInternal = val;
+__isset.lockIdInternal = true;
 }
 
 uint32_t ShowLocksResponseElement::read(::apache::thrift::protocol::TProtocol* iprot) {
@@ -11658,6 +11938,46 @@ uint32_t ShowLocksResponseElement::read(::apache::thrift::protocol::TProtocol* i
           xfer += iprot->skip(ftype);
         }
         break;
+      case 12:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->heartbeatCount);
+          this->__isset.heartbeatCount = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 13:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->agentInfo);
+          this->__isset.agentInfo = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 14:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->blockedByExtId);
+          this->__isset.blockedByExtId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 15:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->blockedByIntId);
+          this->__isset.blockedByIntId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 16:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->lockIdInternal);
+          this->__isset.lockIdInternal = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -11737,6 +12057,31 @@ uint32_t ShowLocksResponseElement::write(::apache::thrift::protocol::TProtocol* 
   xfer += oprot->writeString(this->hostname);
   xfer += oprot->writeFieldEnd();
 
+  if (this->__isset.heartbeatCount) {
+    xfer += oprot->writeFieldBegin("heartbeatCount", ::apache::thrift::protocol::T_I32, 12);
+    xfer += oprot->writeI32(this->heartbeatCount);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.agentInfo) {
+    xfer += oprot->writeFieldBegin("agentInfo", ::apache::thrift::protocol::T_STRING, 13);
+    xfer += oprot->writeString(this->agentInfo);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.blockedByExtId) {
+    xfer += oprot->writeFieldBegin("blockedByExtId", ::apache::thrift::protocol::T_I64, 14);
+    xfer += oprot->writeI64(this->blockedByExtId);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.blockedByIntId) {
+    xfer += oprot->writeFieldBegin("blockedByIntId", ::apache::thrift::protocol::T_I64, 15);
+    xfer += oprot->writeI64(this->blockedByIntId);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.lockIdInternal) {
+    xfer += oprot->writeFieldBegin("lockIdInternal", ::apache::thrift::protocol::T_I64, 16);
+    xfer += oprot->writeI64(this->lockIdInternal);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -11755,6 +12100,11 @@ void swap(ShowLocksResponseElement &a, ShowLocksResponseElement &b) {
   swap(a.acquiredat, b.acquiredat);
   swap(a.user, b.user);
   swap(a.hostname, b.hostname);
+  swap(a.heartbeatCount, b.heartbeatCount);
+  swap(a.agentInfo, b.agentInfo);
+  swap(a.blockedByExtId, b.blockedByExtId);
+  swap(a.blockedByIntId, b.blockedByIntId);
+  swap(a.lockIdInternal, b.lockIdInternal);
   swap(a.__isset, b.__isset);
 }
 
@@ -11770,6 +12120,11 @@ ShowLocksResponseElement::ShowLocksResponseElement(const ShowLocksResponseElemen
   acquiredat = other521.acquiredat;
   user = other521.user;
   hostname = other521.hostname;
+  heartbeatCount = other521.heartbeatCount;
+  agentInfo = other521.agentInfo;
+  blockedByExtId = other521.blockedByExtId;
+  blockedByIntId = other521.blockedByIntId;
+  lockIdInternal = other521.lockIdInternal;
   __isset = other521.__isset;
 }
 ShowLocksResponseElement& ShowLocksResponseElement::operator=(const ShowLocksResponseElement& other522) {
@@ -11784,6 +12139,11 @@ ShowLocksResponseElement& ShowLocksResponseElement::operator=(const ShowLocksRes
   acquiredat = other522.acquiredat;
   user = other522.user;
   hostname = other522.hostname;
+  heartbeatCount = other522.heartbeatCount;
+  agentInfo = other522.agentInfo;
+  blockedByExtId = other522.blockedByExtId;
+  blockedByIntId = other522.blockedByIntId;
+  lockIdInternal = other522.lockIdInternal;
   __isset = other522.__isset;
   return *this;
 }
@@ -11801,6 +12161,11 @@ void ShowLocksResponseElement::printTo(std::ostream& out) const {
   out << ", " << "acquiredat="; (__isset.acquiredat ? (out << to_string(acquiredat)) : (out << "<null>"));
   out << ", " << "user=" << to_string(user);
   out << ", " << "hostname=" << to_string(hostname);
+  out << ", " << "heartbeatCount="; (__isset.heartbeatCount ? (out << to_string(heartbeatCount)) : (out << "<null>"));
+  out << ", " << "agentInfo="; (__isset.agentInfo ? (out << to_string(agentInfo)) : (out << "<null>"));
+  out << ", " << "blockedByExtId="; (__isset.blockedByExtId ? (out << to_string(blockedByExtId)) : (out << "<null>"));
+  out << ", " << "blockedByIntId="; (__isset.blockedByIntId ? (out << to_string(blockedByIntId)) : (out << "<null>"));
+  out << ", " << "lockIdInternal="; (__isset.lockIdInternal ? (out << to_string(lockIdInternal)) : (out << "<null>"));
   out << ")";
 }
 
@@ -12564,6 +12929,26 @@ void ShowCompactResponseElement::__set_runAs(const std::string& val) {
 __isset.runAs = true;
 }
 
+void ShowCompactResponseElement::__set_hightestTxnId(const int64_t val) {
+  this->hightestTxnId = val;
+__isset.hightestTxnId = true;
+}
+
+void ShowCompactResponseElement::__set_metaInfo(const std::string& val) {
+  this->metaInfo = val;
+__isset.metaInfo = true;
+}
+
+void ShowCompactResponseElement::__set_endTime(const int64_t val) {
+  this->endTime = val;
+__isset.endTime = true;
+}
+
+void ShowCompactResponseElement::__set_hadoopJobId(const std::string& val) {
+  this->hadoopJobId = val;
+__isset.hadoopJobId = true;
+}
+
 uint32_t ShowCompactResponseElement::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
@@ -12655,6 +13040,38 @@ uint32_t ShowCompactResponseElement::read(::apache::thrift::protocol::TProtocol*
           xfer += iprot->skip(ftype);
         }
         break;
+      case 9:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->hightestTxnId);
+          this->__isset.hightestTxnId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 10:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->metaInfo);
+          this->__isset.metaInfo = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 11:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->endTime);
+          this->__isset.endTime = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 12:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->hadoopJobId);
+          this->__isset.hadoopJobId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -12716,6 +13133,26 @@ uint32_t ShowCompactResponseElement::write(::apache::thrift::protocol::TProtocol
     xfer += oprot->writeString(this->runAs);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.hightestTxnId) {
+    xfer += oprot->writeFieldBegin("hightestTxnId", ::apache::thrift::protocol::T_I64, 9);
+    xfer += oprot->writeI64(this->hightestTxnId);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.metaInfo) {
+    xfer += oprot->writeFieldBegin("metaInfo", ::apache::thrift::protocol::T_STRING, 10);
+    xfer += oprot->writeString(this->metaInfo);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.endTime) {
+    xfer += oprot->writeFieldBegin("endTime", ::apache::thrift::protocol::T_I64, 11);
+    xfer += oprot->writeI64(this->endTime);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.hadoopJobId) {
+    xfer += oprot->writeFieldBegin("hadoopJobId", ::apache::thrift::protocol::T_STRING, 12);
+    xfer += oprot->writeString(this->hadoopJobId);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -12731,6 +13168,10 @@ void swap(ShowCompactResponseElement &a, ShowCompactResponseElement &b) {
   swap(a.workerid, b.workerid);
   swap(a.start, b.start);
   swap(a.runAs, b.runAs);
+  swap(a.hightestTxnId, b.hightestTxnId);
+  swap(a.metaInfo, b.metaInfo);
+  swap(a.endTime, b.endTime);
+  swap(a.hadoopJobId, b.hadoopJobId);
   swap(a.__isset, b.__isset);
 }
 
@@ -12743,6 +13184,10 @@ ShowCompactResponseElement::ShowCompactResponseElement(const ShowCompactResponse
   workerid = other557.workerid;
   start = other557.start;
   runAs = other557.runAs;
+  hightestTxnId = other557.hightestTxnId;
+  metaInfo = other557.metaInfo;
+  endTime = other557.endTime;
+  hadoopJobId = other557.hadoopJobId;
   __isset = other557.__isset;
 }
 ShowCompactResponseElement& ShowCompactResponseElement::operator=(const ShowCompactResponseElement& other558) {
@@ -12754,6 +13199,10 @@ ShowCompactResponseElement& ShowCompactResponseElement::operator=(const ShowComp
   workerid = other558.workerid;
   start = other558.start;
   runAs = other558.runAs;
+  hightestTxnId = other558.hightestTxnId;
+  metaInfo = other558.metaInfo;
+  endTime = other558.endTime;
+  hadoopJobId = other558.hadoopJobId;
   __isset = other558.__isset;
   return *this;
 }
@@ -12768,6 +13217,10 @@ void ShowCompactResponseElement::printTo(std::ostream& out) const {
   out << ", " << "workerid="; (__isset.workerid ? (out << to_string(workerid)) : (out << "<null>"));
   out << ", " << "start="; (__isset.start ? (out << to_string(start)) : (out << "<null>"));
   out << ", " << "runAs="; (__isset.runAs ? (out << to_string(runAs)) : (out << "<null>"));
+  out << ", " << "hightestTxnId="; (__isset.hightestTxnId ? (out << to_string(hightestTxnId)) : (out << "<null>"));
+  out << ", " << "metaInfo="; (__isset.metaInfo ? (out << to_string(metaInfo)) : (out << "<null>"));
+  out << ", " << "endTime="; (__isset.endTime ? (out << to_string(endTime)) : (out << "<null>"));
+  out << ", " << "hadoopJobId="; (__isset.hadoopJobId ? (out << to_string(hadoopJobId)) : (out << "<null>"));
   out << ")";
 }
 

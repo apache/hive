@@ -543,6 +543,9 @@ struct TxnInfo {
     2: required TxnState state,
     3: required string user,        // used in 'show transactions' to help admins find who has open transactions
     4: required string hostname,    // used in 'show transactions' to help admins find who has open transactions
+    5: optional string agentInfo = "Unknown",
+    6: optional i32 heartbeatCount=0,
+    7: optional string metaInfo,
 }
 
 struct GetOpenTxnsInfoResponse {
@@ -559,6 +562,7 @@ struct OpenTxnRequest {
     1: required i32 num_txns,
     2: required string user,
     3: required string hostname,
+    4: optional string agentInfo = "Unknown",
 }
 
 struct OpenTxnsResponse {
@@ -586,6 +590,7 @@ struct LockRequest {
     2: optional i64 txnid,
     3: required string user,     // used in 'show locks' to help admins find who has open locks
     4: required string hostname, // used in 'show locks' to help admins find who has open locks
+    5: optional string agentInfo = "Unknown",
 }
 
 struct LockResponse {
@@ -595,6 +600,8 @@ struct LockResponse {
 
 struct CheckLockRequest {
     1: required i64 lockid,
+    2: optional i64 txnid,
+    3: optional i64 elapsed_ms,
 }
 
 struct UnlockRequest {
@@ -602,6 +609,10 @@ struct UnlockRequest {
 }
 
 struct ShowLocksRequest {
+    1: optional string dbname,
+    2: optional string tablename,
+    3: optional string partname,
+    4: optional bool isExtended=false,
 }
 
 struct ShowLocksResponseElement {
@@ -616,6 +627,11 @@ struct ShowLocksResponseElement {
     9: optional i64 acquiredat,
     10: required string user,
     11: required string hostname,
+    12: optional i32 heartbeatCount = 0,
+    13: optional string agentInfo,
+    14: optional i64 blockedByExtId,
+    15: optional i64 blockedByIntId,
+    16: optional i64 lockIdInternal,
 }
 
 struct ShowLocksResponse {
@@ -657,6 +673,10 @@ struct ShowCompactResponseElement {
     6: optional string workerid,
     7: optional i64 start,
     8: optional string runAs,
+    9: optional i64 hightestTxnId, // Highest Txn ID handled by this compaction
+    10: optional string metaInfo,
+    11: optional i64 endTime,
+    12: optional string hadoopJobId = "None",
 }
 
 struct ShowCompactResponse {

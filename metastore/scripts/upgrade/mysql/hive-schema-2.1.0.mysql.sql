@@ -813,7 +813,7 @@ CREATE TABLE IF NOT EXISTS `NOTIFICATION_SEQUENCE`
 -- ----------------------------
 -- Transaction and Lock Tables
 -- ----------------------------
-SOURCE hive-txn-schema-0.13.0.mysql.sql;
+SOURCE hive-txn-schema-2.0.0.mysql.sql;
 
 -- -----------------------------------------------------------------
 -- Record schema version. Should be the last step in the init script
