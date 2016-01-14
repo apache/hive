@@ -45,10 +45,12 @@ public class LlapOptionsProcessor {
     private final long size;
     private final long xmx;
     private final String jars;
+    private final boolean isHbase;
     private final Properties conf;
 
     public LlapOptions(String name, int instances, String directory, int executors, long cache,
-        long size, long xmx, String jars, @Nonnull Properties hiveconf) throws ParseException {
+        long size, long xmx, String jars, boolean isHbase, @Nonnull Properties hiveconf)
+            throws ParseException {
       if (instances <= 0) {
         throw new ParseException("Invalid configuration: " + instances
             + " (should be greater than 0)");
@@ -61,6 +63,7 @@ public class LlapOptionsProcessor {
       this.size = size;
       this.xmx = xmx;
       this.jars = jars;
+      this.isHbase = isHbase;
       this.conf = hiveconf;
     }
 
@@ -94,6 +97,10 @@ public class LlapOptionsProcessor {
 
     public String getAuxJars() {
       return jars;
+    }
+
+    public boolean getIsHBase() {
+      return isHbase;
     }
 
     public Properties getConfig() {
@@ -141,8 +148,11 @@ public class LlapOptionsProcessor {
         .withDescription("working memory size").create('w'));
 
     options.addOption(OptionBuilder.hasArg().withArgName("auxjars").withLongOpt("auxjars")
-        .withDescription("additional jars to package (by default, JSON and HBase SerDe jars"
-            + " are packaged if available)").create('j'));
+        .withDescription("additional jars to package (by default, JSON SerDe jar is packaged"
+            + " if available)").create('j'));
+
+    options.addOption(OptionBuilder.hasArg().withArgName("auxhbase").withLongOpt("auxhbase")
+        .withDescription("whether to package the HBase jars (true by default)").create('h'));
 
     // -hiveconf x=y
     options.addOption(OptionBuilder.withValueSeparator().hasArgs(2).withArgName("property=value")
@@ -174,6 +184,7 @@ public class LlapOptionsProcessor {
     final long cache = parseSuffixed(commandLine.getOptionValue("cache", "-1"));
     final long size = parseSuffixed(commandLine.getOptionValue("size", "-1"));
     final long xmx = parseSuffixed(commandLine.getOptionValue("xmx", "-1"));
+    final boolean isHbase = Boolean.parseBoolean(commandLine.getOptionValue("auxhbase", "true"));
 
     final Properties hiveconf;
 
@@ -186,7 +197,7 @@ public class LlapOptionsProcessor {
     // loglevel, chaosmonkey & args are parsed by the python processor
 
     return new LlapOptions(
-        name, instances, directory, executors, cache, size, xmx, jars, hiveconf);
+        name, instances, directory, executors, cache, size, xmx, jars, isHbase, hiveconf);
 
   }
 
