@@ -23,6 +23,7 @@ import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Collection;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +31,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hbase.mapreduce.TableMapReduceUtil;
 import org.apache.hadoop.hive.common.CompressionUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -38,6 +40,8 @@ import org.apache.hadoop.hive.llap.io.api.impl.LlapInputFormat;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.json.JSONObject;
 
@@ -47,7 +51,8 @@ public class LlapServiceDriver {
 
   protected static final Logger LOG = LoggerFactory.getLogger(LlapServiceDriver.class.getName());
   private static final String[] DEFAULT_AUX_CLASSES = new String[] {
-    "org.apache.hive.hcatalog.data.JsonSerDe", "org.apache.hadoop.hive.hbase.HBaseSerDe" };
+  "org.apache.hive.hcatalog.data.JsonSerDe" };
+  private static final String HBASE_SERDE_CLASS = "org.apache.hadoop.hive.hbase.HBaseSerDe";
   private static final String[] NEEDED_CONFIGS = {
     "tez-site.xml", "hive-site.xml", "llap-daemon-site.xml", "core-site.xml" };
   private static final String[] OPTIONAL_CONFIGS = { "ssl-server.xml" };
@@ -217,25 +222,25 @@ public class LlapServiceDriver {
     // copy default aux classes (json/hbase)
 
     for (String className : DEFAULT_AUX_CLASSES) {
-      String jarPath = null;
-      boolean hasException = false;
+      localizeJarForClass(lfs, libDir, className, false);
+    }
+
+    if (options.getIsHBase()) {
       try {
-        Class<?> auxClass = Class.forName(className);
-        jarPath = Utilities.jarFinderGetJar(auxClass);
+        localizeJarForClass(lfs, libDir, HBASE_SERDE_CLASS, true);
+        Job fakeJob = new Job(new JobConf()); // HBase API is convoluted.
+        TableMapReduceUtil.addDependencyJars(fakeJob);
+        Collection<String> hbaseJars = fakeJob.getConfiguration().getStringCollection("tmpjars");
+        for (String jarPath : hbaseJars) {
+          if (!jarPath.isEmpty()) {
+            lfs.copyFromLocalFile(new Path(jarPath), libDir);
+          }
+        }
       } catch (Throwable t) {
-        hasException = true;
-        String err =
-            "Cannot find a jar for [" + className + "] due to an exception (" + t.getMessage()
-                + "); not packaging the jar";
-        LOG.error(err, t);
-        System.err.println(err);
-      }
-      if (jarPath != null) {
-        lfs.copyFromLocalFile(new Path(jarPath), libDir);
-      } else if (!hasException) {
-        String err = "Cannot find a jar for [" + className + "]; not packaging the jar";
+        String err = "Failed to add HBase jars. Use --auxhbase=false to avoid localizing them";
         LOG.error(err);
         System.err.println(err);
+        throw new RuntimeException(t);
       }
     }
 
@@ -304,6 +309,37 @@ public class LlapServiceDriver {
 
     if (LOG.isDebugEnabled()) {
       LOG.debug("Exiting successfully");
+    }
+  }
+
+// TODO#: assumes throw
+  private void localizeJarForClass(FileSystem lfs, Path libDir, String className, boolean doThrow)
+      throws IOException {
+    String jarPath = null;
+    boolean hasException = false;
+    try {
+      Class<?> auxClass = Class.forName(className);
+      jarPath = Utilities.jarFinderGetJar(auxClass);
+    } catch (Throwable t) {
+      if (doThrow) {
+        throw (t instanceof IOException) ? (IOException)t : new IOException(t);
+      }
+      hasException = true;
+      String err =
+          "Cannot find a jar for [" + className + "] due to an exception (" + t.getMessage()
+              + "); not packaging the jar";
+      LOG.error(err, t);
+      System.err.println(err);
+    }
+    if (jarPath != null) {
+      lfs.copyFromLocalFile(new Path(jarPath), libDir);
+    } else if (!hasException) {
+      String err = "Cannot find a jar for [" + className + "]; not packaging the jar";
+      if (doThrow) {
+        throw new IOException(err);
+      }
+      LOG.error(err);
+      System.err.println(err);
     }
   }
 

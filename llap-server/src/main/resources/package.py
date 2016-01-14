@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 import sys,os,stat
-from getopt import getopt
+import argparse
 from json import loads as json_parse
 from os.path import exists, join, relpath
 from time import gmtime, strftime
@@ -17,8 +17,8 @@ class LlapResource(object):
 		self.cores = config["hive.llap.daemon.vcpus.per.instance"]
 		size = config["hive.llap.daemon.yarn.container.mb"]
 		# convert to Mb
-		self.cache = config["hive.llap.io.cache.orc.size"] / (1024*1024.0)
-		self.direct = config["hive.llap.io.cache.direct"]
+		self.cache = config["hive.llap.io.memory.size"] / (1024*1024.0)
+		self.direct = config["hive.llap.io.allocator.direct"]
 		self.min_mb = -1
 		self.min_cores = -1
 		# compute heap + cache as final Xmx
@@ -48,57 +48,47 @@ def zipdir(path, zip, prefix="."):
 			zip.write(src, dst)
 	
 def main(args):
-	opts, args = getopt(args,"",["instances=","output=", "input=","args=","name=","loglevel=","chaosmonkey=","size=","xmx=", "cache=", "executors=","hiveconf="])
 	version = os.getenv("HIVE_VERSION")
 	if not version:
 		version = strftime("%d%b%Y", gmtime()) 
 	home = os.getenv("HIVE_HOME")
 	output = "llap-slider-%(version)s" % ({"version": version})
-	instances=1
-	name = "llap0"
-	d_args = ""
-	d_loglevel = "INFO"
-	input = None
-	monkey = "0"
-	for k,v in opts:
-		if k in ("--input"):
-			input = v
-		elif k in ("--output"):
-			output = v
-		elif k in ("--instances"):
-			instances = int(v)
-		elif k in ("--name"):
-			name = v 
-		elif k in ("--args"):
-			d_args = v
-		elif k in ("--loglevel"):
-			d_loglevel = v
-		elif k in ("--chaosmonkey"):
-			monkey = v
+	parser = argparse.ArgumentParser()
+	parser.add_argument("--instances", type=int, default=1)
+	parser.add_argument("--output", default=output)
+	parser.add_argument("--input", required=True)
+	parser.add_argument("--args", default="")
+	parser.add_argument("--name", default="llap0")
+	parser.add_argument("--loglevel", default="INFO")
+	parser.add_argument("--chaosmonkey", type=int, default="0")
+	# Unneeded here for now: parser.add_argument("--hiveconf", action='append')
+	#parser.add_argument("--size") parser.add_argument("--xmx") parser.add_argument("--cache") parser.add_argument("--executors")
+	(args, unknown_args) = parser.parse_known_args(args)
+	input = args.input
+	output = args.output
 	if not input:
 		print "Cannot find input files"
 		sys.exit(1)
 		return
 	config = json_parse(open(join(input, "config.json")).read())
 	resource = LlapResource(config)
-	monkey_interval = int(monkey) 
 	# 5% container failure every monkey_interval seconds
 	monkey_percentage = 5 # 5%
 	vars = {
 		"home" : home,
 		"version" : version,
-		"instances" : instances,
+		"instances" : args.instances,
 		"heap" : resource.heap_size,
 		"container.mb" : resource.container_size,
 		"container.cores" : resource.container_cores,
 		"hadoop_home" : os.getenv("HADOOP_HOME"),
 		"java_home" : os.getenv("JAVA_HOME"),
-		"name" : name,
-		"daemon_args" : d_args,
-		"daemon_loglevel" : d_loglevel,
-		"monkey_interval" : monkey_interval,
+		"name" : args.name,
+		"daemon_args" : args.args,
+		"daemon_loglevel" : args.loglevel,
+		"monkey_interval" : args.chaosmonkey,
 		"monkey_percentage" : monkey_percentage,
-		"monkey_enabled" : monkey_interval > 0
+		"monkey_enabled" : args.chaosmonkey > 0
 	}
 	
 	if not exists(output):
