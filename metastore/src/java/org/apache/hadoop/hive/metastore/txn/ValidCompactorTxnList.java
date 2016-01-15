@@ -34,6 +34,8 @@ import java.util.Arrays;
  * records when compacting.
  */
 public class ValidCompactorTxnList extends ValidReadTxnList {
+  //TODO: refactor this - minOpenTxn is not needed if we set
+  // highWatermark = Math.min(highWaterMark, minOpenTxn) (assuming there are open txns)
 
   // The minimum open transaction id
   private long minOpenTxn;

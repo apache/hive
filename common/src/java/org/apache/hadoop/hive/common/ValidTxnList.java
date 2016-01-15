@@ -70,8 +70,8 @@ public interface ValidTxnList {
   public void readFromString(String src);
 
   /**
-   * Get the largest committed transaction id.
-   * @return largest committed transaction id
+   * Get the largest transaction id used.
+   * @return largest transaction id used
    */
   public long getHighWatermark();
 
