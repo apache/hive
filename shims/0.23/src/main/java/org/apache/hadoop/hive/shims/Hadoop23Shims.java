@@ -526,6 +526,8 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       mr = new MiniSparkOnYARNCluster("sparkOnYarn");
       conf.set("fs.defaultFS", nameNode);
       conf.set("yarn.resourcemanager.scheduler.class", "org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.FairScheduler");
+      // disable resource monitoring, although it should be off by default
+      conf.setBoolean(YarnConfiguration.YARN_MINICLUSTER_CONTROL_RESOURCE_MONITORING, false);
       configureImpersonation(conf);
       mr.init(conf);
       mr.start();
