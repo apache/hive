@@ -99,6 +99,15 @@ public class HiveServer2 extends CompositeService {
 
   @Override
   public synchronized void init(HiveConf hiveConf) {
+    //Initialize metrics first, as some metrics are for initialization stuff.
+    try {
+      if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_METRICS_ENABLED)) {
+        MetricsFactory.init(hiveConf);
+      }
+    } catch (Throwable t) {
+      LOG.warn("Could not initiate the HiveServer2 Metrics system.  Metrics may not be reported.", t);
+    }
+
     cliService = new CLIService(this);
     addService(cliService);
     final HiveServer2 hiveServer2 = this;
@@ -506,9 +515,6 @@ public class HiveServer2 extends CompositeService {
         server.init(hiveConf);
         server.start();
 
-        if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_METRICS_ENABLED)) {
-          MetricsFactory.init(hiveConf);
-        }
         try {
           JvmPauseMonitor pauseMonitor = new JvmPauseMonitor(hiveConf);
           pauseMonitor.start();
