@@ -30,6 +30,10 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
   public CompactionType type;
   public String runAs;
   public boolean tooManyAborts = false;
+  /**
+   * {@code null} means it wasn't set (e.g. in case of upgrades) 
+   */
+  public Long highestTxnId;
 
   private String fullPartitionName = null;
   private String fullTableName = null;
@@ -80,6 +84,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
       "partName:" + partName + "," +
       "type:" + type + "," +
       "runAs:" + runAs + "," +
-      "tooManyAborts:" + tooManyAborts;
+      "tooManyAborts:" + tooManyAborts + "," +
+      "highestTxnId:" + highestTxnId;
   }
 }

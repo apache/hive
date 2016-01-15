@@ -117,7 +117,8 @@ public final class TxnDbUtil {
           " CQ_TYPE char(1) NOT NULL," +
           " CQ_WORKER_ID varchar(128)," +
           " CQ_START bigint," +
-          " CQ_RUN_AS varchar(128))");
+          " CQ_RUN_AS varchar(128)," +
+          " CQ_HIGHEST_TXN_ID bigint)");
 
       stmt.execute("CREATE TABLE NEXT_COMPACTION_QUEUE_ID (NCQ_NEXT bigint NOT NULL)");
       stmt.execute("INSERT INTO NEXT_COMPACTION_QUEUE_ID VALUES(1)");
