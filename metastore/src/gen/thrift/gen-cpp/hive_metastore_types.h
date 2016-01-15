@@ -4100,13 +4100,19 @@ inline std::ostream& operator<<(std::ostream& out, const Function& obj)
   return out;
 }
 
+typedef struct _TxnInfo__isset {
+  _TxnInfo__isset() : agentInfo(true), heartbeatCount(true), metaInfo(false) {}
+  bool agentInfo :1;
+  bool heartbeatCount :1;
+  bool metaInfo :1;
+} _TxnInfo__isset;
 
 class TxnInfo {
  public:
 
   TxnInfo(const TxnInfo&);
   TxnInfo& operator=(const TxnInfo&);
-  TxnInfo() : id(0), state((TxnState::type)0), user(), hostname() {
+  TxnInfo() : id(0), state((TxnState::type)0), user(), hostname(), agentInfo("Unknown"), heartbeatCount(0), metaInfo() {
   }
 
   virtual ~TxnInfo() throw();
@@ -4114,6 +4120,11 @@ class TxnInfo {
   TxnState::type state;
   std::string user;
   std::string hostname;
+  std::string agentInfo;
+  int32_t heartbeatCount;
+  std::string metaInfo;
+
+  _TxnInfo__isset __isset;
 
   void __set_id(const int64_t val);
 
@@ -4122,6 +4133,12 @@ class TxnInfo {
   void __set_user(const std::string& val);
 
   void __set_hostname(const std::string& val);
+
+  void __set_agentInfo(const std::string& val);
+
+  void __set_heartbeatCount(const int32_t val);
+
+  void __set_metaInfo(const std::string& val);
 
   bool operator == (const TxnInfo & rhs) const
   {
@@ -4132,6 +4149,18 @@ class TxnInfo {
     if (!(user == rhs.user))
       return false;
     if (!(hostname == rhs.hostname))
+      return false;
+    if (__isset.agentInfo != rhs.__isset.agentInfo)
+      return false;
+    else if (__isset.agentInfo && !(agentInfo == rhs.agentInfo))
+      return false;
+    if (__isset.heartbeatCount != rhs.__isset.heartbeatCount)
+      return false;
+    else if (__isset.heartbeatCount && !(heartbeatCount == rhs.heartbeatCount))
+      return false;
+    if (__isset.metaInfo != rhs.__isset.metaInfo)
+      return false;
+    else if (__isset.metaInfo && !(metaInfo == rhs.metaInfo))
       return false;
     return true;
   }
@@ -4245,25 +4274,34 @@ inline std::ostream& operator<<(std::ostream& out, const GetOpenTxnsResponse& ob
   return out;
 }
 
+typedef struct _OpenTxnRequest__isset {
+  _OpenTxnRequest__isset() : agentInfo(true) {}
+  bool agentInfo :1;
+} _OpenTxnRequest__isset;
 
 class OpenTxnRequest {
  public:
 
   OpenTxnRequest(const OpenTxnRequest&);
   OpenTxnRequest& operator=(const OpenTxnRequest&);
-  OpenTxnRequest() : num_txns(0), user(), hostname() {
+  OpenTxnRequest() : num_txns(0), user(), hostname(), agentInfo("Unknown") {
   }
 
   virtual ~OpenTxnRequest() throw();
   int32_t num_txns;
   std::string user;
   std::string hostname;
+  std::string agentInfo;
+
+  _OpenTxnRequest__isset __isset;
 
   void __set_num_txns(const int32_t val);
 
   void __set_user(const std::string& val);
 
   void __set_hostname(const std::string& val);
+
+  void __set_agentInfo(const std::string& val);
 
   bool operator == (const OpenTxnRequest & rhs) const
   {
@@ -4272,6 +4310,10 @@ class OpenTxnRequest {
     if (!(user == rhs.user))
       return false;
     if (!(hostname == rhs.hostname))
+      return false;
+    if (__isset.agentInfo != rhs.__isset.agentInfo)
+      return false;
+    else if (__isset.agentInfo && !(agentInfo == rhs.agentInfo))
       return false;
     return true;
   }
@@ -4487,8 +4529,9 @@ inline std::ostream& operator<<(std::ostream& out, const LockComponent& obj)
 }
 
 typedef struct _LockRequest__isset {
-  _LockRequest__isset() : txnid(false) {}
+  _LockRequest__isset() : txnid(false), agentInfo(true) {}
   bool txnid :1;
+  bool agentInfo :1;
 } _LockRequest__isset;
 
 class LockRequest {
@@ -4496,7 +4539,7 @@ class LockRequest {
 
   LockRequest(const LockRequest&);
   LockRequest& operator=(const LockRequest&);
-  LockRequest() : txnid(0), user(), hostname() {
+  LockRequest() : txnid(0), user(), hostname(), agentInfo("Unknown") {
   }
 
   virtual ~LockRequest() throw();
@@ -4504,6 +4547,7 @@ class LockRequest {
   int64_t txnid;
   std::string user;
   std::string hostname;
+  std::string agentInfo;
 
   _LockRequest__isset __isset;
 
@@ -4514,6 +4558,8 @@ class LockRequest {
   void __set_user(const std::string& val);
 
   void __set_hostname(const std::string& val);
+
+  void __set_agentInfo(const std::string& val);
 
   bool operator == (const LockRequest & rhs) const
   {
@@ -4526,6 +4572,10 @@ class LockRequest {
     if (!(user == rhs.user))
       return false;
     if (!(hostname == rhs.hostname))
+      return false;
+    if (__isset.agentInfo != rhs.__isset.agentInfo)
+      return false;
+    else if (__isset.agentInfo && !(agentInfo == rhs.agentInfo))
       return false;
     return true;
   }
@@ -4594,23 +4644,44 @@ inline std::ostream& operator<<(std::ostream& out, const LockResponse& obj)
   return out;
 }
 
+typedef struct _CheckLockRequest__isset {
+  _CheckLockRequest__isset() : txnid(false), elapsed_ms(false) {}
+  bool txnid :1;
+  bool elapsed_ms :1;
+} _CheckLockRequest__isset;
 
 class CheckLockRequest {
  public:
 
   CheckLockRequest(const CheckLockRequest&);
   CheckLockRequest& operator=(const CheckLockRequest&);
-  CheckLockRequest() : lockid(0) {
+  CheckLockRequest() : lockid(0), txnid(0), elapsed_ms(0) {
   }
 
   virtual ~CheckLockRequest() throw();
   int64_t lockid;
+  int64_t txnid;
+  int64_t elapsed_ms;
+
+  _CheckLockRequest__isset __isset;
 
   void __set_lockid(const int64_t val);
+
+  void __set_txnid(const int64_t val);
+
+  void __set_elapsed_ms(const int64_t val);
 
   bool operator == (const CheckLockRequest & rhs) const
   {
     if (!(lockid == rhs.lockid))
+      return false;
+    if (__isset.txnid != rhs.__isset.txnid)
+      return false;
+    else if (__isset.txnid && !(txnid == rhs.txnid))
+      return false;
+    if (__isset.elapsed_ms != rhs.__isset.elapsed_ms)
+      return false;
+    else if (__isset.elapsed_ms && !(elapsed_ms == rhs.elapsed_ms))
       return false;
     return true;
   }
@@ -4674,19 +4745,56 @@ inline std::ostream& operator<<(std::ostream& out, const UnlockRequest& obj)
   return out;
 }
 
+typedef struct _ShowLocksRequest__isset {
+  _ShowLocksRequest__isset() : dbname(false), tablename(false), partname(false), isExtended(true) {}
+  bool dbname :1;
+  bool tablename :1;
+  bool partname :1;
+  bool isExtended :1;
+} _ShowLocksRequest__isset;
 
 class ShowLocksRequest {
  public:
 
   ShowLocksRequest(const ShowLocksRequest&);
   ShowLocksRequest& operator=(const ShowLocksRequest&);
-  ShowLocksRequest() {
+  ShowLocksRequest() : dbname(), tablename(), partname(), isExtended(false) {
   }
 
   virtual ~ShowLocksRequest() throw();
+  std::string dbname;
+  std::string tablename;
+  std::string partname;
+  bool isExtended;
 
-  bool operator == (const ShowLocksRequest & /* rhs */) const
+  _ShowLocksRequest__isset __isset;
+
+  void __set_dbname(const std::string& val);
+
+  void __set_tablename(const std::string& val);
+
+  void __set_partname(const std::string& val);
+
+  void __set_isExtended(const bool val);
+
+  bool operator == (const ShowLocksRequest & rhs) const
   {
+    if (__isset.dbname != rhs.__isset.dbname)
+      return false;
+    else if (__isset.dbname && !(dbname == rhs.dbname))
+      return false;
+    if (__isset.tablename != rhs.__isset.tablename)
+      return false;
+    else if (__isset.tablename && !(tablename == rhs.tablename))
+      return false;
+    if (__isset.partname != rhs.__isset.partname)
+      return false;
+    else if (__isset.partname && !(partname == rhs.partname))
+      return false;
+    if (__isset.isExtended != rhs.__isset.isExtended)
+      return false;
+    else if (__isset.isExtended && !(isExtended == rhs.isExtended))
+      return false;
     return true;
   }
   bool operator != (const ShowLocksRequest &rhs) const {
@@ -4710,11 +4818,16 @@ inline std::ostream& operator<<(std::ostream& out, const ShowLocksRequest& obj)
 }
 
 typedef struct _ShowLocksResponseElement__isset {
-  _ShowLocksResponseElement__isset() : tablename(false), partname(false), txnid(false), acquiredat(false) {}
+  _ShowLocksResponseElement__isset() : tablename(false), partname(false), txnid(false), acquiredat(false), heartbeatCount(true), agentInfo(false), blockedByExtId(false), blockedByIntId(false), lockIdInternal(false) {}
   bool tablename :1;
   bool partname :1;
   bool txnid :1;
   bool acquiredat :1;
+  bool heartbeatCount :1;
+  bool agentInfo :1;
+  bool blockedByExtId :1;
+  bool blockedByIntId :1;
+  bool lockIdInternal :1;
 } _ShowLocksResponseElement__isset;
 
 class ShowLocksResponseElement {
@@ -4722,7 +4835,7 @@ class ShowLocksResponseElement {
 
   ShowLocksResponseElement(const ShowLocksResponseElement&);
   ShowLocksResponseElement& operator=(const ShowLocksResponseElement&);
-  ShowLocksResponseElement() : lockid(0), dbname(), tablename(), partname(), state((LockState::type)0), type((LockType::type)0), txnid(0), lastheartbeat(0), acquiredat(0), user(), hostname() {
+  ShowLocksResponseElement() : lockid(0), dbname(), tablename(), partname(), state((LockState::type)0), type((LockType::type)0), txnid(0), lastheartbeat(0), acquiredat(0), user(), hostname(), heartbeatCount(0), agentInfo(), blockedByExtId(0), blockedByIntId(0), lockIdInternal(0) {
   }
 
   virtual ~ShowLocksResponseElement() throw();
@@ -4737,6 +4850,11 @@ class ShowLocksResponseElement {
   int64_t acquiredat;
   std::string user;
   std::string hostname;
+  int32_t heartbeatCount;
+  std::string agentInfo;
+  int64_t blockedByExtId;
+  int64_t blockedByIntId;
+  int64_t lockIdInternal;
 
   _ShowLocksResponseElement__isset __isset;
 
@@ -4761,6 +4879,16 @@ class ShowLocksResponseElement {
   void __set_user(const std::string& val);
 
   void __set_hostname(const std::string& val);
+
+  void __set_heartbeatCount(const int32_t val);
+
+  void __set_agentInfo(const std::string& val);
+
+  void __set_blockedByExtId(const int64_t val);
+
+  void __set_blockedByIntId(const int64_t val);
+
+  void __set_lockIdInternal(const int64_t val);
 
   bool operator == (const ShowLocksResponseElement & rhs) const
   {
@@ -4793,6 +4921,26 @@ class ShowLocksResponseElement {
     if (!(user == rhs.user))
       return false;
     if (!(hostname == rhs.hostname))
+      return false;
+    if (__isset.heartbeatCount != rhs.__isset.heartbeatCount)
+      return false;
+    else if (__isset.heartbeatCount && !(heartbeatCount == rhs.heartbeatCount))
+      return false;
+    if (__isset.agentInfo != rhs.__isset.agentInfo)
+      return false;
+    else if (__isset.agentInfo && !(agentInfo == rhs.agentInfo))
+      return false;
+    if (__isset.blockedByExtId != rhs.__isset.blockedByExtId)
+      return false;
+    else if (__isset.blockedByExtId && !(blockedByExtId == rhs.blockedByExtId))
+      return false;
+    if (__isset.blockedByIntId != rhs.__isset.blockedByIntId)
+      return false;
+    else if (__isset.blockedByIntId && !(blockedByIntId == rhs.blockedByIntId))
+      return false;
+    if (__isset.lockIdInternal != rhs.__isset.lockIdInternal)
+      return false;
+    else if (__isset.lockIdInternal && !(lockIdInternal == rhs.lockIdInternal))
       return false;
     return true;
   }
@@ -5115,11 +5263,15 @@ inline std::ostream& operator<<(std::ostream& out, const ShowCompactRequest& obj
 }
 
 typedef struct _ShowCompactResponseElement__isset {
-  _ShowCompactResponseElement__isset() : partitionname(false), workerid(false), start(false), runAs(false) {}
+  _ShowCompactResponseElement__isset() : partitionname(false), workerid(false), start(false), runAs(false), hightestTxnId(false), metaInfo(false), endTime(false), hadoopJobId(true) {}
   bool partitionname :1;
   bool workerid :1;
   bool start :1;
   bool runAs :1;
+  bool hightestTxnId :1;
+  bool metaInfo :1;
+  bool endTime :1;
+  bool hadoopJobId :1;
 } _ShowCompactResponseElement__isset;
 
 class ShowCompactResponseElement {
@@ -5127,7 +5279,7 @@ class ShowCompactResponseElement {
 
   ShowCompactResponseElement(const ShowCompactResponseElement&);
   ShowCompactResponseElement& operator=(const ShowCompactResponseElement&);
-  ShowCompactResponseElement() : dbname(), tablename(), partitionname(), type((CompactionType::type)0), state(), workerid(), start(0), runAs() {
+  ShowCompactResponseElement() : dbname(), tablename(), partitionname(), type((CompactionType::type)0), state(), workerid(), start(0), runAs(), hightestTxnId(0), metaInfo(), endTime(0), hadoopJobId("None") {
   }
 
   virtual ~ShowCompactResponseElement() throw();
@@ -5139,6 +5291,10 @@ class ShowCompactResponseElement {
   std::string workerid;
   int64_t start;
   std::string runAs;
+  int64_t hightestTxnId;
+  std::string metaInfo;
+  int64_t endTime;
+  std::string hadoopJobId;
 
   _ShowCompactResponseElement__isset __isset;
 
@@ -5157,6 +5313,14 @@ class ShowCompactResponseElement {
   void __set_start(const int64_t val);
 
   void __set_runAs(const std::string& val);
+
+  void __set_hightestTxnId(const int64_t val);
+
+  void __set_metaInfo(const std::string& val);
+
+  void __set_endTime(const int64_t val);
+
+  void __set_hadoopJobId(const std::string& val);
 
   bool operator == (const ShowCompactResponseElement & rhs) const
   {
@@ -5183,6 +5347,22 @@ class ShowCompactResponseElement {
     if (__isset.runAs != rhs.__isset.runAs)
       return false;
     else if (__isset.runAs && !(runAs == rhs.runAs))
+      return false;
+    if (__isset.hightestTxnId != rhs.__isset.hightestTxnId)
+      return false;
+    else if (__isset.hightestTxnId && !(hightestTxnId == rhs.hightestTxnId))
+      return false;
+    if (__isset.metaInfo != rhs.__isset.metaInfo)
+      return false;
+    else if (__isset.metaInfo && !(metaInfo == rhs.metaInfo))
+      return false;
+    if (__isset.endTime != rhs.__isset.endTime)
+      return false;
+    else if (__isset.endTime && !(endTime == rhs.endTime))
+      return false;
+    if (__isset.hadoopJobId != rhs.__isset.hadoopJobId)
+      return false;
+    else if (__isset.hadoopJobId && !(hadoopJobId == rhs.hadoopJobId))
       return false;
     return true;
   }

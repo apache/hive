@@ -17,18 +17,6 @@
  */
 package org.apache.hive.beeline;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
@@ -39,6 +27,7 @@ import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.output.NullOutputStream;
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
@@ -46,6 +35,22 @@ import org.apache.hadoop.hive.metastore.MetaStoreSchemaInfo;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.beeline.HiveSchemaHelper.NestedScriptParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 public class HiveSchemaTool {
   private String userName = null;
@@ -56,6 +61,8 @@ public class HiveSchemaTool {
   private final HiveConf hiveConf;
   private final String dbType;
   private final MetaStoreSchemaInfo metaStoreSchemaInfo;
+
+  static final private Logger LOG = LoggerFactory.getLogger(HiveSchemaTool.class.getName());
 
   public HiveSchemaTool(String dbType) throws HiveMetaException {
     this(System.getenv("HIVE_HOME"), new HiveConf(HiveSchemaTool.class), dbType);
@@ -356,6 +363,16 @@ public class HiveSchemaTool {
     argList.add("-f");
     argList.add(sqlScriptFile);
 
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Going to invoke file that contains:");
+      FileReader fr = new FileReader(sqlScriptFile);
+      BufferedReader reader = new BufferedReader(fr);
+      String line;
+      while ((line = reader.readLine()) != null) {
+        LOG.debug("script: " + line);
+      }
+    }
+
     // run the script using Beeline
     BeeLine beeLine = new BeeLine();
     if (!verbose) {
@@ -367,6 +384,7 @@ public class HiveSchemaTool {
     // We can be pretty sure that an entire line can be processed as a single command since
     // we always add a line separator at the end while calling dbCommandParser.buildCommand.
     beeLine.getOpts().setEntireLineAsCommand(true);
+    LOG.debug("Going to run command <" + StringUtils.join(argList, " ") + ">");
     int status = beeLine.begin(argList.toArray(new String[0]), null);
     if (status != 0) {
       throw new IOException("Schema script failed, errorcode " + status);
