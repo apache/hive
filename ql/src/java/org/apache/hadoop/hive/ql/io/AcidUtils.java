@@ -497,12 +497,16 @@ public class AcidUtils {
 
     // If we have a base, the original files are obsolete.
     if (bestBase.status != null) {
+      // Add original files to obsolete list if any
       for (HdfsFileStatusWithId fswid : original) {
         obsolete.add(fswid.getFileStatus());
       }
+      // Add original direcotries to obsolete list if any
+      obsolete.addAll(originalDirectories);
       // remove the entries so we don't get confused later and think we should
       // use them.
       original.clear();
+      originalDirectories.clear();
     } else {
       // Okay, we're going to need these originals.  Recurse through them and figure out what we
       // really need.

@@ -348,6 +348,18 @@ public class TestTxnCommands2 {
     Assert.assertEquals(resultCount, Integer.parseInt(rs.get(0)));
 
     // 5. Let Cleaner delete obsolete files/dirs
+    // Note, here we create a fake directory along with fake files as original directories/files
+    String fakeFile0 = TEST_WAREHOUSE_DIR + "/" + (Table.NONACIDORCTBL).toString().toLowerCase() +
+        "/subdir/000000_0";
+    String fakeFile1 = TEST_WAREHOUSE_DIR + "/" + (Table.NONACIDORCTBL).toString().toLowerCase() +
+        "/subdir/000000_1";
+    fs.create(new Path(fakeFile0));
+    fs.create(new Path(fakeFile1));
+    status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
+        (Table.NONACIDORCTBL).toString().toLowerCase()), FileUtils.STAGING_DIR_PATH_FILTER);
+    // Before Cleaner, there should be 5 items:
+    // 2 original files, 1 original directory, 1 base directory and 1 delta directory
+    Assert.assertEquals(5, status.length);
     Cleaner c = new Cleaner();
     c.setThreadId((int) c.getId());
     c.setHiveConf(hiveConf);
