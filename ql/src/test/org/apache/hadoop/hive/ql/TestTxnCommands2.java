@@ -18,13 +18,16 @@
 
 package org.apache.hadoop.hive.ql;
 
-import org.apache.commons.io.FileUtils;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
-import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.txn.compactor.Cleaner;
 import org.apache.hadoop.hive.ql.txn.compactor.Worker;
 import org.junit.After;
 import org.junit.Assert;
@@ -242,6 +245,147 @@ public class TestTxnCommands2 {
     runStatementOnDriver("insert into " + Table.NONACIDORCTBL + "(a,b) values(2,3)");
     List<String> rs1 = runStatementOnDriver("select a,b from " + Table.NONACIDORCTBL);
   }
+
+  /**
+   * Test the query correctness and directory layout after ACID table conversion and MAJOR compaction
+   * @throws Exception
+   */
+  @Test
+  public void testNonAcidToAcidConversionAndMajorCompaction() throws Exception {
+    FileSystem fs = FileSystem.get(hiveConf);
+    FileStatus[] status;
+
+    // 1. Insert a row to Non-ACID table
+    runStatementOnDriver("insert into " + Table.NONACIDORCTBL + "(a,b) values(1,2)");
+    status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
+        (Table.NONACIDORCTBL).toString().toLowerCase()), FileUtils.STAGING_DIR_PATH_FILTER);
+    // There should be 2 original bucket files in the location (000000_0 and 000001_0)
+    Assert.assertEquals(BUCKET_COUNT, status.length);
+    for (int i = 0; i < status.length; i++) {
+      Assert.assertTrue(status[i].getPath().getName().matches("00000[01]_0"));
+    }
+    List<String> rs = runStatementOnDriver("select a,b from " + Table.NONACIDORCTBL);
+    int [][] resultData = new int[][] {{1, 2}};
+    Assert.assertEquals(stringifyValues(resultData), rs);
+    rs = runStatementOnDriver("select count(*) from " + Table.NONACIDORCTBL);
+    int resultCount = 1;
+    Assert.assertEquals(resultCount, Integer.parseInt(rs.get(0)));
+
+    // 2. Convert NONACIDORCTBL to ACID table
+    runStatementOnDriver("alter table " + Table.NONACIDORCTBL + " SET TBLPROPERTIES ('transactional'='true')");
+    status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
+        (Table.NONACIDORCTBL).toString().toLowerCase()), FileUtils.STAGING_DIR_PATH_FILTER);
+    // Everything should be same as before
+    Assert.assertEquals(BUCKET_COUNT, status.length);
+    for (int i = 0; i < status.length; i++) {
+      Assert.assertTrue(status[i].getPath().getName().matches("00000[01]_0"));
+    }
+    rs = runStatementOnDriver("select a,b from " + Table.NONACIDORCTBL);
+    resultData = new int[][] {{1, 2}};
+    Assert.assertEquals(stringifyValues(resultData), rs);
+    rs = runStatementOnDriver("select count(*) from " + Table.NONACIDORCTBL);
+    resultCount = 1;
+    Assert.assertEquals(resultCount, Integer.parseInt(rs.get(0)));
+
+    // 3. Insert another row to newly-converted ACID table
+    runStatementOnDriver("insert into " + Table.NONACIDORCTBL + "(a,b) values(3,4)");
+    status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
+        (Table.NONACIDORCTBL).toString().toLowerCase()), FileUtils.STAGING_DIR_PATH_FILTER);
+    // There should be 2 original bucket files (000000_0 and 000001_0), plus a new delta directory.
+    // The delta directory should also have 2 bucket files (bucket_00000 and bucket_00001)
+    Assert.assertEquals(3, status.length);
+    boolean sawNewDelta = false;
+    for (int i = 0; i < status.length; i++) {
+      if (status[i].getPath().getName().matches("delta_.*")) {
+        sawNewDelta = true;
+        FileStatus[] buckets = fs.listStatus(status[i].getPath(), FileUtils.STAGING_DIR_PATH_FILTER);
+        Assert.assertEquals(BUCKET_COUNT, buckets.length);
+        Assert.assertTrue(buckets[0].getPath().getName().matches("bucket_0000[01]"));
+        Assert.assertTrue(buckets[1].getPath().getName().matches("bucket_0000[01]"));
+      } else {
+        Assert.assertTrue(status[i].getPath().getName().matches("00000[01]_0"));
+      }
+    }
+    Assert.assertTrue(sawNewDelta);
+    rs = runStatementOnDriver("select a,b from " + Table.NONACIDORCTBL);
+    resultData = new int[][] {{1, 2}, {3, 4}};
+    Assert.assertEquals(stringifyValues(resultData), rs);
+    rs = runStatementOnDriver("select count(*) from " + Table.NONACIDORCTBL);
+    resultCount = 2;
+    Assert.assertEquals(resultCount, Integer.parseInt(rs.get(0)));
+
+    // 4. Perform a major compaction
+    runStatementOnDriver("alter table "+ Table.NONACIDORCTBL + " compact 'MAJOR'");
+    Worker w = new Worker();
+    w.setThreadId((int) w.getId());
+    w.setHiveConf(hiveConf);
+    AtomicBoolean stop = new AtomicBoolean();
+    AtomicBoolean looped = new AtomicBoolean();
+    stop.set(true);
+    w.init(stop, looped);
+    w.run();
+    // There should be 1 new directory: base_xxxxxxx.
+    // Original bucket files and delta directory should stay until Cleaner kicks in.
+    status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
+        (Table.NONACIDORCTBL).toString().toLowerCase()), FileUtils.STAGING_DIR_PATH_FILTER);
+    Assert.assertEquals(4, status.length);
+    boolean sawNewBase = false;
+    for (int i = 0; i < status.length; i++) {
+      if (status[i].getPath().getName().matches("base_.*")) {
+        sawNewBase = true;
+        FileStatus[] buckets = fs.listStatus(status[i].getPath(), FileUtils.STAGING_DIR_PATH_FILTER);
+        Assert.assertEquals(BUCKET_COUNT, buckets.length);
+        Assert.assertTrue(buckets[0].getPath().getName().matches("bucket_0000[01]"));
+        Assert.assertTrue(buckets[1].getPath().getName().matches("bucket_0000[01]"));
+      }
+    }
+    Assert.assertTrue(sawNewBase);
+    rs = runStatementOnDriver("select a,b from " + Table.NONACIDORCTBL);
+    resultData = new int[][] {{1, 2}, {3, 4}};
+    Assert.assertEquals(stringifyValues(resultData), rs);
+    rs = runStatementOnDriver("select count(*) from " + Table.NONACIDORCTBL);
+    resultCount = 2;
+    Assert.assertEquals(resultCount, Integer.parseInt(rs.get(0)));
+
+    // 5. Let Cleaner delete obsolete files/dirs
+    // Note, here we create a fake directory along with fake files as original directories/files
+    String fakeFile0 = TEST_WAREHOUSE_DIR + "/" + (Table.NONACIDORCTBL).toString().toLowerCase() +
+        "/subdir/000000_0";
+    String fakeFile1 = TEST_WAREHOUSE_DIR + "/" + (Table.NONACIDORCTBL).toString().toLowerCase() +
+        "/subdir/000000_1";
+    fs.create(new Path(fakeFile0));
+    fs.create(new Path(fakeFile1));
+    status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
+        (Table.NONACIDORCTBL).toString().toLowerCase()), FileUtils.STAGING_DIR_PATH_FILTER);
+    // Before Cleaner, there should be 5 items:
+    // 2 original files, 1 original directory, 1 base directory and 1 delta directory
+    Assert.assertEquals(5, status.length);
+    Cleaner c = new Cleaner();
+    c.setThreadId((int) c.getId());
+    c.setHiveConf(hiveConf);
+    stop = new AtomicBoolean();
+    looped = new AtomicBoolean();
+    stop.set(true);
+    c.init(stop, looped);
+    c.run();
+    // There should be only 1 directory left: base_xxxxxxx.
+    // Original bucket files and delta directory should have been cleaned up.
+    status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
+        (Table.NONACIDORCTBL).toString().toLowerCase()), FileUtils.STAGING_DIR_PATH_FILTER);
+    Assert.assertEquals(1, status.length);
+    Assert.assertTrue(status[0].getPath().getName().matches("base_.*"));
+    FileStatus[] buckets = fs.listStatus(status[0].getPath(), FileUtils.STAGING_DIR_PATH_FILTER);
+    Assert.assertEquals(BUCKET_COUNT, buckets.length);
+    Assert.assertTrue(buckets[0].getPath().getName().matches("bucket_0000[01]"));
+    Assert.assertTrue(buckets[1].getPath().getName().matches("bucket_0000[01]"));
+    rs = runStatementOnDriver("select a,b from " + Table.NONACIDORCTBL);
+    resultData = new int[][] {{1, 2}, {3, 4}};
+    Assert.assertEquals(stringifyValues(resultData), rs);
+    rs = runStatementOnDriver("select count(*) from " + Table.NONACIDORCTBL);
+    resultCount = 2;
+    Assert.assertEquals(resultCount, Integer.parseInt(rs.get(0)));
+  }
+
   @Test
   public void testUpdateMixedCase() throws Exception {
     int[][] tableData = {{1,2},{3,3},{5,3}};

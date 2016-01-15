@@ -69,6 +69,7 @@ public class AcidUtils {
     }
   };
   public static final String BUCKET_DIGITS = "%05d";
+  public static final String LEGACY_FILE_BUCKET_DIGITS = "%06d";
   public static final String DELTA_DIGITS = "%07d";
   /**
    * 10K statements per tx.  Probably overkill ... since that many delta files
@@ -80,7 +81,7 @@ public class AcidUtils {
    */
   public static final int MAX_STATEMENTS_PER_TXN = 10000;
   public static final Pattern BUCKET_DIGIT_PATTERN = Pattern.compile("[0-9]{5}$");
-  public static final Pattern LEGACY_BUCKET_DIGIT_PATTERN = Pattern.compile("^[0-9]{5}");
+  public static final Pattern   LEGACY_BUCKET_DIGIT_PATTERN = Pattern.compile("^[0-9]{6}");
   public static final PathFilter originalBucketFilter = new PathFilter() {
     @Override
     public boolean accept(Path path) {
@@ -145,7 +146,7 @@ public class AcidUtils {
                                     AcidOutputFormat.Options options) {
     String subdir;
     if (options.getOldStyle()) {
-      return new Path(directory, String.format(BUCKET_DIGITS,
+      return new Path(directory, String.format(LEGACY_FILE_BUCKET_DIGITS,
           options.getBucket()) + "_0");
     } else if (options.isWritingBase()) {
       subdir = BASE_PREFIX + String.format(DELTA_DIGITS,
@@ -453,6 +454,7 @@ public class AcidUtils {
     final List<ParsedDelta> deltas = new ArrayList<ParsedDelta>();
     List<ParsedDelta> working = new ArrayList<ParsedDelta>();
     List<FileStatus> originalDirectories = new ArrayList<FileStatus>();
+    final List<FileStatus> original = new ArrayList<FileStatus>();
     final List<FileStatus> obsolete = new ArrayList<FileStatus>();
     List<FileStatus> children = SHIMS.listLocatedStatus(fs, directory,
         hiddenFileFilter);
@@ -478,21 +480,27 @@ public class AcidUtils {
             ValidTxnList.RangeResponse.NONE) {
           working.add(delta);
         }
-      } else {
+      } else if (child.isDir()) {
         // This is just the directory.  We need to recurse and find the actual files.  But don't
         // do this until we have determined there is no base.  This saves time.  Plus,
         // it is possible that the cleaner is running and removing these original files,
         // in which case recursing through them could cause us to get an error.
         originalDirectories.add(child);
+      } else {
+        original.add(child);
       }
     }
 
-    final List<FileStatus> original = new ArrayList<FileStatus>();
     // if we have a base, the original files are obsolete.
     if (bestBase != null) {
+      // Add original files to obsolete list if any
+      obsolete.addAll(original);
+      // Add original direcotries to obsolete list if any
+      obsolete.addAll(originalDirectories);
       // remove the entries so we don't get confused later and think we should
       // use them.
       original.clear();
+      originalDirectories.clear();
     } else {
       // Okay, we're going to need these originals.  Recurse through them and figure out what we
       // really need.
