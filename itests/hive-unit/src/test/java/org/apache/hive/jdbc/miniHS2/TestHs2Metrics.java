@@ -75,12 +75,12 @@ public class TestHs2Metrics {
     confOverlay = new HashMap<String, String>();
     confOverlay.put(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
     confOverlay.put(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK.varname, MetricCheckingHook.class.getName());
+    confOverlay.put(HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED.varname, "true");
+    confOverlay.put(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
     miniHS2.start(confOverlay);
 
     HiveConf conf = new HiveConf();
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED, true);
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
-    MetricsFactory.init(conf);
+
 
     metrics = (CodahaleMetrics) MetricsFactory.getInstance();
   }
