@@ -10085,6 +10085,18 @@ class TxnInfo {
    * @var string
    */
   public $hostname = null;
+  /**
+   * @var string
+   */
+  public $agentInfo = "Unknown";
+  /**
+   * @var int
+   */
+  public $heartbeatCount = 0;
+  /**
+   * @var string
+   */
+  public $metaInfo = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -10105,6 +10117,18 @@ class TxnInfo {
           'var' => 'hostname',
           'type' => TType::STRING,
           ),
+        5 => array(
+          'var' => 'agentInfo',
+          'type' => TType::STRING,
+          ),
+        6 => array(
+          'var' => 'heartbeatCount',
+          'type' => TType::I32,
+          ),
+        7 => array(
+          'var' => 'metaInfo',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -10119,6 +10143,15 @@ class TxnInfo {
       }
       if (isset($vals['hostname'])) {
         $this->hostname = $vals['hostname'];
+      }
+      if (isset($vals['agentInfo'])) {
+        $this->agentInfo = $vals['agentInfo'];
+      }
+      if (isset($vals['heartbeatCount'])) {
+        $this->heartbeatCount = $vals['heartbeatCount'];
+      }
+      if (isset($vals['metaInfo'])) {
+        $this->metaInfo = $vals['metaInfo'];
       }
     }
   }
@@ -10170,6 +10203,27 @@ class TxnInfo {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 5:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->agentInfo);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 6:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->heartbeatCount);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 7:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->metaInfo);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -10201,6 +10255,21 @@ class TxnInfo {
     if ($this->hostname !== null) {
       $xfer += $output->writeFieldBegin('hostname', TType::STRING, 4);
       $xfer += $output->writeString($this->hostname);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->agentInfo !== null) {
+      $xfer += $output->writeFieldBegin('agentInfo', TType::STRING, 5);
+      $xfer += $output->writeString($this->agentInfo);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->heartbeatCount !== null) {
+      $xfer += $output->writeFieldBegin('heartbeatCount', TType::I32, 6);
+      $xfer += $output->writeI32($this->heartbeatCount);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->metaInfo !== null) {
+      $xfer += $output->writeFieldBegin('metaInfo', TType::STRING, 7);
+      $xfer += $output->writeString($this->metaInfo);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -10483,6 +10552,10 @@ class OpenTxnRequest {
    * @var string
    */
   public $hostname = null;
+  /**
+   * @var string
+   */
+  public $agentInfo = "Unknown";
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -10499,6 +10572,10 @@ class OpenTxnRequest {
           'var' => 'hostname',
           'type' => TType::STRING,
           ),
+        4 => array(
+          'var' => 'agentInfo',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -10510,6 +10587,9 @@ class OpenTxnRequest {
       }
       if (isset($vals['hostname'])) {
         $this->hostname = $vals['hostname'];
+      }
+      if (isset($vals['agentInfo'])) {
+        $this->agentInfo = $vals['agentInfo'];
       }
     }
   }
@@ -10554,6 +10634,13 @@ class OpenTxnRequest {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 4:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->agentInfo);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -10580,6 +10667,11 @@ class OpenTxnRequest {
     if ($this->hostname !== null) {
       $xfer += $output->writeFieldBegin('hostname', TType::STRING, 3);
       $xfer += $output->writeString($this->hostname);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->agentInfo !== null) {
+      $xfer += $output->writeFieldBegin('agentInfo', TType::STRING, 4);
+      $xfer += $output->writeString($this->agentInfo);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -11026,6 +11118,10 @@ class LockRequest {
    * @var string
    */
   public $hostname = null;
+  /**
+   * @var string
+   */
+  public $agentInfo = "Unknown";
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -11051,6 +11147,10 @@ class LockRequest {
           'var' => 'hostname',
           'type' => TType::STRING,
           ),
+        5 => array(
+          'var' => 'agentInfo',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -11065,6 +11165,9 @@ class LockRequest {
       }
       if (isset($vals['hostname'])) {
         $this->hostname = $vals['hostname'];
+      }
+      if (isset($vals['agentInfo'])) {
+        $this->agentInfo = $vals['agentInfo'];
       }
     }
   }
@@ -11127,6 +11230,13 @@ class LockRequest {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 5:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->agentInfo);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -11170,6 +11280,11 @@ class LockRequest {
     if ($this->hostname !== null) {
       $xfer += $output->writeFieldBegin('hostname', TType::STRING, 4);
       $xfer += $output->writeString($this->hostname);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->agentInfo !== null) {
+      $xfer += $output->writeFieldBegin('agentInfo', TType::STRING, 5);
+      $xfer += $output->writeString($this->agentInfo);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -11284,6 +11399,14 @@ class CheckLockRequest {
    * @var int
    */
   public $lockid = null;
+  /**
+   * @var int
+   */
+  public $txnid = null;
+  /**
+   * @var int
+   */
+  public $elapsed_ms = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -11292,11 +11415,25 @@ class CheckLockRequest {
           'var' => 'lockid',
           'type' => TType::I64,
           ),
+        2 => array(
+          'var' => 'txnid',
+          'type' => TType::I64,
+          ),
+        3 => array(
+          'var' => 'elapsed_ms',
+          'type' => TType::I64,
+          ),
         );
     }
     if (is_array($vals)) {
       if (isset($vals['lockid'])) {
         $this->lockid = $vals['lockid'];
+      }
+      if (isset($vals['txnid'])) {
+        $this->txnid = $vals['txnid'];
+      }
+      if (isset($vals['elapsed_ms'])) {
+        $this->elapsed_ms = $vals['elapsed_ms'];
       }
     }
   }
@@ -11327,6 +11464,20 @@ class CheckLockRequest {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 2:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->txnid);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 3:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->elapsed_ms);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -11343,6 +11494,16 @@ class CheckLockRequest {
     if ($this->lockid !== null) {
       $xfer += $output->writeFieldBegin('lockid', TType::I64, 1);
       $xfer += $output->writeI64($this->lockid);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->txnid !== null) {
+      $xfer += $output->writeFieldBegin('txnid', TType::I64, 2);
+      $xfer += $output->writeI64($this->txnid);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->elapsed_ms !== null) {
+      $xfer += $output->writeFieldBegin('elapsed_ms', TType::I64, 3);
+      $xfer += $output->writeI64($this->elapsed_ms);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -11430,11 +11591,57 @@ class UnlockRequest {
 class ShowLocksRequest {
   static $_TSPEC;
 
+  /**
+   * @var string
+   */
+  public $dbname = null;
+  /**
+   * @var string
+   */
+  public $tablename = null;
+  /**
+   * @var string
+   */
+  public $partname = null;
+  /**
+   * @var bool
+   */
+  public $isExtended = false;
 
-  public function __construct() {
+  public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
       self::$_TSPEC = array(
+        1 => array(
+          'var' => 'dbname',
+          'type' => TType::STRING,
+          ),
+        2 => array(
+          'var' => 'tablename',
+          'type' => TType::STRING,
+          ),
+        3 => array(
+          'var' => 'partname',
+          'type' => TType::STRING,
+          ),
+        4 => array(
+          'var' => 'isExtended',
+          'type' => TType::BOOL,
+          ),
         );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['dbname'])) {
+        $this->dbname = $vals['dbname'];
+      }
+      if (isset($vals['tablename'])) {
+        $this->tablename = $vals['tablename'];
+      }
+      if (isset($vals['partname'])) {
+        $this->partname = $vals['partname'];
+      }
+      if (isset($vals['isExtended'])) {
+        $this->isExtended = $vals['isExtended'];
+      }
     }
   }
 
@@ -11457,6 +11664,34 @@ class ShowLocksRequest {
       }
       switch ($fid)
       {
+        case 1:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->dbname);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->tablename);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 3:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->partname);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 4:
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->isExtended);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -11470,6 +11705,26 @@ class ShowLocksRequest {
   public function write($output) {
     $xfer = 0;
     $xfer += $output->writeStructBegin('ShowLocksRequest');
+    if ($this->dbname !== null) {
+      $xfer += $output->writeFieldBegin('dbname', TType::STRING, 1);
+      $xfer += $output->writeString($this->dbname);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->tablename !== null) {
+      $xfer += $output->writeFieldBegin('tablename', TType::STRING, 2);
+      $xfer += $output->writeString($this->tablename);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->partname !== null) {
+      $xfer += $output->writeFieldBegin('partname', TType::STRING, 3);
+      $xfer += $output->writeString($this->partname);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->isExtended !== null) {
+      $xfer += $output->writeFieldBegin('isExtended', TType::BOOL, 4);
+      $xfer += $output->writeBool($this->isExtended);
+      $xfer += $output->writeFieldEnd();
+    }
     $xfer += $output->writeFieldStop();
     $xfer += $output->writeStructEnd();
     return $xfer;
@@ -11524,6 +11779,26 @@ class ShowLocksResponseElement {
    * @var string
    */
   public $hostname = null;
+  /**
+   * @var int
+   */
+  public $heartbeatCount = 0;
+  /**
+   * @var string
+   */
+  public $agentInfo = null;
+  /**
+   * @var int
+   */
+  public $blockedByExtId = null;
+  /**
+   * @var int
+   */
+  public $blockedByIntId = null;
+  /**
+   * @var int
+   */
+  public $lockIdInternal = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -11572,6 +11847,26 @@ class ShowLocksResponseElement {
           'var' => 'hostname',
           'type' => TType::STRING,
           ),
+        12 => array(
+          'var' => 'heartbeatCount',
+          'type' => TType::I32,
+          ),
+        13 => array(
+          'var' => 'agentInfo',
+          'type' => TType::STRING,
+          ),
+        14 => array(
+          'var' => 'blockedByExtId',
+          'type' => TType::I64,
+          ),
+        15 => array(
+          'var' => 'blockedByIntId',
+          'type' => TType::I64,
+          ),
+        16 => array(
+          'var' => 'lockIdInternal',
+          'type' => TType::I64,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -11607,6 +11902,21 @@ class ShowLocksResponseElement {
       }
       if (isset($vals['hostname'])) {
         $this->hostname = $vals['hostname'];
+      }
+      if (isset($vals['heartbeatCount'])) {
+        $this->heartbeatCount = $vals['heartbeatCount'];
+      }
+      if (isset($vals['agentInfo'])) {
+        $this->agentInfo = $vals['agentInfo'];
+      }
+      if (isset($vals['blockedByExtId'])) {
+        $this->blockedByExtId = $vals['blockedByExtId'];
+      }
+      if (isset($vals['blockedByIntId'])) {
+        $this->blockedByIntId = $vals['blockedByIntId'];
+      }
+      if (isset($vals['lockIdInternal'])) {
+        $this->lockIdInternal = $vals['lockIdInternal'];
       }
     }
   }
@@ -11707,6 +12017,41 @@ class ShowLocksResponseElement {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 12:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->heartbeatCount);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 13:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->agentInfo);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 14:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->blockedByExtId);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 15:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->blockedByIntId);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 16:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->lockIdInternal);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -11773,6 +12118,31 @@ class ShowLocksResponseElement {
     if ($this->hostname !== null) {
       $xfer += $output->writeFieldBegin('hostname', TType::STRING, 11);
       $xfer += $output->writeString($this->hostname);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->heartbeatCount !== null) {
+      $xfer += $output->writeFieldBegin('heartbeatCount', TType::I32, 12);
+      $xfer += $output->writeI32($this->heartbeatCount);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->agentInfo !== null) {
+      $xfer += $output->writeFieldBegin('agentInfo', TType::STRING, 13);
+      $xfer += $output->writeString($this->agentInfo);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->blockedByExtId !== null) {
+      $xfer += $output->writeFieldBegin('blockedByExtId', TType::I64, 14);
+      $xfer += $output->writeI64($this->blockedByExtId);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->blockedByIntId !== null) {
+      $xfer += $output->writeFieldBegin('blockedByIntId', TType::I64, 15);
+      $xfer += $output->writeI64($this->blockedByIntId);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->lockIdInternal !== null) {
+      $xfer += $output->writeFieldBegin('lockIdInternal', TType::I64, 16);
+      $xfer += $output->writeI64($this->lockIdInternal);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -12499,6 +12869,22 @@ class ShowCompactResponseElement {
    * @var string
    */
   public $runAs = null;
+  /**
+   * @var int
+   */
+  public $hightestTxnId = null;
+  /**
+   * @var string
+   */
+  public $metaInfo = null;
+  /**
+   * @var int
+   */
+  public $endTime = null;
+  /**
+   * @var string
+   */
+  public $hadoopJobId = "None";
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -12535,6 +12921,22 @@ class ShowCompactResponseElement {
           'var' => 'runAs',
           'type' => TType::STRING,
           ),
+        9 => array(
+          'var' => 'hightestTxnId',
+          'type' => TType::I64,
+          ),
+        10 => array(
+          'var' => 'metaInfo',
+          'type' => TType::STRING,
+          ),
+        11 => array(
+          'var' => 'endTime',
+          'type' => TType::I64,
+          ),
+        12 => array(
+          'var' => 'hadoopJobId',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -12561,6 +12963,18 @@ class ShowCompactResponseElement {
       }
       if (isset($vals['runAs'])) {
         $this->runAs = $vals['runAs'];
+      }
+      if (isset($vals['hightestTxnId'])) {
+        $this->hightestTxnId = $vals['hightestTxnId'];
+      }
+      if (isset($vals['metaInfo'])) {
+        $this->metaInfo = $vals['metaInfo'];
+      }
+      if (isset($vals['endTime'])) {
+        $this->endTime = $vals['endTime'];
+      }
+      if (isset($vals['hadoopJobId'])) {
+        $this->hadoopJobId = $vals['hadoopJobId'];
       }
     }
   }
@@ -12640,6 +13054,34 @@ class ShowCompactResponseElement {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 9:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->hightestTxnId);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 10:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->metaInfo);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 11:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->endTime);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 12:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->hadoopJobId);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -12691,6 +13133,26 @@ class ShowCompactResponseElement {
     if ($this->runAs !== null) {
       $xfer += $output->writeFieldBegin('runAs', TType::STRING, 8);
       $xfer += $output->writeString($this->runAs);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->hightestTxnId !== null) {
+      $xfer += $output->writeFieldBegin('hightestTxnId', TType::I64, 9);
+      $xfer += $output->writeI64($this->hightestTxnId);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->metaInfo !== null) {
+      $xfer += $output->writeFieldBegin('metaInfo', TType::STRING, 10);
+      $xfer += $output->writeString($this->metaInfo);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->endTime !== null) {
+      $xfer += $output->writeFieldBegin('endTime', TType::I64, 11);
+      $xfer += $output->writeI64($this->endTime);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->hadoopJobId !== null) {
+      $xfer += $output->writeFieldBegin('hadoopJobId', TType::STRING, 12);
+      $xfer += $output->writeString($this->hadoopJobId);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

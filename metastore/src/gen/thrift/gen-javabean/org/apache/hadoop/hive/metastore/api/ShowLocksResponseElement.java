@@ -49,6 +49,11 @@ public class ShowLocksResponseElement implements org.apache.thrift.TBase<ShowLoc
   private static final org.apache.thrift.protocol.TField ACQUIREDAT_FIELD_DESC = new org.apache.thrift.protocol.TField("acquiredat", org.apache.thrift.protocol.TType.I64, (short)9);
   private static final org.apache.thrift.protocol.TField USER_FIELD_DESC = new org.apache.thrift.protocol.TField("user", org.apache.thrift.protocol.TType.STRING, (short)10);
   private static final org.apache.thrift.protocol.TField HOSTNAME_FIELD_DESC = new org.apache.thrift.protocol.TField("hostname", org.apache.thrift.protocol.TType.STRING, (short)11);
+  private static final org.apache.thrift.protocol.TField HEARTBEAT_COUNT_FIELD_DESC = new org.apache.thrift.protocol.TField("heartbeatCount", org.apache.thrift.protocol.TType.I32, (short)12);
+  private static final org.apache.thrift.protocol.TField AGENT_INFO_FIELD_DESC = new org.apache.thrift.protocol.TField("agentInfo", org.apache.thrift.protocol.TType.STRING, (short)13);
+  private static final org.apache.thrift.protocol.TField BLOCKED_BY_EXT_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("blockedByExtId", org.apache.thrift.protocol.TType.I64, (short)14);
+  private static final org.apache.thrift.protocol.TField BLOCKED_BY_INT_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("blockedByIntId", org.apache.thrift.protocol.TType.I64, (short)15);
+  private static final org.apache.thrift.protocol.TField LOCK_ID_INTERNAL_FIELD_DESC = new org.apache.thrift.protocol.TField("lockIdInternal", org.apache.thrift.protocol.TType.I64, (short)16);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -67,6 +72,11 @@ public class ShowLocksResponseElement implements org.apache.thrift.TBase<ShowLoc
   private long acquiredat; // optional
   private String user; // required
   private String hostname; // required
+  private int heartbeatCount; // optional
+  private String agentInfo; // optional
+  private long blockedByExtId; // optional
+  private long blockedByIntId; // optional
+  private long lockIdInternal; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -88,7 +98,12 @@ public class ShowLocksResponseElement implements org.apache.thrift.TBase<ShowLoc
     LASTHEARTBEAT((short)8, "lastheartbeat"),
     ACQUIREDAT((short)9, "acquiredat"),
     USER((short)10, "user"),
-    HOSTNAME((short)11, "hostname");
+    HOSTNAME((short)11, "hostname"),
+    HEARTBEAT_COUNT((short)12, "heartbeatCount"),
+    AGENT_INFO((short)13, "agentInfo"),
+    BLOCKED_BY_EXT_ID((short)14, "blockedByExtId"),
+    BLOCKED_BY_INT_ID((short)15, "blockedByIntId"),
+    LOCK_ID_INTERNAL((short)16, "lockIdInternal");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -125,6 +140,16 @@ public class ShowLocksResponseElement implements org.apache.thrift.TBase<ShowLoc
           return USER;
         case 11: // HOSTNAME
           return HOSTNAME;
+        case 12: // HEARTBEAT_COUNT
+          return HEARTBEAT_COUNT;
+        case 13: // AGENT_INFO
+          return AGENT_INFO;
+        case 14: // BLOCKED_BY_EXT_ID
+          return BLOCKED_BY_EXT_ID;
+        case 15: // BLOCKED_BY_INT_ID
+          return BLOCKED_BY_INT_ID;
+        case 16: // LOCK_ID_INTERNAL
+          return LOCK_ID_INTERNAL;
         default:
           return null;
       }
@@ -169,8 +194,12 @@ public class ShowLocksResponseElement implements org.apache.thrift.TBase<ShowLoc
   private static final int __TXNID_ISSET_ID = 1;
   private static final int __LASTHEARTBEAT_ISSET_ID = 2;
   private static final int __ACQUIREDAT_ISSET_ID = 3;
+  private static final int __HEARTBEATCOUNT_ISSET_ID = 4;
+  private static final int __BLOCKEDBYEXTID_ISSET_ID = 5;
+  private static final int __BLOCKEDBYINTID_ISSET_ID = 6;
+  private static final int __LOCKIDINTERNAL_ISSET_ID = 7;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.TABLENAME,_Fields.PARTNAME,_Fields.TXNID,_Fields.ACQUIREDAT};
+  private static final _Fields optionals[] = {_Fields.TABLENAME,_Fields.PARTNAME,_Fields.TXNID,_Fields.ACQUIREDAT,_Fields.HEARTBEAT_COUNT,_Fields.AGENT_INFO,_Fields.BLOCKED_BY_EXT_ID,_Fields.BLOCKED_BY_INT_ID,_Fields.LOCK_ID_INTERNAL};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -196,11 +225,23 @@ public class ShowLocksResponseElement implements org.apache.thrift.TBase<ShowLoc
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.HOSTNAME, new org.apache.thrift.meta_data.FieldMetaData("hostname", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.HEARTBEAT_COUNT, new org.apache.thrift.meta_data.FieldMetaData("heartbeatCount", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+    tmpMap.put(_Fields.AGENT_INFO, new org.apache.thrift.meta_data.FieldMetaData("agentInfo", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.BLOCKED_BY_EXT_ID, new org.apache.thrift.meta_data.FieldMetaData("blockedByExtId", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.BLOCKED_BY_INT_ID, new org.apache.thrift.meta_data.FieldMetaData("blockedByIntId", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.LOCK_ID_INTERNAL, new org.apache.thrift.meta_data.FieldMetaData("lockIdInternal", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(ShowLocksResponseElement.class, metaDataMap);
   }
 
   public ShowLocksResponseElement() {
+    this.heartbeatCount = 0;
+
   }
 
   public ShowLocksResponseElement(
@@ -254,6 +295,13 @@ public class ShowLocksResponseElement implements org.apache.thrift.TBase<ShowLoc
     if (other.isSetHostname()) {
       this.hostname = other.hostname;
     }
+    this.heartbeatCount = other.heartbeatCount;
+    if (other.isSetAgentInfo()) {
+      this.agentInfo = other.agentInfo;
+    }
+    this.blockedByExtId = other.blockedByExtId;
+    this.blockedByIntId = other.blockedByIntId;
+    this.lockIdInternal = other.lockIdInternal;
   }
 
   public ShowLocksResponseElement deepCopy() {
@@ -277,6 +325,15 @@ public class ShowLocksResponseElement implements org.apache.thrift.TBase<ShowLoc
     this.acquiredat = 0;
     this.user = null;
     this.hostname = null;
+    this.heartbeatCount = 0;
+
+    this.agentInfo = null;
+    setBlockedByExtIdIsSet(false);
+    this.blockedByExtId = 0;
+    setBlockedByIntIdIsSet(false);
+    this.blockedByIntId = 0;
+    setLockIdInternalIsSet(false);
+    this.lockIdInternal = 0;
   }
 
   public long getLockid() {
@@ -544,6 +601,117 @@ public class ShowLocksResponseElement implements org.apache.thrift.TBase<ShowLoc
     }
   }
 
+  public int getHeartbeatCount() {
+    return this.heartbeatCount;
+  }
+
+  public void setHeartbeatCount(int heartbeatCount) {
+    this.heartbeatCount = heartbeatCount;
+    setHeartbeatCountIsSet(true);
+  }
+
+  public void unsetHeartbeatCount() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __HEARTBEATCOUNT_ISSET_ID);
+  }
+
+  /** Returns true if field heartbeatCount is set (has been assigned a value) and false otherwise */
+  public boolean isSetHeartbeatCount() {
+    return EncodingUtils.testBit(__isset_bitfield, __HEARTBEATCOUNT_ISSET_ID);
+  }
+
+  public void setHeartbeatCountIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __HEARTBEATCOUNT_ISSET_ID, value);
+  }
+
+  public String getAgentInfo() {
+    return this.agentInfo;
+  }
+
+  public void setAgentInfo(String agentInfo) {
+    this.agentInfo = agentInfo;
+  }
+
+  public void unsetAgentInfo() {
+    this.agentInfo = null;
+  }
+
+  /** Returns true if field agentInfo is set (has been assigned a value) and false otherwise */
+  public boolean isSetAgentInfo() {
+    return this.agentInfo != null;
+  }
+
+  public void setAgentInfoIsSet(boolean value) {
+    if (!value) {
+      this.agentInfo = null;
+    }
+  }
+
+  public long getBlockedByExtId() {
+    return this.blockedByExtId;
+  }
+
+  public void setBlockedByExtId(long blockedByExtId) {
+    this.blockedByExtId = blockedByExtId;
+    setBlockedByExtIdIsSet(true);
+  }
+
+  public void unsetBlockedByExtId() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __BLOCKEDBYEXTID_ISSET_ID);
+  }
+
+  /** Returns true if field blockedByExtId is set (has been assigned a value) and false otherwise */
+  public boolean isSetBlockedByExtId() {
+    return EncodingUtils.testBit(__isset_bitfield, __BLOCKEDBYEXTID_ISSET_ID);
+  }
+
+  public void setBlockedByExtIdIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __BLOCKEDBYEXTID_ISSET_ID, value);
+  }
+
+  public long getBlockedByIntId() {
+    return this.blockedByIntId;
+  }
+
+  public void setBlockedByIntId(long blockedByIntId) {
+    this.blockedByIntId = blockedByIntId;
+    setBlockedByIntIdIsSet(true);
+  }
+
+  public void unsetBlockedByIntId() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __BLOCKEDBYINTID_ISSET_ID);
+  }
+
+  /** Returns true if field blockedByIntId is set (has been assigned a value) and false otherwise */
+  public boolean isSetBlockedByIntId() {
+    return EncodingUtils.testBit(__isset_bitfield, __BLOCKEDBYINTID_ISSET_ID);
+  }
+
+  public void setBlockedByIntIdIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __BLOCKEDBYINTID_ISSET_ID, value);
+  }
+
+  public long getLockIdInternal() {
+    return this.lockIdInternal;
+  }
+
+  public void setLockIdInternal(long lockIdInternal) {
+    this.lockIdInternal = lockIdInternal;
+    setLockIdInternalIsSet(true);
+  }
+
+  public void unsetLockIdInternal() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __LOCKIDINTERNAL_ISSET_ID);
+  }
+
+  /** Returns true if field lockIdInternal is set (has been assigned a value) and false otherwise */
+  public boolean isSetLockIdInternal() {
+    return EncodingUtils.testBit(__isset_bitfield, __LOCKIDINTERNAL_ISSET_ID);
+  }
+
+  public void setLockIdInternalIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __LOCKIDINTERNAL_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case LOCKID:
@@ -634,6 +802,46 @@ public class ShowLocksResponseElement implements org.apache.thrift.TBase<ShowLoc
       }
       break;
 
+    case HEARTBEAT_COUNT:
+      if (value == null) {
+        unsetHeartbeatCount();
+      } else {
+        setHeartbeatCount((Integer)value);
+      }
+      break;
+
+    case AGENT_INFO:
+      if (value == null) {
+        unsetAgentInfo();
+      } else {
+        setAgentInfo((String)value);
+      }
+      break;
+
+    case BLOCKED_BY_EXT_ID:
+      if (value == null) {
+        unsetBlockedByExtId();
+      } else {
+        setBlockedByExtId((Long)value);
+      }
+      break;
+
+    case BLOCKED_BY_INT_ID:
+      if (value == null) {
+        unsetBlockedByIntId();
+      } else {
+        setBlockedByIntId((Long)value);
+      }
+      break;
+
+    case LOCK_ID_INTERNAL:
+      if (value == null) {
+        unsetLockIdInternal();
+      } else {
+        setLockIdInternal((Long)value);
+      }
+      break;
+
     }
   }
 
@@ -672,6 +880,21 @@ public class ShowLocksResponseElement implements org.apache.thrift.TBase<ShowLoc
     case HOSTNAME:
       return getHostname();
 
+    case HEARTBEAT_COUNT:
+      return getHeartbeatCount();
+
+    case AGENT_INFO:
+      return getAgentInfo();
+
+    case BLOCKED_BY_EXT_ID:
+      return getBlockedByExtId();
+
+    case BLOCKED_BY_INT_ID:
+      return getBlockedByIntId();
+
+    case LOCK_ID_INTERNAL:
+      return getLockIdInternal();
+
     }
     throw new IllegalStateException();
   }
@@ -705,6 +928,16 @@ public class ShowLocksResponseElement implements org.apache.thrift.TBase<ShowLoc
       return isSetUser();
     case HOSTNAME:
       return isSetHostname();
+    case HEARTBEAT_COUNT:
+      return isSetHeartbeatCount();
+    case AGENT_INFO:
+      return isSetAgentInfo();
+    case BLOCKED_BY_EXT_ID:
+      return isSetBlockedByExtId();
+    case BLOCKED_BY_INT_ID:
+      return isSetBlockedByIntId();
+    case LOCK_ID_INTERNAL:
+      return isSetLockIdInternal();
     }
     throw new IllegalStateException();
   }
@@ -821,6 +1054,51 @@ public class ShowLocksResponseElement implements org.apache.thrift.TBase<ShowLoc
         return false;
     }
 
+    boolean this_present_heartbeatCount = true && this.isSetHeartbeatCount();
+    boolean that_present_heartbeatCount = true && that.isSetHeartbeatCount();
+    if (this_present_heartbeatCount || that_present_heartbeatCount) {
+      if (!(this_present_heartbeatCount && that_present_heartbeatCount))
+        return false;
+      if (this.heartbeatCount != that.heartbeatCount)
+        return false;
+    }
+
+    boolean this_present_agentInfo = true && this.isSetAgentInfo();
+    boolean that_present_agentInfo = true && that.isSetAgentInfo();
+    if (this_present_agentInfo || that_present_agentInfo) {
+      if (!(this_present_agentInfo && that_present_agentInfo))
+        return false;
+      if (!this.agentInfo.equals(that.agentInfo))
+        return false;
+    }
+
+    boolean this_present_blockedByExtId = true && this.isSetBlockedByExtId();
+    boolean that_present_blockedByExtId = true && that.isSetBlockedByExtId();
+    if (this_present_blockedByExtId || that_present_blockedByExtId) {
+      if (!(this_present_blockedByExtId && that_present_blockedByExtId))
+        return false;
+      if (this.blockedByExtId != that.blockedByExtId)
+        return false;
+    }
+
+    boolean this_present_blockedByIntId = true && this.isSetBlockedByIntId();
+    boolean that_present_blockedByIntId = true && that.isSetBlockedByIntId();
+    if (this_present_blockedByIntId || that_present_blockedByIntId) {
+      if (!(this_present_blockedByIntId && that_present_blockedByIntId))
+        return false;
+      if (this.blockedByIntId != that.blockedByIntId)
+        return false;
+    }
+
+    boolean this_present_lockIdInternal = true && this.isSetLockIdInternal();
+    boolean that_present_lockIdInternal = true && that.isSetLockIdInternal();
+    if (this_present_lockIdInternal || that_present_lockIdInternal) {
+      if (!(this_present_lockIdInternal && that_present_lockIdInternal))
+        return false;
+      if (this.lockIdInternal != that.lockIdInternal)
+        return false;
+    }
+
     return true;
   }
 
@@ -882,6 +1160,31 @@ public class ShowLocksResponseElement implements org.apache.thrift.TBase<ShowLoc
     list.add(present_hostname);
     if (present_hostname)
       list.add(hostname);
+
+    boolean present_heartbeatCount = true && (isSetHeartbeatCount());
+    list.add(present_heartbeatCount);
+    if (present_heartbeatCount)
+      list.add(heartbeatCount);
+
+    boolean present_agentInfo = true && (isSetAgentInfo());
+    list.add(present_agentInfo);
+    if (present_agentInfo)
+      list.add(agentInfo);
+
+    boolean present_blockedByExtId = true && (isSetBlockedByExtId());
+    list.add(present_blockedByExtId);
+    if (present_blockedByExtId)
+      list.add(blockedByExtId);
+
+    boolean present_blockedByIntId = true && (isSetBlockedByIntId());
+    list.add(present_blockedByIntId);
+    if (present_blockedByIntId)
+      list.add(blockedByIntId);
+
+    boolean present_lockIdInternal = true && (isSetLockIdInternal());
+    list.add(present_lockIdInternal);
+    if (present_lockIdInternal)
+      list.add(lockIdInternal);
 
     return list.hashCode();
   }
@@ -1004,6 +1307,56 @@ public class ShowLocksResponseElement implements org.apache.thrift.TBase<ShowLoc
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetHeartbeatCount()).compareTo(other.isSetHeartbeatCount());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetHeartbeatCount()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.heartbeatCount, other.heartbeatCount);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetAgentInfo()).compareTo(other.isSetAgentInfo());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetAgentInfo()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.agentInfo, other.agentInfo);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetBlockedByExtId()).compareTo(other.isSetBlockedByExtId());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetBlockedByExtId()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.blockedByExtId, other.blockedByExtId);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetBlockedByIntId()).compareTo(other.isSetBlockedByIntId());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetBlockedByIntId()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.blockedByIntId, other.blockedByIntId);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetLockIdInternal()).compareTo(other.isSetLockIdInternal());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetLockIdInternal()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.lockIdInternal, other.lockIdInternal);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -1103,6 +1456,40 @@ public class ShowLocksResponseElement implements org.apache.thrift.TBase<ShowLoc
       sb.append(this.hostname);
     }
     first = false;
+    if (isSetHeartbeatCount()) {
+      if (!first) sb.append(", ");
+      sb.append("heartbeatCount:");
+      sb.append(this.heartbeatCount);
+      first = false;
+    }
+    if (isSetAgentInfo()) {
+      if (!first) sb.append(", ");
+      sb.append("agentInfo:");
+      if (this.agentInfo == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.agentInfo);
+      }
+      first = false;
+    }
+    if (isSetBlockedByExtId()) {
+      if (!first) sb.append(", ");
+      sb.append("blockedByExtId:");
+      sb.append(this.blockedByExtId);
+      first = false;
+    }
+    if (isSetBlockedByIntId()) {
+      if (!first) sb.append(", ");
+      sb.append("blockedByIntId:");
+      sb.append(this.blockedByIntId);
+      first = false;
+    }
+    if (isSetLockIdInternal()) {
+      if (!first) sb.append(", ");
+      sb.append("lockIdInternal:");
+      sb.append(this.lockIdInternal);
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -1264,6 +1651,46 @@ public class ShowLocksResponseElement implements org.apache.thrift.TBase<ShowLoc
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 12: // HEARTBEAT_COUNT
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.heartbeatCount = iprot.readI32();
+              struct.setHeartbeatCountIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 13: // AGENT_INFO
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.agentInfo = iprot.readString();
+              struct.setAgentInfoIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 14: // BLOCKED_BY_EXT_ID
+            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+              struct.blockedByExtId = iprot.readI64();
+              struct.setBlockedByExtIdIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 15: // BLOCKED_BY_INT_ID
+            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+              struct.blockedByIntId = iprot.readI64();
+              struct.setBlockedByIntIdIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 16: // LOCK_ID_INTERNAL
+            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+              struct.lockIdInternal = iprot.readI64();
+              struct.setLockIdInternalIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -1332,6 +1759,33 @@ public class ShowLocksResponseElement implements org.apache.thrift.TBase<ShowLoc
         oprot.writeString(struct.hostname);
         oprot.writeFieldEnd();
       }
+      if (struct.isSetHeartbeatCount()) {
+        oprot.writeFieldBegin(HEARTBEAT_COUNT_FIELD_DESC);
+        oprot.writeI32(struct.heartbeatCount);
+        oprot.writeFieldEnd();
+      }
+      if (struct.agentInfo != null) {
+        if (struct.isSetAgentInfo()) {
+          oprot.writeFieldBegin(AGENT_INFO_FIELD_DESC);
+          oprot.writeString(struct.agentInfo);
+          oprot.writeFieldEnd();
+        }
+      }
+      if (struct.isSetBlockedByExtId()) {
+        oprot.writeFieldBegin(BLOCKED_BY_EXT_ID_FIELD_DESC);
+        oprot.writeI64(struct.blockedByExtId);
+        oprot.writeFieldEnd();
+      }
+      if (struct.isSetBlockedByIntId()) {
+        oprot.writeFieldBegin(BLOCKED_BY_INT_ID_FIELD_DESC);
+        oprot.writeI64(struct.blockedByIntId);
+        oprot.writeFieldEnd();
+      }
+      if (struct.isSetLockIdInternal()) {
+        oprot.writeFieldBegin(LOCK_ID_INTERNAL_FIELD_DESC);
+        oprot.writeI64(struct.lockIdInternal);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -1369,7 +1823,22 @@ public class ShowLocksResponseElement implements org.apache.thrift.TBase<ShowLoc
       if (struct.isSetAcquiredat()) {
         optionals.set(3);
       }
-      oprot.writeBitSet(optionals, 4);
+      if (struct.isSetHeartbeatCount()) {
+        optionals.set(4);
+      }
+      if (struct.isSetAgentInfo()) {
+        optionals.set(5);
+      }
+      if (struct.isSetBlockedByExtId()) {
+        optionals.set(6);
+      }
+      if (struct.isSetBlockedByIntId()) {
+        optionals.set(7);
+      }
+      if (struct.isSetLockIdInternal()) {
+        optionals.set(8);
+      }
+      oprot.writeBitSet(optionals, 9);
       if (struct.isSetTablename()) {
         oprot.writeString(struct.tablename);
       }
@@ -1381,6 +1850,21 @@ public class ShowLocksResponseElement implements org.apache.thrift.TBase<ShowLoc
       }
       if (struct.isSetAcquiredat()) {
         oprot.writeI64(struct.acquiredat);
+      }
+      if (struct.isSetHeartbeatCount()) {
+        oprot.writeI32(struct.heartbeatCount);
+      }
+      if (struct.isSetAgentInfo()) {
+        oprot.writeString(struct.agentInfo);
+      }
+      if (struct.isSetBlockedByExtId()) {
+        oprot.writeI64(struct.blockedByExtId);
+      }
+      if (struct.isSetBlockedByIntId()) {
+        oprot.writeI64(struct.blockedByIntId);
+      }
+      if (struct.isSetLockIdInternal()) {
+        oprot.writeI64(struct.lockIdInternal);
       }
     }
 
@@ -1401,7 +1885,7 @@ public class ShowLocksResponseElement implements org.apache.thrift.TBase<ShowLoc
       struct.setUserIsSet(true);
       struct.hostname = iprot.readString();
       struct.setHostnameIsSet(true);
-      BitSet incoming = iprot.readBitSet(4);
+      BitSet incoming = iprot.readBitSet(9);
       if (incoming.get(0)) {
         struct.tablename = iprot.readString();
         struct.setTablenameIsSet(true);
@@ -1417,6 +1901,26 @@ public class ShowLocksResponseElement implements org.apache.thrift.TBase<ShowLoc
       if (incoming.get(3)) {
         struct.acquiredat = iprot.readI64();
         struct.setAcquiredatIsSet(true);
+      }
+      if (incoming.get(4)) {
+        struct.heartbeatCount = iprot.readI32();
+        struct.setHeartbeatCountIsSet(true);
+      }
+      if (incoming.get(5)) {
+        struct.agentInfo = iprot.readString();
+        struct.setAgentInfoIsSet(true);
+      }
+      if (incoming.get(6)) {
+        struct.blockedByExtId = iprot.readI64();
+        struct.setBlockedByExtIdIsSet(true);
+      }
+      if (incoming.get(7)) {
+        struct.blockedByIntId = iprot.readI64();
+        struct.setBlockedByIntIdIsSet(true);
+      }
+      if (incoming.get(8)) {
+        struct.lockIdInternal = iprot.readI64();
+        struct.setLockIdInternalIsSet(true);
       }
     }
   }

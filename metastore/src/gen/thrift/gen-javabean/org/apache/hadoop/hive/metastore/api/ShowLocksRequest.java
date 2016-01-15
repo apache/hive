@@ -38,6 +38,10 @@ import org.slf4j.LoggerFactory;
 public class ShowLocksRequest implements org.apache.thrift.TBase<ShowLocksRequest, ShowLocksRequest._Fields>, java.io.Serializable, Cloneable, Comparable<ShowLocksRequest> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("ShowLocksRequest");
 
+  private static final org.apache.thrift.protocol.TField DBNAME_FIELD_DESC = new org.apache.thrift.protocol.TField("dbname", org.apache.thrift.protocol.TType.STRING, (short)1);
+  private static final org.apache.thrift.protocol.TField TABLENAME_FIELD_DESC = new org.apache.thrift.protocol.TField("tablename", org.apache.thrift.protocol.TType.STRING, (short)2);
+  private static final org.apache.thrift.protocol.TField PARTNAME_FIELD_DESC = new org.apache.thrift.protocol.TField("partname", org.apache.thrift.protocol.TType.STRING, (short)3);
+  private static final org.apache.thrift.protocol.TField IS_EXTENDED_FIELD_DESC = new org.apache.thrift.protocol.TField("isExtended", org.apache.thrift.protocol.TType.BOOL, (short)4);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -45,10 +49,17 @@ public class ShowLocksRequest implements org.apache.thrift.TBase<ShowLocksReques
     schemes.put(TupleScheme.class, new ShowLocksRequestTupleSchemeFactory());
   }
 
+  private String dbname; // optional
+  private String tablename; // optional
+  private String partname; // optional
+  private boolean isExtended; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-;
+    DBNAME((short)1, "dbname"),
+    TABLENAME((short)2, "tablename"),
+    PARTNAME((short)3, "partname"),
+    IS_EXTENDED((short)4, "isExtended");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -63,6 +74,14 @@ public class ShowLocksRequest implements org.apache.thrift.TBase<ShowLocksReques
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
+        case 1: // DBNAME
+          return DBNAME;
+        case 2: // TABLENAME
+          return TABLENAME;
+        case 3: // PARTNAME
+          return PARTNAME;
+        case 4: // IS_EXTENDED
+          return IS_EXTENDED;
         default:
           return null;
       }
@@ -101,20 +120,46 @@ public class ShowLocksRequest implements org.apache.thrift.TBase<ShowLocksReques
       return _fieldName;
     }
   }
+
+  // isset id assignments
+  private static final int __ISEXTENDED_ISSET_ID = 0;
+  private byte __isset_bitfield = 0;
+  private static final _Fields optionals[] = {_Fields.DBNAME,_Fields.TABLENAME,_Fields.PARTNAME,_Fields.IS_EXTENDED};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+    tmpMap.put(_Fields.DBNAME, new org.apache.thrift.meta_data.FieldMetaData("dbname", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.TABLENAME, new org.apache.thrift.meta_data.FieldMetaData("tablename", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.PARTNAME, new org.apache.thrift.meta_data.FieldMetaData("partname", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.IS_EXTENDED, new org.apache.thrift.meta_data.FieldMetaData("isExtended", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(ShowLocksRequest.class, metaDataMap);
   }
 
   public ShowLocksRequest() {
+    this.isExtended = false;
+
   }
 
   /**
    * Performs a deep copy on <i>other</i>.
    */
   public ShowLocksRequest(ShowLocksRequest other) {
+    __isset_bitfield = other.__isset_bitfield;
+    if (other.isSetDbname()) {
+      this.dbname = other.dbname;
+    }
+    if (other.isSetTablename()) {
+      this.tablename = other.tablename;
+    }
+    if (other.isSetPartname()) {
+      this.partname = other.partname;
+    }
+    this.isExtended = other.isExtended;
   }
 
   public ShowLocksRequest deepCopy() {
@@ -123,15 +168,155 @@ public class ShowLocksRequest implements org.apache.thrift.TBase<ShowLocksReques
 
   @Override
   public void clear() {
+    this.dbname = null;
+    this.tablename = null;
+    this.partname = null;
+    this.isExtended = false;
+
+  }
+
+  public String getDbname() {
+    return this.dbname;
+  }
+
+  public void setDbname(String dbname) {
+    this.dbname = dbname;
+  }
+
+  public void unsetDbname() {
+    this.dbname = null;
+  }
+
+  /** Returns true if field dbname is set (has been assigned a value) and false otherwise */
+  public boolean isSetDbname() {
+    return this.dbname != null;
+  }
+
+  public void setDbnameIsSet(boolean value) {
+    if (!value) {
+      this.dbname = null;
+    }
+  }
+
+  public String getTablename() {
+    return this.tablename;
+  }
+
+  public void setTablename(String tablename) {
+    this.tablename = tablename;
+  }
+
+  public void unsetTablename() {
+    this.tablename = null;
+  }
+
+  /** Returns true if field tablename is set (has been assigned a value) and false otherwise */
+  public boolean isSetTablename() {
+    return this.tablename != null;
+  }
+
+  public void setTablenameIsSet(boolean value) {
+    if (!value) {
+      this.tablename = null;
+    }
+  }
+
+  public String getPartname() {
+    return this.partname;
+  }
+
+  public void setPartname(String partname) {
+    this.partname = partname;
+  }
+
+  public void unsetPartname() {
+    this.partname = null;
+  }
+
+  /** Returns true if field partname is set (has been assigned a value) and false otherwise */
+  public boolean isSetPartname() {
+    return this.partname != null;
+  }
+
+  public void setPartnameIsSet(boolean value) {
+    if (!value) {
+      this.partname = null;
+    }
+  }
+
+  public boolean isIsExtended() {
+    return this.isExtended;
+  }
+
+  public void setIsExtended(boolean isExtended) {
+    this.isExtended = isExtended;
+    setIsExtendedIsSet(true);
+  }
+
+  public void unsetIsExtended() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __ISEXTENDED_ISSET_ID);
+  }
+
+  /** Returns true if field isExtended is set (has been assigned a value) and false otherwise */
+  public boolean isSetIsExtended() {
+    return EncodingUtils.testBit(__isset_bitfield, __ISEXTENDED_ISSET_ID);
+  }
+
+  public void setIsExtendedIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __ISEXTENDED_ISSET_ID, value);
   }
 
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
+    case DBNAME:
+      if (value == null) {
+        unsetDbname();
+      } else {
+        setDbname((String)value);
+      }
+      break;
+
+    case TABLENAME:
+      if (value == null) {
+        unsetTablename();
+      } else {
+        setTablename((String)value);
+      }
+      break;
+
+    case PARTNAME:
+      if (value == null) {
+        unsetPartname();
+      } else {
+        setPartname((String)value);
+      }
+      break;
+
+    case IS_EXTENDED:
+      if (value == null) {
+        unsetIsExtended();
+      } else {
+        setIsExtended((Boolean)value);
+      }
+      break;
+
     }
   }
 
   public Object getFieldValue(_Fields field) {
     switch (field) {
+    case DBNAME:
+      return getDbname();
+
+    case TABLENAME:
+      return getTablename();
+
+    case PARTNAME:
+      return getPartname();
+
+    case IS_EXTENDED:
+      return isIsExtended();
+
     }
     throw new IllegalStateException();
   }
@@ -143,6 +328,14 @@ public class ShowLocksRequest implements org.apache.thrift.TBase<ShowLocksReques
     }
 
     switch (field) {
+    case DBNAME:
+      return isSetDbname();
+    case TABLENAME:
+      return isSetTablename();
+    case PARTNAME:
+      return isSetPartname();
+    case IS_EXTENDED:
+      return isSetIsExtended();
     }
     throw new IllegalStateException();
   }
@@ -160,12 +353,68 @@ public class ShowLocksRequest implements org.apache.thrift.TBase<ShowLocksReques
     if (that == null)
       return false;
 
+    boolean this_present_dbname = true && this.isSetDbname();
+    boolean that_present_dbname = true && that.isSetDbname();
+    if (this_present_dbname || that_present_dbname) {
+      if (!(this_present_dbname && that_present_dbname))
+        return false;
+      if (!this.dbname.equals(that.dbname))
+        return false;
+    }
+
+    boolean this_present_tablename = true && this.isSetTablename();
+    boolean that_present_tablename = true && that.isSetTablename();
+    if (this_present_tablename || that_present_tablename) {
+      if (!(this_present_tablename && that_present_tablename))
+        return false;
+      if (!this.tablename.equals(that.tablename))
+        return false;
+    }
+
+    boolean this_present_partname = true && this.isSetPartname();
+    boolean that_present_partname = true && that.isSetPartname();
+    if (this_present_partname || that_present_partname) {
+      if (!(this_present_partname && that_present_partname))
+        return false;
+      if (!this.partname.equals(that.partname))
+        return false;
+    }
+
+    boolean this_present_isExtended = true && this.isSetIsExtended();
+    boolean that_present_isExtended = true && that.isSetIsExtended();
+    if (this_present_isExtended || that_present_isExtended) {
+      if (!(this_present_isExtended && that_present_isExtended))
+        return false;
+      if (this.isExtended != that.isExtended)
+        return false;
+    }
+
     return true;
   }
 
   @Override
   public int hashCode() {
     List<Object> list = new ArrayList<Object>();
+
+    boolean present_dbname = true && (isSetDbname());
+    list.add(present_dbname);
+    if (present_dbname)
+      list.add(dbname);
+
+    boolean present_tablename = true && (isSetTablename());
+    list.add(present_tablename);
+    if (present_tablename)
+      list.add(tablename);
+
+    boolean present_partname = true && (isSetPartname());
+    list.add(present_partname);
+    if (present_partname)
+      list.add(partname);
+
+    boolean present_isExtended = true && (isSetIsExtended());
+    list.add(present_isExtended);
+    if (present_isExtended)
+      list.add(isExtended);
 
     return list.hashCode();
   }
@@ -178,6 +427,46 @@ public class ShowLocksRequest implements org.apache.thrift.TBase<ShowLocksReques
 
     int lastComparison = 0;
 
+    lastComparison = Boolean.valueOf(isSetDbname()).compareTo(other.isSetDbname());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetDbname()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.dbname, other.dbname);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetTablename()).compareTo(other.isSetTablename());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetTablename()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.tablename, other.tablename);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetPartname()).compareTo(other.isSetPartname());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetPartname()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.partname, other.partname);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetIsExtended()).compareTo(other.isSetIsExtended());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetIsExtended()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.isExtended, other.isExtended);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -198,6 +487,41 @@ public class ShowLocksRequest implements org.apache.thrift.TBase<ShowLocksReques
     StringBuilder sb = new StringBuilder("ShowLocksRequest(");
     boolean first = true;
 
+    if (isSetDbname()) {
+      sb.append("dbname:");
+      if (this.dbname == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.dbname);
+      }
+      first = false;
+    }
+    if (isSetTablename()) {
+      if (!first) sb.append(", ");
+      sb.append("tablename:");
+      if (this.tablename == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.tablename);
+      }
+      first = false;
+    }
+    if (isSetPartname()) {
+      if (!first) sb.append(", ");
+      sb.append("partname:");
+      if (this.partname == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.partname);
+      }
+      first = false;
+    }
+    if (isSetIsExtended()) {
+      if (!first) sb.append(", ");
+      sb.append("isExtended:");
+      sb.append(this.isExtended);
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -217,6 +541,8 @@ public class ShowLocksRequest implements org.apache.thrift.TBase<ShowLocksReques
 
   private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
     try {
+      // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+      __isset_bitfield = 0;
       read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
     } catch (org.apache.thrift.TException te) {
       throw new java.io.IOException(te);
@@ -241,6 +567,38 @@ public class ShowLocksRequest implements org.apache.thrift.TBase<ShowLocksReques
           break;
         }
         switch (schemeField.id) {
+          case 1: // DBNAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.dbname = iprot.readString();
+              struct.setDbnameIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 2: // TABLENAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.tablename = iprot.readString();
+              struct.setTablenameIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 3: // PARTNAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.partname = iprot.readString();
+              struct.setPartnameIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 4: // IS_EXTENDED
+            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+              struct.isExtended = iprot.readBool();
+              struct.setIsExtendedIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -254,6 +612,32 @@ public class ShowLocksRequest implements org.apache.thrift.TBase<ShowLocksReques
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
+      if (struct.dbname != null) {
+        if (struct.isSetDbname()) {
+          oprot.writeFieldBegin(DBNAME_FIELD_DESC);
+          oprot.writeString(struct.dbname);
+          oprot.writeFieldEnd();
+        }
+      }
+      if (struct.tablename != null) {
+        if (struct.isSetTablename()) {
+          oprot.writeFieldBegin(TABLENAME_FIELD_DESC);
+          oprot.writeString(struct.tablename);
+          oprot.writeFieldEnd();
+        }
+      }
+      if (struct.partname != null) {
+        if (struct.isSetPartname()) {
+          oprot.writeFieldBegin(PARTNAME_FIELD_DESC);
+          oprot.writeString(struct.partname);
+          oprot.writeFieldEnd();
+        }
+      }
+      if (struct.isSetIsExtended()) {
+        oprot.writeFieldBegin(IS_EXTENDED_FIELD_DESC);
+        oprot.writeBool(struct.isExtended);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -271,11 +655,54 @@ public class ShowLocksRequest implements org.apache.thrift.TBase<ShowLocksReques
     @Override
     public void write(org.apache.thrift.protocol.TProtocol prot, ShowLocksRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
+      BitSet optionals = new BitSet();
+      if (struct.isSetDbname()) {
+        optionals.set(0);
+      }
+      if (struct.isSetTablename()) {
+        optionals.set(1);
+      }
+      if (struct.isSetPartname()) {
+        optionals.set(2);
+      }
+      if (struct.isSetIsExtended()) {
+        optionals.set(3);
+      }
+      oprot.writeBitSet(optionals, 4);
+      if (struct.isSetDbname()) {
+        oprot.writeString(struct.dbname);
+      }
+      if (struct.isSetTablename()) {
+        oprot.writeString(struct.tablename);
+      }
+      if (struct.isSetPartname()) {
+        oprot.writeString(struct.partname);
+      }
+      if (struct.isSetIsExtended()) {
+        oprot.writeBool(struct.isExtended);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, ShowLocksRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
+      BitSet incoming = iprot.readBitSet(4);
+      if (incoming.get(0)) {
+        struct.dbname = iprot.readString();
+        struct.setDbnameIsSet(true);
+      }
+      if (incoming.get(1)) {
+        struct.tablename = iprot.readString();
+        struct.setTablenameIsSet(true);
+      }
+      if (incoming.get(2)) {
+        struct.partname = iprot.readString();
+        struct.setPartnameIsSet(true);
+      }
+      if (incoming.get(3)) {
+        struct.isExtended = iprot.readBool();
+        struct.setIsExtendedIsSet(true);
+      }
     }
   }
 

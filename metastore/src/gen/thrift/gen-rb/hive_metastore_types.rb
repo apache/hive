@@ -1558,12 +1558,18 @@ class TxnInfo
   STATE = 2
   USER = 3
   HOSTNAME = 4
+  AGENTINFO = 5
+  HEARTBEATCOUNT = 6
+  METAINFO = 7
 
   FIELDS = {
     ID => {:type => ::Thrift::Types::I64, :name => 'id'},
     STATE => {:type => ::Thrift::Types::I32, :name => 'state', :enum_class => ::TxnState},
     USER => {:type => ::Thrift::Types::STRING, :name => 'user'},
-    HOSTNAME => {:type => ::Thrift::Types::STRING, :name => 'hostname'}
+    HOSTNAME => {:type => ::Thrift::Types::STRING, :name => 'hostname'},
+    AGENTINFO => {:type => ::Thrift::Types::STRING, :name => 'agentInfo', :default => %q"Unknown", :optional => true},
+    HEARTBEATCOUNT => {:type => ::Thrift::Types::I32, :name => 'heartbeatCount', :default => 0, :optional => true},
+    METAINFO => {:type => ::Thrift::Types::STRING, :name => 'metaInfo', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -1626,11 +1632,13 @@ class OpenTxnRequest
   NUM_TXNS = 1
   USER = 2
   HOSTNAME = 3
+  AGENTINFO = 4
 
   FIELDS = {
     NUM_TXNS => {:type => ::Thrift::Types::I32, :name => 'num_txns'},
     USER => {:type => ::Thrift::Types::STRING, :name => 'user'},
-    HOSTNAME => {:type => ::Thrift::Types::STRING, :name => 'hostname'}
+    HOSTNAME => {:type => ::Thrift::Types::STRING, :name => 'hostname'},
+    AGENTINFO => {:type => ::Thrift::Types::STRING, :name => 'agentInfo', :default => %q"Unknown", :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -1734,12 +1742,14 @@ class LockRequest
   TXNID = 2
   USER = 3
   HOSTNAME = 4
+  AGENTINFO = 5
 
   FIELDS = {
     COMPONENT => {:type => ::Thrift::Types::LIST, :name => 'component', :element => {:type => ::Thrift::Types::STRUCT, :class => ::LockComponent}},
     TXNID => {:type => ::Thrift::Types::I64, :name => 'txnid', :optional => true},
     USER => {:type => ::Thrift::Types::STRING, :name => 'user'},
-    HOSTNAME => {:type => ::Thrift::Types::STRING, :name => 'hostname'}
+    HOSTNAME => {:type => ::Thrift::Types::STRING, :name => 'hostname'},
+    AGENTINFO => {:type => ::Thrift::Types::STRING, :name => 'agentInfo', :default => %q"Unknown", :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -1779,9 +1789,13 @@ end
 class CheckLockRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   LOCKID = 1
+  TXNID = 2
+  ELAPSED_MS = 3
 
   FIELDS = {
-    LOCKID => {:type => ::Thrift::Types::I64, :name => 'lockid'}
+    LOCKID => {:type => ::Thrift::Types::I64, :name => 'lockid'},
+    TXNID => {:type => ::Thrift::Types::I64, :name => 'txnid', :optional => true},
+    ELAPSED_MS => {:type => ::Thrift::Types::I64, :name => 'elapsed_ms', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -1812,9 +1826,16 @@ end
 
 class ShowLocksRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
+  DBNAME = 1
+  TABLENAME = 2
+  PARTNAME = 3
+  ISEXTENDED = 4
 
   FIELDS = {
-
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname', :optional => true},
+    TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tablename', :optional => true},
+    PARTNAME => {:type => ::Thrift::Types::STRING, :name => 'partname', :optional => true},
+    ISEXTENDED => {:type => ::Thrift::Types::BOOL, :name => 'isExtended', :default => false, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -1838,6 +1859,11 @@ class ShowLocksResponseElement
   ACQUIREDAT = 9
   USER = 10
   HOSTNAME = 11
+  HEARTBEATCOUNT = 12
+  AGENTINFO = 13
+  BLOCKEDBYEXTID = 14
+  BLOCKEDBYINTID = 15
+  LOCKIDINTERNAL = 16
 
   FIELDS = {
     LOCKID => {:type => ::Thrift::Types::I64, :name => 'lockid'},
@@ -1850,7 +1876,12 @@ class ShowLocksResponseElement
     LASTHEARTBEAT => {:type => ::Thrift::Types::I64, :name => 'lastheartbeat'},
     ACQUIREDAT => {:type => ::Thrift::Types::I64, :name => 'acquiredat', :optional => true},
     USER => {:type => ::Thrift::Types::STRING, :name => 'user'},
-    HOSTNAME => {:type => ::Thrift::Types::STRING, :name => 'hostname'}
+    HOSTNAME => {:type => ::Thrift::Types::STRING, :name => 'hostname'},
+    HEARTBEATCOUNT => {:type => ::Thrift::Types::I32, :name => 'heartbeatCount', :default => 0, :optional => true},
+    AGENTINFO => {:type => ::Thrift::Types::STRING, :name => 'agentInfo', :optional => true},
+    BLOCKEDBYEXTID => {:type => ::Thrift::Types::I64, :name => 'blockedByExtId', :optional => true},
+    BLOCKEDBYINTID => {:type => ::Thrift::Types::I64, :name => 'blockedByIntId', :optional => true},
+    LOCKIDINTERNAL => {:type => ::Thrift::Types::I64, :name => 'lockIdInternal', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -2003,6 +2034,10 @@ class ShowCompactResponseElement
   WORKERID = 6
   START = 7
   RUNAS = 8
+  HIGHTESTTXNID = 9
+  METAINFO = 10
+  ENDTIME = 11
+  HADOOPJOBID = 12
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
@@ -2012,7 +2047,11 @@ class ShowCompactResponseElement
     STATE => {:type => ::Thrift::Types::STRING, :name => 'state'},
     WORKERID => {:type => ::Thrift::Types::STRING, :name => 'workerid', :optional => true},
     START => {:type => ::Thrift::Types::I64, :name => 'start', :optional => true},
-    RUNAS => {:type => ::Thrift::Types::STRING, :name => 'runAs', :optional => true}
+    RUNAS => {:type => ::Thrift::Types::STRING, :name => 'runAs', :optional => true},
+    HIGHTESTTXNID => {:type => ::Thrift::Types::I64, :name => 'hightestTxnId', :optional => true},
+    METAINFO => {:type => ::Thrift::Types::STRING, :name => 'metaInfo', :optional => true},
+    ENDTIME => {:type => ::Thrift::Types::I64, :name => 'endTime', :optional => true},
+    HADOOPJOBID => {:type => ::Thrift::Types::STRING, :name => 'hadoopJobId', :default => %q"None", :optional => true}
   }
 
   def struct_fields; FIELDS; end

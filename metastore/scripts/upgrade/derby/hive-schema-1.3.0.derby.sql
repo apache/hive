@@ -327,7 +327,7 @@ ALTER TABLE "APP"."SDS" ADD CONSTRAINT "SQL110318025505550" CHECK (IS_COMPRESSED
 -- ----------------------------
 -- Transaction and Lock Tables
 -- ----------------------------
-RUN 'hive-txn-schema-0.13.0.derby.sql';
+RUN 'hive-txn-schema-1.3.0.derby.sql';
 
 -- -----------------------------------------------------------------
 -- Record schema version. Should be the last step in the init script
