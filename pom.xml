@@ -145,8 +145,8 @@
     <json.version>20090211</json.version>
     <junit.version>4.11</junit.version>
     <kryo.version>2.22</kryo.version>
-    <libfb303.version>0.9.2</libfb303.version>
-    <libthrift.version>0.9.2</libthrift.version>
+    <libfb303.version>0.9.3</libfb303.version>
+    <libthrift.version>0.9.3</libthrift.version>
     <log4j.version>1.2.16</log4j.version>
     <log4j-extras.version>1.2.17</log4j-extras.version>
     <opencsv.version>2.3</opencsv.version>

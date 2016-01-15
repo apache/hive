@@ -1,0 +1,1 @@
+ALTER TABLE `TXNS` ADD `TXN_META_INFO` varchar(128);
