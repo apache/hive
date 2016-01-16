@@ -39,11 +39,9 @@ import java.util.TreeSet;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
-import org.apache.hadoop.hive.ql.exec.Heartbeater;
 import org.apache.hadoop.hive.ql.exec.MapOperator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -62,21 +60,6 @@ import org.apache.tez.dag.api.client.VertexStatus;
 import org.fusesource.jansi.Ansi;
 
 import com.google.common.base.Preconditions;
-
-import java.io.IOException;
-import java.io.PrintStream;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 /**
  * TezJobMonitor keeps track of a tez job while it's being executed. It will
@@ -220,11 +203,10 @@ public class TezJobMonitor {
    * monitorExecution handles status printing, failures during execution and final status retrieval.
    *
    * @param dagClient client that was used to kick off the job
-   * @param txnMgr transaction manager for this operation
    * @param conf configuration file for this operation
    * @return int 0 - success, 1 - killed, 2 - failed
    */
-  public int monitorExecution(final DAGClient dagClient, HiveTxnManager txnMgr, HiveConf conf,
+  public int monitorExecution(final DAGClient dagClient, HiveConf conf,
       DAG dag) throws InterruptedException {
     long monitorStartTime = System.currentTimeMillis();
     DAGStatus status = null;
@@ -238,7 +220,6 @@ public class TezJobMonitor {
     DAGStatus.State lastState = null;
     String lastReport = null;
     Set<StatusGetOpts> opts = new HashSet<StatusGetOpts>();
-    Heartbeater heartbeater = new Heartbeater(txnMgr, conf);
     long startTime = 0;
     boolean isProfileEnabled = HiveConf.getBoolVar(conf, HiveConf.ConfVars.TEZ_EXEC_SUMMARY) ||
       Utilities.isPerfOrAboveLogging(conf);
@@ -255,7 +236,6 @@ public class TezJobMonitor {
         status = dagClient.getDAGStatus(opts, checkInterval);
         Map<String, Progress> progressMap = status.getVertexProgress();
         DAGStatus.State state = status.getState();
-        heartbeater.heartbeat();
 
         if (state != lastState || state == RUNNING) {
           lastState = state;

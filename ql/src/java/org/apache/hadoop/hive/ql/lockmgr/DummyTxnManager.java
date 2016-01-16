@@ -181,6 +181,15 @@ class DummyTxnManager extends HiveTxnManagerImpl {
   }
 
   @Override
+  public void releaseLocks(List<HiveLock> hiveLocks) throws LockException {
+    // If there's no lock manager, it essentially means we didn't acquire locks in the first place,
+    // thus no need to release locks
+    if (lockMgr != null) {
+      lockMgr.releaseLocks(hiveLocks);
+    }
+  }
+
+  @Override
   public void commitTxn() throws LockException {
     // No-op
   }

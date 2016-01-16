@@ -27,6 +27,8 @@ import org.apache.hadoop.hive.ql.plan.LockTableDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockTableDesc;
 
+import java.util.List;
+
 /**
  * An interface that allows Hive to manage transactions.  All classes
  * implementing this should extend {@link HiveTxnManagerImpl} rather than
@@ -65,6 +67,14 @@ public interface HiveTxnManager {
    * to get more info on how to handle the exception.
    */
   void acquireLocks(QueryPlan plan, Context ctx, String username) throws LockException;
+
+  /**
+   * Release specified locks.
+   * Transaction aware TxnManagers, which has {@code supportsAcid() == true},
+   * will track locks internally and ignore this parameter
+   * @param hiveLocks The list of locks to be released.
+   */
+  void releaseLocks(List<HiveLock> hiveLocks) throws LockException;
 
   /**
    * Commit the current transaction.  This will release all locks obtained in
