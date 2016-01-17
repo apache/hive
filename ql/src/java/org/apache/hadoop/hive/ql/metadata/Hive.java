@@ -524,7 +524,7 @@ public class Hive {
     tbl.setNumBuckets(bucketCount);
     tbl.setBucketCols(bucketCols);
     if (parameters != null) {
-      tbl.setParamters(parameters);
+      tbl.setParameters(parameters);
     }
     createTable(tbl);
   }
@@ -1419,6 +1419,7 @@ public class Hive {
    * @param isSrcLocal
    *          If the source directory is LOCAL
    * @param isAcid true if this is an ACID operation
+   * @throws JSONException 
    */
   public Partition loadPartition(Path loadPath, Table tbl,
       Map<String, String> partSpec, boolean replace,
@@ -1478,6 +1479,8 @@ public class Hive {
 
       newTPart = getPartition(tbl, partSpec, true, newPartPath.toString(),
           inheritTableSpecs, newFiles);
+      //column stats will be inaccurate
+      StatsSetupConst.clearColumnStatsState(newTPart.getParameters());
 
       // recreate the partition if it existed before
       if (isSkewedStoreAsSubdir) {
@@ -1490,7 +1493,7 @@ public class Hive {
         skewedInfo.setSkewedColValueLocationMaps(skewedColValueLocationMaps);
         newCreatedTpart.getSd().setSkewedInfo(skewedInfo);
         if(!this.getConf().getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
-          newTPart.getParameters().put(StatsSetupConst.COLUMN_STATS_ACCURATE, "false");
+          StatsSetupConst.setBasicStatsState(newTPart.getParameters(), StatsSetupConst.FALSE);
         }
         alterPartition(tbl.getDbName(), tbl.getTableName(), new Partition(tbl, newCreatedTpart));
         newTPart = getPartition(tbl, partSpec, true, newPartPath.toString(), inheritTableSpecs,
@@ -1498,9 +1501,9 @@ public class Hive {
         return new Partition(tbl, newCreatedTpart);
       }
       if(!this.getConf().getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
-        newTPart.getParameters().put(StatsSetupConst.COLUMN_STATS_ACCURATE, "false");
-        alterPartition(tbl.getDbName(), tbl.getTableName(), new Partition(tbl, newTPart.getTPartition()));
+        StatsSetupConst.setBasicStatsState(newTPart.getParameters(), StatsSetupConst.FALSE);
       }
+      alterPartition(tbl.getDbName(), tbl.getTableName(), new Partition(tbl, newTPart.getTPartition()));
     } catch (IOException e) {
       LOG.error(StringUtils.stringifyException(e));
       throw new HiveException(e);
@@ -1611,6 +1614,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @param txnId txnId, can be 0 unless isAcid == true
    * @return partition map details (PartitionSpec and Partition)
    * @throws HiveException
+   * @throws JSONException 
    */
   public Map<Map<String, String>, Partition> loadDynamicPartitions(Path loadPath,
       String tableName, Map<String, String> partSpec, boolean replace,
@@ -1730,10 +1734,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
     }
     if(!this.getConf().getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
-      tbl.getParameters().put(StatsSetupConst.COLUMN_STATS_ACCURATE, "false");
+      StatsSetupConst.setBasicStatsState(tbl.getParameters(), StatsSetupConst.FALSE);
     }  else {
       tbl.getParameters().put(StatsSetupConst.STATS_GENERATED_VIA_STATS_TASK, "true");
     }
+
+    //column stats will be inaccurate
+    StatsSetupConst.clearColumnStatsState(tbl.getParameters());
 
     try {
       if (isSkewedStoreAsSubdir) {
@@ -1992,7 +1999,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
       throw new HiveException("new partition path should not be null or empty.");
     }
     tpart.getSd().setLocation(partPath);
-    tpart.getParameters().put(StatsSetupConst.STATS_GENERATED_VIA_STATS_TASK,"true");
     String fullName = tbl.getTableName();
     if (!org.apache.commons.lang.StringUtils.isEmpty(tbl.getDbName())) {
       fullName = tbl.getDbName() + "." + tbl.getTableName();

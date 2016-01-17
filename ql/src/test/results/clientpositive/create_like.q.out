@@ -339,14 +339,11 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	false               
 	avro.schema.literal 	{\n  \"namespace\": \"testing.hive.avro.serde\",\n  \"name\": \"doctors\",\n  \"type\": \"record\",\n  \"fields\": [\n    {\n      \"name\":\"number\",\n      \"type\":\"int\",\n      \"doc\":\"Order of playing the role\"\n    },\n    {\n      \"name\":\"first_name\",\n      \"type\":\"string\",\n      \"doc\":\"first name of actor playing role\"\n    },\n    {\n      \"name\":\"last_name\",\n      \"type\":\"string\",\n      \"doc\":\"last name of actor playing role\"\n    }\n  ]\n}
 	k1                  	v1                  
 	k2                  	v2                  
 #### A masked pattern was here ####
 	numFiles            	0                   
-	numRows             	-1                  
-	rawDataSize         	-1                  
 	totalSize           	0                   
 #### A masked pattern was here ####
 	 	 

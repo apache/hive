@@ -86,7 +86,6 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
 	totalSize           	11                  
 #### A masked pattern was here ####

@@ -44,6 +44,10 @@ public class StatsWork implements Serializable {
   // are still valid. However, if a load file is being performed, the old stats collected by
   // aggregator are not valid. It might be a good idea to clear them instead of leaving wrong
   // and old stats.
+  // Since HIVE-12661, we maintain the old stats (although may be wrong) for CBO
+  // purpose. We use a flag COLUMN_STATS_ACCURATE to
+  // show the accuracy of the stats.
+
   private boolean clearAggregatorStats = false;
 
   private boolean noStatsAggregator = false;

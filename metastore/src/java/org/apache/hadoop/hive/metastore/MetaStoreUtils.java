@@ -233,13 +233,10 @@ public class MetaStoreUtils {
         LOG.info("Updated size of table " + tbl.getTableName() +" to "+ params.get(StatsSetupConst.TOTAL_SIZE));
         if(!params.containsKey(StatsSetupConst.STATS_GENERATED_VIA_STATS_TASK)) {
           // invalidate stats requiring scan since this is a regular ddl alter case
-          for (String stat : StatsSetupConst.statsRequireCompute) {
-            params.put(stat, "-1");
-          }
-          params.put(StatsSetupConst.COLUMN_STATS_ACCURATE, StatsSetupConst.FALSE);
+          StatsSetupConst.setBasicStatsState(params, StatsSetupConst.FALSE);
         } else {
           params.remove(StatsSetupConst.STATS_GENERATED_VIA_STATS_TASK);
-          params.put(StatsSetupConst.COLUMN_STATS_ACCURATE, StatsSetupConst.TRUE);
+          StatsSetupConst.setBasicStatsState(params, StatsSetupConst.TRUE);
         }
       }
       tbl.setParameters(params);
@@ -354,13 +351,10 @@ public class MetaStoreUtils {
         LOG.warn("Updated size to " + params.get(StatsSetupConst.TOTAL_SIZE));
         if(!params.containsKey(StatsSetupConst.STATS_GENERATED_VIA_STATS_TASK)) {
           // invalidate stats requiring scan since this is a regular ddl alter case
-          for (String stat : StatsSetupConst.statsRequireCompute) {
-            params.put(stat, "-1");
-          }
-          params.put(StatsSetupConst.COLUMN_STATS_ACCURATE, StatsSetupConst.FALSE);
+          StatsSetupConst.setBasicStatsState(params, StatsSetupConst.FALSE);
         } else {
           params.remove(StatsSetupConst.STATS_GENERATED_VIA_STATS_TASK);
-          params.put(StatsSetupConst.COLUMN_STATS_ACCURATE, StatsSetupConst.TRUE);
+          StatsSetupConst.setBasicStatsState(params, StatsSetupConst.TRUE);
         }
       }
       part.setParameters(params);

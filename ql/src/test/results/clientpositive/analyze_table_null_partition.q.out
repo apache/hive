@@ -122,7 +122,7 @@ STAGE PLANS:
             partition values:
               age 15
             properties:
-              COLUMN_STATS_ACCURATE true
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
               columns name
               columns.comments 
@@ -165,7 +165,7 @@ STAGE PLANS:
             partition values:
               age 30
             properties:
-              COLUMN_STATS_ACCURATE true
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
               columns name
               columns.comments 
@@ -208,7 +208,7 @@ STAGE PLANS:
             partition values:
               age 40
             properties:
-              COLUMN_STATS_ACCURATE true
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
               columns name
               columns.comments 
@@ -251,7 +251,7 @@ STAGE PLANS:
             partition values:
               age __HIVE_DEFAULT_PARTITION__
             properties:
-              COLUMN_STATS_ACCURATE true
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
               columns name
               columns.comments 

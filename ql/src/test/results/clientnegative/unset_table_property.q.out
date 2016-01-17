@@ -18,13 +18,10 @@ PREHOOK: query: SHOW TBLPROPERTIES testTable
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
-COLUMN_STATS_ACCURATE	false
 a	1
 c	3
 #### A masked pattern was here ####
 numFiles	0
-numRows	-1
-rawDataSize	-1
 totalSize	0
 #### A masked pattern was here ####
 FAILED: SemanticException [Error 10215]: Please use the following syntax if not sure whether the property existed or not:

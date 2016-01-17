@@ -944,7 +944,7 @@ Database:           	default
 Table:              	over1k_part_orc     	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	2                   
 	numRows             	32                  
 	rawDataSize         	640                 
@@ -986,7 +986,7 @@ Database:           	default
 Table:              	over1k_part_orc     	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	2                   
 	numRows             	6                   
 	rawDataSize         	120                 
@@ -1028,7 +1028,7 @@ Database:           	default
 Table:              	over1k_part_limit_orc	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	2                   
 	numRows             	14                  
 	rawDataSize         	280                 
@@ -1070,7 +1070,7 @@ Database:           	default
 Table:              	over1k_part_limit_orc	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	2                   
 	numRows             	6                   
 	rawDataSize         	120                 
@@ -1111,7 +1111,7 @@ Database:           	default
 Table:              	over1k_part_buck_orc	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	8                   
 	numRows             	32                  
 	rawDataSize         	640                 
@@ -1152,7 +1152,7 @@ Database:           	default
 Table:              	over1k_part_buck_orc	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	8                   
 	numRows             	6                   
 	rawDataSize         	120                 
@@ -1193,7 +1193,7 @@ Database:           	default
 Table:              	over1k_part_buck_sort_orc	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	8                   
 	numRows             	32                  
 	rawDataSize         	640                 
@@ -1234,7 +1234,7 @@ Database:           	default
 Table:              	over1k_part_buck_sort_orc	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	8                   
 	numRows             	6                   
 	rawDataSize         	120                 
@@ -1765,7 +1765,7 @@ Database:           	default
 Table:              	over1k_part2_orc    	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	1                   
 	numRows             	16                  
 	rawDataSize         	415                 
@@ -1807,7 +1807,7 @@ Database:           	default
 Table:              	over1k_part2_orc    	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	1                   
 	numRows             	3                   
 	rawDataSize         	78                  
@@ -1912,7 +1912,7 @@ Database:           	default
 Table:              	over1k_part2_orc    	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	1                   
 	numRows             	16                  
 	rawDataSize         	415                 
@@ -1954,7 +1954,7 @@ Database:           	default
 Table:              	over1k_part2_orc    	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	1                   
 	numRows             	3                   
 	rawDataSize         	78                  
@@ -2226,7 +2226,7 @@ Database:           	default
 Table:              	over1k_part_buck_sort2_orc	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	1                   
 	numRows             	16                  
 	rawDataSize         	415                 
@@ -2267,7 +2267,7 @@ Database:           	default
 Table:              	over1k_part_buck_sort2_orc	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	1                   
 	numRows             	3                   
 	rawDataSize         	78                  
@@ -2441,7 +2441,7 @@ Database:           	default
 Table:              	over1k_part_buck_sort2_orc	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	1                   
 	numRows             	16                  
 	rawDataSize         	415                 
@@ -2482,7 +2482,7 @@ Database:           	default
 Table:              	over1k_part_buck_sort2_orc	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	1                   
 	numRows             	3                   
 	rawDataSize         	78                  

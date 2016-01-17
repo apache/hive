@@ -201,7 +201,7 @@ STAGE PLANS:
             partition values:
               ds 1
             properties:
-              COLUMN_STATS_ACCURATE true
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count 16
               bucket_field_name key
               columns key,value
@@ -462,7 +462,7 @@ STAGE PLANS:
             partition values:
               ds 1
             properties:
-              COLUMN_STATS_ACCURATE true
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count 16
               bucket_field_name key
               columns key,value

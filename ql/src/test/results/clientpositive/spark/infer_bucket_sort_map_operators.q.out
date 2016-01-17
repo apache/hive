@@ -145,7 +145,7 @@ Database:           	default
 Table:              	test_table_out      	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	2                   
 	numRows             	309                 
 	rawDataSize         	1482                
@@ -314,7 +314,7 @@ Database:           	default
 Table:              	test_table_out      	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	4                   
 	numRows             	0                   
 	rawDataSize         	0                   
@@ -429,7 +429,7 @@ Database:           	default
 Table:              	test_table_out      	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	2                   
 	numRows             	1028                
 	rawDataSize         	10968               
@@ -566,7 +566,7 @@ Database:           	default
 Table:              	test_table_out      	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	4                   
 	numRows             	309                 
 	rawDataSize         	2728                

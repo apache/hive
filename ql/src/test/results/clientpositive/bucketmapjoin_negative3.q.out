@@ -287,7 +287,6 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE true
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 3
               bucket_field_name key
@@ -307,7 +306,6 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE true
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 3
                 bucket_field_name key
@@ -477,7 +475,6 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE true
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 3
               bucket_field_name value
@@ -497,7 +494,6 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE true
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 3
                 bucket_field_name value
@@ -656,7 +652,6 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE true
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 3
               bucket_field_name key
@@ -676,7 +671,6 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE true
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 3
                 bucket_field_name key
@@ -838,7 +832,6 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE true
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 3
               bucket_field_name key
@@ -858,7 +851,6 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE true
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 3
                 bucket_field_name key
@@ -1020,7 +1012,6 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE true
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 3
               bucket_field_name key
@@ -1040,7 +1031,6 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE true
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 3
                 bucket_field_name key
@@ -1202,7 +1192,6 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE true
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 3
               bucket_field_name key
@@ -1222,7 +1211,6 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE true
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 3
                 bucket_field_name key
@@ -1384,7 +1372,6 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE true
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 3
               bucket_field_name value
@@ -1404,7 +1391,6 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE true
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 3
                 bucket_field_name value
@@ -1566,7 +1552,6 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE true
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 3
               bucket_field_name value
@@ -1586,7 +1571,6 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE true
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 3
                 bucket_field_name value
@@ -1748,7 +1732,6 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE true
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 3
               bucket_field_name key
@@ -1768,7 +1751,6 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE true
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 3
                 bucket_field_name key

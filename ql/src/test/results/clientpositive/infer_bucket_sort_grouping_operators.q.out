@@ -130,7 +130,7 @@ Database:           	default
 Table:              	test_table_out      	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	1                   
 	numRows             	619                 
 	rawDataSize         	6309                
@@ -189,7 +189,7 @@ Database:           	default
 Table:              	test_table_out_2    	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	1                   
 	numRows             	619                 
 	rawDataSize         	7547                
@@ -314,7 +314,7 @@ Database:           	default
 Table:              	test_table_out      	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	1                   
 	numRows             	928                 
 	rawDataSize         	9954                
@@ -373,7 +373,7 @@ Database:           	default
 Table:              	test_table_out_2    	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	1                   
 	numRows             	928                 
 	rawDataSize         	11810               
@@ -498,7 +498,7 @@ Database:           	default
 Table:              	test_table_out      	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	1                   
 	numRows             	618                 
 	rawDataSize         	6054                
@@ -557,7 +557,7 @@ Database:           	default
 Table:              	test_table_out_2    	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	1                   
 	numRows             	618                 
 	rawDataSize         	7290                

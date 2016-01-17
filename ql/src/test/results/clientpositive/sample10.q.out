@@ -129,7 +129,7 @@ STAGE PLANS:
               ds 2008-04-08
               hr 11
             properties:
-              COLUMN_STATS_ACCURATE true
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count 4
               bucket_field_name key
               columns key,value
@@ -177,7 +177,7 @@ STAGE PLANS:
               ds 2008-04-08
               hr 12
             properties:
-              COLUMN_STATS_ACCURATE true
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count 4
               bucket_field_name key
               columns key,value
@@ -225,7 +225,7 @@ STAGE PLANS:
               ds 2008-04-09
               hr 11
             properties:
-              COLUMN_STATS_ACCURATE true
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count 4
               bucket_field_name key
               columns key,value
@@ -273,7 +273,7 @@ STAGE PLANS:
               ds 2008-04-09
               hr 12
             properties:
-              COLUMN_STATS_ACCURATE true
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count 4
               bucket_field_name key
               columns key,value

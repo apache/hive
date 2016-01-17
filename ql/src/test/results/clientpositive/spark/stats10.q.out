@@ -423,7 +423,7 @@ Database:           	default
 Table:              	bucket3_1           	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	2                   
 	numRows             	500                 
 	rawDataSize         	5312                
@@ -462,7 +462,7 @@ Database:           	default
 Table:              	bucket3_1           	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	2                   
 	numRows             	500                 
 	rawDataSize         	5312                

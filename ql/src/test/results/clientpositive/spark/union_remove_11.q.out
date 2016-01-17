@@ -249,10 +249,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	false               
 	numFiles            	3                   
-	numRows             	-1                  
-	rawDataSize         	-1                  
 	totalSize           	273                 
 #### A masked pattern was here ####
 	 	 

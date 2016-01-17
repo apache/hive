@@ -230,7 +230,7 @@ Database:           	default
 Table:              	srcpart             	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
+	COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"},\"BASIC_STATS\":\"true\"}
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	5312                
@@ -315,7 +315,7 @@ Database:           	default
 Table:              	srcpart             	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
+	COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"},\"BASIC_STATS\":\"true\"}
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	5312                
