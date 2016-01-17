@@ -217,7 +217,7 @@ public class PartialScanTask extends Task<PartialScanWork> implements
       // Finally SUBMIT the JOB!
       rj = jc.submitJob(job);
 
-      returnVal = jobExecHelper.progress(rj, jc, null);
+      returnVal = jobExecHelper.progress(rj, jc);
       success = (returnVal == 0);
 
     } catch (Exception e) {

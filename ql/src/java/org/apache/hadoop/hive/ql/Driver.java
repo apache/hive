@@ -1093,7 +1093,7 @@ public class Driver implements CommandProcessor {
     } else {
       //since there is no tx, we only have locks for current query (if any)
       if (hiveLocks != null) {
-        txnMgr.getLockManager().releaseLocks(hiveLocks);
+        txnMgr.releaseLocks(hiveLocks);
       }
     }
     ctx.setHiveLocks(null);
