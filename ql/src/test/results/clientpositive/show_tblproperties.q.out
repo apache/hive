@@ -36,12 +36,9 @@ PREHOOK: query: show tblproperties tmpfoo
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: show tblproperties tmpfoo
 POSTHOOK: type: SHOW_TBLPROPERTIES
-COLUMN_STATS_ACCURATE	false
 bar	bar value
 #### A masked pattern was here ####
 numFiles	0
-numRows	-1
-rawDataSize	-1
 tmp	true
 totalSize	0
 #### A masked pattern was here ####
@@ -54,12 +51,9 @@ PREHOOK: query: show tblproperties default.tmpfoo
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: show tblproperties default.tmpfoo
 POSTHOOK: type: SHOW_TBLPROPERTIES
-COLUMN_STATS_ACCURATE	false
 bar	bar value
 #### A masked pattern was here ####
 numFiles	0
-numRows	-1
-rawDataSize	-1
 tmp	true
 totalSize	0
 #### A masked pattern was here ####
@@ -110,12 +104,9 @@ PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: -- from db1 to default db
 show tblproperties default.tmpfoo
 POSTHOOK: type: SHOW_TBLPROPERTIES
-COLUMN_STATS_ACCURATE	false
 bar	bar value
 #### A masked pattern was here ####
 numFiles	0
-numRows	-1
-rawDataSize	-1
 tmp	true
 totalSize	0
 #### A masked pattern was here ####
@@ -130,12 +121,9 @@ PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: -- from db1 to db1
 show tblproperties tmpfoo
 POSTHOOK: type: SHOW_TBLPROPERTIES
-COLUMN_STATS_ACCURATE	false
 bar	bar value1
 #### A masked pattern was here ####
 numFiles	0
-numRows	-1
-rawDataSize	-1
 tmp	true1
 totalSize	0
 #### A masked pattern was here ####
@@ -156,12 +144,9 @@ PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: -- from default to db1
 show tblproperties db1.tmpfoo
 POSTHOOK: type: SHOW_TBLPROPERTIES
-COLUMN_STATS_ACCURATE	false
 bar	bar value1
 #### A masked pattern was here ####
 numFiles	0
-numRows	-1
-rawDataSize	-1
 tmp	true1
 totalSize	0
 #### A masked pattern was here ####

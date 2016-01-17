@@ -107,7 +107,6 @@ STAGE PLANS:
             partition values:
               part 1
             properties:
-              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.comments 
@@ -115,10 +114,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.test_tab
               numFiles 2
-              numRows 0
               partition_columns part
               partition_columns.types string
-              rawDataSize 0
               serialization.ddl struct test_tab { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
@@ -214,7 +211,6 @@ STAGE PLANS:
             partition values:
               part 1
             properties:
-              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.comments 
@@ -222,10 +218,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.test_tab
               numFiles 2
-              numRows 0
               partition_columns part
               partition_columns.types string
-              rawDataSize 0
               serialization.ddl struct test_tab { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe

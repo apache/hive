@@ -215,7 +215,7 @@ STAGE PLANS:
             partition values:
               year 2000
             properties:
-              COLUMN_STATS_ACCURATE true
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
               columns state,locid,cnt,zip
               columns.comments 
@@ -258,7 +258,7 @@ STAGE PLANS:
             partition values:
               year 2001
             properties:
-              COLUMN_STATS_ACCURATE true
+              COLUMN_STATS_ACCURATE {"COLUMN_STATS":{"state":"true","locid":"true","cnt":"true","zip":"true"},"BASIC_STATS":"true"}
               bucket_count -1
               columns state,locid,cnt,zip
               columns.comments 
@@ -301,7 +301,7 @@ STAGE PLANS:
             partition values:
               year 2002
             properties:
-              COLUMN_STATS_ACCURATE true
+              COLUMN_STATS_ACCURATE {"COLUMN_STATS":{"state":"true","locid":"true","cnt":"true","zip":"true"},"BASIC_STATS":"true"}
               bucket_count -1
               columns state,locid,cnt,zip
               columns.comments 
@@ -344,7 +344,7 @@ STAGE PLANS:
             partition values:
               year 2003
             properties:
-              COLUMN_STATS_ACCURATE true
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
               columns state,locid,cnt,zip
               columns.comments 
@@ -528,7 +528,7 @@ STAGE PLANS:
             partition values:
               year 2000
             properties:
-              COLUMN_STATS_ACCURATE true
+              COLUMN_STATS_ACCURATE {"COLUMN_STATS":{"state":"true","locid":"true","cnt":"true","zip":"true"},"BASIC_STATS":"true"}
               bucket_count -1
               columns state,locid,cnt,zip
               columns.comments 
@@ -571,7 +571,7 @@ STAGE PLANS:
             partition values:
               year 2001
             properties:
-              COLUMN_STATS_ACCURATE true
+              COLUMN_STATS_ACCURATE {"COLUMN_STATS":{"state":"true","locid":"true","cnt":"true","zip":"true"},"BASIC_STATS":"true"}
               bucket_count -1
               columns state,locid,cnt,zip
               columns.comments 
@@ -614,7 +614,7 @@ STAGE PLANS:
             partition values:
               year 2002
             properties:
-              COLUMN_STATS_ACCURATE true
+              COLUMN_STATS_ACCURATE {"COLUMN_STATS":{"state":"true","locid":"true","cnt":"true","zip":"true"},"BASIC_STATS":"true"}
               bucket_count -1
               columns state,locid,cnt,zip
               columns.comments 
@@ -657,7 +657,7 @@ STAGE PLANS:
             partition values:
               year 2003
             properties:
-              COLUMN_STATS_ACCURATE true
+              COLUMN_STATS_ACCURATE {"COLUMN_STATS":{"state":"true","locid":"true","cnt":"true","zip":"true"},"BASIC_STATS":"true"}
               bucket_count -1
               columns state,locid,cnt,zip
               columns.comments 
@@ -895,7 +895,7 @@ STAGE PLANS:
               year 2001
               zip 43201
             properties:
-              COLUMN_STATS_ACCURATE true
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
               columns state,locid,cnt
               columns.comments 
@@ -939,7 +939,7 @@ STAGE PLANS:
               year 2002
               zip 43201
             properties:
-              COLUMN_STATS_ACCURATE true
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
               columns state,locid,cnt
               columns.comments 
@@ -983,7 +983,7 @@ STAGE PLANS:
               year 2003
               zip 43201
             properties:
-              COLUMN_STATS_ACCURATE true
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
               columns state,locid,cnt
               columns.comments 
@@ -1027,7 +1027,7 @@ STAGE PLANS:
               year 2000
               zip 94086
             properties:
-              COLUMN_STATS_ACCURATE true
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
               columns state,locid,cnt
               columns.comments 
@@ -1071,7 +1071,7 @@ STAGE PLANS:
               year 2001
               zip 94086
             properties:
-              COLUMN_STATS_ACCURATE true
+              COLUMN_STATS_ACCURATE {"COLUMN_STATS":{"state":"true","locid":"true","cnt":"true"},"BASIC_STATS":"true"}
               bucket_count -1
               columns state,locid,cnt
               columns.comments 
@@ -1115,7 +1115,7 @@ STAGE PLANS:
               year 2002
               zip 94086
             properties:
-              COLUMN_STATS_ACCURATE true
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
               columns state,locid,cnt
               columns.comments 
@@ -1159,7 +1159,7 @@ STAGE PLANS:
               year 2003
               zip 94086
             properties:
-              COLUMN_STATS_ACCURATE true
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
               columns state,locid,cnt
               columns.comments 
@@ -1203,7 +1203,7 @@ STAGE PLANS:
               year 2000
               zip 94087
             properties:
-              COLUMN_STATS_ACCURATE true
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
               columns state,locid,cnt
               columns.comments 
@@ -1247,7 +1247,7 @@ STAGE PLANS:
               year 2001
               zip 94087
             properties:
-              COLUMN_STATS_ACCURATE true
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
               columns state,locid,cnt
               columns.comments 
@@ -1291,7 +1291,7 @@ STAGE PLANS:
               year 2002
               zip 94087
             properties:
-              COLUMN_STATS_ACCURATE true
+              COLUMN_STATS_ACCURATE {"COLUMN_STATS":{"state":"true","locid":"true","cnt":"true"},"BASIC_STATS":"true"}
               bucket_count -1
               columns state,locid,cnt
               columns.comments 
@@ -1335,7 +1335,7 @@ STAGE PLANS:
               year 2003
               zip 94087
             properties:
-              COLUMN_STATS_ACCURATE true
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
               columns state,locid,cnt
               columns.comments 

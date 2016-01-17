@@ -1,0 +1,967 @@
+PREHOOK: query: drop table calendar
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table calendar
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE calendar (year int, month int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@calendar
+POSTHOOK: query: CREATE TABLE calendar (year int, month int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@calendar
+PREHOOK: query: insert into calendar values (2010, 10), (2011, 11), (2012, 12)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__1
+PREHOOK: Output: default@calendar
+POSTHOOK: query: insert into calendar values (2010, 10), (2011, 11), (2012, 12)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__1
+POSTHOOK: Output: default@calendar
+POSTHOOK: Lineage: calendar.month EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: calendar.year EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: desc formatted calendar
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@calendar
+POSTHOOK: query: desc formatted calendar
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@calendar
+# col_name            	data_type           	comment             
+	 	 
+year                	int                 	                    
+month               	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	1                   
+	numRows             	3                   
+	rawDataSize         	21                  
+	totalSize           	24                  
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: analyze table calendar compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@calendar
+PREHOOK: Output: default@calendar
+POSTHOOK: query: analyze table calendar compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@calendar
+POSTHOOK: Output: default@calendar
+PREHOOK: query: desc formatted calendar
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@calendar
+POSTHOOK: query: desc formatted calendar
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@calendar
+# col_name            	data_type           	comment             
+	 	 
+year                	int                 	                    
+month               	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	1                   
+	numRows             	3                   
+	rawDataSize         	21                  
+	totalSize           	24                  
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: explain select count(1) from calendar
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select count(1) from calendar
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select max(year) from calendar
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select max(year) from calendar
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: calendar
+            Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: year (type: int)
+              outputColumnNames: year
+              Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: max(year)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: int)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: max(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select max(year) from calendar
+PREHOOK: type: QUERY
+PREHOOK: Input: default@calendar
+#### A masked pattern was here ####
+POSTHOOK: query: select max(year) from calendar
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@calendar
+#### A masked pattern was here ####
+2012
+PREHOOK: query: select max(month) from calendar
+PREHOOK: type: QUERY
+PREHOOK: Input: default@calendar
+#### A masked pattern was here ####
+POSTHOOK: query: select max(month) from calendar
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@calendar
+#### A masked pattern was here ####
+12
+PREHOOK: query: analyze table calendar compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@calendar
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table calendar compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@calendar
+#### A masked pattern was here ####
+PREHOOK: query: desc formatted calendar
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@calendar
+POSTHOOK: query: desc formatted calendar
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@calendar
+# col_name            	data_type           	comment             
+	 	 
+year                	int                 	                    
+month               	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"year\":\"true\",\"month\":\"true\"},\"BASIC_STATS\":\"true\"}
+	numFiles            	1                   
+	numRows             	3                   
+	rawDataSize         	21                  
+	totalSize           	24                  
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: explain select max(year) from calendar
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select max(year) from calendar
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select max(year) from calendar
+PREHOOK: type: QUERY
+PREHOOK: Input: default@calendar
+#### A masked pattern was here ####
+POSTHOOK: query: select max(year) from calendar
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@calendar
+#### A masked pattern was here ####
+2012
+PREHOOK: query: insert into calendar values (2015, 15)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__2
+PREHOOK: Output: default@calendar
+POSTHOOK: query: insert into calendar values (2015, 15)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__2
+POSTHOOK: Output: default@calendar
+POSTHOOK: Lineage: calendar.month EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: calendar.year EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: desc formatted calendar
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@calendar
+POSTHOOK: query: desc formatted calendar
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@calendar
+# col_name            	data_type           	comment             
+	 	 
+year                	int                 	                    
+month               	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	2                   
+	numRows             	4                   
+	rawDataSize         	28                  
+	totalSize           	32                  
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: explain select max(year) from calendar
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select max(year) from calendar
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: calendar
+            Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              expressions: year (type: int)
+              outputColumnNames: year
+              Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+              Group By Operator
+                aggregations: max(year)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: int)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: max(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select max(year) from calendar
+PREHOOK: type: QUERY
+PREHOOK: Input: default@calendar
+#### A masked pattern was here ####
+POSTHOOK: query: select max(year) from calendar
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@calendar
+#### A masked pattern was here ####
+2015
+PREHOOK: query: explain select max(month) from calendar
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select max(month) from calendar
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: calendar
+            Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              expressions: month (type: int)
+              outputColumnNames: month
+              Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+              Group By Operator
+                aggregations: max(month)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: int)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: max(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select max(month) from calendar
+PREHOOK: type: QUERY
+PREHOOK: Input: default@calendar
+#### A masked pattern was here ####
+POSTHOOK: query: select max(month) from calendar
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@calendar
+#### A masked pattern was here ####
+15
+PREHOOK: query: analyze table calendar compute statistics for columns year
+PREHOOK: type: QUERY
+PREHOOK: Input: default@calendar
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table calendar compute statistics for columns year
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@calendar
+#### A masked pattern was here ####
+PREHOOK: query: desc formatted calendar
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@calendar
+POSTHOOK: query: desc formatted calendar
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@calendar
+# col_name            	data_type           	comment             
+	 	 
+year                	int                 	                    
+month               	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"year\":\"true\"},\"BASIC_STATS\":\"true\"}
+	numFiles            	2                   
+	numRows             	4                   
+	rawDataSize         	28                  
+	totalSize           	32                  
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: explain select max(year) from calendar
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select max(year) from calendar
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select max(year) from calendar
+PREHOOK: type: QUERY
+PREHOOK: Input: default@calendar
+#### A masked pattern was here ####
+POSTHOOK: query: select max(year) from calendar
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@calendar
+#### A masked pattern was here ####
+2015
+PREHOOK: query: explain select max(month) from calendar
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select max(month) from calendar
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: calendar
+            Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              expressions: month (type: int)
+              outputColumnNames: month
+              Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+              Group By Operator
+                aggregations: max(month)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: int)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: max(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select max(month) from calendar
+PREHOOK: type: QUERY
+PREHOOK: Input: default@calendar
+#### A masked pattern was here ####
+POSTHOOK: query: select max(month) from calendar
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@calendar
+#### A masked pattern was here ####
+15
+PREHOOK: query: analyze table calendar compute statistics for columns month
+PREHOOK: type: QUERY
+PREHOOK: Input: default@calendar
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table calendar compute statistics for columns month
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@calendar
+#### A masked pattern was here ####
+PREHOOK: query: desc formatted calendar
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@calendar
+POSTHOOK: query: desc formatted calendar
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@calendar
+# col_name            	data_type           	comment             
+	 	 
+year                	int                 	                    
+month               	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"month\":\"true\",\"year\":\"true\"},\"BASIC_STATS\":\"true\"}
+	numFiles            	2                   
+	numRows             	4                   
+	rawDataSize         	28                  
+	totalSize           	32                  
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: explain select max(month) from calendar
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select max(month) from calendar
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select max(month) from calendar
+PREHOOK: type: QUERY
+PREHOOK: Input: default@calendar
+#### A masked pattern was here ####
+POSTHOOK: query: select max(month) from calendar
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@calendar
+#### A masked pattern was here ####
+15
+PREHOOK: query: CREATE TABLE calendarp (`year` int)  partitioned by (p int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@calendarp
+POSTHOOK: query: CREATE TABLE calendarp (`year` int)  partitioned by (p int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@calendarp
+PREHOOK: query: insert into table calendarp partition (p=1) values (2010), (2011), (2012)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__3
+PREHOOK: Output: default@calendarp@p=1
+POSTHOOK: query: insert into table calendarp partition (p=1) values (2010), (2011), (2012)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__3
+POSTHOOK: Output: default@calendarp@p=1
+POSTHOOK: Lineage: calendarp PARTITION(p=1).year EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: desc formatted calendarp partition (p=1)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@calendarp
+POSTHOOK: query: desc formatted calendarp partition (p=1)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@calendarp
+# col_name            	data_type           	comment             
+	 	 
+year                	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+p                   	int                 	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[1]                 	 
+Database:           	default             	 
+Table:              	calendarp           	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	1                   
+	numRows             	3                   
+	rawDataSize         	12                  
+	totalSize           	15                  
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: explain select max(year) from calendarp where p=1
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select max(year) from calendarp where p=1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: calendarp
+            Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: year (type: int)
+              outputColumnNames: year
+              Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: max(year)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: int)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: max(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select max(year) from calendarp where p=1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@calendarp
+PREHOOK: Input: default@calendarp@p=1
+#### A masked pattern was here ####
+POSTHOOK: query: select max(year) from calendarp where p=1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@calendarp
+POSTHOOK: Input: default@calendarp@p=1
+#### A masked pattern was here ####
+2012
+PREHOOK: query: analyze table calendarp partition (p=1) compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@calendarp
+PREHOOK: Input: default@calendarp@p=1
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table calendarp partition (p=1) compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@calendarp
+POSTHOOK: Input: default@calendarp@p=1
+#### A masked pattern was here ####
+PREHOOK: query: desc formatted calendarp partition (p=1)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@calendarp
+POSTHOOK: query: desc formatted calendarp partition (p=1)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@calendarp
+# col_name            	data_type           	comment             
+	 	 
+year                	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+p                   	int                 	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[1]                 	 
+Database:           	default             	 
+Table:              	calendarp           	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"year\":\"true\"},\"BASIC_STATS\":\"true\"}
+	numFiles            	1                   
+	numRows             	3                   
+	rawDataSize         	12                  
+	totalSize           	15                  
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: explain select max(year) from calendarp where p=1
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select max(year) from calendarp where p=1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: insert into table calendarp partition (p=1) values (2015)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__4
+PREHOOK: Output: default@calendarp@p=1
+POSTHOOK: query: insert into table calendarp partition (p=1) values (2015)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__4
+POSTHOOK: Output: default@calendarp@p=1
+POSTHOOK: Lineage: calendarp PARTITION(p=1).year EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: desc formatted calendarp partition (p=1)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@calendarp
+POSTHOOK: query: desc formatted calendarp partition (p=1)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@calendarp
+# col_name            	data_type           	comment             
+	 	 
+year                	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+p                   	int                 	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[1]                 	 
+Database:           	default             	 
+Table:              	calendarp           	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	2                   
+	numRows             	4                   
+	rawDataSize         	16                  
+	totalSize           	20                  
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: explain select max(year) from calendarp where p=1
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select max(year) from calendarp where p=1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: calendarp
+            Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              expressions: year (type: int)
+              outputColumnNames: year
+              Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+              Group By Operator
+                aggregations: max(year)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: int)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: max(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select max(year) from calendarp where p=1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@calendarp
+PREHOOK: Input: default@calendarp@p=1
+#### A masked pattern was here ####
+POSTHOOK: query: select max(year) from calendarp where p=1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@calendarp
+POSTHOOK: Input: default@calendarp@p=1
+#### A masked pattern was here ####
+2015
+PREHOOK: query: create table t (key string, value string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t
+POSTHOOK: query: create table t (key string, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt' into table t
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@t
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' into table t
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@t
+PREHOOK: query: desc formatted t
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t
+POSTHOOK: query: desc formatted t
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	                    
+value               	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	numFiles            	1                   
+	totalSize           	5812                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: analyze table t compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+PREHOOK: Output: default@t
+POSTHOOK: query: analyze table t compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+POSTHOOK: Output: default@t
+PREHOOK: query: desc formatted t
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t
+POSTHOOK: query: desc formatted t
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	                    
+value               	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	1                   
+	numRows             	500                 
+	rawDataSize         	5312                
+	totalSize           	5812                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   

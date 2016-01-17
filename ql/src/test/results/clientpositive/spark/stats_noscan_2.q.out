@@ -51,11 +51,9 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	EXTERNAL_TABLE      	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
 	numFiles            	1                   
-	numRows             	-1                  
-	rawDataSize         	-1                  
 	totalSize           	11                  
 #### A masked pattern was here ####
 	 	 
@@ -94,7 +92,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	EXTERNAL_TABLE      	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
 	numFiles            	1                   
 	numRows             	6                   
@@ -230,10 +228,8 @@ Database:           	default
 Table:              	anaylyze_external   	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	1                   
-	numRows             	-1                  
-	rawDataSize         	-1                  
 	totalSize           	5812                
 #### A masked pattern was here ####
 	 	 
@@ -281,7 +277,7 @@ Database:           	default
 Table:              	anaylyze_external   	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	5312                

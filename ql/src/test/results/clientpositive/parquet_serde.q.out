@@ -71,10 +71,7 @@ Database:           	default
 Table:              	parquet_mixed_fileformat	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
-	numRows             	0                   
-	rawDataSize         	0                   
 	totalSize           	36                  
 #### A masked pattern was here ####
 	 	 
@@ -175,10 +172,7 @@ Database:           	default
 Table:              	parquet_mixed_fileformat	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
-	numRows             	0                   
-	rawDataSize         	0                   
 	totalSize           	36                  
 #### A masked pattern was here ####
 	 	 

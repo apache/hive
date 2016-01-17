@@ -188,7 +188,7 @@ STAGE PLANS:
             partition values:
               ds 2000-04-08
             properties:
-              COLUMN_STATS_ACCURATE true
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
               columns key,value
               columns.comments 
@@ -233,7 +233,7 @@ STAGE PLANS:
             partition values:
               ds 2000-04-09
             properties:
-              COLUMN_STATS_ACCURATE true
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
               columns key,value
               columns.comments 
@@ -431,7 +431,7 @@ STAGE PLANS:
             partition values:
               ds 2000-04-08
             properties:
-              COLUMN_STATS_ACCURATE true
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
               columns key,value
               columns.comments 
@@ -693,7 +693,7 @@ STAGE PLANS:
             partition values:
               ds 2000-04-08
             properties:
-              COLUMN_STATS_ACCURATE true
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
               columns key,value
               columns.comments 
@@ -738,7 +738,7 @@ STAGE PLANS:
             partition values:
               ds 2000-04-09
             properties:
-              COLUMN_STATS_ACCURATE true
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
               columns key,value
               columns.comments 
@@ -1013,7 +1013,7 @@ STAGE PLANS:
             partition values:
               ds 2000-04-08
             properties:
-              COLUMN_STATS_ACCURATE true
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
               columns key,value
               columns.comments 
@@ -1058,7 +1058,7 @@ STAGE PLANS:
             partition values:
               ds 2000-04-09
             properties:
-              COLUMN_STATS_ACCURATE true
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
               columns key,value
               columns.comments 
@@ -1101,7 +1101,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE true
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
               columns ds,key,value
               columns.comments 
@@ -1121,7 +1121,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE true
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
                 columns ds,key,value
                 columns.comments 
@@ -1382,7 +1382,7 @@ STAGE PLANS:
             partition values:
               ds 2000-04-08
             properties:
-              COLUMN_STATS_ACCURATE true
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
               columns key,value
               columns.comments 
@@ -1427,7 +1427,7 @@ STAGE PLANS:
             partition values:
               ds 2000-04-09
             properties:
-              COLUMN_STATS_ACCURATE true
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
               columns key,value
               columns.comments 
@@ -1472,7 +1472,7 @@ STAGE PLANS:
             partition values:
               ds 2000-04-10
             properties:
-              COLUMN_STATS_ACCURATE true
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
               columns key,value
               columns.comments 
@@ -1515,7 +1515,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE true
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
               columns ds,key,value
               columns.comments 
@@ -1535,7 +1535,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE true
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
                 columns ds,key,value
                 columns.comments 

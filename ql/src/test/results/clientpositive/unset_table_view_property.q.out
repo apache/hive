@@ -31,13 +31,10 @@ PREHOOK: query: SHOW TBLPROPERTIES vt.testTable
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES vt.testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
-COLUMN_STATS_ACCURATE	false
 a	1
 c	3
 #### A masked pattern was here ####
 numFiles	0
-numRows	-1
-rawDataSize	-1
 totalSize	0
 #### A masked pattern was here ####
 PREHOOK: query: -- UNSET all the properties
@@ -54,11 +51,8 @@ PREHOOK: query: SHOW TBLPROPERTIES vt.testTable
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES vt.testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
-COLUMN_STATS_ACCURATE	false
 #### A masked pattern was here ####
 numFiles	0
-numRows	-1
-rawDataSize	-1
 totalSize	0
 #### A masked pattern was here ####
 PREHOOK: query: ALTER TABLE vt.testTable SET TBLPROPERTIES ('a'='1', 'c'='3', 'd'='4')
@@ -73,14 +67,11 @@ PREHOOK: query: SHOW TBLPROPERTIES vt.testTable
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES vt.testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
-COLUMN_STATS_ACCURATE	false
 a	1
 c	3
 d	4
 #### A masked pattern was here ####
 numFiles	0
-numRows	-1
-rawDataSize	-1
 totalSize	0
 #### A masked pattern was here ####
 PREHOOK: query: -- UNSET a subset of the properties
@@ -97,12 +88,9 @@ PREHOOK: query: SHOW TBLPROPERTIES vt.testTable
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES vt.testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
-COLUMN_STATS_ACCURATE	false
 c	3
 #### A masked pattern was here ####
 numFiles	0
-numRows	-1
-rawDataSize	-1
 totalSize	0
 #### A masked pattern was here ####
 PREHOOK: query: -- the same property being UNSET multiple times
@@ -119,11 +107,8 @@ PREHOOK: query: SHOW TBLPROPERTIES vt.testTable
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES vt.testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
-COLUMN_STATS_ACCURATE	false
 #### A masked pattern was here ####
 numFiles	0
-numRows	-1
-rawDataSize	-1
 totalSize	0
 #### A masked pattern was here ####
 PREHOOK: query: ALTER TABLE vt.testTable SET TBLPROPERTIES ('a'='1', 'b' = '2', 'c'='3', 'd'='4')
@@ -138,15 +123,12 @@ PREHOOK: query: SHOW TBLPROPERTIES vt.testTable
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES vt.testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
-COLUMN_STATS_ACCURATE	false
 a	1
 b	2
 c	3
 d	4
 #### A masked pattern was here ####
 numFiles	0
-numRows	-1
-rawDataSize	-1
 totalSize	0
 #### A masked pattern was here ####
 PREHOOK: query: -- UNSET a subset of the properties and some non-existed properties using IF EXISTS
@@ -163,13 +145,10 @@ PREHOOK: query: SHOW TBLPROPERTIES vt.testTable
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES vt.testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
-COLUMN_STATS_ACCURATE	false
 a	1
 c	3
 #### A masked pattern was here ####
 numFiles	0
-numRows	-1
-rawDataSize	-1
 totalSize	0
 #### A masked pattern was here ####
 PREHOOK: query: -- UNSET a subset of the properties and some non-existed properties using IF EXISTS
@@ -186,12 +165,9 @@ PREHOOK: query: SHOW TBLPROPERTIES vt.testTable
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES vt.testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
-COLUMN_STATS_ACCURATE	false
 a	1
 #### A masked pattern was here ####
 numFiles	0
-numRows	-1
-rawDataSize	-1
 totalSize	0
 #### A masked pattern was here ####
 PREHOOK: query: DROP TABLE vt.testTable

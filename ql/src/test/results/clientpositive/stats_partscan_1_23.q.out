@@ -76,10 +76,7 @@ Database:           	default
 Table:              	analyze_srcpart_partial_scan	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	false               
 	numFiles            	1                   
-	numRows             	-1                  
-	rawDataSize         	-1                  
 	totalSize           	5293                
 #### A masked pattern was here ####
 	 	 
@@ -149,7 +146,7 @@ Database:           	default
 Table:              	analyze_srcpart_partial_scan	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	4812                
@@ -189,10 +186,7 @@ Database:           	default
 Table:              	analyze_srcpart_partial_scan	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	false               
 	numFiles            	1                   
-	numRows             	-1                  
-	rawDataSize         	-1                  
 	totalSize           	5293                
 #### A masked pattern was here ####
 	 	 

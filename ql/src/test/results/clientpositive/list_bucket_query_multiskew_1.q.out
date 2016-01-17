@@ -75,7 +75,7 @@ Database:           	default
 Table:              	fact_daily          	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	3                   
 	numRows             	500                 
 	rawDataSize         	5312                
@@ -168,7 +168,7 @@ STAGE PLANS:
               ds 1
               hr 4
             properties:
-              COLUMN_STATS_ACCURATE true
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
               columns key,value
               columns.comments 
@@ -296,7 +296,7 @@ STAGE PLANS:
               ds 1
               hr 4
             properties:
-              COLUMN_STATS_ACCURATE true
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
               columns key,value
               columns.comments 
@@ -417,7 +417,7 @@ STAGE PLANS:
               ds 1
               hr 4
             properties:
-              COLUMN_STATS_ACCURATE true
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
               columns key,value
               columns.comments 
@@ -539,7 +539,7 @@ STAGE PLANS:
               ds 1
               hr 4
             properties:
-              COLUMN_STATS_ACCURATE true
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
               columns key,value
               columns.comments 
