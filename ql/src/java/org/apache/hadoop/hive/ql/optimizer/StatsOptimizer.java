@@ -238,7 +238,7 @@ public class StatsOptimizer implements Transform {
                   gbyOp.getConf().getAggregators().size())) {
             // all select columns must be aggregations
             return null;
-  
+
           }
           for(ExprNodeDesc desc : selOp.getConf().getColList()) {
             if (!(desc instanceof ExprNodeColumnDesc)) {
@@ -301,13 +301,18 @@ public class StatsOptimizer implements Transform {
               String colName = desc.getColumn();
               StatType type = getType(desc.getTypeString());
               if(!tbl.isPartitioned()) {
-                if (!StatsSetupConst.areStatsUptoDate(tbl.getParameters())) {
-                  Log.debug("Stats for table : " + tbl.getTableName() + " are not upto date.");
+                if (!StatsSetupConst.areBasicStatsUptoDate(tbl.getParameters())) {
+                  Log.debug("Stats for table : " + tbl.getTableName() + " are not up to date.");
                   return null;
                 }
                 rowCnt = Long.parseLong(tbl.getProperty(StatsSetupConst.ROW_COUNT));
-                if (rowCnt < 1) {
-                  Log.debug("Table doesn't have upto date stats " + tbl.getTableName());
+                if (rowCnt == null) {
+                  Log.debug("Table doesn't have up to date stats " + tbl.getTableName());
+                  return null;
+                }
+                if (!StatsSetupConst.areColumnStatsUptoDate(tbl.getParameters(), colName)) {
+                  Log.debug("Stats for table : " + tbl.getTableName() + " column " + colName
+                      + " are not up to date.");
                   return null;
                 }
                 List<ColumnStatisticsObj> stats = hive.getMSC().getTableColumnStatistics(
@@ -328,20 +333,20 @@ public class StatsOptimizer implements Transform {
                 Set<Partition> parts = pctx.getPrunedPartitions(
                     tsOp.getConf().getAlias(), tsOp).getPartitions();
                 for (Partition part : parts) {
-                  if (!StatsSetupConst.areStatsUptoDate(part.getParameters())) {
-                    Log.debug("Stats for part : " + part.getSpec() + " are not upto date.");
+                  if (!StatsSetupConst.areBasicStatsUptoDate(part.getParameters())) {
+                    Log.debug("Stats for part : " + part.getSpec() + " are not up to date.");
                     return null;
                   }
                   Long partRowCnt = Long.parseLong(part.getParameters()
                       .get(StatsSetupConst.ROW_COUNT));
-                  if (partRowCnt < 1) {
-                    Log.debug("Partition doesn't have upto date stats " + part.getSpec());
+                  if (partRowCnt == null) {
+                    Log.debug("Partition doesn't have up to date stats " + part.getSpec());
                     return null;
                   }
                   rowCnt += partRowCnt;
                 }
                 Collection<List<ColumnStatisticsObj>> result =
-                    verifyAndGetPartStats(hive, tbl, colName, parts);
+                    verifyAndGetPartColumnStats(hive, tbl, colName, parts);
                 if (result == null) {
                   return null; // logging inside
                 }
@@ -367,8 +372,9 @@ public class StatsOptimizer implements Transform {
             String colName = colDesc.getColumn();
             StatType type = getType(colDesc.getTypeString());
             if(!tbl.isPartitioned()) {
-              if (!StatsSetupConst.areStatsUptoDate(tbl.getParameters())) {
-                Log.debug("Stats for table : " + tbl.getTableName() + " are not upto date.");
+              if (!StatsSetupConst.areColumnStatsUptoDate(tbl.getParameters(), colName)) {
+                Log.debug("Stats for table : " + tbl.getTableName() + " column " + colName
+                    + " are not up to date.");
                 return null;
               }
               List<ColumnStatisticsObj> stats = hive.getMSC().getTableColumnStatistics(
@@ -404,7 +410,7 @@ public class StatsOptimizer implements Transform {
                 case Integeral: {
                   Long maxVal = null;
                   Collection<List<ColumnStatisticsObj>> result =
-                      verifyAndGetPartStats(hive, tbl, colName, parts);
+                      verifyAndGetPartColumnStats(hive, tbl, colName, parts);
                   if (result == null) {
                     return null; // logging inside
                   }
@@ -426,7 +432,7 @@ public class StatsOptimizer implements Transform {
                 case Double: {
                   Double maxVal = null;
                   Collection<List<ColumnStatisticsObj>> result =
-                      verifyAndGetPartStats(hive, tbl, colName, parts);
+                      verifyAndGetPartColumnStats(hive, tbl, colName, parts);
                   if (result == null) {
                     return null; // logging inside
                   }
@@ -456,8 +462,9 @@ public class StatsOptimizer implements Transform {
             String colName = colDesc.getColumn();
             StatType type = getType(colDesc.getTypeString());
             if (!tbl.isPartitioned()) {
-              if (!StatsSetupConst.areStatsUptoDate(tbl.getParameters())) {
-                Log.debug("Stats for table : " + tbl.getTableName() + " are not upto date.");
+              if (!StatsSetupConst.areColumnStatsUptoDate(tbl.getParameters(), colName)) {
+                Log.debug("Stats for table : " + tbl.getTableName() + " column " + colName
+                    + " are not up to date.");
                 return null;
               }
               ColumnStatisticsData statData = hive.getMSC().getTableColumnStatistics(
@@ -487,7 +494,7 @@ public class StatsOptimizer implements Transform {
                 case Integeral: {
                   Long minVal = null;
                   Collection<List<ColumnStatisticsObj>> result =
-                      verifyAndGetPartStats(hive, tbl, colName, parts);
+                      verifyAndGetPartColumnStats(hive, tbl, colName, parts);
                   if (result == null) {
                     return null; // logging inside
                   }
@@ -509,7 +516,7 @@ public class StatsOptimizer implements Transform {
                 case Double: {
                   Double minVal = null;
                   Collection<List<ColumnStatisticsObj>> result =
-                      verifyAndGetPartStats(hive, tbl, colName, parts);
+                      verifyAndGetPartColumnStats(hive, tbl, colName, parts);
                   if (result == null) {
                     return null; // logging inside
                   }
@@ -590,12 +597,13 @@ public class StatsOptimizer implements Transform {
       return statObj.get(0).getStatsData();
     }
 
-    private Collection<List<ColumnStatisticsObj>> verifyAndGetPartStats(
+    private Collection<List<ColumnStatisticsObj>> verifyAndGetPartColumnStats(
         Hive hive, Table tbl, String colName, Set<Partition> parts) throws TException {
       List<String> partNames = new ArrayList<String>(parts.size());
       for (Partition part : parts) {
-        if (!StatsSetupConst.areStatsUptoDate(part.getParameters())) {
-          Log.debug("Stats for part : " + part.getSpec() + " are not upto date.");
+        if (!StatsSetupConst.areColumnStatsUptoDate(part.getParameters(), colName)) {
+          Log.debug("Stats for part : " + part.getSpec() + " column " + colName
+              + " are not up to date.");
           return null;
         }
         partNames.add(part.getName());
@@ -615,19 +623,25 @@ public class StatsOptimizer implements Transform {
       if (tbl.isPartitioned()) {
         for (Partition part : pctx.getPrunedPartitions(
             tsOp.getConf().getAlias(), tsOp).getPartitions()) {
-          long partRowCnt = Long.parseLong(part.getParameters().get(StatsSetupConst.ROW_COUNT));
-          if (partRowCnt < 1) {
-            Log.debug("Partition doesn't have upto date stats " + part.getSpec());
+          if (!StatsSetupConst.areBasicStatsUptoDate(part.getParameters())) {
+            return null;
+          }
+          Long partRowCnt = Long.parseLong(part.getParameters().get(StatsSetupConst.ROW_COUNT));
+          if (partRowCnt == null) {
+            Log.debug("Partition doesn't have up to date stats " + part.getSpec());
             return null;
           }
           rowCnt += partRowCnt;
         }
       } else { // unpartitioned table
+        if (!StatsSetupConst.areBasicStatsUptoDate(tbl.getParameters())) {
+          return null;
+        }
         rowCnt = Long.parseLong(tbl.getProperty(StatsSetupConst.ROW_COUNT));
-        if (rowCnt < 1) {
+        if (rowCnt == null) {
           // if rowCnt < 1 than its either empty table or table on which stats are not
           //  computed We assume the worse and don't attempt to optimize.
-          Log.debug("Table doesn't have upto date stats " + tbl.getTableName());
+          Log.debug("Table doesn't have up to date stats " + tbl.getTableName());
           rowCnt = null;
         }
       }
