@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
+import com.google.common.collect.Sets;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -501,11 +502,26 @@ public class Driver implements CommandProcessor {
    */
   public static void doAuthorization(BaseSemanticAnalyzer sem, String command)
       throws HiveException, AuthorizationException {
-    HashSet<ReadEntity> inputs = sem.getInputs();
-    HashSet<WriteEntity> outputs = sem.getOutputs();
     SessionState ss = SessionState.get();
     HiveOperation op = ss.getHiveOperation();
     Hive db = sem.getDb();
+
+    Set<ReadEntity> additionalInputs = new HashSet<ReadEntity>();
+    for (Entity e : sem.getInputs()) {
+      if (e.getType() == Entity.Type.PARTITION) {
+        additionalInputs.add(new ReadEntity(e.getTable()));
+      }
+    }
+
+    Set<WriteEntity> additionalOutputs = new HashSet<WriteEntity>();
+    for (Entity e : sem.getOutputs()) {
+      if (e.getType() == Entity.Type.PARTITION) {
+        additionalOutputs.add(new WriteEntity(e.getTable(), WriteEntity.WriteType.DDL_NO_LOCK));
+      }
+    }
+
+    Set<ReadEntity> inputs = Sets.union(sem.getInputs(), additionalInputs);
+    Set<WriteEntity> outputs = Sets.union(sem.getOutputs(), additionalOutputs);
 
     if (ss.isAuthorizationModeV2()) {
       // get mapping of tables to columns used
@@ -705,8 +721,8 @@ public class Driver implements CommandProcessor {
 
   }
 
-  private static void doAuthorizationV2(SessionState ss, HiveOperation op, HashSet<ReadEntity> inputs,
-      HashSet<WriteEntity> outputs, String command, Map<String, List<String>> tab2cols,
+  private static void doAuthorizationV2(SessionState ss, HiveOperation op, Set<ReadEntity> inputs,
+      Set<WriteEntity> outputs, String command, Map<String, List<String>> tab2cols,
       Map<String, List<String>> updateTab2Cols) throws HiveException {
 
     /* comment for reviewers -> updateTab2Cols needed to be separate from tab2cols because if I
@@ -726,7 +742,7 @@ public class Driver implements CommandProcessor {
   }
 
   private static List<HivePrivilegeObject> getHivePrivObjects(
-      HashSet<? extends Entity> privObjects, Map<String, List<String>> tableName2Cols) {
+      Set<? extends Entity> privObjects, Map<String, List<String>> tableName2Cols) {
     List<HivePrivilegeObject> hivePrivobjs = new ArrayList<HivePrivilegeObject>();
     if(privObjects == null){
       return hivePrivobjs;
