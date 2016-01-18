@@ -193,15 +193,17 @@ public class VectorUDAFCountMerge extends VectorAggregateExpression {
       int batchSize,
       int[] selection,
       boolean[] isNull) {
+
+      if (isNull[0]) {
+        return;
+      }
       
       for (int i=0; i < batchSize; ++i) {
-        if (!isNull[selection[i]]) {
-          Aggregation myagg = getCurrentAggregationBuffer(
-            aggregationBufferSets, 
-            aggregateIndex,
-            i);
-          myagg.value += value;
-        }
+        Aggregation myagg = getCurrentAggregationBuffer(
+          aggregationBufferSets,
+          aggregateIndex,
+          i);
+        myagg.value += value;
       }
       
     }
@@ -213,14 +215,16 @@ public class VectorUDAFCountMerge extends VectorAggregateExpression {
       int batchSize,
       boolean[] isNull) {
 
+      if (isNull[0]) {
+        return;
+      }
+
       for (int i=0; i < batchSize; ++i) {
-        if (!isNull[i]) {
-          Aggregation myagg = getCurrentAggregationBuffer(
-            aggregationBufferSets, 
-            aggregateIndex,
-            i);
-          myagg.value += value;
-        }
+        Aggregation myagg = getCurrentAggregationBuffer(
+          aggregationBufferSets,
+          aggregateIndex,
+          i);
+        myagg.value += value;
       }
     }
 

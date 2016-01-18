@@ -293,14 +293,16 @@ public class VectorUDAFAvgDecimal extends VectorAggregateExpression {
       int[] selection,
       boolean[] isNull) {
 
+      if (isNull[0]) {
+        return;
+      }
+
       for (int i=0; i < batchSize; ++i) {
-        if (!isNull[selection[i]]) {
-          Aggregation myagg = getCurrentAggregationBuffer(
-            aggregationBufferSets,
-            bufferIndex,
-            i);
-          myagg.sumValueWithNullCheck(value, this.sumScale);
-        }
+        Aggregation myagg = getCurrentAggregationBuffer(
+          aggregationBufferSets,
+          bufferIndex,
+          i);
+        myagg.sumValueWithNullCheck(value, this.sumScale);
       }
 
     }
@@ -312,14 +314,16 @@ public class VectorUDAFAvgDecimal extends VectorAggregateExpression {
       int batchSize,
       boolean[] isNull) {
 
+      if (isNull[0]) {
+        return;
+      }
+
       for (int i=0; i < batchSize; ++i) {
-        if (!isNull[i]) {
-          Aggregation myagg = getCurrentAggregationBuffer(
-            aggregationBufferSets,
-            bufferIndex,
-            i);
-          myagg.sumValueWithNullCheck(value, this.sumScale);
-        }
+        Aggregation myagg = getCurrentAggregationBuffer(
+          aggregationBufferSets,
+          bufferIndex,
+          i);
+        myagg.sumValueWithNullCheck(value, this.sumScale);
       }
     }
 

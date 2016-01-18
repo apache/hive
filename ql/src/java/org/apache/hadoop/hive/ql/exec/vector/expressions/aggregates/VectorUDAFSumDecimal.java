@@ -232,14 +232,16 @@ public class VectorUDAFSumDecimal extends VectorAggregateExpression {
       int[] selection,
       boolean[] isNull) {
 
+      if (isNull[0]) {
+        return;
+      }
+
       for (int i=0; i < batchSize; ++i) {
-        if (!isNull[selection[i]]) {
-          Aggregation myagg = getCurrentAggregationBuffer(
-            aggregationBufferSets,
-            aggregateIndex,
-            i);
-          myagg.sumValue(value, scale);
-        }
+        Aggregation myagg = getCurrentAggregationBuffer(
+          aggregationBufferSets,
+          aggregateIndex,
+          i);
+        myagg.sumValue(value, scale);
       }
 
     }
@@ -252,14 +254,16 @@ public class VectorUDAFSumDecimal extends VectorAggregateExpression {
       int batchSize,
       boolean[] isNull) {
 
+      if (isNull[0]) {
+        return;
+      }
+
       for (int i=0; i < batchSize; ++i) {
-        if (!isNull[i]) {
-          Aggregation myagg = getCurrentAggregationBuffer(
-            aggregationBufferSets,
-            aggregateIndex,
-            i);
-          myagg.sumValue(value, scale);
-        }
+        Aggregation myagg = getCurrentAggregationBuffer(
+          aggregationBufferSets,
+          aggregateIndex,
+          i);
+        myagg.sumValue(value, scale);
       }
     }
 
