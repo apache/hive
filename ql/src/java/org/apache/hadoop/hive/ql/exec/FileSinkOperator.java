@@ -910,7 +910,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       pathKey = dpDir;
       if(conf.getDpSortState().equals(DPSortState.PARTITION_BUCKET_SORTED)) {
         String buckNum = row.get(row.size() - 1);
-        taskId = Utilities.replaceTaskIdFromFilename(Utilities.getTaskId(hconf), buckNum);
+        taskId = Utilities.replaceTaskIdFromFilename(taskId, buckNum);
         pathKey = appendToSource(taskId, dpDir);
       }
       FSPaths fsp2 = valToPaths.get(pathKey);
@@ -1155,7 +1155,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       return;
     }
 
-    String taskID = Utilities.getTaskIdFromFilename(Utilities.getTaskId(hconf));
     String spSpec = conf.getStaticSpec();
 
     for (Map.Entry<String, FSPaths> entry : valToPaths.entrySet()) {
@@ -1165,7 +1164,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       // for bucketed tables, hive.optimize.sort.dynamic.partition optimization
       // adds the taskId to the fspKey.
       if (conf.getDpSortState().equals(DPSortState.PARTITION_BUCKET_SORTED)) {
-        taskID = Utilities.getTaskIdFromFilename(fspKey);
+        String taskID = Utilities.getTaskIdFromFilename(fspKey);
         // if length of (prefix/ds=__HIVE_DEFAULT_PARTITION__/000000_0) is greater than max key prefix
         // and if (prefix/ds=10/000000_0) is less than max key prefix, then former will get hashed
         // to a smaller prefix (MD5hash/000000_0) and later will stored as such in staging stats table.
