@@ -1950,7 +1950,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       // 3. Get Aggregation FN from Calcite given name, ret type and input arg
       // type
-      final SqlAggFunction aggregation = SqlFunctionConverter.getCalciteAggFn(agg.m_udfName,
+      final SqlAggFunction aggregation = SqlFunctionConverter.getCalciteAggFn(agg.m_udfName, agg.m_distinct,
           aggArgRelDTBldr.build(), aggFnRetType);
 
       return new AggregateCall(aggregation, agg.m_distinct, argList, aggFnRetType, null);
@@ -2646,7 +2646,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
         // 5. Get Calcite Agg Fn
         final SqlAggFunction calciteAggFn = SqlFunctionConverter.getCalciteAggFn(
-            hiveAggInfo.m_udfName, calciteAggFnArgsType, calciteAggFnRetType);
+            hiveAggInfo.m_udfName, hiveAggInfo.m_distinct, calciteAggFnArgsType, calciteAggFnRetType);
 
         // 6. Translate Window spec
         RowResolver inputRR = relToHiveRR.get(srcRel);

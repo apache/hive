@@ -411,6 +411,18 @@ public class PTFInvocationSpec {
       this.expressions = columns;
     }
 
+    /**
+     * Add order expressions from the list of expressions in the format of ASTNode
+     * @param args
+     */
+    public void addExpressions(ArrayList<ASTNode> nodes) {
+      for (int i = 0; i < nodes.size(); i++) {
+        OrderExpression expr = new OrderExpression();
+        expr.setExpression(nodes.get(i));
+        addExpression(expr);
+      }
+    }
+
     public void addExpression(OrderExpression c)
     {
       expressions = expressions == null ? new ArrayList<OrderExpression>() : expressions;
@@ -500,7 +512,9 @@ public class PTFInvocationSpec {
   {
     Order order;
 
-    public OrderExpression() {}
+    public OrderExpression() {
+      order = Order.ASC;
+    }
 
     public OrderExpression(PartitionExpression peSpec)
     {

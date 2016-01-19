@@ -1,0 +1,78 @@
+PREHOOK: query: drop table windowing_distinct
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table windowing_distinct
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table windowing_distinct(
+           index int,
+           t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+           ts timestamp,
+           dec decimal,
+           bin binary)
+       row format delimited
+       fields terminated by '|'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@windowing_distinct
+POSTHOOK: query: create table windowing_distinct(
+           index int,
+           t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+           ts timestamp,
+           dec decimal,
+           bin binary)
+       row format delimited
+       fields terminated by '|'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@windowing_distinct
+PREHOOK: query: load data local inpath '../../data/files/windowing_distinct.txt' into table windowing_distinct
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@windowing_distinct
+POSTHOOK: query: load data local inpath '../../data/files/windowing_distinct.txt' into table windowing_distinct
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@windowing_distinct
+PREHOOK: query: SELECT COUNT(DISTINCT t) OVER (PARTITION BY index),
+       COUNT(DISTINCT d) OVER (PARTITION BY index),
+       COUNT(DISTINCT bo) OVER (PARTITION BY index),
+       COUNT(DISTINCT s) OVER (PARTITION BY index),
+       COUNT(DISTINCT concat('Mr.', s)) OVER (PARTITION BY index),
+       COUNT(DISTINCT ts) OVER (PARTITION BY index),
+       COUNT(DISTINCT dec) OVER (PARTITION BY index),
+       COUNT(DISTINCT bin) OVER (PARTITION BY index)
+FROM windowing_distinct
+PREHOOK: type: QUERY
+PREHOOK: Input: default@windowing_distinct
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(DISTINCT t) OVER (PARTITION BY index),
+       COUNT(DISTINCT d) OVER (PARTITION BY index),
+       COUNT(DISTINCT bo) OVER (PARTITION BY index),
+       COUNT(DISTINCT s) OVER (PARTITION BY index),
+       COUNT(DISTINCT concat('Mr.', s)) OVER (PARTITION BY index),
+       COUNT(DISTINCT ts) OVER (PARTITION BY index),
+       COUNT(DISTINCT dec) OVER (PARTITION BY index),
+       COUNT(DISTINCT bin) OVER (PARTITION BY index)
+FROM windowing_distinct
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@windowing_distinct
+#### A masked pattern was here ####
+2	2	2	2	2	2	2	1
+2	2	2	2	2	2	2	1
+2	2	2	2	2	2	2	1
+2	2	2	2	2	2	2	2
+2	2	2	2	2	2	2	2
+2	2	2	2	2	2	2	2

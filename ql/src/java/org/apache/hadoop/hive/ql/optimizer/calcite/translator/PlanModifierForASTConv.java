@@ -379,7 +379,7 @@ public class PlanModifierForASTConv {
     RelDataType longType = TypeConverter.convert(TypeInfoFactory.longTypeInfo, typeFactory);
     RelDataType intType = TypeConverter.convert(TypeInfoFactory.intTypeInfo, typeFactory);
     // Create the dummy aggregation.
-    SqlAggFunction countFn = SqlFunctionConverter.getCalciteAggFn("count",
+    SqlAggFunction countFn = SqlFunctionConverter.getCalciteAggFn("count", false,
         ImmutableList.of(intType), longType);
     // TODO: Using 0 might be wrong; might need to walk down to find the
     // proper index of a dummy.

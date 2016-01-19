@@ -32,11 +32,12 @@ import org.apache.calcite.util.ImmutableIntList;
 
 public class HiveSqlCountAggFunction extends SqlAggFunction {
 
+  final boolean                isDistinct;
   final SqlReturnTypeInference returnTypeInference;
   final SqlOperandTypeInference operandTypeInference;
   final SqlOperandTypeChecker operandTypeChecker;
 
-  public HiveSqlCountAggFunction(SqlReturnTypeInference returnTypeInference,
+  public HiveSqlCountAggFunction(boolean isDistinct, SqlReturnTypeInference returnTypeInference,
       SqlOperandTypeInference operandTypeInference, SqlOperandTypeChecker operandTypeChecker) {
     super(
         "count",
@@ -45,9 +46,14 @@ public class HiveSqlCountAggFunction extends SqlAggFunction {
         operandTypeInference,
         operandTypeChecker,
         SqlFunctionCategory.NUMERIC);
+    this.isDistinct = isDistinct;
     this.returnTypeInference = returnTypeInference;
     this.operandTypeChecker = operandTypeChecker;
     this.operandTypeInference = operandTypeInference;
+  }
+
+  public boolean isDistinct() {
+    return isDistinct;
   }
 
   @Override
@@ -64,7 +70,7 @@ public class HiveSqlCountAggFunction extends SqlAggFunction {
     public AggregateCall other(RelDataTypeFactory typeFactory, AggregateCall e) {
 
       return AggregateCall.create(
-          new HiveSqlCountAggFunction(returnTypeInference, operandTypeInference, operandTypeChecker),
+          new HiveSqlCountAggFunction(isDistinct, returnTypeInference, operandTypeInference, operandTypeChecker),
           false, ImmutableIntList.of(), -1,
           typeFactory.createTypeWithNullability(typeFactory.createSqlType(SqlTypeName.BIGINT), true), "count");
     }

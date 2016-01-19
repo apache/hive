@@ -47,14 +47,14 @@ import com.google.common.collect.ImmutableList;
  * is the same type.
  */
 public class HiveSqlSumAggFunction extends SqlAggFunction {
-
+  final boolean isDistinct;
   final SqlReturnTypeInference returnTypeInference;
   final SqlOperandTypeInference operandTypeInference;
   final SqlOperandTypeChecker operandTypeChecker;
 
   //~ Constructors -----------------------------------------------------------
 
-  public HiveSqlSumAggFunction(SqlReturnTypeInference returnTypeInference,
+  public HiveSqlSumAggFunction(boolean isDistinct, SqlReturnTypeInference returnTypeInference,
     SqlOperandTypeInference operandTypeInference, SqlOperandTypeChecker operandTypeChecker) {
     super(
         "sum",
@@ -66,6 +66,7 @@ public class HiveSqlSumAggFunction extends SqlAggFunction {
     this.returnTypeInference = returnTypeInference;
     this.operandTypeChecker = operandTypeChecker;
     this.operandTypeInference = operandTypeInference;
+    this.isDistinct = isDistinct;
   }
 
   //~ Methods ----------------------------------------------------------------
@@ -85,7 +86,7 @@ public class HiveSqlSumAggFunction extends SqlAggFunction {
     public AggregateCall other(RelDataTypeFactory typeFactory, AggregateCall e) {
       RelDataType countRetType = typeFactory.createTypeWithNullability(typeFactory.createSqlType(SqlTypeName.BIGINT), true);
       return AggregateCall.create(
-        new HiveSqlCountAggFunction(ReturnTypes.explicit(countRetType), operandTypeInference, operandTypeChecker),
+        new HiveSqlCountAggFunction(isDistinct, ReturnTypes.explicit(countRetType), operandTypeInference, operandTypeChecker),
         false, ImmutableIntList.of(), -1, countRetType, "count");
     }
 
@@ -116,7 +117,7 @@ public class HiveSqlSumAggFunction extends SqlAggFunction {
         throw new AssertionError("unexpected count " + merges);
       }
       int ordinal = extra.register(node);
-      return AggregateCall.create(new HiveSqlSumAggFunction(returnTypeInference, operandTypeInference, operandTypeChecker),
+      return AggregateCall.create(new HiveSqlSumAggFunction(isDistinct, returnTypeInference, operandTypeInference, operandTypeChecker),
           false, ImmutableList.of(ordinal), -1, aggregateCall.type, aggregateCall.name);
     }
   }

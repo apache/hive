@@ -145,6 +145,21 @@ public final class ObjectInspectorUtils {
   }
 
   /**
+   * Get the corresponding standard ObjectInspector array for an array of ObjectInspector.
+   */
+  public static ObjectInspector[] getStandardObjectInspector(ObjectInspector[] ois,
+      ObjectInspectorCopyOption objectInspectorOption) {
+    if (ois == null) return null;
+
+    ObjectInspector[] result = new ObjectInspector[ois.length];
+    for (int i = 0; i < ois.length; i++) {
+      result[i] = getStandardObjectInspector(ois[i], objectInspectorOption);
+    }
+
+    return result;
+  }
+
+  /**
    * Get the corresponding standard ObjectInspector for an ObjectInspector.
    *
    * The returned ObjectInspector can be used to inspect the standard object.
@@ -271,6 +286,23 @@ public final class ObjectInspectorUtils {
       result.add(copyToStandardObject(soi.getStructFieldData(row, f),
           f.getFieldObjectInspector(), objectInspectorOption));
     }
+  }
+
+  /**
+   * Returns a deep copy of an array of objects
+   */
+  public static Object[] copyToStandardObject(
+      Object[] o, ObjectInspector[] oi, ObjectInspectorCopyOption objectInspectorOption) {
+    if (o == null) return null;
+    assert(o.length == oi.length);
+
+    Object[] result = new Object[o.length];
+    for (int i = 0; i < o.length; i++) {
+      result[i] = ObjectInspectorUtils.copyToStandardObject(
+          o[i], oi[i], objectInspectorOption);
+    }
+
+    return result;
   }
 
   /**

@@ -11640,11 +11640,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       break;
     }
 
-    if ( wfSpec.isDistinct() ) {
-      throw new SemanticException(generateErrorMessage(node,
-          "Count/Sum distinct not supported with Windowing"));
-    }
-
     wfSpec.setExpression(node);
 
     ASTNode nameNode = (ASTNode) node.getChild(0);

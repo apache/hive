@@ -217,10 +217,18 @@ public class SqlFunctionConverter {
         } else if (op.kind == SqlKind.PLUS_PREFIX) {
           node = (ASTNode) ParseDriver.adaptor.create(HiveParser.PLUS, "PLUS");
         } else {
-          if (op.getName().toUpperCase().equals(SqlStdOperatorTable.COUNT.getName())
-              && children.size() == 0) {
-            node = (ASTNode) ParseDriver.adaptor.create(HiveParser.TOK_FUNCTIONSTAR,
+          // Handle 'COUNT' function for the case of COUNT(*) and COUNT(DISTINCT)
+          if (op instanceof HiveSqlCountAggFunction) {
+            if (children.size() == 0) {
+              node = (ASTNode) ParseDriver.adaptor.create(HiveParser.TOK_FUNCTIONSTAR,
                 "TOK_FUNCTIONSTAR");
+            } else {
+              HiveSqlCountAggFunction countFunction = (HiveSqlCountAggFunction)op;
+              if (countFunction.isDistinct()) {
+                node = (ASTNode) ParseDriver.adaptor.create(HiveParser.TOK_FUNCTIONDI,
+                    "TOK_FUNCTIONDI");
+              }
+            }
           }
           node.addChild((ASTNode) ParseDriver.adaptor.create(HiveParser.Identifier, op.getName()));
         }
@@ -416,33 +424,46 @@ public class SqlFunctionConverter {
     return calciteOp;
   }
 
-  public static SqlAggFunction getCalciteAggFn(String hiveUdfName,
+  public static SqlAggFunction getCalciteAggFn(String hiveUdfName, boolean isDistinct,
       ImmutableList<RelDataType> calciteArgTypes, RelDataType calciteRetType) {
     SqlAggFunction calciteAggFn = (SqlAggFunction) hiveToCalcite.get(hiveUdfName);
 
     if (calciteAggFn == null) {
-      CalciteUDFInfo uInf = getUDFInfo(hiveUdfName, calciteArgTypes, calciteRetType);
+      CalciteUDFInfo udfInfo = getUDFInfo(hiveUdfName, calciteArgTypes, calciteRetType);
 
       switch (hiveUdfName.toLowerCase()) {
         case "sum":
-          calciteAggFn = new HiveSqlSumAggFunction(uInf.returnTypeInference,
-              uInf.operandTypeInference, uInf.operandTypeChecker);
+          calciteAggFn = new HiveSqlSumAggFunction(
+              isDistinct,
+              udfInfo.returnTypeInference,
+              udfInfo.operandTypeInference,
+              udfInfo.operandTypeChecker);
           break;
         case "count":
-          calciteAggFn = new HiveSqlCountAggFunction(uInf.returnTypeInference,
-              uInf.operandTypeInference, uInf.operandTypeChecker);
+          calciteAggFn = new HiveSqlCountAggFunction(
+              isDistinct,
+              udfInfo.returnTypeInference,
+              udfInfo.operandTypeInference,
+              udfInfo.operandTypeChecker);
           break;
         case "min":
-          calciteAggFn = new HiveSqlMinMaxAggFunction(uInf.returnTypeInference,
-              uInf.operandTypeInference, uInf.operandTypeChecker, true);
+          calciteAggFn = new HiveSqlMinMaxAggFunction(
+              udfInfo.returnTypeInference,
+              udfInfo.operandTypeInference,
+              udfInfo.operandTypeChecker, true);
           break;
         case "max":
-          calciteAggFn = new HiveSqlMinMaxAggFunction(uInf.returnTypeInference,
-              uInf.operandTypeInference, uInf.operandTypeChecker, false);
+          calciteAggFn = new HiveSqlMinMaxAggFunction(
+              udfInfo.returnTypeInference,
+              udfInfo.operandTypeInference,
+              udfInfo.operandTypeChecker, false);
           break;
         default:
-          calciteAggFn = new CalciteUDAF(uInf.udfName, uInf.returnTypeInference,
-              uInf.operandTypeInference, uInf.operandTypeChecker);
+          calciteAggFn = new CalciteUDAF(
+              udfInfo.udfName,
+              udfInfo.returnTypeInference,
+              udfInfo.operandTypeInference,
+              udfInfo.operandTypeChecker);
           break;
       }
 

@@ -17,16 +17,21 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
+import org.apache.hadoop.hive.serde2.lazy.LazyString;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
 
 /**
  * This class implements the COUNT aggregation function as in SQL.
@@ -67,8 +72,11 @@ public class GenericUDAFCount implements GenericUDAFResolver2 {
       assert !paramInfo.isAllColumns() : "* not supported in expression list";
     }
 
-    return new GenericUDAFCountEvaluator().setCountAllColumns(
-        paramInfo.isAllColumns());
+    GenericUDAFCountEvaluator countEvaluator = new GenericUDAFCountEvaluator();
+    countEvaluator.setCountAllColumns(paramInfo.isAllColumns());
+    countEvaluator.setCountDistinct(paramInfo.isDistinct());
+
+    return countEvaluator;
   }
 
   /**
@@ -77,7 +85,9 @@ public class GenericUDAFCount implements GenericUDAFResolver2 {
    */
   public static class GenericUDAFCountEvaluator extends GenericUDAFEvaluator {
     private boolean countAllColumns = false;
+    private boolean countDistinct = false;
     private LongObjectInspector partialCountAggOI;
+    private ObjectInspector[] inputOI, outputOI;
     private LongWritable result;
 
     @Override
@@ -86,19 +96,27 @@ public class GenericUDAFCount implements GenericUDAFResolver2 {
       super.init(m, parameters);
       if (mode == Mode.PARTIAL2 || mode == Mode.FINAL) {
         partialCountAggOI = (LongObjectInspector)parameters[0];
+      } else {
+        inputOI = parameters;
+        outputOI = ObjectInspectorUtils.getStandardObjectInspector(inputOI,
+            ObjectInspectorCopyOption.JAVA);
       }
       result = new LongWritable(0);
       return PrimitiveObjectInspectorFactory.writableLongObjectInspector;
     }
 
-    private GenericUDAFCountEvaluator setCountAllColumns(boolean countAllCols) {
+    private void setCountAllColumns(boolean countAllCols) {
       countAllColumns = countAllCols;
-      return this;
+    }
+
+    private void setCountDistinct(boolean countDistinct) {
+      this.countDistinct = countDistinct;
     }
 
     /** class for storing count value. */
     @AggregationType(estimable = true)
     static class CountAgg extends AbstractAggregationBuffer {
+      Object[] prevColumns = null;    // Column values from previous row. Used to compare with current row for the case of COUNT(DISTINCT).
       long value;
       @Override
       public int estimate() { return JavaDataModel.PRIMITIVES2; }
@@ -113,6 +131,7 @@ public class GenericUDAFCount implements GenericUDAFResolver2 {
 
     @Override
     public void reset(AggregationBuffer agg) throws HiveException {
+      ((CountAgg) agg).prevColumns = null;
       ((CountAgg) agg).value = 0;
     }
 
@@ -134,6 +153,23 @@ public class GenericUDAFCount implements GenericUDAFResolver2 {
             break;
           }
         }
+
+        // Skip the counting if the values are the same for COUNT(DISTINCT) case
+        if (countThisRow && countDistinct) {
+          Object[] prevColumns = ((CountAgg) agg).prevColumns;
+          if (prevColumns == null) {
+            ((CountAgg) agg).prevColumns = new Object[parameters.length];
+          } else if (ObjectInspectorUtils.compare(parameters, inputOI, prevColumns, outputOI) == 0) {
+             countThisRow = false;
+          }
+
+          // We need to keep a copy of values from previous row.
+          if (countThisRow) {
+            ((CountAgg) agg).prevColumns = ObjectInspectorUtils.copyToStandardObject(
+                  parameters, inputOI, ObjectInspectorCopyOption.JAVA);
+          }
+        }
+
         if (countThisRow) {
           ((CountAgg) agg).value++;
         }
