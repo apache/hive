@@ -4317,6 +4317,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     for(Partition partition : partitions) {
       // Reuse the partition specs from dest partition since they should be the same
+      work.getInputs().add(new ReadEntity(new Partition(sourceTable, partition.getSpec(), null)));
+
       work.getOutputs().add(new WriteEntity(new Partition(sourceTable, partition.getSpec(), null),
           WriteEntity.WriteType.DELETE));
 
