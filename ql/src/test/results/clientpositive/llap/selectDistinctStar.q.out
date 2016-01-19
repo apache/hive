@@ -1770,17 +1770,17 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
-128		128	val_128
+128	val_128	128	
 146	val_146	146	val_146
 150	val_150	150	val_150
 213	val_213	213	val_213
-224		224	val_224
+224	val_224	224	
 238	val_238	238	val_238
 255	val_255	255	val_255
 273	val_273	273	val_273
 278	val_278	278	val_278
 311	val_311	311	val_311
-369		369	val_369
+369	val_369	369	
 401	val_401	401	val_401
 406	val_406	406	val_406
 66	val_66	66	val_66
@@ -1803,18 +1803,18 @@ POSTHOOK: Input: default@src1
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
-146	val_146	2008-04-08	11	146	val_146	146	val_146
-150	val_150	2008-04-08	11	150	val_150	150	val_150
-213	val_213	2008-04-08	11	213	val_213	213	val_213
-238	val_238	2008-04-08	11	238	val_238	238	val_238
-255	val_255	2008-04-08	11	255	val_255	255	val_255
-273	val_273	2008-04-08	11	273	val_273	273	val_273
-278	val_278	2008-04-08	11	278	val_278	278	val_278
-311	val_311	2008-04-08	11	311	val_311	311	val_311
-401	val_401	2008-04-08	11	401	val_401	401	val_401
-406	val_406	2008-04-08	11	406	val_406	406	val_406
-66	val_66	2008-04-08	11	66	val_66	66	val_66
-98	val_98	2008-04-08	11	98	val_98	98	val_98
+146	val_146	146	val_146	146	val_146	2008-04-08	11
+150	val_150	150	val_150	150	val_150	2008-04-08	11
+213	val_213	213	val_213	213	val_213	2008-04-08	11
+238	val_238	238	val_238	238	val_238	2008-04-08	11
+255	val_255	255	val_255	255	val_255	2008-04-08	11
+273	val_273	273	val_273	273	val_273	2008-04-08	11
+278	val_278	278	val_278	278	val_278	2008-04-08	11
+311	val_311	311	val_311	311	val_311	2008-04-08	11
+401	val_401	401	val_401	401	val_401	2008-04-08	11
+406	val_406	406	val_406	406	val_406	2008-04-08	11
+66	val_66	66	val_66	66	val_66	2008-04-08	11
+98	val_98	98	val_98	98	val_98	2008-04-08	11
 PREHOOK: query: select * from (select distinct * from src)src1 
 join 
 (select distinct * from src)src2 
@@ -4223,17 +4223,17 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
-128		128	val_128
+128	val_128	128	
 146	val_146	146	val_146
 150	val_150	150	val_150
 213	val_213	213	val_213
-224		224	val_224
+224	val_224	224	
 238	val_238	238	val_238
 255	val_255	255	val_255
 273	val_273	273	val_273
 278	val_278	278	val_278
 311	val_311	311	val_311
-369		369	val_369
+369	val_369	369	
 401	val_401	401	val_401
 406	val_406	406	val_406
 66	val_66	66	val_66
@@ -4256,18 +4256,18 @@ POSTHOOK: Input: default@src1
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
-146	val_146	2008-04-08	11	146	val_146	146	val_146
-150	val_150	2008-04-08	11	150	val_150	150	val_150
-213	val_213	2008-04-08	11	213	val_213	213	val_213
-238	val_238	2008-04-08	11	238	val_238	238	val_238
-255	val_255	2008-04-08	11	255	val_255	255	val_255
-273	val_273	2008-04-08	11	273	val_273	273	val_273
-278	val_278	2008-04-08	11	278	val_278	278	val_278
-311	val_311	2008-04-08	11	311	val_311	311	val_311
-401	val_401	2008-04-08	11	401	val_401	401	val_401
-406	val_406	2008-04-08	11	406	val_406	406	val_406
-66	val_66	2008-04-08	11	66	val_66	66	val_66
-98	val_98	2008-04-08	11	98	val_98	98	val_98
+146	val_146	146	val_146	146	val_146	2008-04-08	11
+150	val_150	150	val_150	150	val_150	2008-04-08	11
+213	val_213	213	val_213	213	val_213	2008-04-08	11
+238	val_238	238	val_238	238	val_238	2008-04-08	11
+255	val_255	255	val_255	255	val_255	2008-04-08	11
+273	val_273	273	val_273	273	val_273	2008-04-08	11
+278	val_278	278	val_278	278	val_278	2008-04-08	11
+311	val_311	311	val_311	311	val_311	2008-04-08	11
+401	val_401	401	val_401	401	val_401	2008-04-08	11
+406	val_406	406	val_406	406	val_406	2008-04-08	11
+66	val_66	66	val_66	66	val_66	2008-04-08	11
+98	val_98	98	val_98	98	val_98	2008-04-08	11
 PREHOOK: query: select * from (select distinct * from src)src1 
 join 
 (select distinct * from src)src2 

@@ -288,12 +288,12 @@ public class JoinCondTypeCheckProcFactory extends TypeCheckProcFactory {
           // inputRR.
           if (tableAlias != null) {
             if (inputRR.hasTableAlias(tableAlias)) {
-              if (inputRR.getInvRslvMap().containsKey(colDesc.getColumn())) {
+              if (inputRR.doesInvRslvMapContain(colDesc.getColumn())) {
                 inputLineage.add(i);
               }
             }
           } else {
-            if (inputRR.getInvRslvMap().containsKey(colDesc.getColumn())) {
+            if (inputRR.doesInvRslvMapContain(colDesc.getColumn())) {
               inputLineage.add(i);
             }
           }

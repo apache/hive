@@ -12232,8 +12232,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return false;
   }
   public static ASTNode genSelectDIAST(RowResolver rr) {
-    HashMap<String, LinkedHashMap<String, ColumnInfo>> map = rr.getRslvMap();
+    LinkedHashMap<String, LinkedHashMap<String, ColumnInfo>> map = rr.getRslvMap();
     ASTNode selectDI = new ASTNode(new CommonToken(HiveParser.TOK_SELECTDI, "TOK_SELECTDI"));
+    // Note: this will determine the order of columns in the result. For now, the columns for each
+    //       table will be together; the order of the tables, as well as the columns within each
+    //       table, is deterministic, but undefined - RR stores them in the order of addition.
     for (String tabAlias : map.keySet()) {
       for (Entry<String, ColumnInfo> entry : map.get(tabAlias).entrySet()) {
         selectDI.addChild(buildSelExprSubTree(tabAlias, entry.getKey()));
