@@ -263,6 +263,7 @@ public class HBaseStore implements RawStore {
       Table tblCopy = tbl.deepCopy();
       tblCopy.setDbName(HiveStringUtils.normalizeIdentifier(tblCopy.getDbName()));
       tblCopy.setTableName(HiveStringUtils.normalizeIdentifier(tblCopy.getTableName()));
+      normalizeColumnNames(tblCopy);
       getHBase().putTable(tblCopy);
       commit = true;
     } catch (IOException e) {
@@ -271,6 +272,24 @@ public class HBaseStore implements RawStore {
     } finally {
       commitOrRoleBack(commit);
     }
+  }
+
+  private void normalizeColumnNames(Table tbl) {
+    if (tbl.getSd().getCols() != null) {
+      tbl.getSd().setCols(normalizeFieldSchemaList(tbl.getSd().getCols()));
+    }
+    if (tbl.getPartitionKeys() != null) {
+      tbl.setPartitionKeys(normalizeFieldSchemaList(tbl.getPartitionKeys()));
+    }
+  }
+
+  private List<FieldSchema> normalizeFieldSchemaList(List<FieldSchema> fieldschemas) {
+    List<FieldSchema> ret = new ArrayList<>();
+    for (FieldSchema fieldSchema : fieldschemas) {
+      ret.add(new FieldSchema(HiveStringUtils.normalizeIdentifier(fieldSchema.getName()),
+          fieldSchema.getType(), fieldSchema.getComment()));
+    }
+    return ret;
   }
 
   @Override
