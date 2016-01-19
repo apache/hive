@@ -920,7 +920,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       pathKey = dpDir;
       if(conf.getDpSortState().equals(DPSortState.PARTITION_BUCKET_SORTED)) {
         String buckNum = row.get(row.size() - 1);
-        taskId = Utilities.replaceTaskIdFromFilename(Utilities.getTaskId(hconf), buckNum);
+        taskId = Utilities.replaceTaskIdFromFilename(taskId, buckNum);
         pathKey = appendToSource(taskId, dpDir);
       }
       FSPaths fsp2 = valToPaths.get(pathKey);
