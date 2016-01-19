@@ -62,6 +62,17 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
   }
 
   @Override
+  public String getAppID() {
+    Future<String> getAppID = sparkClient.run(new GetAppIDJob());
+    try {
+      return getAppID.get(sparkClientTimeoutInSeconds, TimeUnit.SECONDS);
+    } catch (Exception e) {
+      LOG.warn("Failed to get APP ID.", e);
+      return null;
+    }
+  }
+
+  @Override
   public int getJobId() {
     return jobHandle.getSparkJobIds().size() == 1 ? jobHandle.getSparkJobIds().get(0) : -1;
   }
@@ -267,5 +278,16 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
         return status;
       }
     };
+  }
+
+  private static class GetAppIDJob implements Job<String> {
+
+    public GetAppIDJob() {
+    }
+
+    @Override
+    public String call(JobContext jc) throws Exception {
+      return jc.sc().sc().applicationId();
+    }
   }
 }

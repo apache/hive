@@ -387,6 +387,7 @@ public class HiveConf extends Configuration {
     // a symbolic name to reference in the Hive source code. Properties with non-null
     // values will override any values set in the underlying Hadoop configuration.
     HADOOPBIN("hadoop.bin.path", findHadoopBinary(), "", true),
+    YARNBIN("yarn.bin.path", findYarnBinary(), "", true),
     HIVE_FS_HAR_IMPL("fs.har.impl", "org.apache.hadoop.hive.shims.HiveHarFileSystem",
         "The implementation for accessing Hadoop Archives. Note that this won't be applicable to Hadoop versions less than 0.20"),
     MAPREDMAXSPLITSIZE(FileInputFormat.SPLIT_MAXSIZE, 256000000L, "", true),
@@ -2796,16 +2797,27 @@ public class HiveConf extends Configuration {
     }
 
     private static String findHadoopBinary() {
+      String val = findHadoopHome();
+      // if can't find hadoop home we can at least try /usr/bin/hadoop
+      val = (val == null ? File.separator + "usr" : val)
+          + File.separator + "bin" + File.separator + "hadoop";
+      // Launch hadoop command file on windows.
+      return val + (Shell.WINDOWS ? ".cmd" : "");
+    }
+
+    private static String findYarnBinary() {
+      String val = findHadoopHome();
+      val = (val == null ? "yarn" : val + File.separator + "bin" + File.separator + "yarn");
+      return val + (Shell.WINDOWS ? ".cmd" : "");
+    }
+
+    private static String findHadoopHome() {
       String val = System.getenv("HADOOP_HOME");
       // In Hadoop 1.X and Hadoop 2.X HADOOP_HOME is gone and replaced with HADOOP_PREFIX
       if (val == null) {
         val = System.getenv("HADOOP_PREFIX");
       }
-      // and if all else fails we can at least try /usr/bin/hadoop
-      val = (val == null ? File.separator + "usr" : val)
-        + File.separator + "bin" + File.separator + "hadoop";
-      // Launch hadoop command file on windows.
-      return val + (Shell.WINDOWS ? ".cmd" : "");
+      return val;
     }
 
     public String getDefaultValue() {

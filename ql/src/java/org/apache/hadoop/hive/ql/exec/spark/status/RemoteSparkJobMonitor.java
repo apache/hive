@@ -34,10 +34,12 @@ import org.apache.spark.JobExecutionStatus;
 public class RemoteSparkJobMonitor extends SparkJobMonitor {
 
   private RemoteSparkJobStatus sparkJobStatus;
+  private final HiveConf hiveConf;
 
   public RemoteSparkJobMonitor(HiveConf hiveConf, RemoteSparkJobStatus sparkJobStatus) {
     super(hiveConf);
     this.sparkJobStatus = sparkJobStatus;
+    this.hiveConf = hiveConf;
   }
 
   @Override
@@ -77,6 +79,7 @@ public class RemoteSparkJobMonitor extends SparkJobMonitor {
             Map<String, SparkStageProgress> progressMap = sparkJobStatus.getSparkStageProgress();
             if (!running) {
               perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_SUBMIT_TO_RUNNING);
+              printAppInfo();
               // print job stages.
               console.printInfo("\nQuery Hive on Spark job["
                 + sparkJobStatus.getJobId() + "] stages:");
@@ -136,5 +139,17 @@ public class RemoteSparkJobMonitor extends SparkJobMonitor {
 
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_RUN_JOB);
     return rc;
+  }
+
+  private void printAppInfo() {
+    String sparkMaster = hiveConf.get("spark.master");
+    if (sparkMaster != null && sparkMaster.startsWith("yarn")) {
+      String appID = sparkJobStatus.getAppID();
+      if (appID != null) {
+        console.printInfo("Running with YARN Application = " + appID);
+        console.printInfo("Kill Command = " +
+            HiveConf.getVar(hiveConf, HiveConf.ConfVars.YARNBIN) + " application -kill " + appID);
+      }
+    }
   }
 }

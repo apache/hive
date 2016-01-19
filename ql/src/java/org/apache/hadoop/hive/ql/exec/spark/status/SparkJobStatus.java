@@ -29,6 +29,8 @@ import java.util.Map;
  */
 public interface SparkJobStatus {
 
+  String getAppID();
+
   int getJobId();
 
   JobExecutionStatus getState() throws HiveException;
