@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -59,6 +60,12 @@ public class TestVectorRowObject extends TestCase {
     VectorizedRowBatchCtx batchContext = new VectorizedRowBatchCtx();
     batchContext.init(source.rowStructObjectInspector(), emptyScratchTypeNames);
     VectorizedRowBatch batch = batchContext.createVectorizedRowBatch();
+
+    // junk the destination for the 1st pass
+    for (ColumnVector cv : batch.cols) {
+      Arrays.fill(cv.isNull, true);
+      cv.noNulls = false;
+    }
 
     VectorAssignRowSameBatch vectorAssignRow = new VectorAssignRowSameBatch();
     vectorAssignRow.init(source.typeNames());

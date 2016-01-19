@@ -102,6 +102,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
       } else {
         boolean value = deserializeRead.readBoolean();
         colVector.vector[batchIndex] = (value ? 1 : 0);
+        colVector.isNull[batchIndex] = false;
       }
     }
   }
@@ -121,6 +122,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
       } else {
         byte value = deserializeRead.readByte();
         colVector.vector[batchIndex] = (long) value;
+        colVector.isNull[batchIndex] = false;
       }
     }
   }
@@ -140,6 +142,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
       } else {
         short value = deserializeRead.readShort();
         colVector.vector[batchIndex] = (long) value;
+        colVector.isNull[batchIndex] = false;
       }
     }
   }
@@ -159,6 +162,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
       } else {
         int value = deserializeRead.readInt();
         colVector.vector[batchIndex] = (long) value;
+        colVector.isNull[batchIndex] = false;
       }
     }
   }
@@ -178,6 +182,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
       } else {
         long value = deserializeRead.readLong();
         colVector.vector[batchIndex] = value;
+        colVector.isNull[batchIndex] = false;
       }
     }
   }
@@ -200,6 +205,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
       } else {
         deserializeRead.readDate(readDateResults);
         colVector.vector[batchIndex] = (long) readDateResults.getDays();
+        colVector.isNull[batchIndex] = false;
       }
     }
   }
@@ -223,6 +229,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
         deserializeRead.readTimestamp(readTimestampResults);
         Timestamp t = readTimestampResults.getTimestamp();
         colVector.vector[batchIndex] = TimestampUtils.getTimeNanoSec(t);
+        colVector.isNull[batchIndex] = false;
       }
     }
   }
@@ -246,6 +253,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
         deserializeRead.readIntervalYearMonth(readIntervalYearMonthResults);
         HiveIntervalYearMonth hiym = readIntervalYearMonthResults.getHiveIntervalYearMonth();
         colVector.vector[batchIndex] = hiym.getTotalMonths();
+        colVector.isNull[batchIndex] = false;
       }
     }
   }
@@ -269,6 +277,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
         deserializeRead.readIntervalDayTime(readIntervalDayTimeResults);
         HiveIntervalDayTime hidt = readIntervalDayTimeResults.getHiveIntervalDayTime();
         colVector.vector[batchIndex] = DateUtils.getIntervalDayTimeTotalNanos(hidt);
+        colVector.isNull[batchIndex] = false;
       }
     }
   }
@@ -295,6 +304,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
       } else {
         float value = deserializeRead.readFloat();
         colVector.vector[batchIndex] = (double) value;
+        colVector.isNull[batchIndex] = false;
       }
     }
   }
@@ -314,6 +324,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
       } else {
         double value = deserializeRead.readDouble();
         colVector.vector[batchIndex] = value;
+        colVector.isNull[batchIndex] = false;
       }
     }
   }
@@ -344,6 +355,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
         deserializeRead.readString(readStringResults);
         colVector.setVal(batchIndex, readStringResults.bytes,
                 readStringResults.start, readStringResults.length);
+        colVector.isNull[batchIndex] = false;
       }
     }
   }
@@ -367,6 +379,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
         deserializeRead.readString(readStringResults);
         colVector.setRef(batchIndex, readStringResults.bytes,
                 readStringResults.start, readStringResults.length);
+        colVector.isNull[batchIndex] = false;
       }
     }
   }
@@ -396,6 +409,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
         int adjustedLength = StringExpr.rightTrimAndTruncate(readStringResults.bytes,
                 readStringResults.start, readStringResults.length, charTypeInfo.getLength());
         colVector.setVal(batchIndex, readStringResults.bytes, readStringResults.start, adjustedLength);
+        colVector.isNull[batchIndex] = false;
       }
     }
   }
@@ -425,6 +439,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
         int adjustedLength = StringExpr.rightTrimAndTruncate(readStringResults.bytes,
                 readStringResults.start, readStringResults.length, charTypeInfo.getLength());
         colVector.setRef(batchIndex, readStringResults.bytes, readStringResults.start, adjustedLength);
+        colVector.isNull[batchIndex] = false;
       }
     }
   }
@@ -454,6 +469,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
         int adjustedLength = StringExpr.truncate(readStringResults.bytes,
                 readStringResults.start, readStringResults.length, varcharTypeInfo.getLength());
         colVector.setVal(batchIndex, readStringResults.bytes, readStringResults.start, adjustedLength);
+        colVector.isNull[batchIndex] = false;
       }
     }
   }
@@ -483,6 +499,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
         int adjustedLength = StringExpr.truncate(readStringResults.bytes,
                 readStringResults.start, readStringResults.length, varcharTypeInfo.getLength());
         colVector.setRef(batchIndex, readStringResults.bytes, readStringResults.start, adjustedLength);
+        colVector.isNull[batchIndex] = false;
       }
     }
   }
@@ -506,6 +523,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
         deserializeRead.readBinary(readBinaryResults);
         colVector.setVal(batchIndex, readBinaryResults.bytes,
                 readBinaryResults.start, readBinaryResults.length);
+        colVector.isNull[batchIndex] = false;
       }
     }
   }
@@ -529,6 +547,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
         deserializeRead.readBinary(readBinaryResults);
         colVector.setRef(batchIndex, readBinaryResults.bytes,
                 readBinaryResults.start, readBinaryResults.length);
+        colVector.isNull[batchIndex] = false;
       }
     }
   }
@@ -552,6 +571,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
         deserializeRead.readHiveDecimal(readDecimalResults);
         HiveDecimal hiveDecimal = readDecimalResults.getHiveDecimal();
         colVector.vector[batchIndex].set(hiveDecimal);
+        colVector.isNull[batchIndex] = false;
       }
     }
   }
