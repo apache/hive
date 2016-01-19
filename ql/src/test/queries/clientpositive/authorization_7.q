@@ -1,3 +1,5 @@
+set hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider;
+
 GRANT ALL TO USER hive_test_user;
 SET hive.security.authorization.enabled=true;
 CREATE TABLE src_authorization_7 (key int, value string);

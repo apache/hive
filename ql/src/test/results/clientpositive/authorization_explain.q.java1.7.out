@@ -20,9 +20,6 @@ CURRENT_USER:
   hive_test_user
 OPERATION: 
   QUERY
-AUTHORIZATION_FAILURES: 
-  No privilege 'Select' found for inputs { database:default, table:src, columnName:key}
-  No privilege 'Select' found for inputs { database:default, table:srcpart, columnName:key}
 Warning: Shuffle Join JOIN[7][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: explain formatted authorization select * from src join srcpart
 PREHOOK: type: QUERY

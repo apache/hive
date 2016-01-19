@@ -132,6 +132,7 @@ public class TestJdbcDriver2 {
     Connection con1 = getConnection("default");
     System.setProperty(ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LEVEL.varname, "verbose");
     System.setProperty(ConfVars.HIVEMAPREDMODE.varname, "nonstrict");
+    System.setProperty(ConfVars.HIVE_AUTHORIZATION_MANAGER.varname, "org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider");
 
     Statement stmt1 = con1.createStatement();
     assertNotNull("Statement is null", stmt1);

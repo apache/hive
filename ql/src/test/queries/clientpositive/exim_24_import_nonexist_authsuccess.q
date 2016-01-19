@@ -1,6 +1,7 @@
 set hive.test.mode=true;
 set hive.test.mode.prefix=;
 set hive.test.mode.nosamplelist=exim_department,exim_employee;
+set hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider;
 
 create table exim_department ( dep_id int) stored as textfile;
 load data local inpath "../../data/files/test.dat" into table exim_department;

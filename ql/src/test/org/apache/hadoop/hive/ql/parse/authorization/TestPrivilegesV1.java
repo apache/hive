@@ -76,17 +76,8 @@ public class TestPrivilegesV1 extends PrivilegesTestBase{
    */
   @Test
   public void testPrivInGrantNotAccepted() throws Exception{
-    grantUserTableFail("insert");
-    grantUserTableFail("delete");
-  }
-
-  private void grantUserTableFail(String privName) {
-    try{
-      grantUserTable(privName, PrivilegeType.UNKNOWN);
-      Assert.fail("Exception expected");
-    }catch(Exception e){
-
-    }
+    grantUserTable("insert", PrivilegeType.INSERT);
+    grantUserTable("delete", PrivilegeType.DELETE);
   }
 
   private void grantUserTable(String privName, PrivilegeType privType) throws Exception {

@@ -60,17 +60,6 @@ public class SQLStdHiveAuthorizationValidator implements HiveAuthorizationValida
     this.authenticator = authenticator;
     this.privController = privilegeManager;
     this.ctx = SQLAuthorizationUtils.applyTestSettings(ctx, conf);
-    assertHiveCliAuthDisabled(conf);
-  }
-
-  private void assertHiveCliAuthDisabled(HiveConf conf) throws HiveAuthzPluginException {
-    if (ctx.getClientType() == CLIENT_TYPE.HIVECLI
-        && conf.getBoolVar(ConfVars.HIVE_AUTHORIZATION_ENABLED)) {
-      throw new HiveAuthzPluginException(
-          "SQL standards based authorization should not be enabled from hive cli"
-              + "Instead the use of storage based authorization in hive metastore is reccomended. Set "
-              + ConfVars.HIVE_AUTHORIZATION_ENABLED.varname + "=false to disable authz within cli");
-    }
   }
 
   @Override

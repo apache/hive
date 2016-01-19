@@ -1,3 +1,5 @@
+set hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider;
+
 -- SORT_BEFORE_DIFF
 
 create table src_auth_tmp as select * from src;

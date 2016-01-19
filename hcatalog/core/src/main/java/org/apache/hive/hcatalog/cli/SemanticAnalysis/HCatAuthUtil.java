@@ -20,17 +20,32 @@ package org.apache.hive.hcatalog.cli.SemanticAnalysis;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 final class HCatAuthUtil {
+  private static final Logger LOG = LoggerFactory.getLogger(HCatAuthUtil.class);
+
   public static boolean isAuthorizationEnabled(Configuration conf) {
-    // the session state getAuthorizer can return null even if authorization is
-    // enabled if the V2 api of authorizer in use.
+    if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED)) {
+      return false;
+    }
+    // If the V2 api of authorizer in use, the session state getAuthorizer return null.
+    // Here we disable authorization if we use V2 api or the DefaultHiveAuthorizationProvider
     // The additional authorization checks happening in hcatalog are designed to
     // work with  storage based authorization (on client side). It should not try doing
-    // additional checks if a V2 authorizer is in use. The reccomended configuration is to
-    // use storage based authorization in metastore server
-    return HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED)
-        && SessionState.get().getAuthorizer() != null;
+    // additional checks if a V2 authorizer or DefaultHiveAuthorizationProvider is in use.
+    // The recommended configuration is to use storage based authorization in metastore server.
+    // However, if user define a custom V1 authorization, it will be honored.
+    if (SessionState.get().getAuthorizer() == null ||
+        HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER)
+        == DefaultHiveAuthorizationProvider.class.getName()) {
+      LOG.info("Metastore authorizer is skipped for V2 authorizer or"
+        + " DefaultHiveAuthorizationProvider");
+      return false;
+    }
+    return true;
   }
 }

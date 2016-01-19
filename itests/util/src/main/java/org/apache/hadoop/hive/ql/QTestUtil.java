@@ -717,6 +717,8 @@ public class QTestUtil {
       return;
     }
 
+    db.getConf().set("hive.metastore.filter.hook",
+        "org.apache.hadoop.hive.metastore.DefaultMetaStoreFilterHookImpl");
     // Delete any tables other than the source tables
     // and any databases other than the default database.
     for (String dbName : db.getAllDatabases()) {

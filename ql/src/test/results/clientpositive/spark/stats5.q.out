@@ -25,7 +25,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: analyze_src
-                  Statistics: Num rows: 1 Data size: 5812 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
 
   Stage: Stage-1
     Stats-Aggr Operator
