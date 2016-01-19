@@ -1,3 +1,4 @@
+set hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider;
 create table authorization_fail_1 (key int, value string);
 set hive.security.authorization.enabled=true;
 

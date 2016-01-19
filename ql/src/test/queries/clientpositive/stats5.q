@@ -1,5 +1,5 @@
+set hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider;
 set datanucleus.cache.collections=false;
-set hive.stats.autogather=false;
 
 create table analyze_src as select * from src;
 

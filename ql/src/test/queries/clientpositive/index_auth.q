@@ -1,5 +1,7 @@
 set hive.stats.dbclass=fs;
 SET hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
+set hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider;
+
 create table foobar(key int, value string) PARTITIONED BY (ds string, hr string);
 alter table foobar add partition (ds='2008-04-08',hr='12');
 

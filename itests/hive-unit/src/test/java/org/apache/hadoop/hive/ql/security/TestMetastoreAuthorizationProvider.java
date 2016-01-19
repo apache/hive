@@ -90,6 +90,8 @@ public class TestMetastoreAuthorizationProvider extends TestCase {
         AuthorizationPreEventListener.class.getName());
     System.setProperty(HiveConf.ConfVars.HIVE_METASTORE_AUTHORIZATION_MANAGER.varname,
         getAuthorizationProvider());
+    System.setProperty(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER.varname,
+        getAuthorizationProvider());
     setupMetaStoreReadAuthorization();
     System.setProperty(HiveConf.ConfVars.HIVE_METASTORE_AUTHENTICATOR_MANAGER.varname,
         InjectableDummyAuthenticator.class.getName());
