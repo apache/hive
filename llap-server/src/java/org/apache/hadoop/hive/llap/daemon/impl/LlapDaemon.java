@@ -19,6 +19,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryPoolMXBean;
 import java.lang.management.MemoryType;
 import java.net.InetSocketAddress;
+import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
@@ -47,6 +48,7 @@ import org.apache.hadoop.hive.llap.metrics.LlapMetricsSystem;
 import org.apache.hadoop.hive.llap.metrics.MetricsUtils;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.hive.llap.shufflehandler.ShuffleHandler;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.metrics2.util.MBeans;
 import org.apache.hadoop.service.CompositeService;
 import org.apache.hadoop.util.ExitUtil;
@@ -74,6 +76,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
   private final JvmPauseMonitor pauseMonitor;
   private final ObjectName llapDaemonInfoBean;
   private final LlapDaemonExecutorMetrics metrics;
+  private final FunctionLocalizer fnLocalizer;
 
   // Parameters used for JMX
   private final boolean llapIoEnabled;
@@ -161,22 +164,23 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     LOG.info("Started LlapMetricsSystem with displayName: " + displayName +
         " sessionId: " + sessionId);
 
-
     this.amReporter = new AMReporter(srvAddress, new QueryFailedHandlerProxy(), daemonConf);
 
     this.server = new LlapDaemonProtocolServerImpl(
         numHandlers, this, srvAddress, mngAddress, srvPort, mngPort);
 
-    this.containerRunner = new ContainerRunnerImpl(daemonConf,
-        numExecutors,
-        waitQueueSize,
-        enablePreemption,
-        localDirs,
-        this.shufflePort,
-        srvAddress,
-        executorMemoryBytes,
-        metrics,
-        amReporter);
+    ClassLoader executorClassLoader = null;
+    if (HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_DAEMON_ALLOW_PERMANENT_FNS)) {
+      this.fnLocalizer = new FunctionLocalizer(daemonConf, localDirs[0]);
+      executorClassLoader = fnLocalizer.getClassLoader();
+    } else {
+      this.fnLocalizer = null;
+      executorClassLoader = Thread.currentThread().getContextClassLoader();
+    }
+
+    this.containerRunner = new ContainerRunnerImpl(daemonConf, numExecutors, waitQueueSize,
+        enablePreemption, localDirs, this.shufflePort, srvAddress, executorMemoryBytes, metrics,
+        amReporter, executorClassLoader);
     addIfService(containerRunner);
 
     this.registry = new LlapRegistryService(true);
@@ -235,7 +239,12 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
   public void serviceInit(Configuration conf) throws Exception {
     super.serviceInit(conf);
     LlapProxy.setDaemon(true);
+    if (fnLocalizer != null) {
+      fnLocalizer.init();
+      fnLocalizer.startLocalizeAllFunctions();
+    }
     LlapProxy.initializeLlapIo(conf);
+
   }
 
   @Override
@@ -274,6 +283,10 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     }
 
     LlapProxy.close();
+
+    if (fnLocalizer != null) {
+      fnLocalizer.close();
+    }
   }
 
   public static void main(String[] args) throws Exception {
@@ -430,7 +443,6 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
       }
     }
   }
-
 
   private class QueryFailedHandlerProxy implements QueryFailedHandler {
 

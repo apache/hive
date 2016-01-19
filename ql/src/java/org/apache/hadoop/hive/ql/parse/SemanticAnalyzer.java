@@ -195,6 +195,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFHash;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
+import org.apache.hadoop.hive.ql.util.ResourceDownloader;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
@@ -3074,7 +3075,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     SessionState ss = SessionState.get();
     String progName = getScriptProgName(cmd);
 
-    if (SessionState.canDownloadResource(progName)) {
+    if (!ResourceDownloader.isFileUri(progName)) {
       String filePath = ss.add_resource(ResourceType.FILE, progName, true);
       Path p = new Path(filePath);
       String fileName = p.getName();
@@ -3338,7 +3339,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (conf.getBoolVar(ConfVars.HIVE_CAPTURE_TRANSFORM_ENTITY)) {
       String scriptCmd = getScriptProgName(stripQuotes(trfm.getChild(execPos).getText()));
       getInputs().add(new ReadEntity(new Path(scriptCmd),
-          !SessionState.canDownloadResource(scriptCmd)));
+          ResourceDownloader.isFileUri(scriptCmd)));
     }
 
     return output;

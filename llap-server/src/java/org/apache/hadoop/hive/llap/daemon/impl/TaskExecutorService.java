@@ -33,10 +33,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.hive.llap.daemon.FinishableStateUpdateHandler;
@@ -76,8 +78,6 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  * new tasks. Shutting down of the task executor service can be done gracefully or immediately.
  */
 public class TaskExecutorService extends AbstractService implements Scheduler<TaskRunnerCallable> {
-
-
   private static final Logger LOG = LoggerFactory.getLogger(TaskExecutorService.class);
   private static final boolean isInfoEnabled = LOG.isInfoEnabled();
   private static final boolean isDebugEnabled = LOG.isDebugEnabled();
@@ -105,8 +105,9 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
 
   private final Object lock = new Object();
 
-  public TaskExecutorService(int numExecutors, int waitQueueSize, String waitQueueComparatorClassName,
-      boolean enablePreemption) {
+  public TaskExecutorService(int numExecutors, int waitQueueSize,
+      String waitQueueComparatorClassName, boolean enablePreemption,
+      ClassLoader classLoader) {
     super(TaskExecutorService.class.getSimpleName());
     LOG.info("TaskExecutorService is being setup with parameters: "
         + "numExecutors=" + numExecutors
@@ -114,11 +115,39 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
         + ", waitQueueComparatorClassName=" + waitQueueComparatorClassName
         + ", enablePreemption=" + enablePreemption);
 
+    final Comparator<TaskWrapper> waitQueueComparator = createComparator(
+        waitQueueComparatorClassName);
+    this.waitQueue = new EvictingPriorityBlockingQueue<>(waitQueueComparator, waitQueueSize);
+    this.threadPoolExecutor = new ThreadPoolExecutor(numExecutors, // core pool size
+        numExecutors, // max pool size
+        1, TimeUnit.MINUTES, new SynchronousQueue<Runnable>(), // direct hand-off
+        new ExecutorThreadFactory(classLoader));
+    this.executorService = MoreExecutors.listeningDecorator(threadPoolExecutor);
+    this.preemptionQueue = new PriorityBlockingQueue<>(numExecutors,
+        new PreemptionQueueComparator());
+    this.enablePreemption = enablePreemption;
+    this.numSlotsAvailable = new AtomicInteger(numExecutors);
+
+    // single threaded scheduler for tasks from wait queue to executor threads
+    ExecutorService wes = Executors.newFixedThreadPool(1, new ThreadFactoryBuilder()
+      .setDaemon(true).setNameFormat(WAIT_QUEUE_SCHEDULER_THREAD_NAME_FORMAT).build());
+    this.waitQueueExecutorService = MoreExecutors.listeningDecorator(wes);
+
+    ExecutorService executionCompletionExecutorServiceRaw = Executors.newFixedThreadPool(1,
+        new ThreadFactoryBuilder().setDaemon(true).setNameFormat("ExecutionCompletionThread #%d")
+            .build());
+    executionCompletionExecutorService = MoreExecutors.listeningDecorator(
+        executionCompletionExecutorServiceRaw);
+    ListenableFuture<?> future = waitQueueExecutorService.submit(new WaitQueueWorker());
+    Futures.addCallback(future, new WaitQueueWorkerCallback());
+  }
+
+  private Comparator<TaskWrapper> createComparator(
+      String waitQueueComparatorClassName) {
     final Comparator<TaskWrapper> waitQueueComparator;
     try {
       Class<? extends Comparator> waitQueueComparatorClazz =
-          (Class<? extends Comparator>) Class.forName(
-              waitQueueComparatorClassName);
+          (Class<? extends Comparator>) Class.forName(waitQueueComparatorClassName);
       Constructor<? extends Comparator> ctor = waitQueueComparatorClazz.getConstructor(null);
       waitQueueComparator = ctor.newInstance(null);
     } catch (ClassNotFoundException e) {
@@ -128,36 +157,10 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
       throw new RuntimeException("Failed to find constructor for wait queue comparator, class=" +
           waitQueueComparatorClassName, e);
     } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
-      throw new RuntimeException(
-          "Failed to find instantiate wait queue comparator, class=" + waitQueueComparatorClassName,
-          e);
+      throw new RuntimeException("Failed to find instantiate wait queue comparator, class="
+      + waitQueueComparatorClassName, e);
     }
-    this.waitQueue = new EvictingPriorityBlockingQueue<>(waitQueueComparator, waitQueueSize);
-    this.threadPoolExecutor = new ThreadPoolExecutor(numExecutors, // core pool size
-        numExecutors, // max pool size
-        1, TimeUnit.MINUTES,
-        new SynchronousQueue<Runnable>(), // direct hand-off
-        new ThreadFactoryBuilder().setDaemon(true).setNameFormat(TASK_EXECUTOR_THREAD_NAME_FORMAT)
-            .build());
-    this.executorService = MoreExecutors.listeningDecorator(threadPoolExecutor);
-    this.preemptionQueue = new PriorityBlockingQueue<>(numExecutors,
-        new PreemptionQueueComparator());
-    this.enablePreemption = enablePreemption;
-    this.numSlotsAvailable = new AtomicInteger(numExecutors);
-
-    // single threaded scheduler for tasks from wait queue to executor threads
-    ExecutorService wes = Executors.newFixedThreadPool(1, new ThreadFactoryBuilder().setDaemon(true)
-        .setNameFormat(WAIT_QUEUE_SCHEDULER_THREAD_NAME_FORMAT).build());
-    this.waitQueueExecutorService = MoreExecutors.listeningDecorator(wes);
-
-    ExecutorService executionCompletionExecutorServiceRaw = Executors.newFixedThreadPool(1,
-        new ThreadFactoryBuilder().setDaemon(true).setNameFormat("ExecutionCompletionThread #%d")
-            .build());
-    executionCompletionExecutorService = MoreExecutors.listeningDecorator(executionCompletionExecutorServiceRaw);
-    ListenableFuture<?> future = waitQueueExecutorService.submit(new WaitQueueWorker());
-    Futures.addCallback(future, new WaitQueueWorkerCallback());
-
-
+    return waitQueueComparator;
   }
 
   @Override
@@ -424,9 +427,11 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
       synchronized (lock) {
         boolean canFinish = taskWrapper.getTaskRunnerCallable().canFinish();
         LOG.info("Attempting to execute {}", taskWrapper);
-        ListenableFuture<TaskRunner2Result> future = executorService.submit(taskWrapper.getTaskRunnerCallable());
+        ListenableFuture<TaskRunner2Result> future = executorService.submit(
+            taskWrapper.getTaskRunnerCallable());
         taskWrapper.setIsInWaitQueue(false);
-        FutureCallback<TaskRunner2Result> wrappedCallback = createInternalCompletionListener(taskWrapper);
+        FutureCallback<TaskRunner2Result> wrappedCallback = createInternalCompletionListener(
+            taskWrapper);
         // Callback on a separate thread so that when a task completes, the thread in the main queue
         // is actually available for execution and will not potentially result in a RejectedExecution
         Futures.addCallback(future, wrappedCallback, executionCompletionExecutorService);
@@ -452,7 +457,8 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
   }
 
   private void handleScheduleAttemptedRejection(TaskWrapper taskWrapper) {
-    if (enablePreemption && taskWrapper.getTaskRunnerCallable().canFinish() && !preemptionQueue.isEmpty()) {
+    if (enablePreemption && taskWrapper.getTaskRunnerCallable().canFinish()
+        && !preemptionQueue.isEmpty()) {
 
       if (isDebugEnabled) {
         LOG.debug("Preemption Queue: " + preemptionQueue);
@@ -731,6 +737,26 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
       LOG.info("Received finishable state update for {}, state={}",
           taskRunnerCallable.getRequestId(), finishableState);
       taskExecutorService.finishableStateUpdated(this, finishableState);
+    }
+  }
+
+  private static class ExecutorThreadFactory implements ThreadFactory {
+    private final ClassLoader classLoader;
+    private final ThreadFactory defaultFactory;
+    private final AtomicLong count = new AtomicLong(0);
+
+    public ExecutorThreadFactory(ClassLoader classLoader) {
+      this.classLoader = classLoader;
+      this.defaultFactory = Executors.defaultThreadFactory();
+    }
+
+    @Override
+    public Thread newThread(Runnable r) {
+      Thread thread = defaultFactory.newThread(r);
+      thread.setName(String.format(TASK_EXECUTOR_THREAD_NAME_FORMAT, count.getAndIncrement()));
+      thread.setDaemon(true);
+      thread.setContextClassLoader(classLoader);
+      return thread;
     }
   }
 }

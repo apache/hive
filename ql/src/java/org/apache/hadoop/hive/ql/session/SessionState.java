@@ -46,7 +46,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.FileUtils;
@@ -82,13 +81,13 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizerFac
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzSessionContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzSessionContext.CLIENT_TYPE;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveMetastoreClientFactoryImpl;
-import org.apache.hadoop.hive.ql.util.DosToUnix;
+import org.apache.hadoop.hive.ql.util.ResourceDownloader;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hadoop.util.Shell;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
 /**
@@ -267,7 +266,8 @@ public class SessionState {
 
   private final ResourceMaps resourceMaps;
 
-  private final DependencyResolver dependencyResolver;
+  private final ResourceDownloader resourceDownloader;
+
   /**
    * Get the lineage state stored in this session.
    *
@@ -354,7 +354,6 @@ public class SessionState {
     isSilent = conf.getBoolVar(HiveConf.ConfVars.HIVESESSIONSILENT);
     ls = new LineageState();
     resourceMaps = new ResourceMaps();
-    dependencyResolver = new DependencyResolver();
     // Must be deterministic order map for consistent q-test output across Java versions
     overriddenConfigurations = new LinkedHashMap<String, String>();
     overriddenConfigurations.putAll(HiveConf.getConfSystemProperties());
@@ -368,6 +367,8 @@ public class SessionState {
     // Make sure that each session has its own UDFClassloader. For details see {@link UDFClassLoader}
     final ClassLoader currentLoader = Utilities.createUDFClassLoader((URLClassLoader) parentLoader, new String[]{});
     this.conf.setClassLoader(currentLoader);
+    resourceDownloader = new ResourceDownloader(conf,
+        HiveConf.getVar(conf, ConfVars.DOWNLOADED_RESOURCES_DIR));
   }
 
   public void setCmd(String cmdString) {
@@ -443,6 +444,7 @@ public class SessionState {
     }
     private void attach(HiveConf conf) {
       this.conf = conf;
+
       ClassLoader classLoader = conf.getClassLoader();
       if (classLoader != null) {
         Thread.currentThread().setContextClassLoader(classLoader);
@@ -1210,11 +1212,11 @@ public class SessionState {
         String key;
 
         //get the local path of downloaded jars.
-        List<URI> downloadedURLs = resolveAndDownload(t, value, convertToUnix);
+        List<URI> downloadedURLs = resolveAndDownload(value, convertToUnix);
 
-        if (getURLType(value).equals("ivy")) {
+        if (ResourceDownloader.isIvyUri(value)) {
           // get the key to store in map
-          key = createURI(value).getAuthority();
+          key = ResourceDownloader.createURI(value).getAuthority();
         } else {
           // for local file and hdfs, key and value are same.
           key = downloadedURLs.get(0).toString();
@@ -1255,85 +1257,10 @@ public class SessionState {
     return localized;
   }
 
-  /**
-   * @param path
-   * @return URI corresponding to the path.
-   */
-  private static URI createURI(String path) throws URISyntaxException {
-    if (!Shell.WINDOWS) {
-      // If this is not windows shell, path better follow unix convention.
-      // Else, the below call will throw an URISyntaxException
-      return new URI(path);
-    } else {
-      return new Path(path).toUri();
-    }
-  }
-
-  private static String getURLType(String value) throws URISyntaxException {
-    URI uri = createURI(value);
-    String scheme = uri.getScheme() == null ? null : uri.getScheme().toLowerCase();
-    if (scheme == null || scheme.equals("file")) {
-      return "file";
-    }
-    return scheme;
-  }
-
-  protected List<URI> resolveAndDownload(ResourceType t, String value, boolean convertToUnix) throws URISyntaxException,
-      IOException {
-    URI uri = createURI(value);
-    if (getURLType(value).equals("file")) {
-      return Arrays.asList(uri);
-    } else if (getURLType(value).equals("ivy")) {
-      return dependencyResolver.downloadDependencies(uri);
-    } else {
-      return Arrays.asList(createURI(downloadResource(value, convertToUnix)));
-    }
-  }
-
-
-
-  /**
-   * Returns  true if it is from any external File Systems except local
-   */
-  public static boolean canDownloadResource(String value) {
-    // Allow to download resources from any external FileSystem.
-    // And no need to download if it already exists on local file system.
-    String scheme = new Path(value).toUri().getScheme();
-    return (scheme != null) && !scheme.equalsIgnoreCase("file");
-  }
-
-  private String downloadResource(String value, boolean convertToUnix) {
-    if (canDownloadResource(value)) {
-      getConsole().printInfo("converting to local " + value);
-      File resourceDir = new File(getConf().getVar(HiveConf.ConfVars.DOWNLOADED_RESOURCES_DIR));
-      String destinationName = new Path(value).getName();
-      File destinationFile = new File(resourceDir, destinationName);
-      if (resourceDir.exists() && ! resourceDir.isDirectory()) {
-        throw new RuntimeException("The resource directory is not a directory, resourceDir is set to" + resourceDir);
-      }
-      if (!resourceDir.exists() && !resourceDir.mkdirs()) {
-        throw new RuntimeException("Couldn't create directory " + resourceDir);
-      }
-      try {
-        FileSystem fs = FileSystem.get(createURI(value), conf);
-        fs.copyToLocalFile(new Path(value), new Path(destinationFile.getCanonicalPath()));
-        value = destinationFile.getCanonicalPath();
-
-        // add "execute" permission to downloaded resource file (needed when loading dll file)
-        FileUtil.chmod(value, "ugo+rx", true);
-        if (convertToUnix && DosToUnix.isWindowsScript(destinationFile)) {
-          try {
-            DosToUnix.convertWindowsScriptToUnix(destinationFile);
-          } catch (Exception e) {
-            throw new RuntimeException("Caught exception while converting file " +
-                destinationFile + " to unix line endings", e);
-          }
-        }
-      } catch (Exception e) {
-        throw new RuntimeException("Failed to read external resource " + value, e);
-      }
-    }
-    return value;
+  @VisibleForTesting
+  protected List<URI> resolveAndDownload(String value, boolean convertToUnix)
+      throws URISyntaxException, IOException {
+    return resourceDownloader.resolveAndDownload(value, convertToUnix);
   }
 
   public void delete_resources(ResourceType t, List<String> values) {
@@ -1348,8 +1275,8 @@ public class SessionState {
     for (String value : values) {
       String key = value;
       try {
-        if (getURLType(value).equals("ivy")) {
-          key = createURI(value).getAuthority();
+        if (ResourceDownloader.isIvyUri(value)) {
+          key = ResourceDownloader.createURI(value).getAuthority();
         }
       } catch (URISyntaxException e) {
         throw new RuntimeException("Invalid uri string " + value + ", " + e.getMessage());
@@ -1686,6 +1613,10 @@ public class SessionState {
    */
   public Timestamp getQueryCurrentTimestamp() {
     return queryCurrentTimestamp;
+  }
+
+  public ResourceDownloader getResourceDownloader() {
+    return resourceDownloader;
   }
 }
 

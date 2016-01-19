@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.session;
+package org.apache.hadoop.hive.ql.util;
 
 import java.net.URI;
 import java.net.URISyntaxException;

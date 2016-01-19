@@ -259,7 +259,7 @@ public class LlapDecider implements PhysicalPlanResolver {
 
     private boolean checkAggregator(AggregationDesc agg) throws SemanticException {
       if (LOG.isDebugEnabled()) {
-	LOG.debug(String.format("Checking '%s'", agg.getExprString()));
+        LOG.debug(String.format("Checking '%s'", agg.getExprString()));
       }
 
       boolean result = checkExpressions(agg.getParameters());

@@ -211,6 +211,7 @@ public class Hive {
     }
   }
 
+
   public void reloadFunctions() throws HiveException {
     for (Function function : getAllFunctions()) {
       String functionName = function.getFunctionName();
@@ -287,7 +288,7 @@ public class Hive {
       }
       closeCurrent();
       c.set("fs.scheme.class", "dfs");
-      Hive newdb = new Hive(c);
+      Hive newdb = new Hive(c, true);
       hiveDB.set(newdb);
       return newdb;
     }
@@ -296,6 +297,10 @@ public class Hive {
   }
 
   public static Hive get() throws HiveException {
+    return get(true);
+  }
+
+  public static Hive get(boolean doRegisterAllFns) throws HiveException {
     Hive db = hiveDB.get();
     if (db != null && !db.isCurrentUserOwner()) {
       LOG.debug("Creating new db. db.isCurrentUserOwner = " + db.isCurrentUserOwner());
@@ -304,7 +309,8 @@ public class Hive {
     }
     if (db == null) {
       SessionState session = SessionState.get();
-      db = new Hive(session == null ? new HiveConf(Hive.class) : session.getConf());
+      HiveConf conf = session == null ? new HiveConf(Hive.class) : session.getConf();
+      db = new Hive(conf, doRegisterAllFns);
       hiveDB.set(db);
     }
     return db;
@@ -324,9 +330,11 @@ public class Hive {
    * @param c
    *
    */
-  private Hive(HiveConf c) throws HiveException {
+  private Hive(HiveConf c, boolean doRegisterAllFns) throws HiveException {
     conf = c;
-    registerAllFunctionsOnce();
+    if (doRegisterAllFns) {
+      registerAllFunctionsOnce();
+    }
   }
 
 

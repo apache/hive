@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.ql.plan.DropMacroDesc;
 import org.apache.hadoop.hive.ql.plan.FunctionWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.util.ResourceDownloader;
 import org.apache.hadoop.util.StringUtils;
 
 /**
@@ -251,7 +252,7 @@ public class FunctionTask extends Task<FunctionWork> {
 
         for (ResourceUri res : resources) {
           String resUri = res.getUri();
-          if (!SessionState.canDownloadResource(resUri)) {
+          if (ResourceDownloader.isFileUri(resUri)) {
             throw new HiveException("Hive warehouse is non-local, but "
                 + res.getUri() + " specifies file on local filesystem. "
                 + "Resources on non-local warehouse should specify a non-local scheme/path");
@@ -280,7 +281,7 @@ public class FunctionTask extends Task<FunctionWork> {
     return converted;
   }
 
-  private static SessionState.ResourceType getResourceType(ResourceType rt) throws HiveException {
+  public static SessionState.ResourceType getResourceType(ResourceType rt) {
     switch (rt) {
       case JAR:
         return SessionState.ResourceType.JAR;
@@ -289,7 +290,7 @@ public class FunctionTask extends Task<FunctionWork> {
       case ARCHIVE:
         return SessionState.ResourceType.ARCHIVE;
       default:
-        throw new HiveException("Unexpected resource type " + rt);
+        throw new AssertionError("Unexpected resource type " + rt);
     }
   }
 

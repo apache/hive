@@ -90,7 +90,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
       boolean enablePreemption, String[] localDirsBase, AtomicReference<Integer> localShufflePort,
       AtomicReference<InetSocketAddress> localAddress,
       long totalMemoryAvailableBytes, LlapDaemonExecutorMetrics metrics,
-      AMReporter amReporter) {
+      AMReporter amReporter, ClassLoader classLoader) {
     super("ContainerRunnerImpl");
     this.conf = conf;
     Preconditions.checkState(numExecutors > 0,
@@ -103,8 +103,8 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
     addIfService(queryTracker);
     String waitQueueSchedulerClassName = HiveConf.getVar(
         conf, ConfVars.LLAP_DAEMON_WAIT_QUEUE_COMPARATOR_CLASS_NAME);
-    this.executorService = new TaskExecutorService(numExecutors, waitQueueSize, waitQueueSchedulerClassName,
-        enablePreemption);
+    this.executorService = new TaskExecutorService(numExecutors, waitQueueSize,
+        waitQueueSchedulerClassName, enablePreemption, classLoader);
 
     addIfService(executorService);
 
