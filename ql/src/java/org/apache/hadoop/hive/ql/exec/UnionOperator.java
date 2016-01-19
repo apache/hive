@@ -20,11 +20,10 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.UnionDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
@@ -47,6 +46,15 @@ public class UnionOperator extends Operator<UnionDesc> implements Serializable {
   boolean[] needsTransform;
 
   ArrayList<Object> outputRow;
+
+  /** Kryo ctor. */
+  protected UnionOperator() {
+    super();
+  }
+
+  public UnionOperator(CompilationOpContext ctx) {
+    super(ctx);
+  }
 
   /**
    * UnionOperator will transform the input rows if the inputObjInspectors from

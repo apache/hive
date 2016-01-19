@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -141,8 +142,9 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
    * Initialization when invoked from QL.
    */
   @Override
-  public void initialize(HiveConf conf, QueryPlan queryPlan, DriverContext driverContext) {
-    super.initialize(conf, queryPlan, driverContext);
+  public void initialize(HiveConf conf, QueryPlan queryPlan, DriverContext driverContext,
+      CompilationOpContext opContext) {
+    super.initialize(conf, queryPlan, driverContext, opContext);
 
     job = new JobConf(conf, ExecDriver.class);
 

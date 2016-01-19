@@ -27,6 +27,7 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.DemuxOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -123,7 +124,11 @@ public class QueryPlanTreeTransformation {
     Map<ReduceSinkOperator, Integer> bottomRSToNewTag =
         new HashMap<ReduceSinkOperator, Integer>();
     int newTag = 0;
+    CompilationOpContext opCtx = null;
     for (ReduceSinkOperator rsop: bottomReduceSinkOperators) {
+      if (opCtx == null) {
+        opCtx = rsop.getCompilationOpContext();
+      }
       rsop.getConf().setNumReducers(numReducers);
       bottomRSToNewTag.put(rsop, newTag);
       parentRSsOfDemux.add(rsop);
@@ -150,7 +155,7 @@ public class QueryPlanTreeTransformation {
             childIndexToOriginalNumParents,
             keysSerializeInfos,
             valuessSerializeInfos);
-    Operator<? extends OperatorDesc> demuxOp = OperatorFactory.get(demuxDesc);
+    Operator<? extends OperatorDesc> demuxOp = OperatorFactory.get(opCtx, demuxDesc);
     demuxOp.setChildOperators(childrenOfDemux);
     demuxOp.setParentOperators(parentRSsOfDemux);
     for (Operator<? extends OperatorDesc> child: childrenOfDemux) {
@@ -199,7 +204,7 @@ public class QueryPlanTreeTransformation {
               CorrelationUtilities.getSingleParent(childOP, true);
           parentsOfMux.add(parentOp);
           Operator<? extends OperatorDesc> mux = OperatorFactory.get(
-              new MuxDesc(parentsOfMux));
+              childOP.getCompilationOpContext(), new MuxDesc(parentsOfMux));
           mux.setChildOperators(Utilities.makeList(childOP));
           mux.setParentOperators(parentsOfMux);
           childOP.setParentOperators(Utilities.makeList(mux));
@@ -229,7 +234,8 @@ public class QueryPlanTreeTransformation {
             }
           }
           MuxDesc muxDesc = new MuxDesc(siblingOPs);
-          Operator<? extends OperatorDesc> mux = OperatorFactory.get(muxDesc);
+          Operator<? extends OperatorDesc> mux = OperatorFactory.get(
+              rsop.getCompilationOpContext(), muxDesc);
           mux.setChildOperators(Utilities.makeList(childOP));
           mux.setParentOperators(parentsOfMux);
 

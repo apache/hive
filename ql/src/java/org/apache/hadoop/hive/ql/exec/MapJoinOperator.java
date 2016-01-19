@@ -32,6 +32,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.HashTableLoaderFactory;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.exec.persistence.BytesBytesMultiHashMap;
@@ -97,7 +98,13 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
   protected HybridHashTableContainer firstSmallTable; // The first small table;
                                                       // Only this table has spilled big table rows
 
-  public MapJoinOperator() {
+  /** Kryo ctor. */
+  protected MapJoinOperator() {
+    super();
+  }
+
+  public MapJoinOperator(CompilationOpContext ctx) {
+    super(ctx);
   }
 
   public MapJoinOperator(AbstractMapJoinOperator<? extends MapJoinDesc> mjop) {

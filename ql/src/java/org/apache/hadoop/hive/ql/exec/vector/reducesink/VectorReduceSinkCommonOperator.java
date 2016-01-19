@@ -25,6 +25,7 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TerminalOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -143,13 +144,18 @@ public abstract class VectorReduceSinkCommonOperator extends TerminalOperator<Re
 
   //---------------------------------------------------------------------------
 
-  public VectorReduceSinkCommonOperator() {
+  /** Kryo ctor. */
+  protected VectorReduceSinkCommonOperator() {
     super();
   }
 
-  public VectorReduceSinkCommonOperator(VectorizationContext vContext, OperatorDesc conf)
-          throws HiveException {
-    super();
+  public VectorReduceSinkCommonOperator(CompilationOpContext ctx) {
+    super(ctx);
+  }
+
+  public VectorReduceSinkCommonOperator(CompilationOpContext ctx,
+      VectorizationContext vContext, OperatorDesc conf) throws HiveException {
+    this(ctx);
 
     ReduceSinkDesc desc = (ReduceSinkDesc) conf;
     this.conf = desc;

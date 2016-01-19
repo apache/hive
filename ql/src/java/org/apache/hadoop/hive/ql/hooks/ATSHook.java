@@ -135,7 +135,7 @@ public class ATSHook implements ExecuteWithHookContext {
             );
               @SuppressWarnings("unchecked")
               ExplainTask explain = (ExplainTask) TaskFactory.get(work, conf);
-              explain.initialize(conf, plan, null);
+              explain.initialize(conf, plan, null, null);
               String query = plan.getQueryStr();
               JSONObject explainPlan = explain.getJSONPlan(null, work);
               String logID = conf.getLogIdVar(SessionState.get().getSessionId());

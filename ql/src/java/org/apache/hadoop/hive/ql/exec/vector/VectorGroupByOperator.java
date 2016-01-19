@@ -33,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.KeyWrapper;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
@@ -749,9 +750,9 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
 
   private static final long serialVersionUID = 1L;
 
-  public VectorGroupByOperator(VectorizationContext vContext, OperatorDesc conf)
-      throws HiveException {
-    this();
+  public VectorGroupByOperator(CompilationOpContext ctx,
+      VectorizationContext vContext, OperatorDesc conf) throws HiveException {
+    this(ctx);
     GroupByDesc desc = (GroupByDesc) conf;
     this.conf = desc;
     List<ExprNodeDesc> keysDesc = desc.getKeys();
@@ -769,9 +770,15 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
     vOutContext = new VectorizationContext(getName(), desc.getOutputColumnNames());
   }
 
-  public VectorGroupByOperator() {
+  /** Kryo ctor. */
+  protected VectorGroupByOperator() {
     super();
   }
+
+  public VectorGroupByOperator(CompilationOpContext ctx) {
+    super(ctx);
+  }
+
 
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {

@@ -187,7 +187,8 @@ public class SparkProcessAnalyzeTable implements NodeProcessor {
 
     @SuppressWarnings("unchecked")
     Task<PartialScanWork> partialScanTask = TaskFactory.get(scanWork, parseContext.getConf());
-    partialScanTask.initialize(parseContext.getConf(), null, driverCxt);
+    partialScanTask.initialize(parseContext.getConf(), null, driverCxt,
+        tableScan.getCompilationOpContext());
     partialScanTask.setWork(scanWork);
     statsWork.setSourceTask(partialScanTask);
 

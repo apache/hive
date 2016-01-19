@@ -83,7 +83,7 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
     FetchTask fetchTask = sem.getFetchTask();
     if (fetchTask != null) {
       // Initialize fetch work such that operator tree will be constructed.
-      fetchTask.getWork().initializeForFetch();
+      fetchTask.getWork().initializeForFetch(ctx.getOpContext());
     }
 
     ParseContext pCtx = null;

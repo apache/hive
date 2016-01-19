@@ -141,7 +141,7 @@ public final class LocalMapJoinProcFactory {
 
       HashTableSinkDesc hashTableSinkDesc = new HashTableSinkDesc(mapJoinDesc);
       HashTableSinkOperator hashTableSinkOp = (HashTableSinkOperator) OperatorFactory
-          .get(hashTableSinkDesc);
+          .get(mapJoinOp.getCompilationOpContext(), hashTableSinkDesc);
 
       // get the last operator for processing big tables
       int bigTable = mapJoinDesc.getPosBigTable();
@@ -203,7 +203,8 @@ public final class LocalMapJoinProcFactory {
 
         // create new operator: HashTable DummyOperator, which share the table desc
         HashTableDummyDesc desc = new HashTableDummyDesc();
-        HashTableDummyOperator dummyOp = (HashTableDummyOperator) OperatorFactory.get(desc);
+        HashTableDummyOperator dummyOp = (HashTableDummyOperator) OperatorFactory.get(
+            parent.getCompilationOpContext(), desc);
         TableDesc tbl;
 
         if (parent.getSchema() == null) {

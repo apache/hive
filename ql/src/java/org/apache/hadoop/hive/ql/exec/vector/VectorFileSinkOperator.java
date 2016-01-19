@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
@@ -47,15 +48,20 @@ public class VectorFileSinkOperator extends FileSinkOperator {
 
   protected transient Object[] singleRow;
 
-  public VectorFileSinkOperator(VectorizationContext vContext,
-      OperatorDesc conf) {
-    super();
+  public VectorFileSinkOperator(CompilationOpContext ctx,
+      VectorizationContext vContext, OperatorDesc conf) {
+    this(ctx);
     this.conf = (FileSinkDesc) conf;
     this.vContext = vContext;
   }
 
-  public VectorFileSinkOperator() {
+  /** Kryo ctor. */
+  protected VectorFileSinkOperator() {
+    super();
+  }
 
+  public VectorFileSinkOperator(CompilationOpContext ctx) {
+    super(ctx);
   }
 
   @Override

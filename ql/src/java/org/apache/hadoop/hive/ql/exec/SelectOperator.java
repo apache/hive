@@ -25,6 +25,7 @@ import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -42,6 +43,15 @@ public class SelectOperator extends Operator<SelectDesc> implements Serializable
   transient Object[] output;
 
   private transient boolean isSelectStarNoCompute = false;
+
+  /** Kryo ctor. */
+  protected SelectOperator() {
+    super();
+  }
+
+  public SelectOperator(CompilationOpContext ctx) {
+    super(ctx);
+  }
 
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {

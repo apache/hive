@@ -38,6 +38,7 @@ import java.util.Set;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.vector.util.FakeCaptureOutputOperator;
 import org.apache.hadoop.hive.ql.exec.vector.util.FakeVectorRowBatchFromConcat;
 import org.apache.hadoop.hive.ql.exec.vector.util.FakeVectorRowBatchFromLongIterables;
@@ -186,9 +187,10 @@ public class TestVectorGroupByOperator {
     float treshold = 100.0f*1024.0f/maxMemory;
     desc.setMemoryThreshold(treshold);
 
-    VectorGroupByOperator vgo = new VectorGroupByOperator(ctx, desc);
+    CompilationOpContext cCtx = new CompilationOpContext();
+    VectorGroupByOperator vgo = new VectorGroupByOperator(cCtx, ctx, desc);
 
-    FakeCaptureOutputOperator out = FakeCaptureOutputOperator.addCaptureOutputChild(vgo);
+    FakeCaptureOutputOperator out = FakeCaptureOutputOperator.addCaptureOutputChild(cCtx, vgo);
     vgo.initialize(hconf, null);
 
     this.outputRowCount = 0;
@@ -1729,9 +1731,10 @@ public class TestVectorGroupByOperator {
     desc.setAggregators(aggs);
     desc.setKeys(keysDesc);
 
-    VectorGroupByOperator vgo = new VectorGroupByOperator(ctx, desc);
+    CompilationOpContext cCtx = new CompilationOpContext();
+    VectorGroupByOperator vgo = new VectorGroupByOperator(cCtx, ctx, desc);
 
-    FakeCaptureOutputOperator out = FakeCaptureOutputOperator.addCaptureOutputChild(vgo);
+    FakeCaptureOutputOperator out = FakeCaptureOutputOperator.addCaptureOutputChild(cCtx, vgo);
     vgo.initialize(hconf, null);
     out.setOutputInspector(new FakeCaptureOutputOperator.OutputInspector() {
 
@@ -1843,9 +1846,10 @@ public class TestVectorGroupByOperator {
     keysDesc.add(keyExp);
     desc.setKeys(keysDesc);
 
-    VectorGroupByOperator vgo = new VectorGroupByOperator(ctx, desc);
+    CompilationOpContext cCtx = new CompilationOpContext();
+    VectorGroupByOperator vgo = new VectorGroupByOperator(cCtx, ctx, desc);
 
-    FakeCaptureOutputOperator out = FakeCaptureOutputOperator.addCaptureOutputChild(vgo);
+    FakeCaptureOutputOperator out = FakeCaptureOutputOperator.addCaptureOutputChild(cCtx, vgo);
     vgo.initialize(hconf, null);
     out.setOutputInspector(new FakeCaptureOutputOperator.OutputInspector() {
 
@@ -2239,9 +2243,10 @@ public class TestVectorGroupByOperator {
 
     GroupByDesc desc = buildGroupByDescCountStar (ctx);
 
-    VectorGroupByOperator vgo = new VectorGroupByOperator(ctx, desc);
+    CompilationOpContext cCtx = new CompilationOpContext();
+    VectorGroupByOperator vgo = new VectorGroupByOperator(cCtx, ctx, desc);
 
-    FakeCaptureOutputOperator out = FakeCaptureOutputOperator.addCaptureOutputChild(vgo);
+    FakeCaptureOutputOperator out = FakeCaptureOutputOperator.addCaptureOutputChild(cCtx, vgo);
     vgo.initialize(hconf, null);
 
     for (VectorizedRowBatch unit: data) {
@@ -2269,10 +2274,10 @@ public class TestVectorGroupByOperator {
     GroupByDesc desc = buildGroupByDescType(ctx, "count", "A", TypeInfoFactory.longTypeInfo);
     VectorGroupByDesc vectorDesc = desc.getVectorDesc();
     vectorDesc.setIsReduceMergePartial(true);
+    CompilationOpContext cCtx = new CompilationOpContext();
+    VectorGroupByOperator vgo = new VectorGroupByOperator(cCtx, ctx, desc);
 
-    VectorGroupByOperator vgo = new VectorGroupByOperator(ctx, desc);
-
-    FakeCaptureOutputOperator out = FakeCaptureOutputOperator.addCaptureOutputChild(vgo);
+    FakeCaptureOutputOperator out = FakeCaptureOutputOperator.addCaptureOutputChild(cCtx, vgo);
     vgo.initialize(hconf, null);
 
     for (VectorizedRowBatch unit: data) {
@@ -2301,9 +2306,10 @@ public class TestVectorGroupByOperator {
     GroupByDesc desc = buildGroupByDescType(ctx, aggregateName, "A",
         TypeInfoFactory.stringTypeInfo);
 
-    VectorGroupByOperator vgo = new VectorGroupByOperator(ctx, desc);
+    CompilationOpContext cCtx = new CompilationOpContext();
+    VectorGroupByOperator vgo = new VectorGroupByOperator(cCtx, ctx, desc);
 
-    FakeCaptureOutputOperator out = FakeCaptureOutputOperator.addCaptureOutputChild(vgo);
+    FakeCaptureOutputOperator out = FakeCaptureOutputOperator.addCaptureOutputChild(cCtx, vgo);
     vgo.initialize(hconf, null);
 
     for (VectorizedRowBatch unit: data) {
@@ -2332,9 +2338,10 @@ public class TestVectorGroupByOperator {
     GroupByDesc desc =
         buildGroupByDescType(ctx, aggregateName, "A", TypeInfoFactory.getDecimalTypeInfo(30, 4));
 
-    VectorGroupByOperator vgo = new VectorGroupByOperator(ctx, desc);
+    CompilationOpContext cCtx = new CompilationOpContext();
+    VectorGroupByOperator vgo = new VectorGroupByOperator(cCtx, ctx, desc);
 
-    FakeCaptureOutputOperator out = FakeCaptureOutputOperator.addCaptureOutputChild(vgo);
+    FakeCaptureOutputOperator out = FakeCaptureOutputOperator.addCaptureOutputChild(cCtx, vgo);
     vgo.initialize(hconf, null);
 
     for (VectorizedRowBatch unit : data) {
@@ -2364,9 +2371,10 @@ public class TestVectorGroupByOperator {
     GroupByDesc desc = buildGroupByDescType (ctx, aggregateName, "A",
         TypeInfoFactory.doubleTypeInfo);
 
-    VectorGroupByOperator vgo = new VectorGroupByOperator(ctx, desc);
+    CompilationOpContext cCtx = new CompilationOpContext();
+    VectorGroupByOperator vgo = new VectorGroupByOperator(cCtx, ctx, desc);
 
-    FakeCaptureOutputOperator out = FakeCaptureOutputOperator.addCaptureOutputChild(vgo);
+    FakeCaptureOutputOperator out = FakeCaptureOutputOperator.addCaptureOutputChild(cCtx, vgo);
     vgo.initialize(hconf, null);
 
     for (VectorizedRowBatch unit: data) {
@@ -2394,9 +2402,10 @@ public class TestVectorGroupByOperator {
 
     GroupByDesc desc = buildGroupByDescType(ctx, aggregateName, "A", TypeInfoFactory.longTypeInfo);
 
-    VectorGroupByOperator vgo = new VectorGroupByOperator(ctx, desc);
+    CompilationOpContext cCtx = new CompilationOpContext();
+    VectorGroupByOperator vgo = new VectorGroupByOperator(cCtx, ctx, desc);
 
-    FakeCaptureOutputOperator out = FakeCaptureOutputOperator.addCaptureOutputChild(vgo);
+    FakeCaptureOutputOperator out = FakeCaptureOutputOperator.addCaptureOutputChild(cCtx, vgo);
     vgo.initialize(null, null);
 
     for (VectorizedRowBatch unit: data) {
@@ -2428,13 +2437,13 @@ public class TestVectorGroupByOperator {
     GroupByDesc desc = buildKeyGroupByDesc (ctx, aggregateName, "Value",
         TypeInfoFactory.longTypeInfo, "Key", TypeInfoFactory.longTypeInfo);
 
-    VectorGroupByOperator vgo = new VectorGroupByOperator(ctx, desc);
+    CompilationOpContext cCtx = new CompilationOpContext();
+    VectorGroupByOperator vgo = new VectorGroupByOperator(cCtx, ctx, desc);
 
-    FakeCaptureOutputOperator out = FakeCaptureOutputOperator.addCaptureOutputChild(vgo);
+    FakeCaptureOutputOperator out = FakeCaptureOutputOperator.addCaptureOutputChild(cCtx, vgo);
     vgo.initialize(hconf, null);
     out.setOutputInspector(new FakeCaptureOutputOperator.OutputInspector() {
 
-      private int rowIndex;
       private String aggregateName;
       private HashMap<Object,Object> expected;
       private Set<Object> keys;
@@ -2494,9 +2503,10 @@ public class TestVectorGroupByOperator {
     GroupByDesc desc = buildKeyGroupByDesc (ctx, aggregateName, "Value",
        dataTypeInfo, "Key", TypeInfoFactory.stringTypeInfo);
 
-    VectorGroupByOperator vgo = new VectorGroupByOperator(ctx, desc);
+    CompilationOpContext cCtx = new CompilationOpContext();
+    VectorGroupByOperator vgo = new VectorGroupByOperator(cCtx, ctx, desc);
 
-    FakeCaptureOutputOperator out = FakeCaptureOutputOperator.addCaptureOutputChild(vgo);
+    FakeCaptureOutputOperator out = FakeCaptureOutputOperator.addCaptureOutputChild(cCtx, vgo);
     vgo.initialize(hconf, null);
     out.setOutputInspector(new FakeCaptureOutputOperator.OutputInspector() {
 

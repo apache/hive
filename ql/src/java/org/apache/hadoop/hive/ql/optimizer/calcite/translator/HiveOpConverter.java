@@ -253,7 +253,8 @@ public class HiveOpConverter {
     tsd.setNeededColumns(neededColumnNames);
 
     // 2. Setup TableScan
-    TableScanOperator ts = (TableScanOperator) OperatorFactory.get(tsd, new RowSchema(colInfos));
+    TableScanOperator ts = (TableScanOperator) OperatorFactory.get(
+        semanticAnalyzer.getOpContext(), tsd, new RowSchema(colInfos));
 
     topOps.put(tableAlias, ts);
 
@@ -488,8 +489,7 @@ public class HiveOpConverter {
           && semanticAnalyzer.getQB().getParseInfo() != null)
         this.semanticAnalyzer.getQB().getParseInfo().setOuterQueryLimit(limit);
       ArrayList<ColumnInfo> cinfoLst = createColInfos(resultOp);
-      resultOp = OperatorFactory.getAndMakeChild(limitDesc,
-          new RowSchema(cinfoLst), resultOp);
+      resultOp = OperatorFactory.getAndMakeChild(limitDesc, new RowSchema(cinfoLst), resultOp);
 
       if (LOG.isDebugEnabled()) {
         LOG.debug("Generated " + resultOp + " with row schema: [" + resultOp.getSchema() + "]");
@@ -516,8 +516,8 @@ public class HiveOpConverter {
             filterRel.getCluster().getTypeFactory()));
     FilterDesc filDesc = new FilterDesc(filCondExpr, false);
     ArrayList<ColumnInfo> cinfoLst = createColInfos(inputOpAf.inputs.get(0));
-    FilterOperator filOp = (FilterOperator) OperatorFactory.getAndMakeChild(filDesc, new RowSchema(
-        cinfoLst), inputOpAf.inputs.get(0));
+    FilterOperator filOp = (FilterOperator) OperatorFactory.getAndMakeChild(filDesc,
+        new RowSchema(cinfoLst), inputOpAf.inputs.get(0));
 
     if (LOG.isDebugEnabled()) {
       LOG.debug("Generated " + filOp + " with row schema: [" + filOp.getSchema() + "]");
@@ -569,8 +569,8 @@ public class HiveOpConverter {
         children[i] = genInputSelectForUnion(op, cinfoLst);
       }
     }
-    Operator<? extends OperatorDesc> unionOp = OperatorFactory.getAndMakeChild(unionDesc,
-        new RowSchema(cinfoLst), children);
+    Operator<? extends OperatorDesc> unionOp = OperatorFactory.getAndMakeChild(
+        semanticAnalyzer.getOpContext(), unionDesc, new RowSchema(cinfoLst), children);
 
     if (LOG.isDebugEnabled()) {
       LOG.debug("Generated " + unionOp + " with row schema: [" + unionOp.getSchema() + "]");
@@ -662,8 +662,8 @@ public class HiveOpConverter {
           unparseTranslator);
       RowResolver ptfOpRR = ptfDesc.getFuncDef().getOutputShape().getRr();
 
-      Operator<?> ptfOp = OperatorFactory.getAndMakeChild(ptfDesc,
-          new RowSchema(ptfOpRR.getColumnInfos()), selectOp);
+      Operator<?> ptfOp = OperatorFactory.getAndMakeChild(
+          ptfDesc, new RowSchema(ptfOpRR.getColumnInfos()), selectOp);
 
       if (LOG.isDebugEnabled()) {
         LOG.debug("Generated " + ptfOp + " with row schema: [" + ptfOp.getSchema() + "]");
@@ -725,8 +725,8 @@ public class HiveOpConverter {
     SelectDesc selectDesc = new SelectDesc(new ArrayList<ExprNodeDesc>(descriptors.values()),
         new ArrayList<String>(descriptors.keySet()));
     ArrayList<ColumnInfo> cinfoLst = createColInfosSubset(input, keepColNames);
-    SelectOperator selectOp = (SelectOperator) OperatorFactory.getAndMakeChild(selectDesc,
-        new RowSchema(cinfoLst), rsOp);
+    SelectOperator selectOp = (SelectOperator) OperatorFactory.getAndMakeChild(
+        selectDesc, new RowSchema(cinfoLst), rsOp);
     selectOp.setColumnExprMap(descriptors);
 
     if (LOG.isDebugEnabled()) {
@@ -823,8 +823,8 @@ public class HiveOpConverter {
           partitionCols, order, numReducers, acidOperation);
     }
 
-    ReduceSinkOperator rsOp = (ReduceSinkOperator) OperatorFactory.getAndMakeChild(rsDesc,
-        new RowSchema(outputColumns), input);
+    ReduceSinkOperator rsOp = (ReduceSinkOperator) OperatorFactory.getAndMakeChild(
+        rsDesc, new RowSchema(outputColumns), input);
 
     List<String> keyColNames = rsDesc.getOutputKeyColumnNames();
     for (int i = 0; i < keyColNames.size(); i++) {
@@ -976,8 +976,8 @@ public class HiveOpConverter {
     desc.setReversedExprs(reversedExprs);
     desc.setFilterMap(filterMap);
 
-    JoinOperator joinOp = (JoinOperator) OperatorFactory.getAndMakeChild(desc, new RowSchema(
-        outputColumns), childOps);
+    JoinOperator joinOp = (JoinOperator) OperatorFactory.getAndMakeChild(
+        childOps[0].getCompilationOpContext(), desc, new RowSchema(outputColumns), childOps);
     joinOp.setColumnExprMap(colExprMap);
     joinOp.setPosToAliasMap(posToAliasMap);
 
@@ -1241,8 +1241,8 @@ public class HiveOpConverter {
       columnExprMap.put(uInfo.getInternalName(), column);
     }
     if (needSelectOp) {
-      return OperatorFactory.getAndMakeChild(new SelectDesc(columns, colName), new RowSchema(
-          uColumnInfo), columnExprMap, origInputOp);
+      return OperatorFactory.getAndMakeChild(new SelectDesc(
+          columns, colName), new RowSchema(uColumnInfo), columnExprMap, origInputOp);
     } else {
       return origInputOp;
     }

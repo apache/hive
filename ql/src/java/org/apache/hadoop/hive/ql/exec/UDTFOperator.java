@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.UDTFDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
@@ -57,6 +58,15 @@ public class UDTFOperator extends Operator<UDTFDesc> implements Serializable {
    * sends periodic reports back to the tracker.
    */
   transient AutoProgressor autoProgressor;
+
+  /** Kryo ctor. */
+  protected UDTFOperator() {
+    super();
+  }
+
+  public UDTFOperator(CompilationOpContext ctx) {
+    super(ctx);
+  }
 
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {

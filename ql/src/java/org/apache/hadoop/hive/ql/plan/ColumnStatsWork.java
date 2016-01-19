@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.ListSinkOperator;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -72,8 +73,8 @@ public class ColumnStatsWork implements Serializable {
     return fWork.getSink();
   }
 
-  public void initializeForFetch() {
-    fWork.initializeForFetch();
+  public void initializeForFetch(CompilationOpContext ctx) {
+    fWork.initializeForFetch(ctx);
   }
 
   public int getLeastNumRows() {

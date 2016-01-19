@@ -16,26 +16,21 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.exec;
+package org.apache.hadoop.hive.ql;
 
-import java.io.Serializable;
-
-import org.apache.hadoop.hive.ql.CompilationOpContext;
-import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Terminal Operator Base Class.
- **/
-public abstract class TerminalOperator<T extends OperatorDesc> extends
-    Operator<T> implements Serializable {
-  private static final long serialVersionUID = 1L;
+ * A subset of compilation context that is passed to operators to get rid of some globals.
+ * Perhaps this should be rolled into main Context; however, some code necessitates storing the
+ * context in the operators for now, so this may not be advisable given how much stuff the main
+ * Context class contains.
+ * For now, only the operator sequence ID lives here.
+ */
+public class CompilationOpContext {
+  private final AtomicInteger opSeqId = new AtomicInteger(0);
 
-  /** Kryo ctor. */
-  protected TerminalOperator() {
-    super();
-  }
-
-  public TerminalOperator(CompilationOpContext ctx) {
-    super(ctx);
+  public int nextOperatorId() {
+    return opSeqId.getAndIncrement();
   }
 }

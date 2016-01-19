@@ -23,6 +23,7 @@ import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.ConstantVectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
@@ -47,16 +48,21 @@ public class VectorFilterOperator extends FilterOperator {
   // and 0 if condition needs to be computed.
   transient private int filterMode = 0;
 
-  public VectorFilterOperator(VectorizationContext vContext, OperatorDesc conf)
-      throws HiveException {
-    this();
+  public VectorFilterOperator(CompilationOpContext ctx,
+      VectorizationContext vContext, OperatorDesc conf) throws HiveException {
+    this(ctx);
     ExprNodeDesc oldExpression = ((FilterDesc) conf).getPredicate();
     conditionEvaluator = vContext.getVectorExpression(oldExpression, VectorExpressionDescriptor.Mode.FILTER);
     this.conf = (FilterDesc) conf;
   }
 
-  public VectorFilterOperator() {
+  /** Kryo ctor. */
+  protected VectorFilterOperator() {
     super();
+  }
+
+  public VectorFilterOperator(CompilationOpContext ctx) {
+    super(ctx);
   }
 
 

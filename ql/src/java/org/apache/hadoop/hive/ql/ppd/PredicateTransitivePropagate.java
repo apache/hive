@@ -106,8 +106,8 @@ public class PredicateTransitivePropagate extends Transform {
   // insert filter operator between target(child) and input(parent)
   private Operator<FilterDesc> createFilter(Operator<?> target, Operator<?> parent,
       RowSchema parentRS, ExprNodeDesc filterExpr) {
-    Operator<FilterDesc> filter = OperatorFactory.get(new FilterDesc(filterExpr, false),
-        new RowSchema(parentRS.getSignature()));
+    Operator<FilterDesc> filter = OperatorFactory.get(parent.getCompilationOpContext(),
+        new FilterDesc(filterExpr, false), new RowSchema(parentRS.getSignature()));
     filter.getParentOperators().add(parent);
     filter.getChildOperators().add(target);
     parent.replaceChild(target, filter);

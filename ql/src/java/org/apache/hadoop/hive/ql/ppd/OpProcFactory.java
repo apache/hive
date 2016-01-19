@@ -885,8 +885,7 @@ public final class OpProcFactory {
         .getChildOperators();
     op.setChildOperators(null);
     Operator<FilterDesc> output = OperatorFactory.getAndMakeChild(
-        new FilterDesc(condn, false), new RowSchema(inputRS.getSignature()),
-        op);
+        new FilterDesc(condn, false), new RowSchema(inputRS.getSignature()), op);
     output.setChildOperators(originalChilren);
     for (Operator<? extends OperatorDesc> ch : originalChilren) {
       List<Operator<? extends OperatorDesc>> parentOperators = ch

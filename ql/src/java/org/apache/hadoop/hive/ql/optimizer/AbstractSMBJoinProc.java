@@ -185,7 +185,7 @@ abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc impleme
         par.getChildOperators().add(index, smbJop);
       }
       else {
-        DummyStoreOperator dummyStoreOp = new DummyStoreOperator();
+        DummyStoreOperator dummyStoreOp = new DummyStoreOperator(par.getCompilationOpContext());
         par.getChildOperators().add(index, dummyStoreOp);
 
         List<Operator<? extends OperatorDesc>> childrenOps =

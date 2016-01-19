@@ -25,6 +25,7 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.*;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorGroupByOperator;
@@ -104,7 +105,7 @@ public class TestVectorizer {
     grpByKeys.add(colExprB);
     desc.setKeys(grpByKeys);
 
-    GroupByOperator gbyOp = new GroupByOperator();
+    GroupByOperator gbyOp = new GroupByOperator(new CompilationOpContext());
     gbyOp.setConf(desc);
 
     Vectorizer v = new Vectorizer();
@@ -181,7 +182,7 @@ public class TestVectorizer {
   */
   @Test
   public void testValidateMapJoinOperator() {
-    MapJoinOperator map = new MapJoinOperator();
+    MapJoinOperator map = new MapJoinOperator(new CompilationOpContext());
     MapJoinDesc mjdesc = new MapJoinDesc();
     
     prepareAbstractMapJoin(map, mjdesc);
@@ -197,7 +198,7 @@ public class TestVectorizer {
   */
   @Test
   public void testValidateSMBJoinOperator() {
-      SMBMapJoinOperator map = new SMBMapJoinOperator();
+      SMBMapJoinOperator map = new SMBMapJoinOperator(new CompilationOpContext());
       SMBJoinDesc mjdesc = new SMBJoinDesc();
       
       prepareAbstractMapJoin(map, mjdesc);

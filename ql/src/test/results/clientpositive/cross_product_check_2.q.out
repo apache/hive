@@ -446,8 +446,8 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[47][bigTable=?] in task 'Stage-7:MAPRED' is a cross product
-Warning: Map Join MAPJOIN[40][bigTable=?] in task 'Stage-6:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[35][bigTable=?] in task 'Stage-7:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[34][bigTable=?] in task 'Stage-6:MAPRED' is a cross product
 Warning: Shuffle Join JOIN[23][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: explain select * from 
 (select A.key from A group by key) ss join 

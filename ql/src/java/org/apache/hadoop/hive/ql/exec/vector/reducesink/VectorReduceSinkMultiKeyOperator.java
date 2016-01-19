@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.vector.reducesink;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.exec.vector.keyseries.VectorKeySeriesMultiSerialized;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -45,13 +46,18 @@ public class VectorReduceSinkMultiKeyOperator extends VectorReduceSinkCommonOper
   // Pass-thru constructors.
   //
 
-  public VectorReduceSinkMultiKeyOperator() {
+  /** Kryo ctor. */
+  protected VectorReduceSinkMultiKeyOperator() {
     super();
   }
 
-  public VectorReduceSinkMultiKeyOperator(VectorizationContext vContext, OperatorDesc conf)
-          throws HiveException {
-    super(vContext, conf);
+  public VectorReduceSinkMultiKeyOperator(CompilationOpContext ctx) {
+    super(ctx);
+  }
+
+  public VectorReduceSinkMultiKeyOperator(CompilationOpContext ctx,
+      VectorizationContext vContext, OperatorDesc conf) throws HiveException {
+    super(ctx, vContext, conf);
   }
 
   @Override

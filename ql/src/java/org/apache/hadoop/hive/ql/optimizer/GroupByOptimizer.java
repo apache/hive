@@ -571,8 +571,8 @@ public class GroupByOptimizer extends Transform {
         colName.add(cInfo.getInternalName());
         columnExprMap.put(cInfo.getInternalName(), column);
       }
-      return OperatorFactory.getAndMakeChild(new SelectDesc(columns, colName), new RowSchema(currOp
-          .getSchema().getSignature()), columnExprMap, parentOp);
+      return OperatorFactory.getAndMakeChild(new SelectDesc(columns, colName),
+          new RowSchema(currOp.getSchema().getSignature()), columnExprMap, parentOp);
     }
   }
 

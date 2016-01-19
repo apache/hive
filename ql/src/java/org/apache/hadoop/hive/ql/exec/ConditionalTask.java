@@ -72,11 +72,6 @@ public class ConditionalTask extends Task<ConditionalWork> implements Serializab
   }
 
   @Override
-  public void initialize(HiveConf conf, QueryPlan queryPlan, DriverContext driverContext) {
-    super.initialize(conf, queryPlan, driverContext);
-  }
-
-  @Override
   public int execute(DriverContext driverContext) {
     resTasks = resolver.getTasks(conf, resolverCtx);
     resolved = true;

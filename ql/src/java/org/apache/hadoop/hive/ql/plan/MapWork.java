@@ -399,6 +399,11 @@ public class MapWork extends BaseWork {
     return opSet;
   }
 
+  @Override
+  public Operator<? extends OperatorDesc> getAnyRootOperator() {
+    return aliasToWork.isEmpty() ? null : aliasToWork.values().iterator().next();
+  }
+
   public void mergeAliasedInput(String alias, String pathDir, PartitionDesc partitionInfo) {
     ArrayList<String> aliases = pathToAliases.get(pathDir);
     if (aliases == null) {

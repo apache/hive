@@ -28,6 +28,7 @@ import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.MuxDesc;
@@ -169,6 +170,15 @@ public class MuxOperator extends Operator<MuxDesc> implements Serializable{
   // in Operator since we want to individually track the number of rows from different inputs.
   private transient long[] cntrs;
   private transient long[] nextCntrs;
+
+  /** Kryo ctor. */
+  protected MuxOperator() {
+    super();
+  }
+
+  public MuxOperator(CompilationOpContext ctx) {
+    super(ctx);
+  }
 
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {

@@ -26,6 +26,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
@@ -59,8 +60,8 @@ public class ColumnTruncateTask extends Task<ColumnTruncateWork> implements Seri
 
   @Override
   public void initialize(HiveConf conf, QueryPlan queryPlan,
-      DriverContext driverContext) {
-    super.initialize(conf, queryPlan, driverContext);
+      DriverContext driverContext, CompilationOpContext opContext) {
+    super.initialize(conf, queryPlan, driverContext, opContext);
     job = new JobConf(conf, ColumnTruncateTask.class);
     jobExecHelper = new HadoopJobExecHelper(job, this.console, this, this);
   }

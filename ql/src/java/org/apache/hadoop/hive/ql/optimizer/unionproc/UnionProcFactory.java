@@ -196,8 +196,7 @@ public final class UnionProcFactory {
             Map<String, ExprNodeDesc> origColExprMap = originalOp.getColumnExprMap();
 
             Operator<? extends OperatorDesc> cloneOp =
-              OperatorFactory.getAndMakeChild(
-                cloneDesc, 
+              OperatorFactory.getAndMakeChild(cloneDesc,
                 origSchema == null ? null : new RowSchema(origSchema), 
                 origColExprMap == null ? null : new HashMap(origColExprMap), 
                 parents.get(p));

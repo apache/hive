@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
@@ -27,6 +28,15 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
  *
  */
 public class TezDummyStoreOperator extends DummyStoreOperator {
+  /** Kryo ctor. */
+  protected TezDummyStoreOperator() {
+    super();
+  }
+
+  public TezDummyStoreOperator(CompilationOpContext ctx) {
+    super(ctx);
+  }
+
   private boolean fetchDone = false;
 
   /**

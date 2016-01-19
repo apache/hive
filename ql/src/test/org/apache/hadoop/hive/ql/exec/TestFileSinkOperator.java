@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -293,7 +294,8 @@ public class TestFileSinkOperator {
     if (txnId > 0) desc.setTransactionId(txnId);
     if (writeType != AcidUtils.Operation.NOT_ACID) desc.setTransactionId(1L);
 
-    FileSinkOperator op = (FileSinkOperator)OperatorFactory.get(FileSinkDesc.class);
+    FileSinkOperator op = (FileSinkOperator)OperatorFactory.get(
+        new CompilationOpContext(), FileSinkDesc.class);
     op.setConf(desc);
     op.initialize(jc, new ObjectInspector[]{inspector});
     return op;

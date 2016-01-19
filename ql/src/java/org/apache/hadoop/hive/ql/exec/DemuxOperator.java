@@ -30,6 +30,7 @@ import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.DemuxDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -108,6 +109,15 @@ public class DemuxOperator extends Operator<DemuxDesc>
   // so we need to have two childOperatorsTags (the index of this DemuxOperator in
   // its children's parents lists, also see childOperatorsTag in Operator) at here.
   private int[][] newChildOperatorsTag;
+
+  /** Kryo ctor. */
+  protected DemuxOperator() {
+    super();
+  }
+
+  public DemuxOperator(CompilationOpContext ctx) {
+    super(ctx);
+  }
 
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {

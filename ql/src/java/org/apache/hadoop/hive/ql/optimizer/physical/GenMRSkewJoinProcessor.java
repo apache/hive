@@ -259,7 +259,8 @@ public final class GenMRSkewJoinProcessor {
       Operator<? extends OperatorDesc>[] parentOps = new TableScanOperator[tags.length];
       for (int k = 0; k < tags.length; k++) {
         Operator<? extends OperatorDesc> ts =
-            GenMapRedUtils.createTemporaryTableScanOperator(rowSchemaList.get((byte)k));
+            GenMapRedUtils.createTemporaryTableScanOperator(
+                joinOp.getCompilationOpContext(), rowSchemaList.get((byte)k));
         ((TableScanOperator)ts).setTableDesc(tableDescList.get((byte)k));
         parentOps[k] = ts;
       }
@@ -310,8 +311,8 @@ public final class GenMRSkewJoinProcessor {
       newPlan.setMapRedLocalWork(localPlan);
 
       // construct a map join and set it as the child operator of tblScan_op
-      MapJoinOperator mapJoinOp = (MapJoinOperator) OperatorFactory
-          .getAndMakeChild(mapJoinDescriptor, (RowSchema) null, parentOps);
+      MapJoinOperator mapJoinOp = (MapJoinOperator) OperatorFactory.getAndMakeChild(
+          joinOp.getCompilationOpContext(), mapJoinDescriptor, (RowSchema) null, parentOps);
       // change the children of the original join operator to point to the map
       // join operator
       List<Operator<? extends OperatorDesc>> childOps = cloneJoinOp

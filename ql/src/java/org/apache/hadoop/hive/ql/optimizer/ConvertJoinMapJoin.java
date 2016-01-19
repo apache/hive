@@ -245,8 +245,9 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     }
 
     CommonMergeJoinOperator mergeJoinOp =
-        (CommonMergeJoinOperator) OperatorFactory.get(new CommonMergeJoinDesc(numBuckets,
-            mapJoinConversionPos, mapJoinDesc), joinOp.getSchema());
+        (CommonMergeJoinOperator) OperatorFactory.get(joinOp.getCompilationOpContext(),
+            new CommonMergeJoinDesc(numBuckets, mapJoinConversionPos, mapJoinDesc),
+            joinOp.getSchema());
     OpTraits opTraits =
         new OpTraits(joinOp.getOpTraits().getBucketColNames(), numBuckets, joinOp.getOpTraits()
             .getSortCols());
@@ -295,7 +296,8 @@ public class ConvertJoinMapJoin implements NodeProcessor {
         }
 
         // insert the dummy store operator here
-        DummyStoreOperator dummyStoreOp = new TezDummyStoreOperator();
+        DummyStoreOperator dummyStoreOp = new TezDummyStoreOperator(
+            mergeJoinOp.getCompilationOpContext());
         dummyStoreOp.setParentOperators(new ArrayList<Operator<? extends OperatorDesc>>());
         dummyStoreOp.setChildOperators(new ArrayList<Operator<? extends OperatorDesc>>());
         dummyStoreOp.getChildOperators().add(mergeJoinOp);

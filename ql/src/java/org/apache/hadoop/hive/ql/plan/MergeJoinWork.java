@@ -52,6 +52,11 @@ public class MergeJoinWork extends BaseWork {
   }
 
   @Override
+  public Operator<?> getAnyRootOperator() {
+    return getMainWork().getAnyRootOperator();
+  }
+
+  @Override
   public void configureJobConf(JobConf job) {
   }
 

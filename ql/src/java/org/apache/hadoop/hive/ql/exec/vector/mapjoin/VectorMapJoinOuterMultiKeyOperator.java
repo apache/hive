@@ -23,6 +23,7 @@ import java.util.Arrays;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
@@ -75,12 +76,18 @@ public class VectorMapJoinOuterMultiKeyOperator extends VectorMapJoinOuterGenera
   // Pass-thru constructors.
   //
 
-  public VectorMapJoinOuterMultiKeyOperator() {
+  /** Kryo ctor. */
+  protected VectorMapJoinOuterMultiKeyOperator() {
     super();
   }
 
-  public VectorMapJoinOuterMultiKeyOperator(VectorizationContext vContext, OperatorDesc conf) throws HiveException {
-    super(vContext, conf);
+  public VectorMapJoinOuterMultiKeyOperator(CompilationOpContext ctx) {
+    super(ctx);
+  }
+
+  public VectorMapJoinOuterMultiKeyOperator(CompilationOpContext ctx,
+      VectorizationContext vContext, OperatorDesc conf) throws HiveException {
+    super(ctx, vContext, conf);
   }
 
   //---------------------------------------------------------------------------

@@ -64,6 +64,7 @@ import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.TxnInfo;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -260,8 +261,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   @Override
-  public void initialize(HiveConf conf, QueryPlan queryPlan, DriverContext ctx) {
-    super.initialize(conf, queryPlan, ctx);
+  public void initialize(HiveConf conf, QueryPlan queryPlan, DriverContext ctx,
+      CompilationOpContext opContext) {
+    super.initialize(conf, queryPlan, ctx, opContext);
 
     // Pick the formatter to use to display the results.  Either the
     // normal human readable output or a json object.
@@ -507,7 +509,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       AlterTablePartMergeFilesDesc mergeFilesDesc = work.getMergeFilesDesc();
       if (mergeFilesDesc != null) {
-        return mergeFiles(db, mergeFilesDesc);
+        return mergeFiles(db, mergeFilesDesc, driverContext);
       }
 
       AlterTableAlterPartDesc alterPartDesc = work.getAlterTableAlterPartDesc();
@@ -609,8 +611,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * @return
    * @throws HiveException
    */
-  private int mergeFiles(Hive db, AlterTablePartMergeFilesDesc mergeFilesDesc)
-      throws HiveException {
+  private int mergeFiles(Hive db, AlterTablePartMergeFilesDesc mergeFilesDesc,
+      DriverContext driverContext) throws HiveException {
     ListBucketingCtx lbCtx = mergeFilesDesc.getLbCtx();
     boolean lbatc = lbCtx == null ? false : lbCtx.isSkewedStoredAsDir();
     int lbd = lbCtx == null ? 0 : lbCtx.calculateListBucketingLevel();
@@ -642,7 +644,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     fmd.setListBucketingDepth(lbd);
     fmd.setOutputPath(mergeFilesDesc.getOutputDir());
 
-    Operator<? extends OperatorDesc> mergeOp = OperatorFactory.get(fmd);
+    CompilationOpContext opContext = driverContext.getCtx().getOpContext();
+    Operator<? extends OperatorDesc> mergeOp = OperatorFactory.get(opContext, fmd);
 
     LinkedHashMap<String, Operator<? extends  OperatorDesc>> aliasToWork =
         new LinkedHashMap<String, Operator<? extends OperatorDesc>>();
@@ -662,7 +665,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     // initialize the task and execute
-    task.initialize(db.getConf(), getQueryPlan(), driverCxt);
+    task.initialize(db.getConf(), getQueryPlan(), driverCxt, opContext);
     int ret = task.execute(driverCxt);
     return ret;
   }
@@ -4270,7 +4273,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       truncateWork.setMapperCannotSpanPartns(true);
       DriverContext driverCxt = new DriverContext();
       ColumnTruncateTask taskExec = new ColumnTruncateTask();
-      taskExec.initialize(db.getConf(), null, driverCxt);
+      taskExec.initialize(db.getConf(), null, driverCxt, null);
       taskExec.setWork(truncateWork);
       taskExec.setQueryPlan(this.getQueryPlan());
       return taskExec.execute(driverCxt);

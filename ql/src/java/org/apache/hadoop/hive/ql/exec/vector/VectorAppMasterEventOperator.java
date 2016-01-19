@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.AppMasterEventDesc;
@@ -52,14 +53,20 @@ public class VectorAppMasterEventOperator extends AppMasterEventOperator {
 
   protected transient Object[] singleRow;
 
-  public VectorAppMasterEventOperator(VectorizationContext vContext,
-      OperatorDesc conf) {
-    super();
+  public VectorAppMasterEventOperator(
+      CompilationOpContext ctx, VectorizationContext vContext, OperatorDesc conf) {
+    super(ctx);
     this.conf = (AppMasterEventDesc) conf;
     this.vContext = vContext;
   }
 
-  public VectorAppMasterEventOperator() {
+  /** Kryo ctor. */
+  protected VectorAppMasterEventOperator() {
+    super();
+  }
+
+  public VectorAppMasterEventOperator(CompilationOpContext ctx) {
+    super(ctx);
   }
 
   @Override

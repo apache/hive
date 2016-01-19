@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.spark.SparkPartitionPruningSinkDesc;
 import org.apache.hadoop.hive.ql.parse.spark.SparkPartitionPruningSinkOperator;
@@ -46,14 +47,20 @@ public class VectorSparkPartitionPruningSinkOperator extends SparkPartitionPruni
 
   protected transient Object[] singleRow;
 
-  public VectorSparkPartitionPruningSinkOperator(VectorizationContext context,
-      OperatorDesc conf) {
-    super();
+  public VectorSparkPartitionPruningSinkOperator(CompilationOpContext ctx,
+      VectorizationContext context, OperatorDesc conf) {
+    this(ctx);
     this.conf = (SparkPartitionPruningSinkDesc) conf;
     this.vContext = context;
   }
 
-  public VectorSparkPartitionPruningSinkOperator() {
+  /** Kryo ctor. */
+  protected VectorSparkPartitionPruningSinkOperator() {
+    super();
+  }
+
+  public VectorSparkPartitionPruningSinkOperator(CompilationOpContext ctx) {
+    super(ctx);
   }
 
   @Override

@@ -28,6 +28,7 @@ import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
@@ -89,13 +90,18 @@ public class VectorSMBMapJoinOperator extends SMBMapJoinOperator implements Vect
     List<Object> evaluate(VectorHashKeyWrapper kw) throws HiveException;
 }
 
-  public VectorSMBMapJoinOperator() {
+  /** Kryo ctor. */
+  protected VectorSMBMapJoinOperator() {
     super();
   }
 
-  public VectorSMBMapJoinOperator(VectorizationContext vContext, OperatorDesc conf)
-      throws HiveException {
-    this();
+  public VectorSMBMapJoinOperator(CompilationOpContext ctx) {
+    super(ctx);
+  }
+
+  public VectorSMBMapJoinOperator(CompilationOpContext ctx,
+      VectorizationContext vContext, OperatorDesc conf) throws HiveException {
+    this(ctx);
     SMBJoinDesc desc = (SMBJoinDesc) conf;
     this.conf = desc;
 

@@ -297,6 +297,7 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
           LOG.debug("Cloning reduce sink for multi-child broadcast edge");
           // we've already set this one up. Need to clone for the next work.
           r = (ReduceSinkOperator) OperatorFactory.getAndMakeChild(
+              parentRS.getCompilationOpContext(),
               (ReduceSinkDesc) parentRS.getConf().clone(),
               new RowSchema(parentRS.getSchema()),
               parentRS.getParentOperators());
@@ -334,7 +335,8 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
     // create an new operator: HashTableDummyOperator, which share the table desc
     HashTableDummyDesc desc = new HashTableDummyDesc();
     @SuppressWarnings("unchecked")
-    HashTableDummyOperator dummyOp = (HashTableDummyOperator) OperatorFactory.get(desc);
+    HashTableDummyOperator dummyOp = (HashTableDummyOperator) OperatorFactory.get(
+        parentRS.getCompilationOpContext(), desc);
     TableDesc tbl;
 
     // need to create the correct table descriptor for key/value

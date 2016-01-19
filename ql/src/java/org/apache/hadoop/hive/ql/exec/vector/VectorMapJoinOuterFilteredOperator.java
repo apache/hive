@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
@@ -48,13 +49,18 @@ public class VectorMapJoinOuterFilteredOperator extends VectorMapJoinBaseOperato
 
   protected transient Object[] singleRow;
 
-  public VectorMapJoinOuterFilteredOperator() {
+  /** Kryo ctor. */
+  protected VectorMapJoinOuterFilteredOperator() {
     super();
   }
 
-  public VectorMapJoinOuterFilteredOperator(VectorizationContext vContext, OperatorDesc conf)
-      throws HiveException {
-    super(vContext, conf);
+  public VectorMapJoinOuterFilteredOperator(CompilationOpContext ctx) {
+    super(ctx);
+  }
+
+  public VectorMapJoinOuterFilteredOperator(CompilationOpContext ctx,
+      VectorizationContext vContext, OperatorDesc conf) throws HiveException {
+    super(ctx, vContext, conf);
 
     this.vContext = vContext;
   }

@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.persistence.AbstractRowContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.RowContainer;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -125,17 +126,23 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
   protected transient int heartbeatInterval;
   protected static final int NOTSKIPBIGTABLE = -1;
 
-  public CommonJoinOperator() {
+  /** Kryo ctor. */
+  protected CommonJoinOperator() {
+    super();
+  }
+
+  public CommonJoinOperator(CompilationOpContext ctx) {
+    super(ctx);
   }
 
   public CommonJoinOperator(CommonJoinOperator<T> clone) {
+    super(clone.id, clone.cContext);
     this.joinEmitInterval = clone.joinEmitInterval;
     this.joinCacheSize = clone.joinCacheSize;
     this.nextSz = clone.nextSz;
     this.childOperators = clone.childOperators;
     this.parentOperators = clone.parentOperators;
     this.done = clone.done;
-    this.operatorId = clone.operatorId;
     this.storage = clone.storage;
     this.condn = clone.condn;
     this.conf = clone.getConf();
@@ -150,7 +157,6 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
     this.groupKeyObject = clone.groupKeyObject;
     this.handleSkewJoin = clone.handleSkewJoin;
     this.hconf = clone.hconf;
-    this.id = clone.id;
     this.inputObjInspectors = clone.inputObjInspectors;
     this.noOuterJoin = clone.noOuterJoin;
     this.numAliases = clone.numAliases;

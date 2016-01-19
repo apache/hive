@@ -19,11 +19,13 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.util.ArrayList;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorAppMasterEventOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorFileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorFilterOperator;
@@ -72,6 +74,8 @@ import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.UDTFDesc;
 import org.apache.hadoop.hive.ql.plan.UnionDesc;
 
+import com.google.common.base.Preconditions;
+
 /**
  * OperatorFactory.
  *
@@ -79,97 +83,68 @@ import org.apache.hadoop.hive.ql.plan.UnionDesc;
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public final class OperatorFactory {
   protected static transient final Logger LOG = LoggerFactory.getLogger(OperatorFactory.class);
-  private static final List<OpTuple> opvec;
-  private static final List<OpTuple> vectorOpvec;
+  private static final IdentityHashMap<Class<? extends OperatorDesc>,
+    Class<? extends Operator<? extends OperatorDesc>>> opvec = new IdentityHashMap<>();
+  private static final IdentityHashMap<Class<? extends OperatorDesc>,
+    Class<? extends Operator<? extends OperatorDesc>>> vectorOpvec = new IdentityHashMap<>();
 
   static {
-    opvec = new ArrayList<OpTuple>();
-    opvec.add(new OpTuple<FilterDesc>(FilterDesc.class, FilterOperator.class));
-    opvec.add(new OpTuple<SelectDesc>(SelectDesc.class, SelectOperator.class));
-    opvec.add(new OpTuple<ForwardDesc>(ForwardDesc.class, ForwardOperator.class));
-    opvec.add(new OpTuple<FileSinkDesc>(FileSinkDesc.class, FileSinkOperator.class));
-    opvec.add(new OpTuple<CollectDesc>(CollectDesc.class, CollectOperator.class));
-    opvec.add(new OpTuple<ScriptDesc>(ScriptDesc.class, ScriptOperator.class));
-    opvec.add(new OpTuple<PTFDesc>(PTFDesc.class, PTFOperator.class));
-    opvec.add(new OpTuple<ReduceSinkDesc>(ReduceSinkDesc.class, ReduceSinkOperator.class));
-    opvec.add(new OpTuple<GroupByDesc>(GroupByDesc.class, GroupByOperator.class));
-    opvec.add(new OpTuple<JoinDesc>(JoinDesc.class, JoinOperator.class));
-    opvec.add(new OpTuple<MapJoinDesc>(MapJoinDesc.class, MapJoinOperator.class));
-    opvec.add(new OpTuple<SMBJoinDesc>(SMBJoinDesc.class, SMBMapJoinOperator.class));
-    opvec.add(new OpTuple<LimitDesc>(LimitDesc.class, LimitOperator.class));
-    opvec.add(new OpTuple<TableScanDesc>(TableScanDesc.class, TableScanOperator.class));
-    opvec.add(new OpTuple<UnionDesc>(UnionDesc.class, UnionOperator.class));
-    opvec.add(new OpTuple<UDTFDesc>(UDTFDesc.class, UDTFOperator.class));
-    opvec.add(new OpTuple<LateralViewJoinDesc>(LateralViewJoinDesc.class,
-        LateralViewJoinOperator.class));
-    opvec.add(new OpTuple<LateralViewForwardDesc>(LateralViewForwardDesc.class,
-        LateralViewForwardOperator.class));
-    opvec.add(new OpTuple<HashTableDummyDesc>(HashTableDummyDesc.class,
-        HashTableDummyOperator.class));
-    opvec.add(new OpTuple<HashTableSinkDesc>(HashTableSinkDesc.class,
-        HashTableSinkOperator.class));
-    opvec.add(new OpTuple<SparkHashTableSinkDesc>(SparkHashTableSinkDesc.class,
-        SparkHashTableSinkOperator.class));
-    opvec.add(new OpTuple<DummyStoreDesc>(DummyStoreDesc.class,
-        DummyStoreOperator.class));
-    opvec.add(new OpTuple<DemuxDesc>(DemuxDesc.class,
-        DemuxOperator.class));
-    opvec.add(new OpTuple<MuxDesc>(MuxDesc.class,
-        MuxOperator.class));
-    opvec.add(new OpTuple<AppMasterEventDesc>(AppMasterEventDesc.class,
-        AppMasterEventOperator.class));
-    opvec.add(new OpTuple<DynamicPruningEventDesc>(DynamicPruningEventDesc.class,
-        AppMasterEventOperator.class));
-    opvec.add(new OpTuple<SparkPartitionPruningSinkDesc>(SparkPartitionPruningSinkDesc.class,
-        SparkPartitionPruningSinkOperator.class));
-    opvec.add(new OpTuple<RCFileMergeDesc>(RCFileMergeDesc.class,
-        RCFileMergeOperator.class));
-    opvec.add(new OpTuple<OrcFileMergeDesc>(OrcFileMergeDesc.class,
-        OrcFileMergeOperator.class));
-    opvec.add(new OpTuple<CommonMergeJoinDesc>(CommonMergeJoinDesc.class,
-        CommonMergeJoinOperator.class));
-    opvec.add(new OpTuple<ListSinkDesc>(ListSinkDesc.class,
-        ListSinkOperator.class));
+    opvec.put(FilterDesc.class, FilterOperator.class);
+    opvec.put(SelectDesc.class, SelectOperator.class);
+    opvec.put(ForwardDesc.class, ForwardOperator.class);
+    opvec.put(FileSinkDesc.class, FileSinkOperator.class);
+    opvec.put(CollectDesc.class, CollectOperator.class);
+    opvec.put(ScriptDesc.class, ScriptOperator.class);
+    opvec.put(PTFDesc.class, PTFOperator.class);
+    opvec.put(ReduceSinkDesc.class, ReduceSinkOperator.class);
+    opvec.put(GroupByDesc.class, GroupByOperator.class);
+    opvec.put(JoinDesc.class, JoinOperator.class);
+    opvec.put(MapJoinDesc.class, MapJoinOperator.class);
+    opvec.put(SMBJoinDesc.class, SMBMapJoinOperator.class);
+    opvec.put(LimitDesc.class, LimitOperator.class);
+    opvec.put(TableScanDesc.class, TableScanOperator.class);
+    opvec.put(UnionDesc.class, UnionOperator.class);
+    opvec.put(UDTFDesc.class, UDTFOperator.class);
+    opvec.put(LateralViewJoinDesc.class, LateralViewJoinOperator.class);
+    opvec.put(LateralViewForwardDesc.class, LateralViewForwardOperator.class);
+    opvec.put(HashTableDummyDesc.class, HashTableDummyOperator.class);
+    opvec.put(HashTableSinkDesc.class, HashTableSinkOperator.class);
+    opvec.put(SparkHashTableSinkDesc.class, SparkHashTableSinkOperator.class);
+    opvec.put(DummyStoreDesc.class, DummyStoreOperator.class);
+    opvec.put(DemuxDesc.class, DemuxOperator.class);
+    opvec.put(MuxDesc.class, MuxOperator.class);
+    opvec.put(AppMasterEventDesc.class, AppMasterEventOperator.class);
+    opvec.put(DynamicPruningEventDesc.class, AppMasterEventOperator.class);
+    opvec.put(SparkPartitionPruningSinkDesc.class, SparkPartitionPruningSinkOperator.class);
+    opvec.put(RCFileMergeDesc.class, RCFileMergeOperator.class);
+    opvec.put(OrcFileMergeDesc.class, OrcFileMergeOperator.class);
+    opvec.put(CommonMergeJoinDesc.class, CommonMergeJoinOperator.class);
+    opvec.put(ListSinkDesc.class, ListSinkOperator.class);
   }
 
   static {
-    vectorOpvec = new ArrayList<OpTuple>();
-    vectorOpvec.add(new OpTuple<AppMasterEventDesc>(AppMasterEventDesc.class,
-        VectorAppMasterEventOperator.class));
-    vectorOpvec.add(new OpTuple<DynamicPruningEventDesc>(DynamicPruningEventDesc.class,
-        VectorAppMasterEventOperator.class));
-    vectorOpvec.add(new OpTuple<SparkPartitionPruningSinkDesc>(
-        SparkPartitionPruningSinkDesc.class,
-        VectorSparkPartitionPruningSinkOperator.class));
-    vectorOpvec.add(new OpTuple<SelectDesc>(SelectDesc.class, VectorSelectOperator.class));
-    vectorOpvec.add(new OpTuple<GroupByDesc>(GroupByDesc.class, VectorGroupByOperator.class));
-    vectorOpvec.add(new OpTuple<MapJoinDesc>(MapJoinDesc.class, VectorMapJoinOperator.class));
-    vectorOpvec.add(new OpTuple<SMBJoinDesc>(SMBJoinDesc.class, VectorSMBMapJoinOperator.class));
-    vectorOpvec.add(new OpTuple<ReduceSinkDesc>(ReduceSinkDesc.class,
-        VectorReduceSinkOperator.class));
-    vectorOpvec.add(new OpTuple<FileSinkDesc>(FileSinkDesc.class, VectorFileSinkOperator.class));
-    vectorOpvec.add(new OpTuple<FilterDesc>(FilterDesc.class, VectorFilterOperator.class));
-    vectorOpvec.add(new OpTuple<LimitDesc>(LimitDesc.class, VectorLimitOperator.class));
-    vectorOpvec.add(new OpTuple<SparkHashTableSinkDesc>(SparkHashTableSinkDesc.class,
-        VectorSparkHashTableSinkOperator.class));
-  }
-
-  private static final class OpTuple<T extends OperatorDesc> {
-    private final Class<T> descClass;
-    private final Class<? extends Operator<?>> opClass;
-
-    public OpTuple(Class<T> descClass, Class<? extends Operator<?>> opClass) {
-      this.descClass = descClass;
-      this.opClass = opClass;
-    }
+    vectorOpvec.put(AppMasterEventDesc.class, VectorAppMasterEventOperator.class);
+    vectorOpvec.put(DynamicPruningEventDesc.class, VectorAppMasterEventOperator.class);
+    vectorOpvec.put(
+        SparkPartitionPruningSinkDesc.class, VectorSparkPartitionPruningSinkOperator.class);
+    vectorOpvec.put(SelectDesc.class, VectorSelectOperator.class);
+    vectorOpvec.put(GroupByDesc.class, VectorGroupByOperator.class);
+    vectorOpvec.put(MapJoinDesc.class, VectorMapJoinOperator.class);
+    vectorOpvec.put(SMBJoinDesc.class, VectorSMBMapJoinOperator.class);
+    vectorOpvec.put(ReduceSinkDesc.class, VectorReduceSinkOperator.class);
+    vectorOpvec.put(FileSinkDesc.class, VectorFileSinkOperator.class);
+    vectorOpvec.put(FilterDesc.class, VectorFilterOperator.class);
+    vectorOpvec.put(LimitDesc.class, VectorLimitOperator.class);
+    vectorOpvec.put(SparkHashTableSinkDesc.class, VectorSparkHashTableSinkOperator.class);
   }
 
   public static <T extends OperatorDesc> Operator<T> getVectorOperator(
-    Class<? extends Operator<?>> opClass, T conf, VectorizationContext vContext) throws HiveException {
+    Class<? extends Operator<?>> opClass, CompilationOpContext cContext, T conf,
+        VectorizationContext vContext) throws HiveException {
     try {
       Operator<T> op = (Operator<T>) opClass.getDeclaredConstructor(
-          VectorizationContext.class, OperatorDesc.class).newInstance(
-          vContext, conf);
+          CompilationOpContext.class, VectorizationContext.class, OperatorDesc.class)
+          .newInstance(cContext, vContext, conf);
       return op;
     } catch (Exception e) {
       e.printStackTrace();
@@ -177,50 +152,49 @@ public final class OperatorFactory {
     }
   }
 
-  public static <T extends OperatorDesc> Operator<T> getVectorOperator(T conf,
-      VectorizationContext vContext) throws HiveException {
+  public static <T extends OperatorDesc> Operator<T> getVectorOperator(
+      CompilationOpContext cContext, T conf, VectorizationContext vContext) throws HiveException {
     Class<T> descClass = (Class<T>) conf.getClass();
-    for (OpTuple o : vectorOpvec) {
-      if (o.descClass == descClass) {
-        return getVectorOperator(o.opClass, conf, vContext);
-      }
+    Class<?> opClass = vectorOpvec.get(descClass);
+    if (opClass != null) {
+      return getVectorOperator(vectorOpvec.get(descClass), cContext, conf, vContext);
     }
-    throw new HiveException("No vector operator for descriptor class "
-        + descClass.getName());
+    throw new HiveException("No vector operator for descriptor class " + descClass.getName());
   }
 
-  public static <T extends OperatorDesc> Operator<T> get(Class<T> opClass) {
-
-    for (OpTuple o : opvec) {
-      if (o.descClass == opClass) {
-        try {
-          Operator<T> op = (Operator<T>) o.opClass.newInstance();
-          return op;
-        } catch (Exception e) {
-          e.printStackTrace();
-          throw new RuntimeException(e);
-        }
+  public static <T extends OperatorDesc> Operator<T> get(
+      CompilationOpContext cContext, Class<T> descClass) {
+    Preconditions.checkNotNull(cContext);
+    Class<?> opClass = opvec.get(descClass);
+    if (opClass != null) {
+      try {
+        return (Operator<T>)opClass.getDeclaredConstructor(
+          CompilationOpContext.class).newInstance(cContext);
+      } catch (Exception e) {
+        e.printStackTrace();
+        throw new RuntimeException(e);
       }
     }
-    throw new RuntimeException("No operator for descriptor class "
-        + opClass.getName());
+    throw new RuntimeException("No operator for descriptor class " + descClass.getName());
   }
 
-  public static <T extends OperatorDesc> Operator<T> get(Class<T> opClass,
-      RowSchema rwsch) {
-
-    Operator<T> ret = get(opClass);
-    ret.setSchema(rwsch);
-    return ret;
+  /**
+   * Returns an operator given the conf and a list of children operators.
+   */
+  public static <T extends OperatorDesc> Operator<T> get(CompilationOpContext cContext, T conf) {
+    Operator<T> ret = get(cContext, (Class<T>) conf.getClass());
+    ret.setConf(conf);
+    return (ret);
   }
 
   /**
    * Returns an operator given the conf and a list of children operators.
    */
   public static <T extends OperatorDesc> Operator<T> get(T conf,
-    Operator<? extends OperatorDesc>... oplist) {
-    Operator<T> ret = get((Class<T>) conf.getClass());
+    Operator<? extends OperatorDesc> oplist0, Operator<? extends OperatorDesc>... oplist) {
+    Operator<T> ret = get(oplist0.getCompilationOpContext(), (Class<T>) conf.getClass());
     ret.setConf(conf);
+    makeChild(ret, oplist0);
     makeChild(ret, oplist);
     return (ret);
   }
@@ -253,27 +227,28 @@ public final class OperatorFactory {
   /**
    * Returns an operator given the conf and a list of children operators.
    */
-  public static <T extends OperatorDesc> Operator<T> get(T conf,
-      RowSchema rwsch, Operator... oplist) {
-    Operator<T> ret = get(conf, oplist);
+  public static <T extends OperatorDesc> Operator<T> get(
+      CompilationOpContext cContext, T conf, RowSchema rwsch) {
+    Operator<T> ret = get(cContext, conf);
     ret.setSchema(rwsch);
     return (ret);
   }
 
+
   /**
    * Returns an operator given the conf and a list of parent operators.
    */
-  public static <T extends OperatorDesc> Operator<T> getAndMakeChild(T conf,
-      Operator... oplist) {
-    Operator<T> ret = get((Class<T>) conf.getClass());
+  public static <T extends OperatorDesc> Operator<T> getAndMakeChild(
+      T conf, Operator oplist0, Operator... oplist) {
+    Operator<T> ret = get(oplist0.getCompilationOpContext(), (Class<T>) conf.getClass());
     ret.setConf(conf);
-    if (oplist.length == 0) {
-      return (ret);
-    }
 
     // Add the new operator as child of each of the passed in operators
+    List<Operator> children = oplist0.getChildOperators();
+    children.add(ret);
+    oplist0.setChildOperators(children);
     for (Operator op : oplist) {
-      List<Operator> children = op.getChildOperators();
+      children = op.getChildOperators();
       children.add(ret);
       op.setChildOperators(children);
     }
@@ -281,6 +256,7 @@ public final class OperatorFactory {
     // add parents for the newly created operator
     List<Operator<? extends OperatorDesc>> parent =
       new ArrayList<Operator<? extends OperatorDesc>>();
+    parent.add(oplist0);
     for (Operator op : oplist) {
       parent.add(op);
     }
@@ -293,9 +269,9 @@ public final class OperatorFactory {
   /**
    * Returns an operator given the conf and a list of parent operators.
    */
-  public static <T extends OperatorDesc> Operator<T> getAndMakeChild(T conf,
-      List<Operator<? extends OperatorDesc>> oplist) {
-    Operator<T> ret = get((Class<T>) conf.getClass());
+  public static <T extends OperatorDesc> Operator<T> getAndMakeChild(CompilationOpContext cContext,
+      T conf, List<Operator<? extends OperatorDesc>> oplist) {
+    Operator<T> ret = get(cContext, (Class<T>) conf.getClass());
     ret.setConf(conf);
     if (oplist.size() == 0) {
       return ret;
@@ -322,9 +298,10 @@ public final class OperatorFactory {
   /**
    * Returns an operator given the conf and a list of parent operators.
    */
-  public static <T extends OperatorDesc> Operator<T> getAndMakeChild(T conf,
-      RowSchema rwsch, Operator... oplist) {
-    Operator<T> ret = getAndMakeChild(conf, oplist);
+  public static <T extends OperatorDesc> Operator<T> getAndMakeChild(
+      CompilationOpContext cContext, T conf, RowSchema rwsch) {
+    Operator<T> ret = get(cContext, (Class<T>) conf.getClass());
+    ret.setConf(conf);
     ret.setSchema(rwsch);
     return ret;
   }
@@ -332,9 +309,48 @@ public final class OperatorFactory {
   /**
    * Returns an operator given the conf and a list of parent operators.
    */
-  public static <T extends OperatorDesc> Operator<T> getAndMakeChild(T conf,
-      RowSchema rwsch, Map<String, ExprNodeDesc> colExprMap, Operator... oplist) {
-    Operator<T> ret = getAndMakeChild(conf, rwsch, oplist);
+  public static <T extends OperatorDesc> Operator<T> getAndMakeChild(
+      CompilationOpContext ctx, T conf, RowSchema rwsch, Operator[] oplist) {
+    Operator<T> ret = get(ctx, (Class<T>) conf.getClass());
+    ret.setConf(conf);
+    ret.setSchema(rwsch);
+    if (oplist.length == 0) return ret;
+
+    // Add the new operator as child of each of the passed in operators
+    for (Operator op : oplist) {
+      List<Operator> children = op.getChildOperators();
+      children.add(ret);
+      op.setChildOperators(children);
+    }
+
+    // add parents for the newly created operator
+    List<Operator<? extends OperatorDesc>> parent =
+      new ArrayList<Operator<? extends OperatorDesc>>();
+    for (Operator op : oplist) {
+      parent.add(op);
+    }
+
+    ret.setParentOperators(parent);
+
+    return (ret);
+  }
+
+  /**
+   * Returns an operator given the conf and a list of parent operators.
+   */
+  public static <T extends OperatorDesc> Operator<T> getAndMakeChild(
+      T conf, RowSchema rwsch, Operator oplist0, Operator... oplist) {
+    Operator<T> ret = getAndMakeChild(conf, oplist0, oplist);
+    ret.setSchema(rwsch);
+    return ret;
+  }
+
+  /**
+   * Returns an operator given the conf and a list of parent operators.
+   */
+  public static <T extends OperatorDesc> Operator<T> getAndMakeChild(T conf, RowSchema rwsch,
+      Map<String, ExprNodeDesc> colExprMap, Operator oplist0, Operator... oplist) {
+    Operator<T> ret = getAndMakeChild(conf, rwsch, oplist0, oplist);
     ret.setColumnExprMap(colExprMap);
     return (ret);
   }
@@ -342,9 +358,9 @@ public final class OperatorFactory {
   /**
    * Returns an operator given the conf and a list of parent operators.
    */
-  public static <T extends OperatorDesc> Operator<T> getAndMakeChild(T conf,
-      RowSchema rwsch, List<Operator<? extends OperatorDesc>> oplist) {
-    Operator<T> ret = getAndMakeChild(conf, oplist);
+  public static <T extends OperatorDesc> Operator<T> getAndMakeChild(CompilationOpContext cContext,
+      T conf, RowSchema rwsch, List<Operator<? extends OperatorDesc>> oplist) {
+    Operator<T> ret = getAndMakeChild(cContext, conf, oplist);
     ret.setSchema(rwsch);
     return (ret);
   }
@@ -352,9 +368,10 @@ public final class OperatorFactory {
  /**
    * Returns an operator given the conf and a list of parent operators.
    */
-  public static <T extends OperatorDesc> Operator<T> getAndMakeChild(T conf,
-      RowSchema rwsch, Map<String, ExprNodeDesc> colExprMap, List<Operator<? extends OperatorDesc>> oplist) {
-    Operator<T> ret = getAndMakeChild(conf, rwsch, oplist);
+  public static <T extends OperatorDesc> Operator<T> getAndMakeChild(CompilationOpContext cContext,
+      T conf, RowSchema rwsch, Map<String, ExprNodeDesc> colExprMap,
+      List<Operator<? extends OperatorDesc>> oplist) {
+    Operator<T> ret = getAndMakeChild(cContext, conf, rwsch, oplist);
     ret.setColumnExprMap(colExprMap);
     return (ret);
   }

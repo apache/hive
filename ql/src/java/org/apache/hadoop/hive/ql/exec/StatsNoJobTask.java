@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.io.StatsProvidingRecordReader;
@@ -81,8 +82,9 @@ public class StatsNoJobTask extends Task<StatsNoJobWork> implements Serializable
   }
 
   @Override
-  public void initialize(HiveConf conf, QueryPlan queryPlan, DriverContext driverContext) {
-    super.initialize(conf, queryPlan, driverContext);
+  public void initialize(HiveConf conf, QueryPlan queryPlan, DriverContext driverContext,
+      CompilationOpContext opContext) {
+    super.initialize(conf, queryPlan, driverContext, opContext);
     jc = new JobConf(conf);
   }
 

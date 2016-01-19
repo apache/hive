@@ -22,6 +22,7 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.CollectOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
@@ -83,7 +84,7 @@ public abstract class BaseScalarUdfTest extends TestCase {
     List<ExprNodeDesc> expressionList = getExpressionList();
     SelectDesc selectCtx = new SelectDesc(expressionList,
         OperatorTestUtils.createOutputColumnNames(expressionList));
-    Operator<SelectDesc> op = OperatorFactory.get(SelectDesc.class);
+    Operator<SelectDesc> op = OperatorFactory.get(new CompilationOpContext(), SelectDesc.class);
     op.setConf(selectCtx);
     CollectDesc cd = new CollectDesc(Integer.valueOf(10));
     CollectOperator cdop = (CollectOperator) OperatorFactory.getAndMakeChild(cd, op);

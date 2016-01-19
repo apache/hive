@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -993,9 +994,10 @@ public final class GenMapRedUtils {
     return mrWork;
   }
 
-  public static TableScanOperator createTemporaryTableScanOperator(RowSchema rowSchema) {
+  public static TableScanOperator createTemporaryTableScanOperator(
+      CompilationOpContext ctx, RowSchema rowSchema) {
     TableScanOperator tableScanOp =
-        (TableScanOperator) OperatorFactory.get(new TableScanDesc(null), rowSchema);
+        (TableScanOperator) OperatorFactory.get(ctx, new TableScanDesc(null), rowSchema);
     // Set needed columns for this dummy TableScanOperator
     List<Integer> neededColumnIds = new ArrayList<Integer>();
     List<String> neededColumnNames = new ArrayList<String>();
@@ -1038,7 +1040,7 @@ public final class GenMapRedUtils {
           HiveConf.ConfVars.COMPRESSINTERMEDIATETYPE));
     }
     Operator<? extends OperatorDesc> fileSinkOp = OperatorFactory.get(
-            desc, parent.getSchema());
+        parent.getCompilationOpContext(), desc, parent.getSchema());
 
     // Connect parent to fileSinkOp
     parent.replaceChild(child, fileSinkOp);
@@ -1046,7 +1048,7 @@ public final class GenMapRedUtils {
 
     // Create a dummy TableScanOperator for the file generated through fileSinkOp
     TableScanOperator tableScanOp = createTemporaryTableScanOperator(
-            parent.getSchema());
+        parent.getCompilationOpContext(), parent.getSchema());
 
     // Connect this TableScanOperator to child.
     tableScanOp.setChildOperators(Utilities.makeList(child));
@@ -1272,8 +1274,8 @@ public final class GenMapRedUtils {
 
     // Create a TableScan operator
     RowSchema inputRS = fsInput.getSchema();
-    TableScanOperator tsMerge =
-        GenMapRedUtils.createTemporaryTableScanOperator(inputRS);
+    TableScanOperator tsMerge = GenMapRedUtils.createTemporaryTableScanOperator(
+        fsInput.getCompilationOpContext(), inputRS);
 
     // Create a FileSink operator
     TableDesc ts = (TableDesc) fsInputDesc.getTableInfo().clone();
@@ -1324,7 +1326,7 @@ public final class GenMapRedUtils {
             fsInputDesc.getTableInfo().getInputFileFormatClass().equals(OrcInputFormat.class))) {
 
       cplan = GenMapRedUtils.createMergeTask(fsInputDesc, finalName,
-          dpCtx != null && dpCtx.getNumDPCols() > 0);
+          dpCtx != null && dpCtx.getNumDPCols() > 0, fsInput.getCompilationOpContext());
       if (conf.getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
         work = new TezWork(conf.getVar(HiveConf.ConfVars.HIVEQUERYID));
         cplan.setName("File Merge");
@@ -1560,12 +1562,13 @@ public final class GenMapRedUtils {
    *
    * @param fsInputDesc
    * @param finalName
+   * @param ctx
    * @param inputFormatClass
    * @return MergeWork if table is stored as RCFile or ORCFile,
    *         null otherwise
    */
-  public static MapWork createMergeTask(FileSinkDesc fsInputDesc,
-      Path finalName, boolean hasDynamicPartitions) throws SemanticException {
+  public static MapWork createMergeTask(FileSinkDesc fsInputDesc, Path finalName,
+      boolean hasDynamicPartitions, CompilationOpContext ctx) throws SemanticException {
 
     Path inputDir = fsInputDesc.getFinalDirName();
     TableDesc tblDesc = fsInputDesc.getTableInfo();
@@ -1621,7 +1624,7 @@ public final class GenMapRedUtils {
     int lbLevel = work.getListBucketingCtx() == null ? 0 :
       work.getListBucketingCtx().calculateListBucketingLevel();
     fmd.setListBucketingDepth(lbLevel);
-    mergeOp = OperatorFactory.get(fmd);
+    mergeOp = OperatorFactory.get(ctx, fmd);
     aliasToWork.put(inputDir.toString(), mergeOp);
     work.setAliasToWork(aliasToWork);
 

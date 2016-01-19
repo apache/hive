@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
@@ -85,11 +86,12 @@ public class TestGenTezWork {
       }
     });
 
-    fs = new FileSinkOperator();
+    CompilationOpContext cCtx = new CompilationOpContext();
+    fs = new FileSinkOperator(cCtx);
     fs.setConf(new FileSinkDesc());
-    rs = new ReduceSinkOperator();
+    rs = new ReduceSinkOperator(cCtx);
     rs.setConf(new ReduceSinkDesc());
-    ts = new TableScanOperator();
+    ts = new TableScanOperator(cCtx);
     ts.setConf(new TableScanDesc(null));
     ts.getChildOperators().add(rs);
     rs.getParentOperators().add(ts);

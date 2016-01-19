@@ -177,7 +177,6 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
     MapRedTask newTask = (MapRedTask) TaskFactory.get(newWork, physicalContext
         .getParseContext().getConf());
     JoinOperator newJoinOp = getJoinOp(newTask);
-
     // optimize this newWork given the big table position
     MapJoinProcessor.genMapJoinOpAndLocalWork(physicalContext.getParseContext().getConf(),
         newWork, newJoinOp, bigTablePosition);
@@ -513,8 +512,7 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
         taskToAliases.put(newTask, aliases);
       }
     } catch (Exception e) {
-      e.printStackTrace();
-      throw new SemanticException("Generate Map Join Task Error: " + e.getMessage());
+      throw new SemanticException("Generate Map Join Task Error: " + e.getMessage(), e);
     }
 
     // insert current common join task to conditional task

@@ -315,8 +315,8 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
             new ArrayList<AggregationDesc>(), false, groupByMemoryUsage, memoryThreshold,
             null, false, 0, true);
 
-    GroupByOperator groupByOp =
-        (GroupByOperator) OperatorFactory.getAndMakeChild(groupBy, selectOp);
+    GroupByOperator groupByOp = (GroupByOperator) OperatorFactory.getAndMakeChild(
+        groupBy, selectOp);
 
     Map<String, ExprNodeDesc> colMap = new HashMap<String, ExprNodeDesc>();
     colMap.put(outputNames.get(0), groupByExpr);

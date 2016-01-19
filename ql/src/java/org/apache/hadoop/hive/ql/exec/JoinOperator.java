@@ -29,6 +29,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
@@ -54,6 +55,15 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements Serial
   }
 
   private final transient LongWritable skewjoin_followup_jobs = new LongWritable(0);
+
+  /** Kryo ctor. */
+  protected JoinOperator() {
+    super();
+  }
+
+  public JoinOperator(CompilationOpContext ctx) {
+    super(ctx);
+  }
 
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {

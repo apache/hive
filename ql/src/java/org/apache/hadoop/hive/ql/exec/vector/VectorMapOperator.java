@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.MapOperator;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -26,6 +27,15 @@ import org.apache.hadoop.io.Writable;
 public class VectorMapOperator extends MapOperator {
 
   private static final long serialVersionUID = 1L;
+
+  /** Kryo ctor. */
+  protected VectorMapOperator() {
+    super();
+  }
+
+  public VectorMapOperator(CompilationOpContext ctx) {
+    super(ctx);
+  }
 
   @Override
   public void process(Writable value) throws HiveException {

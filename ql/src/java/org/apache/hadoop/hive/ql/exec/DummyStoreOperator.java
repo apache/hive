@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.DummyStoreDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
@@ -69,8 +70,13 @@ public class DummyStoreOperator extends Operator<DummyStoreDesc> implements Seri
 
   protected transient InspectableObject result;
 
-  public DummyStoreOperator() {
+  /** Kryo ctor. */
+  protected DummyStoreOperator() {
     super();
+  }
+
+  public DummyStoreOperator(CompilationOpContext ctx) {
+    super(ctx);
   }
 
   @Override

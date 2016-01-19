@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
+import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
@@ -195,6 +196,11 @@ public class ReduceWork extends BaseWork {
     Set<Operator<?>> opSet = new LinkedHashSet<Operator<?>>();
     opSet.add(getReducer());
     return opSet;
+  }
+
+  @Override
+  public Operator<? extends OperatorDesc> getAnyRootOperator() {
+    return getReducer();
   }
 
   /**
