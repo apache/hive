@@ -685,9 +685,9 @@ public class HiveGBOpConvUtil {
 
     ReduceSinkOperator rsOp = (ReduceSinkOperator) OperatorFactory.getAndMakeChild(PlanUtils
         .getReduceSinkDesc(reduceKeys, keyLength, reduceValues, gbInfo.distColIndices,
-            outputKeyColumnNames, outputValueColumnNames, true, -1,
-            getNumPartFieldsForMapSideRS(gbInfo), getParallelismForMapSideRS(gbInfo),
-            AcidUtils.Operation.NOT_ACID), new RowSchema(colInfoLst), mapGB);
+        outputKeyColumnNames, outputValueColumnNames, true, -1, getNumPartFieldsForMapSideRS(
+        gbInfo), getParallelismForMapSideRS(gbInfo), AcidUtils.Operation.NOT_ACID),
+        new RowSchema(colInfoLst), mapGB);
 
     rsOp.setColumnExprMap(colExprMap);
 
@@ -945,8 +945,8 @@ public class HiveGBOpConvUtil {
         && !(gbInfo.gbPhysicalPipelineMode == HIVEGBPHYSICALMODE.MAP_SIDE_GB_SKEW_GBKEYS_OR_DIST_UDAF_PRESENT);
     Operator rsGBOp = OperatorFactory.getAndMakeChild(new GroupByDesc(gbMode, outputColNames,
         gbKeys, aggregations, gbInfo.groupByMemoryUsage, gbInfo.memoryThreshold, gbInfo.grpSets,
-        includeGrpSetInGBDesc, groupingSetsColPosition,
-        gbInfo.containsDistinctAggr), new RowSchema(colInfoLst), rs);
+        includeGrpSetInGBDesc, groupingSetsColPosition, gbInfo.containsDistinctAggr),
+        new RowSchema(colInfoLst), rs);
 
     rsGBOp.setColumnExprMap(colExprMap);
 

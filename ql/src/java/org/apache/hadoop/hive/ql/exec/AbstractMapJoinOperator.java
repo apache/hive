@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.persistence.RowContainer;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
@@ -50,7 +51,13 @@ public abstract class AbstractMapJoinOperator <T extends MapJoinDesc> extends Co
 
   transient int numMapRowsRead;
 
-  public AbstractMapJoinOperator() {
+  /** Kryo ctor. */
+  protected AbstractMapJoinOperator() {
+    super();
+  }
+
+  public AbstractMapJoinOperator(CompilationOpContext ctx) {
+    super(ctx);
   }
 
   public AbstractMapJoinOperator(AbstractMapJoinOperator<? extends MapJoinDesc> mjop) {

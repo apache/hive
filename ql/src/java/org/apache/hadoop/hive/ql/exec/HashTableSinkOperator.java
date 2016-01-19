@@ -31,6 +31,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionHandler;
 import org.apache.hadoop.hive.ql.exec.persistence.HashMapWrapper;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinEagerRowContainer;
@@ -104,10 +105,17 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
   private long hashTableScale;
   private MapJoinMemoryExhaustionHandler memoryExhaustionHandler;
 
-  public HashTableSinkOperator() {
+  /** Kryo ctor. */
+  protected HashTableSinkOperator() {
+    super();
   }
 
-  public HashTableSinkOperator(MapJoinOperator mjop) {
+  public HashTableSinkOperator(CompilationOpContext ctx) {
+    super(ctx);
+  }
+
+  public HashTableSinkOperator(CompilationOpContext ctx, MapJoinOperator mjop) {
+    this(ctx);
     this.conf = new HashTableSinkDesc(mjop.getConf());
   }
 

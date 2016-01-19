@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -44,16 +45,21 @@ public class VectorReduceSinkOperator extends ReduceSinkOperator {
 
   protected transient Object[] singleRow;
 
-  public VectorReduceSinkOperator(VectorizationContext vContext, OperatorDesc conf)
-      throws HiveException {
-    this();
+  public VectorReduceSinkOperator(CompilationOpContext ctx,
+      VectorizationContext vContext, OperatorDesc conf) throws HiveException {
+    this(ctx);
     ReduceSinkDesc desc = (ReduceSinkDesc) conf;
     this.conf = desc;
     this.vContext = vContext;
   }
 
-  public VectorReduceSinkOperator() {
+  /** Kryo ctor. */
+  protected VectorReduceSinkOperator() {
     super();
+  }
+
+  public VectorReduceSinkOperator(CompilationOpContext ctx) {
+    super(ctx);
   }
 
   @Override

@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -54,9 +55,9 @@ public class FakeCaptureOutputOperator extends Operator<FakeCaptureOutputDesc>
 
   private transient List<Object> rows;
 
-  public static FakeCaptureOutputOperator addCaptureOutputChild(
+  public static FakeCaptureOutputOperator addCaptureOutputChild(CompilationOpContext ctx,
       Operator<? extends OperatorDesc> op) {
-    FakeCaptureOutputOperator out = new FakeCaptureOutputOperator();
+    FakeCaptureOutputOperator out = new FakeCaptureOutputOperator(ctx);
     List<Operator<? extends OperatorDesc>> listParents =
         new ArrayList<Operator<? extends OperatorDesc>>(1);
     listParents.add(op);
@@ -71,6 +72,15 @@ public class FakeCaptureOutputOperator extends Operator<FakeCaptureOutputDesc>
 
   public List<Object> getCapturedRows() {
     return rows;
+  }
+
+  /** Kryo ctor. */
+  protected FakeCaptureOutputOperator() {
+    super();
+  }
+
+  public FakeCaptureOutputOperator(CompilationOpContext ctx) {
+    super(ctx);
   }
 
   @Override

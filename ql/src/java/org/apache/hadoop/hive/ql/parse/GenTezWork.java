@@ -290,9 +290,8 @@ public class GenTezWork implements NodeProcessor {
                   LOG.debug("Cloning reduce sink for multi-child broadcast edge");
                   // we've already set this one up. Need to clone for the next work.
                   r = (ReduceSinkOperator) OperatorFactory.getAndMakeChild(
-                      (ReduceSinkDesc)r.getConf().clone(),
-                      new RowSchema(r.getSchema()),
-                      r.getParentOperators());
+                      r.getCompilationOpContext(), (ReduceSinkDesc)r.getConf().clone(),
+                      new RowSchema(r.getSchema()), r.getParentOperators());
                   context.clonedReduceSinks.add(r);
                 }
                 r.getConf().setOutputName(work.getName());

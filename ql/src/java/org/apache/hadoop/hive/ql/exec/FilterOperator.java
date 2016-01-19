@@ -24,6 +24,7 @@ import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.io.IOContext;
 import org.apache.hadoop.hive.ql.io.IOContextMap;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -45,8 +46,13 @@ public class FilterOperator extends Operator<FilterDesc> implements
   private transient IOContext ioContext;
   protected transient int heartbeatInterval;
 
-  public FilterOperator() {
+  /** Kryo ctor. */
+  protected FilterOperator() {
     super();
+  }
+
+  public FilterOperator(CompilationOpContext ctx) {
+    super(ctx);
     consecutiveSearches = 0;
   }
 

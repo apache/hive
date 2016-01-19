@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec;
 import java.io.IOException;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.io.orc.Writer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,6 +56,15 @@ public class OrcFileMergeOperator extends
   Path prevPath;
   private Reader reader;
   private FSDataInputStream fdis;
+
+  /** Kryo ctor. */
+  protected OrcFileMergeOperator() {
+    super();
+  }
+
+  public OrcFileMergeOperator(CompilationOpContext ctx) {
+    super(ctx);
+  }
 
   @Override
   public void process(Object row, int tag) throws HiveException {

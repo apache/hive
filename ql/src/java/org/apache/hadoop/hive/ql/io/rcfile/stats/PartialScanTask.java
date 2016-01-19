@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.StatsSetupConst.StatDB;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -84,8 +85,8 @@ public class PartialScanTask extends Task<PartialScanWork> implements
 
   @Override
   public void initialize(HiveConf conf, QueryPlan queryPlan,
-      DriverContext driverContext) {
-    super.initialize(conf, queryPlan, driverContext);
+      DriverContext driverContext, CompilationOpContext opContext) {
+    super.initialize(conf, queryPlan, driverContext, opContext);
     job = new JobConf(conf, PartialScanTask.class);
     jobExecHelper = new HadoopJobExecHelper(job, this.console, this, this);
   }
@@ -351,7 +352,7 @@ public class PartialScanTask extends Task<PartialScanWork> implements
     PartialScanWork mergeWork = new PartialScanWork(inputPaths);
     DriverContext driverCxt = new DriverContext();
     PartialScanTask taskExec = new PartialScanTask();
-    taskExec.initialize(hiveConf, null, driverCxt);
+    taskExec.initialize(hiveConf, null, driverCxt, new CompilationOpContext());
     taskExec.setWork(mergeWork);
     int ret = taskExec.execute(driverCxt);
 

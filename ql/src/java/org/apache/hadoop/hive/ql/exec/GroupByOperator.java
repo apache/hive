@@ -37,6 +37,7 @@ import javolution.util.FastBitSet;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
@@ -177,6 +178,15 @@ public class GroupByOperator extends Operator<GroupByDesc> {
       value = value >>> 1;
     }
     return bits;
+  }
+
+  /** Kryo ctor. */
+  protected GroupByOperator() {
+    super();
+  }
+
+  public GroupByOperator(CompilationOpContext ctx) {
+    super(ctx);
   }
 
   @Override

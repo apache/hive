@@ -39,6 +39,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
@@ -320,6 +321,15 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
 
     specPath = conf.getParentDir();
     childSpecPathDynLinkedPartitions = conf.getDirName().getName();
+  }
+
+  /** Kryo ctor. */
+  protected FileSinkOperator() {
+    super();
+  }
+
+  public FileSinkOperator(CompilationOpContext ctx) {
+    super(ctx);
   }
 
   @Override

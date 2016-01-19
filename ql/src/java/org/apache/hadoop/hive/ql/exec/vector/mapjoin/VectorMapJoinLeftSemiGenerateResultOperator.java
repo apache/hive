@@ -22,6 +22,7 @@ import java.io.IOException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -70,13 +71,18 @@ public abstract class VectorMapJoinLeftSemiGenerateResultOperator
   // Pre-allocated member for storing index into the hashSetResults for each spilled row.
   protected transient int[] spillHashMapResultIndices;
 
-  public VectorMapJoinLeftSemiGenerateResultOperator() {
+  /** Kryo ctor. */
+  protected VectorMapJoinLeftSemiGenerateResultOperator() {
     super();
   }
 
-  public VectorMapJoinLeftSemiGenerateResultOperator(VectorizationContext vContext, OperatorDesc conf)
-              throws HiveException {
-    super(vContext, conf);
+  public VectorMapJoinLeftSemiGenerateResultOperator(CompilationOpContext ctx) {
+    super(ctx);
+  }
+
+  public VectorMapJoinLeftSemiGenerateResultOperator(CompilationOpContext ctx,
+      VectorizationContext vContext, OperatorDesc conf) throws HiveException {
+    super(ctx, vContext, conf);
   }
 
   /*

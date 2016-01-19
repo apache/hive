@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.DummyStoreOperator;
 import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
 import org.apache.hadoop.hive.ql.exec.MapOperator;
@@ -174,10 +175,11 @@ public class MapRecordProcessor extends RecordProcessor {
 
     try {
 
+      CompilationOpContext runtimeCtx = new CompilationOpContext();
       if (mapWork.getVectorMode()) {
-        mapOp = new VectorMapOperator();
+        mapOp = new VectorMapOperator(runtimeCtx);
       } else {
-        mapOp = new MapOperator();
+        mapOp = new MapOperator(runtimeCtx);
       }
 
       mapOp.clearConnectedOperators();
@@ -188,9 +190,9 @@ public class MapRecordProcessor extends RecordProcessor {
         for (BaseWork mergeWork : mergeWorkList) {
           MapWork mergeMapWork = (MapWork) mergeWork;
           if (mergeMapWork.getVectorMode()) {
-            mergeMapOp = new VectorMapOperator();
+            mergeMapOp = new VectorMapOperator(runtimeCtx);
           } else {
-            mergeMapOp = new MapOperator();
+            mergeMapOp = new MapOperator(runtimeCtx);
           }
 
           mergeMapOpList.add(mergeMapOp);

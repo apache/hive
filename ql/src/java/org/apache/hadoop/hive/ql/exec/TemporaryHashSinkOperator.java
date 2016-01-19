@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.HashTableSinkDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
@@ -27,7 +28,8 @@ import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import java.io.IOException;
 
 public class TemporaryHashSinkOperator extends HashTableSinkOperator {
-  public TemporaryHashSinkOperator(MapJoinDesc desc) {
+  public TemporaryHashSinkOperator(CompilationOpContext ctx, MapJoinDesc desc) {
+    super(ctx);
     conf = new HashTableSinkDesc(desc);
 
     // Sanity check the config.

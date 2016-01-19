@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -58,7 +59,7 @@ public class TestPlan extends TestCase {
           .getFuncExprNodeDesc("==", expr1, expr2);
 
       FilterDesc filterCtx = new FilterDesc(filterExpr, false);
-      Operator<FilterDesc> op = OperatorFactory.get(FilterDesc.class);
+      Operator<FilterDesc> op = OperatorFactory.get(new CompilationOpContext(), FilterDesc.class);
       op.setConf(filterCtx);
 
       ArrayList<String> aliasList = new ArrayList<String>();

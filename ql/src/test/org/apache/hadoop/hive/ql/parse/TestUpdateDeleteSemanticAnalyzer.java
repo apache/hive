@@ -297,7 +297,7 @@ public class TestUpdateDeleteSemanticAnalyzer {
         sem.getFetchTask(), astTree, sem, true, false, false, false, false, false, null);
     ExplainTask task = new ExplainTask();
     task.setWork(work);
-    task.initialize(conf, plan, null);
+    task.initialize(conf, plan, null, null);
     task.execute(null);
     FSDataInputStream in = fs.open(tmp);
     StringBuilder builder = new StringBuilder();

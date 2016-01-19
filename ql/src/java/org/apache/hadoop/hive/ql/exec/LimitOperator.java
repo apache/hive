@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.LimitDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
@@ -38,6 +39,15 @@ public class LimitOperator extends Operator<LimitDesc> implements Serializable {
   protected transient int leastRow;
   protected transient int currCount;
   protected transient boolean isMap;
+
+  /** Kryo ctor. */
+  protected LimitOperator() {
+    super();
+  }
+
+  public LimitOperator(CompilationOpContext ctx) {
+    super(ctx);
+  }
 
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {

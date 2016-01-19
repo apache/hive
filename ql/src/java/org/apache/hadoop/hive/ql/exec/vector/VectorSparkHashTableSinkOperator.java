@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec.vector;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.SparkHashTableSinkOperator;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -50,11 +51,18 @@ public class VectorSparkHashTableSinkOperator extends SparkHashTableSinkOperator
 
   protected transient Object[] singleRow;
 
-  public VectorSparkHashTableSinkOperator() {
+  /** Kryo ctor. */
+  protected VectorSparkHashTableSinkOperator() {
+    super();
   }
 
-  public VectorSparkHashTableSinkOperator(VectorizationContext vContext, OperatorDesc conf) {
-    super();
+  public VectorSparkHashTableSinkOperator(CompilationOpContext ctx) {
+    super(ctx);
+  }
+
+  public VectorSparkHashTableSinkOperator(
+      CompilationOpContext ctx, VectorizationContext vContext, OperatorDesc conf) {
+    this(ctx);
     this.vContext = vContext;
     this.conf = (SparkHashTableSinkDesc) conf;
   }

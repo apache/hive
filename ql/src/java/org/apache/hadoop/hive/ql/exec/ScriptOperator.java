@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ScriptDesc;
@@ -264,6 +265,15 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
       }
       return null;
     }
+  }
+
+  /** Kryo ctor. */
+  protected ScriptOperator() {
+    super();
+  }
+
+  public ScriptOperator(CompilationOpContext ctx) {
+    super(ctx);
   }
 
   @Override

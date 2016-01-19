@@ -82,4 +82,9 @@ public class MapredWork extends AbstractOperatorDesc {
 
     return ops;
   }
-}
+
+  public Operator<?> getAnyOperator() {
+    Operator<?> result = mapWork.getAnyRootOperator();
+    if (result != null) return result;
+    return (reduceWork != null) ? reduceWork.getAnyRootOperator() : null;
+  }}

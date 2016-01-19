@@ -219,7 +219,7 @@ public class SkewJoinOptimizer extends Transform {
       oplist.add(currOp);
       oplist.add(currOpClone);
       Operator<? extends OperatorDesc> unionOp =
-        OperatorFactory.getAndMakeChild(
+        OperatorFactory.getAndMakeChild(currOp.getCompilationOpContext(),
           new UnionDesc(), new RowSchema(currOp.getSchema().getSignature()), oplist);
 
       // Introduce a select after the union
@@ -228,8 +228,7 @@ public class SkewJoinOptimizer extends Transform {
       unionList.add(unionOp);
 
       Operator<? extends OperatorDesc> selectUnionOp =
-        OperatorFactory.getAndMakeChild(
-          new SelectDesc(true),
+        OperatorFactory.getAndMakeChild(currOp.getCompilationOpContext(), new SelectDesc(true),
           new RowSchema(unionOp.getSchema().getSignature()), unionList);
 
       // add the finalOp after the union
@@ -475,8 +474,7 @@ public class SkewJoinOptimizer extends Transform {
 
       Operator<FilterDesc> filter = OperatorFactory.getAndMakeChild(
         new FilterDesc(filterExpr, false),
-        new RowSchema(tableScanOp.getSchema().getSignature()),
-        tableScanOp);
+        new RowSchema(tableScanOp.getSchema().getSignature()), tableScanOp);
       OperatorFactory.makeChild(filter, currChild);
     }
 

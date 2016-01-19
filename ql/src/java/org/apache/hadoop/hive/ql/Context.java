@@ -67,6 +67,7 @@ public class Context {
   private int resDirFilesNum;
   boolean initialized;
   String originalTracker = null;
+  private final CompilationOpContext opContext;
   private final Map<String, ContentSummary> pathToCS = new ConcurrentHashMap<String, ContentSummary>();
 
   // scratch path to use for all non-local (ie. hdfs) file system tmp folders
@@ -133,6 +134,7 @@ public class Context {
     localScratchDir = new Path(SessionState.getLocalSessionPath(conf), executionId).toUri().getPath();
     scratchDirPermission = HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIRPERMISSION);
     stagingDir = HiveConf.getVar(conf, HiveConf.ConfVars.STAGINGDIR);
+    opContext = new CompilationOpContext();
   }
 
 
@@ -715,4 +717,7 @@ public class Context {
     this.cboSucceeded = cboSucceeded;
   }
 
+  public CompilationOpContext getOpContext() {
+    return opContext;
+  }
 }

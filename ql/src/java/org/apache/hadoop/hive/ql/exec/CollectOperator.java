@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.CollectDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
@@ -41,6 +42,15 @@ public class CollectOperator extends Operator<CollectDesc> implements
   protected transient ArrayList<Object> rowList;
   protected transient ObjectInspector standardRowInspector;
   transient int maxSize;
+
+  /** Kryo ctor. */
+  protected CollectOperator() {
+    super();
+  }
+
+  public CollectOperator(CompilationOpContext ctx) {
+    super(ctx);
+  }
 
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {

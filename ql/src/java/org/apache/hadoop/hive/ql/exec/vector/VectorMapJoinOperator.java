@@ -27,6 +27,7 @@ import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
@@ -74,15 +75,20 @@ public class VectorMapJoinOperator extends VectorMapJoinBaseOperator {
   private VectorExpressionWriter[] rowWriters;  // Writer for producing row from input batch
   protected transient Object[] singleRow;
 
-  public VectorMapJoinOperator() {
+  /** Kryo ctor. */
+  protected VectorMapJoinOperator() {
     super();
   }
 
+  public VectorMapJoinOperator(CompilationOpContext ctx) {
+    super(ctx);
+  }
 
-  public VectorMapJoinOperator (VectorizationContext vContext, OperatorDesc conf)
-    throws HiveException {
 
-    super(vContext, conf);
+  public VectorMapJoinOperator (CompilationOpContext ctx,
+      VectorizationContext vContext, OperatorDesc conf) throws HiveException {
+
+    super(ctx, vContext, conf);
 
     MapJoinDesc desc = (MapJoinDesc) conf;
 

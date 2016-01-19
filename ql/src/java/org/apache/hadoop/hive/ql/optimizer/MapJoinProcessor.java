@@ -80,6 +80,8 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
+import com.clearspring.analytics.util.Lists;
+
 /**
  * Implementation of one of the rule-based map join optimization. User passes hints to specify
  * map-joins and during this optimization, all user specified map joins are converted to MapJoins -
@@ -376,7 +378,8 @@ public class MapJoinProcessor extends Transform {
     RowSchema outputRS = op.getSchema();
 
     MapJoinOperator mapJoinOp = (MapJoinOperator) OperatorFactory.getAndMakeChild(
-        mapJoinDescriptor, new RowSchema(outputRS.getSignature()), op.getParentOperators());
+        op.getCompilationOpContext(), mapJoinDescriptor,
+        new RowSchema(outputRS.getSignature()), op.getParentOperators());
 
     mapJoinOp.getConf().setReversedExprs(op.getConf().getReversedExprs());
     Map<String, ExprNodeDesc> colExprMap = op.getColumnExprMap();
@@ -438,7 +441,8 @@ public class MapJoinProcessor extends Transform {
     RowSchema joinRS = smbJoinOp.getSchema();
     // The mapjoin has the same schema as the join operator
     MapJoinOperator mapJoinOp = (MapJoinOperator) OperatorFactory.getAndMakeChild(
-        mapJoinDesc, joinRS, new ArrayList<Operator<? extends OperatorDesc>>());
+        smbJoinOp.getCompilationOpContext(), mapJoinDesc, joinRS,
+        new ArrayList<Operator<? extends OperatorDesc>>());
 
     // change the children of the original join operator to point to the map
     // join operator
@@ -601,8 +605,8 @@ public class MapJoinProcessor extends Transform {
 
     SelectDesc select = new SelectDesc(exprs, outputs, false);
 
-    SelectOperator sel = (SelectOperator) OperatorFactory.getAndMakeChild(select,
-            new RowSchema(outputRS), input);
+    SelectOperator sel = (SelectOperator) OperatorFactory.getAndMakeChild(
+        select, new RowSchema(outputRS), input);
 
     sel.setColumnExprMap(colExprMap);
 

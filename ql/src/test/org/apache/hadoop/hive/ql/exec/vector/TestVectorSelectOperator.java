@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.vector.util.VectorizedRowGroupGenUtil;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -47,9 +48,9 @@ public class TestVectorSelectOperator {
 
     private static final long serialVersionUID = 1L;
 
-    public ValidatorVectorSelectOperator(VectorizationContext ctxt, OperatorDesc conf)
-        throws HiveException {
-      super(ctxt, conf);
+    public ValidatorVectorSelectOperator(CompilationOpContext ctx,
+        VectorizationContext ctxt, OperatorDesc conf) throws HiveException {
+      super(ctx, ctxt, conf);
       initializeOp(null);
     }
 
@@ -114,7 +115,8 @@ public class TestVectorSelectOperator {
     outputColNames.add("_col1");
     selDesc.setOutputColumnNames(outputColNames);
 
-    ValidatorVectorSelectOperator vso = new ValidatorVectorSelectOperator(vc, selDesc);
+    ValidatorVectorSelectOperator vso = new ValidatorVectorSelectOperator(
+        new CompilationOpContext(), vc, selDesc);
 
     VectorizedRowBatch vrg = VectorizedRowGroupGenUtil.getVectorizedRowBatch(
         VectorizedRowBatch.DEFAULT_SIZE, 4, 17);

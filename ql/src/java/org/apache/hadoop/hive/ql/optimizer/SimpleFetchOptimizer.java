@@ -476,7 +476,8 @@ public class SimpleFetchOptimizer extends Transform {
 
   public static ListSinkOperator replaceFSwithLS(Operator<?> fileSink, String nullFormat) {
     ListSinkDesc desc = new ListSinkDesc(nullFormat);
-    ListSinkOperator sink = (ListSinkOperator) OperatorFactory.get(desc);
+    ListSinkOperator sink = (ListSinkOperator) OperatorFactory.get(
+        fileSink.getCompilationOpContext(), desc);
 
     sink.setParentOperators(new ArrayList<Operator<? extends OperatorDesc>>());
     Operator<? extends OperatorDesc> parent = fileSink.getParentOperators().get(0);

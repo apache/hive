@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.LateralViewJoinDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
@@ -82,6 +83,15 @@ public class LateralViewJoinOperator extends Operator<LateralViewJoinDesc> {
   // changing the tags.
   public static final byte SELECT_TAG = 0;
   public static final byte UDTF_TAG = 1;
+
+  /** Kryo ctor. */
+  protected LateralViewJoinOperator() {
+    super();
+  }
+
+  public LateralViewJoinOperator(CompilationOpContext ctx) {
+    super(ctx);
+  }
 
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {

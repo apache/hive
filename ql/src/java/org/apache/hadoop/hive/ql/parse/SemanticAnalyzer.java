@@ -66,6 +66,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
@@ -419,6 +420,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         opToSamplePruner, globalLimitCtx, nameToSplitSample, inputs, rootTasks,
         opToPartToSkewedPruner, viewAliasToInput, reduceSinkOperatorsAddedByEnforceBucketingSorting,
         analyzeRewrite, tableDesc, queryProperties);
+  }
+
+  public CompilationOpContext getOpContext() {
+    return ctx.getOpContext();
   }
 
   @SuppressWarnings("nls")
@@ -3322,8 +3327,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         .getChild(inputRecordWriterNum));
     Class<? extends RecordReader> errRecordReader = getDefaultRecordReader();
 
-    Operator output = putOpInsertMap(OperatorFactory.getAndMakeChild(
-        new ScriptDesc(
+    Operator output = putOpInsertMap(OperatorFactory.getAndMakeChild(new ScriptDesc(
             fetchFilesNotInLocalFilesystem(stripQuotes(trfm.getChild(execPos).getText())),
             inInfo, inRecordWriter, outInfo, outRecordReader, errRecordReader, errInfo),
         new RowSchema(out_rwsch.getColumnInfos()), input), out_rwsch);
@@ -5423,8 +5427,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       FilterDesc orFilterDesc = new FilterDesc(previous, false);
       orFilterDesc.setGenerated(true);
 
-      selectInput = putOpInsertMap(OperatorFactory.getAndMakeChild(
-          orFilterDesc, new RowSchema(
+      selectInput = putOpInsertMap(OperatorFactory.getAndMakeChild(orFilterDesc, new RowSchema(
               inputRR.getColumnInfos()), input), inputRR);
     }
 
@@ -6635,8 +6638,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       fileSinkDesc.setStaticSpec(dpCtx.getSPPath());
     }
 
-    Operator output = putOpInsertMap(OperatorFactory.getAndMakeChild(fileSinkDesc,
-        fsRS, input), inputRR);
+    Operator output = putOpInsertMap(OperatorFactory.getAndMakeChild(
+        fileSinkDesc, fsRS, input), inputRR);
 
     if (ltd != null && SessionState.get() != null) {
       SessionState.get().getLineageState()
@@ -7381,7 +7384,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     desc.setReversedExprs(reversedExprs);
     desc.setFilterMap(join.getFilterMap());
 
-    JoinOperator joinOp = (JoinOperator) OperatorFactory.getAndMakeChild(desc,
+    JoinOperator joinOp = (JoinOperator) OperatorFactory.getAndMakeChild(getOpContext(), desc,
         new RowSchema(outputRR.getColumnInfos()), rightOps);
     joinOp.setColumnExprMap(colExprMap);
     joinOp.setPosToAliasMap(posToAliasMap);
@@ -7498,8 +7501,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         reduceKeys.size(), numReds, AcidUtils.Operation.NOT_ACID);
 
     ReduceSinkOperator rsOp = (ReduceSinkOperator) putOpInsertMap(
-        OperatorFactory.getAndMakeChild(rsDesc, new RowSchema(outputRR
-            .getColumnInfos()), child), outputRR);
+        OperatorFactory.getAndMakeChild(rsDesc, new RowSchema(outputRR.getColumnInfos()),
+            child), outputRR);
     List<String> keyColNames = rsDesc.getOutputKeyColumnNames();
     for (int i = 0 ; i < keyColNames.size(); i++) {
       colExprMap.put(Utilities.ReduceField.KEY + "." + keyColNames.get(i), reduceKeys.get(i));
@@ -9089,7 +9092,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // Create a new union operator
     Operator<? extends OperatorDesc> unionforward = OperatorFactory
-        .getAndMakeChild(new UnionDesc(), new RowSchema(unionoutRR
+        .getAndMakeChild(getOpContext(), new UnionDesc(), new RowSchema(unionoutRR
             .getColumnInfos()));
 
     // set union operator as child of each of leftOp and rightOp
@@ -9335,7 +9338,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         nameToSplitSample.remove(alias_id);
       }
 
-      top = putOpInsertMap(OperatorFactory.get(tsDesc,
+      top = putOpInsertMap(OperatorFactory.get(getOpContext(), tsDesc,
           new RowSchema(rwsch.getColumnInfos())), rwsch);
 
       // Add this to the list of top operators - we always start from a table
@@ -11991,8 +11994,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
         ptfDesc.setMapSide(true);
         input = putOpInsertMap(OperatorFactory.getAndMakeChild(ptfDesc,
-            new RowSchema(ptfMapRR.getColumnInfos()),
-            input), ptfMapRR);
+            new RowSchema(ptfMapRR.getColumnInfos()), input), ptfMapRR);
         rr = opParseCtx.get(input).getRowResolver();
       }
 
@@ -12055,8 +12057,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       PTFDesc ptfDesc = translator.translate(wSpec, this, conf, rr, unparseTranslator);
       RowResolver ptfOpRR = ptfDesc.getFuncDef().getOutputShape().getRr();
       input = putOpInsertMap(OperatorFactory.getAndMakeChild(ptfDesc,
-          new RowSchema(ptfOpRR.getColumnInfos()),
-          input), ptfOpRR);
+          new RowSchema(ptfOpRR.getColumnInfos()), input), ptfOpRR);
       input = genSelectAllDesc(input);
       rr = ptfOpRR;
     }

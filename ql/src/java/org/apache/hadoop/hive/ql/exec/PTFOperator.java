@@ -26,6 +26,7 @@ import java.util.Stack;
 import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.PTFPartition.PTFPartitionIterator;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
@@ -59,6 +60,15 @@ public class PTFOperator extends Operator<PTFDesc> implements Serializable {
   transient boolean firstMapRow;
   transient Configuration hiveConf;
   transient PTFInvocation ptfInvocation;
+
+  /** Kryo ctor. */
+  protected PTFOperator() {
+    super();
+  }
+
+  public PTFOperator(CompilationOpContext ctx) {
+    super(ctx);
+  }
 
   /*
    * 1. Find out if the operator is invoked at Map-Side or Reduce-side

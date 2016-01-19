@@ -31,6 +31,7 @@ import junit.framework.TestCase;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.io.IOContextMap;
 import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
@@ -155,7 +156,7 @@ public class TestOperators extends TestCase {
    */
   public void testScriptOperatorEnvVarsProcessing() throws Throwable {
     try {
-      ScriptOperator scriptOperator = new ScriptOperator();
+      ScriptOperator scriptOperator = new ScriptOperator(new CompilationOpContext());
 
       //Environment Variables name
       assertEquals("a_b_c", scriptOperator.safeEnvVarName("a.b.c"));
@@ -194,7 +195,7 @@ public class TestOperators extends TestCase {
   }
 
   public void testScriptOperatorBlacklistedEnvVarsProcessing() {
-    ScriptOperator scriptOperator = new ScriptOperator();
+    ScriptOperator scriptOperator = new ScriptOperator(new CompilationOpContext());
 
     Configuration hconf = new JobConf(ScriptOperator.class);
 
@@ -229,7 +230,7 @@ public class TestOperators extends TestCase {
         outputCols.add("_col" + i);
       }
       SelectDesc selectCtx = new SelectDesc(earr, outputCols);
-      Operator<SelectDesc> op = OperatorFactory.get(SelectDesc.class);
+      Operator<SelectDesc> op = OperatorFactory.get(new CompilationOpContext(), SelectDesc.class);
       op.setConf(selectCtx);
 
       // scriptOperator to echo the output of the select
@@ -245,8 +246,7 @@ public class TestOperators extends TestCase {
 
       // Collect operator to observe the output of the script
       CollectDesc cd = new CollectDesc(Integer.valueOf(10));
-      CollectOperator cdop = (CollectOperator) OperatorFactory.getAndMakeChild(
-          cd, sop);
+      CollectOperator cdop = (CollectOperator) OperatorFactory.getAndMakeChild(cd, sop);
 
       op.initialize(new JobConf(TestOperators.class),
           new ObjectInspector[]{r[0].oi});
@@ -308,12 +308,13 @@ public class TestOperators extends TestCase {
       pathToPartitionInfo.put("hdfs:///testDir", pd);
 
       // initialize aliasToWork
+      CompilationOpContext ctx = new CompilationOpContext();
       CollectDesc cd = new CollectDesc(Integer.valueOf(1));
       CollectOperator cdop1 = (CollectOperator) OperatorFactory
-          .get(CollectDesc.class);
+          .get(ctx, CollectDesc.class);
       cdop1.setConf(cd);
       CollectOperator cdop2 = (CollectOperator) OperatorFactory
-          .get(CollectDesc.class);
+          .get(ctx, CollectDesc.class);
       cdop2.setConf(cd);
       LinkedHashMap<String, Operator<? extends OperatorDesc>> aliasToWork =
         new LinkedHashMap<String, Operator<? extends OperatorDesc>>();
@@ -327,7 +328,7 @@ public class TestOperators extends TestCase {
       mrwork.getMapWork().setAliasToWork(aliasToWork);
 
       // get map operator and initialize it
-      MapOperator mo = new MapOperator();
+      MapOperator mo = new MapOperator(new CompilationOpContext());
       mo.initializeAsRoot(hconf, mrwork.getMapWork());
 
       Text tw = new Text();

@@ -27,6 +27,7 @@ import java.util.concurrent.Future;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.tez.TezContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.AppMasterEventDesc;
@@ -50,6 +51,15 @@ public class AppMasterEventOperator extends Operator<AppMasterEventDesc> {
   protected transient DataOutputBuffer buffer;
   protected transient boolean hasReachedMaxSize = false;
   protected transient long MAX_SIZE;
+
+  /** Kryo ctor. */
+  protected AppMasterEventOperator() {
+    super();
+  }
+
+  public AppMasterEventOperator(CompilationOpContext ctx) {
+    super(ctx);
+  }
 
   @Override
   public void initializeOp(Configuration hconf) throws HiveException {

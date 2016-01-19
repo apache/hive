@@ -64,6 +64,11 @@ public class UnionWork extends BaseWork {
     return new HashSet<Operator<?>>();
   }
 
+  @Override
+  public Operator<? extends OperatorDesc> getAnyRootOperator() {
+    return null;
+  }
+
   public void addUnionOperators(Collection<UnionOperator> unions) {
     unionOperators.addAll(unions);
   }

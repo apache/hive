@@ -232,8 +232,8 @@ public class GenSparkSkewJoinProcessor {
       // create N TableScans
       Operator<? extends OperatorDesc>[] parentOps = new TableScanOperator[tags.length];
       for (int k = 0; k < tags.length; k++) {
-        Operator<? extends OperatorDesc> ts =
-            GenMapRedUtils.createTemporaryTableScanOperator(rowSchemaList.get((byte) k));
+        Operator<? extends OperatorDesc> ts = GenMapRedUtils.createTemporaryTableScanOperator(
+            joinOp.getCompilationOpContext(), rowSchemaList.get((byte) k));
         ((TableScanOperator) ts).setTableDesc(tableDescList.get((byte) k));
         parentOps[k] = ts;
       }
@@ -249,7 +249,7 @@ public class GenSparkSkewJoinProcessor {
       mapJoinDescriptor.setNullSafes(joinDescriptor.getNullSafes());
       // temporarily, mark it as child of all the TS
       MapJoinOperator mapJoinOp = (MapJoinOperator) OperatorFactory
-          .getAndMakeChild(mapJoinDescriptor, null, parentOps);
+          .getAndMakeChild(joinOp.getCompilationOpContext(), mapJoinDescriptor, null, parentOps);
 
       // clone the original join operator, and replace it with the MJ
       // this makes sure MJ has the same downstream operator plan as the original join
@@ -360,7 +360,8 @@ public class GenSparkSkewJoinProcessor {
     Preconditions.checkArgument(tableScan.getChildOperators().size() == 1
         && tableScan.getChildOperators().get(0) instanceof MapJoinOperator);
     HashTableDummyDesc desc = new HashTableDummyDesc();
-    HashTableDummyOperator dummyOp = (HashTableDummyOperator) OperatorFactory.get(desc);
+    HashTableDummyOperator dummyOp = (HashTableDummyOperator) OperatorFactory.get(
+        tableScan.getCompilationOpContext(), desc);
     dummyOp.getConf().setTbl(tableScan.getTableDesc());
     MapJoinOperator mapJoinOp = (MapJoinOperator) tableScan.getChildOperators().get(0);
     mapJoinOp.replaceParent(tableScan, dummyOp);
@@ -373,8 +374,8 @@ public class GenSparkSkewJoinProcessor {
     // mapjoin should not be affected by join reordering
     mjDesc.resetOrder();
     SparkHashTableSinkDesc hashTableSinkDesc = new SparkHashTableSinkDesc(mjDesc);
-    SparkHashTableSinkOperator hashTableSinkOp =
-        (SparkHashTableSinkOperator) OperatorFactory.get(hashTableSinkDesc);
+    SparkHashTableSinkOperator hashTableSinkOp = (SparkHashTableSinkOperator)OperatorFactory.get(
+            tableScan.getCompilationOpContext(), hashTableSinkDesc);
     int[] valueIndex = mjDesc.getValueIndex(tag);
     if (valueIndex != null) {
       List<ExprNodeDesc> newValues = new ArrayList<ExprNodeDesc>();

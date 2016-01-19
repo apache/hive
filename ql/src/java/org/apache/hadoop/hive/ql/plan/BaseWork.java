@@ -109,6 +109,7 @@ public abstract class BaseWork extends AbstractOperatorDesc {
   public abstract void replaceRoots(Map<Operator<?>, Operator<?>> replacementMap);
 
   public abstract Set<Operator<? extends OperatorDesc>> getAllRootOperators();
+  public abstract Operator<? extends OperatorDesc> getAnyRootOperator();
 
   public Set<Operator<?>> getAllOperators() {
 

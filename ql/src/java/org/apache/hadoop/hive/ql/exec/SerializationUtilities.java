@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.exec;
 
+import java.util.LinkedList;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -33,6 +35,7 @@ import java.util.List;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
@@ -356,12 +359,44 @@ public class SerializationUtilities {
     // TODO: need proper clone. Meanwhile, let's at least keep this horror in one place
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.CLONE_PLAN);
+    Operator<?> op = plan.getAnyOperator();
+    CompilationOpContext ctx = (op == null) ? null : op.getCompilationOpContext();
     ByteArrayOutputStream baos = new ByteArrayOutputStream(4096);
     serializePlan(plan, baos, true);
     MapredWork newPlan = deserializePlan(new ByteArrayInputStream(baos.toByteArray()),
         MapredWork.class, true);
+    // Restore the context.
+    for (Operator<?> newOp : newPlan.getAllOperators()) {
+      newOp.setCompilationOpContext(ctx);
+    }
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.CLONE_PLAN);
     return newPlan;
+  }
+
+  /**
+   * Clones using the powers of XML. Do not use unless necessary.
+   * @param roots The roots.
+   * @return The clone.
+   */
+  public static List<Operator<?>> cloneOperatorTree(List<Operator<?>> roots) {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream(4096);
+    CompilationOpContext ctx = roots.isEmpty() ? null : roots.get(0).getCompilationOpContext();
+    serializePlan(roots, baos, true);
+    @SuppressWarnings("unchecked")
+    List<Operator<?>> result =
+        deserializePlan(new ByteArrayInputStream(baos.toByteArray()),
+            roots.getClass(), true);
+    // Restore the context.
+    LinkedList<Operator<?>> newOps = new LinkedList<>(result);
+    while (!newOps.isEmpty()) {
+      Operator<?> newOp = newOps.poll();
+      newOp.setCompilationOpContext(ctx);
+      List<Operator<?>> children = newOp.getChildOperators();
+      if (children != null) {
+        newOps.addAll(children);
+      }
+    }
+    return result;
   }
 
   /**
@@ -372,10 +407,16 @@ public class SerializationUtilities {
   public static BaseWork cloneBaseWork(BaseWork plan) {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.CLONE_PLAN);
+    Operator<?> op = plan.getAnyRootOperator();
+    CompilationOpContext ctx = (op == null) ? null : op.getCompilationOpContext();
     ByteArrayOutputStream baos = new ByteArrayOutputStream(4096);
     serializePlan(plan, baos, true);
     BaseWork newPlan = deserializePlan(new ByteArrayInputStream(baos.toByteArray()),
         plan.getClass(), true);
+    // Restore the context.
+    for (Operator<?> newOp : newPlan.getAllOperators()) {
+      newOp.setCompilationOpContext(ctx);
+    }
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.CLONE_PLAN);
     return newPlan;
   }
@@ -397,16 +438,6 @@ public class SerializationUtilities {
     T t = kryo.readObject(inp,clazz);
     inp.close();
     return t;
-  }
-
-  public static List<Operator<?>> cloneOperatorTree(List<Operator<?>> roots) {
-    ByteArrayOutputStream baos = new ByteArrayOutputStream(4096);
-    serializePlan(roots, baos, true);
-    @SuppressWarnings("unchecked")
-    List<Operator<?>> result =
-        deserializePlan(new ByteArrayInputStream(baos.toByteArray()),
-            roots.getClass(), true);
-    return result;
   }
 
   /**

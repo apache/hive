@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
@@ -53,8 +54,9 @@ public class VectorSelectOperator extends Operator<SelectDesc> implements
   // Create a new outgoing vectorization context because column name map will change.
   private VectorizationContext vOutContext;
 
-  public VectorSelectOperator(VectorizationContext vContext, OperatorDesc conf)
-      throws HiveException {
+  public VectorSelectOperator(CompilationOpContext ctx,
+      VectorizationContext vContext, OperatorDesc conf) throws HiveException {
+    this(ctx);
     this.conf = (SelectDesc) conf;
     List<ExprNodeDesc> colList = this.conf.getColList();
     vExpressions = new VectorExpression[colList.size()];
@@ -79,7 +81,13 @@ public class VectorSelectOperator extends Operator<SelectDesc> implements
     }
   }
 
-  public VectorSelectOperator() {
+  /** Kryo ctor. */
+  protected VectorSelectOperator() {
+    super();
+  }
+
+  public VectorSelectOperator(CompilationOpContext ctx) {
+    super(ctx);
   }
 
   @Override

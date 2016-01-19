@@ -28,6 +28,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.HashTableSinkOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
@@ -183,7 +184,7 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
     JobConf job = new JobConf(hconf);
     MapredLocalTask localTask = new MapredLocalTask(localWork, job, false);
 
-    HashTableSinkOperator sink = new TemporaryHashSinkOperator(desc);
+    HashTableSinkOperator sink = new TemporaryHashSinkOperator(new CompilationOpContext(), desc);
     sink.setParentOperators(new ArrayList<Operator<? extends OperatorDesc>>(directWorks));
 
     for (Operator<?> operator : directWorks) {

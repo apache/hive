@@ -24,6 +24,7 @@ import java.util.Properties;
 import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ListSinkDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
@@ -42,6 +43,15 @@ public class ListSinkOperator extends Operator<ListSinkDesc> {
   private transient List res;
   private transient FetchFormatter fetcher;
   private transient int numRows;
+
+  /** Kryo ctor. */
+  protected ListSinkOperator() {
+    super();
+  }
+
+  public ListSinkOperator(CompilationOpContext ctx) {
+    super(ctx);
+  }
 
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {

@@ -31,6 +31,7 @@ import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -150,6 +151,15 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
   protected transient long cntr = 1;
   protected transient long logEveryNRows = 0;
   private final transient LongWritable recordCounter = new LongWritable();
+
+  /** Kryo ctor. */
+  protected ReduceSinkOperator() {
+    super();
+  }
+
+  public ReduceSinkOperator(CompilationOpContext ctx) {
+    super(ctx);
+  }
 
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {

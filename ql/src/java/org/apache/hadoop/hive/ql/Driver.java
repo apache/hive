@@ -176,7 +176,7 @@ public class Driver implements CommandProcessor {
 
   @Override
   public void init() {
-    Operator.resetId();
+    // Nothing for now.
   }
 
   /**
@@ -501,7 +501,7 @@ public class Driver implements CommandProcessor {
 
       // initialize FetchTask right here
       if (plan.getFetchTask() != null) {
-        plan.getFetchTask().initialize(conf, plan, null);
+        plan.getFetchTask().initialize(conf, plan, null, ctx.getOpContext());
       }
 
       //do the authorization check
@@ -579,7 +579,7 @@ public class Driver implements CommandProcessor {
       ASTNode astTree) throws IOException {
     String ret = null;
     ExplainTask task = new ExplainTask();
-    task.initialize(conf, plan, null);
+    task.initialize(conf, plan, null, ctx.getOpContext());
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     PrintStream ps = new PrintStream(baos);
     try {
@@ -1820,7 +1820,7 @@ public class Driver implements CommandProcessor {
       cxt.incCurJobNo(1);
       console.printInfo("Launching Job " + cxt.getCurJobNo() + " out of " + jobs);
     }
-    tsk.initialize(conf, plan, cxt);
+    tsk.initialize(conf, plan, cxt, ctx.getOpContext());
     TaskResult tskRes = new TaskResult();
     TaskRunner tskRun = new TaskRunner(tsk, tskRes);
 
@@ -1910,7 +1910,7 @@ public class Driver implements CommandProcessor {
         throw new IOException("Error closing the current fetch task", e);
       }
       // FetchTask should not depend on the plan.
-      fetchTask.initialize(conf, null, null);
+      fetchTask.initialize(conf, null, null, ctx.getOpContext());
     } else {
       ctx.resetStream();
       resStream = null;

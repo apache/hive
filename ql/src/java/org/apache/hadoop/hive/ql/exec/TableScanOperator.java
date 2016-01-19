@@ -29,6 +29,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
@@ -207,6 +208,15 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
       currentStat.addToStat(StatsSetupConst.RAW_DATA_SIZE, (((LongWritable)rdSize.get(0)).get()));
     }
 
+  }
+
+  /** Kryo ctor. */
+  protected TableScanOperator() {
+    super();
+  }
+
+  public TableScanOperator(CompilationOpContext ctx) {
+    super(ctx);
   }
 
   @Override

@@ -25,6 +25,7 @@ import java.util.List;
 import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.persistence.HybridHashTableContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.HybridHashTableContainer.HashPartition;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinBytesTableContainer;
@@ -86,13 +87,18 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
   // Debug display.
   protected transient long batchCounter;
 
-  public VectorMapJoinGenerateResultOperator() {
+  /** Kryo ctor. */
+  protected VectorMapJoinGenerateResultOperator() {
     super();
   }
 
-  public VectorMapJoinGenerateResultOperator(VectorizationContext vContext, OperatorDesc conf)
-              throws HiveException {
-    super(vContext, conf);
+  public VectorMapJoinGenerateResultOperator(CompilationOpContext ctx) {
+    super(ctx);
+  }
+
+  public VectorMapJoinGenerateResultOperator(CompilationOpContext ctx,
+      VectorizationContext vContext, OperatorDesc conf) throws HiveException {
+    super(ctx, vContext, conf);
   }
 
   protected void commonSetup(VectorizedRowBatch batch) throws HiveException {

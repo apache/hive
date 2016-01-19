@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -44,7 +45,8 @@ public class FakeVectorDataSourceOperator extends Operator<FakeVectorDataSourceO
   public static FakeVectorDataSourceOperator addFakeVectorDataSourceParent(
       Iterable<VectorizedRowBatch> source,
       Operator<? extends OperatorDesc> op) {
-    FakeVectorDataSourceOperator parent = new FakeVectorDataSourceOperator(source);
+    FakeVectorDataSourceOperator parent = new FakeVectorDataSourceOperator(
+        new CompilationOpContext(), source);
     List<Operator<? extends OperatorDesc>> listParents =
         new ArrayList<Operator<? extends OperatorDesc>>(1);
     listParents.add(parent);
@@ -56,9 +58,19 @@ public class FakeVectorDataSourceOperator extends Operator<FakeVectorDataSourceO
     return parent;
   }
 
-  public FakeVectorDataSourceOperator(
+  public FakeVectorDataSourceOperator(CompilationOpContext ctx,
     Iterable<VectorizedRowBatch> source) {
+    super(ctx);
     this.source = source;
+  }
+
+  /** Kryo ctor. */
+  protected FakeVectorDataSourceOperator() {
+    super();
+  }
+
+  public FakeVectorDataSourceOperator(CompilationOpContext ctx) {
+    super(ctx);
   }
 
   @Override

@@ -37,6 +37,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.MapOperator.MapOpCtx;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
@@ -458,6 +459,15 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
       throw new IllegalStateException("Invalid input path " + fpath);
     }
     return nominal;
+  }
+
+  /** Kryo ctor. */
+  protected MapOperator() {
+    super();
+  }
+
+  public MapOperator(CompilationOpContext ctx) {
+    super(ctx);
   }
 
   @Override

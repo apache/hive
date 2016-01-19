@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.HashTableLoaderFactory;
 import org.apache.hadoop.hive.ql.exec.HashTableLoader;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
@@ -176,13 +177,18 @@ public abstract class VectorMapJoinCommonOperator extends MapJoinOperator implem
   // The small table hash table for the native vectorized map join operator.
   protected transient VectorMapJoinHashTable vectorMapJoinHashTable;
 
-  public VectorMapJoinCommonOperator() {
+  /** Kryo ctor. */
+  protected VectorMapJoinCommonOperator() {
     super();
   }
 
-  public VectorMapJoinCommonOperator(VectorizationContext vContext, OperatorDesc conf)
-          throws HiveException {
-    super();
+  public VectorMapJoinCommonOperator(CompilationOpContext ctx) {
+    super(ctx);
+  }
+
+  public VectorMapJoinCommonOperator(CompilationOpContext ctx,
+      VectorizationContext vContext, OperatorDesc conf) throws HiveException {
+    super(ctx);
 
     MapJoinDesc desc = (MapJoinDesc) conf;
     this.conf = desc;

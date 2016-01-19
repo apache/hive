@@ -197,7 +197,8 @@ public class SparkReduceSinkMapJoinProc implements NodeProcessor {
 
     // create an new operator: HashTableDummyOperator, which share the table desc
     HashTableDummyDesc desc = new HashTableDummyDesc();
-    HashTableDummyOperator dummyOp = (HashTableDummyOperator) OperatorFactory.get(desc);
+    HashTableDummyOperator dummyOp = (HashTableDummyOperator) OperatorFactory.get(
+        mapJoinOp.getCompilationOpContext(), desc);
     TableDesc tbl;
 
     // need to create the correct table descriptor for key/value
@@ -261,8 +262,8 @@ public class SparkReduceSinkMapJoinProc implements NodeProcessor {
     mjDesc.setHashTableMemoryUsage(hashtableMemoryUsage);
 
     SparkHashTableSinkDesc hashTableSinkDesc = new SparkHashTableSinkDesc(mjDesc);
-    SparkHashTableSinkOperator hashTableSinkOp =
-      (SparkHashTableSinkOperator) OperatorFactory.get(hashTableSinkDesc);
+    SparkHashTableSinkOperator hashTableSinkOp = (SparkHashTableSinkOperator) OperatorFactory.get(
+        mapJoinOp.getCompilationOpContext(), hashTableSinkDesc);
 
     byte tag = (byte) pos;
     int[] valueIndex = mjDesc.getValueIndex(tag);

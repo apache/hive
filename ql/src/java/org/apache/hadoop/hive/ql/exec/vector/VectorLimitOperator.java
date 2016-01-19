@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.LimitOperator;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.LimitDesc;
@@ -30,11 +31,18 @@ public class VectorLimitOperator extends LimitOperator  {
 
   private static final long serialVersionUID = 1L;
 
-  public VectorLimitOperator() {
+  /** Kryo ctor. */
+  protected VectorLimitOperator() {
     super();
   }
 
-  public VectorLimitOperator(VectorizationContext vContext, OperatorDesc conf) {
+  public VectorLimitOperator(CompilationOpContext ctx) {
+    super(ctx);
+  }
+
+  public VectorLimitOperator(
+      CompilationOpContext ctx, VectorizationContext vContext, OperatorDesc conf) {
+    this(ctx);
     this.conf = (LimitDesc) conf;
   }
 

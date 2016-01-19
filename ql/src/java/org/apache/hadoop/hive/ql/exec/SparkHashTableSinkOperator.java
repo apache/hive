@@ -32,6 +32,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinPersistableTableContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainerSerDe;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
@@ -54,8 +55,15 @@ public class SparkHashTableSinkOperator
 
   private final HashTableSinkOperator htsOperator;
 
-  public SparkHashTableSinkOperator() {
-    htsOperator = new HashTableSinkOperator();
+  /** Kryo ctor. */
+  protected SparkHashTableSinkOperator() {
+    super();
+    htsOperator = null; // Kryo will set this; or so we hope.
+  }
+
+  public SparkHashTableSinkOperator(CompilationOpContext ctx) {
+    super(ctx);
+    htsOperator = new HashTableSinkOperator(ctx);
   }
 
   @Override

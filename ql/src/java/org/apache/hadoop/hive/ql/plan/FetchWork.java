@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.TreeMap;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.ListSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
@@ -100,10 +101,10 @@ public class FetchWork implements Serializable {
     this.limit = limit;
   }
 
-  public void initializeForFetch() {
+  public void initializeForFetch(CompilationOpContext ctx) {
     if (source == null) {
       ListSinkDesc desc = new ListSinkDesc(serializationNullFormat);
-      sink = (ListSinkOperator) OperatorFactory.get(desc);
+      sink = (ListSinkOperator) OperatorFactory.get(ctx, desc);
       source = sink;
     }
   }

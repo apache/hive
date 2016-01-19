@@ -121,7 +121,8 @@ public class SimpleFetchAggregation extends Transform {
 
       // Create a file sink operator for this file name
       FileSinkDesc desc = new FileSinkDesc(fileName, tsDesc, false);
-      FileSinkOperator newFS = (FileSinkOperator) OperatorFactory.get(desc, parent.getSchema());
+      FileSinkOperator newFS = (FileSinkOperator) OperatorFactory.get(
+          parent.getCompilationOpContext(), desc, parent.getSchema());
 
       newFS.setParentOperators(new ArrayList<Operator<? extends OperatorDesc>>());
       newFS.getParentOperators().add(parent);

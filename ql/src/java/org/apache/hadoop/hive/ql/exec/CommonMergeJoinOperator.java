@@ -33,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.persistence.RowContainer;
 import org.apache.hadoop.hive.ql.exec.tez.RecordSource;
 import org.apache.hadoop.hive.ql.exec.tez.ReduceRecordSource;
@@ -90,8 +91,13 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
       new ArrayList<Operator<? extends OperatorDesc>>();
   transient Set<Integer> fetchInputAtClose;
 
-  public CommonMergeJoinOperator() {
+  /** Kryo ctor. */
+  protected CommonMergeJoinOperator() {
     super();
+  }
+
+  public CommonMergeJoinOperator(CompilationOpContext ctx) {
+    super(ctx);
   }
 
   @SuppressWarnings("unchecked")

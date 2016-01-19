@@ -30,11 +30,11 @@ import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -67,6 +67,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   public static final String CONTEXT_NAME_KEY = "__hive.context.name";
 
   private transient Configuration configuration;
+  protected transient CompilationOpContext cContext;
   protected List<Operator<? extends OperatorDesc>> childOperators;
   protected List<Operator<? extends OperatorDesc>> parentOperators;
   protected String operatorId;
@@ -74,8 +75,6 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   private transient ExecMapperContext execContext;
   private transient boolean rootInitializeCalled = false;
   protected final transient Collection<Future<?>> asyncInitOperations = new HashSet<>();
-
-  private static AtomicInteger seqId;
 
   // It can be optimized later so that an operator operator (init/close) is performed
   // only after that operation has been performed on all the parents. This will require
@@ -98,38 +97,24 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
 
   protected transient State state = State.UNINIT;
 
-  static {
-    seqId = new AtomicInteger(0);
-  }
-
   private boolean useBucketizedHiveInputFormat;
 
   // dummy operator (for not increasing seqId)
-  private Operator(String name) {
-    id = name;
+  protected Operator(String name, CompilationOpContext cContext) {
+    this();
+    this.cContext = cContext;
+    this.id = name;
     initOperatorId();
+  }
+
+  protected Operator() {
     childOperators = new ArrayList<Operator<? extends OperatorDesc>>();
     parentOperators = new ArrayList<Operator<? extends OperatorDesc>>();
     abortOp = new AtomicBoolean(false);
   }
 
-  public Operator() {
-    this(String.valueOf(seqId.getAndIncrement()));
-  }
-
-  public static void resetId() {
-    seqId.set(0);
-  }
-
-  /**
-   * Create an operator with a reporter.
-   *
-   * @param reporter
-   *          Used to report progress of certain operators.
-   */
-  public Operator(Reporter reporter) {
-    this();
-    this.reporter = reporter;
+  public Operator(CompilationOpContext cContext) {
+    this(String.valueOf(cContext.nextOperatorId()), cContext);
   }
 
   public void setChildOperators(
@@ -228,7 +213,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   protected transient final boolean isLogTraceEnabled = LOG.isTraceEnabled() && PLOG.isTraceEnabled();
   protected transient String alias;
   protected transient Reporter reporter;
-  protected transient String id;
+  protected String id;
   // object inspectors for input rows
   // We will increase the size of the array on demand
   protected transient ObjectInspector[] inputObjInspectors = new ObjectInspector[1];
@@ -1129,8 +1114,8 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     @SuppressWarnings("unchecked")
     T descClone = (T)conf.clone();
     // also clone the colExprMap by default
-    Operator<? extends OperatorDesc> ret =
-        OperatorFactory.getAndMakeChild(descClone, getSchema(), getColumnExprMap(), parentClones);
+    Operator<? extends OperatorDesc> ret = OperatorFactory.getAndMakeChild(
+            cContext, descClone, getSchema(), getColumnExprMap(), parentClones);
 
     return ret;
   }
@@ -1145,8 +1130,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   public Operator<? extends OperatorDesc> cloneOp() throws CloneNotSupportedException {
     T descClone = (T) conf.clone();
     Operator<? extends OperatorDesc> ret =
-        OperatorFactory.getAndMakeChild(
-        descClone, getSchema());
+        OperatorFactory.getAndMakeChild(cContext, descClone, getSchema());
     return ret;
   }
 
@@ -1355,7 +1339,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
 
   @SuppressWarnings({ "serial", "unchecked", "rawtypes" })
   private static class DummyOperator extends Operator {
-    public DummyOperator() { super("dummy"); }
+    public DummyOperator() { super("dummy", null); }
 
     @Override
     public void process(Object row, int tag) {
@@ -1383,5 +1367,14 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
 
   public String getReduceOutputName() {
     return null;
+  }
+
+  public void setCompilationOpContext(CompilationOpContext ctx) {
+    cContext = ctx;
+  }
+
+  /** @return Compilation operator context. Only available during compilation. */
+  public CompilationOpContext getCompilationOpContext() {
+    return cContext;
   }
 }

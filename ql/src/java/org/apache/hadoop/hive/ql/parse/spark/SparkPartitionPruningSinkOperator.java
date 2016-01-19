@@ -30,6 +30,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -52,6 +53,15 @@ public class SparkPartitionPruningSinkOperator extends Operator<SparkPartitionPr
   protected transient Serializer serializer;
   protected transient DataOutputBuffer buffer;
   protected static final Logger LOG = LoggerFactory.getLogger(SparkPartitionPruningSinkOperator.class);
+
+  /** Kryo ctor. */
+  protected SparkPartitionPruningSinkOperator() {
+    super();
+  }
+
+  public SparkPartitionPruningSinkOperator(CompilationOpContext ctx) {
+    super(ctx);
+  }
 
   @SuppressWarnings("deprecation")
   public void initializeOp(Configuration hconf) throws HiveException {

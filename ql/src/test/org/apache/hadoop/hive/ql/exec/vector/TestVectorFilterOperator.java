@@ -24,6 +24,7 @@ import java.util.List;
 import junit.framework.Assert;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterExprAndExpr;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColEqualDoubleScalar;
@@ -91,7 +92,7 @@ public class TestVectorFilterOperator {
     VectorizationContext vc = new VectorizationContext("name", columns);
     FilterDesc fdesc = new FilterDesc();
     fdesc.setPredicate(col1Expr);
-    return new VectorFilterOperator(vc, fdesc);
+    return new VectorFilterOperator(new CompilationOpContext(), vc, fdesc);
   }
 
   @Test

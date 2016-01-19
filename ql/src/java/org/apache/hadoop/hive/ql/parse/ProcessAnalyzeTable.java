@@ -190,7 +190,8 @@ public class ProcessAnalyzeTable implements NodeProcessor {
     // partial scan task
     DriverContext driverCxt = new DriverContext();
     Task<PartialScanWork> partialScanTask = TaskFactory.get(scanWork, parseContext.getConf());
-    partialScanTask.initialize(parseContext.getConf(), null, driverCxt);
+    partialScanTask.initialize(parseContext.getConf(), null, driverCxt,
+        tableScan.getCompilationOpContext());
     partialScanTask.setWork(scanWork);
     statsWork.setSourceTask(partialScanTask);
 

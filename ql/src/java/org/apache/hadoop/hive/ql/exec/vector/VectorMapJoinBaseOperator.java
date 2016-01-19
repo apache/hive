@@ -26,6 +26,7 @@ import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.persistence.HybridHashTableContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
@@ -64,13 +65,18 @@ public class VectorMapJoinBaseOperator extends MapJoinOperator implements Vector
 
   protected transient int tag;  // big table alias
 
-  public VectorMapJoinBaseOperator() {
+  /** Kryo ctor. */
+  protected VectorMapJoinBaseOperator() {
     super();
   }
 
-  public VectorMapJoinBaseOperator (VectorizationContext vContext, OperatorDesc conf)
-    throws HiveException {
-    super();
+  public VectorMapJoinBaseOperator(CompilationOpContext ctx) {
+    super(ctx);
+  }
+
+  public VectorMapJoinBaseOperator(CompilationOpContext ctx,
+      VectorizationContext vContext, OperatorDesc conf) throws HiveException {
+    super(ctx);
 
     MapJoinDesc desc = (MapJoinDesc) conf;
     this.conf = desc;

@@ -26,6 +26,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.FileMergeDesc;
@@ -60,6 +61,15 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
   protected boolean tmpPathFixed;
   protected Set<Path> incompatFileSet;
   protected transient DynamicPartitionCtx dpCtx;
+
+  /** Kryo ctor. */
+  protected AbstractFileMergeOperator() {
+    super();
+  }
+
+  public AbstractFileMergeOperator(CompilationOpContext ctx) {
+    super(ctx);
+  }
 
   @Override
   public void initializeOp(Configuration hconf) throws HiveException {
