@@ -1911,6 +1911,9 @@ public class Vectorizer implements PhysicalPlanResolver {
 
   private boolean onExpressionHasNullSafes(MapJoinDesc desc) {
     boolean[] nullSafes = desc.getNullSafes();
+    if (nullSafes == null) {
+	return false;
+    }
     for (boolean nullSafe : nullSafes) {
       if (nullSafe) {
         return true;
