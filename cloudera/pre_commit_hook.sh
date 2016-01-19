@@ -60,7 +60,7 @@ function get_regex_excluded_tests() {
 
 # For pre-commit, we just look for qtests edited in the last commit
 function get_qtests_to_execute() {
-  git diff --name-only HEAD~1 | grep ".q$\|.q.out$" | paste -s -d"," -
+  git diff --name-only --diff-filter=ACMRT HEAD~1 | grep ".q$\|.q.out$" | paste -s -d"," -
 }
 
 regex_tests=`get_regex_excluded_tests`
