@@ -38,10 +38,10 @@ import org.apache.hadoop.hive.ql.exec.RowSchema;
  */
 public class RowResolver implements Serializable{
   private static final long serialVersionUID = 1L;
-  private  RowSchema rowSchema;
-  private  HashMap<String, LinkedHashMap<String, ColumnInfo>> rslvMap;
+  private RowSchema rowSchema;
+  private LinkedHashMap<String, LinkedHashMap<String, ColumnInfo>> rslvMap;
 
-  private  HashMap<String, String[]> invRslvMap;
+  private HashMap<String, String[]> invRslvMap;
   /*
    * now a Column can have an alternate mapping.
    * This captures the alternate mapping.
@@ -58,7 +58,7 @@ public class RowResolver implements Serializable{
 
   public RowResolver() {
     rowSchema = new RowSchema();
-    rslvMap = new HashMap<String, LinkedHashMap<String, ColumnInfo>>();
+    rslvMap = new LinkedHashMap<String, LinkedHashMap<String, ColumnInfo>>();
     invRslvMap = new HashMap<String, String[]>();
     altInvRslvMap = new HashMap<String, String[]>();
     expressionMap = new HashMap<String, ASTNode>();
@@ -315,12 +315,8 @@ public class RowResolver implements Serializable{
     return rowSchema;
   }
 
-  public HashMap<String, LinkedHashMap<String, ColumnInfo>> getRslvMap() {
+  public LinkedHashMap<String, LinkedHashMap<String, ColumnInfo>> getRslvMap() {
     return rslvMap;
-  }
-
-  public HashMap<String, String[]> getInvRslvMap() {
-    return invRslvMap;
   }
 
   public Map<String, ASTNode> getExpressionMap() {
@@ -331,17 +327,12 @@ public class RowResolver implements Serializable{
     this.isExprResolver = isExprResolver;
   }
 
+  public boolean doesInvRslvMapContain(String column) {
+    return getInvRslvMap().containsKey(column);
+  }
 
   public void setRowSchema(RowSchema rowSchema) {
     this.rowSchema = rowSchema;
-  }
-
-  public void setRslvMap(HashMap<String, LinkedHashMap<String, ColumnInfo>> rslvMap) {
-    this.rslvMap = rslvMap;
-  }
-
-  public void setInvRslvMap(HashMap<String, String[]> invRslvMap) {
-    this.invRslvMap = invRslvMap;
   }
 
   public void setExpressionMap(Map<String, ASTNode> expressionMap) {
@@ -473,5 +464,9 @@ public class RowResolver implements Serializable{
     resolver.expressionMap.putAll(expressionMap);
     resolver.isExprResolver = isExprResolver;
     return resolver;
+  }
+
+  private HashMap<String, String[]> getInvRslvMap() {
+    return invRslvMap; // If making this public, note that its ordering is undefined.
   }
 }

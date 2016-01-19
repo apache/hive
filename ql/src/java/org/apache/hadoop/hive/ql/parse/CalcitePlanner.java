@@ -2938,6 +2938,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
             ExprNodeColumnDesc colExp = (ExprNodeColumnDesc) exp;
             String[] altMapping = inputRR.getAlternateMappings(colExp.getColumn());
             if (altMapping != null) {
+              // TODO: this can overwrite the mapping. Should this be allowed?
               out_rwsch.put(altMapping[0], altMapping[1], colInfo);
             }
           }
