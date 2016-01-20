@@ -290,3 +290,21 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
 NULL
+PREHOOK: query: select sum(hash(*)) from newtypesorc where ts between cast('2010-10-01' as timestamp) and cast('2010-11-01' as timestamp)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@newtypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(hash(*)) from newtypesorc where ts between cast('2010-10-01' as timestamp) and cast('2010-11-01' as timestamp)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@newtypesorc
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: select sum(hash(*)) from newtypesorc where ts between cast('2010-10-01' as timestamp) and cast('2010-11-01' as timestamp)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@newtypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(hash(*)) from newtypesorc where ts between cast('2010-10-01' as timestamp) and cast('2010-11-01' as timestamp)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@newtypesorc
+#### A masked pattern was here ####
+NULL

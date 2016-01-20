@@ -95,3 +95,9 @@ select sum(hash(*)) from newtypesorc where ts between cast('2010-10-01 01:01:01'
 
 set hive.optimize.index.filter=true;
 select sum(hash(*)) from newtypesorc where ts between cast('2010-10-01 01:01:01' as timestamp) and cast('2010-11-01 01:01:01' as timestamp);
+
+set hive.optimize.index.filter=false;
+select sum(hash(*)) from newtypesorc where ts between cast('2010-10-01' as timestamp) and cast('2010-11-01' as timestamp);
+
+set hive.optimize.index.filter=true;
+select sum(hash(*)) from newtypesorc where ts between cast('2010-10-01' as timestamp) and cast('2010-11-01' as timestamp);
