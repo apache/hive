@@ -87,6 +87,7 @@ import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDeStats;
@@ -2090,12 +2091,13 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     }
 
     if (haveSchemaEvolutionProperties) {
-      LOG.info("Using schema evolution configuration variables schema.evolution.columns " +
-          schemaEvolutionColumnNames.toString() +
-          " / schema.evolution.columns.types " +
-          schemaEvolutionTypeDescrs.toString() +
-          " (isAcid " + isAcid + ")");
-
+      if (LOG.isInfoEnabled()) {
+        LOG.info("Using schema evolution configuration variables schema.evolution.columns " +
+            schemaEvolutionColumnNames.toString() +
+            " / schema.evolution.columns.types " +
+            schemaEvolutionTypeDescrs.toString() +
+            " (isAcid " + isAcid + ")");
+      }
     } else {
 
       // Try regular properties;
@@ -2114,11 +2116,30 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       if (schemaEvolutionTypeDescrs.size() != schemaEvolutionColumnNames.size()) {
         return null;
       }
-      LOG.info("Using column configuration variables columns " +
-              schemaEvolutionColumnNames.toString() +
-              " / columns.types " +
-              schemaEvolutionTypeDescrs.toString() +
-              " (isAcid " + isAcid + ")");
+
+      // Find first virtual column and clip them off.
+      int virtualColumnClipNum = -1;
+      int columnNum = 0;
+      for (String columnName : schemaEvolutionColumnNames) {
+        if (VirtualColumn.VIRTUAL_COLUMN_NAMES.contains(columnName)) {
+          virtualColumnClipNum = columnNum;
+          break;
+        }
+        columnNum++;
+      }
+      if (virtualColumnClipNum != -1) {
+        schemaEvolutionColumnNames =
+            Lists.newArrayList(schemaEvolutionColumnNames.subList(0, virtualColumnClipNum));
+        schemaEvolutionTypeDescrs = Lists.newArrayList(schemaEvolutionTypeDescrs.subList(0, virtualColumnClipNum));
+      }
+
+      if (LOG.isInfoEnabled()) {
+        LOG.info("Using column configuration variables columns " +
+                schemaEvolutionColumnNames.toString() +
+                " / columns.types " +
+                schemaEvolutionTypeDescrs.toString() +
+                " (isAcid " + isAcid + ")");
+      }
     }
 
     // Desired schema does not include virtual columns or partition columns.

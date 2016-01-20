@@ -2036,7 +2036,7 @@ public class TreeReaderFactory {
   }
 
   protected static class StructTreeReader extends TreeReader {
-    private final int fileColumnCount;
+    private final int readColumnCount;
     private final int resultColumnCount;
     protected final TreeReader[] fields;
     private final String[] fieldNames;
@@ -2049,30 +2049,31 @@ public class TreeReaderFactory {
       super(columnId);
 
       OrcProto.Type fileStructType = treeReaderSchema.getFileTypes().get(columnId);
-      fileColumnCount = fileStructType.getFieldNamesCount();
 
       OrcProto.Type schemaStructType = treeReaderSchema.getSchemaTypes().get(columnId);
+
+      readColumnCount = Math.min(fileStructType.getFieldNamesCount(), schemaStructType.getFieldNamesCount());
 
       if (columnId == treeReaderSchema.getInnerStructSubtype()) {
         // If there are more result columns than reader columns, we will default those additional
         // columns to NULL.
         resultColumnCount = schemaStructType.getFieldNamesCount();
       } else {
-        resultColumnCount = fileColumnCount;
+        resultColumnCount = readColumnCount;
       }
 
-      this.fields = new TreeReader[fileColumnCount];
-      this.fieldNames = new String[fileColumnCount];
+      this.fields = new TreeReader[readColumnCount];
+      this.fieldNames = new String[readColumnCount];
 
       if (included == null) {
-        for (int i = 0; i < fileColumnCount; ++i) {
+        for (int i = 0; i < readColumnCount; ++i) {
           int subtype = schemaStructType.getSubtypes(i);
           this.fields[i] = createTreeReader(subtype, treeReaderSchema, included, skipCorrupt);
           // Use the treeReaderSchema evolution name since file/reader types may not have the real column name.
           this.fieldNames[i] = schemaStructType.getFieldNames(i);
         }
       } else {
-        for (int i = 0; i < fileColumnCount; ++i) {
+        for (int i = 0; i < readColumnCount; ++i) {
           int subtype = schemaStructType.getSubtypes(i);
           if (subtype >= included.length) {
             throw new IOException("subtype " + subtype + " exceeds the included array size " +
@@ -2116,13 +2117,13 @@ public class TreeReaderFactory {
             result.setNumFields(resultColumnCount);
           }
         }
-        for (int i = 0; i < fileColumnCount; ++i) {
+        for (int i = 0; i < readColumnCount; ++i) {
           if (fields[i] != null) {
             result.setFieldValue(i, fields[i].next(result.getFieldValue(i)));
           }
         }
-        if (resultColumnCount > fileColumnCount) {
-          for (int i = fileColumnCount; i < resultColumnCount; ++i) {
+        if (resultColumnCount > readColumnCount) {
+          for (int i = readColumnCount; i < resultColumnCount; ++i) {
             // Default new treeReaderSchema evolution fields to NULL.
             result.setFieldValue(i, null);
           }
@@ -2135,13 +2136,13 @@ public class TreeReaderFactory {
     public Object nextVector(Object previousVector, long batchSize) throws IOException {
       final ColumnVector[] result;
       if (previousVector == null) {
-        result = new ColumnVector[fileColumnCount];
+        result = new ColumnVector[readColumnCount];
       } else {
         result = (ColumnVector[]) previousVector;
       }
 
       // Read all the members of struct as column vectors
-      for (int i = 0; i < fileColumnCount; i++) {
+      for (int i = 0; i < readColumnCount; i++) {
         if (fields[i] != null) {
           if (result[i] == null) {
             result[i] = (ColumnVector) fields[i].nextVector(null, batchSize);
@@ -2152,8 +2153,8 @@ public class TreeReaderFactory {
       }
 
       // Default additional treeReaderSchema evolution fields to NULL.
-      if (vectorColumnCount != -1 && vectorColumnCount > fileColumnCount) {
-        for (int i = fileColumnCount; i < vectorColumnCount; ++i) {
+      if (vectorColumnCount != -1 && vectorColumnCount > readColumnCount) {
+        for (int i = readColumnCount; i < vectorColumnCount; ++i) {
           ColumnVector colVector = result[i];
           if (colVector != null) {
             colVector.isRepeating = true;

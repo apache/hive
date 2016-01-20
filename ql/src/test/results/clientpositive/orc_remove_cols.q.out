@@ -1,0 +1,94 @@
+PREHOOK: query: CREATE TABLE orc_partitioned(a INT, b STRING) partitioned by (ds string) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_partitioned
+POSTHOOK: query: CREATE TABLE orc_partitioned(a INT, b STRING) partitioned by (ds string) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_partitioned
+PREHOOK: query: insert into table orc_partitioned partition (ds = 'today') select cint, cstring1 from alltypesorc where cint is not null order by cint limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@orc_partitioned@ds=today
+POSTHOOK: query: insert into table orc_partitioned partition (ds = 'today') select cint, cstring1 from alltypesorc where cint is not null order by cint limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@orc_partitioned@ds=today
+POSTHOOK: Lineage: orc_partitioned PARTITION(ds=today).a SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_partitioned PARTITION(ds=today).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+PREHOOK: query: insert into table orc_partitioned partition (ds = 'tomorrow') select cint, cstring1 from alltypesorc where cint is not null order by cint limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@orc_partitioned@ds=tomorrow
+POSTHOOK: query: insert into table orc_partitioned partition (ds = 'tomorrow') select cint, cstring1 from alltypesorc where cint is not null order by cint limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@orc_partitioned@ds=tomorrow
+POSTHOOK: Lineage: orc_partitioned PARTITION(ds=tomorrow).a SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_partitioned PARTITION(ds=tomorrow).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+PREHOOK: query: -- Use the old change the SERDE trick to avoid ORC DDL checks... and remove a column on the end.
+ALTER TABLE orc_partitioned SET SERDE 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
+PREHOOK: type: ALTERTABLE_SERIALIZER
+PREHOOK: Input: default@orc_partitioned
+PREHOOK: Output: default@orc_partitioned
+POSTHOOK: query: -- Use the old change the SERDE trick to avoid ORC DDL checks... and remove a column on the end.
+ALTER TABLE orc_partitioned SET SERDE 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
+POSTHOOK: type: ALTERTABLE_SERIALIZER
+POSTHOOK: Input: default@orc_partitioned
+POSTHOOK: Output: default@orc_partitioned
+PREHOOK: query: ALTER TABLE orc_partitioned REPLACE COLUMNS (cint int)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@orc_partitioned
+PREHOOK: Output: default@orc_partitioned
+POSTHOOK: query: ALTER TABLE orc_partitioned REPLACE COLUMNS (cint int)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@orc_partitioned
+POSTHOOK: Output: default@orc_partitioned
+PREHOOK: query: ALTER TABLE orc_partitioned SET SERDE 'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
+PREHOOK: type: ALTERTABLE_SERIALIZER
+PREHOOK: Input: default@orc_partitioned
+PREHOOK: Output: default@orc_partitioned
+POSTHOOK: query: ALTER TABLE orc_partitioned SET SERDE 'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
+POSTHOOK: type: ALTERTABLE_SERIALIZER
+POSTHOOK: Input: default@orc_partitioned
+POSTHOOK: Output: default@orc_partitioned
+PREHOOK: query: SELECT * FROM orc_partitioned WHERE ds = 'today'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_partitioned
+PREHOOK: Input: default@orc_partitioned@ds=today
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM orc_partitioned WHERE ds = 'today'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_partitioned
+POSTHOOK: Input: default@orc_partitioned@ds=today
+#### A masked pattern was here ####
+-1073279343	today
+-1073051226	today
+-1072910839	today
+-1072081801	today
+-1072076362	today
+-1071480828	today
+-1071363017	today
+-1070883071	today
+-1070551679	today
+-1069736047	today
+PREHOOK: query: SELECT * FROM orc_partitioned WHERE ds = 'tomorrow'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_partitioned
+PREHOOK: Input: default@orc_partitioned@ds=tomorrow
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM orc_partitioned WHERE ds = 'tomorrow'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_partitioned
+POSTHOOK: Input: default@orc_partitioned@ds=tomorrow
+#### A masked pattern was here ####
+-1073279343	tomorrow
+-1073051226	tomorrow
+-1072910839	tomorrow
+-1072081801	tomorrow
+-1072076362	tomorrow
+-1071480828	tomorrow
+-1071363017	tomorrow
+-1070883071	tomorrow
+-1070551679	tomorrow
+-1069736047	tomorrow

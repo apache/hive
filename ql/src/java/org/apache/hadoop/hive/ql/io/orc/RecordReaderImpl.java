@@ -154,6 +154,9 @@ public class RecordReaderImpl implements RecordReader {
 
     TreeReaderFactory.TreeReaderSchema treeReaderSchema;
     if (options.getSchema() == null) {
+      if (LOG.isInfoEnabled()) {
+        LOG.info("Schema on read not provided -- using file schema " + types.toString());
+      }
       treeReaderSchema = new TreeReaderFactory.TreeReaderSchema().fileTypes(types).schemaTypes(types);
     } else {
 
@@ -901,7 +904,7 @@ public class RecordReaderImpl implements RecordReader {
       // since stream kind is optional, first check if it exists
       if (stream.hasKind() &&
           (StreamName.getArea(streamKind) == StreamName.Area.DATA) &&
-          includedColumns[column]) {
+          (column < includedColumns.length && includedColumns[column])) {
         // if we aren't filtering or it is a dictionary, load it.
         if (includedRowGroups == null
             || RecordReaderUtils.isDictionary(streamKind, encodings.get(column))) {
@@ -926,7 +929,8 @@ public class RecordReaderImpl implements RecordReader {
     long streamOffset = 0;
     for (OrcProto.Stream streamDesc : streamDescriptions) {
       int column = streamDesc.getColumn();
-      if ((includeColumn != null && !includeColumn[column]) ||
+      if ((includeColumn != null &&
+          (column < included.length && !includeColumn[column])) ||
           streamDesc.hasKind() &&
               (StreamName.getArea(streamDesc.getKind()) != StreamName.Area.DATA)) {
         streamOffset += streamDesc.getLength();
