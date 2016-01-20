@@ -327,12 +327,20 @@ public class TestHBaseStoreCached {
   // each stat type separately.  We'll test them together in hte integration tests.
   @Test
   public void booleanTableStatistics() throws Exception {
-    // Because of the way our mock implementation works we actually need to not create the table
-    // before we set statistics on it.
     long now = System.currentTimeMillis();
     String dbname = "default";
     String tableName = "statstable";
     String boolcol = "boolcol";
+    int startTime = (int)(System.currentTimeMillis() / 1000);
+    List<FieldSchema> cols = new ArrayList<FieldSchema>();
+    cols.add(new FieldSchema(boolcol, "boolean", "nocomment"));
+    SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
+    StorageDescriptor sd = new StorageDescriptor(cols, "file:/tmp", "input", "output", false, 0,
+        serde, null, null, emptyParameters);
+    Table table = new Table(tableName, dbname, "me", startTime, startTime, 0, sd, null,
+        emptyParameters, null, null, null);
+    store.createTable(table);
+
     long trues = 37;
     long falses = 12;
     long booleanNulls = 2;

@@ -820,6 +820,7 @@ public class TestHBaseStore {
 
   @Test
   public void longTableStatistics() throws Exception {
+    createMockTable(LONG_TYPE);
     // Add a long table stats for LONG_COL to DB
     // Because of the way our mock implementation works we actually need to not create the table
     // before we set statistics on it.
@@ -856,6 +857,7 @@ public class TestHBaseStore {
 
   @Test
   public void doubleTableStatistics() throws Exception {
+    createMockTable(DOUBLE_TYPE);
     // Add a double table stats for DOUBLE_COL to DB
     // Because of the way our mock implementation works we actually need to not create the table
     // before we set statistics on it.
@@ -892,6 +894,7 @@ public class TestHBaseStore {
 
   @Test
   public void stringTableStatistics() throws Exception {
+    createMockTable(STRING_TYPE);
     // Add a string table stats for STRING_COL to DB
     // Because of the way our mock implementation works we actually need to not create the table
     // before we set statistics on it.
@@ -928,6 +931,7 @@ public class TestHBaseStore {
 
   @Test
   public void binaryTableStatistics() throws Exception {
+    createMockTable(BINARY_TYPE);
     // Add a binary table stats for BINARY_COL to DB
     // Because of the way our mock implementation works we actually need to not create the table
     // before we set statistics on it.
@@ -963,6 +967,7 @@ public class TestHBaseStore {
 
   @Test
   public void decimalTableStatistics() throws Exception {
+    createMockTable(DECIMAL_TYPE);
     // Add a decimal table stats for DECIMAL_COL to DB
     // Because of the way our mock implementation works we actually need to not create the table
     // before we set statistics on it.
@@ -1276,6 +1281,21 @@ public class TestHBaseStore {
     Partition part = new Partition(vals, DB, TBL, currentTime, currentTime, sd,
         emptyParameters);
     store.addPartition(part);
+    return table;
+  }
+
+  private Table createMockTable(String type) throws Exception {
+    List<FieldSchema> cols = new ArrayList<FieldSchema>();
+    cols.add(new FieldSchema("col1", type, ""));
+    SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
+    Map<String, String> params = new HashMap<String, String>();
+    params.put("key", "value");
+    StorageDescriptor sd = new StorageDescriptor(cols, "file:/tmp", "input", "output", false, 17,
+        serde, Arrays.asList("bucketcol"), Arrays.asList(new Order("sortcol", 1)), params);
+    int currentTime = (int)(System.currentTimeMillis() / 1000);
+    Table table = new Table(TBL, DB, "me", currentTime, currentTime, 0, sd, cols,
+        emptyParameters, null, null, null);
+    store.createTable(table);
     return table;
   }
   /**

@@ -1667,7 +1667,12 @@ public class TestHBaseStoreIntegration extends HBaseIntegrationTests {
     Table table = new Table(tableName, dbname, "me", (int)now / 1000, (int)now / 1000, 0, sd, partCols,
         emptyParameters, null, null, null);
     store.createTable(table);
-
+    for (String partVal : partVals) {
+      Partition part = new Partition(Arrays.asList(partVal), dbname, tableName, (int) now / 1000,
+          (int) now / 1000, sd, emptyParameters);
+      store.addPartition(part);
+    }
+    
     for (int i = 0; i < partNames.length; i++) {
       ColumnStatistics stats = new ColumnStatistics();
       ColumnStatisticsDesc desc = new ColumnStatisticsDesc();

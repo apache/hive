@@ -464,7 +464,7 @@ public class TestHBaseSchemaTool extends HBaseIntegrationTests {
     Assert.assertEquals("{\"tableName\":\"tab0\",\"dbName\":\"db0\",\"owner\":\"me\"," +
         "\"createTime\":0,\"lastAccessTime\":0,\"retention\":0," +
         "\"partitionKeys\":[{\"name\":\"pcol1\",\"type\":\"string\",\"comment\":\"\"}," +
-        "{\"name\":\"pcol2\",\"type\":\"string\",\"comment\":\"\"}],\"parameters\":{}," +
+        "{\"name\":\"pcol2\",\"type\":\"string\",\"comment\":\"\"}],\"parameters\":{\"COLUMN_STATS_ACCURATE\":\"{\\\"COLUMN_STATS\\\":{\\\"col1\\\":\\\"true\\\",\\\"col2\\\":\\\"true\\\"}}\"}," +
             "\"tableType\":\"\"} sdHash: qQTgZAi5VzgpozzFGmIVTQ stats: column " +
             "col1: {\"colName\":\"col1\",\"colType\":\"int\"," +
             "\"statsData\":{\"longStats\":{\"lowValue\":-95,\"highValue\":95,\"numNulls\":1," +
@@ -516,7 +516,7 @@ public class TestHBaseSchemaTool extends HBaseIntegrationTests {
     out = new PrintStream(outStr);
     tool.go(false, HBaseReadWrite.PART_TABLE, "db0.tab1.c.d", null, conf, out, err);
     Assert.assertEquals("{\"values\":[\"c\",\"d\"],\"dbName\":\"db0\",\"tableName\":\"tab1\"," +
-        "\"createTime\":0,\"lastAccessTime\":0,\"parameters\":{}} sdHash: qQTgZAi5VzgpozzFGmIVTQ " +
+        "\"createTime\":0,\"lastAccessTime\":0,\"parameters\":{\"COLUMN_STATS_ACCURATE\":\"{\\\"COLUMN_STATS\\\":{\\\"col1\\\":\\\"true\\\",\\\"col2\\\":\\\"true\\\"}}\"}} sdHash: qQTgZAi5VzgpozzFGmIVTQ " +
         "stats: column col1: {\"colName\":\"col1\",\"colType\":\"int\"," +
         "\"statsData\":{\"longStats\":{\"lowValue\":-95,\"highValue\":95,\"numNulls\":1," +
         "\"numDVs\":2}}} column col2: {\"colName\":\"col2\",\"colType\":\"varchar(32)\"," +
@@ -530,7 +530,7 @@ public class TestHBaseSchemaTool extends HBaseIntegrationTests {
         "\"createTime\":0,\"lastAccessTime\":0,\"parameters\":{}} sdHash: qQTgZAi5VzgpozzFGmIVTQ " +
         "stats:" + lsep +
         "{\"values\":[\"c\",\"d\"],\"dbName\":\"db0\",\"tableName\":\"tab1\",\"createTime\":0," +
-        "\"lastAccessTime\":0,\"parameters\":{}} sdHash: qQTgZAi5VzgpozzFGmIVTQ stats: column " +
+        "\"lastAccessTime\":0,\"parameters\":{\"COLUMN_STATS_ACCURATE\":\"{\\\"COLUMN_STATS\\\":{\\\"col1\\\":\\\"true\\\",\\\"col2\\\":\\\"true\\\"}}\"}} sdHash: qQTgZAi5VzgpozzFGmIVTQ stats: column " +
         "col1: {\"colName\":\"col1\",\"colType\":\"int\"," +
         "\"statsData\":{\"longStats\":{\"lowValue\":-95,\"highValue\":95,\"numNulls\":1," +
         "\"numDVs\":2}}} column col2: {\"colName\":\"col2\",\"colType\":\"varchar(32)\"," +
