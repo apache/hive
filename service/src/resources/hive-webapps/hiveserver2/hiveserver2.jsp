@@ -19,6 +19,8 @@
 --%>
 <%@ page contentType="text/html;charset=UTF-8"
   import="org.apache.hadoop.conf.Configuration"
+  import="org.apache.hadoop.hive.conf.HiveConf"
+  import="org.apache.hadoop.hive.conf.HiveConf.ConfVars"
   import="org.apache.hive.common.util.HiveVersionInfo"
   import="org.apache.hive.service.cli.operation.Operation"
   import="org.apache.hive.service.cli.operation.SQLOperation"
@@ -126,6 +128,7 @@ for (HiveSession hiveSession: hiveSessions) {
     <tr>
         <th>User Name</th>
         <th>Query</th>
+        <th>Execution Engine</th>
         <th>State</th>
         <th>Elapsed Time (s)</th>
     </tr>
@@ -140,6 +143,7 @@ for (Operation operation: operations) {
     <tr>
         <td><%= query.getParentSession().getUserName() %></td>
         <td><%= query.getQueryStr() %></td>
+        <td><%= query.getConfigForOperation().getVar(ConfVars.HIVE_EXECUTION_ENGINE) %>
         <td><%= query.getStatus().getState() %></td>
         <td><%= (currentTime - query.getLastAccessTime())/1000 %></td>
     </tr>
@@ -148,7 +152,7 @@ for (Operation operation: operations) {
 }
 %>
 <tr>
-  <td colspan="4">Total number of queries: <%= queries %></td>
+  <td colspan="5">Total number of queries: <%= queries %></td>
 </tr>
 </table>
 </section>

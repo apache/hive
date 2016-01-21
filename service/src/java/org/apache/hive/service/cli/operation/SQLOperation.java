@@ -462,7 +462,7 @@ public class SQLOperation extends ExecuteStatementOperation {
    * @return new configuration
    * @throws HiveSQLException
    */
-  private HiveConf getConfigForOperation() throws HiveSQLException {
+  public HiveConf getConfigForOperation() throws HiveSQLException {
     HiveConf sqlOperationConf = getParentSession().getHiveConf();
     if (!confOverlay.isEmpty() || shouldRunAsync()) {
       // clone the partent session config for this query
