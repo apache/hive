@@ -1611,7 +1611,7 @@ public class MetaStoreUtils {
   }
 
 
-  private static String getPartitionValWithInvalidCharacter(List<String> partVals,
+  public static String getPartitionValWithInvalidCharacter(List<String> partVals,
       Pattern partitionValidationPattern) {
     if (partitionValidationPattern == null) {
       return null;
