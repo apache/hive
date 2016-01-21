@@ -513,7 +513,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   private void validateFileMetadata() throws IOException {
     if (fileMetadata.getCompressionKind() == CompressionKind.NONE) return;
     int bufferSize = fileMetadata.getCompressionBufferSize();
-    int minAllocSize = HiveConf.getIntVar(conf, HiveConf.ConfVars.LLAP_ALLOCATOR_MIN_ALLOC);
+    long minAllocSize = HiveConf.getSizeVar(conf, ConfVars.LLAP_ALLOCATOR_MIN_ALLOC);
     if (bufferSize < minAllocSize) {
       LOG.warn("ORC compression buffer size (" + bufferSize + ") is smaller than LLAP low-level "
             + "cache minimum allocation size (" + minAllocSize + "). Decrease the value for "

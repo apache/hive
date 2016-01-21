@@ -17,10 +17,10 @@
  */
 package org.apache.hadoop.hive.llap.cache;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -44,13 +44,23 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
   // We don't know the acceptable size for Java array, so we'll use 1Gb boundary.
   // That is guaranteed to fit any maximum allocation.
   private static final int MAX_ARENA_SIZE = 1024*1024*1024;
-  public BuddyAllocator(Configuration conf, MemoryManager memoryManager,
-      LlapDaemonCacheMetrics metrics) {
-    isDirect = HiveConf.getBoolVar(conf, ConfVars.LLAP_ALLOCATOR_DIRECT);
-    minAllocation = HiveConf.getIntVar(conf, ConfVars.LLAP_ALLOCATOR_MIN_ALLOC);
-    maxAllocation = HiveConf.getIntVar(conf, ConfVars.LLAP_ALLOCATOR_MAX_ALLOC);
-    int arenaCount = HiveConf.getIntVar(conf, ConfVars.LLAP_ALLOCATOR_ARENA_COUNT);
-    long maxSizeVal = HiveConf.getLongVar(conf, ConfVars.LLAP_IO_MEMORY_MAX_SIZE);
+
+
+  public BuddyAllocator(Configuration conf, MemoryManager mm, LlapDaemonCacheMetrics metrics) {
+    this(HiveConf.getBoolVar(conf, ConfVars.LLAP_ALLOCATOR_DIRECT),
+        (int)HiveConf.getSizeVar(conf, ConfVars.LLAP_ALLOCATOR_MIN_ALLOC),
+        (int)HiveConf.getSizeVar(conf, ConfVars.LLAP_ALLOCATOR_MAX_ALLOC),
+        HiveConf.getIntVar(conf, ConfVars.LLAP_ALLOCATOR_ARENA_COUNT),
+        HiveConf.getSizeVar(conf, ConfVars.LLAP_IO_MEMORY_MAX_SIZE),
+        mm, metrics);
+  }
+
+  @VisibleForTesting
+  public BuddyAllocator(boolean isDirectVal, int minAllocVal, int maxAllocVal, int arenaCount,
+      long maxSizeVal, MemoryManager memoryManager, LlapDaemonCacheMetrics metrics) {
+    isDirect = isDirectVal;
+    minAllocation = minAllocVal;
+    maxAllocation = maxAllocVal;
     int arenaSizeVal = (arenaCount == 0) ? MAX_ARENA_SIZE : (int)(maxSizeVal / arenaCount);
     arenaSizeVal = Math.max(maxAllocation, Math.min(arenaSizeVal, MAX_ARENA_SIZE));
     if (LlapIoImpl.LOG.isInfoEnabled()) {
@@ -60,7 +70,7 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
     }
 
     if (minAllocation < 8) {
-      throw new AssertionError("Min allocation must be at least 8: " + minAllocation);
+      throw new AssertionError("Min allocation must be at least 8 bytes: " + minAllocation);
     }
     if (maxSizeVal < arenaSizeVal || maxAllocation < minAllocation) {
       throw new AssertionError("Inconsistent sizes of cache, arena and allocations: "

@@ -18,9 +18,9 @@
 
 package org.apache.hadoop.hive.llap.cache;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -67,8 +67,12 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
   private LlapOomDebugDump parentDebugDump;
 
   public LowLevelLrfuCachePolicy(Configuration conf) {
-    long maxSize = HiveConf.getLongVar(conf, ConfVars.LLAP_IO_MEMORY_MAX_SIZE);
-    int minBufferSize = HiveConf.getIntVar(conf, ConfVars.LLAP_ALLOCATOR_MIN_ALLOC);
+    this((int)HiveConf.getSizeVar(conf, ConfVars.LLAP_ALLOCATOR_MIN_ALLOC),
+        HiveConf.getSizeVar(conf, ConfVars.LLAP_IO_MEMORY_MAX_SIZE), conf);
+  }
+
+  @VisibleForTesting
+  public LowLevelLrfuCachePolicy(int minBufferSize, long maxSize, Configuration conf) {
     lambda = HiveConf.getFloatVar(conf, HiveConf.ConfVars.LLAP_LRFU_LAMBDA);
     int maxBuffers = (int)Math.ceil((maxSize * 1.0) / minBufferSize);
     int maxHeapSize = -1;

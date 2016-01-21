@@ -78,9 +78,8 @@ public class TestBuddyAllocator {
   @Test
   public void testSameSizes() throws Exception {
     int min = 3, max = 8, maxAlloc = 1 << max;
-    Configuration conf = createConf(1 << min, maxAlloc, maxAlloc, maxAlloc);
-    BuddyAllocator a = new BuddyAllocator(conf, new DummyMemoryManager(),
-        LlapDaemonCacheMetrics.create("test", "1"));
+    BuddyAllocator a = new BuddyAllocator(false, 1 << min, maxAlloc, maxAlloc, maxAlloc,
+        new DummyMemoryManager(), LlapDaemonCacheMetrics.create("test", "1"));
     for (int i = max; i >= min; --i) {
       allocSameSize(a, 1 << (max - i), i);
     }
@@ -89,18 +88,16 @@ public class TestBuddyAllocator {
   @Test
   public void testMultipleArenas() throws Exception {
     int max = 8, maxAlloc = 1 << max, allocLog2 = max - 1, arenaCount = 5;
-    Configuration conf = createConf(1 << 3, maxAlloc, maxAlloc, maxAlloc * arenaCount);
-    BuddyAllocator a = new BuddyAllocator(conf, new DummyMemoryManager(),
-        LlapDaemonCacheMetrics.create("test", "1"));
+    BuddyAllocator a = new BuddyAllocator(false, 1 << 3, maxAlloc, maxAlloc, maxAlloc * arenaCount,
+        new DummyMemoryManager(), LlapDaemonCacheMetrics.create("test", "1"));
     allocSameSize(a, arenaCount * 2, allocLog2);
   }
 
   @Test
   public void testMTT() {
     final int min = 3, max = 8, maxAlloc = 1 << max, allocsPerSize = 3;
-    Configuration conf = createConf(1 << min, maxAlloc, maxAlloc * 8, maxAlloc * 24);
-    final BuddyAllocator a = new BuddyAllocator(conf, new DummyMemoryManager(),
-        LlapDaemonCacheMetrics.create("test", "1"));
+    final BuddyAllocator a = new BuddyAllocator(false, 1 << min, maxAlloc, maxAlloc * 8,
+        maxAlloc * 24, new DummyMemoryManager(), LlapDaemonCacheMetrics.create("test", "1"));
     ExecutorService executor = Executors.newFixedThreadPool(3);
     final CountDownLatch cdlIn = new CountDownLatch(3), cdlOut = new CountDownLatch(1);
     FutureTask<Void> upTask = new FutureTask<Void>(new Callable<Void>() {
@@ -143,8 +140,8 @@ public class TestBuddyAllocator {
   @Test
   public void testMTTArenas() {
     final int min = 3, max = 4, maxAlloc = 1 << max, minAllocCount = 2048, threadCount = 4;
-    Configuration conf = createConf(1 << min, maxAlloc, maxAlloc, (1 << min) * minAllocCount);
-    final BuddyAllocator a = new BuddyAllocator(conf, new DummyMemoryManager(),
+    final BuddyAllocator a = new BuddyAllocator(false, 1 << min, maxAlloc, maxAlloc,
+        (1 << min) * minAllocCount, new DummyMemoryManager(),
         LlapDaemonCacheMetrics.create("test", "1"));
     ExecutorService executor = Executors.newFixedThreadPool(threadCount);
     final CountDownLatch cdlIn = new CountDownLatch(threadCount), cdlOut = new CountDownLatch(1);
@@ -183,8 +180,8 @@ public class TestBuddyAllocator {
   private void testVariableSizeInternal(
       int allocCount, int arenaSizeMult, int arenaCount) throws Exception {
     int min = 3, max = 8, maxAlloc = 1 << max, arenaSize = maxAlloc * arenaSizeMult;
-    Configuration conf = createConf(1 << min, maxAlloc, arenaSize, arenaSize * arenaCount);
-    BuddyAllocator a = new BuddyAllocator(conf, new DummyMemoryManager(),
+    BuddyAllocator a = new BuddyAllocator(false, 1 << min, maxAlloc, arenaSize,
+        arenaSize * arenaCount, new DummyMemoryManager(),
         LlapDaemonCacheMetrics.create("test", "1"));
     allocateUp(a, min, max, allocCount, true);
     allocateDown(a, min, max, allocCount, true);
@@ -278,14 +275,5 @@ public class TestBuddyAllocator {
       }
       a.deallocate(mem);
     }
-  }
-
-  private Configuration createConf(int min, int max, int arena, int total) {
-    Configuration conf = new Configuration();
-    conf.setInt(ConfVars.LLAP_ALLOCATOR_MIN_ALLOC.varname, min);
-    conf.setInt(ConfVars.LLAP_ALLOCATOR_MAX_ALLOC.varname, max);
-    conf.setInt(ConfVars.LLAP_ALLOCATOR_ARENA_COUNT.varname, total/arena);
-    conf.setLong(ConfVars.LLAP_IO_MEMORY_MAX_SIZE.varname, total);
-    return conf;
   }
 }

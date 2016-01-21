@@ -36,15 +36,14 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import javax.security.auth.login.LoginException;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hadoop.hive.conf.Validator.PatternSet;
 import org.apache.hadoop.hive.conf.Validator.RangeValidator;
 import org.apache.hadoop.hive.conf.Validator.RatioValidator;
+import org.apache.hadoop.hive.conf.Validator.SizeValidator;
 import org.apache.hadoop.hive.conf.Validator.StringSet;
 import org.apache.hadoop.hive.conf.Validator.TimeValidator;
 import org.apache.hadoop.hive.shims.Utils;
@@ -2346,18 +2345,18 @@ public class HiveConf extends Configuration {
         "LLAP IO memory usage; 'cache' (the default) uses data and metadata cache with a\n" +
         "custom off-heap allocator, 'allocator' uses the custom allocator without the caches,\n" +
         "'none' doesn't use either (this mode may result in significant performance degradation)"),
-    LLAP_ALLOCATOR_MIN_ALLOC("hive.llap.io.allocator.alloc.min", 128 * 1024,
+    LLAP_ALLOCATOR_MIN_ALLOC("hive.llap.io.allocator.alloc.min", "128Kb", new SizeValidator(),
         "Minimum allocation possible from LLAP buddy allocator. Allocations below that are\n" +
         "padded to minimum allocation. For ORC, should generally be the same as the expected\n" +
         "compression buffer size, or next lowest power of 2. Must be a power of 2."),
-    LLAP_ALLOCATOR_MAX_ALLOC("hive.llap.io.allocator.alloc.max", 16 * 1024 * 1024,
+    LLAP_ALLOCATOR_MAX_ALLOC("hive.llap.io.allocator.alloc.max", "16Mb", new SizeValidator(),
         "Maximum allocation possible from LLAP buddy allocator. For ORC, should be as large as\n" +
         "the largest expected ORC compression buffer size. Must be a power of 2."),
     LLAP_ALLOCATOR_ARENA_COUNT("hive.llap.io.allocator.arena.count", 8,
         "Arena count for LLAP low-level cache; cache will be allocated in the steps of\n" +
         "(size/arena_count) bytes. This size must be <= 1Gb and >= max allocation; if it is\n" +
         "not the case, an adjusted size will be used. Using powers of 2 is recommended."),
-    LLAP_IO_MEMORY_MAX_SIZE("hive.llap.io.memory.size", 1024L * 1024 * 1024,
+    LLAP_IO_MEMORY_MAX_SIZE("hive.llap.io.memory.size", "1Gb", new SizeValidator(),
         "Maximum size for IO allocator or ORC low-level cache.", "hive.llap.io.cache.orc.size"),
     LLAP_ALLOCATOR_DIRECT("hive.llap.io.allocator.direct", true,
         "Whether ORC low-level cache should use direct allocation."),
@@ -2937,6 +2936,14 @@ public class HiveConf extends Configuration {
     setTimeVar(this, var, time, outUnit);
   }
 
+  public static long getSizeVar(Configuration conf, ConfVars var) {
+    return toSizeBytes(getVar(conf, var));
+  }
+
+  public long getSizeVar(ConfVars var) {
+    return getSizeVar(this, var);
+  }
+
   private static TimeUnit getDefaultTimeUnit(ConfVars var) {
     TimeUnit inputUnit = null;
     if (var.validator instanceof TimeValidator) {
@@ -2946,11 +2953,16 @@ public class HiveConf extends Configuration {
   }
 
   public static long toTime(String value, TimeUnit inputUnit, TimeUnit outUnit) {
-    String[] parsed = parseTime(value.trim());
+    String[] parsed = parseNumberFollowedByUnit(value.trim());
     return outUnit.convert(Long.valueOf(parsed[0].trim().trim()), unitFor(parsed[1].trim(), inputUnit));
   }
 
-  private static String[] parseTime(String value) {
+  public static long toSizeBytes(String value) {
+    String[] parsed = parseNumberFollowedByUnit(value.trim());
+    return Long.valueOf(parsed[0].trim()) * multiplierFor(parsed[1].trim());
+  }
+
+  private static String[] parseNumberFollowedByUnit(String value) {
     char[] chars = value.toCharArray();
     int i = 0;
     for (; i < chars.length && (chars[i] == '-' || Character.isDigit(chars[i])); i++) {
@@ -2981,6 +2993,25 @@ public class HiveConf extends Configuration {
       return TimeUnit.NANOSECONDS;
     }
     throw new IllegalArgumentException("Invalid time unit " + unit);
+  }
+
+
+  public static long multiplierFor(String unit) {
+    unit = unit.trim().toLowerCase();
+    if (unit.isEmpty() || unit.equals("b") || unit.equals("bytes")) {
+      return 1;
+    } else if (unit.equals("kb")) {
+      return 1024;
+    } else if (unit.equals("mb")) {
+      return 1024*1024;
+    } else if (unit.equals("gb")) {
+      return 1024*1024*1024;
+    } else if (unit.equals("tb")) {
+      return 1024*1024*1024*1024;
+    } else if (unit.equals("pb")) {
+      return 1024*1024*1024*1024*1024;
+    }
+    throw new IllegalArgumentException("Invalid size unit " + unit);
   }
 
   public static String stringFor(TimeUnit timeunit) {
