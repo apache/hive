@@ -290,7 +290,7 @@ public class ObjectStore implements RawStore, Configurable {
 
       String partitionValidationRegex =
           hiveConf.get(HiveConf.ConfVars.METASTORE_PARTITION_NAME_WHITELIST_PATTERN.name());
-      if (partitionValidationRegex != null && partitionValidationRegex.equals("")) {
+      if (partitionValidationRegex != null && !partitionValidationRegex.isEmpty()) {
         partitionValidationPattern = Pattern.compile(partitionValidationRegex);
       } else {
         partitionValidationPattern = null;
@@ -759,7 +759,7 @@ public class ObjectStore implements RawStore, Configurable {
 
     String queryStr = "select name from org.apache.hadoop.hive.metastore.model.MDatabase";
     Query query = null;
-    
+
     openTransaction();
     try {
       query = pm.newQuery(queryStr);
@@ -1054,14 +1054,17 @@ public class ObjectStore implements RawStore, Configurable {
     return tbls;
   }
 
+  @Override
   public int getDatabaseCount() throws MetaException {
     return getObjectCount("name", MDatabase.class.getName());
   }
 
+  @Override
   public int getPartitionCount() throws MetaException {
     return getObjectCount("partitionName", MPartition.class.getName());
   }
 
+  @Override
   public int getTableCount() throws MetaException {
     return getObjectCount("tableName", MTable.class.getName());
   }

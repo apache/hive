@@ -1427,7 +1427,7 @@ public class Hive {
    * @param isSrcLocal
    *          If the source directory is LOCAL
    * @param isAcid true if this is an ACID operation
-   * @throws JSONException 
+   * @throws JSONException
    */
   public Partition loadPartition(Path loadPath, Table tbl,
       Map<String, String> partSpec, boolean replace,
@@ -1622,7 +1622,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @param txnId txnId, can be 0 unless isAcid == true
    * @return partition map details (PartitionSpec and Partition)
    * @throws HiveException
-   * @throws JSONException 
+   * @throws JSONException
    */
   public Map<Map<String, String>, Partition> loadDynamicPartitions(Path loadPath,
       String tableName, Map<String, String> partSpec, boolean replace,
@@ -1635,16 +1635,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
           LinkedHashMap<Map<String, String>, Partition>();
 
       FileSystem fs = loadPath.getFileSystem(conf);
-      FileStatus[] leafStatus = HiveStatsUtils.getFileStatusRecurse(loadPath, numDP+1, fs);
+      FileStatus[] leafStatus = HiveStatsUtils.getFileStatusRecurse(loadPath, numDP, fs);
       // Check for empty partitions
       for (FileStatus s : leafStatus) {
-        try {
-          validatePartitionNameCharacters(
-            Warehouse.getPartValuesFromPartName(s.getPath().getParent().toString()));
-        } catch (MetaException e) {
-          throw new HiveException(e);
-        }
-        validPartitions.add(s.getPath().getParent());
+        validPartitions.add(s.getPath());
       }
 
       int partsToLoad = validPartitions.size();
