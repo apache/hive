@@ -24,10 +24,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.security.AccessControlException;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -65,7 +65,6 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
-import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryProperties;
@@ -189,7 +188,6 @@ import org.apache.hadoop.hive.ql.plan.ptf.PTFExpressionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.PartitionedTableFunctionDef;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.ResourceType;
-import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFHash;
@@ -11194,98 +11192,103 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       isByPos = true;
     }
 
-    if (ast.getChildCount()  == 0) {
-      return;
-    }
+    Deque<ASTNode> stack = new ArrayDeque<ASTNode>();
+    stack.push(ast);
 
-    boolean isAllCol;
-    ASTNode selectNode = null;
-    ASTNode groupbyNode = null;
-    ASTNode orderbyNode = null;
+    while (!stack.isEmpty()) {
+      ASTNode next = stack.pop();
 
-    // get node type
-    int child_count = ast.getChildCount();
-    for (int child_pos = 0; child_pos < child_count; ++child_pos) {
-      ASTNode node = (ASTNode) ast.getChild(child_pos);
-      int type = node.getToken().getType();
-      if (type == HiveParser.TOK_SELECT) {
-        selectNode = node;
-      } else if (type == HiveParser.TOK_GROUPBY) {
-        groupbyNode = node;
-      } else if (type == HiveParser.TOK_ORDERBY) {
-        orderbyNode = node;
+      if (next.getChildCount()  == 0) {
+        continue;
       }
-    }
 
-    if (selectNode != null) {
-      int selectExpCnt = selectNode.getChildCount();
+      boolean isAllCol;
+      ASTNode selectNode = null;
+      ASTNode groupbyNode = null;
+      ASTNode orderbyNode = null;
 
-      // replace each of the position alias in GROUPBY with the actual column name
-      if (groupbyNode != null) {
-        for (int child_pos = 0; child_pos < groupbyNode.getChildCount(); ++child_pos) {
-          ASTNode node = (ASTNode) groupbyNode.getChild(child_pos);
-          if (node.getToken().getType() == HiveParser.Number) {
-            if (isByPos) {
-              int pos = Integer.parseInt(node.getText());
-              if (pos > 0 && pos <= selectExpCnt) {
-                groupbyNode.setChild(child_pos,
-                  selectNode.getChild(pos - 1).getChild(0));
-              } else {
-                throw new SemanticException(
-                  ErrorMsg.INVALID_POSITION_ALIAS_IN_GROUPBY.getMsg(
-                  "Position alias: " + pos + " does not exist\n" +
-                  "The Select List is indexed from 1 to " + selectExpCnt));
-              }
-            } else {
-              warn("Using constant number  " + node.getText() +
-                " in group by. If you try to use position alias when hive.groupby.orderby.position.alias is false, the position alias will be ignored.");
-            }
-          }
+      // get node type
+      int child_count = next.getChildCount();
+      for (int child_pos = 0; child_pos < child_count; ++child_pos) {
+        ASTNode node = (ASTNode) next.getChild(child_pos);
+        int type = node.getToken().getType();
+        if (type == HiveParser.TOK_SELECT) {
+          selectNode = node;
+        } else if (type == HiveParser.TOK_GROUPBY) {
+          groupbyNode = node;
+        } else if (type == HiveParser.TOK_ORDERBY) {
+          orderbyNode = node;
         }
       }
 
-      // replace each of the position alias in ORDERBY with the actual column name
-      if (orderbyNode != null) {
-        isAllCol = false;
-        for (int child_pos = 0; child_pos < selectNode.getChildCount(); ++child_pos) {
-          ASTNode node = (ASTNode) selectNode.getChild(child_pos).getChild(0);
-          if (node.getToken().getType() == HiveParser.TOK_ALLCOLREF) {
-            isAllCol = true;
-          }
-        }
-        for (int child_pos = 0; child_pos < orderbyNode.getChildCount(); ++child_pos) {
-          ASTNode colNode = (ASTNode) orderbyNode.getChild(child_pos);
-          ASTNode node = (ASTNode) colNode.getChild(0);
-          if (node.getToken().getType() == HiveParser.Number) {
-            if( isByPos ) {
-              if (!isAllCol) {
+      if (selectNode != null) {
+        int selectExpCnt = selectNode.getChildCount();
+
+        // replace each of the position alias in GROUPBY with the actual column name
+        if (groupbyNode != null) {
+          for (int child_pos = 0; child_pos < groupbyNode.getChildCount(); ++child_pos) {
+            ASTNode node = (ASTNode) groupbyNode.getChild(child_pos);
+            if (node.getToken().getType() == HiveParser.Number) {
+              if (isByPos) {
                 int pos = Integer.parseInt(node.getText());
                 if (pos > 0 && pos <= selectExpCnt) {
-                  colNode.setChild(0, selectNode.getChild(pos - 1).getChild(0));
+                  groupbyNode.setChild(child_pos,
+                    selectNode.getChild(pos - 1).getChild(0));
                 } else {
                   throw new SemanticException(
-                    ErrorMsg.INVALID_POSITION_ALIAS_IN_ORDERBY.getMsg(
+                    ErrorMsg.INVALID_POSITION_ALIAS_IN_GROUPBY.getMsg(
                     "Position alias: " + pos + " does not exist\n" +
                     "The Select List is indexed from 1 to " + selectExpCnt));
                 }
               } else {
-                throw new SemanticException(
-                  ErrorMsg.NO_SUPPORTED_ORDERBY_ALLCOLREF_POS.getMsg());
+                warn("Using constant number  " + node.getText() +
+                  " in group by. If you try to use position alias when hive.groupby.orderby.position.alias is false, the position alias will be ignored.");
               }
-            } else { //if not using position alias and it is a number.
-              warn("Using constant number " + node.getText() +
-                " in order by. If you try to use position alias when hive.groupby.orderby.position.alias is false, the position alias will be ignored.");
+            }
+          }
+        }
+
+        // replace each of the position alias in ORDERBY with the actual column name
+        if (orderbyNode != null) {
+          isAllCol = false;
+          for (int child_pos = 0; child_pos < selectNode.getChildCount(); ++child_pos) {
+            ASTNode node = (ASTNode) selectNode.getChild(child_pos).getChild(0);
+            if (node.getToken().getType() == HiveParser.TOK_ALLCOLREF) {
+              isAllCol = true;
+            }
+          }
+          for (int child_pos = 0; child_pos < orderbyNode.getChildCount(); ++child_pos) {
+            ASTNode colNode = (ASTNode) orderbyNode.getChild(child_pos);
+            ASTNode node = (ASTNode) colNode.getChild(0);
+            if (node.getToken().getType() == HiveParser.Number) {
+              if( isByPos ) {
+                if (!isAllCol) {
+                  int pos = Integer.parseInt(node.getText());
+                  if (pos > 0 && pos <= selectExpCnt) {
+                    colNode.setChild(0, selectNode.getChild(pos - 1).getChild(0));
+                  } else {
+                    throw new SemanticException(
+                      ErrorMsg.INVALID_POSITION_ALIAS_IN_ORDERBY.getMsg(
+                      "Position alias: " + pos + " does not exist\n" +
+                      "The Select List is indexed from 1 to " + selectExpCnt));
+                  }
+                } else {
+                  throw new SemanticException(
+                    ErrorMsg.NO_SUPPORTED_ORDERBY_ALLCOLREF_POS.getMsg());
+                }
+              } else { //if not using position alias and it is a number.
+                warn("Using constant number " + node.getText() +
+                  " in order by. If you try to use position alias when hive.groupby.orderby.position.alias is false, the position alias will be ignored.");
+              }
             }
           }
         }
       }
-    }
 
-    // Recursively process through the children ASTNodes
-    for (int child_pos = 0; child_pos < child_count; ++child_pos) {
-      processPositionAlias((ASTNode) ast.getChild(child_pos));
+      for (int i = next.getChildren().size() - 1; i >= 0; i--) {
+        stack.push((ASTNode)next.getChildren().get(i));
+      }
     }
-    return;
   }
 
   /**

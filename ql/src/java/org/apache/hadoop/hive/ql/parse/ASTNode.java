@@ -19,12 +19,15 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.io.Serializable;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.List;
 
 import org.antlr.runtime.Token;
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.ql.lib.Node;
 
 /**
@@ -38,6 +41,7 @@ public class ASTNode extends CommonTree implements Node,Serializable {
   private transient int endIndx = -1;
   private transient ASTNode rootNode;
   private transient boolean isValidASTStr;
+  private transient boolean visited = false;
 
   public ASTNode() {
   }
@@ -92,6 +96,49 @@ public class ASTNode extends CommonTree implements Node,Serializable {
   }
 
   /**
+   * For every node in this subtree, make sure it's start/stop token's
+   * are set.  Walk depth first, visit bottom up.  Only updates nodes
+   * with at least one token index < 0.
+   *
+   * In contrast to the method in the parent class, this method is
+   * iterative.
+   */
+  @Override
+  public void setUnknownTokenBoundaries() {
+    Deque<ASTNode> stack1 = new ArrayDeque<ASTNode>();
+    Deque<ASTNode> stack2 = new ArrayDeque<ASTNode>();
+    stack1.push(this);
+
+    while (!stack1.isEmpty()) {
+      ASTNode next = stack1.pop();
+      stack2.push(next);
+
+      if (next.children != null) {
+        for (int i = next.children.size() - 1; i >= 0 ; i--) {
+          stack1.push((ASTNode)next.children.get(i));
+        }
+      }
+    }
+
+    while (!stack2.isEmpty()) {
+      ASTNode next = stack2.pop();
+
+      if (next.children == null) {
+        if (next.startIndex < 0 || next.stopIndex < 0) {
+          next.startIndex = next.stopIndex = next.token.getTokenIndex();
+        }
+      } else if (next.startIndex >= 0 && next.stopIndex >= 0) {
+        continue;
+      } else if (next.children.size() > 0) {
+        ASTNode firstChild = (ASTNode)next.children.get(0);
+        ASTNode lastChild = (ASTNode)next.children.get(next.children.size()-1);
+        next.startIndex = firstChild.getTokenStartIndex();
+        next.stopIndex = lastChild.getTokenStopIndex();
+      }
+    }
+  }
+
+  /**
    * @return information about the object from which this ASTNode originated, or
    *         null if this ASTNode was not expanded from an object reference
    */
@@ -109,27 +156,38 @@ public class ASTNode extends CommonTree implements Node,Serializable {
 
   public String dump() {
     StringBuilder sb = new StringBuilder("\n");
-    dump(sb, "");
+    dump(sb);
     return sb.toString();
   }
 
-  private StringBuilder dump(StringBuilder sb, String ws) {
-    sb.append(ws);
-    sb.append(toString());
-    sb.append("\n");
+  private StringBuilder dump(StringBuilder sb) {
+    Deque<ASTNode> stack = new ArrayDeque<ASTNode>();
+    stack.push(this);
+    int tabLength = 0;
 
-    ArrayList<Node> children = getChildren();
-    if (children != null) {
-      for (Node node : getChildren()) {
-        if (node instanceof ASTNode) {
-          ((ASTNode) node).dump(sb, ws + "   ");
-        } else {
-          sb.append(ws);
-          sb.append("   NON-ASTNODE!!");
-          sb.append("\n");
+    while (!stack.isEmpty()) {
+      ASTNode next = stack.peek();
+
+      if (!next.visited) {
+        sb.append(StringUtils.repeat(" ", tabLength * 3));
+        sb.append(next.toString());
+        sb.append("\n");
+
+        if (next.children != null) {
+          for (int i = next.children.size() - 1 ; i >= 0 ; i--) {
+            stack.push((ASTNode)next.children.get(i));
+          }
         }
+
+        tabLength++;
+        next.visited = true;
+      } else {
+        tabLength--;
+        next.visited = false;
+        stack.pop();
       }
     }
+
     return sb;
   }
 
@@ -238,34 +296,55 @@ public class ASTNode extends CommonTree implements Node,Serializable {
   }
 
   private String toStringTree(ASTNode rootNode) {
-    this.rootNode = rootNode;
-    startIndx = rootNode.getMemoizedStringLen();
-    // Leaf node
-    String str;
-    if ( children==null || children.size()==0 ) {
-      str = this.toString();
-      rootNode.addtoMemoizedString(this.getType() != HiveParser.StringLiteral ? str.toLowerCase() : str);
-      endIndx =  rootNode.getMemoizedStringLen();
-      return this.getType() != HiveParser.StringLiteral ? str.toLowerCase() : str;
+    Deque<ASTNode> stack = new ArrayDeque<ASTNode>();
+    stack.push(this);
+
+    while (!stack.isEmpty()) {
+      ASTNode next = stack.peek();
+      if (!next.visited) {
+        if (next.parent != null && next.parent.getChildCount() > 1 &&
+                next != next.parent.getChild(0)) {
+          rootNode.addtoMemoizedString(" ");
+        }
+
+        next.rootNode = rootNode;
+        next.startIndx = rootNode.getMemoizedStringLen();
+
+        // Leaf
+        if (next.children == null || next.children.size() == 0) {
+          String str = next.toString();
+          rootNode.addtoMemoizedString(next.getType() != HiveParser.StringLiteral ? str.toLowerCase() : str);
+          next.endIndx =  rootNode.getMemoizedStringLen();
+          stack.pop();
+          continue;
+        }
+
+        if ( !next.isNil() ) {
+          rootNode.addtoMemoizedString("(");
+          String str = next.toString();
+          rootNode.addtoMemoizedString((next.getType() == HiveParser.StringLiteral || null == str) ? str :  str.toLowerCase());
+          rootNode.addtoMemoizedString(" ");
+        }
+
+        if (next.children != null) {
+          for (int i = next.children.size() - 1 ; i >= 0 ; i--) {
+            stack.push((ASTNode)next.children.get(i));
+          }
+        }
+
+        next.visited = true;
+      } else {
+        if ( !next.isNil() ) {
+          rootNode.addtoMemoizedString(")");
+        }
+        next.endIndx = rootNode.getMemoizedStringLen();
+        next.visited = false;
+        stack.pop();
+      }
+
     }
 
-    if ( !isNil() ) {
-      rootNode.addtoMemoizedString("(");
-      str = this.toString();
-      rootNode.addtoMemoizedString((this.getType() == HiveParser.StringLiteral || null == str) ? str :  str.toLowerCase());
-      rootNode.addtoMemoizedString(" ");
-    }
-    for (int i = 0; children!=null && i < children.size(); i++) {
-      ASTNode t = (ASTNode)children.get(i);
-      if ( i>0 ) {
-        rootNode.addtoMemoizedString(" ");
-      }
-      t.toStringTree(rootNode);
-    }
-    if ( !isNil() ) {
-      rootNode.addtoMemoizedString(")");
-    }
-    endIndx =  rootNode.getMemoizedStringLen();
     return rootNode.getMemoizedSubString(startIndx, endIndx);
   }
+
 }
