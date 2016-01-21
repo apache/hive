@@ -172,6 +172,15 @@ public class HiveSparkClientFactory {
     sparkConf.put(
       "spark.kryo.classesToRegister", Joiner.on(",").join(classes));
 
+    // set yarn queue name
+    final String sparkQueueNameKey = "spark.yarn.queue";
+    if (sparkMaster.startsWith("yarn") && hiveConf.get(sparkQueueNameKey) == null) {
+      String queueName = hiveConf.get("mapreduce.job.queuename");
+      if (queueName != null) {
+        sparkConf.put(sparkQueueNameKey, queueName);
+      }
+    }
+
     return sparkConf;
   }
 
