@@ -172,7 +172,8 @@ public class LlapServiceDriver {
     }
 
     if (options.getCache() != -1) {
-      conf.setLong(HiveConf.ConfVars.LLAP_IO_MEMORY_MAX_SIZE.varname, options.getCache());
+      conf.set(HiveConf.ConfVars.LLAP_IO_MEMORY_MAX_SIZE.varname,
+          Long.toString(options.getCache()));
     }
 
     if (options.getXmx() != -1) {

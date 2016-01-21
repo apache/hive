@@ -298,7 +298,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
       long executorMemoryBytes = HiveConf.getIntVar(
           daemonConf, ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB) * 1024l * 1024l;
 
-      long ioMemoryBytes = HiveConf.getLongVar(daemonConf, ConfVars.LLAP_IO_MEMORY_MAX_SIZE);
+      long ioMemoryBytes = HiveConf.getSizeVar(daemonConf, ConfVars.LLAP_IO_MEMORY_MAX_SIZE);
       boolean isDirectCache = HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_ALLOCATOR_DIRECT);
       boolean llapIoEnabled = HiveConf.getBoolVar(daemonConf, HiveConf.ConfVars.LLAP_IO_ENABLED);
       llapDaemon = new LlapDaemon(daemonConf, numExecutors, executorMemoryBytes, llapIoEnabled,

@@ -18,8 +18,8 @@
 
 package org.apache.hadoop.hive.llap.cache;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.util.concurrent.atomic.AtomicLong;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -37,9 +37,15 @@ public class LowLevelCacheMemoryManager implements MemoryManager {
   private final LlapDaemonCacheMetrics metrics;
   private long maxSize;
 
-  public LowLevelCacheMemoryManager(Configuration conf, LowLevelCachePolicy evictor,
-      LlapDaemonCacheMetrics metrics) {
-    this.maxSize = HiveConf.getLongVar(conf, ConfVars.LLAP_IO_MEMORY_MAX_SIZE);
+  public LowLevelCacheMemoryManager(
+      Configuration conf, LowLevelCachePolicy evictor, LlapDaemonCacheMetrics metrics) {
+    this(HiveConf.getSizeVar(conf, ConfVars.LLAP_IO_MEMORY_MAX_SIZE), evictor, metrics);
+  }
+
+  @VisibleForTesting
+  public LowLevelCacheMemoryManager(
+      long maxSize, LowLevelCachePolicy evictor, LlapDaemonCacheMetrics metrics) {
+    this.maxSize = maxSize;
     this.evictor = evictor;
     this.usedMemory = new AtomicLong(0);
     this.metrics = metrics;
