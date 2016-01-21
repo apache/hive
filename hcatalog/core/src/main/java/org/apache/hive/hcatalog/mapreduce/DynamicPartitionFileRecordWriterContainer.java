@@ -62,6 +62,8 @@ class DynamicPartitionFileRecordWriterContainer extends FileRecordWriterContaine
   private final Map<String, ObjectInspector> dynamicObjectInspectors;
   private Map<String, OutputJobInfo> dynamicOutputJobInfo;
 
+  private String HIVE_DEFAULT_PARTITION_VALUE = null;
+
   /**
    * @param baseWriter RecordWriter to contain
    * @param context current TaskAttemptContext
@@ -86,6 +88,7 @@ class DynamicPartitionFileRecordWriterContainer extends FileRecordWriterContaine
     this.dynamicContexts = new HashMap<String, org.apache.hadoop.mapred.TaskAttemptContext>();
     this.dynamicObjectInspectors = new HashMap<String, ObjectInspector>();
     this.dynamicOutputJobInfo = new HashMap<String, OutputJobInfo>();
+    this.HIVE_DEFAULT_PARTITION_VALUE = HiveConf.getVar(context.getConfiguration(), HiveConf.ConfVars.DEFAULTPARTITIONNAME);
   }
 
   @Override
@@ -136,7 +139,8 @@ class DynamicPartitionFileRecordWriterContainer extends FileRecordWriterContaine
     // be done before we delete cols.
     List<String> dynamicPartValues = new ArrayList<String>();
     for (Integer colToAppend : dynamicPartCols) {
-      dynamicPartValues.add(value.get(colToAppend).toString());
+      Object partitionValue = value.get(colToAppend);
+      dynamicPartValues.add(partitionValue == null? HIVE_DEFAULT_PARTITION_VALUE : partitionValue.toString());
     }
 
     String dynKey = dynamicPartValues.toString();
