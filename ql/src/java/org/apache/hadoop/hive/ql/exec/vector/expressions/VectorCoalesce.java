@@ -22,6 +22,8 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 
+import com.google.common.base.Preconditions;
+
 import java.util.Arrays;
 
 /**
@@ -38,6 +40,7 @@ public class VectorCoalesce extends VectorExpression {
     this();
     this.inputColumns = inputColumns;
     this.outputColumn = outputColumn;
+    Preconditions.checkArgument(this.inputColumns.length > 0);
   }
 
   public VectorCoalesce() {
@@ -61,9 +64,25 @@ public class VectorCoalesce extends VectorExpression {
 
     outputVector.init();
 
-    outputVector.noNulls = false;
+    boolean noNulls = false;
+
+    for (int k = 0; k < inputColumns.length; k++) {
+      ColumnVector cv = batch.cols[inputColumns[k]];
+      // non-nulls in any column qualifies coalesce having no nulls
+      // common case: last column is a constant & non-null
+      noNulls = noNulls || cv.noNulls;
+    }
+
+    outputVector.noNulls = noNulls;
     outputVector.isRepeating = false;
-    if (batch.selectedInUse) {
+
+    ColumnVector first = batch.cols[inputColumns[0]];
+
+    if (first.noNulls && first.isRepeating) {
+      outputVector.isRepeating = true;
+      outputVector.isNull[0] = false;
+      outputVector.setElement(0, 0, first);
+    } else if (batch.selectedInUse) {
       for (int j = 0; j != n; j++) {
         int i = sel[j];
         outputVector.isNull[i] = true;
