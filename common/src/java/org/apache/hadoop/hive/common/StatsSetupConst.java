@@ -192,7 +192,7 @@ public class StatsSetupConst {
   // note that set basic stats false will wipe out column stats too.
   public static void setBasicStatsState(Map<String, String> params, String setting) {
     if (setting.equals(FALSE)) {
-      if (params.containsKey(COLUMN_STATS_ACCURATE)) {
+      if (params != null && params.containsKey(COLUMN_STATS_ACCURATE)) {
         params.remove(COLUMN_STATS_ACCURATE);
       }
     } else {
@@ -299,8 +299,8 @@ public class StatsSetupConst {
   }
 
   public static void clearColumnStatsState(Map<String, String> params) {
-    String statsAcc = params.get(COLUMN_STATS_ACCURATE);
-    if (statsAcc != null) {
+    String statsAcc;
+    if (params != null && (statsAcc = params.get(COLUMN_STATS_ACCURATE)) != null) {
       // statsAcc may not be jason format, which will throw exception
       JSONObject stats;
       try {

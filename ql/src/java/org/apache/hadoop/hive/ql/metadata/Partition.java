@@ -164,12 +164,11 @@ public class Partition implements Serializable {
 
     if (table.isPartitioned()) {
       try {
-        String partName = Warehouse.makePartName(table.getPartCols(), tPartition.getValues());
         if (tPartition.getSd().getLocation() == null) {
           // set default if location is not set and this is a physical
           // table partition (not a view partition)
           if (table.getDataLocation() != null) {
-            Path partPath = new Path(table.getDataLocation(), partName);
+            Path partPath = new Path(table.getDataLocation(), Warehouse.makePartName(table.getPartCols(), tPartition.getValues()));
             tPartition.getSd().setLocation(partPath.toString());
           }
         }

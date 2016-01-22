@@ -84,6 +84,7 @@ import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.InsertEventRequestData;
+import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -631,11 +632,7 @@ public class Hive {
   public void alterPartition(String dbName, String tblName, Partition newPart)
       throws InvalidOperationException, HiveException {
     try {
-      // Remove the DDL time so that it gets refreshed
-      if (newPart.getParameters() != null) {
-        newPart.getParameters().remove(hive_metastoreConstants.DDL_TIME);
-      }
-      newPart.checkValidity();
+      validatePartition(newPart);
       getMSC().alter_partition(dbName, tblName, newPart.getTPartition());
 
     } catch (MetaException e) {
@@ -643,6 +640,14 @@ public class Hive {
     } catch (TException e) {
       throw new HiveException("Unable to alter partition. " + e.getMessage(), e);
     }
+  }
+
+  private void validatePartition(Partition newPart) throws HiveException {
+    // Remove the DDL time so that it gets refreshed
+    if (newPart.getParameters() != null) {
+      newPart.getParameters().remove(hive_metastoreConstants.DDL_TIME);
+    }
+    newPart.checkValidity();
   }
 
   /**
@@ -1427,14 +1432,12 @@ public class Hive {
    * @param isSrcLocal
    *          If the source directory is LOCAL
    * @param isAcid true if this is an ACID operation
-   * @throws JSONException
    */
   public Partition loadPartition(Path loadPath, Table tbl,
       Map<String, String> partSpec, boolean replace,
       boolean inheritTableSpecs, boolean isSkewedStoreAsSubdir,
       boolean isSrcLocal, boolean isAcid) throws HiveException {
     Path tblDataLocationPath =  tbl.getDataLocation();
-    Partition newTPart = null;
     try {
       /**
        * Move files before creating the partition since down stream processes
@@ -1474,19 +1477,25 @@ public class Hive {
       } else {
         newPartPath = oldPartPath;
       }
-
       List<Path> newFiles = null;
       if (replace) {
         Hive.replaceFiles(tbl.getPath(), loadPath, newPartPath, oldPartPath, getConf(),
             isSrcLocal);
       } else {
-        newFiles = new ArrayList<Path>();
+        if (conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML) && !tbl.isTemporary()) {
+          newFiles = new ArrayList<>();
+        }
+
         FileSystem fs = tbl.getDataLocation().getFileSystem(conf);
         Hive.copyFiles(conf, loadPath, newPartPath, fs, isSrcLocal, isAcid, newFiles);
       }
+      Partition newTPart = oldPart != null ? oldPart : new Partition(tbl, partSpec, newPartPath);
+      alterPartitionSpecInMemory(tbl, partSpec, newTPart.getTPartition(), inheritTableSpecs, newPartPath.toString());
+      validatePartition(newTPart);
+      if (oldPart != null && null != newFiles) {
+        fireInsertEvent(tbl, partSpec, newFiles);
+      }
 
-      newTPart = getPartition(tbl, partSpec, true, newPartPath.toString(),
-          inheritTableSpecs, newFiles);
       //column stats will be inaccurate
       StatsSetupConst.clearColumnStatsState(newTPart.getParameters());
 
@@ -1500,18 +1509,18 @@ public class Hive {
         /* Add list bucketing location mappings. */
         skewedInfo.setSkewedColValueLocationMaps(skewedColValueLocationMaps);
         newCreatedTpart.getSd().setSkewedInfo(skewedInfo);
-        if(!this.getConf().getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
-          StatsSetupConst.setBasicStatsState(newTPart.getParameters(), StatsSetupConst.FALSE);
-        }
-        alterPartition(tbl.getDbName(), tbl.getTableName(), new Partition(tbl, newCreatedTpart));
-        newTPart = getPartition(tbl, partSpec, true, newPartPath.toString(), inheritTableSpecs,
-            newFiles);
-        return new Partition(tbl, newCreatedTpart);
       }
       if(!this.getConf().getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
         StatsSetupConst.setBasicStatsState(newTPart.getParameters(), StatsSetupConst.FALSE);
       }
-      alterPartition(tbl.getDbName(), tbl.getTableName(), new Partition(tbl, newTPart.getTPartition()));
+      if (oldPart == null) {
+        newTPart.getTPartition().setParameters(new HashMap<String,String>());
+        MetaStoreUtils.populateQuickStats(HiveStatsUtils.getFileStatusRecurse(newPartPath, -1, newPartPath.getFileSystem(conf)), newTPart.getParameters());
+        getMSC().add_partition(newTPart.getTPartition());
+      } else {
+        alterPartition(tbl.getDbName(), tbl.getTableName(), new Partition(tbl, newTPart.getTPartition()));
+      }
+      return newTPart;
     } catch (IOException e) {
       LOG.error(StringUtils.stringifyException(e));
       throw new HiveException(e);
@@ -1521,8 +1530,10 @@ public class Hive {
     } catch (InvalidOperationException e) {
       LOG.error(StringUtils.stringifyException(e));
       throw new HiveException(e);
+    } catch (TException e) {
+      LOG.error(StringUtils.stringifyException(e));
+      throw new HiveException(e);
     }
-    return newTPart;
   }
 
   /**
@@ -1622,7 +1633,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @param txnId txnId, can be 0 unless isAcid == true
    * @return partition map details (PartitionSpec and Partition)
    * @throws HiveException
-   * @throws JSONException
    */
   public Map<Map<String, String>, Partition> loadDynamicPartitions(Path loadPath,
       String tableName, Map<String, String> partSpec, boolean replace,
@@ -1985,6 +1995,20 @@ private void constructOneLBLocationMap(FileStatus fSta,
                                   org.apache.hadoop.hive.metastore.api.Partition tpart,
                                   boolean inheritTableSpecs,
                                   String partPath) throws HiveException, InvalidOperationException {
+
+    alterPartitionSpecInMemory(tbl, partSpec, tpart, inheritTableSpecs, partPath);
+    String fullName = tbl.getTableName();
+    if (!org.apache.commons.lang.StringUtils.isEmpty(tbl.getDbName())) {
+      fullName = tbl.getDbName() + "." + tbl.getTableName();
+    }
+    alterPartition(fullName, new Partition(tbl, tpart));
+  }
+
+  private void alterPartitionSpecInMemory(Table tbl,
+      Map<String, String> partSpec,
+      org.apache.hadoop.hive.metastore.api.Partition tpart,
+      boolean inheritTableSpecs,
+      String partPath) throws HiveException, InvalidOperationException {
     LOG.debug("altering partition for table " + tbl.getTableName() + " with partition spec : "
         + partSpec);
     if (inheritTableSpecs) {
@@ -2001,11 +2025,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
       throw new HiveException("new partition path should not be null or empty.");
     }
     tpart.getSd().setLocation(partPath);
-    String fullName = tbl.getTableName();
-    if (!org.apache.commons.lang.StringUtils.isEmpty(tbl.getDbName())) {
-      fullName = tbl.getDbName() + "." + tbl.getTableName();
-    }
-    alterPartition(fullName, new Partition(tbl, tpart));
   }
 
   private void fireInsertEvent(Table tbl, Map<String, String> partitionSpec, List<Path> newFiles)
