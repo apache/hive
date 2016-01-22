@@ -85,12 +85,9 @@ public class TezSessionPoolManager {
 
   private boolean inited = false;
 
-
-
   private static TezSessionPoolManager sessionPool = null;
 
-  private static List<TezSessionState> openSessions = Collections
-      .synchronizedList(new LinkedList<TezSessionState>());
+  private static List<TezSessionState> openSessions = new LinkedList<TezSessionState>();
 
   public static TezSessionPoolManager getInstance()
       throws Exception {
@@ -137,6 +134,7 @@ public class TezSessionPoolManager {
             + sessionLifetimeMs + " + [0, " + sessionLifetimeJitterMs + ") ms");
       }
       expirationQueue = new PriorityBlockingQueue<>(11, new Comparator<TezSessionPoolSession>() {
+        @Override
         public int compare(TezSessionPoolSession o1, TezSessionPoolSession o2) {
           assert o1.expirationNs != null && o2.expirationNs != null;
           return o1.expirationNs.compareTo(o2.expirationNs);
@@ -144,11 +142,13 @@ public class TezSessionPoolManager {
       });
       restartQueue = new LinkedBlockingQueue<>();
       expirationThread = new Thread(new Runnable() {
+        @Override
         public void run() {
           runExpirationThread();
         }
       }, "TezSessionPool-expiration");
       restartThread = new Thread(new Runnable() {
+        @Override
         public void run() {
           runRestartThread();
         }
@@ -279,13 +279,15 @@ public class TezSessionPoolManager {
       return;
     }
 
-    // we can just stop all the sessions
-    Iterator<TezSessionState> iter = openSessions.iterator();
-    while (iter.hasNext()) {
-      TezSessionState sessionState = iter.next();
-      if (sessionState.isDefault()) {
-        sessionState.close(false);
-        iter.remove();
+    synchronized (openSessions) {
+      // we can just stop all the sessions
+      Iterator<TezSessionState> iter = openSessions.iterator();
+      while (iter.hasNext()) {
+        TezSessionState sessionState = iter.next();
+        if (sessionState.isDefault()) {
+          sessionState.close(false);
+          iter.remove();
+        }
       }
     }
 
@@ -402,8 +404,18 @@ public class TezSessionPoolManager {
     sessionState.open(conf, additionalFiles);
   }
 
-  public List<TezSessionState> getOpenSessions() {
-    return openSessions;
+  public void closeNonDefaultSessions(boolean keepTmpDir) throws Exception {
+    synchronized (openSessions) {
+      Iterator<TezSessionState> iter = openSessions.iterator();
+      while (iter.hasNext()) {
+        System.err.println("Shutting down tez session.");
+        TezSessionState sessionState = iter.next();
+        closeIfNotDefault(sessionState, keepTmpDir);
+        if (sessionState.isDefault() == false) {
+          iter.remove();
+        }
+      }
+    }
   }
 
   private void closeAndReopen(TezSessionPoolSession oldSession) throws Exception {
@@ -522,7 +534,9 @@ public class TezSessionPoolManager {
         if (LOG.isDebugEnabled()) {
           LOG.debug("Closed a pool session [" + this + "]");
         }
-        openSessions.remove(this);
+        synchronized (openSessions) {
+          openSessions.remove(this);
+        }
         if (parent.expirationQueue != null) {
           parent.expirationQueue.remove(this);
         }
@@ -534,7 +548,9 @@ public class TezSessionPoolManager {
         boolean isAsync, LogHelper console, Path scratchDir)
             throws IOException, LoginException, URISyntaxException, TezException {
       super.openInternal(conf, additionalFiles, isAsync, console, scratchDir);
-      openSessions.add(this);
+      synchronized (openSessions) {
+        openSessions.add(this);
+      }
       if (parent.expirationQueue != null) {
         long jitterModMs = (long)(parent.sessionLifetimeJitterMs * rdm.nextFloat());
         expirationNs = System.nanoTime() + (parent.sessionLifetimeMs + jitterModMs) * 1000000L;
