@@ -219,7 +219,8 @@ public class TestCompactionTxnHandler {
     assertEquals(0, txnHandler.findReadyToClean().size());
 
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
-    assertEquals(0, rsp.getCompactsSize());
+    assertEquals(1, rsp.getCompactsSize());
+    assertTrue(TxnHandler.SUCCEEDED_RESPONSE.equals(rsp.getCompacts().get(0).getState()));
   }
 
   @Test

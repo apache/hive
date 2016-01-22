@@ -36,4 +36,10 @@ public interface HouseKeeperService {
    * Returns short description of services this module provides.
    */
   public String getServiceDescription();
+
+  /**
+   * This is incremented each time the service is performed.  Can be useful to
+   * check if serivce is still alive.
+   */
+  public int getIsAliveCounter();
 }

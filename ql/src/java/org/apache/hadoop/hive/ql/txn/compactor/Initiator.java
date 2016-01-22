@@ -78,7 +78,7 @@ public class Initiator extends CompactorThread {
 
         // Wrap the inner parts of the loop in a catch throwable so that any errors in the loop
         // don't doom the entire thread.
-        try {
+        try {//todo: add method to only get current i.e. skip history - more efficient
           ShowCompactResponse currentCompactions = txnHandler.showCompact(new ShowCompactRequest());
           ValidTxnList txns =
               CompactionTxnHandler.createValidCompactTxnList(txnHandler.getOpenTxnsInfo());
@@ -119,6 +119,11 @@ public class Initiator extends CompactorThread {
                     ci.getFullPartitionName() + " so we will not initiate another compaction");
                 continue;
               }
+              if(txnHandler.checkFailedCompactions(ci)) {
+                //todo: make 'a' state entry in completed_compactions
+                LOG.warn("Will not initiate compaction for " + ci.getFullPartitionName() + " since last 3 attempts to compact it failed.");
+                continue;
+              }
 
               // Figure out who we should run the file operations as
               Partition p = resolvePartition(ci);
@@ -134,9 +139,9 @@ public class Initiator extends CompactorThread {
               if (compactionNeeded != null) requestCompaction(ci, runAs, compactionNeeded);
             } catch (Throwable t) {
               LOG.error("Caught exception while trying to determine if we should compact " +
-                  ci.getFullPartitionName() + ".  Marking clean to avoid repeated failures, " +
+                  ci + ".  Marking clean to avoid repeated failures, " +
                   "" + StringUtils.stringifyException(t));
-              txnHandler.markCleaned(ci);
+              txnHandler.markFailed(ci);
             }
           }
 
@@ -300,7 +305,7 @@ public class Initiator extends CompactorThread {
     if (ci.partName != null) rqst.setPartitionname(ci.partName);
     rqst.setRunas(runAs);
     LOG.info("Requesting compaction: " + rqst);
-    txnHandler.compact(rqst);
+    ci.id = txnHandler.compact(rqst);
   }
 
   // Because TABLE_NO_AUTO_COMPACT was originally assumed to be NO_AUTO_COMPACT and then was moved

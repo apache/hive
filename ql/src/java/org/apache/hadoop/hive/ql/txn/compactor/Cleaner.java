@@ -189,6 +189,7 @@ public class Cleaner extends CompactorThread {
       if (t == null) {
         // The table was dropped before we got around to cleaning it.
         LOG.info("Unable to find table " + ci.getFullTableName() + ", assuming it was dropped");
+        txnHandler.markCleaned(ci);
         return;
       }
       Partition p = null;
@@ -198,6 +199,7 @@ public class Cleaner extends CompactorThread {
           // The partition was dropped before we got around to cleaning it.
           LOG.info("Unable to find partition " + ci.getFullPartitionName() +
               ", assuming it was dropped");
+          txnHandler.markCleaned(ci);
           return;
         }
       }
@@ -223,13 +225,11 @@ public class Cleaner extends CompactorThread {
           }
         });
       }
-
-    } catch (Exception e) {
-      LOG.error("Caught exception when cleaning, unable to complete cleaning " +
-          StringUtils.stringifyException(e));
-    } finally {
-      // We need to clean this out one way or another.
       txnHandler.markCleaned(ci);
+    } catch (Exception e) {
+      LOG.error("Caught exception when cleaning, unable to complete cleaning of " + ci + " " +
+          StringUtils.stringifyException(e));
+      txnHandler.markFailed(ci);
     }
   }
 

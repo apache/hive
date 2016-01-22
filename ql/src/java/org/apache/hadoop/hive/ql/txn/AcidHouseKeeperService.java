@@ -17,17 +17,12 @@
  */
 package org.apache.hadoop.hive.ql.txn;
 
+import org.apache.hadoop.hive.ql.txn.compactor.HouseKeeperServiceBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.HouseKeeperService;
 import org.apache.hadoop.hive.metastore.txn.TxnHandler;
-import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
-import org.apache.hadoop.hive.ql.lockmgr.TxnManagerFactory;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -35,71 +30,45 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Performs background tasks for Transaction management in Hive.
  * Runs inside Hive Metastore Service.
  */
-public class AcidHouseKeeperService implements HouseKeeperService {
+public class AcidHouseKeeperService extends HouseKeeperServiceBase {
   private static final Logger LOG = LoggerFactory.getLogger(AcidHouseKeeperService.class);
-  private ScheduledExecutorService pool = null;
-  private final AtomicInteger isAliveCounter = new AtomicInteger(Integer.MIN_VALUE);
+
   @Override
-  public void start(HiveConf hiveConf) throws Exception {
-    HiveTxnManager mgr = TxnManagerFactory.getTxnManagerFactory().getTxnManager(hiveConf);
-    if(!mgr.supportsAcid()) {
-      LOG.info(AcidHouseKeeperService.class.getName() + " not started since " +
-        mgr.getClass().getName()  + " does not support Acid.");
-      return;//there are no transactions in this case
-    }
-    pool = Executors.newScheduledThreadPool(1, new ThreadFactory() {
-      private final AtomicInteger threadCounter = new AtomicInteger();
-      @Override
-      public Thread newThread(Runnable r) {
-        return new Thread(r, "DeadTxnReaper-" + threadCounter.getAndIncrement());
-      }
-    });
-    TimeUnit tu = TimeUnit.MILLISECONDS;
-    pool.scheduleAtFixedRate(new TimedoutTxnReaper(hiveConf, this),
-      hiveConf.getTimeVar(HiveConf.ConfVars.HIVE_TIMEDOUT_TXN_REAPER_START, tu),
-      hiveConf.getTimeVar(HiveConf.ConfVars.HIVE_TIMEDOUT_TXN_REAPER_INTERVAL, tu),
-      TimeUnit.MILLISECONDS);
-    LOG.info("Started " + this.getClass().getName() + " with delay/interval = " +
-      hiveConf.getTimeVar(HiveConf.ConfVars.HIVE_TIMEDOUT_TXN_REAPER_START, tu) + "/" +
-      hiveConf.getTimeVar(HiveConf.ConfVars.HIVE_TIMEDOUT_TXN_REAPER_INTERVAL, tu) + " " + tu);
+  protected long getStartDelayMs() {
+    return hiveConf.getTimeVar(HiveConf.ConfVars.HIVE_TIMEDOUT_TXN_REAPER_START, TimeUnit.MILLISECONDS);
   }
   @Override
-  public void stop() {
-    if(pool != null && !pool.isShutdown()) {
-      pool.shutdown();
-    }
-    pool = null;
+  protected long getIntervalMs() {
+    return hiveConf.getTimeVar(HiveConf.ConfVars.HIVE_TIMEDOUT_TXN_REAPER_INTERVAL, TimeUnit.MILLISECONDS);
   }
+  @Override
+  protected Runnable getScheduedAction(HiveConf hiveConf, AtomicInteger isAliveCounter) {
+    return new TimedoutTxnReaper(hiveConf, isAliveCounter);
+  }
+
   @Override
   public String getServiceDescription() {
     return "Abort expired transactions";
   }
+
   private static final class TimedoutTxnReaper implements Runnable {
     private final TxnHandler txnHandler;
-    private final AcidHouseKeeperService owner;
-    private TimedoutTxnReaper(HiveConf hiveConf, AcidHouseKeeperService owner) {
+    private final AtomicInteger isAliveCounter;
+    private TimedoutTxnReaper(HiveConf hiveConf, AtomicInteger isAliveCounter) {
       txnHandler = new TxnHandler(hiveConf);
-      this.owner = owner;
+      this.isAliveCounter = isAliveCounter;
     }
     @Override
     public void run() {
       try {
         long startTime = System.currentTimeMillis();
         txnHandler.performTimeOuts();
-        int count = owner.isAliveCounter.incrementAndGet();
+        int count = isAliveCounter.incrementAndGet();
         LOG.info("timeout reaper ran for " + (System.currentTimeMillis() - startTime)/1000 + "seconds.  isAliveCounter=" + count);
       }
       catch(Throwable t) {
         LOG.error("Serious error in {}", Thread.currentThread().getName(), ": {}" + t.getMessage(), t);
       }
     }
-  }
-
-  /**
-   * This is used for testing only.  Each time the housekeeper runs, counter is incremented by 1.
-   * Starts with {@link java.lang.Integer#MIN_VALUE}
-   */
-  public int getIsAliveCounter() {
-    return isAliveCounter.get();
   }
 }

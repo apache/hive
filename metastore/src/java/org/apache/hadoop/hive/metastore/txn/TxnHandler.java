@@ -64,14 +64,20 @@ import java.util.concurrent.TimeUnit;
 @InterfaceAudience.Private
 @InterfaceStability.Evolving
 public class TxnHandler {
-  // Compactor states
+  // Compactor states (Should really be enum)
   static final public String INITIATED_RESPONSE = "initiated";
   static final public String WORKING_RESPONSE = "working";
   static final public String CLEANING_RESPONSE = "ready for cleaning";
+  static final public String FAILED_RESPONSE = "failed";
+  static final public String SUCCEEDED_RESPONSE = "succeeded";
+  static final public String ATTEMPTED_RESPONSE = "attempted";
 
   static final protected char INITIATED_STATE = 'i';
   static final protected char WORKING_STATE = 'w';
   static final protected char READY_FOR_CLEANING = 'r';
+  static final char FAILED_STATE = 'f';
+  static final char SUCCEEDED_STATE = 's';
+  static final char ATTEMPTED_STATE = 'a';
 
   // Compactor types
   static final protected char MAJOR_TYPE = 'a';
@@ -759,7 +765,7 @@ public class TxnHandler {
     }
   }
 
-  public void compact(CompactionRequest rqst) throws MetaException {
+  public long compact(CompactionRequest rqst) throws MetaException {
     // Put a compaction request in the queue.
     try {
       Connection dbConn = null;
@@ -826,6 +832,7 @@ public class TxnHandler {
         stmt.executeUpdate(s);
         LOG.debug("Going to commit");
         dbConn.commit();
+        return id;
       } catch (SQLException e) {
         LOG.debug("Going to rollback");
         rollbackDBConn(dbConn);
@@ -837,7 +844,7 @@ public class TxnHandler {
         closeDbConn(dbConn);
       }
     } catch (RetryException e) {
-      compact(rqst);
+      return compact(rqst);
     }
   }
 
@@ -850,7 +857,13 @@ public class TxnHandler {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
         String s = "select cq_database, cq_table, cq_partition, cq_state, cq_type, cq_worker_id, " +
-          "cq_start, cq_run_as from COMPACTION_QUEUE";
+          "cq_start, -1 cc_end, cq_run_as, cq_hadoop_job_id, cq_id from COMPACTION_QUEUE union all " +
+          "select cc_database, cc_table, cc_partition, cc_state, cc_type, cc_worker_id, " +
+          "cc_start, cc_end, cc_run_as, cc_hadoop_job_id, cc_id from COMPLETED_COMPACTIONS";
+        //what I want is order by cc_end desc, cc_start asc (but derby has a bug https://issues.apache.org/jira/browse/DERBY-6013)
+        //to sort so that currently running jobs are at the end of the list (bottom of screen)
+        //and currently running ones are in sorted by start time
+        //w/o order by likely currently running compactions will be first (LHS of Union)
         LOG.debug("Going to execute query <" + s + ">");
         ResultSet rs = stmt.executeQuery(s);
         while (rs.next()) {
@@ -862,16 +875,26 @@ public class TxnHandler {
             case INITIATED_STATE: e.setState(INITIATED_RESPONSE); break;
             case WORKING_STATE: e.setState(WORKING_RESPONSE); break;
             case READY_FOR_CLEANING: e.setState(CLEANING_RESPONSE); break;
-            default: throw new MetaException("Unexpected compaction state " + rs.getString(4));
+            case FAILED_STATE: e.setState(FAILED_RESPONSE); break;
+            case SUCCEEDED_STATE: e.setState(SUCCEEDED_RESPONSE); break;
+            default:
+              //do nothing to handle RU/D if we add another status
           }
           switch (rs.getString(5).charAt(0)) {
             case MAJOR_TYPE: e.setType(CompactionType.MAJOR); break;
             case MINOR_TYPE: e.setType(CompactionType.MINOR); break;
-            default: throw new MetaException("Unexpected compaction type " + rs.getString(5));
+            default:
+              //do nothing to handle RU/D if we add another status
           }
           e.setWorkerid(rs.getString(6));
           e.setStart(rs.getLong(7));
-          e.setRunAs(rs.getString(8));
+          long endTime = rs.getLong(8);
+          if(endTime != -1) {
+            e.setEndTime(endTime);
+          }
+          e.setRunAs(rs.getString(9));
+          e.setHadoopJobId(rs.getString(10));
+          long id = rs.getLong(11);//for debugging
           response.addToCompacts(e);
         }
         LOG.debug("Going to rollback");
@@ -2331,41 +2354,29 @@ public class TxnHandler {
         throw new MetaException(msg);
     }
   }
-  /**
-   * the caller is expected to retry if this fails
-   *
-   * @return
-   * @throws SQLException
-   * @throws MetaException
-   */
-  private long generateNewExtLockId() throws SQLException, MetaException {
-    Connection dbConn = null;
-    Statement stmt = null;
-    ResultSet rs = null;
-    try {
-      dbConn = getDbConn(getRequiredIsolationLevel());
-      stmt = dbConn.createStatement();
-
-      // Get the next lock id.
-      String s = addForUpdateClause(dbConn, "select nl_next from NEXT_LOCK_ID");
-      LOG.debug("Going to execute query <" + s + ">");
-      rs = stmt.executeQuery(s);
-      if (!rs.next()) {
-        LOG.debug("Going to rollback");
-        dbConn.rollback();
-        throw new MetaException("Transaction tables not properly " +
-          "initialized, no record found in next_lock_id");
-      }
-      long extLockId = rs.getLong(1);
-      s = "update NEXT_LOCK_ID set nl_next = " + (extLockId + 1);
-      LOG.debug("Going to execute update <" + s + ">");
-      stmt.executeUpdate(s);
-      LOG.debug("Going to commit.");
-      dbConn.commit();
-      return extLockId;
+  static String quoteString(String input) {
+    return "'" + input + "'";
+  }
+  static CompactionType dbCompactionType2ThriftType(char dbValue) {
+    switch (dbValue) {
+      case MAJOR_TYPE:
+        return CompactionType.MAJOR;
+      case MINOR_TYPE:
+        return CompactionType.MINOR;
+      default:
+        LOG.warn("Unexpected compaction type " + dbValue);
+        return null;
     }
-    finally {
-      close(rs, stmt, dbConn);
+  }
+  static Character thriftCompactionType2DbType(CompactionType ct) {
+    switch (ct) {
+      case MAJOR:
+        return MAJOR_TYPE;
+      case MINOR:
+        return MINOR_TYPE;
+      default:
+        LOG.warn("Unexpected compaction type " + ct);
+        return null;
     }
   }
 }
