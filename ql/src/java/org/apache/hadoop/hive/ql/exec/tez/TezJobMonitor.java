@@ -110,21 +110,18 @@ public class TezJobMonitor {
   private final NumberFormat secondsFormat;
   private final NumberFormat commaFormat;
   private static final List<DAGClient> shutdownList;
-  private Map<String, BaseWork> workMap;
+  private final Map<String, BaseWork> workMap;
 
   private StringBuffer diagnostics;
 
   static {
-    shutdownList = Collections.synchronizedList(new LinkedList<DAGClient>());
+    shutdownList = new LinkedList<DAGClient>();
     Runtime.getRuntime().addShutdownHook(new Thread() {
       @Override
       public void run() {
         TezJobMonitor.killRunningJobs();
         try {
-          for (TezSessionState s : TezSessionPoolManager.getInstance().getOpenSessions()) {
-            System.err.println("Shutting down tez session.");
-            TezSessionPoolManager.getInstance().closeIfNotDefault(s, false);
-          }
+          TezSessionPoolManager.getInstance().closeNonDefaultSessions(false);
         } catch (Exception e) {
           // ignore
         }
@@ -225,7 +222,9 @@ public class TezJobMonitor {
       Utilities.isPerfOrAboveLogging(conf);
 
     boolean inPlaceEligible = InPlaceUpdates.inPlaceEligible(conf);
-    shutdownList.add(dagClient);
+    synchronized(shutdownList) {
+      shutdownList.add(dagClient);
+    }
     console.printInfo("\n");
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_RUN_DAG);
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_SUBMIT_TO_RUNNING);
@@ -350,7 +349,9 @@ public class TezJobMonitor {
               diagnostics.append(diag);
             }
           }
-          shutdownList.remove(dagClient);
+          synchronized(shutdownList) {
+            shutdownList.remove(dagClient);
+          }
           break;
         }
       }
@@ -376,12 +377,14 @@ public class TezJobMonitor {
    * currently running tez queries. No guarantees, best effort only.
    */
   public static void killRunningJobs() {
-    for (DAGClient c: shutdownList) {
-      try {
-        System.err.println("Trying to shutdown DAG");
-        c.tryKillDAG();
-      } catch (Exception e) {
-        // ignore
+    synchronized (shutdownList) {
+      for (DAGClient c : shutdownList) {
+        try {
+          System.err.println("Trying to shutdown DAG");
+          c.tryKillDAG();
+        } catch (Exception e) {
+          // ignore
+        }
       }
     }
   }
