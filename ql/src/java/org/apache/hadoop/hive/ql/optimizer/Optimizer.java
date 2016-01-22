@@ -100,7 +100,8 @@ public class Optimizer {
       }
       transformations.add(new SyntheticJoinPredicate());
       transformations.add(new PredicatePushDown());
-    } else if (pctx.getContext().isCboSucceeded()) {
+    } else if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTPPD) &&
+            pctx.getContext().isCboSucceeded()) {
       if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTCONSTANTPROPAGATION)) {
         transformations.add(new ConstantPropagate());
       }
