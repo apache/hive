@@ -85,7 +85,6 @@ import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.InsertEventRequestData;
-import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -1479,11 +1478,11 @@ public class Hive {
         newPartPath = oldPartPath;
       }
       List<Path> newFiles = null;
-      if (replace) {
+      if (replace || (oldPart == null && !isAcid)) {
         Hive.replaceFiles(tbl.getPath(), loadPath, newPartPath, oldPartPath, getConf(),
             isSrcLocal);
       } else {
-        if (conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML) && !tbl.isTemporary()) {
+        if (conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML) && !tbl.isTemporary() && oldPart != null) {
           newFiles = new ArrayList<>();
         }
 
@@ -1493,7 +1492,7 @@ public class Hive {
       Partition newTPart = oldPart != null ? oldPart : new Partition(tbl, partSpec, newPartPath);
       alterPartitionSpecInMemory(tbl, partSpec, newTPart.getTPartition(), inheritTableSpecs, newPartPath.toString());
       validatePartition(newTPart);
-      if (oldPart != null && null != newFiles) {
+      if (null != newFiles) {
         fireInsertEvent(tbl, partSpec, newFiles);
       }
 
@@ -2595,21 +2594,20 @@ private void constructOneLBLocationMap(FileStatus fSta,
             continue;
           }
 
-          // Strip off the file type, if any so we don't make:
-          // 000000_0.gz -> 000000_0.gz_copy_1
-          String name = itemSource.getName();
-          String filetype;
-          int index = name.lastIndexOf('.');
-          if (index >= 0) {
-            filetype = name.substring(index);
-            name = name.substring(0, index);
-          } else {
-            filetype = "";
-          }
-
           Path itemDest = new Path(destf, itemSource.getName());
 
           if (!replace) {
+            // Strip off the file type, if any so we don't make:
+            // 000000_0.gz -> 000000_0.gz_copy_1
+            String name = itemSource.getName();
+            String filetype;
+            int index = name.lastIndexOf('.');
+            if (index >= 0) {
+              filetype = name.substring(index);
+              name = name.substring(0, index);
+            } else {
+              filetype = "";
+            }
             // It's possible that the file we're copying may have the same
             // relative name as an existing file in the "destf" directory.
             // So let's make a quick check to see if we can rename any
@@ -2724,7 +2722,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     try {
       if (inheritPerms || replace) {
         try{
-          destStatus = shims.getFullFileStatus(conf, destFs, destf.getParent());
+          destStatus = shims.getFullFileStatus(conf, destFs, destf);
           //if destf is an existing directory:
           //if replace is true, delete followed by rename(mv) is equivalent to replace
           //if replace is false, rename (mv) actually move the src under dest dir
@@ -2759,7 +2757,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
             if (srcs.length == 0) {
               success = true; // Nothing to move.
             }
-
             /* Move files one by one because source is a subdirectory of destination */
             for (FileStatus status : srcs) {
               Path destFile;
@@ -2989,7 +2986,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
     try {
 
       FileSystem destFs = destf.getFileSystem(conf);
-
       // check if srcf contains nested sub-directories
       FileStatus[] srcs;
       FileSystem srcFs;
@@ -3003,7 +2999,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
         LOG.info("No sources specified to move: " + srcf);
         return;
       }
-      List<List<Path[]>> result = checkPaths(conf, destFs, srcs, srcFs, destf, true);
 
       if (oldPath != null) {
         boolean oldPathDeleted = false;
@@ -3020,7 +3015,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
               // existing content might result in incorrect (extra) data.
               // But not sure why we changed not to delete the oldPath in HIVE-8750 if it is
               // not the destf or its subdir?
-              oldPathDeleted = FileUtils.trashFilesUnderDir(fs2, oldPath, conf);
+              oldPathDeleted = FileUtils.trashFilesUnderDir(fs2, oldPath, conf, true);
             }
           }
         } catch (IOException e) {
@@ -3052,10 +3047,14 @@ private void constructOneLBLocationMap(FileStatus fSta,
       // directory if it is the root of an HDFS encryption zone.
       // 2. srcs must be a list of files -- ensured by LoadSemanticAnalyzer
       // in both cases, we move the file under destf
-      for (List<Path[]> sdpairs : result) {
-        for (Path[] sdpair : sdpairs) {
-          if (!moveFile(conf, sdpair[0], sdpair[1], true, isSrcLocal)) {
-            throw new IOException("Error moving: " + sdpair[0] + " into: " + sdpair[1]);
+      if (srcs.length == 1 && srcs[0].isDirectory()) {
+        if (!moveFile(conf, srcs[0].getPath(), destf, true, isSrcLocal)) {
+          throw new IOException("Error moving: " + srcf + " into: " + destf);
+        }
+      } else { // its either a file or glob
+        for (FileStatus src : srcs) {
+          if (!moveFile(conf, src.getPath(), new Path(destf, src.getPath().getName()), true, isSrcLocal)) {
+            throw new IOException("Error moving: " + srcf + " into: " + destf);
           }
         }
       }

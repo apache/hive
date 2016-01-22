@@ -578,20 +578,6 @@ public final class FileUtils {
    * @param fs FileSystem to use
    * @param f path of directory
    * @param conf hive configuration
-   * @return true if deletion successful
-   * @throws FileNotFoundException
-   * @throws IOException
-   */
-  public static boolean trashFilesUnderDir(FileSystem fs, Path f, Configuration conf)
-      throws FileNotFoundException, IOException {
-    return trashFilesUnderDir(fs, f, conf, true);
-  }
-
-  /**
-   * Trashes or deletes all files under a directory. Leaves the directory as is.
-   * @param fs FileSystem to use
-   * @param f path of directory
-   * @param conf hive configuration
    * @param forceDelete whether to force delete files if trashing does not succeed
    * @return true if deletion successful
    * @throws FileNotFoundException
