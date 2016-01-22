@@ -155,6 +155,9 @@ public class Driver implements CommandProcessor {
 
   private String userName;
 
+  // For WebUI.  Kept alive after queryPlan is freed.
+  private String savedQueryString;
+
   private boolean checkConcurrency() {
     boolean supportConcurrency = conf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY);
     if (!supportConcurrency) {
@@ -379,6 +382,7 @@ public class Driver implements CommandProcessor {
     } catch (Exception e) {
       LOG.warn("WARNING! Query command could not be redacted." + e);
     }
+    this.savedQueryString = queryStr;
 
     //holder for parent command type/string when executing reentrant queries
     QueryState queryState = new QueryState();
@@ -1877,4 +1881,8 @@ public class Driver implements CommandProcessor {
     return errorMessage;
   }
 
+
+  public String getQueryString() {
+    return savedQueryString == null ? "Unknown" : savedQueryString;
+  }
 }

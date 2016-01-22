@@ -24,11 +24,13 @@
   import="org.apache.hive.common.util.HiveVersionInfo"
   import="org.apache.hive.service.cli.operation.Operation"
   import="org.apache.hive.service.cli.operation.SQLOperation"
+  import="org.apache.hive.service.cli.operation.SQLOperationInfo"
   import="org.apache.hive.service.cli.session.SessionManager"
   import="org.apache.hive.service.cli.session.HiveSession"
   import="javax.servlet.ServletContext"
   import="java.util.Collection"
   import="java.util.Date"
+  import="java.util.List"
 %>
 
 <%
@@ -145,7 +147,7 @@ for (Operation operation: operations) {
         <td><%= query.getQueryStr() %></td>
         <td><%= query.getConfigForOperation().getVar(ConfVars.HIVE_EXECUTION_ENGINE) %>
         <td><%= query.getStatus().getState() %></td>
-        <td><%= (currentTime - query.getLastAccessTime())/1000 %></td>
+        <td><%= (currentTime - query.getBeginTime())/1000 %></td>
     </tr>
 <%
   }
@@ -156,6 +158,43 @@ for (Operation operation: operations) {
 </tr>
 </table>
 </section>
+
+
+<section>
+<h2>Last Max <%= conf.get(ConfVars.HIVE_SERVER2_WEBUI_MAX_HISTORIC_QUERIES.varname) %> Completed Queries</h2>
+<table id="attributes_table" class="table table-striped">
+    <tr>
+        <th>User Name</th>
+        <th>Query</th>
+        <th>Execution Engine</th>
+        <th>State</th>
+        <th>Elapsed Time (s)</th>
+        <th>End Time </th>
+    </tr>
+<%
+queries = 0;
+List<SQLOperationInfo> sqlOperations = sessionManager.getOperationManager().getHistoricalSQLOpInfo();
+for (SQLOperationInfo sqlOperation: sqlOperations) {
+  queries++;
+%>
+    <tr>
+        <td><%= sqlOperation.userName %></td>
+        <td><%= sqlOperation.queryStr %></td>
+        <td><%= sqlOperation.executionEngine %></td>
+        <td><%= sqlOperation.endState %></td>
+        <td><%= sqlOperation.elapsedTime %></td>
+        <td><%= new Date(sqlOperation.endTime) %></td>
+    </tr>
+<%
+}
+
+%>
+<tr>
+  <td colspan="6">Total number of queries: <%= queries %></td>
+</tr>
+</table>
+</section>
+
 <% 
  }
 %>

@@ -72,6 +72,7 @@ public abstract class Operation {
 
   private long operationTimeout;
   private volatile long lastAccessTime;
+  private final long beginTime;
 
   protected static final EnumSet<FetchOrientation> DEFAULT_FETCH_ORIENTATION_SET =
       EnumSet.of(FetchOrientation.FETCH_NEXT,FetchOrientation.FETCH_FIRST);
@@ -87,7 +88,8 @@ public abstract class Operation {
     }
     this.runAsync = runInBackground;
     this.opHandle = new OperationHandle(opType, parentSession.getProtocolVersion());
-    lastAccessTime = System.currentTimeMillis();
+    beginTime = System.currentTimeMillis();
+    lastAccessTime = beginTime;
     operationTimeout = HiveConf.getTimeVar(parentSession.getHiveConf(),
         HiveConf.ConfVars.HIVE_SERVER2_IDLE_OPERATION_TIMEOUT, TimeUnit.MILLISECONDS);
     setMetrics(state);
@@ -410,5 +412,13 @@ public abstract class Operation {
          LOG.warn("Error metrics", e);
        }
     }
+  }
+
+  public long getBeginTime() {
+    return beginTime;
+  }
+
+  protected OperationState getState() {
+    return state;
   }
 }
