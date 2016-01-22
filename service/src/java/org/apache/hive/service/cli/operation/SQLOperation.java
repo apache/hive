@@ -163,7 +163,7 @@ public class SQLOperation extends ExecuteStatementOperation {
   }
 
   public String getQueryStr() {
-    return driver == null || driver.getPlan() == null ? "Unknown" : driver.getPlan().getQueryStr();
+    return driver == null ? "Unknown" : driver.getQueryString();
   }
 
   private void runQuery(HiveConf sqlOperationConf) throws HiveSQLException {
@@ -199,6 +199,7 @@ public class SQLOperation extends ExecuteStatementOperation {
   public void runInternal() throws HiveSQLException {
     setState(OperationState.PENDING);
     final HiveConf opConfig = getConfigForOperation();
+
     prepare(opConfig);
     if (!shouldRunAsync()) {
       runQuery(opConfig);
@@ -304,6 +305,7 @@ public class SQLOperation extends ExecuteStatementOperation {
         backgroundHandle.cancel(true);
       }
     }
+
     if (driver != null) {
       driver.close();
       driver.destroy();
@@ -478,5 +480,23 @@ public class SQLOperation extends ExecuteStatementOperation {
       }
     }
     return sqlOperationConf;
+  }
+
+  /**
+   * Get summary information of this SQLOperation for display in WebUI.
+   */
+  public SQLOperationInfo getSQLOperationInfo() {
+    try {
+      return new SQLOperationInfo(
+        getParentSession().getUserName(),
+        driver.getQueryString(),
+        getConfigForOperation().getVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE),
+        getState(),
+        (int) (System.currentTimeMillis() - getBeginTime()) / 1000,
+        System.currentTimeMillis());
+    } catch (HiveSQLException e) {
+      LOG.warn("Error calcluating SQL Operation Info for webui", e);
+    }
+    return null;
   }
 }

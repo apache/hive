@@ -22,10 +22,14 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.google.common.collect.EvictingQueue;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
@@ -61,6 +65,9 @@ public class OperationManager extends AbstractService {
   private final ConcurrentHashMap<OperationHandle, Operation> handleToOperation =
       new ConcurrentHashMap<OperationHandle, Operation>();
 
+  //for displaying historical queries on WebUI
+  private Queue<SQLOperationInfo> historicSqlOperations;
+
   public OperationManager() {
     super(OperationManager.class.getSimpleName());
   }
@@ -72,6 +79,11 @@ public class OperationManager extends AbstractService {
         HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LEVEL));
     } else {
       LOG.debug("Operation level logging is turned off");
+    }
+    if ((hiveConf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_PORT) != 0) &&
+      hiveConf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_MAX_HISTORIC_QUERIES) > 0) {
+      historicSqlOperations = EvictingQueue.create(
+        hiveConf.getIntVar(ConfVars.HIVE_SERVER2_WEBUI_MAX_HISTORIC_QUERIES));
     }
     super.init(hiveConf);
   }
@@ -174,6 +186,7 @@ public class OperationManager extends AbstractService {
     Operation operation = handleToOperation.get(operationHandle);
     if (operation != null && operation.isTimedOut(System.currentTimeMillis())) {
       handleToOperation.remove(operationHandle, operation);
+      cacheOldOperationInfo(operation);
       return operation;
     }
     return null;
@@ -184,7 +197,9 @@ public class OperationManager extends AbstractService {
   }
 
   private Operation removeOperation(OperationHandle opHandle) {
-    return handleToOperation.remove(opHandle);
+    Operation result = handleToOperation.remove(opHandle);
+    cacheOldOperationInfo(result);
+    return result;
   }
 
   public OperationStatus getOperationStatus(OperationHandle opHandle)
@@ -312,5 +327,37 @@ public class OperationManager extends AbstractService {
       }
     }
     return removed;
+  }
+
+  //Cache a number of historical operation info, at max number of
+  //hive.server2.webui.max.historic.queries.
+  private void cacheOldOperationInfo(Operation oldOperation) {
+    if ((getHiveConf().getIntVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_PORT) != 0) &&
+      getHiveConf().getIntVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_MAX_HISTORIC_QUERIES) > 0) {
+      if (oldOperation instanceof SQLOperation) {
+        SQLOperation query = (SQLOperation) oldOperation;
+        SQLOperationInfo queryInfo = query.getSQLOperationInfo();
+        if (queryInfo != null) {
+          synchronized (historicSqlOperations) {
+            historicSqlOperations.add(queryInfo);
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * @return a number of historical SQLOperation info, at max number of
+   * hive.server2.webui.max.historic.queries
+   */
+  public List<SQLOperationInfo> getHistoricalSQLOpInfo() {
+    List<SQLOperationInfo> result = new LinkedList<>();
+    synchronized (historicSqlOperations) {
+      Iterator<SQLOperationInfo> opIterator = historicSqlOperations.iterator();
+      while (opIterator.hasNext()) {
+        result.add(opIterator.next());
+      }
+    }
+    return result;
   }
 }

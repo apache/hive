@@ -1910,6 +1910,8 @@ public class HiveConf extends Configuration {
         "HTTP/_HOST@EXAMPLE.COM", "The HiveServer2 WebUI SPNEGO service principal.\n" +
         "The special string _HOST will be replaced automatically with \n" +
         "the value of hive.server2.webui.host or the correct host name."),
+    HIVE_SERVER2_WEBUI_MAX_HISTORIC_QUERIES("hive.server2.webui.max.historic.queries", 25,
+        "The maximum number of past queries to show in HiverSever2 WebUI."),
 
     // Tez session settings
     HIVE_SERVER2_TEZ_DEFAULT_QUEUES("hive.server2.tez.default.queues", "",

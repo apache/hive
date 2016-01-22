@@ -125,7 +125,7 @@
     <commons-dbcp.version>1.4</commons-dbcp.version>
     <derby.version>10.10.2.0</derby.version>
     <dropwizard.version>3.1.0</dropwizard.version>
-    <guava.version>14.0.1</guava.version>
+    <guava.version>15.0</guava.version>
     <groovy.version>2.4.4</groovy.version>
     <hadoop.version>2.6.0</hadoop.version>
     <hadoop.bin.path>${basedir}/${hive.path.to.root}/testutils/hadoop</hadoop.bin.path>
