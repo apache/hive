@@ -174,16 +174,7 @@ public class CompactionTxnHandler extends TxnHandler {
           info.dbname = rs.getString(2);
           info.tableName = rs.getString(3);
           info.partName = rs.getString(4);
-          switch (rs.getString(5).charAt(0)) {
-            case MAJOR_TYPE:
-              info.type = CompactionType.MAJOR;
-              break;
-            case MINOR_TYPE:
-              info.type = CompactionType.MINOR;
-              break;
-            default:
-              throw new MetaException("Unexpected compaction type " + rs.getString(5));
-          }
+          info.type = dbCompactionType2ThriftType(rs.getString(5).charAt(0));
           // Now, update this record as being worked on by this worker.
           long now = getDbTime(dbConn);
           s = "update COMPACTION_QUEUE set cq_worker_id = '" + workerId + "', " +
@@ -291,8 +282,7 @@ public class CompactionTxnHandler extends TxnHandler {
             default: throw new MetaException("Unexpected compaction type " + rs.getString(5));
           }
           info.runAs = rs.getString(6);
-          long highestTxnId = rs.getLong(7);
-          info.highestTxnId = rs.wasNull() ? null : highestTxnId;
+          info.highestTxnId = rs.getLong(7);
           rc.add(info);
         }
         LOG.debug("Going to rollback");
@@ -323,13 +313,19 @@ public class CompactionTxnHandler extends TxnHandler {
     try {
       Connection dbConn = null;
       Statement stmt = null;
+      PreparedStatement pStmt = null;
       ResultSet rs = null;
       try {
-        //do we need serializable?  Once we have the HWM as above, no.  Before that
-        //it's debatable, but problem described above applies either way
-        //Thus can drop to RC
-        dbConn = getDbConn(Connection.TRANSACTION_SERIALIZABLE);
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
+        rs = stmt.executeQuery("select CQ_ID, CQ_DATABASE, CQ_TABLE, CQ_PARTITION, CQ_STATE, CQ_TYPE, CQ_WORKER_ID, CQ_START, CQ_RUN_AS, CQ_HIGHEST_TXN_ID, CQ_META_INFO, CQ_HADOOP_JOB_ID from COMPACTION_QUEUE WHERE CQ_ID = " + info.id);
+        if(rs.next()) {
+          info = CompactionInfo.loadFullFromCompactionQueue(rs);
+        }
+        else {
+          throw new IllegalStateException("No record with CQ_ID=" + info.id + " found in COMPACTION_QUEUE");
+        }
+        close(rs);
         String s = "delete from COMPACTION_QUEUE where cq_id = " + info.id;
         LOG.debug("Going to execute update <" + s + ">");
         int updCount = stmt.executeUpdate(s);
@@ -338,6 +334,10 @@ public class CompactionTxnHandler extends TxnHandler {
           LOG.debug("Going to rollback");
           dbConn.rollback();
         }
+        pStmt = dbConn.prepareStatement("insert into COMPLETED_COMPACTIONS(CC_ID, CC_DATABASE, CC_TABLE, CC_PARTITION, CC_STATE, CC_TYPE, CC_WORKER_ID, CC_START, CC_END, CC_RUN_AS, CC_HIGHEST_TXN_ID, CC_META_INFO, CC_HADOOP_JOB_ID) VALUES(?,?,?,?,?, ?,?,?,?,?, ?,?,?)");
+        info.state = SUCCEEDED_STATE;
+        CompactionInfo.insertIntoCompletedCompactions(pStmt, info, getDbTime(dbConn));
+        updCount = pStmt.executeUpdate();
 
         // Remove entries from completed_txn_components as well, so we don't start looking there
         // again but only up to the highest txn ID include in this compaction job.
@@ -347,7 +347,7 @@ public class CompactionTxnHandler extends TxnHandler {
         if (info.partName != null) {
           s += " and ctc_partition = '" + info.partName + "'";
         }
-        if(info.highestTxnId != null) {
+        if(info.highestTxnId != 0) {
           s += " and ctc_txnid <= " + info.highestTxnId;
         }
         LOG.debug("Going to execute update <" + s + ">");
@@ -358,7 +358,7 @@ public class CompactionTxnHandler extends TxnHandler {
 
         s = "select distinct txn_id from TXNS, TXN_COMPONENTS where txn_id = tc_txnid and txn_state = '" +
           TXN_ABORTED + "' and tc_database = '" + info.dbname + "' and tc_table = '" +
-          info.tableName + "'" + (info.highestTxnId == null ? "" : " and txn_id <= " + info.highestTxnId);
+          info.tableName + "'" + (info.highestTxnId == 0 ? "" : " and txn_id <= " + info.highestTxnId);
         if (info.partName != null) s += " and tc_partition = '" + info.partName + "'";
         LOG.debug("Going to execute update <" + s + ">");
         rs = stmt.executeQuery(s);
@@ -406,6 +406,7 @@ public class CompactionTxnHandler extends TxnHandler {
         throw new MetaException("Unable to connect to transaction database " +
           StringUtils.stringifyException(e));
       } finally {
+        closeStmt(pStmt);
         close(rs, stmt, dbConn);
       }
     } catch (RetryException e) {
@@ -668,6 +669,225 @@ public class CompactionTxnHandler extends TxnHandler {
       setCompactionHighestTxnId(ci, highestTxnId);
     }
   }
+  private static class RetentionCounters {
+    int attemptedRetention = 0;
+    int failedRetention = 0;
+    int succeededRetention = 0;
+    RetentionCounters(int attemptedRetention, int failedRetention, int succeededRetention) {
+      this.attemptedRetention = attemptedRetention;
+      this.failedRetention = failedRetention;
+      this.succeededRetention = succeededRetention;
+    }
+  }
+  private void checkForDeletion(List<Long> deleteSet, CompactionInfo ci, RetentionCounters rc) {
+    switch (ci.state) {
+      case ATTEMPTED_STATE:
+        if(--rc.attemptedRetention < 0) {
+          deleteSet.add(ci.id);
+        }
+        break;
+      case FAILED_STATE:
+        if(--rc.failedRetention < 0) {
+          deleteSet.add(ci.id);
+        }
+        break;
+      case SUCCEEDED_STATE:
+        if(--rc.succeededRetention < 0) {
+          deleteSet.add(ci.id);
+        }
+        break;
+      default:
+        //do nothing to hanlde future RU/D where we may want to add new state types
+    }
+  }
+
+  /**
+   * For any given compactable entity (partition, table if not partitioned) the history of compactions
+   * may look like "sssfffaaasffss", for example.  The idea is to retain the tail (most recent) of the
+   * history such that a configurable number of each type of state is present.  Any other entries
+   * can be purged.  This scheme has advantage of always retaining the last failure/success even if
+   * it's not recent.
+   * @throws MetaException
+   */
+  public void purgeCompactionHistory() throws MetaException {
+    Connection dbConn = null;
+    Statement stmt = null;
+    ResultSet rs = null;
+    List<Long> deleteSet = new ArrayList<>();
+    RetentionCounters rc = null;
+    try {
+      try {
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        stmt = dbConn.createStatement();
+        /*cc_id is monotonically increasing so for any entity sorts in order of compaction history,
+        thus this query groups by entity and withing group sorts most recent first*/
+        rs = stmt.executeQuery("select cc_id, cc_database, cc_table, cc_partition, cc_state from " +
+          "COMPLETED_COMPACTIONS order by cc_database, cc_table, cc_partition, cc_id desc");
+        String lastCompactedEntity = null;
+        /*In each group, walk from most recent and count occurences of each state type.  Once you
+        * have counted enough (for each state) to satisfy retention policy, delete all other
+        * instances of this status.*/
+        while(rs.next()) {
+          CompactionInfo ci = new CompactionInfo(rs.getLong(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5).charAt(0));
+          if(!ci.getFullPartitionName().equals(lastCompactedEntity)) {
+            lastCompactedEntity = ci.getFullPartitionName();
+            rc = new RetentionCounters(conf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_ATTEMPTED),
+              getFailedCompactionRetention(),
+              conf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_SUCCEEDED));
+          }
+          checkForDeletion(deleteSet, ci, rc);
+        }
+        close(rs);
+        
+        String baseDeleteSql = "delete from COMPLETED_COMPACTIONS where cc_id IN(";
+        StringBuilder queryStr = new StringBuilder(baseDeleteSql);
+        for(int i = 0; i < deleteSet.size(); i++) {
+          if(i > 0 && i % TIMED_OUT_TXN_ABORT_BATCH_SIZE == 0) {
+            queryStr.setCharAt(queryStr.length() - 1, ')');
+            stmt.executeUpdate(queryStr.toString());
+            dbConn.commit();
+            queryStr = new StringBuilder(baseDeleteSql);
+          }
+          queryStr.append(deleteSet.get(i)).append(',');
+        }
+        if(queryStr.length() > baseDeleteSql.length()) {
+          queryStr.setCharAt(queryStr.length() - 1, ')');
+          int updCnt = stmt.executeUpdate(queryStr.toString());
+          dbConn.commit();
+        }
+        dbConn.commit();
+      } catch (SQLException e) {
+        rollbackDBConn(dbConn);
+        checkRetryable(dbConn, e, "purgeCompactionHistory()");
+        throw new MetaException("Unable to connect to transaction database " +
+          StringUtils.stringifyException(e));
+      } finally {
+        close(rs, stmt, dbConn);
+      }
+    } catch (RetryException ex) {
+      purgeCompactionHistory();
+    }
+  }
+  /**
+   * this ensures that the number of failed compaction entries retained is > than number of failed
+   * compaction threshold which prevents new compactions from being scheduled.
+   */
+  public int getFailedCompactionRetention() {
+    int failedThreshold = conf.getIntVar(HiveConf.ConfVars.COMPACTOR_INITIATOR_FAILED_THRESHOLD);
+    int failedRetention = conf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED);
+    if(failedRetention < failedThreshold) {
+      LOG.warn("Invalid configuration " + HiveConf.ConfVars.COMPACTOR_INITIATOR_FAILED_THRESHOLD.varname +
+        "=" + failedRetention + " < " + HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED + "=" +
+        failedRetention + ".  Will use " + HiveConf.ConfVars.COMPACTOR_INITIATOR_FAILED_THRESHOLD.varname +
+        "=" + failedRetention);
+      failedRetention = failedThreshold;
+    }
+    return failedRetention;
+  }
+  /**
+   * Returns {@code true} if there already exists sufficient number of consecutive failures for
+   * this table/partition so that no new automatic compactions will be scheduled.
+   * User initiated compactions don't do this check.
+   *
+   * Do we allow compacting whole table (when it's partitioned)?  No, though perhaps we should.
+   * That would be a meta operations, i.e. first find all partitions for this table (which have 
+   * txn info) and schedule each compaction separately.  This avoids complications in this logic.
+   */
+  public boolean checkFailedCompactions(CompactionInfo ci) throws MetaException {
+    Connection dbConn = null;
+    Statement stmt = null;
+    ResultSet rs = null;
+    try {
+      try {
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        stmt = dbConn.createStatement();
+        rs = stmt.executeQuery("select CC_STATE from COMPLETED_COMPACTIONS where " +
+          "CC_DATABASE = " + quoteString(ci.dbname) + " and " +
+          "CC_TABLE = " + quoteString(ci.tableName) +
+          (ci.partName != null ? "and CC_PARTITION = " + quoteString(ci.partName) : "") +
+          " order by CC_ID desc");
+        int numFailed = 0;
+        int numTotal = 0;
+        int failedThreshold = conf.getIntVar(HiveConf.ConfVars.COMPACTOR_INITIATOR_FAILED_THRESHOLD);
+        while(rs.next() && ++numTotal <= failedThreshold) {
+          if(rs.getString(1).charAt(0) == FAILED_STATE) {
+            numFailed++;
+          }
+          else {
+            numFailed--;
+          }
+        }
+        return numFailed == failedThreshold;
+      }
+      catch (SQLException e) {
+        LOG.error("Unable to delete from compaction queue " + e.getMessage());
+        LOG.debug("Going to rollback");
+        rollbackDBConn(dbConn);
+        checkRetryable(dbConn, e, "checkFailedCompactions(" + ci + ")");
+        LOG.error("Unable to connect to transaction database " + StringUtils.stringifyException(e));
+        return false;//weren't able to check
+      } finally {
+        close(rs, stmt, dbConn);
+      }
+    } catch (RetryException e) {
+      return checkFailedCompactions(ci);
+    }
+  }
+  /**
+   * If there is an entry in compaction_queue with ci.id, remove it
+   * Make entry in completed_compactions with status 'f'.
+   *
+   * but what abount markCleaned() which is called when table is had been deleted...
+   */
+  public void markFailed(CompactionInfo ci) throws MetaException {//todo: this should not throw
+    //todo: this shoudl take "comment" as parameter to set in CC_META_INFO to provide some context for the failure
+    try {
+      Connection dbConn = null;
+      Statement stmt = null;
+      PreparedStatement pStmt = null;
+      ResultSet rs = null;
+      try {
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        stmt = dbConn.createStatement();
+        rs = stmt.executeQuery("select CQ_ID, CQ_DATABASE, CQ_TABLE, CQ_PARTITION, CQ_STATE, CQ_TYPE, CQ_WORKER_ID, CQ_START, CQ_RUN_AS, CQ_HIGHEST_TXN_ID, CQ_META_INFO, CQ_HADOOP_JOB_ID from COMPACTION_QUEUE WHERE CQ_ID = " + ci.id);
+        if(rs.next()) {
+          ci = CompactionInfo.loadFullFromCompactionQueue(rs);
+          String s = "delete from COMPACTION_QUEUE where cq_id = " + ci.id;
+          LOG.debug("Going to execute update <" + s + ">");
+          int updCnt = stmt.executeUpdate(s);
+        }
+        else {
+          throw new IllegalStateException("No record with CQ_ID=" + ci.id + " found in COMPACTION_QUEUE");
+        }
+        close(rs, stmt, null);
+
+        pStmt = dbConn.prepareStatement("insert into COMPLETED_COMPACTIONS(CC_ID, CC_DATABASE, CC_TABLE, CC_PARTITION, CC_STATE, CC_TYPE, CC_WORKER_ID, CC_START, CC_END, CC_RUN_AS, CC_HIGHEST_TXN_ID, CC_META_INFO, CC_HADOOP_JOB_ID) VALUES(?,?,?,?,?, ?,?,?,?,?, ?,?,?)");
+        ci.state = FAILED_STATE;
+        CompactionInfo.insertIntoCompletedCompactions(pStmt, ci, getDbTime(dbConn));
+        int updCount = pStmt.executeUpdate();
+        LOG.debug("Going to commit");
+        closeStmt(pStmt);
+        dbConn.commit();
+      } catch (SQLException e) {
+        LOG.error("Unable to delete from compaction queue " + e.getMessage());
+        LOG.debug("Going to rollback");
+        rollbackDBConn(dbConn);
+        try {
+          checkRetryable(dbConn, e, "markFailed(" + ci + ")");
+        }
+        catch(MetaException ex) {
+          LOG.error("Unable to connect to transaction database " + StringUtils.stringifyException(ex));
+        }
+        LOG.error("Unable to connect to transaction database " + StringUtils.stringifyException(e));
+      } finally {
+        close(rs, stmt, null);
+        close(null, pStmt, dbConn);
+      }
+    } catch (RetryException e) {
+      markFailed(ci);
+    }
+  }
+
 }
 
 

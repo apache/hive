@@ -19,6 +19,10 @@ package org.apache.hadoop.hive.metastore.txn;
 
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 /**
  * Information on a possible or running compaction.
  */
@@ -27,13 +31,18 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
   public String dbname;
   public String tableName;
   public String partName;
+  char state;
   public CompactionType type;
+  String workerId;
+  long start;
   public String runAs;
   public boolean tooManyAborts = false;
   /**
-   * {@code null} means it wasn't set (e.g. in case of upgrades) 
+   * {@code 0} means it wasn't set (e.g. in case of upgrades, since ResultSet.getLong() will return 0 if field is NULL) 
    */
-  public Long highestTxnId;
+  public long highestTxnId;
+  byte[] metaInfo;
+  String hadoopJobId;
 
   private String fullPartitionName = null;
   private String fullTableName = null;
@@ -43,6 +52,11 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     this.tableName = tableName;
     this.partName = partName;
     this.type = type;
+  }
+  CompactionInfo(long id, String dbname, String tableName, String partName, char state) {
+    this(dbname, tableName, partName, null);
+    this.id = id;
+    this.state = state;
   }
   CompactionInfo() {}
   
@@ -82,9 +96,47 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
       "dbname:" + dbname + "," +
       "tableName:" + tableName + "," +
       "partName:" + partName + "," +
+      "state:" + state + "," +
       "type:" + type + "," +
       "runAs:" + runAs + "," +
       "tooManyAborts:" + tooManyAborts + "," +
       "highestTxnId:" + highestTxnId;
+  }
+
+  /**
+   * loads object from a row in Select * from COMPACTION_QUEUE
+   * @param rs ResultSet after call to rs.next()
+   * @throws SQLException
+   */
+  static CompactionInfo loadFullFromCompactionQueue(ResultSet rs) throws SQLException {
+    CompactionInfo fullCi = new CompactionInfo();
+    fullCi.id = rs.getLong(1);
+    fullCi.dbname = rs.getString(2);
+    fullCi.tableName = rs.getString(3);
+    fullCi.partName = rs.getString(4);
+    fullCi.state = rs.getString(5).charAt(0);//cq_state
+    fullCi.type = TxnHandler.dbCompactionType2ThriftType(rs.getString(6).charAt(0));
+    fullCi.workerId = rs.getString(7);
+    fullCi.start = rs.getLong(8);
+    fullCi.runAs = rs.getString(9);
+    fullCi.highestTxnId = rs.getLong(10);
+    fullCi.metaInfo = rs.getBytes(11);
+    fullCi.hadoopJobId = rs.getString(12);
+    return fullCi;
+  }
+  static void insertIntoCompletedCompactions(PreparedStatement pStmt, CompactionInfo ci, long endTime) throws SQLException {
+    pStmt.setLong(1, ci.id);
+    pStmt.setString(2, ci.dbname);
+    pStmt.setString(3, ci.tableName);
+    pStmt.setString(4, ci.partName);
+    pStmt.setString(5, Character.toString(ci.state));
+    pStmt.setString(6, Character.toString(TxnHandler.thriftCompactionType2DbType(ci.type)));
+    pStmt.setString(7, ci.workerId);
+    pStmt.setLong(8, ci.start);
+    pStmt.setLong(9, endTime);
+    pStmt.setString(10, ci.runAs);
+    pStmt.setLong(11, ci.highestTxnId);
+    pStmt.setBytes(12, ci.metaInfo);
+    pStmt.setString(13, ci.hadoopJobId);
   }
 }

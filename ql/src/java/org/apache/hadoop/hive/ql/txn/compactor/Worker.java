@@ -69,7 +69,8 @@ public class Worker extends CompactorThread {
       throw new RuntimeException(e);
     }
   }
-
+//todo: this doesn;t check if compaction is already running (even though Initiator does but we
+// don't go  through Initiator for user initiated compactions)
   @Override
   public void run() {
     do {
@@ -173,9 +174,9 @@ public class Worker extends CompactorThread {
           }
           txnHandler.markCompacted(ci);
         } catch (Exception e) {
-          LOG.error("Caught exception while trying to compact " + ci.getFullPartitionName() +
+          LOG.error("Caught exception while trying to compact " + ci +
               ".  Marking clean to avoid repeated failures, " + StringUtils.stringifyException(e));
-          txnHandler.markCleaned(ci);
+          txnHandler.markFailed(ci);
         }
       } catch (Throwable t) {
         LOG.error("Caught an exception in the main loop of compactor worker " + name + ", " +
