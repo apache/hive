@@ -1456,11 +1456,14 @@ public class Hive {
       }
 
       List<Path> newFiles = null;
-      if (replace) {
+      if (replace || (oldPart == null && !isAcid)) {
         Hive.replaceFiles(tbl.getPath(), loadPath, newPartPath, oldPartPath, getConf(),
             isSrcLocal);
       } else {
-        newFiles = Collections.synchronizedList(new ArrayList<Path>());
+        if (conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML) && !tbl.isTemporary() && oldPart != null) {
+          Collections.synchronizedList(new ArrayList<Path>());
+        }
+
         FileSystem fs = tbl.getDataLocation().getFileSystem(conf);
         Hive.copyFiles(conf, loadPath, newPartPath, fs, isSrcLocal, isAcid, newFiles);
       }
@@ -2736,7 +2739,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     try {
       if (inheritPerms || replace) {
         try{
-          destStatus = shims.getFullFileStatus(conf, destFs, destf.getParent());
+          destStatus = shims.getFullFileStatus(conf, destFs, destf);
           //if destf is an existing directory:
           //if replace is true, delete followed by rename(mv) is equivalent to replace
           //if replace is false, rename (mv) actually move the src under dest dir
@@ -3045,7 +3048,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
               // existing content might result in incorrect (extra) data.
               // But not sure why we changed not to delete the oldPath in HIVE-8750 if it is
               // not the destf or its subdir?
-              oldPathDeleted = FileUtils.trashFilesUnderDir(fs2, oldPath, conf);
+              oldPathDeleted = FileUtils.trashFilesUnderDir(fs2, oldPath, conf, true);
             }
           }
         } catch (IOException e) {
