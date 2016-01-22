@@ -24,10 +24,21 @@ import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.HouseKeeperService;
+import org.apache.hadoop.hive.metastore.api.CompactionRequest;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
+import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
+import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
+import org.apache.hadoop.hive.metastore.txn.CompactionTxnHandler;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
+import org.apache.hadoop.hive.metastore.txn.TxnHandler;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.txn.AcidCompactionHistoryService;
 import org.apache.hadoop.hive.ql.txn.compactor.Cleaner;
+import org.apache.hadoop.hive.ql.txn.compactor.Initiator;
 import org.apache.hadoop.hive.ql.txn.compactor.Worker;
 import org.junit.After;
 import org.junit.Assert;
@@ -42,6 +53,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -452,6 +464,211 @@ public class TestTxnCommands2 {
     int[][] updatedData = {{1,7},{1,8},{1,8}};
     Assert.assertEquals("Insert overwrite partition failed", stringifyValues(updatedData), rs2);
     //insert overwrite not supported for ACID tables
+  }
+  /**
+   * HIVE-12353
+   * @throws Exception
+   */
+  @Test
+  public void testInitiatorWithMultipleFailedCompactions() throws Exception {
+    String tblName = "hive12353";
+    runStatementOnDriver("drop table if exists " + tblName);
+    runStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
+      " CLUSTERED BY(a) INTO 1 BUCKETS" + //currently ACID requires table to be bucketed
+      " STORED AS ORC  TBLPROPERTIES ('transactional'='true')");
+    hiveConf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD, 4);
+    for(int i = 0; i < 5; i++) {
+      //generate enough delta files so that Initiator can trigger auto compaction
+      runStatementOnDriver("insert into " + tblName + " values(" + (i + 1) + ", 'foo'),(" + (i + 2) + ", 'bar'),(" + (i + 3) + ", 'baz')");
+    }
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION, true);
+
+    int numFailedCompactions = hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_INITIATOR_FAILED_THRESHOLD);
+    CompactionTxnHandler txnHandler = new CompactionTxnHandler(hiveConf);
+    AtomicBoolean stop = new AtomicBoolean(true);
+    //create failed compactions
+    for(int i = 0; i < numFailedCompactions; i++) {
+      //each of these should fail
+      txnHandler.compact(new CompactionRequest("default", tblName, CompactionType.MINOR));
+      runWorker(hiveConf);
+    }
+    //this should not schedule a new compaction due to prior failures
+    Initiator init = new Initiator();
+    init.setThreadId((int)init.getId());
+    init.setHiveConf(hiveConf);
+    init.init(stop, new AtomicBoolean());
+    init.run();
+
+    CompactionsByState cbs = countCompacts(txnHandler);
+    Assert.assertEquals("Unexpected number of failed compactions", numFailedCompactions, cbs.failed);
+    Assert.assertEquals("Unexpected total number of compactions", numFailedCompactions, cbs.total);
+    
+    hiveConf.setTimeVar(HiveConf.ConfVars.COMPACTOR_HISTORY_REAPER_INTERVAL, 10, TimeUnit.MILLISECONDS);
+    AcidCompactionHistoryService compactionHistoryService = new AcidCompactionHistoryService();
+    runHouseKeeperService(compactionHistoryService, hiveConf);//should not remove anything from history
+    cbs = countCompacts(txnHandler);
+    Assert.assertEquals("Number of failed compactions after History clean", numFailedCompactions, cbs.failed);
+    Assert.assertEquals("Total number of compactions after History clean", numFailedCompactions, cbs.total);
+
+    txnHandler.compact(new CompactionRequest("default", tblName, CompactionType.MAJOR));
+    runWorker(hiveConf);//will fail
+    txnHandler.compact(new CompactionRequest("default", tblName, CompactionType.MINOR));
+    runWorker(hiveConf);//will fail
+    cbs = countCompacts(txnHandler);
+    Assert.assertEquals("Unexpected num failed1", numFailedCompactions + 2, cbs.failed);
+    Assert.assertEquals("Unexpected num total1", numFailedCompactions + 2, cbs.total);
+    runHouseKeeperService(compactionHistoryService, hiveConf);//should remove history so that we have
+    //COMPACTOR_HISTORY_RETENTION_FAILED failed compacts left (and no other since we only have failed ones here)
+    cbs = countCompacts(txnHandler);
+    Assert.assertEquals("Unexpected num failed2", hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED), cbs.failed);
+    Assert.assertEquals("Unexpected num total2", hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED), cbs.total);
+    
+    
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION, false);
+    txnHandler.compact(new CompactionRequest("default", tblName, CompactionType.MINOR));
+    //at this point "show compactions" should have (COMPACTOR_HISTORY_RETENTION_FAILED) failed + 1 initiated
+    cbs = countCompacts(txnHandler);
+    Assert.assertEquals("Unexpected num failed3", hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED), cbs.failed);
+    Assert.assertEquals("Unexpected num initiated", 1, cbs.initiated);
+    Assert.assertEquals("Unexpected num total3", hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED) + 1, cbs.total);
+
+    runWorker(hiveConf);//will succeed and transition to Initiated->Working->Ready for Cleaning
+    cbs = countCompacts(txnHandler);
+    Assert.assertEquals("Unexpected num failed4", hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED), cbs.failed);
+    Assert.assertEquals("Unexpected num ready to clean", 1, cbs.readyToClean);
+    Assert.assertEquals("Unexpected num total4", hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED) + 1, cbs.total);
+    
+    runCleaner(hiveConf); // transition to Success state
+    runHouseKeeperService(compactionHistoryService, hiveConf);//should not purge anything as all items within retention sizes
+    cbs = countCompacts(txnHandler);
+    Assert.assertEquals("Unexpected num failed5", hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED), cbs.failed);
+    Assert.assertEquals("Unexpected num succeeded", 1, cbs.succeeded);
+    Assert.assertEquals("Unexpected num total5", hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED) + 1, cbs.total);
+  }
+  private static class CompactionsByState {
+    private int attempted;
+    private int failed;
+    private int initiated;
+    private int readyToClean;
+    private int succeeded;
+    private int working;
+    private int total;
+  }
+  private static CompactionsByState countCompacts(TxnHandler txnHandler) throws MetaException {
+    ShowCompactResponse resp = txnHandler.showCompact(new ShowCompactRequest());
+    CompactionsByState compactionsByState = new CompactionsByState();
+    compactionsByState.total = resp.getCompactsSize();
+    for(ShowCompactResponseElement compact : resp.getCompacts()) {
+      if(TxnHandler.FAILED_RESPONSE.equals(compact.getState())) {
+        compactionsByState.failed++;
+      }
+      else if(TxnHandler.CLEANING_RESPONSE.equals(compact.getState())) {
+        compactionsByState.readyToClean++;
+      }
+      else if(TxnHandler.INITIATED_RESPONSE.equals(compact.getState())) {
+        compactionsByState.initiated++;
+      }
+      else if(TxnHandler.SUCCEEDED_RESPONSE.equals(compact.getState())) {
+        compactionsByState.succeeded++;
+      }
+      else if(TxnHandler.WORKING_RESPONSE.equals(compact.getState())) {
+        compactionsByState.working++;
+      }
+      else if(TxnHandler.ATTEMPTED_RESPONSE.equals(compact.getState())) {
+        compactionsByState.attempted++;
+      }
+    }
+    return compactionsByState;
+  }
+  private static void runWorker(HiveConf hiveConf) throws MetaException {
+    AtomicBoolean stop = new AtomicBoolean(true);
+    Worker t = new Worker();
+    t.setThreadId((int) t.getId());
+    t.setHiveConf(hiveConf);
+    AtomicBoolean looped = new AtomicBoolean();
+    t.init(stop, looped);
+    t.run();
+  }
+  private static void runCleaner(HiveConf hiveConf) throws MetaException {
+    AtomicBoolean stop = new AtomicBoolean(true);
+    Cleaner t = new Cleaner();
+    t.setThreadId((int) t.getId());
+    t.setHiveConf(hiveConf);
+    AtomicBoolean looped = new AtomicBoolean();
+    t.init(stop, looped);
+    t.run();
+  }
+
+  private static void runHouseKeeperService(HouseKeeperService houseKeeperService, HiveConf conf) throws Exception {
+    int lastCount = houseKeeperService.getIsAliveCounter();
+    houseKeeperService.start(conf);
+    while(houseKeeperService.getIsAliveCounter() <= lastCount) {
+      try {
+        Thread.sleep(100);//make sure it has run at least once
+      }
+      catch(InterruptedException ex) {
+        //...
+      }
+    }
+    houseKeeperService.stop();
+  }
+
+  /**
+   * HIVE-12352 has details
+   * @throws Exception
+   */
+  @Test
+  public void writeBetweenWorkerAndCleaner() throws Exception {
+    String tblName = "hive12352";
+    runStatementOnDriver("drop table if exists " + tblName);
+    runStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
+      " CLUSTERED BY(a) INTO 1 BUCKETS" + //currently ACID requires table to be bucketed
+      " STORED AS ORC  TBLPROPERTIES ('transactional'='true')");
+
+    //create some data
+    runStatementOnDriver("insert into " + tblName + " values(1, 'foo'),(2, 'bar'),(3, 'baz')");
+    runStatementOnDriver("update " + tblName + " set b = 'blah' where a = 3");
+
+    //run Worker to execute compaction
+    CompactionTxnHandler txnHandler = new CompactionTxnHandler(hiveConf);
+    txnHandler.compact(new CompactionRequest("default", tblName, CompactionType.MINOR));
+    Worker t = new Worker();
+    t.setThreadId((int) t.getId());
+    t.setHiveConf(hiveConf);
+    AtomicBoolean stop = new AtomicBoolean(true);
+    AtomicBoolean looped = new AtomicBoolean();
+    t.init(stop, looped);
+    t.run();
+
+    //delete something, but make sure txn is rolled back
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, true);
+    runStatementOnDriver("delete from " + tblName + " where a = 1");
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, false);
+
+    List<String> expected = new ArrayList<>();
+    expected.add("1\tfoo");
+    expected.add("2\tbar");
+    expected.add("3\tblah");
+    Assert.assertEquals("", expected,
+      runStatementOnDriver("select a,b from " + tblName + " order by a"));
+
+    //run Cleaner
+    Cleaner c = new Cleaner();
+    c.setThreadId((int)c.getId());
+    c.setHiveConf(hiveConf);
+    c.init(stop, new AtomicBoolean());
+    c.run();
+
+    //this seems odd, but we wan to make sure that to run CompactionTxnHandler.cleanEmptyAbortedTxns()
+    Initiator i = new Initiator();
+    i.setThreadId((int)i.getId());
+    i.setHiveConf(hiveConf);
+    i.init(stop, new AtomicBoolean());
+    i.run();
+
+    //check that aborted operation didn't become committed
+    Assert.assertEquals("", expected,
+      runStatementOnDriver("select a,b from " + tblName + " order by a"));
   }
   /**
    * takes raw data and turns it into a string as if from Driver.getResults()

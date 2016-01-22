@@ -137,6 +137,10 @@ public class CompactorMR {
    */
   void run(HiveConf conf, String jobName, Table t, StorageDescriptor sd,
            ValidTxnList txns, CompactionInfo ci, Worker.StatsUpdater su) throws IOException {
+
+    if(conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST) && conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION)) {
+      throw new RuntimeException(HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION.name() + "=true");
+    }
     JobConf job = createBaseJobConf(conf, jobName, t, sd, txns);
 
     // Figure out and encode what files we need to read.  We do this here (rather than in

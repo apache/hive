@@ -118,10 +118,27 @@ public final class TxnDbUtil {
           " CQ_WORKER_ID varchar(128)," +
           " CQ_START bigint," +
           " CQ_RUN_AS varchar(128)," +
-          " CQ_HIGHEST_TXN_ID bigint)");
+          " CQ_HIGHEST_TXN_ID bigint," +
+          " CQ_META_INFO varchar(2048) for bit data," +
+          " CQ_HADOOP_JOB_ID varchar(32))");
 
       stmt.execute("CREATE TABLE NEXT_COMPACTION_QUEUE_ID (NCQ_NEXT bigint NOT NULL)");
       stmt.execute("INSERT INTO NEXT_COMPACTION_QUEUE_ID VALUES(1)");
+      
+      stmt.execute("CREATE TABLE COMPLETED_COMPACTIONS (" +
+        " CC_ID bigint PRIMARY KEY," +
+        " CC_DATABASE varchar(128) NOT NULL," +
+        " CC_TABLE varchar(128) NOT NULL," +
+        " CC_PARTITION varchar(767)," +
+        " CC_STATE char(1) NOT NULL," +
+        " CC_TYPE char(1) NOT NULL," +
+        " CC_WORKER_ID varchar(128)," +
+        " CC_START bigint," +
+        " CC_END bigint," +
+        " CC_RUN_AS varchar(128)," +
+        " CC_HIGHEST_TXN_ID bigint," +
+        " CC_META_INFO varchar(2048) for bit data," +
+        " CC_HADOOP_JOB_ID varchar(32))");
 
       conn.commit();
     } catch (SQLException e) {
@@ -161,7 +178,7 @@ public final class TxnDbUtil {
       dropTable(stmt, "NEXT_LOCK_ID");
       dropTable(stmt, "COMPACTION_QUEUE");
       dropTable(stmt, "NEXT_COMPACTION_QUEUE_ID");
-
+      dropTable(stmt, "COMPLETED_COMPACTIONS");
       conn.commit();
     } finally {
       closeResources(conn, stmt, null);

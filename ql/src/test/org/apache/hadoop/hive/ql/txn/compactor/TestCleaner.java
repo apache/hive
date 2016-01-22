@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import org.apache.hadoop.hive.metastore.txn.TxnHandler;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,7 +72,8 @@ public class TestCleaner extends CompactorTest {
 
     // Check there are no compactions requests left.
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
-    Assert.assertEquals(0, rsp.getCompactsSize());
+    Assert.assertEquals(1, rsp.getCompactsSize());
+    Assert.assertTrue(TxnHandler.SUCCEEDED_RESPONSE.equals(rsp.getCompacts().get(0).getState()));
 
     // Check that the files are removed
     List<Path> paths = getDirectories(conf, t, null);
@@ -102,7 +104,8 @@ public class TestCleaner extends CompactorTest {
 
     // Check there are no compactions requests left.
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
-    Assert.assertEquals(0, rsp.getCompactsSize());
+    Assert.assertEquals(1, rsp.getCompactsSize());
+    Assert.assertTrue(TxnHandler.SUCCEEDED_RESPONSE.equals(rsp.getCompacts().get(0).getState()));
 
     // Check that the files are removed
     List<Path> paths = getDirectories(conf, t, p);
@@ -131,7 +134,8 @@ public class TestCleaner extends CompactorTest {
 
     // Check there are no compactions requests left.
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
-    Assert.assertEquals(0, rsp.getCompactsSize());
+    Assert.assertEquals(1, rsp.getCompactsSize());
+    Assert.assertTrue(TxnHandler.SUCCEEDED_RESPONSE.equals(rsp.getCompacts().get(0).getState()));
 
     // Check that the files are removed
     List<Path> paths = getDirectories(conf, t, null);
@@ -169,7 +173,8 @@ public class TestCleaner extends CompactorTest {
 
     // Check there are no compactions requests left.
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
-    Assert.assertEquals(0, rsp.getCompactsSize());
+    Assert.assertEquals(1, rsp.getCompactsSize());
+    Assert.assertTrue(TxnHandler.SUCCEEDED_RESPONSE.equals(rsp.getCompacts().get(0).getState()));
 
     // Check that the files are removed
     List<Path> paths = getDirectories(conf, t, p);
@@ -323,7 +328,8 @@ public class TestCleaner extends CompactorTest {
     // Check there are no compactions requests left.
     rsp = txnHandler.showCompact(new ShowCompactRequest());
     compacts = rsp.getCompacts();
-    Assert.assertEquals(0, compacts.size());
+    Assert.assertEquals(1, compacts.size());
+    Assert.assertTrue(TxnHandler.SUCCEEDED_RESPONSE.equals(rsp.getCompacts().get(0).getState()));
   }
 
   @Test
@@ -396,7 +402,8 @@ public class TestCleaner extends CompactorTest {
     // Check there are no compactions requests left.
     rsp = txnHandler.showCompact(new ShowCompactRequest());
     compacts = rsp.getCompacts();
-    Assert.assertEquals(0, compacts.size());
+    Assert.assertEquals(1, compacts.size());
+    Assert.assertTrue(TxnHandler.SUCCEEDED_RESPONSE.equals(rsp.getCompacts().get(0).getState()));
   }
 
   @Test
@@ -421,7 +428,8 @@ public class TestCleaner extends CompactorTest {
 
     // Check there are no compactions requests left.
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
-    Assert.assertEquals(0, rsp.getCompactsSize());
+    Assert.assertEquals(1, rsp.getCompactsSize());
+    Assert.assertTrue(TxnHandler.SUCCEEDED_RESPONSE.equals(rsp.getCompacts().get(0).getState()));
 
     // Check that the files are removed
     List<Path> paths = getDirectories(conf, t, p);
@@ -451,7 +459,8 @@ public class TestCleaner extends CompactorTest {
 
     // Check there are no compactions requests left.
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
-    Assert.assertEquals(0, rsp.getCompactsSize());
+    Assert.assertEquals(1, rsp.getCompactsSize());
+    Assert.assertTrue(TxnHandler.SUCCEEDED_RESPONSE.equals(rsp.getCompacts().get(0).getState()));
   }
 
   @Test
@@ -478,7 +487,8 @@ public class TestCleaner extends CompactorTest {
 
     // Check there are no compactions requests left.
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
-    Assert.assertEquals(0, rsp.getCompactsSize());
+    Assert.assertEquals(1, rsp.getCompactsSize());
+    Assert.assertTrue(TxnHandler.SUCCEEDED_RESPONSE.equals(rsp.getCompacts().get(0).getState()));
   }
   @Override
   boolean useHive130DeltaDirName() {
