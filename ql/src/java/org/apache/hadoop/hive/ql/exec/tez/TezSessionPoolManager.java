@@ -19,17 +19,20 @@
 package org.apache.hadoop.hive.ql.exec.tez;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -101,17 +104,63 @@ public class TezSessionPoolManager {
   protected TezSessionPoolManager() {
   }
 
+  private void startNextSessionFromQueue() throws Exception {
+    HiveConf newConf = new HiveConf(initConf);
+    TezSessionPoolSession sessionState = defaultQueuePool.take();
+    boolean isUsable = sessionState.tryUse();
+    if (!isUsable) throw new IOException(sessionState + " is not usable at pool startup");
+    newConf.set("tez.queue.name", sessionState.getQueueName());
+    sessionState.open(newConf);
+    if (sessionState.returnAfterUse()) {
+      defaultQueuePool.put(sessionState);
+    }
+  }
+
   public void startPool() throws Exception {
     this.inited = true;
-    for (int i = 0; i < blockingQueueLength; i++) {
-      HiveConf newConf = new HiveConf(initConf);
-      TezSessionPoolSession sessionState = defaultQueuePool.take();
-      boolean isUsable = sessionState.tryUse();
-      if (!isUsable) throw new IOException(sessionState + " is not usable at pool startup");
-      newConf.set("tez.queue.name", sessionState.getQueueName());
-      sessionState.open(newConf);
-      if (sessionState.returnAfterUse()) {
-        defaultQueuePool.put(sessionState);
+    if (blockingQueueLength == 0) return;
+    int threadCount = Math.min(blockingQueueLength,
+        HiveConf.getIntVar(initConf, ConfVars.HIVE_SERVER2_TEZ_SESSION_MAX_INIT_THREADS));
+    Preconditions.checkArgument(threadCount > 0);
+    if (threadCount == 1) {
+      for (int i = 0; i < blockingQueueLength; i++) {
+        // The queue is FIFO, so if we cycle thru length items, we'd start each session once.
+        startNextSessionFromQueue();
+      }
+    } else {
+      final SessionState parentSessionState = SessionState.get();
+      // The queue is FIFO, so if we cycle thru length items, we'd start each session once.
+      final AtomicInteger remainingToStart = new AtomicInteger(blockingQueueLength);
+      // The runnable has no mutable state, so each thread can run the same thing.
+      final AtomicReference<Exception> firstError = new AtomicReference<>(null);
+      Runnable runnable = new Runnable() {
+        public void run() {
+          if (parentSessionState != null) {
+            SessionState.setCurrentSessionState(parentSessionState);
+          }
+          while (remainingToStart.decrementAndGet() >= 0) {
+            try {
+              startNextSessionFromQueue();
+            } catch (Exception e) {
+              if (!firstError.compareAndSet(null, e)) {
+                LOG.error("Failed to start session; ignoring due to previous error", e);
+              }
+            }
+          }
+        }
+      };
+      Thread[] threads = new Thread[threadCount - 1];
+      for (int i = 0; i < threads.length; ++i) {
+        threads[i] = new Thread(runnable, "Tez session init " + i);
+        threads[i].start();
+      }
+      runnable.run();
+      for (int i = 0; i < threads.length; ++i) {
+        threads[i].join();
+      }
+      Exception ex = firstError.get();
+      if (ex != null) {
+        throw ex;
       }
     }
     if (expirationThread != null) {
@@ -163,10 +212,11 @@ public class TezSessionPoolManager {
 
     this.initConf = conf;
     /*
-     *  with this the ordering of sessions in the queue will be (with 2 sessions 3 queues)
-     *  s1q1, s1q2, s1q3, s2q1, s2q2, s2q3 there by ensuring uniform distribution of
-     *  the sessions across queues at least to begin with. Then as sessions get freed up, the list
-     *  may change this ordering.
+     * In a single-threaded init case, with this the ordering of sessions in the queue will be
+     * (with 2 sessions 3 queues) s1q1, s1q2, s1q3, s2q1, s2q2, s2q3 there by ensuring uniform
+     * distribution of the sessions across queues at least to begin with. Then as sessions get
+     * freed up, the list may change this ordering.
+     * In a multi threaded init case it's a free for all.
      */
     blockingQueueLength = 0;
     for (int i = 0; i < numSessions; i++) {

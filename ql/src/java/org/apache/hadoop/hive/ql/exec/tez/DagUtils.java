@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.exec.tez;
 
+import java.util.concurrent.ConcurrentHashMap;
+
 import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
@@ -138,12 +140,20 @@ public class DagUtils {
   public static final String TEZ_TMP_DIR_KEY = "_hive_tez_tmp_dir";
   private static final Logger LOG = LoggerFactory.getLogger(DagUtils.class.getName());
   private static final String TEZ_DIR = "_tez_scratch_dir";
-  private static DagUtils instance;
+  private static final DagUtils instance = new DagUtils();
   // The merge file being currently processed.
   public static final String TEZ_MERGE_CURRENT_MERGE_FILE_PREFIX =
       "hive.tez.current.merge.file.prefix";
   // "A comma separated list of work names used as prefix.
   public static final String TEZ_MERGE_WORK_FILE_PREFIXES = "hive.tez.merge.file.prefixes";
+
+  /**
+   * Notifiers to synchronize resource localization across threads. If one thread is localizing
+   * a file, other threads can wait on the corresponding notifier object instead of just sleeping
+   * before re-checking HDFS. This is used just to avoid unnecesary waits; HDFS check still needs
+   * to be performed to make sure the resource is there and matches the expected file.
+   */
+  private final ConcurrentHashMap<String, Object> copyNotifiers = new ConcurrentHashMap<>();
 
   private void addCredentials(MapWork mapWork, DAG dag) {
     Set<String> paths = mapWork.getPathToAliases().keySet();
@@ -968,6 +978,7 @@ public class DagUtils {
   }
 
   /**
+   * Localizes a resources. Should be thread-safe.
    * @param src path to the source for the resource
    * @param dest path in hdfs for the resource
    * @param type local resource type (File/Archive)
@@ -975,49 +986,76 @@ public class DagUtils {
    * @return localresource from tez localization.
    * @throws IOException when any file system related calls fails.
    */
-  public LocalResource localizeResource(Path src, Path dest, LocalResourceType type, Configuration conf)
-    throws IOException {
+  public LocalResource localizeResource(
+      Path src, Path dest, LocalResourceType type, Configuration conf) throws IOException {
     FileSystem destFS = dest.getFileSystem(conf);
-
-    if (src != null && checkPreExisting(src, dest, conf) == false) {
+    if (src != null && !checkPreExisting(src, dest, conf)) {
       // copy the src to the destination and create local resource.
       // do not overwrite.
-      LOG.info("Localizing resource because it does not exist: " + src + " to dest: " + dest);
+      String srcStr = src.toString();
+      LOG.info("Localizing resource because it does not exist: " + srcStr + " to dest: " + dest);
+      Object notifierNew = new Object(),
+          notifierOld = copyNotifiers.putIfAbsent(srcStr, notifierNew),
+          notifier = (notifierOld == null) ? notifierNew : notifierOld;
+      // To avoid timing issues with notifications (and given that HDFS check is anyway the
+      // authoritative one), don't wait infinitely for the notifier, just wait a little bit
+      // and check HDFS before and after.
+      if (notifierOld != null
+          && checkOrWaitForTheFile(src, dest, conf, notifierOld, 1, 150, false)) {
+        return createLocalResource(destFS, dest, type, LocalResourceVisibility.PRIVATE);
+      }
       try {
         destFS.copyFromLocalFile(false, false, src, dest);
-      } catch (IOException e) {
-        LOG.info("Looks like another thread is writing the same file will wait.");
-        int waitAttempts =
-            conf.getInt(HiveConf.ConfVars.HIVE_LOCALIZE_RESOURCE_NUM_WAIT_ATTEMPTS.varname,
-                HiveConf.ConfVars.HIVE_LOCALIZE_RESOURCE_NUM_WAIT_ATTEMPTS.defaultIntVal);
-        long sleepInterval = HiveConf.getTimeVar(
-            conf, HiveConf.ConfVars.HIVE_LOCALIZE_RESOURCE_WAIT_INTERVAL,
-            TimeUnit.MILLISECONDS);
-        LOG.info("Number of wait attempts: " + waitAttempts + ". Wait interval: "
-            + sleepInterval);
-        boolean found = false;
-        for (int i = 0; i < waitAttempts; i++) {
-          if (!checkPreExisting(src, dest, conf)) {
-            try {
-              Thread.sleep(sleepInterval);
-            } catch (InterruptedException interruptedException) {
-              throw new IOException(interruptedException);
-            }
-          } else {
-            found = true;
-            break;
-          }
+        synchronized (notifier) {
+          notifier.notifyAll(); // Notify if we have successfully copied the file.
         }
-        if (!found) {
+        copyNotifiers.remove(srcStr, notifier);
+      } catch (IOException e) {
+        LOG.info("Looks like another thread or process is writing the same file");
+        int waitAttempts = HiveConf.getIntVar(
+            conf, ConfVars.HIVE_LOCALIZE_RESOURCE_NUM_WAIT_ATTEMPTS);
+        long sleepInterval = HiveConf.getTimeVar(
+            conf, HiveConf.ConfVars.HIVE_LOCALIZE_RESOURCE_WAIT_INTERVAL, TimeUnit.MILLISECONDS);
+        // Only log on the first wait, and check after wait on the last iteration.
+        if (!checkOrWaitForTheFile(
+            src, dest, conf, notifierOld, waitAttempts, sleepInterval, true)) {
           LOG.error("Could not find the jar that was being uploaded");
           throw new IOException("Previous writer likely failed to write " + dest +
               ". Failing because I am unlikely to write too.");
         }
+      } finally {
+        if (notifier == notifierNew) {
+          copyNotifiers.remove(srcStr, notifierNew);
+        }
       }
     }
-
     return createLocalResource(destFS, dest, type,
         LocalResourceVisibility.PRIVATE);
+  }
+
+  public boolean checkOrWaitForTheFile(Path src, Path dest, Configuration conf, Object notifier,
+      int waitAttempts, long sleepInterval, boolean doLog) throws IOException {
+    for (int i = 0; i < waitAttempts; i++) {
+      if (checkPreExisting(src, dest, conf)) return true;
+      if (doLog && i == 0) {
+        LOG.info("Waiting for the file " + dest + " (" + waitAttempts + " attempts, with "
+            + sleepInterval + "ms interval)");
+      }
+      try {
+        if (notifier != null) {
+          // The writing thread has given us an object to wait on.
+          synchronized (notifier) {
+            notifier.wait(sleepInterval);
+          }
+        } else {
+          // Some other process is probably writing the file. Just sleep.
+          Thread.sleep(sleepInterval);
+        }
+      } catch (InterruptedException interruptedException) {
+        throw new IOException(interruptedException);
+      }
+    }
+    return checkPreExisting(src, dest, conf); // One last check.
   }
 
   /**
@@ -1201,9 +1239,6 @@ public class DagUtils {
    * @return instance of this class
    */
   public static DagUtils getInstance() {
-    if (instance == null) {
-      instance = new DagUtils();
-    }
     return instance;
   }
 

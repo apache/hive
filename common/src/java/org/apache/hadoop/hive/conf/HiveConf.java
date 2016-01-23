@@ -1921,6 +1921,10 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_TEZ_SESSION_LIFETIME_JITTER("hive.server2.tez.session.lifetime.jitter", "3h",
         new TimeValidator(TimeUnit.HOURS),
         "The jitter for Tez session lifetime; prevents all the sessions from restarting at once."),
+    HIVE_SERVER2_TEZ_SESSION_MAX_INIT_THREADS("hive.server2.tez.sessions.init.threads", 16,
+        "If hive.server2.tez.initialize.default.sessions is enabled, the maximum number of\n" +
+        "threads to use to initialize the default sessions."),
+
 
     // Operation log configuration
     HIVE_SERVER2_LOGGING_OPERATION_ENABLED("hive.server2.logging.operation.enabled", true,

@@ -30,6 +30,7 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 
 public class TestTezSessionPool {
 
@@ -77,29 +78,24 @@ public class TestTezSessionPool {
   @Test
   public void testSessionPoolGetInOrder() {
     try {
-      conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS, false);
-      conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_TEZ_DEFAULT_QUEUES, "a,b,c");
-      conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_TEZ_SESSIONS_PER_DEFAULT_QUEUE, 2);
+      conf.setBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS, false);
+      conf.setVar(ConfVars.HIVE_SERVER2_TEZ_DEFAULT_QUEUES, "a,b,c");
+      conf.setIntVar(ConfVars.HIVE_SERVER2_TEZ_SESSIONS_PER_DEFAULT_QUEUE, 2);
+      conf.setIntVar(ConfVars.HIVE_SERVER2_TEZ_SESSION_MAX_INIT_THREADS, 1);
 
       poolManager = new TestTezSessionPoolManager();
       poolManager.setupPool(conf);
       poolManager.startPool();
       TezSessionState sessionState = poolManager.getSession(null, conf, true, false);
-      if (sessionState.getQueueName().compareTo("a") != 0) {
-        fail();
-      }
+      assertEquals("a", sessionState.getQueueName());
       poolManager.returnSession(sessionState, false);
 
       sessionState = poolManager.getSession(null, conf, true, false);
-      if (sessionState.getQueueName().compareTo("b") != 0) {
-        fail();
-      }
+      assertEquals("b", sessionState.getQueueName());
       poolManager.returnSession(sessionState, false);
 
       sessionState = poolManager.getSession(null, conf, true, false);
-      if (sessionState.getQueueName().compareTo("c") != 0) {
-        fail();
-      }
+      assertEquals("c", sessionState.getQueueName());
       poolManager.returnSession(sessionState, false);
 
       sessionState = poolManager.getSession(null, conf, true, false);
@@ -108,6 +104,38 @@ public class TestTezSessionPool {
       }
 
       poolManager.returnSession(sessionState, false);
+
+    } catch (Exception e) {
+      e.printStackTrace();
+      fail();
+    }
+  }
+
+
+  @Test
+  public void testSessionPoolThreads() {
+    // Make sure we get a correct number of sessions in each queue and that we don't crash.
+    try {
+      conf.setBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS, false);
+      conf.setVar(ConfVars.HIVE_SERVER2_TEZ_DEFAULT_QUEUES, "0,1,2");
+      conf.setIntVar(ConfVars.HIVE_SERVER2_TEZ_SESSIONS_PER_DEFAULT_QUEUE, 4);
+      conf.setIntVar(ConfVars.HIVE_SERVER2_TEZ_SESSION_MAX_INIT_THREADS, 16);
+
+      poolManager = new TestTezSessionPoolManager();
+      poolManager.setupPool(conf);
+      poolManager.startPool();
+      TezSessionState[] sessions = new TezSessionState[12];
+      int[] queueCounts = new int[3];
+      for (int i = 0; i < sessions.length; ++i) {
+        sessions[i] = poolManager.getSession(null, conf, true, false);
+        queueCounts[Integer.parseInt(sessions[i].getQueueName())] += 1;
+      }
+      for (int i = 0; i < queueCounts.length; ++i) {
+        assertEquals(4, queueCounts[i]);
+      }
+      for (int i = 0; i < sessions.length; ++i) {
+        poolManager.returnSession(sessions[i], false);
+      }
 
     } catch (Exception e) {
       e.printStackTrace();
