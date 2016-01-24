@@ -50,6 +50,7 @@ message GroupInputSpecProto {
 message FragmentSpecProto {
   optional string fragment_identifier_string = 1;
   optional string dag_name = 2;
+  optional int32 dag_id = 11;
   optional string vertex_name = 3;
   optional EntityDescriptorProto processor_descriptor = 4;
   repeated IOSpecProto input_specs = 5;
@@ -72,6 +73,11 @@ message FragmentRuntimeInfo {
 enum SourceStateProto {
   S_SUCCEEDED = 1;
   S_RUNNING = 2;
+}
+
+message QueryIdentifierProto {
+  optional string app_identifier = 1;
+  optional int32 dag_identifier = 2;
 }
 
 message SubmitWorkRequestProto {
@@ -98,7 +104,7 @@ message SubmitWorkResponseProto {
 }
 
 message SourceStateUpdatedRequestProto {
-  optional string dag_name = 1;
+  optional QueryIdentifierProto query_identifier = 1;
   optional string src_name = 2;
   optional SourceStateProto state = 3;
 }
@@ -108,17 +114,16 @@ message SourceStateUpdatedResponseProto {
 
 message QueryCompleteRequestProto {
   optional string query_id = 1;
-  optional string dag_name = 2;
-  optional int64 delete_delay = 3 [default = 0];
+  optional QueryIdentifierProto query_identifier = 2;
+  optional int64 delete_delay = 4 [default = 0];
 }
 
 message QueryCompleteResponseProto {
 }
 
 message TerminateFragmentRequestProto {
-  optional string query_id = 1;
-  optional string dag_name = 2;
-  optional string fragment_identifier_string = 7;
+  optional QueryIdentifierProto query_identifier = 1;
+  optional string fragment_identifier_string = 2;
 }
 
 message TerminateFragmentResponseProto {

@@ -149,7 +149,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
   @Override
   public SubmitWorkResponseProto submitWork(SubmitWorkRequestProto request) throws IOException {
     HistoryLogger.logFragmentStart(request.getApplicationIdString(), request.getContainerIdString(),
-        localAddress.get().getHostName(), request.getFragmentSpec().getDagName(),
+        localAddress.get().getHostName(), request.getFragmentSpec().getDagName(), request.getFragmentSpec().getDagId(),
         request.getFragmentSpec().getVertexName(), request.getFragmentSpec().getFragmentNumber(),
         request.getFragmentSpec().getAttemptNumber());
     if (LOG.isInfoEnabled()) {
@@ -172,8 +172,10 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
           fragmentSpec.getFragmentIdentifierString());
       int dagIdentifier = taskAttemptId.getTaskID().getVertexID().getDAGId().getId();
 
+      QueryIdentifier queryIdentifier = new QueryIdentifier(request.getApplicationIdString(), dagIdentifier);
+
       QueryFragmentInfo fragmentInfo = queryTracker
-          .registerFragment(null, request.getApplicationIdString(), fragmentSpec.getDagName(),
+          .registerFragment(queryIdentifier, request.getApplicationIdString(), fragmentSpec.getDagName(),
               dagIdentifier,
               fragmentSpec.getVertexName(), fragmentSpec.getFragmentNumber(),
               fragmentSpec.getAttemptNumber(), request.getUser(), request.getFragmentSpec());
@@ -239,28 +241,37 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
 
     @Override
     public void initializeHook(TezProcessor source) {
-      queryTracker.registerDagQueryId(source.getContext().getDAGName(),
+      queryTracker.registerDagQueryId(
+          new QueryIdentifier(source.getContext().getApplicationId().toString(),
+              source.getContext().getDagIdentifier()),
           HiveConf.getVar(source.getConf(), HiveConf.ConfVars.HIVEQUERYID));
     }
   }
 
   @Override
-  public SourceStateUpdatedResponseProto sourceStateUpdated(SourceStateUpdatedRequestProto request) {
+  public SourceStateUpdatedResponseProto sourceStateUpdated(
+      SourceStateUpdatedRequestProto request) {
     LOG.info("Processing state update: " + stringifySourceStateUpdateRequest(request));
-    queryTracker.registerSourceStateChange(request.getDagName(), request.getSrcName(),
+    queryTracker.registerSourceStateChange(
+        new QueryIdentifier(request.getQueryIdentifier().getAppIdentifier(),
+            request.getQueryIdentifier().getDagIdentifier()), request.getSrcName(),
         request.getState());
     return SourceStateUpdatedResponseProto.getDefaultInstance();
   }
 
   @Override
   public QueryCompleteResponseProto queryComplete(QueryCompleteRequestProto request) {
-    LOG.info("Processing queryComplete notification for {}", request.getDagName());
+    QueryIdentifier queryIdentifier =
+        new QueryIdentifier(request.getQueryIdentifier().getAppIdentifier(),
+            request.getQueryIdentifier().getDagIdentifier());
+    LOG.info("Processing queryComplete notification for {}", queryIdentifier);
     List<QueryFragmentInfo> knownFragments =
-        queryTracker.queryComplete(null, request.getDagName(), request.getDeleteDelay());
-    LOG.info("DBG: Pending fragment count for completed query {} = {}", request.getDagName(),
+        queryTracker
+            .queryComplete(queryIdentifier, request.getDeleteDelay());
+    LOG.info("DBG: Pending fragment count for completed query {} = {}", queryIdentifier,
         knownFragments.size());
     for (QueryFragmentInfo fragmentInfo : knownFragments) {
-      LOG.info("DBG: Issuing killFragment for completed query {} {}", request.getDagName(),
+      LOG.info("DBG: Issuing killFragment for completed query {} {}", queryIdentifier,
           fragmentInfo.getFragmentIdentifierString());
       executorService.killFragment(fragmentInfo.getFragmentIdentifierString());
     }
@@ -276,7 +287,9 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
 
   private String stringifySourceStateUpdateRequest(SourceStateUpdatedRequestProto request) {
     StringBuilder sb = new StringBuilder();
-    sb.append("dagName=").append(request.getDagName())
+    QueryIdentifier queryIdentifier = new QueryIdentifier(request.getQueryIdentifier().getAppIdentifier(),
+        request.getQueryIdentifier().getDagIdentifier());
+    sb.append("queryIdentifier=").append(queryIdentifier)
         .append(", ").append("sourceName=").append(request.getSrcName())
         .append(", ").append("state=").append(request.getState());
     return sb.toString();
@@ -342,14 +355,14 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
   }
 
   @Override
-  public void queryFailed(String queryId, String dagName) {
-    LOG.info("Processing query failed notification for {}", dagName);
+  public void queryFailed(QueryIdentifier queryIdentifier) {
+    LOG.info("Processing query failed notification for {}", queryIdentifier);
     List<QueryFragmentInfo> knownFragments =
-        queryTracker.queryComplete(queryId, dagName, -1);
-    LOG.info("DBG: Pending fragment count for failed query {} = {}", dagName,
+        queryTracker.queryComplete(queryIdentifier, -1);
+    LOG.info("DBG: Pending fragment count for failed query {} = {}", queryIdentifier,
         knownFragments.size());
     for (QueryFragmentInfo fragmentInfo : knownFragments) {
-      LOG.info("DBG: Issuing killFragment for failed query {} {}", dagName,
+      LOG.info("DBG: Issuing killFragment for failed query {} {}", queryIdentifier,
           fragmentInfo.getFragmentIdentifierString());
       executorService.killFragment(fragmentInfo.getFragmentIdentifierString());
     }
@@ -359,9 +372,9 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
 
     @Override
     public void taskKilled(String amLocation, int port, String user,
-                           Token<JobTokenIdentifier> jobToken, String queryId, String dagName,
+                           Token<JobTokenIdentifier> jobToken, QueryIdentifier queryIdentifier,
                            TezTaskAttemptID taskAttemptId) {
-      amReporter.taskKilled(amLocation, port, user, jobToken, queryId, dagName, taskAttemptId);
+      amReporter.taskKilled(amLocation, port, user, jobToken, queryIdentifier, taskAttemptId);
     }
   }
 

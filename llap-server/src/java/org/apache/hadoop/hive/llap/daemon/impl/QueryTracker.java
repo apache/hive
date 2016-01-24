@@ -56,8 +56,7 @@ public class QueryTracker extends AbstractService {
 
   private final ScheduledExecutorService executorService;
 
-  // TODO Make use if the query id for cachin when this is available.
-  private final ConcurrentHashMap<String, QueryInfo> queryInfoMap = new ConcurrentHashMap<>();
+  private final ConcurrentHashMap<QueryIdentifier, QueryInfo> queryInfoMap = new ConcurrentHashMap<>();
 
   private final String[] localDirsBase;
   private final FileSystem localFs;
@@ -70,22 +69,25 @@ public class QueryTracker extends AbstractService {
   // Alternately - send in an explicit dag start message before any other message is processed.
   // Multiple threads communicating from a single AM gets in the way of this.
 
-  // Keeps track of completed dags. Assumes dag names are unique across AMs.
-  private final Set<String> completedDagMap = Collections.newSetFromMap(
-      new ConcurrentHashMap<String, Boolean>());
+  // Keeps track of completed DAGS. QueryIdentifiers need to be unique across applications.
+  private final Set<QueryIdentifier> completedDagMap =
+      Collections.newSetFromMap(new ConcurrentHashMap<QueryIdentifier, Boolean>());
 
 
   private final Lock lock = new ReentrantLock();
-  private final ConcurrentMap<String, ReadWriteLock> dagSpecificLocks = new ConcurrentHashMap<>();
+  private final ConcurrentMap<QueryIdentifier, ReadWriteLock> dagSpecificLocks = new ConcurrentHashMap<>();
 
   // Tracks various maps for dagCompletions. This is setup here since stateChange messages
   // may be processed by a thread which ends up executing before a task.
-  private final ConcurrentMap<String, ConcurrentMap<String, SourceStateProto>>
-    sourceCompletionMap = new ConcurrentHashMap<>();
+  private final ConcurrentMap<QueryIdentifier, ConcurrentMap<String, SourceStateProto>>
+      sourceCompletionMap = new ConcurrentHashMap<>();
 
-  // Tracks queryId by dagName. This can only be set when config is parsed in TezProcessor,
+  // Tracks HiveQueryId by QueryIdentifier. This can only be set when config is parsed in TezProcessor.
   // all the other existing code passes queryId equal to 0 everywhere.
-  private final ConcurrentHashMap<String, String> dagNameToQueryId = new ConcurrentHashMap<>();
+  // If we switch the runtime and move to parsing the payload in the AM - the actual hive queryId could
+  // be sent over the wire from the AM, and will take the place of AppId+dagId in QueryIdentifier.
+  private final ConcurrentHashMap<QueryIdentifier, String> queryIdentifierToHiveQueryId =
+      new ConcurrentHashMap<>();
 
   public QueryTracker(Configuration conf, String[] localDirsBase) {
     super("QueryTracker");
@@ -107,7 +109,7 @@ public class QueryTracker extends AbstractService {
 
   /**
    * Register a new fragment for a specific query
-   * @param queryId
+   * @param queryIdentifier
    * @param appIdString
    * @param dagName
    * @param dagIdentifier
@@ -117,23 +119,23 @@ public class QueryTracker extends AbstractService {
    * @param user
    * @throws IOException
    */
-  QueryFragmentInfo registerFragment(String queryId, String appIdString, String dagName,
+  QueryFragmentInfo registerFragment(QueryIdentifier queryIdentifier, String appIdString, String dagName,
       int dagIdentifier, String vertexName, int fragmentNumber, int attemptNumber, String user,
       FragmentSpecProto fragmentSpec) throws IOException {
-    ReadWriteLock dagLock = getDagLock(dagName);
+    ReadWriteLock dagLock = getDagLock(queryIdentifier);
     dagLock.readLock().lock();
     try {
-      if (!completedDagMap.contains(dagName)) {
-        QueryInfo queryInfo = queryInfoMap.get(dagName);
+      if (!completedDagMap.contains(queryIdentifier)) {
+        QueryInfo queryInfo = queryInfoMap.get(queryIdentifier);
         if (queryInfo == null) {
-          queryInfo = new QueryInfo(queryId, appIdString, dagName, dagIdentifier, user,
-              getSourceCompletionMap(dagName), localDirsBase, localFs);
-          queryInfoMap.putIfAbsent(dagName, queryInfo);
+          queryInfo = new QueryInfo(queryIdentifier, appIdString, dagName, dagIdentifier, user,
+              getSourceCompletionMap(queryIdentifier), localDirsBase, localFs);
+          queryInfoMap.putIfAbsent(queryIdentifier, queryInfo);
         }
         return queryInfo.registerFragment(vertexName, fragmentNumber, attemptNumber, fragmentSpec);
       } else {
         // Cleanup the dag lock here, since it may have been created after the query completed
-        dagSpecificLocks.remove(dagName);
+        dagSpecificLocks.remove(queryIdentifier);
         throw new RuntimeException(
             "Dag " + dagName + " already complete. Rejecting fragment ["
                 + vertexName + ", " + fragmentNumber + ", " + attemptNumber + "]");
@@ -148,12 +150,12 @@ public class QueryTracker extends AbstractService {
    * @param fragmentInfo
    */
   void fragmentComplete(QueryFragmentInfo fragmentInfo) {
-    String dagName = fragmentInfo.getQueryInfo().getDagName();
-    QueryInfo queryInfo = queryInfoMap.get(dagName);
+    QueryIdentifier qId = fragmentInfo.getQueryInfo().getQueryIdentifier();
+    QueryInfo queryInfo = queryInfoMap.get(qId);
     if (queryInfo == null) {
       // Possible because a queryComplete message from the AM can come in first - KILL / SUCCESSFUL,
       // before the fragmentComplete is reported
-      LOG.info("Ignoring fragmentComplete message for unknown query");
+      LOG.info("Ignoring fragmentComplete message for unknown query: {}", qId);
     } else {
       queryInfo.unregisterFragment(fragmentInfo);
     }
@@ -161,42 +163,40 @@ public class QueryTracker extends AbstractService {
 
   /**
    * Register completion for a query
-   * @param queryId
-   * @param dagName
+   * @param queryIdentifier
    * @param deleteDelay
    */
-  List<QueryFragmentInfo> queryComplete(String queryId, String dagName, long deleteDelay) {
+  List<QueryFragmentInfo> queryComplete(QueryIdentifier queryIdentifier, long deleteDelay) {
     if (deleteDelay == -1) {
       deleteDelay = defaultDeleteDelaySeconds;
     }
-    ReadWriteLock dagLock = getDagLock(dagName);
+    ReadWriteLock dagLock = getDagLock(queryIdentifier);
     dagLock.writeLock().lock();
     try {
-      rememberCompletedDag(dagName);
-      LOG.info("Processing queryComplete for dagName={} with deleteDelay={} seconds",
-          dagName, deleteDelay);
-      QueryInfo queryInfo = queryInfoMap.remove(dagName);
+      rememberCompletedDag(queryIdentifier);
+      LOG.info("Processing queryComplete for queryIdentifier={} with deleteDelay={} seconds", queryIdentifier,
+          deleteDelay);
+      QueryInfo queryInfo = queryInfoMap.remove(queryIdentifier);
       if (queryInfo == null) {
-        LOG.warn("Ignoring query complete for unknown dag: {}", dagName);
+        LOG.warn("Ignoring query complete for unknown dag: {}", queryIdentifier);
         return Collections.emptyList();
       }
       String[] localDirs = queryInfo.getLocalDirsNoCreate();
       if (localDirs != null) {
         for (String localDir : localDirs) {
           cleanupDir(localDir, deleteDelay);
-          ShuffleHandler.get().unregisterDag(localDir, dagName, queryInfo.getDagIdentifier());
+          ShuffleHandler.get().unregisterDag(localDir, queryInfo.getAppIdString(), queryInfo.getDagIdentifier());
         }
       }
       // Clearing this before sending a kill is OK, since canFinish will change to false.
       // Ideally this should be a state machine where kills are issued to the executor,
       // and the structures are cleaned up once all tasks complete. New requests, however,
       // should not be allowed after a query complete is received.
-      sourceCompletionMap.remove(dagName);
-      String savedQueryId = dagNameToQueryId.remove(dagName);
-      queryId = queryId == null ? savedQueryId : queryId;
-      dagSpecificLocks.remove(dagName);
-      if (queryId != null) {
-        ObjectCacheFactory.removeLlapQueryCache(queryId);
+      sourceCompletionMap.remove(queryIdentifier);
+      String savedQueryId = queryIdentifierToHiveQueryId.remove(queryIdentifier);
+      dagSpecificLocks.remove(queryIdentifier);
+      if (savedQueryId != null) {
+        ObjectCacheFactory.removeLlapQueryCache(savedQueryId);
       }
       return queryInfo.getRegisteredFragments();
     } finally {
@@ -206,24 +206,24 @@ public class QueryTracker extends AbstractService {
 
 
 
-  public void rememberCompletedDag(String dagName) {
-    if (completedDagMap.add(dagName)) {
+  public void rememberCompletedDag(QueryIdentifier queryIdentifier) {
+    if (completedDagMap.add(queryIdentifier)) {
       // We will remember completed DAG for an hour to avoid execution out-of-order fragments.
-      executorService.schedule(new DagMapCleanerCallable(dagName), 1, TimeUnit.HOURS);
+      executorService.schedule(new DagMapCleanerCallable(queryIdentifier), 1, TimeUnit.HOURS);
     } else {
-      LOG.warn("Couldn't add {} to completed dag set", dagName);
+      LOG.warn("Couldn't add {} to completed dag set", queryIdentifier);
     }
   }
 
   /**
    * Register an update to a source within an executing dag
-   * @param dagName
+   * @param queryIdentifier
    * @param sourceName
    * @param sourceState
    */
-  void registerSourceStateChange(String dagName, String sourceName, SourceStateProto sourceState) {
-    getSourceCompletionMap(dagName).put(sourceName, sourceState);
-    QueryInfo queryInfo = queryInfoMap.get(dagName);
+  void registerSourceStateChange(QueryIdentifier queryIdentifier, String sourceName, SourceStateProto sourceState) {
+    getSourceCompletionMap(queryIdentifier).put(sourceName, sourceState);
+    QueryInfo queryInfo = queryInfoMap.get(queryIdentifier);
     if (queryInfo != null) {
       queryInfo.sourceStateUpdated(sourceName);
     } else {
@@ -233,13 +233,13 @@ public class QueryTracker extends AbstractService {
   }
 
 
-  private ReadWriteLock getDagLock(String dagName) {
+  private ReadWriteLock getDagLock(QueryIdentifier queryIdentifier) {
     lock.lock();
     try {
-      ReadWriteLock dagLock = dagSpecificLocks.get(dagName);
+      ReadWriteLock dagLock = dagSpecificLocks.get(queryIdentifier);
       if (dagLock == null) {
         dagLock = new ReentrantReadWriteLock();
-        dagSpecificLocks.put(dagName, dagLock);
+        dagSpecificLocks.put(queryIdentifier, dagLock);
       }
       return dagLock;
     } finally {
@@ -247,20 +247,20 @@ public class QueryTracker extends AbstractService {
     }
   }
 
-  private ConcurrentMap<String, SourceStateProto> getSourceCompletionMap(String dagName) {
-    ConcurrentMap<String, SourceStateProto> dagMap = sourceCompletionMap.get(dagName);
+  private ConcurrentMap<String, SourceStateProto> getSourceCompletionMap(QueryIdentifier queryIdentifier) {
+    ConcurrentMap<String, SourceStateProto> dagMap = sourceCompletionMap.get(queryIdentifier);
     if (dagMap == null) {
       dagMap = new ConcurrentHashMap<>();
       ConcurrentMap<String, SourceStateProto> old =
-          sourceCompletionMap.putIfAbsent(dagName, dagMap);
+          sourceCompletionMap.putIfAbsent(queryIdentifier, dagMap);
       dagMap = (old != null) ? old : dagMap;
     }
     return dagMap;
   }
 
-  public void registerDagQueryId(String dagName, String queryId) {
-    if (queryId == null) return;
-    dagNameToQueryId.putIfAbsent(dagName, queryId);
+  public void registerDagQueryId(QueryIdentifier queryIdentifier, String hiveQueryIdString) {
+    if (hiveQueryIdString == null) return;
+    queryIdentifierToHiveQueryId.putIfAbsent(queryIdentifier, hiveQueryIdString);
   }
 
   @Override
@@ -302,15 +302,15 @@ public class QueryTracker extends AbstractService {
   }
 
   private class DagMapCleanerCallable extends CallableWithNdc<Void> {
-    private final String dagName;
+    private final QueryIdentifier queryIdentifier;
 
-    private DagMapCleanerCallable(String dagName) {
-      this.dagName = dagName;
+    private DagMapCleanerCallable(QueryIdentifier queryIdentifier) {
+      this.queryIdentifier = queryIdentifier;
     }
 
     @Override
     protected Void callInternal() {
-      completedDagMap.remove(dagName);
+      completedDagMap.remove(queryIdentifier);
       return null;
     }
   }

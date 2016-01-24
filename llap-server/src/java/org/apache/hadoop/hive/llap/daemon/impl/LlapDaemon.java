@@ -435,8 +435,8 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
   private class QueryFailedHandlerProxy implements QueryFailedHandler {
 
     @Override
-    public void queryFailed(String queryId, String dagName) {
-      containerRunner.queryFailed(queryId, dagName);
+    public void queryFailed(QueryIdentifier queryIdentifier) {
+      containerRunner.queryFailed(queryIdentifier);
     }
   }
 }
