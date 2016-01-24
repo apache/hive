@@ -24,6 +24,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler;
@@ -130,6 +131,8 @@ public class FosterStorageHandler extends DefaultStorageHandler {
         jobProperties.put(IOConstants.SCHEMA_EVOLUTION_COLUMNS, columnNamesSb.toString());
         jobProperties.put(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, typeNamesSb.toString());
 
+        boolean isAcidTable = AcidUtils.isTablePropertyTransactional(tableProperties);
+        AcidUtils.setTransactionalTableScan(jobProperties, isAcidTable);
       }
     } catch (IOException e) {
       throw new IllegalStateException("Failed to set output path", e);

@@ -37,6 +37,8 @@ import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.HiveInputFormat;
+import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -266,8 +268,10 @@ public class CompactorMR {
       colNames.append(col.getName());
       colTypes.append(col.getType());
     }
-    job.set(serdeConstants.LIST_COLUMNS, colNames.toString());
-    job.set(serdeConstants.LIST_COLUMN_TYPES, colTypes.toString());
+    job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS, colNames.toString());
+    job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, colTypes.toString());
+    HiveConf.setBoolVar(job, HiveConf.ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN, true);
+    HiveConf.setVar(job, HiveConf.ConfVars.HIVEINPUTFORMAT, HiveInputFormat.class.getName());
   }
 
   static class CompactorInputSplit implements InputSplit {
