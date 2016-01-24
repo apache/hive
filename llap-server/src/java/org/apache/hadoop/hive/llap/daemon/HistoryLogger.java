@@ -27,6 +27,7 @@ public class HistoryLogger {
   private static final String HISTORY_START_TIME = "StartTime";
   private static final String HISTORY_END_TIME = "EndTime";
   private static final String HISTORY_DAG_NAME = "DagName";
+  private static final String HISTORY_DAG_ID = "DagId";
   private static final String HISTORY_VERTEX_NAME = "VertexName";
   private static final String HISTORY_TASK_ID = "TaskId";
   private static final String HISTORY_ATTEMPT_ID = "TaskAttemptId";
@@ -41,29 +42,30 @@ public class HistoryLogger {
 
   public static void logFragmentStart(String applicationIdStr, String containerIdStr,
                                       String hostname,
-                                      String dagName, String vertexName, int taskId,
+                                      String dagName, int dagIdentifier, String vertexName, int taskId,
                                       int attemptId) {
     HISTORY_LOGGER.info(
-        constructFragmentStartString(applicationIdStr, containerIdStr, hostname, dagName,
+        constructFragmentStartString(applicationIdStr, containerIdStr, hostname, dagName, dagIdentifier,
             vertexName, taskId, attemptId));
   }
 
   public static void logFragmentEnd(String applicationIdStr, String containerIdStr, String hostname,
-                                    String dagName, String vertexName, int taskId, int attemptId,
+                                    String dagName, int dagIdentifier, String vertexName, int taskId, int attemptId,
                                     String threadName, long startTime, boolean failed) {
     HISTORY_LOGGER.info(constructFragmentEndString(applicationIdStr, containerIdStr, hostname,
-        dagName, vertexName, taskId, attemptId, threadName, startTime, failed));
+        dagName, dagIdentifier, vertexName, taskId, attemptId, threadName, startTime, failed));
   }
 
 
   private static String constructFragmentStartString(String applicationIdStr, String containerIdStr,
-                                                     String hostname, String dagName,
+                                                     String hostname, String dagName, int dagIdentifier,
                                                      String vertexName, int taskId, int attemptId) {
     HistoryLineBuilder lb = new HistoryLineBuilder(EVENT_TYPE_FRAGMENT_START);
     lb.addHostName(hostname);
     lb.addAppid(applicationIdStr);
     lb.addContainerId(containerIdStr);
     lb.addDagName(dagName);
+    lb.addDagId(dagIdentifier);
     lb.addVertexName(vertexName);
     lb.addTaskId(taskId);
     lb.addTaskAttemptId(attemptId);
@@ -72,7 +74,7 @@ public class HistoryLogger {
   }
 
   private static String constructFragmentEndString(String applicationIdStr, String containerIdStr,
-                                                   String hostname, String dagName,
+                                                   String hostname, String dagName, int dagIdentifier,
                                                    String vertexName, int taskId, int attemptId,
                                                    String threadName, long startTime, boolean succeeded) {
     HistoryLineBuilder lb = new HistoryLineBuilder(EVENT_TYPE_FRAGMENT_END);
@@ -80,6 +82,7 @@ public class HistoryLogger {
     lb.addAppid(applicationIdStr);
     lb.addContainerId(containerIdStr);
     lb.addDagName(dagName);
+    lb.addDagId(dagIdentifier);
     lb.addVertexName(vertexName);
     lb.addTaskId(taskId);
     lb.addTaskAttemptId(attemptId);
@@ -111,6 +114,10 @@ public class HistoryLogger {
 
     HistoryLineBuilder addDagName(String dagName) {
       return setKeyValue(HISTORY_DAG_NAME, dagName);
+    }
+
+    HistoryLineBuilder addDagId(int dagId) {
+      return setKeyValue(HISTORY_DAG_ID, String.valueOf(dagId));
     }
 
     HistoryLineBuilder addVertexName(String vertexName) {
