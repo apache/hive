@@ -350,13 +350,15 @@ public class LlapTaskReporter implements TaskReporterInterface {
       float progress = 0;
       if (task.hasInitialized()) {
         progress = task.getProgress();
+        // TODO HIVE-12449. Make use of progress notifications once Hive starts sending them out.
+        // progressNotified = task.getAndClearProgressNotification();
         if (sendCounters) {
           // send these potentially large objects at longer intervals to avoid overloading the AM
           counters = task.getCounters();
           stats = task.getTaskStatistics();
         }
       }
-      return new TaskStatusUpdateEvent(counters, progress, stats);
+      return new TaskStatusUpdateEvent(counters, progress, stats, true);
     }
 
     /**
