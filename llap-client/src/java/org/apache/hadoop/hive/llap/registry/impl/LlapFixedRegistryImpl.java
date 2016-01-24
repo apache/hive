@@ -17,8 +17,13 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -176,7 +181,8 @@ public class LlapFixedRegistryImpl implements ServiceRegistry {
 
   private final class FixedServiceInstanceSet implements ServiceInstanceSet {
 
-    private final Map<String, ServiceInstance> instances = new HashMap<String, ServiceInstance>();
+    // LinkedHashMap have a repeatable iteration order.
+    private final Map<String, ServiceInstance> instances = new LinkedHashMap<>();
 
     public FixedServiceInstanceSet() {
       for (String host : hosts) {
@@ -188,6 +194,19 @@ public class LlapFixedRegistryImpl implements ServiceRegistry {
     @Override
     public Map<String, ServiceInstance> getAll() {
       return instances;
+    }
+
+    @Override
+    public List<ServiceInstance> getAllInstancesOrdered() {
+      List<ServiceInstance> list = new LinkedList<>();
+      list.addAll(instances.values());
+      Collections.sort(list, new Comparator<ServiceInstance>() {
+        @Override
+        public int compare(ServiceInstance o1, ServiceInstance o2) {
+          return o2.getWorkerIdentity().compareTo(o2.getWorkerIdentity());
+        }
+      });
+      return list;
     }
 
     @Override

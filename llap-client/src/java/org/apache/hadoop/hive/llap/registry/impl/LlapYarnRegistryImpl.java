@@ -20,15 +20,20 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hadoop.conf.Configuration;
@@ -269,16 +274,47 @@ public class LlapYarnRegistryImpl implements ServiceRegistry {
 
     // LinkedHashMap to retain iteration order.
     private final Map<String, ServiceInstance> instances = new LinkedHashMap<>();
+    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+    private final ReentrantReadWriteLock.ReadLock readLock = lock.readLock();
+    private final ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
 
     @Override
-    public synchronized Map<String, ServiceInstance> getAll() {
+    public Map<String, ServiceInstance> getAll() {
       // Return a copy. Instances may be modified during a refresh.
-      return new LinkedHashMap<>(instances);
+      readLock.lock();
+      try {
+        return new LinkedHashMap<>(instances);
+      } finally {
+        readLock.unlock();
+      }
     }
 
     @Override
-    public synchronized ServiceInstance getInstance(String name) {
-      return instances.get(name);
+    public List<ServiceInstance> getAllInstancesOrdered() {
+      List<ServiceInstance> list = new LinkedList<>();
+      readLock.lock();
+      try {
+        list.addAll(instances.values());
+      } finally {
+        readLock.unlock();
+      }
+      Collections.sort(list, new Comparator<ServiceInstance>() {
+        @Override
+        public int compare(ServiceInstance o1, ServiceInstance o2) {
+          return o2.getWorkerIdentity().compareTo(o2.getWorkerIdentity());
+        }
+      });
+      return list;
+    }
+
+    @Override
+    public ServiceInstance getInstance(String name) {
+      readLock.lock();
+      try {
+        return instances.get(name);
+      } finally {
+        readLock.unlock();
+      }
     }
 
     @Override
@@ -290,7 +326,8 @@ public class LlapYarnRegistryImpl implements ServiceRegistry {
       Map<String, ServiceRecord> records =
           RegistryUtils.listServiceRecords(client, RegistryPathUtils.parentOf(path));
       // Synchronize after reading the service records from the external service (ZK)
-      synchronized (this) {
+      writeLock.lock();
+      try {
         Set<String> latestKeys = new HashSet<String>();
         LOG.info("Starting to refresh ServiceInstanceSet " + System.identityHashCode(this));
         for (ServiceRecord rec : records.values()) {
@@ -333,28 +370,34 @@ public class LlapYarnRegistryImpl implements ServiceRegistry {
         } else {
           this.instances.putAll(freshInstances);
         }
+      } finally {
+        writeLock.unlock();
       }
     }
 
     @Override
-    public synchronized Set<ServiceInstance> getByHost(String host) {
+    public Set<ServiceInstance> getByHost(String host) {
       // TODO Maybe store this as a map which is populated during construction, to avoid walking
       // the map on each request.
+      readLock.lock();
       Set<ServiceInstance> byHost = new HashSet<ServiceInstance>();
-
-      for (ServiceInstance i : instances.values()) {
-        if (host.equals(i.getHost())) {
-          // all hosts in instances should be alive in this impl
-          byHost.add(i);
+      try {
+        for (ServiceInstance i : instances.values()) {
+          if (host.equals(i.getHost())) {
+            // all hosts in instances should be alive in this impl
+            byHost.add(i);
+          }
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("Locality comparing " + host + " to " + i.getHost());
+          }
         }
         if (LOG.isDebugEnabled()) {
-          LOG.debug("Locality comparing " + host + " to " + i.getHost());
+          LOG.debug("Returning " + byHost.size() + " hosts for locality allocation on " + host);
         }
+        return byHost;
+      } finally {
+        readLock.unlock();
       }
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Returning " + byHost.size() + " hosts for locality allocation on " + host);
-      }
-      return byHost;
     }
   }
 
