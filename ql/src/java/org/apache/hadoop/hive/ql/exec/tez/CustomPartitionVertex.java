@@ -33,6 +33,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import com.google.common.collect.LinkedListMultimap;
+import org.apache.hadoop.mapred.split.SplitLocationProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -271,25 +272,27 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
           HashMultimap.<Integer, InputSplit> create();
       boolean secondLevelGroupingDone = false;
       if ((mainWorkName.isEmpty()) || (inputName.compareTo(mainWorkName) == 0)) {
+        SplitLocationProvider splitLocationProvider = Utils.getSplitLocationProvider(conf, LOG);
         for (Integer key : bucketToInitialSplitMap.keySet()) {
           InputSplit[] inputSplitArray =
               (bucketToInitialSplitMap.get(key).toArray(new InputSplit[0]));
           Multimap<Integer, InputSplit> groupedSplit =
               grouper.generateGroupedSplits(jobConf, conf, inputSplitArray, waves,
-                  availableSlots, inputName, mainWorkName.isEmpty());
+                  availableSlots, inputName, mainWorkName.isEmpty(), splitLocationProvider);
           if (mainWorkName.isEmpty() == false) {
             Multimap<Integer, InputSplit> singleBucketToGroupedSplit =
                 HashMultimap.<Integer, InputSplit> create();
             singleBucketToGroupedSplit.putAll(key, groupedSplit.values());
             groupedSplit =
                 grouper.group(jobConf, singleBucketToGroupedSplit, availableSlots,
-                    HiveConf.getFloatVar(conf, HiveConf.ConfVars.TEZ_SMB_NUMBER_WAVES));
+                    HiveConf.getFloatVar(conf, HiveConf.ConfVars.TEZ_SMB_NUMBER_WAVES), null);
             secondLevelGroupingDone = true;
           }
           bucketToGroupedSplitMap.putAll(key, groupedSplit.values());
         }
         processAllEvents(inputName, bucketToGroupedSplitMap, secondLevelGroupingDone);
       } else {
+        SplitLocationProvider splitLocationProvider = Utils.getSplitLocationProvider(conf, LOG);
         // do not group across files in case of side work because there is only 1 KV reader per
         // grouped split. This would affect SMB joins where we want to find the smallest key in
         // all the bucket files.
@@ -298,7 +301,7 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
               (bucketToInitialSplitMap.get(key).toArray(new InputSplit[0]));
           Multimap<Integer, InputSplit> groupedSplit =
               grouper.generateGroupedSplits(jobConf, conf, inputSplitArray, waves,
-                    availableSlots, inputName, false);
+                    availableSlots, inputName, false, splitLocationProvider);
             bucketToGroupedSplitMap.putAll(key, groupedSplit.values());
         }
         /*

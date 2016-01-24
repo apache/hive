@@ -2288,7 +2288,6 @@ public class HiveConf extends Configuration {
         "Whether to generate the splits locally or in the AM (tez only)"),
     HIVE_TEZ_GENERATE_CONSISTENT_SPLITS("hive.tez.input.generate.consistent.splits", true,
         "Whether to generate consistent split locations when generating splits in the AM"),
-
     HIVE_PREWARM_ENABLED("hive.prewarm.enabled", false, "Enables container prewarm for Tez/Spark (Hadoop 2 only)"),
     HIVE_PREWARM_NUM_CONTAINERS("hive.prewarm.numcontainers", 10, "Controls the number of containers to prewarm for Tez/Spark (Hadoop 2 only)"),
 
@@ -2501,7 +2500,7 @@ public class HiveConf extends Configuration {
        new TimeValidator(TimeUnit.SECONDS),
       "How long to delay before cleaning up query files in LLAP (in seconds, for debugging).",
       "llap.file.cleanup.delay-seconds"),
-    LLAP_DAEMON_SERVICE_HOSTS("hive.llap.daemon.service.hosts", "",
+    LLAP_DAEMON_SERVICE_HOSTS("hive.llap.daemon.service.hosts", null,
       "Explicitly specified hosts to use for LLAP scheduling. Useful for testing. By default,\n" +
       "YARN registry is used.", "llap.daemon.service.hosts"),
     LLAP_DAEMON_SERVICE_REFRESH_INTERVAL("hive.llap.daemon.service.refresh.interval.sec", "60s",
@@ -2570,6 +2569,10 @@ public class HiveConf extends Configuration {
       "llap.daemon.service.port"),
     LLAP_DAEMON_WEB_SSL("hive.llap.daemon.web.ssl", false,
       "Whether LLAP daemon web UI should use SSL.", "llap.daemon.service.ssl"),
+    LLAP_CLIENT_CONSISTENT_SPLITS("hive.llap.client.consistent.splits",
+        false,
+        "Whether to setup split locations to match nodes on which llap daemons are running," +
+            " instead of using the locations provided by the split itself"),
 
     SPARK_CLIENT_FUTURE_TIMEOUT("hive.spark.client.future.timeout",
       "60s", new TimeValidator(TimeUnit.SECONDS),

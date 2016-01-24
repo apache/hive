@@ -23,7 +23,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +41,7 @@ import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.split.SplitLocationProvider;
 import org.apache.hadoop.mapred.split.TezGroupedSplit;
 import org.apache.hadoop.mapred.split.TezMapredSplitsGrouper;
 import org.apache.tez.dag.api.TaskLocationHint;
@@ -65,14 +65,13 @@ public class SplitGrouper {
 
   private final TezMapredSplitsGrouper tezGrouper = new TezMapredSplitsGrouper();
 
-
-
   /**
    * group splits for each bucket separately - while evenly filling all the
    * available slots with tasks
    */
   public Multimap<Integer, InputSplit> group(Configuration conf,
-      Multimap<Integer, InputSplit> bucketSplitMultimap, int availableSlots, float waves)
+      Multimap<Integer, InputSplit> bucketSplitMultimap, int availableSlots, float waves,
+                                             SplitLocationProvider splitLocationProvider)
       throws IOException {
 
     // figure out how many tasks we want for each bucket
@@ -90,9 +89,9 @@ public class SplitGrouper {
       InputSplit[] rawSplits = inputSplitCollection.toArray(new InputSplit[0]);
       InputSplit[] groupedSplits =
           tezGrouper.getGroupedSplits(conf, rawSplits, bucketTaskMap.get(bucketId),
-              HiveInputFormat.class.getName(), new ColumnarSplitSizeEstimator());
+              HiveInputFormat.class.getName(), new ColumnarSplitSizeEstimator(), splitLocationProvider);
 
-      LOG.info("Original split size is " + rawSplits.length + " grouped split size is "
+      LOG.info("Original split count is " + rawSplits.length + " grouped split count is "
           + groupedSplits.length + ", for bucket: " + bucketId);
 
       for (InputSplit inSplit : groupedSplits) {
@@ -155,9 +154,10 @@ public class SplitGrouper {
   public Multimap<Integer, InputSplit> generateGroupedSplits(JobConf jobConf,
                                                                     Configuration conf,
                                                                     InputSplit[] splits,
-                                                                    float waves, int availableSlots)
+                                                                    float waves, int availableSlots,
+                                                                    SplitLocationProvider locationProvider)
       throws Exception {
-    return generateGroupedSplits(jobConf, conf, splits, waves, availableSlots, null, true);
+    return generateGroupedSplits(jobConf, conf, splits, waves, availableSlots, null, true, locationProvider);
   }
 
   /** Generate groups of splits, separated by schema evolution boundaries */
@@ -166,10 +166,12 @@ public class SplitGrouper {
                                                                     InputSplit[] splits,
                                                                     float waves, int availableSlots,
                                                                     String inputName,
-                                                                    boolean groupAcrossFiles) throws
+                                                                    boolean groupAcrossFiles,
+                                                                    SplitLocationProvider locationProvider) throws
       Exception {
 
     MapWork work = populateMapWork(jobConf, inputName);
+    // ArrayListMultimap is important here to retain the ordering for the splits.
     Multimap<Integer, InputSplit> bucketSplitMultiMap =
         ArrayListMultimap.<Integer, InputSplit> create();
 
@@ -188,7 +190,7 @@ public class SplitGrouper {
 
     // group them into the chunks we want
     Multimap<Integer, InputSplit> groupedSplits =
-        this.group(jobConf, bucketSplitMultiMap, availableSlots, waves);
+        this.group(jobConf, bucketSplitMultiMap, availableSlots, waves, locationProvider);
 
     return groupedSplits;
   }
@@ -207,6 +209,8 @@ public class SplitGrouper {
     // mapping of bucket id to number of required tasks to run
     Map<Integer, Integer> bucketTaskMap = new HashMap<Integer, Integer>();
 
+    // TODO HIVE-12255. Make use of SplitSizeEstimator.
+    // The actual task computation needs to be looked at as well.
     // compute the total size per bucket
     long totalSize = 0;
     boolean earlyExit = false;

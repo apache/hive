@@ -41,6 +41,7 @@ import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.split.SplitLocationProvider;
 import org.apache.hadoop.mapreduce.split.TezMapReduceSplitsGrouper;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.tez.common.TezUtils;
@@ -79,6 +80,7 @@ public class HiveSplitGenerator extends InputInitializer {
   private final MRInputUserPayloadProto userPayloadProto;
   private final MapWork work;
   private final SplitGrouper splitGrouper = new SplitGrouper();
+  private final SplitLocationProvider splitLocationProvider;
 
   public HiveSplitGenerator(InputInitializerContext initializerContext) throws IOException,
       SerDeException {
@@ -90,6 +92,9 @@ public class HiveSplitGenerator extends InputInitializer {
     this.conf = TezUtils.createConfFromByteString(userPayloadProto.getConfigurationBytes());
 
     this.jobConf = new JobConf(conf);
+
+    this.splitLocationProvider = Utils.getSplitLocationProvider(conf, LOG);
+    LOG.info("SplitLocationProvider: " + splitLocationProvider);
 
     // Read all credentials into the credentials instance stored in JobConf.
     ShimLoader.getHadoopShims().getMergedCredentials(jobConf);
@@ -149,6 +154,7 @@ public class HiveSplitGenerator extends InputInitializer {
             conf.getFloat(TezMapReduceSplitsGrouper.TEZ_GROUPING_SPLIT_WAVES,
                 TezMapReduceSplitsGrouper.TEZ_GROUPING_SPLIT_WAVES_DEFAULT);
 
+        // Raw splits
         InputSplit[] splits = inputFormat.getSplits(jobConf, (int) (availableSlots * waves));
         // Sort the splits, so that subsequent grouping is consistent.
         Arrays.sort(splits, new InputSplitComparator());
@@ -160,10 +166,10 @@ public class HiveSplitGenerator extends InputInitializer {
         }
 
         Multimap<Integer, InputSplit> groupedSplits =
-            splitGrouper.generateGroupedSplits(jobConf, conf, splits, waves, availableSlots);
+            splitGrouper.generateGroupedSplits(jobConf, conf, splits, waves, availableSlots, splitLocationProvider);
         // And finally return them in a flat array
         InputSplit[] flatSplits = groupedSplits.values().toArray(new InputSplit[0]);
-        LOG.info("Number of grouped splits: " + flatSplits.length);
+        LOG.info("Number of split groups: " + flatSplits.length);
 
         List<TaskLocationHint> locationHints = splitGrouper.createTaskLocationHints(flatSplits, generateConsistentSplits);
 
