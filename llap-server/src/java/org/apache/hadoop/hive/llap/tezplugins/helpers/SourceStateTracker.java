@@ -24,8 +24,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang3.mutable.MutableInt;
-import org.apache.hadoop.hive.llap.daemon.impl.QueryIdentifier;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryIdentifierProto;
+import org.apache.tez.serviceplugins.api.TaskCommunicatorContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.llap.LlapNodeId;
@@ -33,7 +33,6 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentR
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateUpdatedRequestProto;
 import org.apache.hadoop.hive.llap.tezplugins.Converters;
 import org.apache.hadoop.hive.llap.tezplugins.LlapTaskCommunicator;
-import org.apache.tez.dag.api.TaskCommunicatorContext;
 import org.apache.tez.dag.api.event.VertexState;
 import org.apache.tez.mapreduce.input.MRInput;
 import org.apache.tez.mapreduce.input.MRInputLegacy;
