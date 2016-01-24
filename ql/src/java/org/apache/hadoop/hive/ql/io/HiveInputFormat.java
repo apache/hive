@@ -36,6 +36,7 @@ import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.spark.SparkDynamicPartitionPruner;
@@ -586,6 +587,8 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
             jobConf, ts.getNeededColumnIDs(), ts.getNeededColumns());
         // push down filters
         pushFilters(jobConf, ts);
+
+        AcidUtils.setTransactionalTableScan(job, ts.getConf().isAcidTable());
       }
     }
   }

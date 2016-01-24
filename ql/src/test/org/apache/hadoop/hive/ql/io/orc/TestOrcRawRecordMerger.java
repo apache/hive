@@ -25,6 +25,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.IOConstants;
@@ -357,10 +358,9 @@ public class TestOrcRawRecordMerger {
   @Test
   public void testNewBase() throws Exception {
     Configuration conf = new Configuration();
-    conf.set("columns", "col1");
-    conf.set("columns.types", "string");
-    conf.set(serdeConstants.LIST_COLUMNS, "col1");
-    conf.set(serdeConstants.LIST_COLUMN_TYPES, "string");
+    conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS, "col1");
+    conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, "string");
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN, true);
     Reader reader = Mockito.mock(Reader.class, settings);
     RecordReader recordReader = Mockito.mock(RecordReader.class, settings);
 
@@ -520,8 +520,9 @@ public class TestOrcRawRecordMerger {
         BUCKET);
     Reader baseReader = OrcFile.createReader(basePath,
         OrcFile.readerOptions(conf));
-    conf.set("columns", MyRow.getColumnNamesProperty());
-    conf.set("columns.types", MyRow.getColumnTypesProperty());
+    conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS, MyRow.getColumnNamesProperty());
+    conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, MyRow.getColumnTypesProperty());
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN, true);
     OrcRawRecordMerger merger =
         new OrcRawRecordMerger(conf, true, baseReader, false, BUCKET,
             createMaximalTxnList(), new Reader.Options(),
@@ -591,8 +592,9 @@ public class TestOrcRawRecordMerger {
     Path basePath = AcidUtils.createBucketFile(directory.getBaseDirectory(),
         BUCKET);
 
-    conf.set("columns", MyRow.getColumnNamesProperty());
-    conf.set("columns.types", MyRow.getColumnTypesProperty());
+    conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS, MyRow.getColumnNamesProperty());
+    conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, MyRow.getColumnTypesProperty());
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN, true);
 
     Reader baseReader = OrcFile.createReader(basePath,
         OrcFile.readerOptions(conf));
@@ -897,8 +899,9 @@ public class TestOrcRawRecordMerger {
 
     InputFormat inf = new OrcInputFormat();
     JobConf job = new JobConf();
-    job.set("columns", BigRow.getColumnNamesProperty());
-    job.set("columns.types", BigRow.getColumnTypesProperty());
+    job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS, BigRow.getColumnNamesProperty());
+    job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, BigRow.getColumnTypesProperty());
+    HiveConf.setBoolVar(job, HiveConf.ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN, true);
     job.set("mapred.min.split.size", "1");
     job.set("mapred.max.split.size", "2");
     job.set("mapred.input.dir", root.toString());
@@ -1003,8 +1006,9 @@ public class TestOrcRawRecordMerger {
     job.set("mapred.min.split.size", "1");
     job.set("mapred.max.split.size", "2");
     job.set("mapred.input.dir", root.toString());
-    job.set("columns", BigRow.getColumnNamesProperty());
-    job.set("columns.types", BigRow.getColumnTypesProperty());
+    job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS, BigRow.getColumnNamesProperty());
+    job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, BigRow.getColumnTypesProperty());
+    HiveConf.setBoolVar(job, HiveConf.ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN, true);
     InputSplit[] splits = inf.getSplits(job, 5);
     assertEquals(5, splits.length);
     org.apache.hadoop.mapred.RecordReader<NullWritable, OrcStruct> rr;
@@ -1075,8 +1079,9 @@ public class TestOrcRawRecordMerger {
     job.set("mapred.max.split.size", "2");
     job.set("mapred.input.dir", root.toString());
     job.set("bucket_count", "1");
-    job.set("columns", MyRow.getColumnNamesProperty());
-    job.set("columns.types", MyRow.getColumnTypesProperty());
+    job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS, MyRow.getColumnNamesProperty());
+    job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, MyRow.getColumnTypesProperty());
+    HiveConf.setBoolVar(job, HiveConf.ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN, true);
     InputSplit[] splits = inf.getSplits(job, 5);
     assertEquals(1, splits.length);
     org.apache.hadoop.mapred.RecordReader<NullWritable, OrcStruct> rr;
@@ -1144,8 +1149,9 @@ public class TestOrcRawRecordMerger {
     JobConf job = new JobConf();
     job.set("mapred.input.dir", root.toString());
     job.set("bucket_count", "2");
-    job.set("columns", MyRow.getColumnNamesProperty());
-    job.set("columns.types", MyRow.getColumnTypesProperty());
+    job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS, MyRow.getColumnNamesProperty());
+    job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, MyRow.getColumnTypesProperty());
+    HiveConf.setBoolVar(job, HiveConf.ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN, true);
 
     // read the keys before the delta is flushed
     InputSplit[] splits = inf.getSplits(job, 1);

@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
@@ -75,6 +76,8 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
             job, ts.getNeededColumnIDs(), ts.getNeededColumns());
         // push down filters
         HiveInputFormat.pushFilters(job, ts);
+
+        AcidUtils.setTransactionalTableScan(job, ts.getConf().isAcidTable());
       }
       sink = work.getSink();
       fetch = new FetchOperator(work, job, source, getVirtualColumns(source));

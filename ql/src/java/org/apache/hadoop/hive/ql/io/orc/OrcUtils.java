@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.io.orc;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -34,6 +35,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.Type;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
@@ -690,7 +692,8 @@ public class OrcUtils {
     return columnId;
   }
 
-  public static TypeDescription getDesiredRowTypeDescr(Configuration conf, boolean isAcid) {
+   public static TypeDescription getDesiredRowTypeDescr(Configuration conf, boolean isAcid)
+       throws IOException {
 
     String columnNameProperty = null;
     String columnTypeProperty = null;
@@ -718,6 +721,8 @@ public class OrcUtils {
             haveSchemaEvolutionProperties = false;
           }
         }
+      } else if (isAcid) {
+        throw new IOException(ErrorMsg.SCHEMA_REQUIRED_TO_READ_ACID_TABLES.getErrorCodedMsg());
       }
     }
 

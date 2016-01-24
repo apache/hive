@@ -24,9 +24,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.ql.exec.PTFUtils;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
-import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.TableSample;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -98,6 +98,8 @@ public class TableScanDesc extends AbstractOperatorDesc {
 
   private boolean isMetadataOnly = false;
 
+  private boolean isAcidTable;
+
   private transient TableSample tableSample;
 
   private transient Table tableMetadata;
@@ -120,6 +122,7 @@ public class TableScanDesc extends AbstractOperatorDesc {
     this.alias = alias;
     this.virtualCols = vcs;
     this.tableMetadata = tblMetadata;
+    isAcidTable = AcidUtils.isAcidTable(this.tableMetadata);
   }
 
   @Override
@@ -134,7 +137,7 @@ public class TableScanDesc extends AbstractOperatorDesc {
   }
 
   public boolean isAcidTable() {
-    return SemanticAnalyzer.isAcidTable(this.tableMetadata);
+    return isAcidTable;
   }
 
   @Explain(displayName = "filterExpr")

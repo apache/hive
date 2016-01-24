@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionException;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.BucketMapJoinContext;
@@ -431,6 +432,8 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
           jobClone, ts.getNeededColumnIDs(), ts.getNeededColumns());
       // push down filters
       HiveInputFormat.pushFilters(jobClone, ts);
+
+      AcidUtils.setTransactionalTableScan(job, ts.getConf().isAcidTable());
 
       // create a fetch operator
       FetchOperator fetchOp = new FetchOperator(entry.getValue(), jobClone);
