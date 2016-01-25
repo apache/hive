@@ -781,7 +781,7 @@ public abstract class BaseSemanticAnalyzer {
         throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(ast
             .getChild(0)), ite);
       } catch (HiveException e) {
-        throw new SemanticException(ErrorMsg.GENERIC_ERROR.getMsg(ast
+        throw new SemanticException(ErrorMsg.CANNOT_RETRIEVE_TABLE_METADATA.getMsg(ast
             .getChild(childIndex), e.getMessage()), e);
       }
 

@@ -166,7 +166,7 @@ public class ExportSemanticAnalyzer extends BaseSemanticAnalyzer {
           + " and then copied to " + toURI.toString());
     } catch (Exception e) {
       throw new SemanticException(
-          ErrorMsg.GENERIC_ERROR
+          ErrorMsg.IO_ERROR
               .getMsg("Exception while writing out the local file"), e);
     }
 

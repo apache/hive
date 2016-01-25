@@ -430,7 +430,7 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
             .getMsg());
         }
       } catch (ClassNotFoundException e) {
-        throw new SemanticException(ErrorMsg.GENERIC_ERROR.getMsg(), e);
+        throw new SemanticException(ErrorMsg.CLASSPATH_ERROR.getMsg(), e);
       }
     }
 

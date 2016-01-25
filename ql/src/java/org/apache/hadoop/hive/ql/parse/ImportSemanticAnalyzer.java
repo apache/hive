@@ -237,7 +237,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     } catch (SemanticException e) {
       throw e;
     } catch (Exception e) {
-      throw new SemanticException(ErrorMsg.GENERIC_ERROR.getMsg(), e);
+      throw new SemanticException(ErrorMsg.IMPORT_SEMANTIC_ERROR.getMsg(), e);
     }
   }
 

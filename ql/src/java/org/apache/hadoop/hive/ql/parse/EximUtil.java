@@ -122,7 +122,7 @@ public class EximUtil {
         throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(), e);
       }
     } catch (IOException e) {
-      throw new SemanticException(ErrorMsg.GENERIC_ERROR.getMsg(), e);
+      throw new SemanticException(ErrorMsg.IO_ERROR.getMsg(), e);
     }
   }
 
@@ -239,8 +239,8 @@ public class EximUtil {
         jgen.writeEndArray();
       } catch (TException e) {
         throw new SemanticException(
-            ErrorMsg.GENERIC_ERROR
-                .getMsg("Exception while serializing the metastore objects"), e);
+            ErrorMsg.ERROR_SERIALIZE_METASTORE
+                .getMsg(), e);
       }
     }
     jgen.writeEndObject();
@@ -318,9 +318,9 @@ public class EximUtil {
 
       return new ReadMetaData(table, partitionsList,readReplicationSpec(jsonContainer));
     } catch (JSONException e) {
-      throw new SemanticException(ErrorMsg.GENERIC_ERROR.getMsg("Error in serializing metadata"), e);
+      throw new SemanticException(ErrorMsg.ERROR_SERIALIZE_METADATA.getMsg(), e);
     } catch (TException e) {
-      throw new SemanticException(ErrorMsg.GENERIC_ERROR.getMsg("Error in serializing metadata"), e);
+      throw new SemanticException(ErrorMsg.ERROR_SERIALIZE_METADATA.getMsg(), e);
     } finally {
       if (mdstream != null) {
         mdstream.close();
