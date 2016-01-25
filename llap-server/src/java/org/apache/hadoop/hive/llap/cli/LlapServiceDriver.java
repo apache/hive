@@ -272,8 +272,19 @@ public class LlapServiceDriver {
 
     lfs.copyFromLocalFile(new Path(logger.toString()), confPath);
 
+    String java_home = System.getenv("JAVA_HOME");
+    String jre_home = System.getProperty("java.home");
+    if (java_home == null) {
+      java_home = jre_home;
+    } else if (!java_home.equals(jre_home)) {
+      LOG.warn("Java versions might not match : JAVA_HOME=%s,process jre=%s", 
+          java_home, jre_home);
+    }
+
     // extract configs for processing by the python fragments in Slider
     JSONObject configs = new JSONObject();
+
+    configs.put("java.home", java_home);
 
     configs.put(ConfVars.LLAP_DAEMON_YARN_CONTAINER_MB.varname, HiveConf.getIntVar(conf,
         ConfVars.LLAP_DAEMON_YARN_CONTAINER_MB));

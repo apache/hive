@@ -71,6 +71,7 @@ def main(args):
 		sys.exit(1)
 		return
 	config = json_parse(open(join(input, "config.json")).read())
+	java_home = config["java.home"]
 	resource = LlapResource(config)
 	# 5% container failure every monkey_interval seconds
 	monkey_percentage = 5 # 5%
@@ -82,7 +83,7 @@ def main(args):
 		"container.mb" : resource.container_size,
 		"container.cores" : resource.container_cores,
 		"hadoop_home" : os.getenv("HADOOP_HOME"),
-		"java_home" : os.getenv("JAVA_HOME"),
+		"java_home" : java_home,
 		"name" : args.name,
 		"daemon_args" : args.args,
 		"daemon_loglevel" : args.loglevel,
@@ -141,3 +142,4 @@ def main(args):
 
 if __name__ == "__main__":
 	main(sys.argv[1:])
+# vim: ai ts=4 noet sw=4 ft=python
