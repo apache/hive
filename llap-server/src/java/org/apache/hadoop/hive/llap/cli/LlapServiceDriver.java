@@ -279,7 +279,7 @@ public class LlapServiceDriver {
         ConfVars.LLAP_DAEMON_YARN_CONTAINER_MB));
 
     configs.put(HiveConf.ConfVars.LLAP_IO_MEMORY_MAX_SIZE.varname,
-        HiveConf.getLongVar(conf, HiveConf.ConfVars.LLAP_IO_MEMORY_MAX_SIZE));
+        HiveConf.getSizeVar(conf, HiveConf.ConfVars.LLAP_IO_MEMORY_MAX_SIZE));
 
     configs.put(HiveConf.ConfVars.LLAP_ALLOCATOR_DIRECT.varname,
         HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_ALLOCATOR_DIRECT));
