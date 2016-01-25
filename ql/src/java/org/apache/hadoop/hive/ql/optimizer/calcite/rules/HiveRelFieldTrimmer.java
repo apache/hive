@@ -42,6 +42,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveMultiJoin;
 
+import com.google.common.collect.Lists;
+
 public class HiveRelFieldTrimmer extends RelFieldTrimmer {
 
   protected static final Log LOG = LogFactory.getLog(HiveRelFieldTrimmer.class);
@@ -61,6 +63,7 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
       Set<RelDataTypeField> extraFields) {
     final int fieldCount = join.getRowType().getFieldCount();
     final RexNode conditionExpr = join.getCondition();
+    final List<RexNode> joinFilters = join.getJoinFilters();
 
     // Add in fields used in the condition.
     final Set<RelDataTypeField> combinedInputExtraFields =
@@ -131,6 +134,12 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
             mapping, newInputs.toArray(new RelNode[newInputs.size()]));
     RexNode newConditionExpr = conditionExpr.accept(shuttle);
 
+    List<RexNode> newJoinFilters = Lists.newArrayList();
+
+    for (RexNode joinFilter : joinFilters) {
+      newJoinFilters.add(joinFilter.accept(shuttle));
+    }
+
     final RelDataType newRowType = RelOptUtil.permute(join.getCluster().getTypeFactory(),
             join.getRowType(), mapping);
     final RelNode newJoin = new HiveMultiJoin(join.getCluster(),
@@ -139,7 +148,7 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
             newRowType,
             join.getJoinInputs(),
             join.getJoinTypes(),
-            join.getJoinFilters());
+            newJoinFilters);
 
     return new TrimResult(newJoin, mapping);
   }
