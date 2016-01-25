@@ -60,12 +60,28 @@ def main(args):
 	parser.add_argument("--args", default="")
 	parser.add_argument("--name", default="llap0")
 	parser.add_argument("--loglevel", default="INFO")
-	parser.add_argument("--chaosmonkey", type=int, default="0")
+	parser.add_argument("--chaosmonkey", type=int, default=0)
+	parser.add_argument("--slider-keytab-dir", default="")
+	parser.add_argument("--slider-keytab", default="")
+	parser.add_argument("--slider-principal", default="")
+	parser.add_argument("--slider-default-keytab", dest='slider_default_keytab', action='store_true')
+	parser.set_defaults(slider_default_keytab=False)
 	# Unneeded here for now: parser.add_argument("--hiveconf", action='append')
 	#parser.add_argument("--size") parser.add_argument("--xmx") parser.add_argument("--cache") parser.add_argument("--executors")
 	(args, unknown_args) = parser.parse_known_args(args)
 	input = args.input
 	output = args.output
+	slider_keytab_dir = args.slider_keytab_dir
+	slider_keytab = args.slider_keytab
+	slider_principal = args.slider_principal
+	# set the defaults only if the defaults are enabled
+	if args.slider_default_keytab:
+		if not slider_keytab_dir:
+			slider_keytab_dir = ".slider/keytabs/llap"
+		if not slider_keytab:
+			slider_keytab = "llap.keytab"
+		if not slider_principal:
+			slider_principal = "llap@EXAMPLE.COM"
 	if not input:
 		print "Cannot find input files"
 		sys.exit(1)
@@ -89,7 +105,10 @@ def main(args):
 		"daemon_loglevel" : args.loglevel,
 		"monkey_interval" : args.chaosmonkey,
 		"monkey_percentage" : monkey_percentage,
-		"monkey_enabled" : args.chaosmonkey > 0
+		"monkey_enabled" : args.chaosmonkey > 0,
+		"slider_keytab_dir" : slider_keytab_dir,
+		"slider_keytab" : slider_keytab,
+		"slider_principal" : slider_principal
 	}
 	
 	if not exists(output):

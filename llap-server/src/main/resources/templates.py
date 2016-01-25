@@ -88,7 +88,10 @@ appConfig = """
   },
   "components": {
     "slider-appmaster": {
-      "jvm.heapsize": "1024M"
+      "jvm.heapsize": "1024M",
+      "slider.hdfs.keytab.dir": "%(slider_keytab_dir)s",
+      "slider.am.login.keytab.name": "%(slider_keytab)s",
+      "slider.keytab.principal.name": "%(slider_principal)s"
     }
   }
 }
