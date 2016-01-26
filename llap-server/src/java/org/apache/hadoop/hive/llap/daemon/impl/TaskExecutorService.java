@@ -323,6 +323,7 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
     TaskWrapper taskWrapper = new TaskWrapper(task, this);
     SubmissionState result;
     TaskWrapper evictedTask;
+    boolean canFinish;
     synchronized (lock) {
       // If the queue does not have capacity, it does not throw a Rejection. Instead it will
       // return the task with the lowest priority, which could be the task which is currently being processed.
@@ -330,6 +331,7 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
       // TODO HIVE-11687 It's possible for a bunch of tasks to come in around the same time, without the
       // actual executor threads picking up any work. This will lead to unnecessary rejection of tasks.
       // The wait queue should be able to fit at least (waitQueue + currentFreeExecutor slots)
+      canFinish = taskWrapper.getTaskRunnerCallable().canFinish();
       evictedTask = waitQueue.offer(taskWrapper);
 
       // null evicted task means offer accepted
@@ -369,10 +371,14 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
     // This registration has to be done after knownTasks has been populated.
     // Register for state change notifications so that the waitQueue can be re-ordered correctly
     // if the fragment moves in or out of the finishable state.
-    boolean canFinish = taskWrapper.getTaskRunnerCallable().canFinish();
-    // It's safe to register outside of the lock since the stateChangeTracker ensures that updates
-    // and registrations are mutually exclusive.
-    taskWrapper.maybeRegisterForFinishedStateNotifications(canFinish);
+    boolean stateChanged = taskWrapper.maybeRegisterForFinishedStateNotifications(canFinish);
+    if (stateChanged) {
+      if (isDebugEnabled) {
+        LOG.debug("Finishable state of {} updated to {} during registration for state updates",
+            taskWrapper.getRequestId(), !canFinish);
+      }
+      finishableStateUpdated(taskWrapper, !canFinish);
+    }
 
     if (isDebugEnabled) {
       LOG.debug("Wait Queue: {}", waitQueue);
@@ -400,14 +406,14 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
       TaskWrapper taskWrapper = knownTasks.remove(fragmentId);
       // Can be null since the task may have completed meanwhile.
       if (taskWrapper != null) {
-        if (taskWrapper.inWaitQueue) {
+        if (taskWrapper.isInWaitQueue()) {
           if (isDebugEnabled) {
             LOG.debug("Removing {} from waitQueue", fragmentId);
           }
           taskWrapper.setIsInWaitQueue(false);
           waitQueue.remove(taskWrapper);
         }
-        if (taskWrapper.inPreemptionQueue) {
+        if (taskWrapper.isInPreemptionQueue()) {
           if (isDebugEnabled) {
             LOG.debug("Removing {} from preemptionQueue", fragmentId);
           }
@@ -650,9 +656,9 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
 
   public static class TaskWrapper implements FinishableStateUpdateHandler {
     private final TaskRunnerCallable taskRunnerCallable;
-    private boolean inWaitQueue = false;
-    private boolean inPreemptionQueue = false;
-    private boolean registeredForNotifications = false;
+    private final AtomicBoolean inWaitQueue = new AtomicBoolean(false);
+    private final AtomicBoolean inPreemptionQueue = new AtomicBoolean(false);
+    private final AtomicBoolean registeredForNotifications = new AtomicBoolean(false);
     private final TaskExecutorService taskExecutorService;
 
     public TaskWrapper(TaskRunnerCallable taskRunnerCallable, TaskExecutorService taskExecutorService) {
@@ -660,18 +666,16 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
       this.taskExecutorService = taskExecutorService;
     }
 
-    // Methods are synchronized primarily for visibility.
+    // Don't invoke from within a scheduler lock
+
     /**
      *
      * @param currentFinishableState
-     * @return true if the current state is the same as the currentFinishableState. false if the state has already changed.
+     * @return true if the state has not changed from currentFinishableState, false otherwise
      */
-    // Synchronized to avoid register / unregister clobbering each other.
-    // Don't invoke from within a scheduler lock
-    public synchronized boolean maybeRegisterForFinishedStateNotifications(
+    public boolean maybeRegisterForFinishedStateNotifications(
         boolean currentFinishableState) {
-      if (!registeredForNotifications) {
-        registeredForNotifications = true;
+      if (!registeredForNotifications.getAndSet(true)) {
         return taskRunnerCallable.getFragmentInfo()
             .registerForFinishableStateUpdates(this, currentFinishableState);
       } else {
@@ -679,11 +683,9 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
       }
     }
 
-    // Synchronized to avoid register / unregister clobbering each other.
     // Don't invoke from within a scheduler lock
-    public synchronized void maybeUnregisterForFinishedStateNotifications() {
-      if (registeredForNotifications) {
-        registeredForNotifications = false;
+    public void maybeUnregisterForFinishedStateNotifications() {
+      if (registeredForNotifications.getAndSet(false)) {
         taskRunnerCallable.getFragmentInfo().unregisterForFinishableStateUpdates(this);
       }
     }
@@ -692,20 +694,20 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
       return taskRunnerCallable;
     }
 
-    public synchronized boolean isInWaitQueue() {
-      return inWaitQueue;
+    public boolean isInWaitQueue() {
+      return inWaitQueue.get();
     }
 
-    public synchronized boolean isInPreemptionQueue() {
-      return inPreemptionQueue;
+    public boolean isInPreemptionQueue() {
+      return inPreemptionQueue.get();
     }
 
-    public synchronized void setIsInWaitQueue(boolean value) {
-      this.inWaitQueue = value;
+    public void setIsInWaitQueue(boolean value) {
+      this.inWaitQueue.set(value);
     }
 
-    public synchronized void setIsInPreemptableQueue(boolean value) {
-      this.inPreemptionQueue = value;
+    public void setIsInPreemptableQueue(boolean value) {
+      this.inPreemptionQueue.set(value);
     }
 
     public String getRequestId() {
@@ -716,9 +718,9 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
     public String toString() {
       return "TaskWrapper{" +
           "task=" + taskRunnerCallable.getRequestId() +
-          ", inWaitQueue=" + inWaitQueue +
-          ", inPreemptionQueue=" + inPreemptionQueue +
-          ", registeredForNotifications=" + registeredForNotifications +
+          ", inWaitQueue=" + inWaitQueue.get() +
+          ", inPreemptionQueue=" + inPreemptionQueue.get() +
+          ", registeredForNotifications=" + registeredForNotifications.get() +
           ", canFinish=" + taskRunnerCallable.canFinish() +
           ", firstAttemptStartTime=" + taskRunnerCallable.getFragmentRuntimeInfo().getFirstAttemptStartTime() +
           ", dagStartTime=" + taskRunnerCallable.getFragmentRuntimeInfo().getDagStartTime() +

@@ -20,11 +20,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
@@ -166,37 +168,60 @@ public class QueryInfo {
     private final Map<FinishableStateUpdateHandler, EntityInfo> trackedEntities = new HashMap<>();
     private final Multimap<String, EntityInfo> sourceToEntity = HashMultimap.create();
 
-    synchronized boolean registerForUpdates(FinishableStateUpdateHandler handler,
+    private final ReentrantLock lock = new ReentrantLock();
+
+    boolean registerForUpdates(FinishableStateUpdateHandler handler,
                                          List<String> sources, QueryFragmentInfo fragmentInfo,
                                          boolean lastFinishableState) {
-      EntityInfo entityInfo =
-          new EntityInfo(handler, sources, fragmentInfo, lastFinishableState);
-      if (trackedEntities.put(handler, entityInfo) != null) {
-        throw new IllegalStateException(
-            "Only a single registration allowed per entity. Duplicate for " + handler.toString());
-      }
-      for (String source : sources) {
-        sourceToEntity.put(source, entityInfo);
-      }
+      lock.lock();
+      try {
+        EntityInfo entityInfo =
+            new EntityInfo(handler, sources, fragmentInfo, lastFinishableState);
+        if (trackedEntities.put(handler, entityInfo) != null) {
+          throw new IllegalStateException(
+              "Only a single registration allowed per entity. Duplicate for " + handler.toString());
+        }
+        for (String source : sources) {
+          sourceToEntity.put(source, entityInfo);
+        }
 
-      if (lastFinishableState != fragmentInfo.canFinish()) {
-        entityInfo.setLastFinishableState(fragmentInfo.canFinish());
-        return false;
-      } else {
-        return true;
+        if (lastFinishableState != fragmentInfo.canFinish()) {
+          entityInfo.setLastFinishableState(fragmentInfo.canFinish());
+          return false;
+        } else {
+          return true;
+        }
+      } finally {
+        lock.unlock();
       }
     }
 
-    synchronized void unregisterForUpdates(FinishableStateUpdateHandler handler) {
-      EntityInfo info = trackedEntities.remove(handler);
-      Preconditions.checkState(info != null, "Cannot invoke unregister on an entity which has not been registered");
-      for (String source : info.getSources()) {
-        sourceToEntity.remove(source, info);
+    void unregisterForUpdates(FinishableStateUpdateHandler handler) {
+      lock.lock();
+      try {
+        EntityInfo info = trackedEntities.remove(handler);
+        Preconditions.checkState(info != null,
+            "Cannot invoke unregister on an entity which has not been registered");
+        for (String source : info.getSources()) {
+          sourceToEntity.remove(source, info);
+        }
+      } finally {
+        lock.unlock();
       }
     }
 
-    synchronized void sourceStateUpdated(String sourceName) {
-      Collection<EntityInfo> interestedEntityInfos = sourceToEntity.get(sourceName);
+    void sourceStateUpdated(String sourceName) {
+      List<EntityInfo> interestedEntityInfos = null;
+      lock.lock();
+      try {
+        Collection<EntityInfo> entities = sourceToEntity.get(sourceName);
+        if (entities != null) {
+          // Create a copy since the underlying list can be changed elsewhere.
+          interestedEntityInfos = new LinkedList<>(entities);
+        }
+      } finally {
+        lock.unlock();
+      }
       if (interestedEntityInfos != null) {
         for (EntityInfo entityInfo : interestedEntityInfos) {
           boolean newFinishState = entityInfo.getFragmentInfo().canFinish();
