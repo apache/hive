@@ -86,21 +86,21 @@ public class HybridHashTableContainer
   private int numPartitionsSpilled;             // number of spilled partitions
   private boolean lastPartitionInMem;           // only one (last one) partition is left in memory
   private final int memoryCheckFrequency;       // how often (# of rows apart) to check if memory is full
-  private HybridHashTableConf nwayConf;         // configuration for n-way join
+  private final HybridHashTableConf nwayConf;         // configuration for n-way join
 
   /** The OI used to deserialize values. We never deserialize keys. */
   private LazyBinaryStructObjectInspector internalValueOi;
   private boolean[] sortableSortOrders;
   private MapJoinBytesTableContainer.KeyValueHelper writeHelper;
-  private MapJoinBytesTableContainer.DirectKeyValueWriter directWriteHelper;
+  private final MapJoinBytesTableContainer.DirectKeyValueWriter directWriteHelper;
   /*
    * this is not a real bloom filter, but is a cheap version of the 1-memory
    * access bloom filters
-   * 
+   *
    * In several cases, we'll have map-join spills because the value columns are
    * a few hundred columns of Text each, while there are very few keys in total
    * (a few thousand).
-   * 
+   *
    * This is a cheap exit option to prevent spilling the big-table in such a
    * scenario.
    */
@@ -424,27 +424,8 @@ public class HybridHashTableContainer
    */
   @SuppressWarnings("deprecation")
   @Override
-  public MapJoinKey putRow(MapJoinObjectSerDeContext keyContext, Writable currentKey,
-      MapJoinObjectSerDeContext valueContext, Writable currentValue)
+  public MapJoinKey putRow(Writable currentKey, Writable currentValue)
       throws SerDeException, HiveException, IOException {
-    SerDe keySerde = keyContext.getSerDe(), valSerde = valueContext.getSerDe();
-
-    if (writeHelper == null) {
-      LOG.info("Initializing container with "
-          + keySerde.getClass().getName() + " and " + valSerde.getClass().getName());
-
-      // We assume this hashtable is loaded only when tez is enabled
-      LazyBinaryStructObjectInspector valSoi =
-          (LazyBinaryStructObjectInspector) valSerde.getObjectInspector();
-      writeHelper = new MapJoinBytesTableContainer.LazyBinaryKvWriter(keySerde, valSoi,
-                                                                      valueContext.hasFilterTag());
-      if (internalValueOi == null) {
-        internalValueOi = valSoi;
-      }
-      if (sortableSortOrders == null) {
-        sortableSortOrders = ((BinarySortableSerDe) keySerde).getSortOrders();
-      }
-    }
     writeHelper.setKeyValue(currentKey, currentValue);
     return internalPutRow(writeHelper, currentKey, currentValue);
   }
@@ -793,7 +774,7 @@ public class HybridHashTableContainer
   private class ReusableRowContainer
     implements MapJoinRowContainer, AbstractRowContainer.RowIterator<List<Object>> {
     private byte aliasFilter;
-    private BytesBytesMultiHashMap.Result hashMapResult;
+    private final BytesBytesMultiHashMap.Result hashMapResult;
 
     /**
      * Sometimes, when container is empty in multi-table mapjoin, we need to add a dummy row.
@@ -1061,5 +1042,28 @@ public class HybridHashTableContainer
       totalSize += hashPartition.size();
     }
     return totalSize;
+  }
+
+  @Override
+  public void setSerde(MapJoinObjectSerDeContext keyCtx, MapJoinObjectSerDeContext valCtx)
+      throws SerDeException {
+    SerDe keySerde = keyCtx.getSerDe(), valSerde = valCtx.getSerDe();
+
+    if (writeHelper == null) {
+      LOG.info("Initializing container with " + keySerde.getClass().getName() + " and "
+          + valSerde.getClass().getName());
+
+      // We assume this hashtable is loaded only when tez is enabled
+      LazyBinaryStructObjectInspector valSoi =
+          (LazyBinaryStructObjectInspector) valSerde.getObjectInspector();
+      writeHelper = new MapJoinBytesTableContainer.LazyBinaryKvWriter(keySerde, valSoi,
+          valCtx.hasFilterTag());
+      if (internalValueOi == null) {
+        internalValueOi = valSoi;
+      }
+      if (sortableSortOrders == null) {
+        sortableSortOrders = ((BinarySortableSerDe) keySerde).getSortOrders();
+      }
+    }
   }
 }

@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.persistence;
 
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -28,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.debug.Utils;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
 import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapper;
@@ -345,26 +347,30 @@ public class MapJoinBytesTableContainer
     }
   }
 
-  @SuppressWarnings("deprecation")
   @Override
-  public MapJoinKey putRow(MapJoinObjectSerDeContext keyContext, Writable currentKey,
-      MapJoinObjectSerDeContext valueContext, Writable currentValue) throws SerDeException {
+  public void setSerde(MapJoinObjectSerDeContext keyContext, MapJoinObjectSerDeContext valueContext)
+      throws SerDeException {
     SerDe keySerde = keyContext.getSerDe(), valSerde = valueContext.getSerDe();
     if (writeHelper == null) {
-      LOG.info("Initializing container with "
-          + keySerde.getClass().getName() + " and " + valSerde.getClass().getName());
+      LOG.info("Initializing container with " + keySerde.getClass().getName() + " and "
+          + valSerde.getClass().getName());
       if (keySerde instanceof BinarySortableSerDe && valSerde instanceof LazyBinarySerDe) {
         LazyBinaryStructObjectInspector valSoi =
-            (LazyBinaryStructObjectInspector)valSerde.getObjectInspector();
+            (LazyBinaryStructObjectInspector) valSerde.getObjectInspector();
         writeHelper = new LazyBinaryKvWriter(keySerde, valSoi, valueContext.hasFilterTag());
         internalValueOi = valSoi;
-        sortableSortOrders = ((BinarySortableSerDe)keySerde).getSortOrders();
+        sortableSortOrders = ((BinarySortableSerDe) keySerde).getSortOrders();
       } else {
         writeHelper = new KeyValueWriter(keySerde, valSerde, valueContext.hasFilterTag());
         internalValueOi = createInternalOi(valueContext);
         sortableSortOrders = null;
       }
     }
+  }
+
+  @SuppressWarnings("deprecation")
+  @Override
+  public MapJoinKey putRow(Writable currentKey, Writable currentValue) throws SerDeException {
     writeHelper.setKeyValue(currentKey, currentValue);
     hashMap.put(writeHelper, -1);
     return null; // there's no key to return
@@ -538,7 +544,7 @@ public class MapJoinBytesTableContainer
     private byte aliasFilter;
 
     /** Hash table wrapper specific to the container. */
-    private BytesBytesMultiHashMap.Result hashMapResult;
+    private final BytesBytesMultiHashMap.Result hashMapResult;
 
     /**
      * Sometimes, when container is empty in multi-table mapjoin, we need to add a dummy row.

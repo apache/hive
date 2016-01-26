@@ -48,17 +48,17 @@ public class VectorMapJoinFastTableContainer implements VectorMapJoinTableContai
 
   private static final Logger LOG = LoggerFactory.getLogger(HashTableLoader.class.getName());
 
-  private MapJoinDesc desc;
-  private Configuration hconf;
+  private final MapJoinDesc desc;
+  private final Configuration hconf;
 
-  private float keyCountAdj;
-  private int threshold;
-  private float loadFactor;
-  private int wbSize;
-  private long keyCount;
+  private final float keyCountAdj;
+  private final int threshold;
+  private final float loadFactor;
+  private final int wbSize;
+  private final long keyCount;
 
 
-  private VectorMapJoinFastHashTable VectorMapJoinFastHashTable;
+  private final VectorMapJoinFastHashTable VectorMapJoinFastHashTable;
 
   public VectorMapJoinFastTableContainer(MapJoinDesc desc, Configuration hconf,
       long keyCount) throws SerDeException {
@@ -88,7 +88,7 @@ public class VectorMapJoinFastTableContainer implements VectorMapJoinTableContai
 
   @Override
   public VectorMapJoinHashTable vectorMapJoinHashTable() {
-    return (VectorMapJoinHashTable) VectorMapJoinFastHashTable;
+    return VectorMapJoinFastHashTable;
   }
 
   private VectorMapJoinFastHashTable createHashTable(int newThreshold) {
@@ -174,9 +174,8 @@ public class VectorMapJoinFastTableContainer implements VectorMapJoinTableContai
   }
 
   @Override
-  public MapJoinKey putRow(MapJoinObjectSerDeContext keyContext,
-      Writable currentKey, MapJoinObjectSerDeContext valueContext,
-      Writable currentValue) throws SerDeException, HiveException, IOException {
+  public MapJoinKey putRow(Writable currentKey, Writable currentValue)
+      throws SerDeException, HiveException, IOException {
 
     // We are not using the key and value contexts, nor do we support a MapJoinKey.
     VectorMapJoinFastHashTable.putRow((BytesWritable) currentKey, (BytesWritable) currentValue);
@@ -216,6 +215,13 @@ public class VectorMapJoinFastTableContainer implements VectorMapJoinTableContai
   @Override
   public int size() {
     return VectorMapJoinFastHashTable.size();
+  }
+
+  @Override
+  public void setSerde(MapJoinObjectSerDeContext keyCtx, MapJoinObjectSerDeContext valCtx)
+      throws SerDeException {
+    // Do nothing in this case.
+
   }
 
   /*

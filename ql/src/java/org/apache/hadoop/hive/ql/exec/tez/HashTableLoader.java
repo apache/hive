@@ -206,9 +206,10 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
 
         LOG.info("Using tableContainer " + tableContainer.getClass().getSimpleName());
 
+        tableContainer.setSerde(keyCtx, valCtx);
         while (kvReader.next()) {
-          tableContainer.putRow(keyCtx, (Writable)kvReader.getCurrentKey(),
-              valCtx, (Writable)kvReader.getCurrentValue());
+          tableContainer.putRow(
+              (Writable)kvReader.getCurrentKey(), (Writable)kvReader.getCurrentValue());
         }
         tableContainer.seal();
         mapJoinTables[pos] = tableContainer;

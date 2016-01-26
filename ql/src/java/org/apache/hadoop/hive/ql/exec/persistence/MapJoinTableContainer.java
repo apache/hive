@@ -77,8 +77,7 @@ public interface MapJoinTableContainer {
   /**
    * Adds row from input to the table.
    */
-  MapJoinKey putRow(MapJoinObjectSerDeContext keyContext, Writable currentKey,
-      MapJoinObjectSerDeContext valueContext, Writable currentValue)
+  MapJoinKey putRow(Writable currentKey, Writable currentValue)
       throws SerDeException, HiveException, IOException;
 
   /**
@@ -111,4 +110,7 @@ public interface MapJoinTableContainer {
    * Return the size of the hash table
    */
   int size();
+
+  void setSerde(MapJoinObjectSerDeContext keyCtx, MapJoinObjectSerDeContext valCtx)
+      throws SerDeException;
 }

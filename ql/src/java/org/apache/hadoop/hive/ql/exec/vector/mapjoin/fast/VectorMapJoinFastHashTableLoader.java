@@ -93,10 +93,10 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
         VectorMapJoinFastTableContainer vectorMapJoinFastTableContainer =
                 new VectorMapJoinFastTableContainer(desc, hconf, keyCount);
 
+        vectorMapJoinFastTableContainer.setSerde(null, null); // No SerDes here.
         while (kvReader.next()) {
-          vectorMapJoinFastTableContainer.putRow(
-              null, (BytesWritable) kvReader.getCurrentKey(),
-              null, (BytesWritable) kvReader.getCurrentValue());
+          vectorMapJoinFastTableContainer.putRow((BytesWritable)kvReader.getCurrentKey(),
+              (BytesWritable)kvReader.getCurrentValue());
         }
 
         vectorMapJoinFastTableContainer.seal();
