@@ -143,6 +143,7 @@ public class MapJoinTableContainerSerDe {
                 new MapJoinBytesTableContainer(hconf, valueContext, -1, 0) :
                 create(name, metaData);
           }
+          tableContainer.setSerde(keyContext, valueContext);
           if (useOptimizedContainer) {
             loadOptimized((MapJoinBytesTableContainer) tableContainer,
                 in, keyContainer, valueContainer);
@@ -192,7 +193,7 @@ public class MapJoinTableContainerSerDe {
       long numRows = in.readLong();
       for (long rowIndex = 0L; rowIndex < numRows; rowIndex++) {
         value.readFields(in);
-        container.putRow(keyContext, key, valueContext, value);
+        container.putRow(key, value);
       }
     }
   }
@@ -224,6 +225,7 @@ public class MapJoinTableContainerSerDe {
 
       VectorMapJoinFastTableContainer tableContainer =
           new VectorMapJoinFastTableContainer(mapJoinDesc, hconf, -1);
+      tableContainer.setSerde(keyContext, valueContext);
 
       for (FileStatus fileStatus : fileStatuses) {
         Path filePath = fileStatus.getPath();
@@ -244,7 +246,7 @@ public class MapJoinTableContainerSerDe {
             long numRows = in.readLong();
             for (long rowIndex = 0L; rowIndex < numRows; rowIndex++) {
               value.readFields(in);
-              tableContainer.putRow(null, key, null, value);
+              tableContainer.putRow(key, value);
             }
           }
         } finally {

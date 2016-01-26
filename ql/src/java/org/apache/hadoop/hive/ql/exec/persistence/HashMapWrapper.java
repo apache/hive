@@ -58,8 +58,10 @@ public class HashMapWrapper extends AbstractMapJoinTableContainer implements Ser
   private static final int THRESHOLD = 1000000;
   private static final float LOADFACTOR = 0.75f;
   private final HashMap<MapJoinKey, MapJoinRowContainer> mHash; // main memory HashMap
-  private MapJoinKey lastKey = null;
-  private Output output = new Output(0); // Reusable output for serialization
+  private final MapJoinKey lastKey = null;
+  private final Output output = new Output(0); // Reusable output for serialization
+  private MapJoinObjectSerDeContext keyContext;
+  private MapJoinObjectSerDeContext valueContext;
 
   public HashMapWrapper(Map<String, String> metaData) {
     super(metaData);
@@ -121,8 +123,7 @@ public class HashMapWrapper extends AbstractMapJoinTableContainer implements Ser
   }
 
   @Override
-  public MapJoinKey putRow(MapJoinObjectSerDeContext keyContext, Writable currentKey,
-      MapJoinObjectSerDeContext valueContext, Writable currentValue)
+  public MapJoinKey putRow(Writable currentKey, Writable currentValue)
           throws SerDeException, HiveException {
     MapJoinKey key = MapJoinKey.read(output, keyContext, currentKey);
     FlatRowContainer values = (FlatRowContainer)get(key);
@@ -247,5 +248,12 @@ public class HashMapWrapper extends AbstractMapJoinTableContainer implements Ser
   @Override
   public boolean hasSpill() {
     return false;
+  }
+
+  @Override
+  public void setSerde(MapJoinObjectSerDeContext keyCtx, MapJoinObjectSerDeContext valCtx)
+      throws SerDeException {
+    this.keyContext = keyCtx;
+    this.valueContext = valCtx;
   }
 }

@@ -1,0 +1,115 @@
+PREHOOK: query: DROP TABLE IF EXISTS test_1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS test_1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE test_1 AS SELECT 1 AS id
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_1
+POSTHOOK: query: CREATE TABLE test_1 AS SELECT 1 AS id
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_1
+PREHOOK: query: DROP TABLE IF EXISTS test_2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS test_2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE test_2 (id INT)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_2
+POSTHOOK: query: CREATE TABLE test_2 (id INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_2
+PREHOOK: query: DROP TABLE IF EXISTS test_3
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS test_3
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE test_3 AS SELECT 1 AS id
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_3
+POSTHOOK: query: CREATE TABLE test_3 AS SELECT 1 AS id
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_3
+PREHOOK: query: explain
+SELECT t1.id, t2.id, t3.id
+FROM test_1 t1
+LEFT JOIN test_2 t2 ON t1.id = t2.id
+INNER JOIN test_3 t3 ON t1.id = t3.id
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+SELECT t1.id, t2.id, t3.id
+FROM test_1 t1
+LEFT JOIN test_2 t2 ON t1.id = t2.id
+INNER JOIN test_3 t3 ON t1.id = t3.id
+POSTHOOK: type: QUERY
+Plan not optimized by CBO.
+
+Vertex dependency in root stage
+Map 1 <- Map 2 (BROADCAST_EDGE), Map 3 (BROADCAST_EDGE)
+
+Stage-0
+   Fetch Operator
+      limit:-1
+      Stage-1
+         Map 1
+         File Output Operator [FS_8]
+            compressed:false
+            Statistics:Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
+            Select Operator [SEL_7]
+               outputColumnNames:["_col0","_col1","_col2"]
+               Statistics:Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
+               Map Join Operator [MAPJOIN_16]
+               |  condition map:[{"":"Left Outer Join0 to 1"},{"":"Inner Join 0 to 2"}]
+               |  keys:{"Map 1":"id (type: int)","Map 2":"id (type: int)","Map 3":"id (type: int)"}
+               |  outputColumnNames:["_col0","_col4","_col8"]
+               |  Statistics:Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
+               |<-Map 2 [BROADCAST_EDGE]
+               |  Reduce Output Operator [RS_4]
+               |     key expressions:id (type: int)
+               |     Map-reduce partition columns:id (type: int)
+               |     sort order:+
+               |     Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+               |     TableScan [TS_1]
+               |        alias:t2
+               |        Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+               |<-Map 3 [BROADCAST_EDGE]
+               |  Reduce Output Operator [RS_5]
+               |     key expressions:id (type: int)
+               |     Map-reduce partition columns:id (type: int)
+               |     sort order:+
+               |     Statistics:Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
+               |     TableScan [TS_2]
+               |        alias:t3
+               |        Statistics:Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
+               |<-TableScan [TS_0]
+                     alias:t1
+                     Statistics:Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
+
+PREHOOK: query: SELECT t1.id, t2.id, t3.id
+FROM test_1 t1
+LEFT JOIN test_2 t2 ON t1.id = t2.id
+INNER JOIN test_3 t3 ON t1.id = t3.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_1
+PREHOOK: Input: default@test_2
+PREHOOK: Input: default@test_3
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT t1.id, t2.id, t3.id
+FROM test_1 t1
+LEFT JOIN test_2 t2 ON t1.id = t2.id
+INNER JOIN test_3 t3 ON t1.id = t3.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_1
+POSTHOOK: Input: default@test_2
+POSTHOOK: Input: default@test_3
+#### A masked pattern was here ####
+1	NULL	1
