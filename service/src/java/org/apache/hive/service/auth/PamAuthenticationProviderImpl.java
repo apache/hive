@@ -39,13 +39,20 @@ public class PamAuthenticationProviderImpl implements PasswdAuthenticationProvid
       throw new AuthenticationException("No PAM services are set.");
     }
 
+    String errorMsg = "Error authenticating with the PAM service: ";
     String[] pamServices = pamServiceNames.split(",");
     for (String pamService : pamServices) {
-      Pam pam = new Pam(pamService);
-      boolean isAuthenticated = pam.authenticateSuccessful(user, password);
-      if (!isAuthenticated) {
-        throw new AuthenticationException(
-          "Error authenticating with the PAM service: " + pamService);
+      try {
+        Pam pam = new Pam(pamService);
+        boolean isAuthenticated = pam.authenticateSuccessful(user, password);
+        if (!isAuthenticated) {
+          throw new AuthenticationException(errorMsg + pamService);
+        }
+      } catch(Throwable e) {
+        // Catch the exception caused by missing jpam.so which otherwise would
+        // crashes the thread and causes the client hanging rather than notifying
+        // the client nicely
+        throw new AuthenticationException(errorMsg + pamService, e);
       }
     }
   }
