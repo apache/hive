@@ -66,6 +66,11 @@ public class LocalSparkJobStatus implements SparkJobStatus {
   }
 
   @Override
+  public String getAppID() {
+    return sparkContext.sc().applicationId();
+  }
+
+  @Override
   public int getJobId() {
     return jobId;
   }
