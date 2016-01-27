@@ -210,6 +210,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Edges:
         Map 3 <- Map 1 (BROADCAST_EDGE), Map 2 (BROADCAST_EDGE), Map 5 (BROADCAST_EDGE)
         Reducer 4 <- Map 3 (SIMPLE_EDGE)

@@ -43,13 +43,13 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Edges:
         Reducer 10 <- Map 9 (SIMPLE_EDGE), Union 3 (CONTAINS)
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Union 3 (CONTAINS)
         Reducer 4 <- Union 3 (SIMPLE_EDGE)
         Reducer 6 <- Map 5 (SIMPLE_EDGE), Union 3 (CONTAINS)
         Reducer 8 <- Map 7 (SIMPLE_EDGE), Union 3 (CONTAINS)
-#### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:

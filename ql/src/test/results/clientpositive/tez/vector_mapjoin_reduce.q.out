@@ -29,10 +29,10 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Edges:
         Map 1 <- Map 2 (BROADCAST_EDGE), Reducer 4 (BROADCAST_EDGE)
         Reducer 4 <- Map 3 (SIMPLE_EDGE)
-#### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
@@ -184,6 +184,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Edges:
         Map 1 <- Map 2 (BROADCAST_EDGE), Reducer 4 (BROADCAST_EDGE)
         Reducer 4 <- Map 3 (SIMPLE_EDGE)

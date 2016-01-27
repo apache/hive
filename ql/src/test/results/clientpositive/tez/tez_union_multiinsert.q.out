@@ -55,6 +55,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-2
     Tez
+#### A masked pattern was here ####
       Edges:
         Map 6 <- Union 3 (CONTAINS)
         Map 7 <- Union 3 (CONTAINS)
@@ -952,6 +953,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-2
     Tez
+#### A masked pattern was here ####
       Edges:
         Map 1 <- Union 2 (CONTAINS)
         Map 7 <- Union 2 (CONTAINS)
@@ -1845,6 +1847,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-2
     Tez
+#### A masked pattern was here ####
       Edges:
         Map 1 <- Union 2 (CONTAINS)
         Map 7 <- Union 2 (CONTAINS)
@@ -2722,6 +2725,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-2
     Tez
+#### A masked pattern was here ####
       Edges:
         Map 6 <- Union 3 (CONTAINS)
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Union 3 (CONTAINS)
@@ -3561,6 +3565,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-2
     Tez
+#### A masked pattern was here ####
       Edges:
         Map 6 <- Union 3 (CONTAINS)
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Union 3 (CONTAINS)

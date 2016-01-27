@@ -40,6 +40,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Edges:
         Map 1 <- Map 2 (BROADCAST_EDGE)
 #### A masked pattern was here ####
@@ -102,6 +103,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Edges:
         Map 1 <- Map 2 (BROADCAST_EDGE), Map 3 (BROADCAST_EDGE)
 #### A masked pattern was here ####
@@ -202,6 +204,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Edges:
         Map 2 <- Map 4 (BROADCAST_EDGE)
         Reducer 3 <- Map 1 (BROADCAST_EDGE), Map 2 (SIMPLE_EDGE)
@@ -314,6 +317,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Edges:
         Map 2 <- Map 4 (BROADCAST_EDGE)
         Reducer 3 <- Map 1 (BROADCAST_EDGE), Map 2 (SIMPLE_EDGE)
@@ -418,6 +422,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Edges:
         Map 3 <- Map 5 (BROADCAST_EDGE)
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
