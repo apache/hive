@@ -34,13 +34,17 @@ public class $className {
 
   static {
     MiniClusterType miniMR = MiniClusterType.valueForString("$clusterMode");
+    String hiveConfDir = "$hiveConfDir";
     String initScript = "$initScript";
     String cleanupScript = "$cleanupScript";
 
     try {
       String hadoopVer = "$hadoopVersion";
-      qt = new QTestUtil((HIVE_ROOT + "$resultsDir"), (HIVE_ROOT + "$logDir"), miniMR, null, hadoopVer,
-       initScript, cleanupScript, false, false);
+      if (!hiveConfDir.isEmpty()) {
+        hiveConfDir = HIVE_ROOT + hiveConfDir;
+      }
+      qt = new QTestUtil((HIVE_ROOT + "$resultsDir"), (HIVE_ROOT + "$logDir"), miniMR,
+       hiveConfDir, hadoopVer, initScript, cleanupScript, false, false);
       // do a one time initialization
       qt.cleanUp();
       qt.createSources();
