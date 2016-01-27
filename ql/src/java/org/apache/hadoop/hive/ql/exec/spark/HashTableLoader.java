@@ -161,7 +161,6 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
     }
     MapJoinTableContainer mapJoinTable = SmallTableCache.get(path);
     if (mapJoinTable == null) {
-      // TODO#: HERE?
       synchronized (path.toString().intern()) {
         mapJoinTable = SmallTableCache.get(path);
         if (mapJoinTable == null) {

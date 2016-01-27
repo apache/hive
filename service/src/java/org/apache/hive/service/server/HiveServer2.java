@@ -500,6 +500,13 @@ public class HiveServer2 extends CompositeService {
       maxAttempts = hiveConf.getLongVar(HiveConf.ConfVars.HIVE_SERVER2_MAX_START_ATTEMPTS);
       HiveServer2 server = null;
       try {
+        // Initialize the pool before we start the server; don't start yet.
+        TezSessionPoolManager sessionPool = null;
+        if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_TEZ_INITIALIZE_DEFAULT_SESSIONS)) {
+          sessionPool = TezSessionPoolManager.getInstance();
+          sessionPool.setupPool(hiveConf);
+        }
+
         // Cleanup the scratch dir before starting
         ServerUtils.cleanUpScratchDir(hiveConf);
         server = new HiveServer2();
@@ -522,9 +529,8 @@ public class HiveServer2 extends CompositeService {
         if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_SUPPORT_DYNAMIC_SERVICE_DISCOVERY)) {
           server.addServerInstanceToZooKeeper(hiveConf);
         }
-        if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_TEZ_INITIALIZE_DEFAULT_SESSIONS)) {
-          TezSessionPoolManager sessionPool = TezSessionPoolManager.getInstance();
-          sessionPool.setupPool(hiveConf);
+
+        if (sessionPool != null) {
           sessionPool.startPool();
         }
 
