@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper;
@@ -1224,6 +1225,21 @@ public class DagUtils {
       desc.setUserPayload(payload);
       v.setVertexManagerPlugin(desc);
     }
+  }
+
+  public String createDagName(Configuration conf, QueryPlan plan) {
+    String name = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYNAME);
+
+    if (name == null) {
+      name = conf.get("mapred.job.name");
+    }
+
+    if (name == null) {
+      name = plan.getQueryId();
+    }
+
+    assert name != null;
+    return name;
   }
 
   private DagUtils() {

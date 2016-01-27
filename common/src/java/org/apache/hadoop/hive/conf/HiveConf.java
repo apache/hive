@@ -1198,6 +1198,9 @@ public class HiveConf extends Configuration {
     HIVETEZLOGLEVEL("hive.tez.log.level", "INFO",
         "The log level to use for tasks executing as part of the DAG.\n" +
         "Used only if hive.tez.java.opts is used to configure Java options."),
+    HIVEQUERYNAME ("hive.query.name", null,
+        "This named is used by Tez to set the dag name. This name in turn will appear on \n" +
+        "the Tez UI representing the work that was done."),
 
     HIVEOPTIMIZEBUCKETINGSORTING("hive.optimize.bucketingsorting", true,
         "Don't create a reducer for enforcing \n" +
