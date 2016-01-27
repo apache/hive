@@ -229,6 +229,12 @@ public class SqlFunctionConverter {
                     "TOK_FUNCTIONDI");
               }
             }
+          } else if (op instanceof HiveSqlSumAggFunction) { // case SUM(DISTINCT)
+            HiveSqlSumAggFunction sumFunction = (HiveSqlSumAggFunction) op;
+            if (sumFunction.isDistinct()) {
+              node = (ASTNode) ParseDriver.adaptor.create(HiveParser.TOK_FUNCTIONDI,
+                  "TOK_FUNCTIONDI");
+            }
           }
           node.addChild((ASTNode) ParseDriver.adaptor.create(HiveParser.Identifier, op.getName()));
         }

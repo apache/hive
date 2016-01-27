@@ -71,6 +71,9 @@ public class HiveSqlSumAggFunction extends SqlAggFunction {
 
   //~ Methods ----------------------------------------------------------------
 
+  public boolean isDistinct() {
+    return isDistinct;
+  }
 
   @Override
   public <T> T unwrap(Class<T> clazz) {

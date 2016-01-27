@@ -76,3 +76,29 @@ POSTHOOK: Input: default@windowing_distinct
 2	2	2	2	2	2	2	2
 2	2	2	2	2	2	2	2
 2	2	2	2	2	2	2	2
+PREHOOK: query: SELECT SUM(DISTINCT t) OVER (PARTITION BY index),
+       SUM(DISTINCT d) OVER (PARTITION BY index),
+       SUM(DISTINCT s) OVER (PARTITION BY index),
+       SUM(DISTINCT concat('Mr.', s)) OVER (PARTITION BY index),
+       SUM(DISTINCT ts) OVER (PARTITION BY index),
+       SUM(DISTINCT dec) OVER (PARTITION BY index)
+FROM windowing_distinct
+PREHOOK: type: QUERY
+PREHOOK: Input: default@windowing_distinct
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT SUM(DISTINCT t) OVER (PARTITION BY index),
+       SUM(DISTINCT d) OVER (PARTITION BY index),
+       SUM(DISTINCT s) OVER (PARTITION BY index),
+       SUM(DISTINCT concat('Mr.', s)) OVER (PARTITION BY index),
+       SUM(DISTINCT ts) OVER (PARTITION BY index),
+       SUM(DISTINCT dec) OVER (PARTITION BY index)
+FROM windowing_distinct
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@windowing_distinct
+#### A masked pattern was here ####
+54	56.63	0.0	0.0	2.724315837406296E9	57
+54	56.63	0.0	0.0	2.724315837406296E9	57
+54	56.63	0.0	0.0	2.724315837406296E9	57
+235	77.42	0.0	0.0	2.724315837406612E9	69
+235	77.42	0.0	0.0	2.724315837406612E9	69
+235	77.42	0.0	0.0	2.724315837406612E9	69

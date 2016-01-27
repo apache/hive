@@ -24,14 +24,14 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.parse.WindowingSpec.BoundarySpec;
-import org.apache.hadoop.hive.ql.plan.ptf.BoundaryDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
@@ -87,6 +87,17 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
     }
   }
 
+  @Override
+  public GenericUDAFEvaluator getEvaluator(GenericUDAFParameterInfo info)
+      throws SemanticException {
+    TypeInfo[] parameters = info.getParameters();
+
+    GenericUDAFSumEvaluator eval = (GenericUDAFSumEvaluator) getEvaluator(parameters);
+    eval.setSumDistinct(info.isDistinct());
+
+    return eval;
+  }
+
   public static PrimitiveObjectInspector.PrimitiveCategory getReturnType(TypeInfo type) {
     if (type.getCategory() != ObjectInspector.Category.PRIMITIVE) {
       return null;
@@ -111,12 +122,54 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
   }
 
   /**
+   * The base type for sum operator evaluator
+   *
+   */
+  public static abstract class GenericUDAFSumEvaluator<ResultType> extends GenericUDAFEvaluator {
+    static abstract class SumAgg<T> extends AbstractAggregationBuffer {
+      boolean empty;
+      T sum;
+      Object previousValue = null;
+    }
+
+    protected PrimitiveObjectInspector inputOI;
+    protected ObjectInspector outputOI;
+    protected ResultType result;
+    protected boolean sumDistinct;
+
+    public boolean sumDistinct() {
+      return sumDistinct;
+    }
+
+    public void setSumDistinct(boolean sumDistinct) {
+      this.sumDistinct = sumDistinct;
+    }
+
+    /**
+     * Check if the input object is the same as the previous one for the case of
+     * SUM(DISTINCT).
+     * @param input the input object
+     * @return True if sumDistinct is false or the input is different from the previous object
+     */
+    protected boolean checkDistinct(SumAgg agg, Object input) {
+      if (this.sumDistinct &&
+          ObjectInspectorUtils.compare(input, inputOI, agg.previousValue, outputOI) == 0) {
+        return false;
+      }
+
+      agg.previousValue = ObjectInspectorUtils.copyToStandardObject(
+          input, inputOI, ObjectInspectorCopyOption.JAVA);
+      return true;
+    }
+
+
+  }
+
+  /**
    * GenericUDAFSumHiveDecimal.
    *
    */
-  public static class GenericUDAFSumHiveDecimal extends GenericUDAFEvaluator {
-    private PrimitiveObjectInspector inputOI;
-    private HiveDecimalWritable result;
+  public static class GenericUDAFSumHiveDecimal extends GenericUDAFSumEvaluator<HiveDecimalWritable> {
 
     @Override
     public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {
@@ -124,6 +177,8 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
       super.init(m, parameters);
       result = new HiveDecimalWritable(HiveDecimal.ZERO);
       inputOI = (PrimitiveObjectInspector) parameters[0];
+      outputOI = ObjectInspectorUtils.getStandardObjectInspector(inputOI,
+          ObjectInspectorCopyOption.JAVA);
       // The output precision is 10 greater than the input which should cover at least
       // 10b rows. The scale is the same as the input.
       DecimalTypeInfo outputTypeInfo = null;
@@ -138,9 +193,7 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
 
     /** class for storing decimal sum value. */
     @AggregationType(estimable = false) // hard to know exactly for decimals
-    static class SumHiveDecimalAgg extends AbstractAggregationBuffer {
-      boolean empty;
-      HiveDecimal sum;
+    static class SumHiveDecimalAgg extends SumAgg<HiveDecimal> {
     }
 
     @Override
@@ -152,7 +205,7 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
 
     @Override
     public void reset(AggregationBuffer agg) throws HiveException {
-      SumHiveDecimalAgg bdAgg = (SumHiveDecimalAgg) agg;
+      SumAgg<HiveDecimal> bdAgg = (SumAgg<HiveDecimal>) agg;
       bdAgg.empty = true;
       bdAgg.sum = HiveDecimal.ZERO;
     }
@@ -163,7 +216,9 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
     public void iterate(AggregationBuffer agg, Object[] parameters) throws HiveException {
       assert (parameters.length == 1);
       try {
-        merge(agg, parameters[0]);
+        if (checkDistinct((SumAgg) agg, parameters[0])) {
+          merge(agg, parameters[0]);
+        }
       } catch (NumberFormatException e) {
         if (!warned) {
           warned = true;
@@ -239,24 +294,21 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
    * GenericUDAFSumDouble.
    *
    */
-  public static class GenericUDAFSumDouble extends GenericUDAFEvaluator {
-    private PrimitiveObjectInspector inputOI;
-    private DoubleWritable result;
-
+  public static class GenericUDAFSumDouble extends GenericUDAFSumEvaluator<DoubleWritable> {
     @Override
     public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {
       assert (parameters.length == 1);
       super.init(m, parameters);
       result = new DoubleWritable(0);
       inputOI = (PrimitiveObjectInspector) parameters[0];
+      outputOI = ObjectInspectorUtils.getStandardObjectInspector(inputOI,
+          ObjectInspectorCopyOption.JAVA);
       return PrimitiveObjectInspectorFactory.writableDoubleObjectInspector;
     }
 
     /** class for storing double sum value. */
     @AggregationType(estimable = true)
-    static class SumDoubleAgg extends AbstractAggregationBuffer {
-      boolean empty;
-      double sum;
+    static class SumDoubleAgg extends SumAgg<Double> {
       @Override
       public int estimate() { return JavaDataModel.PRIMITIVES1 + JavaDataModel.PRIMITIVES2; }
     }
@@ -272,7 +324,7 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
     public void reset(AggregationBuffer agg) throws HiveException {
       SumDoubleAgg myagg = (SumDoubleAgg) agg;
       myagg.empty = true;
-      myagg.sum = 0;
+      myagg.sum = 0.0;
     }
 
     boolean warned = false;
@@ -281,7 +333,9 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
     public void iterate(AggregationBuffer agg, Object[] parameters) throws HiveException {
       assert (parameters.length == 1);
       try {
-        merge(agg, parameters[0]);
+        if (checkDistinct((SumAgg) agg, parameters[0])) {
+          merge(agg, parameters[0]);
+        }
       } catch (NumberFormatException e) {
         if (!warned) {
           warned = true;
@@ -354,24 +408,21 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
    * GenericUDAFSumLong.
    *
    */
-  public static class GenericUDAFSumLong extends GenericUDAFEvaluator {
-    private PrimitiveObjectInspector inputOI;
-    protected LongWritable result;
-
+  public static class GenericUDAFSumLong extends GenericUDAFSumEvaluator<LongWritable> {
     @Override
     public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {
       assert (parameters.length == 1);
       super.init(m, parameters);
       result = new LongWritable(0);
       inputOI = (PrimitiveObjectInspector) parameters[0];
+      outputOI = ObjectInspectorUtils.getStandardObjectInspector(inputOI,
+          ObjectInspectorCopyOption.JAVA);
       return PrimitiveObjectInspectorFactory.writableLongObjectInspector;
     }
 
     /** class for storing double sum value. */
     @AggregationType(estimable = true)
-    static class SumLongAgg extends AbstractAggregationBuffer {
-      boolean empty;
-      long sum;
+    static class SumLongAgg extends SumAgg<Long> {
       @Override
       public int estimate() { return JavaDataModel.PRIMITIVES1 + JavaDataModel.PRIMITIVES2; }
     }
@@ -387,7 +438,7 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
     public void reset(AggregationBuffer agg) throws HiveException {
       SumLongAgg myagg = (SumLongAgg) agg;
       myagg.empty = true;
-      myagg.sum = 0;
+      myagg.sum = 0L;
     }
 
     private boolean warned = false;
@@ -396,7 +447,9 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
     public void iterate(AggregationBuffer agg, Object[] parameters) throws HiveException {
       assert (parameters.length == 1);
       try {
-        merge(agg, parameters[0]);
+        if (checkDistinct((SumAgg) agg, parameters[0])) {
+          merge(agg, parameters[0]);
+        }
       } catch (NumberFormatException e) {
         if (!warned) {
           warned = true;
@@ -460,5 +513,4 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
       };
     }
   }
-
 }
