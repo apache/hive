@@ -3163,6 +3163,17 @@ public class HiveConf extends Configuration {
     return conf.getTrimmed(var.varname, var.defaultStrVal);
   }
 
+  public static String[] getTrimmedStringsVar(Configuration conf, ConfVars var) {
+    assert (var.valClass == String.class) : var.varname;
+    String[] result = conf.getTrimmedStrings(var.varname, (String[])null);
+    if (result != null) return result;
+    if (var.altName != null) {
+      result = conf.getTrimmedStrings(var.altName, (String[])null);
+      if (result != null) return result;
+    }
+    return org.apache.hadoop.util.StringUtils.getTrimmedStrings(var.defaultStrVal);
+  }
+
   public static String getVar(Configuration conf, ConfVars var, String defaultVal) {
     if (var.altName != null) {
       return conf.get(var.varname, conf.get(var.altName, defaultVal));

@@ -152,7 +152,7 @@ public class TestTezSessionPool {
       poolManager.setupPool(conf);
       poolManager.startPool();
     } catch (Exception e) {
-      e.printStackTrace();
+      LOG.error("Initialization error", e);
       fail();
     }
 

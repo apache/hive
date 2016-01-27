@@ -28,17 +28,17 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
 
@@ -80,13 +80,18 @@ public class TezSessionPoolManager {
 
 
   private Semaphore llapQueue;
-  private int blockingQueueLength = -1;
   private HiveConf initConf = null;
   int numConcurrentLlapQueries = -1;
   private long sessionLifetimeMs = 0;
   private long sessionLifetimeJitterMs = 0;
-
-  private boolean inited = false;
+  /** A queue for initial sessions that have not been started yet. */
+  private Queue<TezSessionPoolSession> initialSessions =
+      new ConcurrentLinkedQueue<TezSessionPoolSession>();
+  /**
+   * Indicates whether we should try to use defaultSessionPool.
+   * We assume that setupPool is either called before any activity, or not called at all.
+   */
+  private volatile boolean hasInitialSessions = false;
 
   private static TezSessionPoolManager sessionPool = null;
 
@@ -104,9 +109,8 @@ public class TezSessionPoolManager {
   protected TezSessionPoolManager() {
   }
 
-  private void startNextSessionFromQueue() throws Exception {
+  private void startInitialSession(TezSessionPoolSession sessionState) throws Exception {
     HiveConf newConf = new HiveConf(initConf);
-    TezSessionPoolSession sessionState = defaultQueuePool.take();
     boolean isUsable = sessionState.tryUse();
     if (!isUsable) throw new IOException(sessionState + " is not usable at pool startup");
     newConf.set("tez.queue.name", sessionState.getQueueName());
@@ -117,20 +121,18 @@ public class TezSessionPoolManager {
   }
 
   public void startPool() throws Exception {
-    this.inited = true;
-    if (blockingQueueLength == 0) return;
-    int threadCount = Math.min(blockingQueueLength,
+    if (initialSessions.isEmpty()) return;
+    int threadCount = Math.min(initialSessions.size(),
         HiveConf.getIntVar(initConf, ConfVars.HIVE_SERVER2_TEZ_SESSION_MAX_INIT_THREADS));
     Preconditions.checkArgument(threadCount > 0);
     if (threadCount == 1) {
-      for (int i = 0; i < blockingQueueLength; i++) {
-        // The queue is FIFO, so if we cycle thru length items, we'd start each session once.
-        startNextSessionFromQueue();
+      while (true) {
+        TezSessionPoolSession session = initialSessions.poll();
+        if (session == null) break;
+        startInitialSession(session);
       }
     } else {
       final SessionState parentSessionState = SessionState.get();
-      // The queue is FIFO, so if we cycle thru length items, we'd start each session once.
-      final AtomicInteger remainingToStart = new AtomicInteger(blockingQueueLength);
       // The runnable has no mutable state, so each thread can run the same thing.
       final AtomicReference<Exception> firstError = new AtomicReference<>(null);
       Runnable runnable = new Runnable() {
@@ -138,9 +140,11 @@ public class TezSessionPoolManager {
           if (parentSessionState != null) {
             SessionState.setCurrentSessionState(parentSessionState);
           }
-          while (remainingToStart.decrementAndGet() >= 0) {
+          while (true) {
+            TezSessionPoolSession session = initialSessions.poll();
+            if (session == null) break;
             try {
-              startNextSessionFromQueue();
+              startInitialSession(session);
             } catch (Exception e) {
               if (!firstError.compareAndSet(null, e)) {
                 LOG.error("Failed to start session; ignoring due to previous error", e);
@@ -170,16 +174,32 @@ public class TezSessionPoolManager {
   }
 
   public void setupPool(HiveConf conf) throws InterruptedException {
-    String defaultQueues = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_SERVER2_TEZ_DEFAULT_QUEUES);
+    String[] defaultQueueList = HiveConf.getTrimmedStringsVar(
+        conf, HiveConf.ConfVars.HIVE_SERVER2_TEZ_DEFAULT_QUEUES);
+    int emptyNames = 0; // We don't create sessions for empty entries.
+    for (String queueName : defaultQueueList) {
+      if (queueName.isEmpty()) {
+        ++emptyNames;
+      }
+    }
     int numSessions = conf.getIntVar(ConfVars.HIVE_SERVER2_TEZ_SESSIONS_PER_DEFAULT_QUEUE);
+    int numSessionsTotal = numSessions * (defaultQueueList.length - emptyNames);
+    if (numSessionsTotal > 0) {
+      defaultQueuePool = new ArrayBlockingQueue<TezSessionPoolSession>(numSessionsTotal);
+    }
+
     numConcurrentLlapQueries = conf.getIntVar(ConfVars.HIVE_SERVER2_LLAP_CONCURRENT_QUERIES);
+    llapQueue = new Semaphore(numConcurrentLlapQueries, true);
+
+    this.initConf = conf;
+
     sessionLifetimeMs = conf.getTimeVar(
         ConfVars.HIVE_SERVER2_TEZ_SESSION_LIFETIME, TimeUnit.MILLISECONDS);
     if (sessionLifetimeMs != 0) {
       sessionLifetimeJitterMs = conf.getTimeVar(
           ConfVars.HIVE_SERVER2_TEZ_SESSION_LIFETIME_JITTER, TimeUnit.MILLISECONDS);
       if (LOG.isDebugEnabled()) {
-        LOG.debug("Starting session expiration threads; session lifetime is "
+        LOG.debug("Session expiration is enabled; session lifetime is "
             + sessionLifetimeMs + " + [0, " + sessionLifetimeJitterMs + ") ms");
       }
       expirationQueue = new PriorityBlockingQueue<>(11, new Comparator<TezSessionPoolSession>() {
@@ -190,6 +210,11 @@ public class TezSessionPoolManager {
         }
       });
       restartQueue = new LinkedBlockingQueue<>();
+    }
+    this.hasInitialSessions = numSessionsTotal > 0;
+    // From this point on, session creation will wait for the default pool (if # of sessions > 0).
+
+    if (sessionLifetimeMs != 0) {
       expirationThread = new Thread(new Runnable() {
         @Override
         public void run() {
@@ -204,13 +229,6 @@ public class TezSessionPoolManager {
       }, "TezSessionPool-cleanup");
     }
 
-    // the list of queues is a comma separated list.
-    String defaultQueueList[] = defaultQueues.split(",");
-    defaultQueuePool = new ArrayBlockingQueue<TezSessionPoolSession>(
-        numSessions * defaultQueueList.length);
-    llapQueue = new Semaphore(numConcurrentLlapQueries, true);
-
-    this.initConf = conf;
     /*
      * In a single-threaded init case, with this the ordering of sessions in the queue will be
      * (with 2 sessions 3 queues) s1q1, s1q2, s1q3, s2q1, s2q2, s2q3 there by ensuring uniform
@@ -218,14 +236,12 @@ public class TezSessionPoolManager {
      * freed up, the list may change this ordering.
      * In a multi threaded init case it's a free for all.
      */
-    blockingQueueLength = 0;
     for (int i = 0; i < numSessions; i++) {
-      for (String queue : defaultQueueList) {
-        if (queue.length() == 0) {
+      for (String queueName : defaultQueueList) {
+        if (queueName.isEmpty()) {
           continue;
         }
-        defaultQueuePool.put(createAndInitSession(queue, true));
-        blockingQueueLength++;
+        initialSessions.add(createAndInitSession(queueName, true));
       }
     }
   }
@@ -246,7 +262,6 @@ public class TezSessionPoolManager {
   private TezSessionState getSession(HiveConf conf, boolean doOpen,
       boolean forceCreate)
       throws Exception {
-
     String queueName = conf.get("tez.queue.name");
 
     boolean nonDefaultUser = conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS);
@@ -257,12 +272,10 @@ public class TezSessionPoolManager {
      * their own credentials. We expect that with the new security model, things will
      * run as user hive in most cases.
      */
-    if (forceCreate || !(this.inited)
-        || ((queueName != null) && (!queueName.isEmpty()))
-        || (nonDefaultUser) || (defaultQueuePool == null) || (blockingQueueLength <= 0)) {
+    if (forceCreate || nonDefaultUser || !hasInitialSessions
+        || ((queueName != null) && !queueName.isEmpty())) {
       LOG.info("QueueName: " + queueName + " nonDefaultUser: " + nonDefaultUser +
-          " defaultQueuePool: " + defaultQueuePool +
-          " blockingQueueLength: " + blockingQueueLength);
+          " defaultQueuePool: " + defaultQueuePool + " hasInitialSessions: " + hasInitialSessions);
       return getNewSessionState(conf, queueName, doOpen);
     }
 
@@ -316,7 +329,7 @@ public class TezSessionPoolManager {
     // session in the SessionState
   }
 
-  public void closeIfNotDefault(
+  public static void closeIfNotDefault(
       TezSessionState tezSessionState, boolean keepTmpDir) throws Exception {
     LOG.info("Closing tez session default? " + tezSessionState.isDefault());
     if (!tezSessionState.isDefault()) {
@@ -325,7 +338,7 @@ public class TezSessionPoolManager {
   }
 
   public void stop() throws Exception {
-    if ((sessionPool == null) || (this.inited == false)) {
+    if ((sessionPool == null) || !this.hasInitialSessions) {
       return;
     }
 
@@ -378,7 +391,7 @@ public class TezSessionPoolManager {
    * sessions for e.g. when a CLI session is started. The CLI session could re-use the
    * same tez session eliminating the latencies of new AM and containers.
    */
-  private boolean canWorkWithSameSession(TezSessionState session, HiveConf conf)
+  private static boolean canWorkWithSameSession(TezSessionState session, HiveConf conf)
        throws HiveException {
     if (session == null || conf == null) {
       return false;
