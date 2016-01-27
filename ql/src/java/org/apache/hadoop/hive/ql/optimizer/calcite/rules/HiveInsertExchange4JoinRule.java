@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinLeafPredi
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinPredicateInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelCollation;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelDistribution;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveMultiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortExchange;
 
@@ -76,11 +77,10 @@ public class HiveInsertExchange4JoinRule extends RelOptRule {
     JoinPredicateInfo joinPredInfo;
     if (call.rel(0) instanceof HiveMultiJoin) {
       HiveMultiJoin multiJoin = call.rel(0);
-      try {
-        joinPredInfo =  HiveCalciteUtil.JoinPredicateInfo.constructJoinPredicateInfo(multiJoin);
-      } catch (CalciteSemanticException e) {
-        throw new RuntimeException(e);
-      }
+      joinPredInfo = multiJoin.getJoinPredicateInfo();
+    } else if (call.rel(0) instanceof HiveJoin) {
+      HiveJoin hiveJoin = call.rel(0);
+      joinPredInfo = hiveJoin.getJoinPredicateInfo();
     } else if (call.rel(0) instanceof Join) {
       Join join = call.rel(0);
       try {

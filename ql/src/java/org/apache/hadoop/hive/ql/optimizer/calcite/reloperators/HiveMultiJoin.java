@@ -70,6 +70,7 @@ public final class HiveMultiJoin extends AbstractRelNode {
    *                              INNER
    * @param filters               filters associated with each join
    *                              input
+   * @param joinPredicateInfo     join predicate information
    */
   public HiveMultiJoin(
       RelOptCluster cluster,
@@ -78,9 +79,10 @@ public final class HiveMultiJoin extends AbstractRelNode {
       RelDataType rowType,
       List<Pair<Integer,Integer>> joinInputs,
       List<JoinRelType> joinTypes,
-      List<RexNode> filters) {
+      List<RexNode> filters,
+      JoinPredicateInfo joinPredicateInfo) {
     super(cluster, TraitsUtil.getDefaultTraitSet(cluster));
-    this.inputs = Lists.newArrayList(inputs);
+    this.inputs = inputs;
     this.condition = condition;
     this.rowType = rowType;
 
@@ -89,14 +91,27 @@ public final class HiveMultiJoin extends AbstractRelNode {
     this.joinTypes = ImmutableList.copyOf(joinTypes);
     this.filters = ImmutableList.copyOf(filters);
     this.outerJoin = containsOuter();
-
-    try {
-      this.joinPredInfo = HiveCalciteUtil.JoinPredicateInfo.constructJoinPredicateInfo(this);
-    } catch (CalciteSemanticException e) {
-      throw new RuntimeException(e);
+    if (joinPredicateInfo == null) {
+      try {
+        this.joinPredInfo = HiveCalciteUtil.JoinPredicateInfo.constructJoinPredicateInfo(this);
+      } catch (CalciteSemanticException e) {
+        throw new RuntimeException(e);
+      }
+    } else {
+      this.joinPredInfo = joinPredicateInfo;
     }
   }
 
+  public HiveMultiJoin(
+    RelOptCluster cluster,
+    List<RelNode> inputs,
+    RexNode condition,
+    RelDataType rowType,
+    List<Pair<Integer,Integer>> joinInputs,
+    List<JoinRelType> joinTypes,
+    List<RexNode> filters) {
+    this(cluster, Lists.newArrayList(inputs), condition, rowType, joinInputs, joinTypes, filters, null);
+  }
 
   @Override
   public void replaceInput(int ordinalInParent, RelNode p) {
