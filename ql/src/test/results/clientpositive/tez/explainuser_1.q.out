@@ -840,7 +840,7 @@ Stage-0
                                                                   outputColumnNames:["_col0","_col1","_col2"]
                                                                   Statistics:Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
                                                                   Filter Operator [FIL_45]
-                                                                     predicate:((((((c_int + 1) >= 0) and ((c_int > 0) or (c_float >= 0.0))) and (c_float > 0.0)) and ((c_int >= 1) or (c_float >= 1.0))) and ((UDFToFloat(c_int) + c_float) >= 0.0)) (type: boolean)
+                                                                     predicate:(((((((c_int + 1) >= 0) and ((c_int > 0) or (c_float >= 0.0))) and (c_float > 0.0)) and ((c_int >= 1) or (c_float >= 1.0))) and ((UDFToFloat(c_int) + c_float) >= 0.0)) and key is not null) (type: boolean)
                                                                      Statistics:Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
                                                                      TableScan [TS_11]
                                                                         alias:cbo_t2
@@ -1931,19 +1931,19 @@ Stage-0
          Reducer 3
          File Output Operator [FS_19]
             compressed:false
-            Statistics:Num rows: 6 Data size: 606 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics:Num rows: 14 Data size: 1414 Basic stats: COMPLETE Column stats: COMPLETE
             table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_18]
                outputColumnNames:["_col0","_col1","_col2","_col3","_col4"]
-               Statistics:Num rows: 6 Data size: 606 Basic stats: COMPLETE Column stats: COMPLETE
+               Statistics:Num rows: 14 Data size: 1414 Basic stats: COMPLETE Column stats: COMPLETE
                Filter Operator [FIL_17]
                   predicate:((_col1 > 0) or (_col6 >= 0)) (type: boolean)
-                  Statistics:Num rows: 6 Data size: 606 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics:Num rows: 14 Data size: 1414 Basic stats: COMPLETE Column stats: COMPLETE
                   Merge Join Operator [MERGEJOIN_28]
                   |  condition map:[{"":"Inner Join 0 to 1"}]
                   |  keys:{"0":"_col0 (type: string)","1":"_col0 (type: string)"}
                   |  outputColumnNames:["_col1","_col2","_col3","_col4","_col6"]
-                  |  Statistics:Num rows: 10 Data size: 1010 Basic stats: COMPLETE Column stats: COMPLETE
+                  |  Statistics:Num rows: 21 Data size: 2121 Basic stats: COMPLETE Column stats: COMPLETE
                   |<-Map 5 [SIMPLE_EDGE]
                   |  Reduce Output Operator [RS_15]
                   |     key expressions:_col0 (type: string)
@@ -1965,16 +1965,16 @@ Stage-0
                         key expressions:_col0 (type: string)
                         Map-reduce partition columns:_col0 (type: string)
                         sort order:+
-                        Statistics:Num rows: 3 Data size: 546 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics:Num rows: 6 Data size: 1092 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions:_col1 (type: int), _col2 (type: float), _col3 (type: string), _col4 (type: int)
                         Filter Operator [FIL_9]
                            predicate:(((_col1 + _col4) = 2) and ((_col4 + 1) = 2)) (type: boolean)
-                           Statistics:Num rows: 3 Data size: 546 Basic stats: COMPLETE Column stats: COMPLETE
+                           Statistics:Num rows: 6 Data size: 1092 Basic stats: COMPLETE Column stats: COMPLETE
                            Merge Join Operator [MERGEJOIN_27]
                            |  condition map:[{"":"Left Outer Join0 to 1"}]
                            |  keys:{"0":"_col0 (type: string)","1":"_col0 (type: string)"}
                            |  outputColumnNames:["_col0","_col1","_col2","_col3","_col4"]
-                           |  Statistics:Num rows: 15 Data size: 2730 Basic stats: COMPLETE Column stats: COMPLETE
+                           |  Statistics:Num rows: 25 Data size: 4550 Basic stats: COMPLETE Column stats: COMPLETE
                            |<-Map 1 [SIMPLE_EDGE]
                            |  Reduce Output Operator [RS_6]
                            |     key expressions:_col0 (type: string)
@@ -1996,14 +1996,14 @@ Stage-0
                                  key expressions:_col0 (type: string)
                                  Map-reduce partition columns:_col0 (type: string)
                                  sort order:+
-                                 Statistics:Num rows: 6 Data size: 445 Basic stats: COMPLETE Column stats: COMPLETE
+                                 Statistics:Num rows: 5 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                                  value expressions:_col1 (type: int)
                                  Select Operator [SEL_5]
                                     outputColumnNames:["_col0","_col1"]
-                                    Statistics:Num rows: 6 Data size: 445 Basic stats: COMPLETE Column stats: COMPLETE
+                                    Statistics:Num rows: 5 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                                     Filter Operator [FIL_25]
-                                       predicate:(((c_int + 1) = 2) and ((c_int > 0) or (c_float >= 0.0))) (type: boolean)
-                                       Statistics:Num rows: 6 Data size: 465 Basic stats: COMPLETE Column stats: COMPLETE
+                                       predicate:((((c_int + 1) = 2) and ((c_int > 0) or (c_float >= 0.0))) and key is not null) (type: boolean)
+                                       Statistics:Num rows: 5 Data size: 372 Basic stats: COMPLETE Column stats: COMPLETE
                                        TableScan [TS_3]
                                           alias:cbo_t2
                                           Statistics:Num rows: 20 Data size: 1674 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2576,7 +2576,7 @@ Stage-0
                |        outputColumnNames:["_col0","_col1"]
                |        Statistics:Num rows: 6 Data size: 465 Basic stats: COMPLETE Column stats: COMPLETE
                |        Filter Operator [FIL_15]
-               |           predicate:((((c_int + 1) = 2) and key is not null) and ((c_int > 0) or (c_float >= 0.0))) (type: boolean)
+               |           predicate:((key is not null and ((c_int + 1) = 2)) and ((c_int > 0) or (c_float >= 0.0))) (type: boolean)
                |           Statistics:Num rows: 6 Data size: 465 Basic stats: COMPLETE Column stats: COMPLETE
                |           TableScan [TS_0]
                |              alias:cbo_t1
@@ -3177,7 +3177,7 @@ Stage-0
             |        outputColumnNames:["_col0","_col1"]
             |        Statistics:Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
             |        Filter Operator [FIL_15]
-            |           predicate:((value > 'val_9') and key is not null) (type: boolean)
+            |           predicate:(key is not null and (value > 'val_9')) (type: boolean)
             |           Statistics:Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
             |           TableScan [TS_0]
             |              alias:b
@@ -3249,7 +3249,7 @@ Stage-0
             |        outputColumnNames:["_col0","_col1"]
             |        Statistics:Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
             |        Filter Operator [FIL_15]
-            |           predicate:((value > 'val_9') and key is not null) (type: boolean)
+            |           predicate:(key is not null and (value > 'val_9')) (type: boolean)
             |           Statistics:Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
             |           TableScan [TS_0]
             |              alias:b
@@ -3394,7 +3394,7 @@ Stage-0
                |     |        outputColumnNames:["_col0","_col1","_col2","_col3"]
                |     |        Statistics:Num rows: 16 Data size: 256 Basic stats: COMPLETE Column stats: COMPLETE
                |     |        Filter Operator [FIL_28]
-               |     |           predicate:(((l_linenumber = 1) and l_partkey is not null) and l_orderkey is not null) (type: boolean)
+               |     |           predicate:((l_partkey is not null and l_orderkey is not null) and (l_linenumber = 1)) (type: boolean)
                |     |           Statistics:Num rows: 16 Data size: 256 Basic stats: COMPLETE Column stats: COMPLETE
                |     |           TableScan [TS_0]
                |     |              alias:lineitem
@@ -3413,7 +3413,7 @@ Stage-0
                |                 outputColumnNames:["_col0"]
                |                 Statistics:Num rows: 14 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                |                 Filter Operator [FIL_29]
-               |                    predicate:(((l_shipmode = 'AIR') and (l_linenumber = 1)) and l_orderkey is not null) (type: boolean)
+               |                    predicate:(((l_shipmode = 'AIR') and l_orderkey is not null) and (l_linenumber = 1)) (type: boolean)
                |                    Statistics:Num rows: 14 Data size: 1344 Basic stats: COMPLETE Column stats: COMPLETE
                |                    TableScan [TS_3]
                |                       alias:lineitem
@@ -6409,7 +6409,7 @@ Stage-0
             |           outputColumnNames:["_col0","_col1"]
             |           Statistics:Num rows: 666 Data size: 118548 Basic stats: COMPLETE Column stats: COMPLETE
             |           Filter Operator [FIL_22]
-            |              predicate:((value > 'val_450') and key is not null) (type: boolean)
+            |              predicate:(key is not null and (value > 'val_450')) (type: boolean)
             |              Statistics:Num rows: 666 Data size: 118548 Basic stats: COMPLETE Column stats: COMPLETE
             |              TableScan [TS_0]
             |                 alias:srcpart
@@ -6486,7 +6486,7 @@ Stage-0
             |           outputColumnNames:["_col0","_col1"]
             |           Statistics:Num rows: 666 Data size: 118548 Basic stats: COMPLETE Column stats: COMPLETE
             |           Filter Operator [FIL_22]
-            |              predicate:((value > 'val_450') and key is not null) (type: boolean)
+            |              predicate:(key is not null and (value > 'val_450')) (type: boolean)
             |              Statistics:Num rows: 666 Data size: 118548 Basic stats: COMPLETE Column stats: COMPLETE
             |              TableScan [TS_0]
             |                 alias:srcpart
@@ -6563,7 +6563,7 @@ Stage-0
             |           outputColumnNames:["_col0","_col1"]
             |           Statistics:Num rows: 666 Data size: 118548 Basic stats: COMPLETE Column stats: COMPLETE
             |           Filter Operator [FIL_22]
-            |              predicate:((value > 'val_450') and key is not null) (type: boolean)
+            |              predicate:(key is not null and (value > 'val_450')) (type: boolean)
             |              Statistics:Num rows: 666 Data size: 118548 Basic stats: COMPLETE Column stats: COMPLETE
             |              TableScan [TS_0]
             |                 alias:srcpart

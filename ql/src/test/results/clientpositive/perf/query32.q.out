@@ -88,7 +88,7 @@ Stage-0
                            |        outputColumnNames:["_col0"]
                            |        Statistics:Num rows: 231000 Data size: 331780228 Basic stats: COMPLETE Column stats: NONE
                            |        Filter Operator [FIL_54]
-                           |           predicate:((i_manufact_id = 436) and i_item_sk is not null) (type: boolean)
+                           |           predicate:(i_item_sk is not null and (i_manufact_id = 436)) (type: boolean)
                            |           Statistics:Num rows: 231000 Data size: 331780228 Basic stats: COMPLETE Column stats: NONE
                            |           TableScan [TS_10]
                            |              alias:i
@@ -134,7 +134,7 @@ Stage-0
                            |                 outputColumnNames:["_col0"]
                            |                 Statistics:Num rows: 36524 Data size: 40870356 Basic stats: COMPLETE Column stats: NONE
                            |                 Filter Operator [FIL_53]
-                           |                    predicate:(d_date BETWEEN '2000-01-27' AND '2000-04-27' and d_date_sk is not null) (type: boolean)
+                           |                    predicate:(d_date_sk is not null and d_date BETWEEN '2000-01-27' AND '2000-04-27') (type: boolean)
                            |                    Statistics:Num rows: 36524 Data size: 40870356 Basic stats: COMPLETE Column stats: NONE
                            |                    TableScan [TS_3]
                            |                       alias:d
@@ -181,7 +181,7 @@ Stage-0
                                              |        outputColumnNames:["_col0"]
                                              |        Statistics:Num rows: 36524 Data size: 40870356 Basic stats: COMPLETE Column stats: NONE
                                              |        Filter Operator [FIL_56]
-                                             |           predicate:(d_date BETWEEN '2000-01-27' AND '2000-04-27' and d_date_sk is not null) (type: boolean)
+                                             |           predicate:(d_date_sk is not null and d_date BETWEEN '2000-01-27' AND '2000-04-27') (type: boolean)
                                              |           Statistics:Num rows: 36524 Data size: 40870356 Basic stats: COMPLETE Column stats: NONE
                                              |           TableScan [TS_16]
                                              |              alias:d

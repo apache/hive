@@ -287,7 +287,7 @@ Stage-0
                            |                                outputColumnNames:["_col1"]
                            |                                Statistics:Num rows: 36524 Data size: 40870356 Basic stats: COMPLETE Column stats: NONE
                            |                                Filter Operator [FIL_188]
-                           |                                   predicate:((d_date = '1998-08-04') and d_week_seq is not null) (type: boolean)
+                           |                                   predicate:(d_week_seq is not null and (d_date = '1998-08-04')) (type: boolean)
                            |                                   Statistics:Num rows: 36524 Data size: 40870356 Basic stats: COMPLETE Column stats: NONE
                            |                                   TableScan [TS_83]
                            |                                      alias:date_dim
@@ -300,7 +300,7 @@ Stage-0
                                  Statistics:Num rows: 84551 Data size: 121438791 Basic stats: COMPLETE Column stats: NONE
                                  value expressions:_col1 (type: decimal(17,2)), _col3 (type: decimal(17,2))
                                  Filter Operator [FIL_69]
-                                    predicate:(_col3 BETWEEN (0.9 * UDFToDouble(_col1)) AND (1.1 * UDFToDouble(_col1)) and _col1 BETWEEN (0.9 * UDFToDouble(_col3)) AND (1.1 * UDFToDouble(_col3))) (type: boolean)
+                                    predicate:(_col1 BETWEEN (0.9 * UDFToDouble(_col3)) AND (1.1 * UDFToDouble(_col3)) and _col3 BETWEEN (0.9 * UDFToDouble(_col1)) AND (1.1 * UDFToDouble(_col1))) (type: boolean)
                                     Statistics:Num rows: 84551 Data size: 121438791 Basic stats: COMPLETE Column stats: NONE
                                     Merge Join Operator [MERGEJOIN_201]
                                     |  condition map:[{"":"Inner Join 0 to 1"}]
@@ -448,7 +448,7 @@ Stage-0
                                     |                                outputColumnNames:["_col1"]
                                     |                                Statistics:Num rows: 36524 Data size: 40870356 Basic stats: COMPLETE Column stats: NONE
                                     |                                Filter Operator [FIL_183]
-                                    |                                   predicate:((d_date = '1998-08-04') and d_week_seq is not null) (type: boolean)
+                                    |                                   predicate:(d_week_seq is not null and (d_date = '1998-08-04')) (type: boolean)
                                     |                                   Statistics:Num rows: 36524 Data size: 40870356 Basic stats: COMPLETE Column stats: NONE
                                     |                                   TableScan [TS_45]
                                     |                                      alias:date_dim
@@ -522,7 +522,7 @@ Stage-0
                                                       |              outputColumnNames:["_col1"]
                                                       |              Statistics:Num rows: 36524 Data size: 40870356 Basic stats: COMPLETE Column stats: NONE
                                                       |              Filter Operator [FIL_178]
-                                                      |                 predicate:((d_date = '1998-08-04') and d_week_seq is not null) (type: boolean)
+                                                      |                 predicate:(d_week_seq is not null and (d_date = '1998-08-04')) (type: boolean)
                                                       |                 Statistics:Num rows: 36524 Data size: 40870356 Basic stats: COMPLETE Column stats: NONE
                                                       |                 TableScan [TS_12]
                                                       |                    alias:date_dim

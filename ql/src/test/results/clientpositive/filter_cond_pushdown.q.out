@@ -37,7 +37,7 @@ STAGE PLANS:
             alias: f
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((value <> '') and key is not null) and value is not null) (type: boolean)
+              predicate: ((value is not null and (value <> '')) and key is not null) (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
@@ -163,7 +163,7 @@ STAGE PLANS:
             alias: f
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((value <> '') and key is not null) and value is not null) (type: boolean)
+              predicate: ((value is not null and (value <> '')) and key is not null) (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
@@ -317,7 +317,7 @@ STAGE PLANS:
                Inner Join 0 to 1
           keys:
             0 UDFToDouble(_col0) (type: double), _col0 (type: string)
-            1 UDFToDouble(_col1) (type: double), _col0 (type: string)
+            1 UDFToDouble(1) (type: double), _col0 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col5
           Statistics: Num rows: 22 Data size: 288 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
@@ -419,7 +419,7 @@ STAGE PLANS:
             alias: f
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((((value <> '') and key is not null) and value is not null) and ((value = '2008-04-10') or (value = '2008-04-08'))) (type: boolean)
+              predicate: (((key is not null and ((value = '2008-04-10') or (value = '2008-04-08'))) and value is not null) and (value <> '')) (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)

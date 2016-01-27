@@ -88,7 +88,7 @@ Stage-0
                                     |        outputColumnNames:["_col0","_col1","_col2","_col3"]
                                     |        Statistics:Num rows: 115500 Data size: 165890114 Basic stats: COMPLETE Column stats: NONE
                                     |        Filter Operator [FIL_38]
-                                    |           predicate:(((i_manufact_id) IN (437, 129, 727, 663) and i_current_price BETWEEN 30 AND 60) and i_item_sk is not null) (type: boolean)
+                                    |           predicate:((i_current_price BETWEEN 30 AND 60 and (i_manufact_id) IN (437, 129, 727, 663)) and i_item_sk is not null) (type: boolean)
                                     |           Statistics:Num rows: 115500 Data size: 165890114 Basic stats: COMPLETE Column stats: NONE
                                     |           TableScan [TS_0]
                                     |              alias:item

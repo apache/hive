@@ -37,7 +37,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (CASE (key) WHEN ('27') THEN (true) WHEN ('38') THEN (false) ELSE (null) END and key is not null) (type: boolean)
+              predicate: (key is not null and CASE (key) WHEN ('27') THEN (true) WHEN ('38') THEN (false) ELSE (null) END) (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string), hr (type: string)
@@ -53,7 +53,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (CASE (key) WHEN ('27') THEN (true) WHEN ('38') THEN (false) ELSE (null) END and key is not null) (type: boolean)
+              predicate: (key is not null and CASE (key) WHEN ('27') THEN (true) WHEN ('38') THEN (false) ELSE (null) END) (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string), hr (type: string)
@@ -183,7 +183,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (CASE (key) WHEN ('27') THEN (true) WHEN ('38') THEN (false) ELSE (null) END and key is not null) (type: boolean)
+              predicate: (key is not null and CASE (key) WHEN ('27') THEN (true) WHEN ('38') THEN (false) ELSE (null) END) (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string), hr (type: string)
@@ -199,7 +199,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (CASE (key) WHEN ('27') THEN (true) WHEN ('38') THEN (false) ELSE (null) END and key is not null) (type: boolean)
+              predicate: (key is not null and CASE (key) WHEN ('27') THEN (true) WHEN ('38') THEN (false) ELSE (null) END) (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string), hr (type: string)

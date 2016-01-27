@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveCostModel.JoinAlgorithm;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveDefaultCostModel.DefaultJoinAlgorithm;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRulesRegistry;
 
 import com.google.common.collect.ImmutableList;
 
@@ -103,8 +104,14 @@ public class HiveJoin extends Join implements HiveRelNode {
       RelNode right, JoinRelType joinType, boolean semiJoinDone) {
     try {
       Set<String> variablesStopped = Collections.emptySet();
-      return new HiveJoin(getCluster(), traitSet, left, right, conditionExpr, joinType,
+      HiveJoin join = new HiveJoin(getCluster(), traitSet, left, right, conditionExpr, joinType,
           variablesStopped, joinAlgorithm, leftSemiJoin);
+      // If available, copy state to registry for optimization rules
+      HiveRulesRegistry registry = join.getCluster().getPlanner().getContext().unwrap(HiveRulesRegistry.class);
+      if (registry != null) {
+        registry.copyPushedPredicates(this, join);
+      }
+      return join;
     } catch (InvalidRelException | CalciteSemanticException e) {
       // Semantic error not possible. Must be a bug. Convert to
       // internal error.

@@ -358,12 +358,12 @@ STAGE PLANS:
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: value (type: string)
-                outputColumnNames: _col0
+                outputColumnNames: _col1
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 Union
                   Statistics: Num rows: 252 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: 86 (type: int), _col0 (type: string), '1' (type: string)
+                    expressions: 86 (type: int), _col1 (type: string), '1' (type: string)
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 252 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
@@ -382,12 +382,12 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: value (type: string)
-                outputColumnNames: _col0
+                outputColumnNames: _col1
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                 Union
                   Statistics: Num rows: 252 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: 86 (type: int), _col0 (type: string), '1' (type: string)
+                    expressions: 86 (type: int), _col1 (type: string), '1' (type: string)
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 252 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
@@ -406,12 +406,12 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: value (type: string)
-                outputColumnNames: _col0
+                outputColumnNames: _col1
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                 Union
                   Statistics: Num rows: 252 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: 86 (type: int), _col0 (type: string), '1' (type: string)
+                    expressions: 86 (type: int), _col1 (type: string), '1' (type: string)
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 252 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
@@ -471,12 +471,12 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: value (type: string)
-                outputColumnNames: _col0
+                outputColumnNames: _col1
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                 Union
                   Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: 86 (type: int), _col0 (type: string), '2' (type: string)
+                    expressions: 86 (type: int), _col1 (type: string), '2' (type: string)
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
@@ -495,12 +495,12 @@ STAGE PLANS:
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: value (type: string)
-                outputColumnNames: _col0
+                outputColumnNames: _col1
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 Union
                   Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: 86 (type: int), _col0 (type: string), '2' (type: string)
+                    expressions: 86 (type: int), _col1 (type: string), '2' (type: string)
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
@@ -519,12 +519,12 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: value (type: string)
-                outputColumnNames: _col0
+                outputColumnNames: _col1
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                 Union
                   Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: 86 (type: int), _col0 (type: string), '2' (type: string)
+                    expressions: 86 (type: int), _col1 (type: string), '2' (type: string)
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
@@ -584,12 +584,12 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: value (type: string)
-                outputColumnNames: _col0
+                outputColumnNames: _col1
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                 Union
                   Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: 86 (type: int), _col0 (type: string), '3' (type: string)
+                    expressions: 86 (type: int), _col1 (type: string), '3' (type: string)
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
@@ -608,12 +608,12 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: value (type: string)
-                outputColumnNames: _col0
+                outputColumnNames: _col1
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                 Union
                   Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: 86 (type: int), _col0 (type: string), '3' (type: string)
+                    expressions: 86 (type: int), _col1 (type: string), '3' (type: string)
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
@@ -632,12 +632,12 @@ STAGE PLANS:
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: value (type: string)
-                outputColumnNames: _col0
+                outputColumnNames: _col1
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 Union
                   Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: 86 (type: int), _col0 (type: string), '3' (type: string)
+                    expressions: 86 (type: int), _col1 (type: string), '3' (type: string)
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
@@ -701,12 +701,12 @@ STAGE PLANS:
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: value (type: string), ds (type: string)
-                outputColumnNames: _col0, _col1
+                outputColumnNames: _col1, _col2
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 Union
                   Statistics: Num rows: 1250 Data size: 13280 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: _col0 (type: string), _col1 (type: string)
+                    expressions: _col1 (type: string), _col2 (type: string)
                     outputColumnNames: _col1, _col2
                     Statistics: Num rows: 1250 Data size: 13280 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
@@ -723,12 +723,12 @@ STAGE PLANS:
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: value (type: string), ds (type: string)
-                outputColumnNames: _col0, _col1
+                outputColumnNames: _col1, _col2
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 Union
                   Statistics: Num rows: 1250 Data size: 13280 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: _col0 (type: string), _col1 (type: string)
+                    expressions: _col1 (type: string), _col2 (type: string)
                     outputColumnNames: _col1, _col2
                     Statistics: Num rows: 1250 Data size: 13280 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
@@ -745,12 +745,12 @@ STAGE PLANS:
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: value (type: string), ds (type: string)
-                outputColumnNames: _col0, _col1
+                outputColumnNames: _col1, _col2
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 Union
                   Statistics: Num rows: 1250 Data size: 13280 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: _col0 (type: string), _col1 (type: string)
+                    expressions: _col1 (type: string), _col2 (type: string)
                     outputColumnNames: _col1, _col2
                     Statistics: Num rows: 1250 Data size: 13280 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
@@ -1226,12 +1226,12 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: value (type: string)
-                outputColumnNames: _col0
+                outputColumnNames: _col1
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                 Union
                   Statistics: Num rows: 252 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: 86 (type: int), _col0 (type: string), '4' (type: string)
+                    expressions: 86 (type: int), _col1 (type: string), '4' (type: string)
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 252 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
@@ -1250,12 +1250,12 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: value (type: string)
-                outputColumnNames: _col0
+                outputColumnNames: _col1
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                 Union
                   Statistics: Num rows: 252 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: 86 (type: int), _col0 (type: string), '4' (type: string)
+                    expressions: 86 (type: int), _col1 (type: string), '4' (type: string)
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 252 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
@@ -1274,12 +1274,12 @@ STAGE PLANS:
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: value (type: string)
-                outputColumnNames: _col0
+                outputColumnNames: _col1
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 Union
                   Statistics: Num rows: 252 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: 86 (type: int), _col0 (type: string), '4' (type: string)
+                    expressions: 86 (type: int), _col1 (type: string), '4' (type: string)
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 252 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator

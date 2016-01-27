@@ -97,7 +97,7 @@ Stage-0
                                           |        outputColumnNames:["_col0"]
                                           |        Statistics:Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
                                           |        Filter Operator [FIL_30]
-                                          |           predicate:(((d_year = 1998) and (d_moy = 12)) and d_date_sk is not null) (type: boolean)
+                                          |           predicate:(((d_moy = 12) and (d_year = 1998)) and d_date_sk is not null) (type: boolean)
                                           |           Statistics:Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
                                           |           TableScan [TS_0]
                                           |              alias:dt

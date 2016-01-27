@@ -24,9 +24,8 @@ import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.SetOp;
 import org.apache.calcite.rel.core.Union;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode.Implementor;
 
-public class HiveUnion extends Union {
+public class HiveUnion extends Union implements HiveRelNode {
 
   public HiveUnion(RelOptCluster cluster, RelTraitSet traits, List<RelNode> inputs) {
     super(cluster, traits, inputs, true);
@@ -37,6 +36,7 @@ public class HiveUnion extends Union {
     return new HiveUnion(this.getCluster(), traitSet, inputs);
   }
 
+  @Override
   public void implement(Implementor implementor) {
   }
 

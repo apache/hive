@@ -557,10 +557,10 @@ STAGE PLANS:
         $hdt$_0:o1 
           TableScan
             alias: o1
-            filterExpr: (cbigint is not null and csmallint is not null) (type: boolean)
+            filterExpr: (csmallint is not null and cbigint is not null) (type: boolean)
             Statistics: Num rows: 122880 Data size: 29079940 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (cbigint is not null and csmallint is not null) (type: boolean)
+              predicate: (csmallint is not null and cbigint is not null) (type: boolean)
               Statistics: Num rows: 122880 Data size: 29079940 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: csmallint (type: smallint), cstring1 (type: string)
@@ -576,10 +576,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: o1
-            filterExpr: (cbigint is not null and csmallint is not null) (type: boolean)
+            filterExpr: (csmallint is not null and cbigint is not null) (type: boolean)
             Statistics: Num rows: 122880 Data size: 29079940 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (cbigint is not null and csmallint is not null) (type: boolean)
+              predicate: (csmallint is not null and cbigint is not null) (type: boolean)
               Statistics: Num rows: 122880 Data size: 29079940 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: csmallint (type: smallint), cstring2 (type: string)
@@ -998,10 +998,10 @@ STAGE PLANS:
         $hdt$_0:o1 
           TableScan
             alias: o1
-            filterExpr: (cbigint is not null and csmallint is not null) (type: boolean)
+            filterExpr: (csmallint is not null and cbigint is not null) (type: boolean)
             Statistics: Num rows: 14111 Data size: 1580469 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (cbigint is not null and csmallint is not null) (type: boolean)
+              predicate: (csmallint is not null and cbigint is not null) (type: boolean)
               Statistics: Num rows: 14111 Data size: 1580469 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: csmallint (type: smallint), cstring1 (type: string)
@@ -1017,10 +1017,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: o1
-            filterExpr: (cbigint is not null and csmallint is not null) (type: boolean)
+            filterExpr: (csmallint is not null and cbigint is not null) (type: boolean)
             Statistics: Num rows: 14111 Data size: 1580469 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (cbigint is not null and csmallint is not null) (type: boolean)
+              predicate: (csmallint is not null and cbigint is not null) (type: boolean)
               Statistics: Num rows: 14111 Data size: 1580469 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: csmallint (type: smallint), cstring2 (type: string)

@@ -26,7 +26,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.calcite.plan.RelOptCluster;
-import org.apache.calcite.plan.RelOptPredicateList;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.plan.RelOptUtil.InputFinder;
 import org.apache.calcite.plan.RelOptUtil.InputReferencedVisitor;
@@ -75,6 +74,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 /**
@@ -628,16 +628,55 @@ public class HiveCalciteUtil {
                                                               }
                                                             };
 
-  public static ImmutableList<RexNode> getPredsNotPushedAlready(RelNode inp, List<RexNode> predsToPushDown) {
-    final RelOptPredicateList predicates = RelMetadataQuery.getPulledUpPredicates(inp);
-    final ImmutableSet<String> alreadyPushedPreds = ImmutableSet.copyOf(Lists.transform(
-        predicates.pulledUpPredicates, REX_STR_FN));
-    final ImmutableList.Builder<RexNode> newConjuncts = ImmutableList.builder();
+  public static ImmutableList<RexNode> getPredsNotPushedAlready(RelNode inp, List<RexNode> predsToPushDown) {   
+    return getPredsNotPushedAlready(Sets.<String>newHashSet(), inp, predsToPushDown);
+  }
+
+  /**
+   * Given a list of predicates to push down, this methods returns the set of predicates
+   * that still need to be pushed. Predicates need to be pushed because 1) their String
+   * representation is not included in input set of predicates to exclude, or 2) they are
+   * already in the subtree rooted at the input node.
+   * This method updates the set of predicates to exclude with the String representation
+   * of the predicates in the output and in the subtree.
+   *
+   * @param predicatesToExclude String representation of predicates that should be excluded
+   * @param inp root of the subtree
+   * @param predsToPushDown candidate predicates to push down through the subtree
+   * @return list of predicates to push down
+   */
+  public static ImmutableList<RexNode> getPredsNotPushedAlready(Set<String> predicatesToExclude,
+          RelNode inp, List<RexNode> predsToPushDown) {
+    // Bail out if there is nothing to push
+    if (predsToPushDown.isEmpty()) {
+      return ImmutableList.of();
+    }
+    // Build map to not convert multiple times, further remove already included predicates
+    Map<String,RexNode> stringToRexNode = Maps.newLinkedHashMap();
     for (RexNode r : predsToPushDown) {
-      if (!alreadyPushedPreds.contains(r.toString())) {
-        newConjuncts.add(r);
+      String rexNodeString = r.toString();
+      if (predicatesToExclude.add(rexNodeString)) {
+        stringToRexNode.put(rexNodeString, r);
       }
     }
+    if (stringToRexNode.isEmpty()) {
+      return ImmutableList.of();
+    }
+    // Finally exclude preds that are already in the subtree as given by the metadata provider
+    // Note: this is the last step, trying to avoid the expensive call to the metadata provider
+    //       if possible
+    Set<String> predicatesInSubtree = Sets.newHashSet();
+    for (RexNode pred : RelMetadataQuery.getPulledUpPredicates(inp).pulledUpPredicates) {
+      predicatesInSubtree.add(pred.toString());
+      predicatesInSubtree.addAll(Lists.transform(RelOptUtil.conjunctions(pred), REX_STR_FN));
+    }
+    final ImmutableList.Builder<RexNode> newConjuncts = ImmutableList.builder();
+    for (Entry<String,RexNode> e : stringToRexNode.entrySet()) {
+      if (predicatesInSubtree.add(e.getKey())) {
+        newConjuncts.add(e.getValue());
+      }
+    }
+    predicatesToExclude.addAll(predicatesInSubtree);
     return newConjuncts.build();
   }
 

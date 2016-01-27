@@ -145,7 +145,7 @@ Stage-0
                         |                                   outputColumnNames:["_col0"]
                         |                                   Statistics:Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
                         |                                   Filter Operator [FIL_266]
-                        |                                      predicate:(((d_qoy = 3) and (d_year = 1998)) and d_date_sk is not null) (type: boolean)
+                        |                                      predicate:((d_date_sk is not null and (d_qoy = 3)) and (d_year = 1998)) (type: boolean)
                         |                                      Statistics:Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
                         |                                      TableScan [TS_116]
                         |                                         alias:date_dim
@@ -257,7 +257,7 @@ Stage-0
                                     |                                   outputColumnNames:["_col0"]
                                     |                                   Statistics:Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
                                     |                                   Filter Operator [FIL_254]
-                                    |                                      predicate:(((d_qoy = 2) and (d_year = 1998)) and d_date_sk is not null) (type: boolean)
+                                    |                                      predicate:((d_date_sk is not null and (d_qoy = 2)) and (d_year = 1998)) (type: boolean)
                                     |                                      Statistics:Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
                                     |                                      TableScan [TS_24]
                                     |                                         alias:date_dim
@@ -351,7 +351,7 @@ Stage-0
                                     |                                   outputColumnNames:["_col0"]
                                     |                                   Statistics:Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
                                     |                                   Filter Operator [FIL_257]
-                                    |                                      predicate:(((d_qoy = 3) and (d_year = 1998)) and d_date_sk is not null) (type: boolean)
+                                    |                                      predicate:((d_date_sk is not null and (d_qoy = 3)) and (d_year = 1998)) (type: boolean)
                                     |                                      Statistics:Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
                                     |                                      TableScan [TS_45]
                                     |                                         alias:date_dim
@@ -445,7 +445,7 @@ Stage-0
                                     |                                   outputColumnNames:["_col0"]
                                     |                                   Statistics:Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
                                     |                                   Filter Operator [FIL_260]
-                                    |                                      predicate:(((d_year = 1998) and (d_qoy = 1)) and d_date_sk is not null) (type: boolean)
+                                    |                                      predicate:((d_date_sk is not null and (d_qoy = 1)) and (d_year = 1998)) (type: boolean)
                                     |                                      Statistics:Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
                                     |                                      TableScan [TS_66]
                                     |                                         alias:date_dim
@@ -539,7 +539,7 @@ Stage-0
                                     |                                   outputColumnNames:["_col0"]
                                     |                                   Statistics:Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
                                     |                                   Filter Operator [FIL_263]
-                                    |                                      predicate:(((d_qoy = 2) and (d_year = 1998)) and d_date_sk is not null) (type: boolean)
+                                    |                                      predicate:((d_date_sk is not null and (d_qoy = 2)) and (d_year = 1998)) (type: boolean)
                                     |                                      Statistics:Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
                                     |                                      TableScan [TS_87]
                                     |                                         alias:date_dim
@@ -633,7 +633,7 @@ Stage-0
                                                                         outputColumnNames:["_col0"]
                                                                         Statistics:Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
                                                                         Filter Operator [FIL_251]
-                                                                           predicate:(((d_year = 1998) and (d_qoy = 1)) and d_date_sk is not null) (type: boolean)
+                                                                           predicate:((d_date_sk is not null and (d_qoy = 1)) and (d_year = 1998)) (type: boolean)
                                                                            Statistics:Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
                                                                            TableScan [TS_3]
                                                                               alias:date_dim

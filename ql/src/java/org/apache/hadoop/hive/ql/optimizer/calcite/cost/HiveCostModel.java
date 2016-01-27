@@ -56,8 +56,8 @@ public abstract class HiveCostModel {
     JoinAlgorithm joinAlgorithm = null;
     RelOptCost minJoinCost = null;
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Join algorithm selection for:\n" + RelOptUtil.toString(join));
+    if (LOG.isTraceEnabled()) {
+      LOG.trace("Join algorithm selection for:\n" + RelOptUtil.toString(join));
     }
 
     for (JoinAlgorithm possibleAlgorithm : this.joinAlgorithms) {
@@ -65,8 +65,8 @@ public abstract class HiveCostModel {
         continue;
       }
       RelOptCost joinCost = possibleAlgorithm.getCost(join);
-      if (LOG.isDebugEnabled()) {
-        LOG.debug(possibleAlgorithm + " cost: " + joinCost);
+      if (LOG.isTraceEnabled()) {
+        LOG.trace(possibleAlgorithm + " cost: " + joinCost);
       }
       if (minJoinCost == null || joinCost.isLt(minJoinCost) ) {
         joinAlgorithm = possibleAlgorithm;
@@ -74,8 +74,8 @@ public abstract class HiveCostModel {
       }
     }
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug(joinAlgorithm + " selected");
+    if (LOG.isTraceEnabled()) {
+      LOG.trace(joinAlgorithm + " selected");
     }
 
     join.setJoinAlgorithm(joinAlgorithm);

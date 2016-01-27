@@ -99,7 +99,7 @@ Stage-0
                                           |        outputColumnNames:["_col0"]
                                           |        Statistics:Num rows: 800 Data size: 85600 Basic stats: COMPLETE Column stats: NONE
                                           |        Filter Operator [FIL_55]
-                                          |           predicate:((((CASE WHEN ((hd_vehicle_count > 0)) THEN ((UDFToDouble(hd_dep_count) / UDFToDouble(hd_vehicle_count))) ELSE (null) END > 1.2) and ((hd_buy_potential = '1001-5000') or (hd_buy_potential = '5001-10000'))) and (hd_vehicle_count > 0)) and hd_demo_sk is not null) (type: boolean)
+                                          |           predicate:(((((hd_buy_potential = '1001-5000') or (hd_buy_potential = '5001-10000')) and (hd_vehicle_count > 0)) and (CASE WHEN ((hd_vehicle_count > 0)) THEN ((UDFToDouble(hd_dep_count) / UDFToDouble(hd_vehicle_count))) ELSE (null) END > 1.2)) and hd_demo_sk is not null) (type: boolean)
                                           |           Statistics:Num rows: 800 Data size: 85600 Basic stats: COMPLETE Column stats: NONE
                                           |           TableScan [TS_9]
                                           |              alias:household_demographics
@@ -169,7 +169,7 @@ Stage-0
                                                                outputColumnNames:["_col0"]
                                                                Statistics:Num rows: 36524 Data size: 40870356 Basic stats: COMPLETE Column stats: NONE
                                                                Filter Operator [FIL_53]
-                                                                  predicate:(((d_year) IN (1998, 1999, 2000) and (d_dom BETWEEN 1 AND 3 or d_dom BETWEEN 25 AND 28)) and d_date_sk is not null) (type: boolean)
+                                                                  predicate:(((d_dom BETWEEN 1 AND 3 or d_dom BETWEEN 25 AND 28) and (d_year) IN (1998, 1999, 2000)) and d_date_sk is not null) (type: boolean)
                                                                   Statistics:Num rows: 36524 Data size: 40870356 Basic stats: COMPLETE Column stats: NONE
                                                                   TableScan [TS_3]
                                                                      alias:date_dim

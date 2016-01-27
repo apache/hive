@@ -133,7 +133,7 @@ Stage-0
                            |                                outputColumnNames:["_col0","_col1"]
                            |                                Statistics:Num rows: 36524 Data size: 40870356 Basic stats: COMPLETE Column stats: NONE
                            |                                Filter Operator [FIL_103]
-                           |                                   predicate:(d_month_seq BETWEEN 1193 AND 1204 and d_date_sk is not null) (type: boolean)
+                           |                                   predicate:(d_date_sk is not null and d_month_seq BETWEEN 1193 AND 1204) (type: boolean)
                            |                                   Statistics:Num rows: 36524 Data size: 40870356 Basic stats: COMPLETE Column stats: NONE
                            |                                   TableScan [TS_48]
                            |                                      alias:date_dim
@@ -238,7 +238,7 @@ Stage-0
                                        |                                outputColumnNames:["_col0","_col1"]
                                        |                                Statistics:Num rows: 36524 Data size: 40870356 Basic stats: COMPLETE Column stats: NONE
                                        |                                Filter Operator [FIL_100]
-                                       |                                   predicate:(d_month_seq BETWEEN 1193 AND 1204 and d_date_sk is not null) (type: boolean)
+                                       |                                   predicate:(d_date_sk is not null and d_month_seq BETWEEN 1193 AND 1204) (type: boolean)
                                        |                                   Statistics:Num rows: 36524 Data size: 40870356 Basic stats: COMPLETE Column stats: NONE
                                        |                                   TableScan [TS_23]
                                        |                                      alias:date_dim
@@ -326,7 +326,7 @@ Stage-0
                                                                         outputColumnNames:["_col0","_col1"]
                                                                         Statistics:Num rows: 36524 Data size: 40870356 Basic stats: COMPLETE Column stats: NONE
                                                                         Filter Operator [FIL_97]
-                                                                           predicate:(d_month_seq BETWEEN 1193 AND 1204 and d_date_sk is not null) (type: boolean)
+                                                                           predicate:(d_date_sk is not null and d_month_seq BETWEEN 1193 AND 1204) (type: boolean)
                                                                            Statistics:Num rows: 36524 Data size: 40870356 Basic stats: COMPLETE Column stats: NONE
                                                                            TableScan [TS_3]
                                                                               alias:date_dim

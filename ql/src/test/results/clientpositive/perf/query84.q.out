@@ -50,7 +50,7 @@ Stage-0
                         |        outputColumnNames:["_col0"]
                         |        Statistics:Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                         |        Filter Operator [FIL_61]
-                        |           predicate:(((ib_upper_bound <= 82287) and (ib_lower_bound >= 32287)) and ib_income_band_sk is not null) (type: boolean)
+                        |           predicate:(((ib_lower_bound >= 32287) and (ib_upper_bound <= 82287)) and ib_income_band_sk is not null) (type: boolean)
                         |           Statistics:Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                         |           TableScan [TS_12]
                         |              alias:income_band

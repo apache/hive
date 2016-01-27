@@ -210,7 +210,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: ((bar = 3) and foo is not null) (type: boolean)
+              predicate: (foo is not null and (bar = 3)) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: foo (type: int)

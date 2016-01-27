@@ -521,7 +521,7 @@ STAGE PLANS:
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: ((ds = '2011-10-15') and keymap is not null) (type: boolean)
+              predicate: (keymap is not null and (ds = '2011-10-15')) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: keymap (type: string), value (type: string)
@@ -541,7 +541,7 @@ STAGE PLANS:
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: ((ds = '2011-10-15') and keymap is not null) (type: boolean)
+              predicate: (keymap is not null and (ds = '2011-10-15')) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: key (type: string), keymap (type: string)

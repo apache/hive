@@ -412,7 +412,7 @@ STAGE PLANS:
             alias: s
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: ((p = 'bar') and name is not null) (type: boolean)
+              predicate: (name is not null and (p = 'bar')) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: name (type: string)

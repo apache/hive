@@ -52,7 +52,7 @@ STAGE PLANS:
             alias: src11
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: ((key1 > '9') and value1 is not null) (type: boolean)
+              predicate: (value1 is not null and (key1 > '9')) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: key1 (type: string), value1 (type: string)
@@ -122,7 +122,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((key > '9') and value is not null) (type: boolean)
+              predicate: (value is not null and (key > '9')) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
@@ -302,7 +302,7 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (p_size is not null and p_mfgr is not null) (type: boolean)
+              predicate: (p_mfgr is not null and p_size is not null) (type: boolean)
               Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: p_name (type: string), p_mfgr (type: string), p_size (type: int)
@@ -471,7 +471,7 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (p_size is not null and p_mfgr is not null) (type: boolean)
+              predicate: (p_mfgr is not null and p_size is not null) (type: boolean)
               Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: p_name (type: string), p_mfgr (type: string), p_size (type: int)
@@ -586,7 +586,7 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((key > '9') and value is not null) (type: boolean)
+              predicate: (value is not null and (key > '9')) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)

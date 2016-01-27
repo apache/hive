@@ -672,7 +672,7 @@ Stage-0
             |     |                       |                    |        outputColumnNames:["_col0"]
             |     |                       |                    |        Statistics:Num rows: 14400 Data size: 6782400 Basic stats: COMPLETE Column stats: NONE
             |     |                       |                    |        Filter Operator [FIL_320]
-            |     |                       |                    |           predicate:(((t_minute >= 30) and (t_hour = 9)) and t_time_sk is not null) (type: boolean)
+            |     |                       |                    |           predicate:(((t_hour = 9) and (t_minute >= 30)) and t_time_sk is not null) (type: boolean)
             |     |                       |                    |           Statistics:Num rows: 14400 Data size: 6782400 Basic stats: COMPLETE Column stats: NONE
             |     |                       |                    |           TableScan [TS_58]
             |     |                       |                    |              alias:time_dim
@@ -894,7 +894,7 @@ Stage-0
             |     |                                                  |        outputColumnNames:["_col0"]
             |     |                                                  |        Statistics:Num rows: 14400 Data size: 6782400 Basic stats: COMPLETE Column stats: NONE
             |     |                                                  |        Filter Operator [FIL_312]
-            |     |                                                  |           predicate:(((t_minute >= 30) and (t_hour = 8)) and t_time_sk is not null) (type: boolean)
+            |     |                                                  |           predicate:(((t_hour = 8) and (t_minute >= 30)) and t_time_sk is not null) (type: boolean)
             |     |                                                  |           Statistics:Num rows: 14400 Data size: 6782400 Basic stats: COMPLETE Column stats: NONE
             |     |                                                  |           TableScan [TS_6]
             |     |                                                  |              alias:time_dim
@@ -1000,7 +1000,7 @@ Stage-0
             |                          |        outputColumnNames:["_col0"]
             |                          |        Statistics:Num rows: 14400 Data size: 6782400 Basic stats: COMPLETE Column stats: NONE
             |                          |        Filter Operator [FIL_336]
-            |                          |           predicate:(((t_minute >= 30) and (t_hour = 11)) and t_time_sk is not null) (type: boolean)
+            |                          |           predicate:(((t_hour = 11) and (t_minute >= 30)) and t_time_sk is not null) (type: boolean)
             |                          |           Statistics:Num rows: 14400 Data size: 6782400 Basic stats: COMPLETE Column stats: NONE
             |                          |           TableScan [TS_162]
             |                          |              alias:time_dim

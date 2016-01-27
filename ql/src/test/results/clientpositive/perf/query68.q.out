@@ -233,7 +233,7 @@ Stage-0
                                                                                  outputColumnNames:["_col0"]
                                                                                  Statistics:Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
                                                                                  Filter Operator [FIL_79]
-                                                                                    predicate:(((d_year) IN (1998, 1999, 2000) and d_dom BETWEEN 1 AND 2) and d_date_sk is not null) (type: boolean)
+                                                                                    predicate:((d_dom BETWEEN 1 AND 2 and (d_year) IN (1998, 1999, 2000)) and d_date_sk is not null) (type: boolean)
                                                                                     Statistics:Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
                                                                                     TableScan [TS_3]
                                                                                        alias:date_dim

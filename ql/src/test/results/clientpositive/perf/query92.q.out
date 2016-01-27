@@ -96,7 +96,7 @@ Stage-0
                         |                          outputColumnNames:["_col0"]
                         |                          Statistics:Num rows: 8116 Data size: 9081804 Basic stats: COMPLETE Column stats: NONE
                         |                          Filter Operator [FIL_43]
-                        |                             predicate:(((d_month_seq <= 1217) and d_date_sk is not null) and (d_month_seq >= 1206)) (type: boolean)
+                        |                             predicate:((d_date_sk is not null and (d_month_seq >= 1206)) and (d_month_seq <= 1217)) (type: boolean)
                         |                             Statistics:Num rows: 8116 Data size: 9081804 Basic stats: COMPLETE Column stats: NONE
                         |                             TableScan [TS_3]
                         |                                alias:d1
@@ -136,7 +136,7 @@ Stage-0
                                        |        outputColumnNames:["_col0"]
                                        |        Statistics:Num rows: 8116 Data size: 9081804 Basic stats: COMPLETE Column stats: NONE
                                        |        Filter Operator [FIL_45]
-                                       |           predicate:(((d_month_seq <= 1217) and d_date_sk is not null) and (d_month_seq >= 1206)) (type: boolean)
+                                       |           predicate:((d_date_sk is not null and (d_month_seq >= 1206)) and (d_month_seq <= 1217)) (type: boolean)
                                        |           Statistics:Num rows: 8116 Data size: 9081804 Basic stats: COMPLETE Column stats: NONE
                                        |           TableScan [TS_17]
                                        |              alias:d1

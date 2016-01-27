@@ -209,7 +209,7 @@ Stage-0
                                              |        outputColumnNames:["_col0"]
                                              |        Statistics:Num rows: 43200 Data size: 20347200 Basic stats: COMPLETE Column stats: NONE
                                              |        Filter Operator [FIL_81]
-                                             |           predicate:(t_time_sk is not null and t_hour BETWEEN 6 AND 7) (type: boolean)
+                                             |           predicate:(t_hour BETWEEN 6 AND 7 and t_time_sk is not null) (type: boolean)
                                              |           Statistics:Num rows: 43200 Data size: 20347200 Basic stats: COMPLETE Column stats: NONE
                                              |           TableScan [TS_6]
                                              |              alias:time_dim

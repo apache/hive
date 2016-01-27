@@ -19,18 +19,24 @@ package org.apache.hadoop.hive.ql.optimizer.calcite;
 
 import org.apache.calcite.plan.Context;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveAlgorithmsConf;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRulesRegistry;
 
 
-public class HiveVolcanoPlannerContext implements Context {
+public class HivePlannerContext implements Context {
   private HiveAlgorithmsConf config;
+  private HiveRulesRegistry registry;
 
-  public HiveVolcanoPlannerContext(HiveAlgorithmsConf config) {
+  public HivePlannerContext(HiveAlgorithmsConf config, HiveRulesRegistry registry) {
     this.config = config;
+    this.registry = registry;
   }
 
   public <T> T unwrap(Class<T> clazz) {
     if (clazz.isInstance(config)) {
       return clazz.cast(config);
+    }
+    if (clazz.isInstance(registry)) {
+      return clazz.cast(registry);
     }
     return null;
   }

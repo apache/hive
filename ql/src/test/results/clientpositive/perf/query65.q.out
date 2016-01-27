@@ -164,7 +164,7 @@ Stage-0
                            |                 |        outputColumnNames:["_col0","_col1","_col2","_col3"]
                            |                 |        Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                            |                 |        Filter Operator [FIL_70]
-                           |                 |           predicate:((ss_sold_date_sk is not null and ss_item_sk is not null) and ss_store_sk is not null) (type: boolean)
+                           |                 |           predicate:((ss_sold_date_sk is not null and ss_store_sk is not null) and ss_item_sk is not null) (type: boolean)
                            |                 |           Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                            |                 |           TableScan [TS_25]
                            |                 |              alias:store_sales

@@ -250,7 +250,7 @@ STAGE PLANS:
                   alias: emp
                   Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (deptid is not null and lastname is not null) (type: boolean)
+                    predicate: (lastname is not null and deptid is not null) (type: boolean)
                     Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: lastname (type: string), deptid (type: int), locid (type: int)
@@ -268,7 +268,7 @@ STAGE PLANS:
                   alias: dept
                   Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (deptname is not null and deptid is not null) (type: boolean)
+                    predicate: (deptid is not null and deptname is not null) (type: boolean)
                     Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: deptid (type: int), deptname (type: string)
@@ -324,7 +324,7 @@ STAGE PLANS:
                   alias: e
                   Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (deptid is not null and lastname is not null) (type: boolean)
+                    predicate: (lastname is not null and deptid is not null) (type: boolean)
                     Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: lastname (type: string), deptid (type: int), locid (type: int)
@@ -342,7 +342,7 @@ STAGE PLANS:
                   alias: d
                   Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (deptname is not null and deptid is not null) (type: boolean)
+                    predicate: (deptid is not null and deptname is not null) (type: boolean)
                     Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: deptid (type: int), deptname (type: string)
@@ -402,7 +402,7 @@ STAGE PLANS:
                   alias: emp
                   Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (deptid is not null and lastname is not null) (type: boolean)
+                    predicate: (lastname is not null and deptid is not null) (type: boolean)
                     Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: lastname (type: string), deptid (type: int), locid (type: int)
@@ -420,7 +420,7 @@ STAGE PLANS:
                   alias: dept
                   Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (deptname is not null and deptid is not null) (type: boolean)
+                    predicate: (deptid is not null and deptname is not null) (type: boolean)
                     Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: deptid (type: int), deptname (type: string)
@@ -676,7 +676,7 @@ STAGE PLANS:
                   alias: e
                   Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (deptid is not null and lastname is not null) (type: boolean)
+                    predicate: (lastname is not null and deptid is not null) (type: boolean)
                     Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: lastname (type: string), deptid (type: int), locid (type: int)
@@ -694,7 +694,7 @@ STAGE PLANS:
                   alias: d
                   Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (deptname is not null and deptid is not null) (type: boolean)
+                    predicate: (deptid is not null and deptname is not null) (type: boolean)
                     Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: deptid (type: int), deptname (type: string)
@@ -711,7 +711,7 @@ STAGE PLANS:
                   alias: l
                   Statistics: Num rows: 8 Data size: 804 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (locid is not null and state is not null) (type: boolean)
+                    predicate: (state is not null and locid is not null) (type: boolean)
                     Statistics: Num rows: 8 Data size: 804 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: int)

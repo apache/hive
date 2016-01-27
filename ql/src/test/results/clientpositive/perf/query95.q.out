@@ -53,7 +53,7 @@ Stage-0
                      |        outputColumnNames:["_col0"]
                      |        Statistics:Num rows: 36524 Data size: 40870356 Basic stats: COMPLETE Column stats: NONE
                      |        Filter Operator [FIL_115]
-                     |           predicate:(d_date BETWEEN '2002-05-01' AND '2002-06-30' and d_date_sk is not null) (type: boolean)
+                     |           predicate:(d_date_sk is not null and d_date BETWEEN '2002-05-01' AND '2002-06-30') (type: boolean)
                      |           Statistics:Num rows: 36524 Data size: 40870356 Basic stats: COMPLETE Column stats: NONE
                      |           TableScan [TS_38]
                      |              alias:d
@@ -80,7 +80,7 @@ Stage-0
                            |        outputColumnNames:["_col0"]
                            |        Statistics:Num rows: 42 Data size: 77704 Basic stats: COMPLETE Column stats: NONE
                            |        Filter Operator [FIL_114]
-                           |           predicate:((web_company_name = 'pri') and web_site_sk is not null) (type: boolean)
+                           |           predicate:(web_site_sk is not null and (web_company_name = 'pri')) (type: boolean)
                            |           Statistics:Num rows: 42 Data size: 77704 Basic stats: COMPLETE Column stats: NONE
                            |           TableScan [TS_35]
                            |              alias:s
@@ -107,7 +107,7 @@ Stage-0
                                  |        outputColumnNames:["_col0"]
                                  |        Statistics:Num rows: 20000000 Data size: 20297597642 Basic stats: COMPLETE Column stats: NONE
                                  |        Filter Operator [FIL_113]
-                                 |           predicate:((ca_state = 'GA') and ca_address_sk is not null) (type: boolean)
+                                 |           predicate:(ca_address_sk is not null and (ca_state = 'GA')) (type: boolean)
                                  |           Statistics:Num rows: 20000000 Data size: 20297597642 Basic stats: COMPLETE Column stats: NONE
                                  |           TableScan [TS_32]
                                  |              alias:ca

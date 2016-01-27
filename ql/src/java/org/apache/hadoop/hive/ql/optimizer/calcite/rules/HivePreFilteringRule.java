@@ -37,10 +37,10 @@ import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlKind;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.LinkedHashMultimap;
@@ -169,13 +169,13 @@ public class HivePreFilteringRule extends RelOptRule {
     // 3. If the new conjuncts are already present in the plan, we bail out
     final List<RexNode> newConjuncts = HiveCalciteUtil.getPredsNotPushedAlready(filter.getInput(),
         operandsToPushDown);
-    if (newConjuncts.isEmpty()) {
+    RexNode newPredicate = RexUtil.composeConjunction(rexBuilder, newConjuncts, false);
+    if (newPredicate.isAlwaysTrue()) {
       return;
     }
 
     // 4. Otherwise, we create a new condition
-    final RexNode newChildFilterCondition = RexUtil.pullFactors(rexBuilder,
-        RexUtil.composeConjunction(rexBuilder, newConjuncts, false));
+    final RexNode newChildFilterCondition = RexUtil.pullFactors(rexBuilder, newPredicate);
 
     // 5. We create the new filter that might be pushed down
     RelNode newChildFilter = filterFactory.createFilter(filter.getInput(), newChildFilterCondition);

@@ -67,7 +67,7 @@ Stage-0
                               |        outputColumnNames:["_col0","_col1","_col2"]
                               |        Statistics:Num rows: 86400 Data size: 40694400 Basic stats: COMPLETE Column stats: NONE
                               |        Filter Operator [FIL_82]
-                              |           predicate:(((t_meal_time = 'breakfast') or (t_meal_time = 'dinner')) and t_time_sk is not null) (type: boolean)
+                              |           predicate:(t_time_sk is not null and ((t_meal_time = 'breakfast') or (t_meal_time = 'dinner'))) (type: boolean)
                               |           Statistics:Num rows: 86400 Data size: 40694400 Basic stats: COMPLETE Column stats: NONE
                               |           TableScan [TS_36]
                               |              alias:time_dim
@@ -95,7 +95,7 @@ Stage-0
                                     |        outputColumnNames:["_col0","_col1","_col2"]
                                     |        Statistics:Num rows: 231000 Data size: 331780228 Basic stats: COMPLETE Column stats: NONE
                                     |        Filter Operator [FIL_75]
-                                    |           predicate:((i_manager_id = 1) and i_item_sk is not null) (type: boolean)
+                                    |           predicate:(i_item_sk is not null and (i_manager_id = 1)) (type: boolean)
                                     |           Statistics:Num rows: 231000 Data size: 331780228 Basic stats: COMPLETE Column stats: NONE
                                     |           TableScan [TS_0]
                                     |              alias:item
@@ -142,7 +142,7 @@ Stage-0
                                        |                 outputColumnNames:["_col0"]
                                        |                 Statistics:Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
                                        |                 Filter Operator [FIL_79]
-                                       |                    predicate:(((d_moy = 12) and d_date_sk is not null) and (d_year = 2001)) (type: boolean)
+                                       |                    predicate:(((d_moy = 12) and (d_year = 2001)) and d_date_sk is not null) (type: boolean)
                                        |                    Statistics:Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
                                        |                    TableScan [TS_16]
                                        |                       alias:date_dim
@@ -188,7 +188,7 @@ Stage-0
                                        |                 outputColumnNames:["_col0"]
                                        |                 Statistics:Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
                                        |                 Filter Operator [FIL_81]
-                                       |                    predicate:(((d_moy = 12) and d_date_sk is not null) and (d_year = 2001)) (type: boolean)
+                                       |                    predicate:(((d_moy = 12) and (d_year = 2001)) and d_date_sk is not null) (type: boolean)
                                        |                    Statistics:Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
                                        |                    TableScan [TS_28]
                                        |                       alias:date_dim
@@ -234,7 +234,7 @@ Stage-0
                                                          outputColumnNames:["_col0"]
                                                          Statistics:Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
                                                          Filter Operator [FIL_77]
-                                                            predicate:(((d_moy = 12) and d_date_sk is not null) and (d_year = 2001)) (type: boolean)
+                                                            predicate:(((d_moy = 12) and (d_year = 2001)) and d_date_sk is not null) (type: boolean)
                                                             Statistics:Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
                                                             TableScan [TS_6]
                                                                alias:date_dim

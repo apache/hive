@@ -85,7 +85,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 10 Data size: 91 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key2 is not null and key is not null) (type: boolean)
+              predicate: (key is not null and key2 is not null) (type: boolean)
               Statistics: Num rows: 10 Data size: 91 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), key2 (type: int), value (type: string)
@@ -224,7 +224,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 10 Data size: 91 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key2 is not null and key is not null) (type: boolean)
+              predicate: (key is not null and key2 is not null) (type: boolean)
               Statistics: Num rows: 10 Data size: 91 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), key2 (type: int), value (type: string)
@@ -376,7 +376,7 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 84 Data size: 979 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key2 is not null and key is not null) (type: boolean)
+              predicate: (key is not null and key2 is not null) (type: boolean)
               Statistics: Num rows: 84 Data size: 979 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), key2 (type: int), value (type: string)
@@ -394,7 +394,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 10 Data size: 91 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key2 is not null and key is not null) (type: boolean)
+              predicate: (key is not null and key2 is not null) (type: boolean)
               Statistics: Num rows: 10 Data size: 91 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), key2 (type: int), value (type: string)
@@ -456,7 +456,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 10 Data size: 91 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key2 is not null and key is not null) (type: boolean)
+              predicate: (key is not null and key2 is not null) (type: boolean)
               Statistics: Num rows: 10 Data size: 91 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), key2 (type: int), value (type: string)
@@ -474,7 +474,7 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 84 Data size: 979 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key2 is not null and key is not null) (type: boolean)
+              predicate: (key is not null and key2 is not null) (type: boolean)
               Statistics: Num rows: 84 Data size: 979 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), key2 (type: int), value (type: string)
@@ -516,7 +516,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 10 Data size: 91 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key2 is not null and key is not null) (type: boolean)
+              predicate: (key is not null and key2 is not null) (type: boolean)
               Statistics: Num rows: 10 Data size: 91 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), key2 (type: int), value (type: string)
@@ -597,7 +597,7 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 84 Data size: 979 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key2 is not null and key is not null) (type: boolean)
+              predicate: (key is not null and key2 is not null) (type: boolean)
               Statistics: Num rows: 84 Data size: 979 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), key2 (type: int), value (type: string)
@@ -615,7 +615,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 10 Data size: 91 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key2 is not null and key is not null) (type: boolean)
+              predicate: (key is not null and key2 is not null) (type: boolean)
               Statistics: Num rows: 10 Data size: 91 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), key2 (type: int), value (type: string)
@@ -677,7 +677,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 10 Data size: 91 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key2 is not null and key is not null) (type: boolean)
+              predicate: (key is not null and key2 is not null) (type: boolean)
               Statistics: Num rows: 10 Data size: 91 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), key2 (type: int), value (type: string)
@@ -695,7 +695,7 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 84 Data size: 979 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key2 is not null and key is not null) (type: boolean)
+              predicate: (key is not null and key2 is not null) (type: boolean)
               Statistics: Num rows: 84 Data size: 979 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), key2 (type: int), value (type: string)
@@ -737,7 +737,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 10 Data size: 91 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key2 is not null and key is not null) (type: boolean)
+              predicate: (key is not null and key2 is not null) (type: boolean)
               Statistics: Num rows: 10 Data size: 91 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), key2 (type: int), value (type: string)
@@ -811,7 +811,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 10 Data size: 91 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key2 is not null and key is not null) (type: boolean)
+              predicate: (key is not null and key2 is not null) (type: boolean)
               Statistics: Num rows: 10 Data size: 91 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), key2 (type: int), value (type: string)
@@ -968,7 +968,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 10 Data size: 91 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key2 is not null and key is not null) (type: boolean)
+              predicate: (key is not null and key2 is not null) (type: boolean)
               Statistics: Num rows: 10 Data size: 91 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), key2 (type: int), value (type: string)
@@ -1148,7 +1148,7 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 84 Data size: 979 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key2 is not null and key is not null) (type: boolean)
+              predicate: (key is not null and key2 is not null) (type: boolean)
               Statistics: Num rows: 84 Data size: 979 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), key2 (type: int), value (type: string)
@@ -1166,7 +1166,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 10 Data size: 91 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key2 is not null and key is not null) (type: boolean)
+              predicate: (key is not null and key2 is not null) (type: boolean)
               Statistics: Num rows: 10 Data size: 91 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), key2 (type: int), value (type: string)
@@ -1228,7 +1228,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 10 Data size: 91 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key2 is not null and key is not null) (type: boolean)
+              predicate: (key is not null and key2 is not null) (type: boolean)
               Statistics: Num rows: 10 Data size: 91 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), key2 (type: int), value (type: string)
@@ -1246,7 +1246,7 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 84 Data size: 979 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key2 is not null and key is not null) (type: boolean)
+              predicate: (key is not null and key2 is not null) (type: boolean)
               Statistics: Num rows: 84 Data size: 979 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), key2 (type: int), value (type: string)
@@ -1288,7 +1288,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 10 Data size: 91 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key2 is not null and key is not null) (type: boolean)
+              predicate: (key is not null and key2 is not null) (type: boolean)
               Statistics: Num rows: 10 Data size: 91 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), key2 (type: int), value (type: string)
