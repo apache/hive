@@ -15,10 +15,10 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Edges:
         Map 1 <- Map 3 (BROADCAST_EDGE), Union 2 (CONTAINS)
         Map 4 <- Union 2 (CONTAINS)
-#### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
@@ -164,6 +164,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Edges:
         Map 1 <- Union 2 (CONTAINS)
         Map 5 <- Union 2 (CONTAINS)
@@ -338,6 +339,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Edges:
         Map 2 <- Map 1 (BROADCAST_EDGE), Union 3 (CONTAINS)
         Map 4 <- Map 1 (BROADCAST_EDGE), Union 3 (CONTAINS)
@@ -512,6 +514,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Edges:
         Map 1 <- Map 10 (BROADCAST_EDGE), Map 4 (BROADCAST_EDGE), Map 9 (BROADCAST_EDGE), Union 2 (CONTAINS)
         Map 5 <- Map 10 (BROADCAST_EDGE), Map 6 (BROADCAST_EDGE), Map 9 (BROADCAST_EDGE), Union 2 (CONTAINS)
@@ -948,6 +951,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Edges:
         Map 1 <- Map 3 (BROADCAST_EDGE), Union 2 (CONTAINS)
         Map 4 <- Map 5 (BROADCAST_EDGE), Union 2 (CONTAINS)
@@ -1137,6 +1141,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Edges:
         Map 1 <- Map 4 (BROADCAST_EDGE), Union 2 (CONTAINS)
         Map 3 <- Map 4 (BROADCAST_EDGE), Union 2 (CONTAINS)
@@ -1246,6 +1251,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Edges:
         Map 1 <- Union 2 (CONTAINS)
         Map 3 <- Union 2 (CONTAINS)

@@ -1263,12 +1263,7 @@ public class DagUtils {
   }
 
   public String createDagName(Configuration conf, QueryPlan plan) {
-    String name = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYNAME);
-
-    if (name == null) {
-      name = conf.get("mapred.job.name");
-    }
-
+    String name = getUserSpecifiedDagName(conf);
     if (name == null) {
       name = plan.getQueryId();
     }
@@ -1277,7 +1272,13 @@ public class DagUtils {
     return name;
   }
 
+  public static String getUserSpecifiedDagName(Configuration conf) {
+    String name = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYNAME);
+    return (name != null) ? name : conf.get("mapred.job.name");
+  }
+
   private DagUtils() {
     // don't instantiate
   }
+
 }

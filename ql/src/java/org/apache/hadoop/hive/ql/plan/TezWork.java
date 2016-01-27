@@ -34,6 +34,8 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.exec.tez.DagUtils;
 import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
@@ -68,7 +70,8 @@ public class TezWork extends AbstractOperatorDesc {
   private static transient final Logger LOG = LoggerFactory.getLogger(TezWork.class);
 
   private static int counter;
-  private final String name;
+  private final String dagId;
+  private final String queryName;
   private final Set<BaseWork> roots = new HashSet<BaseWork>();
   private final Set<BaseWork> leaves = new HashSet<BaseWork>();
   private final Map<BaseWork, List<BaseWork>> workGraph = new HashMap<BaseWork, List<BaseWork>>();
@@ -77,13 +80,19 @@ public class TezWork extends AbstractOperatorDesc {
       new HashMap<Pair<BaseWork, BaseWork>, TezEdgeProperty>();
   private final Map<BaseWork, VertexType> workVertexTypeMap = new HashMap<BaseWork, VertexType>();
 
-  public TezWork(String name) {
-    this.name = name + ":" + (++counter);
+  public TezWork(String queryId, Configuration conf) {
+    this.dagId = queryId + ":" + (++counter);
+    this.queryName = (conf != null) ? DagUtils.getUserSpecifiedDagName(conf) : null;
   }
 
   @Explain(displayName = "DagName")
   public String getName() {
-    return name;
+    return queryName;
+  }
+
+  @Explain(displayName = "DagId")
+  public String getDagId() {
+    return dagId;
   }
 
   /**

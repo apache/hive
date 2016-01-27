@@ -1456,6 +1456,7 @@ public class QTestUtil {
       ".*USING 'java -cp.*",
       "^Deleted.*",
       ".*DagName:.*",
+      ".*DagId:.*",
       ".*Input:.*/data/files/.*",
       ".*Output:.*/data/files/.*",
       ".*total number of created files now is.*",

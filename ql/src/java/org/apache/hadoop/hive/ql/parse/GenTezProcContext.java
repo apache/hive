@@ -173,7 +173,7 @@ public class GenTezProcContext implements NodeProcessorCtx{
     this.inputs = inputs;
     this.outputs = outputs;
     this.currentTask = (TezTask) TaskFactory.get(
-         new TezWork(conf.getVar(HiveConf.ConfVars.HIVEQUERYID)), conf);
+         new TezWork(conf.getVar(HiveConf.ConfVars.HIVEQUERYID), conf), conf);
     this.leafOperatorToFollowingWork = new LinkedHashMap<Operator<?>, BaseWork>();
     this.linkOpWithWorkMap = new LinkedHashMap<Operator<?>, Map<BaseWork, TezEdgeProperty>>();
     this.linkWorkWithReduceSinkMap = new LinkedHashMap<BaseWork, List<ReduceSinkOperator>>();
