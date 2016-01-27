@@ -31,6 +31,7 @@ import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -93,7 +94,8 @@ public class TezSessionPoolManager {
 
   private static TezSessionPoolManager sessionPool = null;
 
-  private static List<TezSessionState> openSessions = new LinkedList<TezSessionState>();
+  private static final List<TezSessionPoolSession> openSessions
+    = new LinkedList<TezSessionPoolSession>();
 
   public static TezSessionPoolManager getInstance()
       throws Exception {
@@ -299,15 +301,14 @@ public class TezSessionPoolManager {
       return;
     }
 
+    List<TezSessionPoolSession> sessionsToClose = null;
     synchronized (openSessions) {
-      // we can just stop all the sessions
-      Iterator<TezSessionState> iter = openSessions.iterator();
-      while (iter.hasNext()) {
-        TezSessionState sessionState = iter.next();
-        if (sessionState.isDefault()) {
-          sessionState.close(false);
-          iter.remove();
-        }
+      sessionsToClose = new ArrayList<TezSessionPoolSession>(openSessions);
+    }
+    // we can just stop all the sessions
+    for (TezSessionState sessionState : sessionsToClose) {
+      if (sessionState.isDefault()) {
+        sessionState.close(false);
       }
     }
 
@@ -425,16 +426,13 @@ public class TezSessionPoolManager {
   }
 
   public void closeNonDefaultSessions(boolean keepTmpDir) throws Exception {
+    List<TezSessionPoolSession> sessionsToClose = null;
     synchronized (openSessions) {
-      Iterator<TezSessionState> iter = openSessions.iterator();
-      while (iter.hasNext()) {
-        System.err.println("Shutting down tez session.");
-        TezSessionState sessionState = iter.next();
-        closeIfNotDefault(sessionState, keepTmpDir);
-        if (sessionState.isDefault() == false) {
-          iter.remove();
-        }
-      }
+      sessionsToClose = new ArrayList<TezSessionPoolSession>(openSessions);
+    }
+    for (TezSessionPoolSession sessionState : sessionsToClose) {
+      System.err.println("Shutting down tez session.");
+      closeIfNotDefault(sessionState, keepTmpDir);
     }
   }
 
