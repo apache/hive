@@ -50,13 +50,14 @@ public class ATSHook implements ExecuteWithHookContext {
 
   private static final Logger LOG = LoggerFactory.getLogger(ATSHook.class.getName());
   private static final Object LOCK = new Object();
+  private static final int VERSION = 2;
   private static ExecutorService executor;
   private static TimelineClient timelineClient;
   private enum EntityTypes { HIVE_QUERY_ID };
   private enum EventTypes { QUERY_SUBMITTED, QUERY_COMPLETED };
 
   private enum OtherInfoTypes {
-    QUERY, STATUS, TEZ, MAPRED, INVOKER_INFO, THREAD_NAME
+    QUERY, STATUS, TEZ, MAPRED, INVOKER_INFO, THREAD_NAME, VERSION
   };
   private enum PrimaryFilterTypes { user, requestuser, operationid };
   private static final int WAIT_TIME = 3;
@@ -193,6 +194,7 @@ public class ATSHook implements ExecuteWithHookContext {
     atsEntity.addOtherInfo(OtherInfoTypes.MAPRED.name(), numMrJobs > 0);
     atsEntity.addOtherInfo(OtherInfoTypes.INVOKER_INFO.name(), logID);
     atsEntity.addOtherInfo(OtherInfoTypes.THREAD_NAME.name(), Thread.currentThread().getName());
+    atsEntity.addOtherInfo(OtherInfoTypes.VERSION.name(), VERSION);
     return atsEntity;
   }
 

@@ -176,9 +176,8 @@ public class TezTask extends Task<TezWork> {
       if (driverContext.getCtx() == null) {
         boolean a = false;
       }
-      CallerContext callerContext = CallerContext.create("HIVE",
-          conf.getLogIdVar(SessionState.get().getSessionId()) + " "
-              + conf.getVar(HiveConf.ConfVars.HIVEQUERYID),
+      CallerContext callerContext = CallerContext.create(
+          "HIVE", queryPlan.getQueryId(),
           "HIVE_QUERY_ID", queryPlan.getQueryStr());
       dag.setCallerContext(callerContext);
 
@@ -320,7 +319,10 @@ public class TezTask extends Task<TezWork> {
     FileSystem fs = scratchDir.getFileSystem(conf);
 
     // the name of the dag is what is displayed in the AM/Job UI
-    DAG dag = DAG.create(work.getName());
+    String dagName = utils.createDagName(conf, queryPlan);
+
+    LOG.info("Dag name: " + dagName);
+    DAG dag = DAG.create(dagName);
 
     // set some info for the query
     JSONObject json = new JSONObject(new LinkedHashMap()).put("context", "Hive")
