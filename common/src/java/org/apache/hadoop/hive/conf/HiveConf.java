@@ -1265,7 +1265,10 @@ public class HiveConf extends Configuration {
     HIVEPPDRECOGNIZETRANSITIVITY("hive.ppd.recognizetransivity", true,
         "Whether to transitively replicate predicate filters over equijoin conditions."),
     HIVEPPDREMOVEDUPLICATEFILTERS("hive.ppd.remove.duplicatefilters", true,
-        "Whether to push predicates down into storage handlers.  Ignored when hive.optimize.ppd is false."),
+        "During query optimization, filters may be pushed down in the operator tree. \n" +
+        "If this config is true only pushed down filters remain in the operator tree, \n" +
+        "and the original filter is removed. If this config is false, the original filter \n" +
+        "is also left in the operator tree at the original place."),
     HIVEPOINTLOOKUPOPTIMIZER("hive.optimize.point.lookup", true,
          "Whether to transform OR clauses in Filter operators into IN clauses"),
     HIVEPOINTLOOKUPOPTIMIZERMIN("hive.optimize.point.lookup.min", 31,
