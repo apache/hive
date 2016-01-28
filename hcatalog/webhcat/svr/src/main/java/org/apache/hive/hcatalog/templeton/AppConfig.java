@@ -91,6 +91,7 @@ public class AppConfig extends Configuration {
   };
 
   public static final String PORT                = "templeton.port";
+  public static final String JETTY_CONFIGURATION = "templeton.jetty.configuration";
   public static final String EXEC_ENCODING_NAME  = "templeton.exec.encoding";
   public static final String EXEC_ENVS_NAME      = "templeton.exec.envs";
   public static final String EXEC_MAX_BYTES_NAME = "templeton.exec.max-output-bytes";
@@ -294,6 +295,7 @@ public class AppConfig extends Configuration {
     return false;
   }
 
+  public String jettyConfiguration() { return get(JETTY_CONFIGURATION); }
   public String libJars()          { return get(LIB_JARS_NAME); }
   public String hadoopQueueName()  { return get(HADOOP_QUEUE_NAME); }
   public String clusterHadoop()    { return get(HADOOP_NAME); }
