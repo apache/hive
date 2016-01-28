@@ -32,6 +32,12 @@
   </property>
 
   <property>
+    <name>templeton.jetty.configuration</name>
+    <value></value>
+    <description>The embedded jetty configuration file.</description>
+  </property>
+
+  <property>
     <name>templeton.hadoop.conf.dir</name>
     <value>${env.HADOOP_CONF_DIR}</value>
     <description>The path to the Hadoop configuration.</description>

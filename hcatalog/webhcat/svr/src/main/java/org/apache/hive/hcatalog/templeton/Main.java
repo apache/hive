@@ -22,12 +22,15 @@ import com.sun.jersey.api.core.PackagesResourceConfig;
 import com.sun.jersey.spi.container.servlet.ServletContainer;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hdfs.web.AuthFilter;
@@ -44,6 +47,7 @@ import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.FilterMapping;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.xml.XmlConfiguration;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import javax.servlet.http.HttpServletRequest;
@@ -116,6 +120,9 @@ public class Main {
     try {
       checkEnv();
       runServer(port);
+      // Currently only print the first port to be consistent with old behavior
+      port =  ArrayUtils.isEmpty(server.getConnectors()) ? -1 : server.getConnectors()[0].getPort();
+
       System.out.println("templeton: listening on port " + port);
       LOG.info("Templeton listening on port " + port);
     } catch (Exception e) {
@@ -162,8 +169,17 @@ public class Main {
         conf.kerberosKeytab());
     }
 
-    // Create the Jetty server
-    Server server = new Server(port);
+    // Create the Jetty server. If jetty conf file exists, use that to create server
+    // to have more control.
+    Server server = null;
+    if (StringUtils.isEmpty(conf.jettyConfiguration())) {
+      server = new Server(port);
+    } else {
+        FileInputStream jettyConf = new FileInputStream(conf.jettyConfiguration());
+        XmlConfiguration configuration = new XmlConfiguration(jettyConf);
+        server = (Server)configuration.configure();
+    }
+
     ServletContextHandler root = new ServletContextHandler(server, "/");
 
     // Add the Auth filter
