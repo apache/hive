@@ -384,6 +384,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
     xlateMap.put("KW_FALSE", "FALSE");
     xlateMap.put("KW_ALL", "ALL");
     xlateMap.put("KW_NONE", "NONE");
+    xlateMap.put("KW_DEFAULT", "DEFAULT");
     xlateMap.put("KW_AND", "AND");
     xlateMap.put("KW_OR", "OR");
     xlateMap.put("KW_NOT", "NOT");
