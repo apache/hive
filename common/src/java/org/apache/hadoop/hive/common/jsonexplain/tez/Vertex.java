@@ -20,8 +20,15 @@ package org.apache.hadoop.hive.common.jsonexplain.tez;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 
+import org.apache.hadoop.hive.common.jsonexplain.tez.Op.OpType;
+import org.apache.hadoop.util.hash.Hash;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.json.JSONArray;
@@ -38,8 +45,6 @@ public final class Vertex implements Comparable<Vertex>{
   public final List<Vertex> children = new ArrayList<>();
   // the jsonObject for this vertex
   public final JSONObject vertexObject;
-  // whether this vertex is a union vertex
-  public boolean union;
   // whether this vertex is dummy (which does not really exists but is created),
   // e.g., a dummy vertex for a mergejoin branch
   public boolean dummy;
@@ -52,14 +57,36 @@ public final class Vertex implements Comparable<Vertex>{
   public boolean hasMultiReduceOp = false;
   // execution mode
   public String executionMode = "";
+  // tagToInput for reduce work
+  public Map<String, String> tagToInput = new LinkedHashMap<>();
+  // tag
+  public String tag;
+
+  public static enum VertexType {
+    MAP, REDUCE, UNION, UNKNOWN
+  };
+  public VertexType vertexType;
+
+  public static enum EdgeType {
+    BROADCAST, SHUFFLE, MULTICAST, PARTITION_ONLY_SHUFFLE, UNKNOWN
+  };
+  public EdgeType edgeType;
 
   public Vertex(String name, JSONObject vertexObject, TezJsonParser tezJsonParser) {
     super();
     this.name = name;
-    if (this.name != null && this.name.contains("Union")) {
-      this.union = true;
+    if (this.name != null) {
+      if (this.name.contains("Map")) {
+        this.vertexType = VertexType.MAP;
+      } else if (this.name.contains("Reduce")) {
+        this.vertexType = VertexType.REDUCE;
+      } else if (this.name.contains("Union")) {
+        this.vertexType = VertexType.UNION;
+      } else {
+        this.vertexType = VertexType.UNKNOWN;
+      }
     } else {
-      this.union = false;
+      this.vertexType = VertexType.UNKNOWN;
     }
     this.dummy = false;
     this.vertexObject = vertexObject;
@@ -93,7 +120,7 @@ public final class Vertex implements Comparable<Vertex>{
           JSONArray array = vertexObject.getJSONArray(key);
           for (int index = 0; index < array.length(); index++) {
             JSONObject mpOpTree = array.getJSONObject(index);
-            Vertex v = new Vertex("", mpOpTree, parser);
+            Vertex v = new Vertex(null, mpOpTree, parser);
             v.extractOpTree();
             v.dummy = true;
             mergeJoinDummyVertexs.add(v);
@@ -107,6 +134,13 @@ public final class Vertex implements Comparable<Vertex>{
           }
         } else if (key.equals("Execution mode:")) {
           executionMode = " " + vertexObject.getString(key);
+        } else if (key.equals("tagToInput:")) {
+          JSONObject tagToInput = vertexObject.getJSONObject(key);
+          for (String tag : JSONObject.getNames(tagToInput)) {
+            this.tagToInput.put(tag, (String) tagToInput.get(tag));
+          }
+        } else if (key.equals("tag:")) {
+          this.tag = vertexObject.getString(key);
         } else {
           throw new Exception("Unsupported operator tree in vertex " + this.name);
         }
@@ -134,7 +168,7 @@ public final class Vertex implements Comparable<Vertex>{
     } else {
       String opName = names[0];
       JSONObject attrObj = (JSONObject) operator.get(opName);
-      List<Attr> attrs = new ArrayList<>();
+      Map<String, String> attrs = new TreeMap<>();
       List<Op> children = new ArrayList<>();
       String id = null;
       String outputVertexName = null;
@@ -162,7 +196,9 @@ public final class Vertex implements Comparable<Vertex>{
           } else if (attrName.equals("outputname:")) {
             outputVertexName = attrObj.get(attrName).toString();
           } else {
-            attrs.add(new Attr(attrName, attrObj.get(attrName).toString()));
+            if (!attrObj.get(attrName).toString().isEmpty()) {
+              attrs.put(attrName, attrObj.get(attrName).toString());
+            }
           }
         }
       }
@@ -178,28 +214,28 @@ public final class Vertex implements Comparable<Vertex>{
     }
   }
 
-  public void print(Printer printer, List<Boolean> indentFlag, String type, Vertex callingVertex)
+  public void print(Printer printer, int indentFlag, String type, Vertex callingVertex)
       throws JSONException, Exception {
     // print vertexname
     if (parser.printSet.contains(this) && !hasMultiReduceOp) {
       if (type != null) {
-        printer.println(TezJsonParser.prefixString(indentFlag, "|<-")
+        printer.println(TezJsonParser.prefixString(indentFlag, "<-")
             + " Please refer to the previous " + this.name + " [" + type + "]");
       } else {
-        printer.println(TezJsonParser.prefixString(indentFlag, "|<-")
+        printer.println(TezJsonParser.prefixString(indentFlag, "<-")
             + " Please refer to the previous " + this.name);
       }
       return;
     }
     parser.printSet.add(this);
     if (type != null) {
-      printer.println(TezJsonParser.prefixString(indentFlag, "|<-") + this.name + " [" + type + "]"
+      printer.println(TezJsonParser.prefixString(indentFlag, "<-") + this.name + " [" + type + "]"
           + this.executionMode);
     } else if (this.name != null) {
       printer.println(TezJsonParser.prefixString(indentFlag) + this.name + this.executionMode);
     }
     // print operators
-    if (hasMultiReduceOp && !callingVertex.union) {
+    if (hasMultiReduceOp && !(callingVertex.vertexType == VertexType.UNION)) {
       // find the right op
       Op choose = null;
       for (Op op : this.rootOps) {
@@ -222,18 +258,12 @@ public final class Vertex implements Comparable<Vertex>{
         }
       }
     }
-    if (this.union) {
+    if (vertexType == VertexType.UNION) {
       // print dependent vertexs
+      indentFlag++;
       for (int index = 0; index < this.parentConnections.size(); index++) {
         Connection connection = this.parentConnections.get(index);
-        List<Boolean> unionFlag = new ArrayList<>();
-        unionFlag.addAll(indentFlag);
-        if (index != this.parentConnections.size() - 1) {
-          unionFlag.add(true);
-        } else {
-          unionFlag.add(false);
-        }
-        connection.from.print(printer, unionFlag, connection.type, this);
+        connection.from.print(printer, indentFlag, connection.type, this);
       }
     }
   }
@@ -248,15 +278,54 @@ public final class Vertex implements Comparable<Vertex>{
     }
     // check if all the child ops are reduce output operators
     for (Op op : this.rootOps) {
-      if (!op.name.contains("Reduce"))
+      if (op.type != OpType.RS) {
         return;
+      }
     }
     this.hasMultiReduceOp = true;
+  }
+
+  public void setType(String type) {
+    switch (type) {
+    case "BROADCAST_EDGE":
+      this.edgeType = EdgeType.BROADCAST;
+      break;
+    case "SIMPLE_EDGE":
+      this.edgeType = EdgeType.SHUFFLE;
+      break;
+    case "CUSTOM_SIMPLE_EDGE":
+      this.edgeType = EdgeType.PARTITION_ONLY_SHUFFLE;
+      break;
+    case "CUSTOM_EDGE":
+      this.edgeType = EdgeType.MULTICAST;
+      break;
+    default:
+      this.edgeType = EdgeType.UNKNOWN;
+    }
   }
 
   //The following code should be gone after HIVE-11075 using topological order
   @Override
   public int compareTo(Vertex o) {
     return this.name.compareTo(o.name);
+  }
+
+  public Op getSingleRSOp() {
+    if (rootOps.size() == 0) {
+      return null;
+    } else {
+      Op ret = null;
+      for (Op op : rootOps) {
+        if (op.type == OpType.RS) {
+          if (ret == null) {
+            ret = op;
+          } else {
+            // find more than one RS Op
+            return null;
+          }
+        }
+      }
+      return ret;
+    }
   }
 }

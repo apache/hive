@@ -46,8 +46,13 @@ public class LateralViewJoinDesc extends AbstractOperatorDesc {
     this.outputInternalColNames = outputInternalColNames;
   }
 
-  @Explain(displayName = "outputColumnNames", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Explain(displayName = "outputColumnNames")
   public ArrayList<String> getOutputInternalColNames() {
+    return outputInternalColNames;
+  }
+
+  @Explain(displayName = "Output", explainLevels = { Level.USER })
+  public ArrayList<String> getUserLevelExplainOutputInternalColNames() {
     return outputInternalColNames;
   }
 

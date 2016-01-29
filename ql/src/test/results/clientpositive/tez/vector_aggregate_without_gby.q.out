@@ -43,36 +43,23 @@ Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
 Stage-0
-   Fetch Operator
-      limit:-1
-      Stage-1
-         Reducer 2 vectorized
-         File Output Operator [FS_7]
-            compressed:false
-            Statistics:Num rows: 1 Data size: 88 Basic stats: COMPLETE Column stats: NONE
-            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
-            Group By Operator [OP_12]
-            |  aggregations:["max(VALUE._col0)","max(VALUE._col1)"]
-            |  outputColumnNames:["_col0","_col1"]
-            |  Statistics:Num rows: 1 Data size: 88 Basic stats: COMPLETE Column stats: NONE
-            |<-Map 1 [SIMPLE_EDGE] vectorized
-               Reduce Output Operator [RS_4]
-                  sort order:
-                  Statistics:Num rows: 1 Data size: 88 Basic stats: COMPLETE Column stats: NONE
-                  value expressions:_col0 (type: int), _col1 (type: string)
-                  Group By Operator [OP_11]
-                     aggregations:["max(dt)","max(greg_dt)"]
-                     outputColumnNames:["_col0","_col1"]
-                     Statistics:Num rows: 1 Data size: 88 Basic stats: COMPLETE Column stats: NONE
-                     Select Operator [OP_10]
-                        outputColumnNames:["dt","greg_dt"]
-                        Statistics:Num rows: 3 Data size: 306 Basic stats: COMPLETE Column stats: NONE
-                        Filter Operator [FIL_9]
-                           predicate:(id = 5) (type: boolean)
-                           Statistics:Num rows: 3 Data size: 306 Basic stats: COMPLETE Column stats: NONE
-                           TableScan [TS_0]
-                              alias:testvec
-                              Statistics:Num rows: 7 Data size: 714 Basic stats: COMPLETE Column stats: NONE
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 2 vectorized
+      File Output Operator [FS_7]
+        Group By Operator [OP_12] (rows=1 width=88)
+          Output:["_col0","_col1"],aggregations:["max(VALUE._col0)","max(VALUE._col1)"]
+        <-Map 1 [SIMPLE_EDGE] vectorized
+          SHUFFLE [RS_4]
+            Group By Operator [OP_11] (rows=1 width=88)
+              Output:["_col0","_col1"],aggregations:["max(dt)","max(greg_dt)"]
+              Select Operator [OP_10] (rows=3 width=102)
+                Output:["dt","greg_dt"]
+                Filter Operator [FIL_9] (rows=3 width=102)
+                  predicate:(id = 5)
+                  TableScan [TS_0] (rows=7 width=102)
+                    default@testvec,testvec,Tbl:COMPLETE,Col:NONE,Output:["id","dt","greg_dt"]
 
 PREHOOK: query: select max(dt), max(greg_dt) from testvec where id=5
 PREHOOK: type: QUERY

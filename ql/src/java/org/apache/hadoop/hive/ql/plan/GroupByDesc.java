@@ -158,9 +158,14 @@ public class GroupByDesc extends AbstractOperatorDesc {
     this.mode = mode;
   }
 
-  @Explain(displayName = "keys", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Explain(displayName = "keys")
   public String getKeyString() {
     return PlanUtils.getExprListString(keys);
+  }
+
+  @Explain(displayName = "keys", explainLevels = { Level.USER })
+  public String getUserLevelExplainKeyString() {
+    return PlanUtils.getExprListString(keys, true);
   }
 
   public ArrayList<ExprNodeDesc> getKeys() {
@@ -171,8 +176,13 @@ public class GroupByDesc extends AbstractOperatorDesc {
     this.keys = keys;
   }
 
-  @Explain(displayName = "outputColumnNames", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Explain(displayName = "outputColumnNames")
   public ArrayList<java.lang.String> getOutputColumnNames() {
+    return outputColumnNames;
+  }
+
+  @Explain(displayName = "Output", explainLevels = { Level.USER })
+  public ArrayList<java.lang.String> getUserLevelExplainOutputColumnNames() {
     return outputColumnNames;
   }
 

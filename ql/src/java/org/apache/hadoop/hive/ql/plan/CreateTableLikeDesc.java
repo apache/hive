@@ -82,7 +82,7 @@ public class CreateTableLikeDesc extends DDLDesc implements Serializable {
     this.tableName = tableName;
   }
 
-  @Explain(displayName = "default input format", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Explain(displayName = "default input format")
   public String getDefaultInputFormat() {
     return defaultInputFormat;
   }
@@ -91,7 +91,7 @@ public class CreateTableLikeDesc extends DDLDesc implements Serializable {
     this.defaultInputFormat = inputFormat;
   }
 
-  @Explain(displayName = "default output format", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Explain(displayName = "default output format")
   public String getDefaultOutputFormat() {
     return defaultOutputFormat;
   }
@@ -150,7 +150,7 @@ public class CreateTableLikeDesc extends DDLDesc implements Serializable {
     this.defaultSerdeProps = serdeProps;
   }
 
-  @Explain(displayName = "like", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Explain(displayName = "like")
   public String getLikeTableName() {
     return likeTableName;
   }

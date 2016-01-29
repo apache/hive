@@ -18,7 +18,9 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import java.util.Arrays;
 import java.util.List;
+
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 
@@ -105,11 +107,14 @@ public class FilterDesc extends AbstractOperatorDesc {
     this.sampleDescr = sampleDescr;
   }
 
-  @Explain(displayName = "predicate", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Explain(displayName = "predicate")
   public String getPredicateString() {
-    StringBuilder sb = new StringBuilder();
-    PlanUtils.addExprToStringBuffer(predicate, sb);
-    return sb.toString();
+    return PlanUtils.getExprListString(Arrays.asList(predicate));
+  }
+
+  @Explain(displayName = "predicate", explainLevels = { Level.USER })
+  public String getUserLevelExplainPredicateString() {
+    return PlanUtils.getExprListString(Arrays.asList(predicate), true);
   }
 
   public org.apache.hadoop.hive.ql.plan.ExprNodeDesc getPredicate() {

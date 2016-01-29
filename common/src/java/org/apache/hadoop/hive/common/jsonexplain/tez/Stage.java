@@ -20,13 +20,13 @@ package org.apache.hadoop.hive.common.jsonexplain.tez;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.jsonexplain.tez.Vertex.VertexType;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -43,7 +43,7 @@ public final class Stage {
   // downstream stages.
   public final List<Stage> childStages = new ArrayList<>();
   public final Map<String, Vertex> vertexs =new LinkedHashMap<>();
-  public final List<Attr> attrs = new ArrayList<>();
+  public final Map<String, String> attrs = new TreeMap<>();
   Map<Vertex, List<Connection>> tezStageDependency;
   // some stage may contain only a single operator, e.g., create table operator,
   // fetch operator.
@@ -112,6 +112,7 @@ public final class Stage {
             // for union vertex, we reverse the dependency relationship
             if (!"CONTAINS".equals(type)) {
               v.addDependency(new Connection(type, parentVertex));
+              parentVertex.setType(type);
               parentVertex.children.add(v);
             } else {
               parentVertex.addDependency(new Connection(type, v));
@@ -133,6 +134,7 @@ public final class Stage {
               String type = obj.getString("type");
               if (!"CONTAINS".equals(type)) {
                 v.addDependency(new Connection(type, parentVertex));
+                parentVertex.setType(type);
                 parentVertex.children.add(v);
               } else {
                 parentVertex.addDependency(new Connection(type, v));
@@ -150,7 +152,7 @@ public final class Stage {
       }
       // The opTree in vertex is extracted
       for (Vertex v : vertexs.values()) {
-        if (!v.union) {
+        if (v.vertexType == VertexType.MAP || v.vertexType == VertexType.REDUCE) {
           v.extractOpTree();
           v.checkMultiReduceOperator();
         }
@@ -162,7 +164,9 @@ public final class Stage {
           if (name.contains("Operator")) {
             this.op = extractOp(name, object.getJSONObject(name));
           } else {
-            attrs.add(new Attr(name, object.get(name).toString()));
+            if (!object.get(name).toString().isEmpty()) {
+              attrs.put(name, object.get(name).toString());
+            }
           }
         }
       }
@@ -178,14 +182,14 @@ public final class Stage {
    *           etc
    */
   Op extractOp(String opName, JSONObject opObj) throws Exception {
-    List<Attr> attrs = new ArrayList<>();
+    Map<String, String> attrs = new TreeMap<>();
     Vertex v = null;
     if (opObj.length() > 0) {
       String[] names = JSONObject.getNames(opObj);
       for (String name : names) {
         Object o = opObj.get(name);
-        if (isPrintable(o)) {
-          attrs.add(new Attr(name, o.toString()));
+        if (isPrintable(o) && !o.toString().isEmpty()) {
+          attrs.put(name, o.toString());
         } else if (o instanceof JSONObject) {
           JSONObject attrObj = (JSONObject) o;
           if (attrObj.length() > 0) {
@@ -196,7 +200,9 @@ public final class Stage {
               v.extractOpTree();
             } else {
               for (String attrName : JSONObject.getNames(attrObj)) {
-                attrs.add(new Attr(attrName, attrObj.get(attrName).toString()));
+                if (!attrObj.get(attrName).toString().isEmpty()) {
+                  attrs.put(attrName, attrObj.get(attrName).toString());
+                }
               }
             }
           }
@@ -224,7 +230,7 @@ public final class Stage {
     return false;
   }
 
-  public void print(Printer printer, List<Boolean> indentFlag) throws Exception {
+  public void print(Printer printer, int indentFlag) throws Exception {
     // print stagename
     if (parser.printSet.contains(this)) {
       printer.println(TezJsonParser.prefixString(indentFlag) + " Please refer to the previous "
@@ -234,27 +240,23 @@ public final class Stage {
     parser.printSet.add(this);
     printer.println(TezJsonParser.prefixString(indentFlag) + externalName);
     // print vertexes
-    List<Boolean> nextIndentFlag = new ArrayList<>();
-    nextIndentFlag.addAll(indentFlag);
-    nextIndentFlag.add(false);
+    indentFlag++;
     for (Vertex candidate : this.vertexs.values()) {
       if (!parser.isInline(candidate) && candidate.children.isEmpty()) {
-        candidate.print(printer, nextIndentFlag, null, null);
+        candidate.print(printer, indentFlag, null, null);
       }
     }
     if (!attrs.isEmpty()) {
-      Collections.sort(attrs);
-      for (Attr attr : attrs) {
-        printer.println(TezJsonParser.prefixString(nextIndentFlag) + attr.toString());
-      }
+      printer.println(TezJsonParser.prefixString(indentFlag)
+          + TezJsonParserUtils.attrsToString(attrs));
     }
     if (op != null) {
-      op.print(printer, nextIndentFlag, false);
+      op.print(printer, indentFlag, false);
     }
-    nextIndentFlag.add(false);
+    indentFlag++;
     // print dependent stages
     for (Stage stage : this.parentStages) {
-      stage.print(printer, nextIndentFlag);
+      stage.print(printer, indentFlag);
     }
   }
 }

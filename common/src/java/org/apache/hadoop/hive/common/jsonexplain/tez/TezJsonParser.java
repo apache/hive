@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
 public final class TezJsonParser implements JsonParser {
   public final Map<String, Stage> stages = new LinkedHashMap<>();
   protected final Logger LOG;
-  // the object that has been printed.
+  // the objects that have been printed.
   public final Set<Object> printSet = new LinkedHashSet<>();
   // the vertex that should be inlined. <Operator, list of Vertex that is
   // inlined>
@@ -75,13 +75,10 @@ public final class TezJsonParser implements JsonParser {
    *          help to generate correct indent
    * @return
    */
-  public static String prefixString(List<Boolean> indentFlag) {
+  public static String prefixString(int indentFlag) {
     StringBuilder sb = new StringBuilder();
-    for (int index = 0; index < indentFlag.size(); index++) {
-      if (indentFlag.get(index))
-        sb.append("|  ");
-      else
-        sb.append("   ");
+    for (int index = 0; index < indentFlag; index++) {
+      sb.append("  ");
     }
     return sb.toString();
   }
@@ -92,13 +89,10 @@ public final class TezJsonParser implements JsonParser {
    *          help to generate correct indent with a specific tail
    * @return
    */
-  public static String prefixString(List<Boolean> indentFlag, String tail) {
+  public static String prefixString(int indentFlag, String tail) {
     StringBuilder sb = new StringBuilder();
-    for (int index = 0; index < indentFlag.size(); index++) {
-      if (indentFlag.get(index))
-        sb.append("|  ");
-      else
-        sb.append("   ");
+    for (int index = 0; index < indentFlag; index++) {
+      sb.append("  ");
     }
     int len = sb.length();
     return sb.replace(len - tail.length(), len, tail).toString();
@@ -136,11 +130,10 @@ public final class TezJsonParser implements JsonParser {
         printer.println();
       }
     }
-    List<Boolean> indentFlag = new ArrayList<>();
     // print out all the stages that have no childStages.
     for (Stage candidate : this.stages.values()) {
       if (candidate.childStages.isEmpty()) {
-        candidate.print(printer, indentFlag);
+        candidate.print(printer, 0);
       }
     }
     outputStream.println(printer.toString());

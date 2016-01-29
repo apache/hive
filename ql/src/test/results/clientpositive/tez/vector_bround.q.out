@@ -41,12 +41,12 @@ POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
 Stage-0
-   Fetch Operator
-      limit:-1
-      Select Operator [SEL_1]
-         outputColumnNames:["_col0","_col1"]
-         TableScan [TS_0]
-            alias:test_vector_bround
+  Fetch Operator
+    limit:-1
+    Select Operator [SEL_1]
+      Output:["_col0","_col1"]
+      TableScan [TS_0]
+        Output:["v0","v1"]
 
 PREHOOK: query: select bround(v0), bround(v1, 1) from test_vector_bround
 PREHOOK: type: QUERY

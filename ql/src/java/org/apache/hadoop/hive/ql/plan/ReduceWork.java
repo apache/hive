@@ -182,6 +182,7 @@ public class ReduceWork extends BaseWork {
     this.tagToInput = tagToInput;
   }
 
+  @Explain(displayName = "tagToInput", explainLevels = { Level.USER })
   public Map<Integer, String> getTagToInput() {
     return tagToInput;
   }

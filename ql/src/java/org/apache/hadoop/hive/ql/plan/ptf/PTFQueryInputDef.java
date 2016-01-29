@@ -22,12 +22,12 @@ import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PTFQueryInputType;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
-@Explain(displayName = "Input definition", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+@Explain(displayName = "Input definition")
 public class PTFQueryInputDef extends PTFInputDef {
   private String destination;
   private PTFQueryInputType type;
 
-  @Explain(displayName = "destination", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Explain(displayName = "destination")
   public String getDestination() {
     return destination;
   }
@@ -44,7 +44,7 @@ public class PTFQueryInputDef extends PTFInputDef {
     this.type = type;
   }
 
-  @Explain(displayName = "type", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Explain(displayName = "type")
   public String getTypeExplain() {
     return type.name();
   }

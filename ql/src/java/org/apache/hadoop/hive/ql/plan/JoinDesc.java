@@ -211,7 +211,7 @@ public class JoinDesc extends AbstractOperatorDesc {
   /**
    * @return the keys in string form
    */
-  @Explain(displayName = "keys", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Explain(displayName = "keys")
   public Map<Byte, String> getKeysString() {
     if (joinKeys == null) {
       return null;
@@ -220,6 +220,19 @@ public class JoinDesc extends AbstractOperatorDesc {
     Map<Byte, String> keyMap = new LinkedHashMap<Byte, String>();
     for (byte i = 0; i < joinKeys.length; i++) {
       keyMap.put(i, PlanUtils.getExprListString(Arrays.asList(joinKeys[i])));
+    }
+    return keyMap;
+  }
+
+  @Explain(displayName = "keys", explainLevels = { Level.USER })
+  public Map<Byte, String> getUserLevelExplainKeysString() {
+    if (joinKeys == null) {
+      return null;
+    }
+
+    Map<Byte, String> keyMap = new LinkedHashMap<Byte, String>();
+    for (byte i = 0; i < joinKeys.length; i++) {
+      keyMap.put(i, PlanUtils.getExprListString(Arrays.asList(joinKeys[i]), true));
     }
     return keyMap;
   }
@@ -235,7 +248,7 @@ public class JoinDesc extends AbstractOperatorDesc {
    *
    * @return Map from alias to filters on the alias.
    */
-  @Explain(displayName = "filter predicates", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Explain(displayName = "filter predicates")
   public Map<Byte, String> getFiltersStringMap() {
     if (getFilters() == null || getFilters().size() == 0) {
       return null;
@@ -281,8 +294,13 @@ public class JoinDesc extends AbstractOperatorDesc {
     this.filters = filters;
   }
 
-  @Explain(displayName = "outputColumnNames", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Explain(displayName = "outputColumnNames")
   public List<String> getOutputColumnNames() {
+    return outputColumnNames;
+  }
+
+  @Explain(displayName = "Output", explainLevels = { Level.USER })
+  public List<String> getUserLevelExplainOutputColumnNames() {
     return outputColumnNames;
   }
 

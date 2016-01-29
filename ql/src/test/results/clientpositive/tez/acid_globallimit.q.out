@@ -33,24 +33,17 @@ POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
 Stage-0
-   Fetch Operator
-      limit:10
-      Stage-1
-         Map 1
-         File Output Operator [FS_3]
-            compressed:false
-            Statistics:Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
-            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
-            Limit [LIM_2]
-               Number of rows:10
-               Statistics:Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
-               Select Operator [SEL_1]
-                  outputColumnNames:["_col0"]
-                  Statistics:Num rows: 9173 Data size: 100540 Basic stats: COMPLETE Column stats: NONE
-                  TableScan [TS_0]
-                     ACID table:true
-                     alias:acidtest1
-                     Statistics:Num rows: 9173 Data size: 100540 Basic stats: COMPLETE Column stats: NONE
+  Fetch Operator
+    limit:10
+    Stage-1
+      Map 1
+      File Output Operator [FS_3]
+        Limit [LIM_2] (rows=10 width=10)
+          Number of rows:10
+          Select Operator [SEL_1] (rows=9173 width=10)
+            Output:["_col0"]
+            TableScan [TS_0] (rows=9173 width=10)
+              default@acidtest1,acidtest1, ACID table,Tbl:COMPLETE,Col:NONE,Output:["c1"]
 
 PREHOOK: query: select cast (c1 as string) from acidtest1 limit 10
 PREHOOK: type: QUERY

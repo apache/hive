@@ -213,7 +213,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     this.outputValueColumnNames = outputValueColumnNames;
   }
 
-  @Explain(displayName = "key expressions", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Explain(displayName = "key expressions")
   public String getKeyColString() {
     return PlanUtils.getExprListString(keyCols);
   }
@@ -234,7 +234,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     this.numDistributionKeys = numKeys;
   }
 
-  @Explain(displayName = "value expressions", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Explain(displayName = "value expressions")
   public String getValueColsString() {
     return PlanUtils.getExprListString(valueCols);
   }
@@ -247,9 +247,14 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     this.valueCols = valueCols;
   }
 
-  @Explain(displayName = "Map-reduce partition columns", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Explain(displayName = "Map-reduce partition columns")
   public String getParitionColsString() {
     return PlanUtils.getExprListString(partitionCols);
+  }
+
+  @Explain(displayName = "PartitionCols", explainLevels = { Level.USER })
+  public String getUserLevelExplainParitionColsString() {
+    return PlanUtils.getExprListString(partitionCols, true);
   }
 
   public java.util.ArrayList<ExprNodeDesc> getPartitionCols() {
@@ -356,7 +361,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
    *         of the same length as key columns, that consists of only "+"
    *         (ascending order) and "-" (descending order).
    */
-  @Explain(displayName = "sort order", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Explain(displayName = "sort order")
   public String getOrder() {
     return keySerializeInfo.getProperties().getProperty(
         org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_SORT_ORDER);

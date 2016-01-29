@@ -19,7 +19,13 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
+import java.util.LinkedHashMap;
+
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -32,6 +38,7 @@ public class JoinCondDesc implements Serializable {
   private int right;
   private int type;
   private boolean preserved;
+  protected final static Logger LOG = LoggerFactory.getLogger(JoinCondDesc.class.getName());
 
   public JoinCondDesc() {
   }
@@ -109,7 +116,7 @@ public class JoinCondDesc implements Serializable {
     this.type = type;
   }
 
-  @Explain(explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Explain(explainLevels = { Level.DEFAULT, Level.EXTENDED })
   public String getJoinCondString() {
     StringBuilder sb = new StringBuilder();
 
@@ -142,6 +149,42 @@ public class JoinCondDesc implements Serializable {
     sb.append(right);
 
     return sb.toString();
+  }
+
+  @Explain(explainLevels = { Level.USER })
+  public String getUserLevelJoinCondString() {
+    JSONObject join = new JSONObject(new LinkedHashMap());
+    try {
+      switch (type) {
+      case JoinDesc.INNER_JOIN:
+        join.put("type", "Inner");
+        break;
+      case JoinDesc.FULL_OUTER_JOIN:
+        join.put("type", "Outer");
+        break;
+      case JoinDesc.LEFT_OUTER_JOIN:
+        join.put("type", "Left Outer");
+        break;
+      case JoinDesc.RIGHT_OUTER_JOIN:
+        join.put("type", "Right Outer");
+        break;
+      case JoinDesc.UNIQUE_JOIN:
+        join.put("type", "Unique");
+        break;
+      case JoinDesc.LEFT_SEMI_JOIN:
+        join.put("type", "Left Semi");
+        break;
+      default:
+        join.put("type", "Unknow Join");
+        break;
+      }
+      join.put("left", left);
+      join.put("right", right);
+    } catch (JSONException e) {
+      // impossible to throw any json exceptions.
+      LOG.trace(e.getMessage());
+    }
+    return join.toString();
   }
 
   @Override

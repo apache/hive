@@ -140,7 +140,7 @@ public class TableDesc implements Serializable, Cloneable {
   /**
    * @return the serdeClassName
    */
-  @Explain(displayName = "serde", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Explain(displayName = "serde")
   public String getSerdeClassName() {
     return properties.getProperty(serdeConstants.SERIALIZATION_LIB);
   }
@@ -151,12 +151,12 @@ public class TableDesc implements Serializable, Cloneable {
         .getProperty(hive_metastoreConstants.META_TABLE_NAME);
   }
 
-  @Explain(displayName = "input format", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Explain(displayName = "input format")
   public String getInputFileFormatClassName() {
     return getInputFileFormatClass().getName();
   }
 
-  @Explain(displayName = "output format", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Explain(displayName = "output format")
   public String getOutputFileFormatClassName() {
     return getOutputFileFormatClass().getName();
   }

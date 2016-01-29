@@ -763,7 +763,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
               out.println(header);
             }
             JSONObject jsonOut = outputPlan(val, out, extended, jsonOutput, ind);
-            if (jsonOutput) {
+            if (jsonOutput && jsonOut != null && jsonOut.length() != 0) {
               if (!skipHeader) {
                 json.put(header, jsonOut);
               } else {

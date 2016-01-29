@@ -82,8 +82,13 @@ public class SelectDesc extends AbstractOperatorDesc {
     this.colList = colList;
   }
 
-  @Explain(displayName = "outputColumnNames", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Explain(displayName = "outputColumnNames")
   public List<java.lang.String> getOutputColumnNames() {
+    return outputColumnNames;
+  }
+
+  @Explain(displayName = "Output", explainLevels = { Level.USER })
+  public List<java.lang.String> getUserLevelExplainOutputColumnNames() {
     return outputColumnNames;
   }
 

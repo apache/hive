@@ -51,14 +51,14 @@ struct('ten','1')
 )
 POSTHOOK: type: QUERY
 Stage-0
-   Fetch Operator
-      limit:-1
-      Select Operator [SEL_2]
-         outputColumnNames:["_col0","_col1"]
-         Filter Operator [FIL_4]
-            predicate:(struct(id,lineid)) IN (const struct('two','3'), const struct('three','1'), const struct('one','1'), const struct('five','2'), const struct('six','1'), const struct('eight','1'), const struct('seven','1'), const struct('nine','1'), const struct('ten','1')) (type: boolean)
-            TableScan [TS_0]
-               alias:test_1
+  Fetch Operator
+    limit:-1
+    Select Operator [SEL_2]
+      Output:["_col0","_col1"]
+      Filter Operator [FIL_4]
+        predicate:(struct(id,lineid)) IN (const struct('two','3'), const struct('three','1'), const struct('one','1'), const struct('five','2'), const struct('six','1'), const struct('eight','1'), const struct('seven','1'), const struct('nine','1'), const struct('ten','1'))
+        TableScan [TS_0]
+          Output:["id","lineid"]
 
 PREHOOK: query: select * from test_1 where struct(`id`, `lineid`)
 IN (
@@ -121,12 +121,12 @@ struct('ten','1')
 ) as b from test_1
 POSTHOOK: type: QUERY
 Stage-0
-   Fetch Operator
-      limit:-1
-      Select Operator [SEL_1]
-         outputColumnNames:["_col0","_col1","_col2"]
-         TableScan [TS_0]
-            alias:test_1
+  Fetch Operator
+    limit:-1
+    Select Operator [SEL_1]
+      Output:["_col0","_col1","_col2"]
+      TableScan [TS_0]
+        Output:["id","lineid"]
 
 PREHOOK: query: select `id`, `lineid`, struct(`id`, `lineid`)
 IN (
@@ -209,14 +209,14 @@ struct(10,1)
 )
 POSTHOOK: type: QUERY
 Stage-0
-   Fetch Operator
-      limit:-1
-      Select Operator [SEL_2]
-         outputColumnNames:["_col0","_col1"]
-         Filter Operator [FIL_4]
-            predicate:(struct(id,lineid)) IN (const struct(2,3), const struct(3,1), const struct(1,1), const struct(5,2), const struct(6,1), const struct(8,1), const struct(7,1), const struct(9,1), const struct(10,1)) (type: boolean)
-            TableScan [TS_0]
-               alias:test_2
+  Fetch Operator
+    limit:-1
+    Select Operator [SEL_2]
+      Output:["_col0","_col1"]
+      Filter Operator [FIL_4]
+        predicate:(struct(id,lineid)) IN (const struct(2,3), const struct(3,1), const struct(1,1), const struct(5,2), const struct(6,1), const struct(8,1), const struct(7,1), const struct(9,1), const struct(10,1))
+        TableScan [TS_0]
+          Output:["id","lineid"]
 
 PREHOOK: query: select * from test_2 where struct(`id`, `lineid`)
 IN (
@@ -279,12 +279,12 @@ struct(10,1)
 ) as b from test_2
 POSTHOOK: type: QUERY
 Stage-0
-   Fetch Operator
-      limit:-1
-      Select Operator [SEL_1]
-         outputColumnNames:["_col0","_col1","_col2"]
-         TableScan [TS_0]
-            alias:test_2
+  Fetch Operator
+    limit:-1
+    Select Operator [SEL_1]
+      Output:["_col0","_col1","_col2"]
+      TableScan [TS_0]
+        Output:["id","lineid"]
 
 PREHOOK: query: select `id`, `lineid`, struct(`id`, `lineid`)
 IN (
@@ -367,14 +367,14 @@ struct('ten',1)
 )
 POSTHOOK: type: QUERY
 Stage-0
-   Fetch Operator
-      limit:-1
-      Select Operator [SEL_2]
-         outputColumnNames:["_col0","_col1"]
-         Filter Operator [FIL_4]
-            predicate:(struct(id,lineid)) IN (const struct('two',3), const struct('three',1), const struct('one',1), const struct('five',2), const struct('six',1), const struct('eight',1), const struct('seven',1), const struct('nine',1), const struct('ten',1)) (type: boolean)
-            TableScan [TS_0]
-               alias:test_3
+  Fetch Operator
+    limit:-1
+    Select Operator [SEL_2]
+      Output:["_col0","_col1"]
+      Filter Operator [FIL_4]
+        predicate:(struct(id,lineid)) IN (const struct('two',3), const struct('three',1), const struct('one',1), const struct('five',2), const struct('six',1), const struct('eight',1), const struct('seven',1), const struct('nine',1), const struct('ten',1))
+        TableScan [TS_0]
+          Output:["id","lineid"]
 
 PREHOOK: query: select * from test_3 where struct(`id`, `lineid`)
 IN (
@@ -437,12 +437,12 @@ struct('ten',1)
 ) as b from test_3
 POSTHOOK: type: QUERY
 Stage-0
-   Fetch Operator
-      limit:-1
-      Select Operator [SEL_1]
-         outputColumnNames:["_col0","_col1","_col2"]
-         TableScan [TS_0]
-            alias:test_3
+  Fetch Operator
+    limit:-1
+    Select Operator [SEL_1]
+      Output:["_col0","_col1","_col2"]
+      TableScan [TS_0]
+        Output:["id","lineid"]
 
 PREHOOK: query: select `id`, `lineid`, struct(`id`, `lineid`)
 IN (
@@ -528,14 +528,14 @@ struct(3L, "b", 1.5)
 )
 POSTHOOK: type: QUERY
 Stage-0
-   Fetch Operator
-      limit:-1
-      Select Operator [SEL_2]
-         outputColumnNames:["_col0","_col1","_col2"]
-         Filter Operator [FIL_4]
-            predicate:(struct(my_bigint,my_string,my_double)) IN (const struct(1,'a',1.5), const struct(1,'b',-0.5), const struct(3,'b',1.5), const struct(1,'d',1.5), const struct(1,'c',1.5), const struct(1,'b',2.5), const struct(1,'b',0.5), const struct(5,'b',1.5), const struct(1,'a',0.5), const struct(3,'b',1.5)) (type: boolean)
-            TableScan [TS_0]
-               alias:test_4
+  Fetch Operator
+    limit:-1
+    Select Operator [SEL_2]
+      Output:["_col0","_col1","_col2"]
+      Filter Operator [FIL_4]
+        predicate:(struct(my_bigint,my_string,my_double)) IN (const struct(1,'a',1.5), const struct(1,'b',-0.5), const struct(3,'b',1.5), const struct(1,'d',1.5), const struct(1,'c',1.5), const struct(1,'b',2.5), const struct(1,'b',0.5), const struct(5,'b',1.5), const struct(1,'a',0.5), const struct(3,'b',1.5))
+        TableScan [TS_0]
+          Output:["my_bigint","my_string","my_double"]
 
 PREHOOK: query: select * from test_4 where struct(`my_bigint`, `my_string`, `my_double`)
 IN (
@@ -601,12 +601,12 @@ struct(3L, "b", 1.5)
 ) as b from test_4
 POSTHOOK: type: QUERY
 Stage-0
-   Fetch Operator
-      limit:-1
-      Select Operator [SEL_1]
-         outputColumnNames:["_col0","_col1","_col2","_col3"]
-         TableScan [TS_0]
-            alias:test_4
+  Fetch Operator
+    limit:-1
+    Select Operator [SEL_1]
+      Output:["_col0","_col1","_col2","_col3"]
+      TableScan [TS_0]
+        Output:["my_bigint","my_string","my_double"]
 
 PREHOOK: query: select `my_bigint`, `my_string`, `my_double`, struct(`my_bigint`, `my_string`, `my_double`)
 IN (

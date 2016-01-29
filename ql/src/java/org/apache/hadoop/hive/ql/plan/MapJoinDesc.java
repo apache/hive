@@ -29,8 +29,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
-import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
-
 /**
  * Map Join operator Descriptor implementation.
  *
@@ -217,11 +215,21 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
    * @return the keys in string form
    */
   @Override
-  @Explain(displayName = "keys", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Explain(displayName = "keys")
   public Map<Byte, String> getKeysString() {
     Map<Byte, String> keyMap = new LinkedHashMap<Byte, String>();
     for (Map.Entry<Byte, List<ExprNodeDesc>> k: getKeys().entrySet()) {
       keyMap.put(k.getKey(), PlanUtils.getExprListString(k.getValue()));
+    }
+    return keyMap;
+  }
+
+  @Override
+  @Explain(displayName = "keys", explainLevels = { Level.USER })
+  public Map<Byte, String> getUserLevelExplainKeysString() {
+    Map<Byte, String> keyMap = new LinkedHashMap<Byte, String>();
+    for (Map.Entry<Byte, List<ExprNodeDesc>> k: getKeys().entrySet()) {
+      keyMap.put(k.getKey(), PlanUtils.getExprListString(k.getValue(), true));
     }
     return keyMap;
   }

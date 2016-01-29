@@ -121,7 +121,7 @@ public class LoadTableDesc extends org.apache.hadoop.hive.ql.plan.LoadDesc
     this.table = table;
   }
 
-  @Explain(displayName = "partition", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Explain(displayName = "partition")
   public Map<String, String> getPartitionSpec() {
     return partitionSpec;
   }

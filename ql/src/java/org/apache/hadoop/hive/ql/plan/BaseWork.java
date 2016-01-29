@@ -206,6 +206,7 @@ public abstract class BaseWork extends AbstractOperatorDesc {
     this.tag = tag;
   }
 
+  @Explain(displayName = "tag", explainLevels = { Level.USER })
   public int getTag() {
     return tag;
   }

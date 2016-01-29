@@ -33,9 +33,14 @@ public class AbstractOperatorDesc implements OperatorDesc {
   protected long memNeeded = 0;
 
   @Override
-  @Explain(skipHeader = true, displayName = "Statistics", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Explain(skipHeader = true, displayName = "Statistics")
   public Statistics getStatistics() {
     return statistics;
+  }
+
+  @Explain(skipHeader = true, displayName = "Statistics", explainLevels = { Level.USER })
+  public String getUserLevelStatistics() {
+    return statistics.toUserLevelExplainString();
   }
 
   @Override

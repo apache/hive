@@ -102,7 +102,7 @@ public class Statistics implements Serializable {
   }
 
   @Override
-  @Explain(displayName = "Statistics", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Explain(displayName = "Statistics")
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("Num rows: ");
@@ -113,6 +113,21 @@ public class Statistics implements Serializable {
     sb.append(basicStatsState);
     sb.append(" Column stats: ");
     sb.append(columnStatsState);
+    return sb.toString();
+  }
+
+  @Explain(displayName = "Statistics", explainLevels = { Level.USER })
+  public String toUserLevelExplainString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("rows=");
+    sb.append(numRows);
+    sb.append(" width=");
+    // just to be safe about numRows
+    if (numRows != 0) {
+      sb.append(dataSize / numRows);
+    } else {
+      sb.append("-1");
+    }
     return sb.toString();
   }
 

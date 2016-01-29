@@ -47,70 +47,41 @@ Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 5 (SIMPLE_EDGE)
 Reducer 5 <- Union 4 (SIMPLE_EDGE)
 
 Stage-0
-   Fetch Operator
-      limit:-1
-      Stage-1
-         Reducer 2 llap
-         File Output Operator [FS_17]
-            compressed:false
-            Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
-            Merge Join Operator [MERGEJOIN_21]
-            |  condition map:[{"":"Left Outer Join0 to 1"}]
-            |  keys:{"0":"_col0 (type: int)","1":"_col0 (type: int)"}
-            |  outputColumnNames:["_col0"]
-            |  Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-            |<-Map 1 [SIMPLE_EDGE] llap
-            |  Reduce Output Operator [RS_13]
-            |     key expressions:_col0 (type: int)
-            |     Map-reduce partition columns:_col0 (type: int)
-            |     sort order:+
-            |     Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-            |     Select Operator [SEL_1]
-            |        outputColumnNames:["_col0"]
-            |        Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-            |        TableScan [TS_0]
-            |           alias:a
-            |           Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-            |<-Reducer 5 [SIMPLE_EDGE] llap
-               Reduce Output Operator [RS_14]
-                  key expressions:_col0 (type: int)
-                  Map-reduce partition columns:_col0 (type: int)
-                  sort order:+
-                  Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-                  Limit [LIM_11]
-                     Number of rows:1
-                     Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-                     Select Operator [SEL_10]
-                     |  outputColumnNames:["_col0"]
-                     |  Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-                     |<-Union 4 [SIMPLE_EDGE]
-                        |<-Map 3 [CONTAINS] llap
-                        |  Reduce Output Operator [RS_9]
-                        |     sort order:
-                        |     Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-                        |     value expressions:_col0 (type: int)
-                        |     Limit [LIM_8]
-                        |        Number of rows:1
-                        |        Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-                        |        Select Operator [SEL_3]
-                        |           outputColumnNames:["_col0"]
-                        |           Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                        |           TableScan [TS_2]
-                        |              alias:tb2
-                        |              Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                        |<-Map 6 [CONTAINS] llap
-                           Reduce Output Operator [RS_9]
-                              sort order:
-                              Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-                              value expressions:_col0 (type: int)
-                              Limit [LIM_8]
-                                 Number of rows:1
-                                 Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-                                 Select Operator [SEL_5]
-                                    outputColumnNames:["_col0"]
-                                    Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-                                    TableScan [TS_4]
-                                       alias:tb2
-                                       Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 2 llap
+      File Output Operator [FS_17]
+        Merge Join Operator [MERGEJOIN_21] (rows=1 width=0)
+          Conds:RS_13._col0=RS_14._col0(Left Outer),Output:["_col0"]
+        <-Map 1 [SIMPLE_EDGE] llap
+          SHUFFLE [RS_13]
+            PartitionCols:_col0
+            Select Operator [SEL_1] (rows=1 width=0)
+              Output:["_col0"]
+              TableScan [TS_0] (rows=1 width=0)
+                default@tb1,a,Tbl:PARTIAL,Col:NONE,Output:["id"]
+        <-Reducer 5 [SIMPLE_EDGE] llap
+          SHUFFLE [RS_14]
+            PartitionCols:_col0
+            Limit [LIM_11] (rows=1 width=0)
+              Number of rows:1
+              Select Operator [SEL_10] (rows=1 width=0)
+                Output:["_col0"]
+              <-Union 4 [SIMPLE_EDGE]
+                <-Map 3 [CONTAINS] llap
+                  Reduce Output Operator [RS_9]
+                    Limit [LIM_8] (rows=1 width=0)
+                      Number of rows:1
+                      Select Operator [SEL_3] (rows=1 width=0)
+                        Output:["_col0"]
+                        TableScan [TS_2] (rows=1 width=0)
+                          Output:["id"]
+                <-Map 6 [CONTAINS] llap
+                  Reduce Output Operator [RS_9]
+                    Limit [LIM_8] (rows=1 width=0)
+                      Number of rows:1
+                      Select Operator [SEL_5] (rows=1 width=0)
+                        Output:["_col0"]
+                        TableScan [TS_4] (rows=1 width=0)
 

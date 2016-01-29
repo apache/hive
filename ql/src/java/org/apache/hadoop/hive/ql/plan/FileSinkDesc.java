@@ -181,7 +181,7 @@ public class FileSinkDesc extends AbstractOperatorDesc {
     this.tableInfo = tableInfo;
   }
 
-  @Explain(displayName = "compressed", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Explain(displayName = "compressed")
   public boolean getCompressed() {
     return compressed;
   }
