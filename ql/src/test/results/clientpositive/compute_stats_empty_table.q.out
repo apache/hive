@@ -34,7 +34,7 @@ POSTHOOK: query: select compute_stats(b, 16) from tab_empty
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab_empty
 #### A masked pattern was here ####
-{"columntype":"Long","min":null,"max":null,"countnulls":0,"numdistinctvalues":0}
+{"columntype":"Long","min":null,"max":null,"countnulls":0,"numdistinctvalues":0,"ndvbitvector":""}
 PREHOOK: query: select compute_stats(c, 16) from tab_empty
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tab_empty
@@ -43,7 +43,7 @@ POSTHOOK: query: select compute_stats(c, 16) from tab_empty
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab_empty
 #### A masked pattern was here ####
-{"columntype":"Double","min":null,"max":null,"countnulls":0,"numdistinctvalues":0}
+{"columntype":"Double","min":null,"max":null,"countnulls":0,"numdistinctvalues":0,"ndvbitvector":""}
 PREHOOK: query: select compute_stats(d, 16) from tab_empty
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tab_empty
@@ -52,7 +52,7 @@ POSTHOOK: query: select compute_stats(d, 16) from tab_empty
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab_empty
 #### A masked pattern was here ####
-{"columntype":"String","maxlength":0,"avglength":0.0,"countnulls":0,"numdistinctvalues":0}
+{"columntype":"String","maxlength":0,"avglength":0.0,"countnulls":0,"numdistinctvalues":0,"ndvbitvector":""}
 PREHOOK: query: select compute_stats(e, 16) from tab_empty
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tab_empty

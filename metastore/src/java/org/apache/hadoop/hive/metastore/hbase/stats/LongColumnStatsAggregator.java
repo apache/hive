@@ -19,10 +19,11 @@
 
 package org.apache.hadoop.hive.metastore.hbase.stats;
 
+import org.apache.hadoop.hive.metastore.NumDistinctValueEstimator;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 
-public class LongColumnStatsAggregator implements ColumnStatsAggregator {
+public class LongColumnStatsAggregator extends ColumnStatsAggregator {
 
   @Override
   public void aggregate(ColumnStatisticsObj aggregateColStats, ColumnStatisticsObj newColStats) {
@@ -31,6 +32,13 @@ public class LongColumnStatsAggregator implements ColumnStatsAggregator {
     aggregateData.setLowValue(Math.min(aggregateData.getLowValue(), newData.getLowValue()));
     aggregateData.setHighValue(Math.max(aggregateData.getHighValue(), newData.getHighValue()));
     aggregateData.setNumNulls(aggregateData.getNumNulls() + newData.getNumNulls());
-    aggregateData.setNumDVs(Math.max(aggregateData.getNumDVs(), newData.getNumDVs()));
+    if (ndvEstimator == null || !newData.isSetBitVectors() || newData.getBitVectors().length() == 0) {
+      aggregateData.setNumDVs(Math.max(aggregateData.getNumDVs(), newData.getNumDVs()));
+    } else {
+      ndvEstimator.mergeEstimators(new NumDistinctValueEstimator(newData.getBitVectors(),
+          ndvEstimator.getnumBitVectors()));
+      aggregateData.setNumDVs(ndvEstimator.estimateNumDistinctValues());
+      aggregateData.setBitVectors(ndvEstimator.serialize().toString());
+    }
   }
 }

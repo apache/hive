@@ -47,7 +47,7 @@ select compute_stats(fl_date, 16) from tab_date
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab_date
 #### A masked pattern was here ####
-{"columntype":"Date","min":"2000-11-20","max":"2010-10-29","countnulls":0,"numdistinctvalues":18}
+{"columntype":"Date","min":"2000-11-20","max":"2010-10-29","countnulls":0,"numdistinctvalues":18,"ndvbitvector":"{0, 1, 2, 3, 4, 5}{0, 1, 2, 3}{0}{0, 1, 2, 6}{0, 1, 2, 3}{0, 1, 2, 3}{0, 1, 2}{0, 1, 2, 3}{0, 1, 2, 3}{0, 2}{0, 1, 2, 3, 4}{0, 1, 2, 4, 5}{0, 1, 2, 3}{0, 1, 2, 3, 5}{0, 1, 2, 3, 4, 5}{0, 1, 2, 3, 4}"}
 PREHOOK: query: explain
 analyze table tab_date compute statistics for columns fl_date
 PREHOOK: type: QUERY

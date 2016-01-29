@@ -3918,6 +3918,21 @@ public final class HbaseMetastoreProto {
      */
     com.google.protobuf.ByteString
         getColumnNameBytes();
+
+    // optional string bit_vectors = 12;
+    /**
+     * <code>optional string bit_vectors = 12;</code>
+     */
+    boolean hasBitVectors();
+    /**
+     * <code>optional string bit_vectors = 12;</code>
+     */
+    java.lang.String getBitVectors();
+    /**
+     * <code>optional string bit_vectors = 12;</code>
+     */
+    com.google.protobuf.ByteString
+        getBitVectorsBytes();
   }
   /**
    * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.ColumnStats}
@@ -4071,6 +4086,11 @@ public final class HbaseMetastoreProto {
             case 90: {
               bitField0_ |= 0x00000400;
               columnName_ = input.readBytes();
+              break;
+            }
+            case 98: {
+              bitField0_ |= 0x00000800;
+              bitVectors_ = input.readBytes();
               break;
             }
           }
@@ -7506,6 +7526,49 @@ public final class HbaseMetastoreProto {
       }
     }
 
+    // optional string bit_vectors = 12;
+    public static final int BIT_VECTORS_FIELD_NUMBER = 12;
+    private java.lang.Object bitVectors_;
+    /**
+     * <code>optional string bit_vectors = 12;</code>
+     */
+    public boolean hasBitVectors() {
+      return ((bitField0_ & 0x00000800) == 0x00000800);
+    }
+    /**
+     * <code>optional string bit_vectors = 12;</code>
+     */
+    public java.lang.String getBitVectors() {
+      java.lang.Object ref = bitVectors_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          bitVectors_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string bit_vectors = 12;</code>
+     */
+    public com.google.protobuf.ByteString
+        getBitVectorsBytes() {
+      java.lang.Object ref = bitVectors_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        bitVectors_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     private void initFields() {
       lastAnalyzed_ = 0L;
       columnType_ = "";
@@ -7518,6 +7581,7 @@ public final class HbaseMetastoreProto {
       binaryStats_ = org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ColumnStats.StringStats.getDefaultInstance();
       decimalStats_ = org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ColumnStats.DecimalStats.getDefaultInstance();
       columnName_ = "";
+      bitVectors_ = "";
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -7574,6 +7638,9 @@ public final class HbaseMetastoreProto {
       if (((bitField0_ & 0x00000400) == 0x00000400)) {
         output.writeBytes(11, getColumnNameBytes());
       }
+      if (((bitField0_ & 0x00000800) == 0x00000800)) {
+        output.writeBytes(12, getBitVectorsBytes());
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -7626,6 +7693,10 @@ public final class HbaseMetastoreProto {
       if (((bitField0_ & 0x00000400) == 0x00000400)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(11, getColumnNameBytes());
+      }
+      if (((bitField0_ & 0x00000800) == 0x00000800)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(12, getBitVectorsBytes());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -7795,6 +7866,8 @@ public final class HbaseMetastoreProto {
         bitField0_ = (bitField0_ & ~0x00000200);
         columnName_ = "";
         bitField0_ = (bitField0_ & ~0x00000400);
+        bitVectors_ = "";
+        bitField0_ = (bitField0_ & ~0x00000800);
         return this;
       }
 
@@ -7891,6 +7964,10 @@ public final class HbaseMetastoreProto {
           to_bitField0_ |= 0x00000400;
         }
         result.columnName_ = columnName_;
+        if (((from_bitField0_ & 0x00000800) == 0x00000800)) {
+          to_bitField0_ |= 0x00000800;
+        }
+        result.bitVectors_ = bitVectors_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -7942,6 +8019,11 @@ public final class HbaseMetastoreProto {
         if (other.hasColumnName()) {
           bitField0_ |= 0x00000400;
           columnName_ = other.columnName_;
+          onChanged();
+        }
+        if (other.hasBitVectors()) {
+          bitField0_ |= 0x00000800;
+          bitVectors_ = other.bitVectors_;
           onChanged();
         }
         this.mergeUnknownFields(other.getUnknownFields());
@@ -8926,6 +9008,80 @@ public final class HbaseMetastoreProto {
   }
   bitField0_ |= 0x00000400;
         columnName_ = value;
+        onChanged();
+        return this;
+      }
+
+      // optional string bit_vectors = 12;
+      private java.lang.Object bitVectors_ = "";
+      /**
+       * <code>optional string bit_vectors = 12;</code>
+       */
+      public boolean hasBitVectors() {
+        return ((bitField0_ & 0x00000800) == 0x00000800);
+      }
+      /**
+       * <code>optional string bit_vectors = 12;</code>
+       */
+      public java.lang.String getBitVectors() {
+        java.lang.Object ref = bitVectors_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          bitVectors_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string bit_vectors = 12;</code>
+       */
+      public com.google.protobuf.ByteString
+          getBitVectorsBytes() {
+        java.lang.Object ref = bitVectors_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          bitVectors_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string bit_vectors = 12;</code>
+       */
+      public Builder setBitVectors(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000800;
+        bitVectors_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string bit_vectors = 12;</code>
+       */
+      public Builder clearBitVectors() {
+        bitField0_ = (bitField0_ & ~0x00000800);
+        bitVectors_ = getDefaultInstance().getBitVectors();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string bit_vectors = 12;</code>
+       */
+      public Builder setBitVectorsBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000800;
+        bitVectors_ = value;
         onChanged();
         return this;
       }
@@ -34506,7 +34662,7 @@ public final class HbaseMetastoreProto {
       "grStatsInvalidatorFilter.Entry\022\021\n\trun_ev" +
       "ery\030\002 \002(\003\022\034\n\024max_cache_entry_life\030\003 \002(\003\032" +
       "?\n\005Entry\022\017\n\007db_name\030\001 \002(\014\022\022\n\ntable_name\030" +
-      "\002 \002(\014\022\021\n\tpart_name\030\003 \002(\014\"\335\010\n\013ColumnStats" +
+      "\002 \002(\014\022\021\n\tpart_name\030\003 \002(\014\"\362\010\n\013ColumnStats" +
       "\022\025\n\rlast_analyzed\030\001 \001(\003\022\023\n\013column_type\030\002" +
       " \002(\t\022\021\n\tnum_nulls\030\003 \001(\003\022\033\n\023num_distinct_" +
       "values\030\004 \001(\003\022T\n\nbool_stats\030\005 \001(\0132@.org.a",
@@ -34522,132 +34678,133 @@ public final class HbaseMetastoreProto {
       "ve.metastore.hbase.ColumnStats.StringSta",
       "ts\022W\n\rdecimal_stats\030\n \001(\0132@.org.apache.h" +
       "adoop.hive.metastore.hbase.ColumnStats.D" +
-      "ecimalStats\022\023\n\013column_name\030\013 \001(\t\0325\n\014Bool" +
-      "eanStats\022\021\n\tnum_trues\030\001 \001(\003\022\022\n\nnum_false" +
-      "s\030\002 \001(\003\0322\n\tLongStats\022\021\n\tlow_value\030\001 \001(\022\022" +
-      "\022\n\nhigh_value\030\002 \001(\022\0324\n\013DoubleStats\022\021\n\tlo" +
-      "w_value\030\001 \001(\001\022\022\n\nhigh_value\030\002 \001(\001\032=\n\013Str" +
-      "ingStats\022\026\n\016max_col_length\030\001 \001(\003\022\026\n\016avg_" +
-      "col_length\030\002 \001(\001\032\365\001\n\014DecimalStats\022[\n\tlow" +
-      "_value\030\001 \001(\0132H.org.apache.hadoop.hive.me",
-      "tastore.hbase.ColumnStats.DecimalStats.D" +
-      "ecimal\022\\\n\nhigh_value\030\002 \001(\0132H.org.apache." +
-      "hadoop.hive.metastore.hbase.ColumnStats." +
-      "DecimalStats.Decimal\032*\n\007Decimal\022\020\n\010unsca" +
-      "led\030\001 \002(\014\022\r\n\005scale\030\002 \002(\005\"\246\002\n\010Database\022\023\n" +
-      "\013description\030\001 \001(\t\022\013\n\003uri\030\002 \001(\t\022F\n\nparam" +
-      "eters\030\003 \001(\01322.org.apache.hadoop.hive.met" +
-      "astore.hbase.Parameters\022Q\n\nprivileges\030\004 " +
-      "\001(\0132=.org.apache.hadoop.hive.metastore.h" +
-      "base.PrincipalPrivilegeSet\022\022\n\nowner_name",
-      "\030\005 \001(\t\022I\n\nowner_type\030\006 \001(\01625.org.apache." +
-      "hadoop.hive.metastore.hbase.PrincipalTyp" +
-      "e\"$\n\017DelegationToken\022\021\n\ttoken_str\030\001 \002(\t\"" +
-      ":\n\013FieldSchema\022\014\n\004name\030\001 \002(\t\022\014\n\004type\030\002 \002" +
-      "(\t\022\017\n\007comment\030\003 \001(\t\"\206\004\n\010Function\022\022\n\nclas" +
-      "s_name\030\001 \001(\t\022\022\n\nowner_name\030\002 \001(\t\022I\n\nowne" +
-      "r_type\030\003 \001(\01625.org.apache.hadoop.hive.me" +
-      "tastore.hbase.PrincipalType\022\023\n\013create_ti" +
-      "me\030\004 \001(\022\022T\n\rfunction_type\030\005 \001(\0162=.org.ap" +
-      "ache.hadoop.hive.metastore.hbase.Functio",
-      "n.FunctionType\022S\n\rresource_uris\030\006 \003(\0132<." +
-      "org.apache.hadoop.hive.metastore.hbase.F" +
-      "unction.ResourceUri\032\254\001\n\013ResourceUri\022`\n\rr" +
-      "esource_type\030\001 \002(\0162I.org.apache.hadoop.h" +
+      "ecimalStats\022\023\n\013column_name\030\013 \001(\t\022\023\n\013bit_" +
+      "vectors\030\014 \001(\t\0325\n\014BooleanStats\022\021\n\tnum_tru" +
+      "es\030\001 \001(\003\022\022\n\nnum_falses\030\002 \001(\003\0322\n\tLongStat" +
+      "s\022\021\n\tlow_value\030\001 \001(\022\022\022\n\nhigh_value\030\002 \001(\022" +
+      "\0324\n\013DoubleStats\022\021\n\tlow_value\030\001 \001(\001\022\022\n\nhi" +
+      "gh_value\030\002 \001(\001\032=\n\013StringStats\022\026\n\016max_col" +
+      "_length\030\001 \001(\003\022\026\n\016avg_col_length\030\002 \001(\001\032\365\001" +
+      "\n\014DecimalStats\022[\n\tlow_value\030\001 \001(\0132H.org.",
+      "apache.hadoop.hive.metastore.hbase.Colum" +
+      "nStats.DecimalStats.Decimal\022\\\n\nhigh_valu" +
+      "e\030\002 \001(\0132H.org.apache.hadoop.hive.metasto" +
+      "re.hbase.ColumnStats.DecimalStats.Decima" +
+      "l\032*\n\007Decimal\022\020\n\010unscaled\030\001 \002(\014\022\r\n\005scale\030" +
+      "\002 \002(\005\"\246\002\n\010Database\022\023\n\013description\030\001 \001(\t\022" +
+      "\013\n\003uri\030\002 \001(\t\022F\n\nparameters\030\003 \001(\01322.org.a" +
+      "pache.hadoop.hive.metastore.hbase.Parame" +
+      "ters\022Q\n\nprivileges\030\004 \001(\0132=.org.apache.ha" +
+      "doop.hive.metastore.hbase.PrincipalPrivi",
+      "legeSet\022\022\n\nowner_name\030\005 \001(\t\022I\n\nowner_typ" +
+      "e\030\006 \001(\01625.org.apache.hadoop.hive.metasto" +
+      "re.hbase.PrincipalType\"$\n\017DelegationToke" +
+      "n\022\021\n\ttoken_str\030\001 \002(\t\":\n\013FieldSchema\022\014\n\004n" +
+      "ame\030\001 \002(\t\022\014\n\004type\030\002 \002(\t\022\017\n\007comment\030\003 \001(\t" +
+      "\"\206\004\n\010Function\022\022\n\nclass_name\030\001 \001(\t\022\022\n\nown" +
+      "er_name\030\002 \001(\t\022I\n\nowner_type\030\003 \001(\01625.org." +
+      "apache.hadoop.hive.metastore.hbase.Princ" +
+      "ipalType\022\023\n\013create_time\030\004 \001(\022\022T\n\rfunctio" +
+      "n_type\030\005 \001(\0162=.org.apache.hadoop.hive.me",
+      "tastore.hbase.Function.FunctionType\022S\n\rr" +
+      "esource_uris\030\006 \003(\0132<.org.apache.hadoop.h" +
       "ive.metastore.hbase.Function.ResourceUri" +
-      ".ResourceType\022\013\n\003uri\030\002 \002(\t\".\n\014ResourceTy" +
-      "pe\022\007\n\003JAR\020\001\022\010\n\004FILE\020\002\022\013\n\007ARCHIVE\020\003\"\030\n\014Fu" +
-      "nctionType\022\010\n\004JAVA\020\001\"\037\n\tMasterKey\022\022\n\nmas" +
-      "ter_key\030\001 \002(\t\",\n\016ParameterEntry\022\013\n\003key\030\001" +
-      " \002(\t\022\r\n\005value\030\002 \002(\t\"W\n\nParameters\022I\n\tpar",
-      "ameter\030\001 \003(\01326.org.apache.hadoop.hive.me" +
-      "tastore.hbase.ParameterEntry\"\360\001\n\tPartiti" +
-      "on\022\023\n\013create_time\030\001 \001(\003\022\030\n\020last_access_t" +
-      "ime\030\002 \001(\003\022\020\n\010location\030\003 \001(\t\022I\n\rsd_parame" +
-      "ters\030\004 \001(\01322.org.apache.hadoop.hive.meta" +
-      "store.hbase.Parameters\022\017\n\007sd_hash\030\005 \002(\014\022" +
-      "F\n\nparameters\030\006 \001(\01322.org.apache.hadoop." +
-      "hive.metastore.hbase.Parameters\"\204\001\n\032Prin" +
-      "cipalPrivilegeSetEntry\022\026\n\016principal_name" +
-      "\030\001 \002(\t\022N\n\nprivileges\030\002 \003(\0132:.org.apache.",
-      "hadoop.hive.metastore.hbase.PrivilegeGra" +
-      "ntInfo\"\275\001\n\025PrincipalPrivilegeSet\022Q\n\005user" +
-      "s\030\001 \003(\0132B.org.apache.hadoop.hive.metasto" +
-      "re.hbase.PrincipalPrivilegeSetEntry\022Q\n\005r" +
-      "oles\030\002 \003(\0132B.org.apache.hadoop.hive.meta" +
-      "store.hbase.PrincipalPrivilegeSetEntry\"\260" +
-      "\001\n\022PrivilegeGrantInfo\022\021\n\tprivilege\030\001 \001(\t" +
-      "\022\023\n\013create_time\030\002 \001(\003\022\017\n\007grantor\030\003 \001(\t\022K" +
-      "\n\014grantor_type\030\004 \001(\01625.org.apache.hadoop" +
-      ".hive.metastore.hbase.PrincipalType\022\024\n\014g",
-      "rant_option\030\005 \001(\010\"\374\001\n\rRoleGrantInfo\022\026\n\016p" +
-      "rincipal_name\030\001 \002(\t\022M\n\016principal_type\030\002 " +
-      "\002(\01625.org.apache.hadoop.hive.metastore.h" +
-      "base.PrincipalType\022\020\n\010add_time\030\003 \001(\003\022\017\n\007" +
-      "grantor\030\004 \001(\t\022K\n\014grantor_type\030\005 \001(\01625.or" +
-      "g.apache.hadoop.hive.metastore.hbase.Pri" +
-      "ncipalType\022\024\n\014grant_option\030\006 \001(\010\"^\n\021Role" +
-      "GrantInfoList\022I\n\ngrant_info\030\001 \003(\01325.org." +
-      "apache.hadoop.hive.metastore.hbase.RoleG" +
-      "rantInfo\"\030\n\010RoleList\022\014\n\004role\030\001 \003(\t\"/\n\004Ro",
-      "le\022\023\n\013create_time\030\001 \001(\003\022\022\n\nowner_name\030\002 " +
-      "\001(\t\"\254\010\n\021StorageDescriptor\022A\n\004cols\030\001 \003(\0132" +
-      "3.org.apache.hadoop.hive.metastore.hbase" +
-      ".FieldSchema\022\024\n\014input_format\030\002 \001(\t\022\025\n\rou" +
-      "tput_format\030\003 \001(\t\022\025\n\ris_compressed\030\004 \001(\010" +
-      "\022\023\n\013num_buckets\030\005 \001(\021\022W\n\nserde_info\030\006 \001(" +
-      "\0132C.org.apache.hadoop.hive.metastore.hba" +
-      "se.StorageDescriptor.SerDeInfo\022\023\n\013bucket" +
-      "_cols\030\007 \003(\t\022R\n\tsort_cols\030\010 \003(\0132?.org.apa" +
-      "che.hadoop.hive.metastore.hbase.StorageD",
-      "escriptor.Order\022Y\n\013skewed_info\030\t \001(\0132D.o" +
-      "rg.apache.hadoop.hive.metastore.hbase.St" +
-      "orageDescriptor.SkewedInfo\022!\n\031stored_as_" +
-      "sub_directories\030\n \001(\010\032.\n\005Order\022\023\n\013column" +
-      "_name\030\001 \002(\t\022\020\n\005order\030\002 \001(\021:\0011\032|\n\tSerDeIn" +
-      "fo\022\014\n\004name\030\001 \001(\t\022\031\n\021serialization_lib\030\002 " +
-      "\001(\t\022F\n\nparameters\030\003 \001(\01322.org.apache.had" +
-      "oop.hive.metastore.hbase.Parameters\032\214\003\n\n" +
-      "SkewedInfo\022\030\n\020skewed_col_names\030\001 \003(\t\022r\n\021" +
-      "skewed_col_values\030\002 \003(\0132W.org.apache.had",
-      "oop.hive.metastore.hbase.StorageDescript" +
-      "or.SkewedInfo.SkewedColValueList\022\206\001\n\036ske" +
-      "wed_col_value_location_maps\030\003 \003(\0132^.org." +
-      "apache.hadoop.hive.metastore.hbase.Stora" +
-      "geDescriptor.SkewedInfo.SkewedColValueLo" +
-      "cationMap\032.\n\022SkewedColValueList\022\030\n\020skewe" +
-      "d_col_value\030\001 \003(\t\0327\n\031SkewedColValueLocat" +
-      "ionMap\022\013\n\003key\030\001 \003(\t\022\r\n\005value\030\002 \002(\t\"\220\004\n\005T" +
-      "able\022\r\n\005owner\030\001 \001(\t\022\023\n\013create_time\030\002 \001(\003" +
-      "\022\030\n\020last_access_time\030\003 \001(\003\022\021\n\tretention\030",
-      "\004 \001(\003\022\020\n\010location\030\005 \001(\t\022I\n\rsd_parameters" +
-      "\030\006 \001(\01322.org.apache.hadoop.hive.metastor" +
-      "e.hbase.Parameters\022\017\n\007sd_hash\030\007 \002(\014\022K\n\016p" +
-      "artition_keys\030\010 \003(\01323.org.apache.hadoop." +
-      "hive.metastore.hbase.FieldSchema\022F\n\npara" +
-      "meters\030\t \001(\01322.org.apache.hadoop.hive.me" +
-      "tastore.hbase.Parameters\022\032\n\022view_origina" +
-      "l_text\030\n \001(\t\022\032\n\022view_expanded_text\030\013 \001(\t" +
-      "\022\022\n\ntable_type\030\014 \001(\t\022Q\n\nprivileges\030\r \001(\013" +
-      "2=.org.apache.hadoop.hive.metastore.hbas",
-      "e.PrincipalPrivilegeSet\022\024\n\014is_temporary\030" +
-      "\016 \001(\010\"\353\004\n\026PartitionKeyComparator\022\r\n\005name" +
-      "s\030\001 \002(\t\022\r\n\005types\030\002 \002(\t\022S\n\002op\030\003 \003(\0132G.org" +
-      ".apache.hadoop.hive.metastore.hbase.Part" +
-      "itionKeyComparator.Operator\022S\n\005range\030\004 \003" +
-      "(\0132D.org.apache.hadoop.hive.metastore.hb" +
-      "ase.PartitionKeyComparator.Range\032(\n\004Mark" +
-      "\022\r\n\005value\030\001 \002(\t\022\021\n\tinclusive\030\002 \002(\010\032\272\001\n\005R" +
-      "ange\022\013\n\003key\030\001 \002(\t\022R\n\005start\030\002 \001(\0132C.org.a" +
-      "pache.hadoop.hive.metastore.hbase.Partit",
-      "ionKeyComparator.Mark\022P\n\003end\030\003 \001(\0132C.org" +
-      ".apache.hadoop.hive.metastore.hbase.Part" +
-      "itionKeyComparator.Mark\032\241\001\n\010Operator\022Z\n\004" +
-      "type\030\001 \002(\0162L.org.apache.hadoop.hive.meta" +
-      "store.hbase.PartitionKeyComparator.Opera" +
-      "tor.Type\022\013\n\003key\030\002 \002(\t\022\013\n\003val\030\003 \002(\t\"\037\n\004Ty" +
-      "pe\022\010\n\004LIKE\020\000\022\r\n\tNOTEQUALS\020\001*#\n\rPrincipal" +
-      "Type\022\010\n\004USER\020\000\022\010\n\004ROLE\020\001"
+      "\032\254\001\n\013ResourceUri\022`\n\rresource_type\030\001 \002(\0162" +
+      "I.org.apache.hadoop.hive.metastore.hbase" +
+      ".Function.ResourceUri.ResourceType\022\013\n\003ur" +
+      "i\030\002 \002(\t\".\n\014ResourceType\022\007\n\003JAR\020\001\022\010\n\004FILE" +
+      "\020\002\022\013\n\007ARCHIVE\020\003\"\030\n\014FunctionType\022\010\n\004JAVA\020" +
+      "\001\"\037\n\tMasterKey\022\022\n\nmaster_key\030\001 \002(\t\",\n\016Pa" +
+      "rameterEntry\022\013\n\003key\030\001 \002(\t\022\r\n\005value\030\002 \002(\t",
+      "\"W\n\nParameters\022I\n\tparameter\030\001 \003(\01326.org." +
+      "apache.hadoop.hive.metastore.hbase.Param" +
+      "eterEntry\"\360\001\n\tPartition\022\023\n\013create_time\030\001" +
+      " \001(\003\022\030\n\020last_access_time\030\002 \001(\003\022\020\n\010locati" +
+      "on\030\003 \001(\t\022I\n\rsd_parameters\030\004 \001(\01322.org.ap" +
+      "ache.hadoop.hive.metastore.hbase.Paramet" +
+      "ers\022\017\n\007sd_hash\030\005 \002(\014\022F\n\nparameters\030\006 \001(\013" +
+      "22.org.apache.hadoop.hive.metastore.hbas" +
+      "e.Parameters\"\204\001\n\032PrincipalPrivilegeSetEn" +
+      "try\022\026\n\016principal_name\030\001 \002(\t\022N\n\nprivilege",
+      "s\030\002 \003(\0132:.org.apache.hadoop.hive.metasto" +
+      "re.hbase.PrivilegeGrantInfo\"\275\001\n\025Principa" +
+      "lPrivilegeSet\022Q\n\005users\030\001 \003(\0132B.org.apach" +
+      "e.hadoop.hive.metastore.hbase.PrincipalP" +
+      "rivilegeSetEntry\022Q\n\005roles\030\002 \003(\0132B.org.ap" +
+      "ache.hadoop.hive.metastore.hbase.Princip" +
+      "alPrivilegeSetEntry\"\260\001\n\022PrivilegeGrantIn" +
+      "fo\022\021\n\tprivilege\030\001 \001(\t\022\023\n\013create_time\030\002 \001" +
+      "(\003\022\017\n\007grantor\030\003 \001(\t\022K\n\014grantor_type\030\004 \001(" +
+      "\01625.org.apache.hadoop.hive.metastore.hba",
+      "se.PrincipalType\022\024\n\014grant_option\030\005 \001(\010\"\374" +
+      "\001\n\rRoleGrantInfo\022\026\n\016principal_name\030\001 \002(\t" +
+      "\022M\n\016principal_type\030\002 \002(\01625.org.apache.ha" +
+      "doop.hive.metastore.hbase.PrincipalType\022" +
+      "\020\n\010add_time\030\003 \001(\003\022\017\n\007grantor\030\004 \001(\t\022K\n\014gr" +
+      "antor_type\030\005 \001(\01625.org.apache.hadoop.hiv" +
+      "e.metastore.hbase.PrincipalType\022\024\n\014grant" +
+      "_option\030\006 \001(\010\"^\n\021RoleGrantInfoList\022I\n\ngr" +
+      "ant_info\030\001 \003(\01325.org.apache.hadoop.hive." +
+      "metastore.hbase.RoleGrantInfo\"\030\n\010RoleLis",
+      "t\022\014\n\004role\030\001 \003(\t\"/\n\004Role\022\023\n\013create_time\030\001" +
+      " \001(\003\022\022\n\nowner_name\030\002 \001(\t\"\254\010\n\021StorageDesc" +
+      "riptor\022A\n\004cols\030\001 \003(\01323.org.apache.hadoop" +
+      ".hive.metastore.hbase.FieldSchema\022\024\n\014inp" +
+      "ut_format\030\002 \001(\t\022\025\n\routput_format\030\003 \001(\t\022\025" +
+      "\n\ris_compressed\030\004 \001(\010\022\023\n\013num_buckets\030\005 \001" +
+      "(\021\022W\n\nserde_info\030\006 \001(\0132C.org.apache.hado" +
+      "op.hive.metastore.hbase.StorageDescripto" +
+      "r.SerDeInfo\022\023\n\013bucket_cols\030\007 \003(\t\022R\n\tsort" +
+      "_cols\030\010 \003(\0132?.org.apache.hadoop.hive.met",
+      "astore.hbase.StorageDescriptor.Order\022Y\n\013" +
+      "skewed_info\030\t \001(\0132D.org.apache.hadoop.hi" +
+      "ve.metastore.hbase.StorageDescriptor.Ske" +
+      "wedInfo\022!\n\031stored_as_sub_directories\030\n \001" +
+      "(\010\032.\n\005Order\022\023\n\013column_name\030\001 \002(\t\022\020\n\005orde" +
+      "r\030\002 \001(\021:\0011\032|\n\tSerDeInfo\022\014\n\004name\030\001 \001(\t\022\031\n" +
+      "\021serialization_lib\030\002 \001(\t\022F\n\nparameters\030\003" +
+      " \001(\01322.org.apache.hadoop.hive.metastore." +
+      "hbase.Parameters\032\214\003\n\nSkewedInfo\022\030\n\020skewe" +
+      "d_col_names\030\001 \003(\t\022r\n\021skewed_col_values\030\002",
+      " \003(\0132W.org.apache.hadoop.hive.metastore." +
+      "hbase.StorageDescriptor.SkewedInfo.Skewe" +
+      "dColValueList\022\206\001\n\036skewed_col_value_locat" +
+      "ion_maps\030\003 \003(\0132^.org.apache.hadoop.hive." +
+      "metastore.hbase.StorageDescriptor.Skewed" +
+      "Info.SkewedColValueLocationMap\032.\n\022Skewed" +
+      "ColValueList\022\030\n\020skewed_col_value\030\001 \003(\t\0327" +
+      "\n\031SkewedColValueLocationMap\022\013\n\003key\030\001 \003(\t" +
+      "\022\r\n\005value\030\002 \002(\t\"\220\004\n\005Table\022\r\n\005owner\030\001 \001(\t" +
+      "\022\023\n\013create_time\030\002 \001(\003\022\030\n\020last_access_tim",
+      "e\030\003 \001(\003\022\021\n\tretention\030\004 \001(\003\022\020\n\010location\030\005" +
+      " \001(\t\022I\n\rsd_parameters\030\006 \001(\01322.org.apache" +
+      ".hadoop.hive.metastore.hbase.Parameters\022" +
+      "\017\n\007sd_hash\030\007 \002(\014\022K\n\016partition_keys\030\010 \003(\013" +
+      "23.org.apache.hadoop.hive.metastore.hbas" +
+      "e.FieldSchema\022F\n\nparameters\030\t \001(\01322.org." +
+      "apache.hadoop.hive.metastore.hbase.Param" +
+      "eters\022\032\n\022view_original_text\030\n \001(\t\022\032\n\022vie" +
+      "w_expanded_text\030\013 \001(\t\022\022\n\ntable_type\030\014 \001(" +
+      "\t\022Q\n\nprivileges\030\r \001(\0132=.org.apache.hadoo",
+      "p.hive.metastore.hbase.PrincipalPrivileg" +
+      "eSet\022\024\n\014is_temporary\030\016 \001(\010\"\353\004\n\026Partition" +
+      "KeyComparator\022\r\n\005names\030\001 \002(\t\022\r\n\005types\030\002 " +
+      "\002(\t\022S\n\002op\030\003 \003(\0132G.org.apache.hadoop.hive" +
+      ".metastore.hbase.PartitionKeyComparator." +
+      "Operator\022S\n\005range\030\004 \003(\0132D.org.apache.had" +
+      "oop.hive.metastore.hbase.PartitionKeyCom" +
+      "parator.Range\032(\n\004Mark\022\r\n\005value\030\001 \002(\t\022\021\n\t" +
+      "inclusive\030\002 \002(\010\032\272\001\n\005Range\022\013\n\003key\030\001 \002(\t\022R" +
+      "\n\005start\030\002 \001(\0132C.org.apache.hadoop.hive.m",
+      "etastore.hbase.PartitionKeyComparator.Ma" +
+      "rk\022P\n\003end\030\003 \001(\0132C.org.apache.hadoop.hive" +
+      ".metastore.hbase.PartitionKeyComparator." +
+      "Mark\032\241\001\n\010Operator\022Z\n\004type\030\001 \002(\0162L.org.ap" +
+      "ache.hadoop.hive.metastore.hbase.Partiti" +
+      "onKeyComparator.Operator.Type\022\013\n\003key\030\002 \002" +
+      "(\t\022\013\n\003val\030\003 \002(\t\"\037\n\004Type\022\010\n\004LIKE\020\000\022\r\n\tNOT" +
+      "EQUALS\020\001*#\n\rPrincipalType\022\010\n\004USER\020\000\022\010\n\004R" +
+      "OLE\020\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -34689,7 +34846,7 @@ public final class HbaseMetastoreProto {
           internal_static_org_apache_hadoop_hive_metastore_hbase_ColumnStats_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_ColumnStats_descriptor,
-              new java.lang.String[] { "LastAnalyzed", "ColumnType", "NumNulls", "NumDistinctValues", "BoolStats", "LongStats", "DoubleStats", "StringStats", "BinaryStats", "DecimalStats", "ColumnName", });
+              new java.lang.String[] { "LastAnalyzed", "ColumnType", "NumNulls", "NumDistinctValues", "BoolStats", "LongStats", "DoubleStats", "StringStats", "BinaryStats", "DecimalStats", "ColumnName", "BitVectors", });
           internal_static_org_apache_hadoop_hive_metastore_hbase_ColumnStats_BooleanStats_descriptor =
             internal_static_org_apache_hadoop_hive_metastore_hbase_ColumnStats_descriptor.getNestedTypes().get(0);
           internal_static_org_apache_hadoop_hive_metastore_hbase_ColumnStats_BooleanStats_fieldAccessorTable = new

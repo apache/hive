@@ -19,25 +19,33 @@
 
 package org.apache.hadoop.hive.metastore.hbase.stats;
 
+import org.apache.hadoop.hive.metastore.NumDistinctValueEstimator;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Decimal;
 import org.apache.hadoop.hive.metastore.api.DecimalColumnStatsData;
 
-public class DecimalColumnStatsAggregator implements ColumnStatsAggregator {
+public class DecimalColumnStatsAggregator extends ColumnStatsAggregator {
 
   @Override
   public void aggregate(ColumnStatisticsObj aggregateColStats, ColumnStatisticsObj newColStats) {
     DecimalColumnStatsData aggregateData = aggregateColStats.getStatsData().getDecimalStats();
     DecimalColumnStatsData newData = newColStats.getStatsData().getDecimalStats();
-    Decimal lowValue =
-        (aggregateData.getLowValue().compareTo(newData.getLowValue()) > 0) ? aggregateData
-            .getLowValue() : newData.getLowValue();
+    Decimal lowValue = aggregateData.getLowValue() != null
+        && (aggregateData.getLowValue().compareTo(newData.getLowValue()) > 0) ? aggregateData
+        .getLowValue() : newData.getLowValue();
     aggregateData.setLowValue(lowValue);
-    Decimal highValue =
-        (aggregateData.getHighValue().compareTo(newData.getHighValue()) > 0) ? aggregateData
-            .getHighValue() : newData.getHighValue();
+    Decimal highValue = aggregateData.getHighValue() != null
+        && (aggregateData.getHighValue().compareTo(newData.getHighValue()) > 0) ? aggregateData
+        .getHighValue() : newData.getHighValue();
     aggregateData.setHighValue(highValue);
     aggregateData.setNumNulls(aggregateData.getNumNulls() + newData.getNumNulls());
-    aggregateData.setNumDVs(Math.max(aggregateData.getNumDVs(), newData.getNumDVs()));
+    if (ndvEstimator == null || !newData.isSetBitVectors() || newData.getBitVectors().length() == 0) {
+      aggregateData.setNumDVs(Math.max(aggregateData.getNumDVs(), newData.getNumDVs()));
+    } else {
+      ndvEstimator.mergeEstimators(new NumDistinctValueEstimator(newData.getBitVectors(),
+          ndvEstimator.getnumBitVectors()));
+      aggregateData.setNumDVs(ndvEstimator.estimateNumDistinctValues());
+      aggregateData.setBitVectors(ndvEstimator.serialize().toString());
+    }
   }
 }

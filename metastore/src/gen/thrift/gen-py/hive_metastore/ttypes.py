@@ -3749,6 +3749,7 @@ class BooleanColumnStatsData:
    - numTrues
    - numFalses
    - numNulls
+   - bitVectors
   """
 
   thrift_spec = (
@@ -3756,12 +3757,14 @@ class BooleanColumnStatsData:
     (1, TType.I64, 'numTrues', None, None, ), # 1
     (2, TType.I64, 'numFalses', None, None, ), # 2
     (3, TType.I64, 'numNulls', None, None, ), # 3
+    (4, TType.STRING, 'bitVectors', None, None, ), # 4
   )
 
-  def __init__(self, numTrues=None, numFalses=None, numNulls=None,):
+  def __init__(self, numTrues=None, numFalses=None, numNulls=None, bitVectors=None,):
     self.numTrues = numTrues
     self.numFalses = numFalses
     self.numNulls = numNulls
+    self.bitVectors = bitVectors
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -3787,6 +3790,11 @@ class BooleanColumnStatsData:
           self.numNulls = iprot.readI64()
         else:
           iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.STRING:
+          self.bitVectors = iprot.readString()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -3809,6 +3817,10 @@ class BooleanColumnStatsData:
       oprot.writeFieldBegin('numNulls', TType.I64, 3)
       oprot.writeI64(self.numNulls)
       oprot.writeFieldEnd()
+    if self.bitVectors is not None:
+      oprot.writeFieldBegin('bitVectors', TType.STRING, 4)
+      oprot.writeString(self.bitVectors)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -3827,6 +3839,7 @@ class BooleanColumnStatsData:
     value = (value * 31) ^ hash(self.numTrues)
     value = (value * 31) ^ hash(self.numFalses)
     value = (value * 31) ^ hash(self.numNulls)
+    value = (value * 31) ^ hash(self.bitVectors)
     return value
 
   def __repr__(self):
@@ -3847,6 +3860,7 @@ class DoubleColumnStatsData:
    - highValue
    - numNulls
    - numDVs
+   - bitVectors
   """
 
   thrift_spec = (
@@ -3855,13 +3869,15 @@ class DoubleColumnStatsData:
     (2, TType.DOUBLE, 'highValue', None, None, ), # 2
     (3, TType.I64, 'numNulls', None, None, ), # 3
     (4, TType.I64, 'numDVs', None, None, ), # 4
+    (5, TType.STRING, 'bitVectors', None, None, ), # 5
   )
 
-  def __init__(self, lowValue=None, highValue=None, numNulls=None, numDVs=None,):
+  def __init__(self, lowValue=None, highValue=None, numNulls=None, numDVs=None, bitVectors=None,):
     self.lowValue = lowValue
     self.highValue = highValue
     self.numNulls = numNulls
     self.numDVs = numDVs
+    self.bitVectors = bitVectors
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -3892,6 +3908,11 @@ class DoubleColumnStatsData:
           self.numDVs = iprot.readI64()
         else:
           iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.STRING:
+          self.bitVectors = iprot.readString()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -3918,6 +3939,10 @@ class DoubleColumnStatsData:
       oprot.writeFieldBegin('numDVs', TType.I64, 4)
       oprot.writeI64(self.numDVs)
       oprot.writeFieldEnd()
+    if self.bitVectors is not None:
+      oprot.writeFieldBegin('bitVectors', TType.STRING, 5)
+      oprot.writeString(self.bitVectors)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -3935,6 +3960,7 @@ class DoubleColumnStatsData:
     value = (value * 31) ^ hash(self.highValue)
     value = (value * 31) ^ hash(self.numNulls)
     value = (value * 31) ^ hash(self.numDVs)
+    value = (value * 31) ^ hash(self.bitVectors)
     return value
 
   def __repr__(self):
@@ -3955,6 +3981,7 @@ class LongColumnStatsData:
    - highValue
    - numNulls
    - numDVs
+   - bitVectors
   """
 
   thrift_spec = (
@@ -3963,13 +3990,15 @@ class LongColumnStatsData:
     (2, TType.I64, 'highValue', None, None, ), # 2
     (3, TType.I64, 'numNulls', None, None, ), # 3
     (4, TType.I64, 'numDVs', None, None, ), # 4
+    (5, TType.STRING, 'bitVectors', None, None, ), # 5
   )
 
-  def __init__(self, lowValue=None, highValue=None, numNulls=None, numDVs=None,):
+  def __init__(self, lowValue=None, highValue=None, numNulls=None, numDVs=None, bitVectors=None,):
     self.lowValue = lowValue
     self.highValue = highValue
     self.numNulls = numNulls
     self.numDVs = numDVs
+    self.bitVectors = bitVectors
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -4000,6 +4029,11 @@ class LongColumnStatsData:
           self.numDVs = iprot.readI64()
         else:
           iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.STRING:
+          self.bitVectors = iprot.readString()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -4026,6 +4060,10 @@ class LongColumnStatsData:
       oprot.writeFieldBegin('numDVs', TType.I64, 4)
       oprot.writeI64(self.numDVs)
       oprot.writeFieldEnd()
+    if self.bitVectors is not None:
+      oprot.writeFieldBegin('bitVectors', TType.STRING, 5)
+      oprot.writeString(self.bitVectors)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -4043,6 +4081,7 @@ class LongColumnStatsData:
     value = (value * 31) ^ hash(self.highValue)
     value = (value * 31) ^ hash(self.numNulls)
     value = (value * 31) ^ hash(self.numDVs)
+    value = (value * 31) ^ hash(self.bitVectors)
     return value
 
   def __repr__(self):
@@ -4063,6 +4102,7 @@ class StringColumnStatsData:
    - avgColLen
    - numNulls
    - numDVs
+   - bitVectors
   """
 
   thrift_spec = (
@@ -4071,13 +4111,15 @@ class StringColumnStatsData:
     (2, TType.DOUBLE, 'avgColLen', None, None, ), # 2
     (3, TType.I64, 'numNulls', None, None, ), # 3
     (4, TType.I64, 'numDVs', None, None, ), # 4
+    (5, TType.STRING, 'bitVectors', None, None, ), # 5
   )
 
-  def __init__(self, maxColLen=None, avgColLen=None, numNulls=None, numDVs=None,):
+  def __init__(self, maxColLen=None, avgColLen=None, numNulls=None, numDVs=None, bitVectors=None,):
     self.maxColLen = maxColLen
     self.avgColLen = avgColLen
     self.numNulls = numNulls
     self.numDVs = numDVs
+    self.bitVectors = bitVectors
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -4108,6 +4150,11 @@ class StringColumnStatsData:
           self.numDVs = iprot.readI64()
         else:
           iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.STRING:
+          self.bitVectors = iprot.readString()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -4134,6 +4181,10 @@ class StringColumnStatsData:
       oprot.writeFieldBegin('numDVs', TType.I64, 4)
       oprot.writeI64(self.numDVs)
       oprot.writeFieldEnd()
+    if self.bitVectors is not None:
+      oprot.writeFieldBegin('bitVectors', TType.STRING, 5)
+      oprot.writeString(self.bitVectors)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -4155,6 +4206,7 @@ class StringColumnStatsData:
     value = (value * 31) ^ hash(self.avgColLen)
     value = (value * 31) ^ hash(self.numNulls)
     value = (value * 31) ^ hash(self.numDVs)
+    value = (value * 31) ^ hash(self.bitVectors)
     return value
 
   def __repr__(self):
@@ -4174,6 +4226,7 @@ class BinaryColumnStatsData:
    - maxColLen
    - avgColLen
    - numNulls
+   - bitVectors
   """
 
   thrift_spec = (
@@ -4181,12 +4234,14 @@ class BinaryColumnStatsData:
     (1, TType.I64, 'maxColLen', None, None, ), # 1
     (2, TType.DOUBLE, 'avgColLen', None, None, ), # 2
     (3, TType.I64, 'numNulls', None, None, ), # 3
+    (4, TType.STRING, 'bitVectors', None, None, ), # 4
   )
 
-  def __init__(self, maxColLen=None, avgColLen=None, numNulls=None,):
+  def __init__(self, maxColLen=None, avgColLen=None, numNulls=None, bitVectors=None,):
     self.maxColLen = maxColLen
     self.avgColLen = avgColLen
     self.numNulls = numNulls
+    self.bitVectors = bitVectors
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -4212,6 +4267,11 @@ class BinaryColumnStatsData:
           self.numNulls = iprot.readI64()
         else:
           iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.STRING:
+          self.bitVectors = iprot.readString()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -4234,6 +4294,10 @@ class BinaryColumnStatsData:
       oprot.writeFieldBegin('numNulls', TType.I64, 3)
       oprot.writeI64(self.numNulls)
       oprot.writeFieldEnd()
+    if self.bitVectors is not None:
+      oprot.writeFieldBegin('bitVectors', TType.STRING, 4)
+      oprot.writeString(self.bitVectors)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -4252,6 +4316,7 @@ class BinaryColumnStatsData:
     value = (value * 31) ^ hash(self.maxColLen)
     value = (value * 31) ^ hash(self.avgColLen)
     value = (value * 31) ^ hash(self.numNulls)
+    value = (value * 31) ^ hash(self.bitVectors)
     return value
 
   def __repr__(self):
@@ -4355,6 +4420,7 @@ class DecimalColumnStatsData:
    - highValue
    - numNulls
    - numDVs
+   - bitVectors
   """
 
   thrift_spec = (
@@ -4363,13 +4429,15 @@ class DecimalColumnStatsData:
     (2, TType.STRUCT, 'highValue', (Decimal, Decimal.thrift_spec), None, ), # 2
     (3, TType.I64, 'numNulls', None, None, ), # 3
     (4, TType.I64, 'numDVs', None, None, ), # 4
+    (5, TType.STRING, 'bitVectors', None, None, ), # 5
   )
 
-  def __init__(self, lowValue=None, highValue=None, numNulls=None, numDVs=None,):
+  def __init__(self, lowValue=None, highValue=None, numNulls=None, numDVs=None, bitVectors=None,):
     self.lowValue = lowValue
     self.highValue = highValue
     self.numNulls = numNulls
     self.numDVs = numDVs
+    self.bitVectors = bitVectors
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -4402,6 +4470,11 @@ class DecimalColumnStatsData:
           self.numDVs = iprot.readI64()
         else:
           iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.STRING:
+          self.bitVectors = iprot.readString()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -4428,6 +4501,10 @@ class DecimalColumnStatsData:
       oprot.writeFieldBegin('numDVs', TType.I64, 4)
       oprot.writeI64(self.numDVs)
       oprot.writeFieldEnd()
+    if self.bitVectors is not None:
+      oprot.writeFieldBegin('bitVectors', TType.STRING, 5)
+      oprot.writeString(self.bitVectors)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -4445,6 +4522,7 @@ class DecimalColumnStatsData:
     value = (value * 31) ^ hash(self.highValue)
     value = (value * 31) ^ hash(self.numNulls)
     value = (value * 31) ^ hash(self.numDVs)
+    value = (value * 31) ^ hash(self.bitVectors)
     return value
 
   def __repr__(self):
@@ -4532,6 +4610,7 @@ class DateColumnStatsData:
    - highValue
    - numNulls
    - numDVs
+   - bitVectors
   """
 
   thrift_spec = (
@@ -4540,13 +4619,15 @@ class DateColumnStatsData:
     (2, TType.STRUCT, 'highValue', (Date, Date.thrift_spec), None, ), # 2
     (3, TType.I64, 'numNulls', None, None, ), # 3
     (4, TType.I64, 'numDVs', None, None, ), # 4
+    (5, TType.STRING, 'bitVectors', None, None, ), # 5
   )
 
-  def __init__(self, lowValue=None, highValue=None, numNulls=None, numDVs=None,):
+  def __init__(self, lowValue=None, highValue=None, numNulls=None, numDVs=None, bitVectors=None,):
     self.lowValue = lowValue
     self.highValue = highValue
     self.numNulls = numNulls
     self.numDVs = numDVs
+    self.bitVectors = bitVectors
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -4579,6 +4660,11 @@ class DateColumnStatsData:
           self.numDVs = iprot.readI64()
         else:
           iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.STRING:
+          self.bitVectors = iprot.readString()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -4605,6 +4691,10 @@ class DateColumnStatsData:
       oprot.writeFieldBegin('numDVs', TType.I64, 4)
       oprot.writeI64(self.numDVs)
       oprot.writeFieldEnd()
+    if self.bitVectors is not None:
+      oprot.writeFieldBegin('bitVectors', TType.STRING, 5)
+      oprot.writeString(self.bitVectors)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -4622,6 +4712,7 @@ class DateColumnStatsData:
     value = (value * 31) ^ hash(self.highValue)
     value = (value * 31) ^ hash(self.numNulls)
     value = (value * 31) ^ hash(self.numDVs)
+    value = (value * 31) ^ hash(self.bitVectors)
     return value
 
   def __repr__(self):

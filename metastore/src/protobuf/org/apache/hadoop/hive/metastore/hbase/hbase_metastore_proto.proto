@@ -93,6 +93,7 @@ message ColumnStats {
   optional StringStats binary_stats = 9;
   optional DecimalStats decimal_stats = 10;
   optional string column_name = 11;
+  optional string bit_vectors = 12;
 }
 
 message Database {

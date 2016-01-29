@@ -23,9 +23,11 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.protobuf.ByteString;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -72,7 +74,7 @@ class StatsCache {
     return self;
   }
 
-  private StatsCache(Configuration conf) {
+  private StatsCache(final Configuration conf) {
     final StatsCache me = this;
     cache = CacheBuilder.newBuilder()
         .maximumSize(
@@ -82,6 +84,7 @@ class StatsCache {
         .build(new CacheLoader<StatsCacheKey, AggrStats>() {
           @Override
           public AggrStats load(StatsCacheKey key) throws Exception {
+            int numBitVectors = HiveStatsUtils.getNumBitVectorsForNDVEstimation(conf);
             HBaseReadWrite hrw = HBaseReadWrite.getInstance();
             AggrStats aggrStats = hrw.getAggregatedStats(key.hashed);
             if (aggrStats == null) {
@@ -103,7 +106,7 @@ class StatsCache {
                     }
                     if (aggregator == null) {
                       aggregator = ColumnStatsAggregatorFactory.getColumnStatsAggregator(
-                          cso.getStatsData().getSetField());
+                          cso.getStatsData().getSetField(), numBitVectors);
                     }
                     aggregator.aggregate(statsObj, cso);
                   }

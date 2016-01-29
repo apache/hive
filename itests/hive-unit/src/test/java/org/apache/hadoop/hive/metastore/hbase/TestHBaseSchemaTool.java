@@ -468,9 +468,9 @@ public class TestHBaseSchemaTool extends HBaseIntegrationTests {
             "\"tableType\":\"\"} sdHash: qQTgZAi5VzgpozzFGmIVTQ stats: column " +
             "col1: {\"colName\":\"col1\",\"colType\":\"int\"," +
             "\"statsData\":{\"longStats\":{\"lowValue\":-95,\"highValue\":95,\"numNulls\":1," +
-            "\"numDVs\":2}}} column col2: {\"colName\":\"col2\",\"colType\":\"varchar(32)\"," +
+            "\"numDVs\":2,\"bitVectors\":\"\"}}} column col2: {\"colName\":\"col2\",\"colType\":\"varchar(32)\"," +
             "\"statsData\":{\"stringStats\":{\"maxColLen\":97,\"avgColLen\":18.78," +
-        "\"numNulls\":29,\"numDVs\":397}}}" + lsep +
+        "\"numNulls\":29,\"numDVs\":397,\"bitVectors\":\"\"}}}" + lsep +
         "{\"tableName\":\"tab1\",\"dbName\":\"db0\",\"owner\":\"me\",\"createTime\":0," +
         "\"lastAccessTime\":0,\"retention\":0,\"partitionKeys\":[{\"name\":\"pcol1\"," +
             "\"type\":\"string\",\"comment\":\"\"},{\"name\":\"pcol2\",\"type\":\"string\"," +
@@ -519,9 +519,9 @@ public class TestHBaseSchemaTool extends HBaseIntegrationTests {
         "\"createTime\":0,\"lastAccessTime\":0,\"parameters\":{\"COLUMN_STATS_ACCURATE\":\"{\\\"COLUMN_STATS\\\":{\\\"col1\\\":\\\"true\\\",\\\"col2\\\":\\\"true\\\"}}\"}} sdHash: qQTgZAi5VzgpozzFGmIVTQ " +
         "stats: column col1: {\"colName\":\"col1\",\"colType\":\"int\"," +
         "\"statsData\":{\"longStats\":{\"lowValue\":-95,\"highValue\":95,\"numNulls\":1," +
-        "\"numDVs\":2}}} column col2: {\"colName\":\"col2\",\"colType\":\"varchar(32)\"," +
+        "\"numDVs\":2,\"bitVectors\":\"\"}}} column col2: {\"colName\":\"col2\",\"colType\":\"varchar(32)\"," +
         "\"statsData\":{\"stringStats\":{\"maxColLen\":97,\"avgColLen\":18.78,\"numNulls\":29," +
-        "\"numDVs\":397}}}" + lsep,  outStr.toString());
+        "\"numDVs\":397,\"bitVectors\":\"\"}}}" + lsep,  outStr.toString());
 
     outStr = new ByteArrayOutputStream();
     out = new PrintStream(outStr);
@@ -533,9 +533,9 @@ public class TestHBaseSchemaTool extends HBaseIntegrationTests {
         "\"lastAccessTime\":0,\"parameters\":{\"COLUMN_STATS_ACCURATE\":\"{\\\"COLUMN_STATS\\\":{\\\"col1\\\":\\\"true\\\",\\\"col2\\\":\\\"true\\\"}}\"}} sdHash: qQTgZAi5VzgpozzFGmIVTQ stats: column " +
         "col1: {\"colName\":\"col1\",\"colType\":\"int\"," +
         "\"statsData\":{\"longStats\":{\"lowValue\":-95,\"highValue\":95,\"numNulls\":1," +
-        "\"numDVs\":2}}} column col2: {\"colName\":\"col2\",\"colType\":\"varchar(32)\"," +
+        "\"numDVs\":2,\"bitVectors\":\"\"}}} column col2: {\"colName\":\"col2\",\"colType\":\"varchar(32)\"," +
         "\"statsData\":{\"stringStats\":{\"maxColLen\":97,\"avgColLen\":18.78,\"numNulls\":29," +
-        "\"numDVs\":397}}}" + lsep, outStr.toString());
+        "\"numDVs\":397,\"bitVectors\":\"\"}}}" + lsep, outStr.toString());
 
     outStr = new ByteArrayOutputStream();
     out = new PrintStream(outStr);

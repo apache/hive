@@ -43,8 +43,6 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.util.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * GenericUDAFComputeStats
@@ -401,6 +399,7 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
         foi.add(getValueObjectInspector());
         foi.add(PrimitiveObjectInspectorFactory.writableLongObjectInspector);
         foi.add(PrimitiveObjectInspectorFactory.writableLongObjectInspector);
+        foi.add(PrimitiveObjectInspectorFactory.writableStringObjectInspector);
 
         List<String> fname = new ArrayList<String>();
         fname.add("columnType");
@@ -408,11 +407,13 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
         fname.add("max");
         fname.add("countnulls");
         fname.add("numdistinctvalues");
+        fname.add("ndvbitvector");
 
-        result = new Object[5];
+        result = new Object[6];
         result[0] = new Text();
         result[3] = new LongWritable(0);
         result[4] = new LongWritable(0);
+        result[5] = new Text();
 
         return ObjectInspectorFactory.getStandardStructObjectInspector(fname,
             foi);
@@ -448,6 +449,9 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
         serializeCommon(result);
         long dv = numDV != null ? numDV.estimateNumDistinctValues() : 0;
         ((LongWritable) result[4]).set(dv);
+        if (numDV != null) {
+          ((Text) result[5]).set(numDV.serialize());
+        }
 
         return result;
       }
@@ -795,6 +799,7 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
         foi.add(PrimitiveObjectInspectorFactory.writableDoubleObjectInspector);
         foi.add(PrimitiveObjectInspectorFactory.writableLongObjectInspector);
         foi.add(PrimitiveObjectInspectorFactory.writableLongObjectInspector);
+        foi.add(PrimitiveObjectInspectorFactory.writableStringObjectInspector);
 
         List<String> fname = new ArrayList<String>();
         fname.add("columntype");
@@ -802,13 +807,15 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
         fname.add("avglength");
         fname.add("countnulls");
         fname.add("numdistinctvalues");
+        fname.add("ndvbitvector");
 
-        result = new Object[5];
+        result = new Object[6];
         result[0] = new Text();
         result[1] = new LongWritable(0);
         result[2] = new DoubleWritable(0);
         result[3] = new LongWritable(0);
         result[4] = new LongWritable(0);
+        result[5] = new Text();
 
         return ObjectInspectorFactory.getStandardStructObjectInspector(fname,
             foi);
@@ -1003,7 +1010,9 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
       ((DoubleWritable) result[2]).set(avgLength);
       ((LongWritable) result[3]).set(myagg.countNulls);
       ((LongWritable) result[4]).set(numDV);
-
+      if (myagg.numBitVectors != 0) {
+        ((Text) result[5]).set(myagg.numDV.serialize());
+      }
       return result;
     }
   }

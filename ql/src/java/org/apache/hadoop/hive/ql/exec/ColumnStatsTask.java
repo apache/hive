@@ -121,6 +121,10 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
     } else if (fName.equals("min")) {
       double d = ((DoubleObjectInspector) oi).get(o);
       statsObj.getStatsData().getDoubleStats().setLowValue(d);
+    } else if (fName.equals("ndvbitvector")) {
+      PrimitiveObjectInspector poi = (PrimitiveObjectInspector) oi;
+      String v = ((StringObjectInspector) poi).getPrimitiveJavaObject(o);
+      statsObj.getStatsData().getDoubleStats().setBitVectors(v);;
     }
   }
 
@@ -138,6 +142,10 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
     } else if (fName.equals("min")) {
       HiveDecimal d = ((HiveDecimalObjectInspector) oi).getPrimitiveJavaObject(o);
       statsObj.getStatsData().getDecimalStats().setLowValue(convertToThriftDecimal(d));
+    } else if (fName.equals("ndvbitvector")) {
+      PrimitiveObjectInspector poi = (PrimitiveObjectInspector) oi;
+      String v = ((StringObjectInspector) poi).getPrimitiveJavaObject(o);
+      statsObj.getStatsData().getDecimalStats().setBitVectors(v);;
     }
   }
 
@@ -159,6 +167,10 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
     } else if (fName.equals("min")) {
       long  v = ((LongObjectInspector) oi).get(o);
       statsObj.getStatsData().getLongStats().setLowValue(v);
+    } else if (fName.equals("ndvbitvector")) {
+      PrimitiveObjectInspector poi = (PrimitiveObjectInspector) oi;
+      String v = ((StringObjectInspector) poi).getPrimitiveJavaObject(o);
+      statsObj.getStatsData().getLongStats().setBitVectors(v);;
     }
   }
 
@@ -176,6 +188,10 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
     } else if (fName.equals("maxlength")) {
       long v = ((LongObjectInspector) oi).get(o);
       statsObj.getStatsData().getStringStats().setMaxColLen(v);
+    } else if (fName.equals("ndvbitvector")) {
+      PrimitiveObjectInspector poi = (PrimitiveObjectInspector) oi;
+      String v = ((StringObjectInspector) poi).getPrimitiveJavaObject(o);
+      statsObj.getStatsData().getStringStats().setBitVectors(v);;
     }
   }
 
@@ -207,6 +223,10 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
     } else if (fName.equals("min")) {
       DateWritable v = ((DateObjectInspector) oi).getPrimitiveWritableObject(o);
       statsObj.getStatsData().getDateStats().setLowValue(new Date(v.getDays()));
+    } else if (fName.equals("ndvbitvector")) {
+      PrimitiveObjectInspector poi = (PrimitiveObjectInspector) oi;
+      String v = ((StringObjectInspector) poi).getPrimitiveJavaObject(o);
+      statsObj.getStatsData().getDateStats().setBitVectors(v);;
     }
   }
 

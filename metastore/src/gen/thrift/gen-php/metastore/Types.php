@@ -5624,6 +5624,10 @@ class BooleanColumnStatsData {
    * @var int
    */
   public $numNulls = null;
+  /**
+   * @var string
+   */
+  public $bitVectors = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -5640,6 +5644,10 @@ class BooleanColumnStatsData {
           'var' => 'numNulls',
           'type' => TType::I64,
           ),
+        4 => array(
+          'var' => 'bitVectors',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -5651,6 +5659,9 @@ class BooleanColumnStatsData {
       }
       if (isset($vals['numNulls'])) {
         $this->numNulls = $vals['numNulls'];
+      }
+      if (isset($vals['bitVectors'])) {
+        $this->bitVectors = $vals['bitVectors'];
       }
     }
   }
@@ -5695,6 +5706,13 @@ class BooleanColumnStatsData {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 4:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->bitVectors);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -5723,6 +5741,11 @@ class BooleanColumnStatsData {
       $xfer += $output->writeI64($this->numNulls);
       $xfer += $output->writeFieldEnd();
     }
+    if ($this->bitVectors !== null) {
+      $xfer += $output->writeFieldBegin('bitVectors', TType::STRING, 4);
+      $xfer += $output->writeString($this->bitVectors);
+      $xfer += $output->writeFieldEnd();
+    }
     $xfer += $output->writeFieldStop();
     $xfer += $output->writeStructEnd();
     return $xfer;
@@ -5749,6 +5772,10 @@ class DoubleColumnStatsData {
    * @var int
    */
   public $numDVs = null;
+  /**
+   * @var string
+   */
+  public $bitVectors = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -5769,6 +5796,10 @@ class DoubleColumnStatsData {
           'var' => 'numDVs',
           'type' => TType::I64,
           ),
+        5 => array(
+          'var' => 'bitVectors',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -5783,6 +5814,9 @@ class DoubleColumnStatsData {
       }
       if (isset($vals['numDVs'])) {
         $this->numDVs = $vals['numDVs'];
+      }
+      if (isset($vals['bitVectors'])) {
+        $this->bitVectors = $vals['bitVectors'];
       }
     }
   }
@@ -5834,6 +5868,13 @@ class DoubleColumnStatsData {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 5:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->bitVectors);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -5867,6 +5908,11 @@ class DoubleColumnStatsData {
       $xfer += $output->writeI64($this->numDVs);
       $xfer += $output->writeFieldEnd();
     }
+    if ($this->bitVectors !== null) {
+      $xfer += $output->writeFieldBegin('bitVectors', TType::STRING, 5);
+      $xfer += $output->writeString($this->bitVectors);
+      $xfer += $output->writeFieldEnd();
+    }
     $xfer += $output->writeFieldStop();
     $xfer += $output->writeStructEnd();
     return $xfer;
@@ -5893,6 +5939,10 @@ class LongColumnStatsData {
    * @var int
    */
   public $numDVs = null;
+  /**
+   * @var string
+   */
+  public $bitVectors = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -5913,6 +5963,10 @@ class LongColumnStatsData {
           'var' => 'numDVs',
           'type' => TType::I64,
           ),
+        5 => array(
+          'var' => 'bitVectors',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -5927,6 +5981,9 @@ class LongColumnStatsData {
       }
       if (isset($vals['numDVs'])) {
         $this->numDVs = $vals['numDVs'];
+      }
+      if (isset($vals['bitVectors'])) {
+        $this->bitVectors = $vals['bitVectors'];
       }
     }
   }
@@ -5978,6 +6035,13 @@ class LongColumnStatsData {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 5:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->bitVectors);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -6011,6 +6075,11 @@ class LongColumnStatsData {
       $xfer += $output->writeI64($this->numDVs);
       $xfer += $output->writeFieldEnd();
     }
+    if ($this->bitVectors !== null) {
+      $xfer += $output->writeFieldBegin('bitVectors', TType::STRING, 5);
+      $xfer += $output->writeString($this->bitVectors);
+      $xfer += $output->writeFieldEnd();
+    }
     $xfer += $output->writeFieldStop();
     $xfer += $output->writeStructEnd();
     return $xfer;
@@ -6037,6 +6106,10 @@ class StringColumnStatsData {
    * @var int
    */
   public $numDVs = null;
+  /**
+   * @var string
+   */
+  public $bitVectors = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -6057,6 +6130,10 @@ class StringColumnStatsData {
           'var' => 'numDVs',
           'type' => TType::I64,
           ),
+        5 => array(
+          'var' => 'bitVectors',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -6071,6 +6148,9 @@ class StringColumnStatsData {
       }
       if (isset($vals['numDVs'])) {
         $this->numDVs = $vals['numDVs'];
+      }
+      if (isset($vals['bitVectors'])) {
+        $this->bitVectors = $vals['bitVectors'];
       }
     }
   }
@@ -6122,6 +6202,13 @@ class StringColumnStatsData {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 5:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->bitVectors);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -6155,6 +6242,11 @@ class StringColumnStatsData {
       $xfer += $output->writeI64($this->numDVs);
       $xfer += $output->writeFieldEnd();
     }
+    if ($this->bitVectors !== null) {
+      $xfer += $output->writeFieldBegin('bitVectors', TType::STRING, 5);
+      $xfer += $output->writeString($this->bitVectors);
+      $xfer += $output->writeFieldEnd();
+    }
     $xfer += $output->writeFieldStop();
     $xfer += $output->writeStructEnd();
     return $xfer;
@@ -6177,6 +6269,10 @@ class BinaryColumnStatsData {
    * @var int
    */
   public $numNulls = null;
+  /**
+   * @var string
+   */
+  public $bitVectors = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -6193,6 +6289,10 @@ class BinaryColumnStatsData {
           'var' => 'numNulls',
           'type' => TType::I64,
           ),
+        4 => array(
+          'var' => 'bitVectors',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -6204,6 +6304,9 @@ class BinaryColumnStatsData {
       }
       if (isset($vals['numNulls'])) {
         $this->numNulls = $vals['numNulls'];
+      }
+      if (isset($vals['bitVectors'])) {
+        $this->bitVectors = $vals['bitVectors'];
       }
     }
   }
@@ -6248,6 +6351,13 @@ class BinaryColumnStatsData {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 4:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->bitVectors);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -6274,6 +6384,11 @@ class BinaryColumnStatsData {
     if ($this->numNulls !== null) {
       $xfer += $output->writeFieldBegin('numNulls', TType::I64, 3);
       $xfer += $output->writeI64($this->numNulls);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->bitVectors !== null) {
+      $xfer += $output->writeFieldBegin('bitVectors', TType::STRING, 4);
+      $xfer += $output->writeString($this->bitVectors);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -6400,6 +6515,10 @@ class DecimalColumnStatsData {
    * @var int
    */
   public $numDVs = null;
+  /**
+   * @var string
+   */
+  public $bitVectors = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -6422,6 +6541,10 @@ class DecimalColumnStatsData {
           'var' => 'numDVs',
           'type' => TType::I64,
           ),
+        5 => array(
+          'var' => 'bitVectors',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -6436,6 +6559,9 @@ class DecimalColumnStatsData {
       }
       if (isset($vals['numDVs'])) {
         $this->numDVs = $vals['numDVs'];
+      }
+      if (isset($vals['bitVectors'])) {
+        $this->bitVectors = $vals['bitVectors'];
       }
     }
   }
@@ -6489,6 +6615,13 @@ class DecimalColumnStatsData {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 5:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->bitVectors);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -6526,6 +6659,11 @@ class DecimalColumnStatsData {
     if ($this->numDVs !== null) {
       $xfer += $output->writeFieldBegin('numDVs', TType::I64, 4);
       $xfer += $output->writeI64($this->numDVs);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->bitVectors !== null) {
+      $xfer += $output->writeFieldBegin('bitVectors', TType::STRING, 5);
+      $xfer += $output->writeString($this->bitVectors);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -6629,6 +6767,10 @@ class DateColumnStatsData {
    * @var int
    */
   public $numDVs = null;
+  /**
+   * @var string
+   */
+  public $bitVectors = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -6651,6 +6793,10 @@ class DateColumnStatsData {
           'var' => 'numDVs',
           'type' => TType::I64,
           ),
+        5 => array(
+          'var' => 'bitVectors',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -6665,6 +6811,9 @@ class DateColumnStatsData {
       }
       if (isset($vals['numDVs'])) {
         $this->numDVs = $vals['numDVs'];
+      }
+      if (isset($vals['bitVectors'])) {
+        $this->bitVectors = $vals['bitVectors'];
       }
     }
   }
@@ -6718,6 +6867,13 @@ class DateColumnStatsData {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 5:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->bitVectors);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -6755,6 +6911,11 @@ class DateColumnStatsData {
     if ($this->numDVs !== null) {
       $xfer += $output->writeFieldBegin('numDVs', TType::I64, 4);
       $xfer += $output->writeI64($this->numDVs);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->bitVectors !== null) {
+      $xfer += $output->writeFieldBegin('bitVectors', TType::STRING, 5);
+      $xfer += $output->writeString($this->bitVectors);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

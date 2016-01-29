@@ -44,6 +44,11 @@
       <artifactId>hive-shims</artifactId>
       <version>${project.version}</version>
     </dependency>
+	<dependency>
+		<groupId>javolution</groupId>
+		<artifactId>javolution</artifactId>
+		<version>${javolution.version}</version>
+	</dependency>
     <!-- inter-project -->
     <dependency>
       <groupId>com.google.guava</groupId>

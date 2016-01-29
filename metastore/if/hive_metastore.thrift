@@ -325,34 +325,39 @@ struct Index {
 struct BooleanColumnStatsData {
 1: required i64 numTrues,
 2: required i64 numFalses,
-3: required i64 numNulls
+3: required i64 numNulls,
+4: optional string bitVectors
 }
 
 struct DoubleColumnStatsData {
 1: optional double lowValue,
 2: optional double highValue,
 3: required i64 numNulls,
-4: required i64 numDVs
+4: required i64 numDVs,
+5: optional string bitVectors
 }
 
 struct LongColumnStatsData {
 1: optional i64 lowValue,
 2: optional i64 highValue,
 3: required i64 numNulls,
-4: required i64 numDVs
+4: required i64 numDVs,
+5: optional string bitVectors
 }
 
 struct StringColumnStatsData {
 1: required i64 maxColLen,
 2: required double avgColLen,
 3: required i64 numNulls,
-4: required i64 numDVs
+4: required i64 numDVs,
+5: optional string bitVectors
 }
 
 struct BinaryColumnStatsData {
 1: required i64 maxColLen,
 2: required double avgColLen,
-3: required i64 numNulls
+3: required i64 numNulls,
+4: optional string bitVectors
 }
 
 
@@ -365,7 +370,8 @@ struct DecimalColumnStatsData {
 1: optional Decimal lowValue,
 2: optional Decimal highValue,
 3: required i64 numNulls,
-4: required i64 numDVs
+4: required i64 numDVs,
+5: optional string bitVectors
 }
 
 struct Date {
@@ -376,7 +382,8 @@ struct DateColumnStatsData {
 1: optional Date lowValue,
 2: optional Date highValue,
 3: required i64 numNulls,
-4: required i64 numDVs
+4: required i64 numDVs,
+5: optional string bitVectors
 }
 
 union ColumnStatisticsData {

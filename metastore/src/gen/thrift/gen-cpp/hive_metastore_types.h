@@ -2364,25 +2364,34 @@ inline std::ostream& operator<<(std::ostream& out, const Index& obj)
   return out;
 }
 
+typedef struct _BooleanColumnStatsData__isset {
+  _BooleanColumnStatsData__isset() : bitVectors(false) {}
+  bool bitVectors :1;
+} _BooleanColumnStatsData__isset;
 
 class BooleanColumnStatsData {
  public:
 
   BooleanColumnStatsData(const BooleanColumnStatsData&);
   BooleanColumnStatsData& operator=(const BooleanColumnStatsData&);
-  BooleanColumnStatsData() : numTrues(0), numFalses(0), numNulls(0) {
+  BooleanColumnStatsData() : numTrues(0), numFalses(0), numNulls(0), bitVectors() {
   }
 
   virtual ~BooleanColumnStatsData() throw();
   int64_t numTrues;
   int64_t numFalses;
   int64_t numNulls;
+  std::string bitVectors;
+
+  _BooleanColumnStatsData__isset __isset;
 
   void __set_numTrues(const int64_t val);
 
   void __set_numFalses(const int64_t val);
 
   void __set_numNulls(const int64_t val);
+
+  void __set_bitVectors(const std::string& val);
 
   bool operator == (const BooleanColumnStatsData & rhs) const
   {
@@ -2391,6 +2400,10 @@ class BooleanColumnStatsData {
     if (!(numFalses == rhs.numFalses))
       return false;
     if (!(numNulls == rhs.numNulls))
+      return false;
+    if (__isset.bitVectors != rhs.__isset.bitVectors)
+      return false;
+    else if (__isset.bitVectors && !(bitVectors == rhs.bitVectors))
       return false;
     return true;
   }
@@ -2415,9 +2428,10 @@ inline std::ostream& operator<<(std::ostream& out, const BooleanColumnStatsData&
 }
 
 typedef struct _DoubleColumnStatsData__isset {
-  _DoubleColumnStatsData__isset() : lowValue(false), highValue(false) {}
+  _DoubleColumnStatsData__isset() : lowValue(false), highValue(false), bitVectors(false) {}
   bool lowValue :1;
   bool highValue :1;
+  bool bitVectors :1;
 } _DoubleColumnStatsData__isset;
 
 class DoubleColumnStatsData {
@@ -2425,7 +2439,7 @@ class DoubleColumnStatsData {
 
   DoubleColumnStatsData(const DoubleColumnStatsData&);
   DoubleColumnStatsData& operator=(const DoubleColumnStatsData&);
-  DoubleColumnStatsData() : lowValue(0), highValue(0), numNulls(0), numDVs(0) {
+  DoubleColumnStatsData() : lowValue(0), highValue(0), numNulls(0), numDVs(0), bitVectors() {
   }
 
   virtual ~DoubleColumnStatsData() throw();
@@ -2433,6 +2447,7 @@ class DoubleColumnStatsData {
   double highValue;
   int64_t numNulls;
   int64_t numDVs;
+  std::string bitVectors;
 
   _DoubleColumnStatsData__isset __isset;
 
@@ -2443,6 +2458,8 @@ class DoubleColumnStatsData {
   void __set_numNulls(const int64_t val);
 
   void __set_numDVs(const int64_t val);
+
+  void __set_bitVectors(const std::string& val);
 
   bool operator == (const DoubleColumnStatsData & rhs) const
   {
@@ -2457,6 +2474,10 @@ class DoubleColumnStatsData {
     if (!(numNulls == rhs.numNulls))
       return false;
     if (!(numDVs == rhs.numDVs))
+      return false;
+    if (__isset.bitVectors != rhs.__isset.bitVectors)
+      return false;
+    else if (__isset.bitVectors && !(bitVectors == rhs.bitVectors))
       return false;
     return true;
   }
@@ -2481,9 +2502,10 @@ inline std::ostream& operator<<(std::ostream& out, const DoubleColumnStatsData& 
 }
 
 typedef struct _LongColumnStatsData__isset {
-  _LongColumnStatsData__isset() : lowValue(false), highValue(false) {}
+  _LongColumnStatsData__isset() : lowValue(false), highValue(false), bitVectors(false) {}
   bool lowValue :1;
   bool highValue :1;
+  bool bitVectors :1;
 } _LongColumnStatsData__isset;
 
 class LongColumnStatsData {
@@ -2491,7 +2513,7 @@ class LongColumnStatsData {
 
   LongColumnStatsData(const LongColumnStatsData&);
   LongColumnStatsData& operator=(const LongColumnStatsData&);
-  LongColumnStatsData() : lowValue(0), highValue(0), numNulls(0), numDVs(0) {
+  LongColumnStatsData() : lowValue(0), highValue(0), numNulls(0), numDVs(0), bitVectors() {
   }
 
   virtual ~LongColumnStatsData() throw();
@@ -2499,6 +2521,7 @@ class LongColumnStatsData {
   int64_t highValue;
   int64_t numNulls;
   int64_t numDVs;
+  std::string bitVectors;
 
   _LongColumnStatsData__isset __isset;
 
@@ -2509,6 +2532,8 @@ class LongColumnStatsData {
   void __set_numNulls(const int64_t val);
 
   void __set_numDVs(const int64_t val);
+
+  void __set_bitVectors(const std::string& val);
 
   bool operator == (const LongColumnStatsData & rhs) const
   {
@@ -2523,6 +2548,10 @@ class LongColumnStatsData {
     if (!(numNulls == rhs.numNulls))
       return false;
     if (!(numDVs == rhs.numDVs))
+      return false;
+    if (__isset.bitVectors != rhs.__isset.bitVectors)
+      return false;
+    else if (__isset.bitVectors && !(bitVectors == rhs.bitVectors))
       return false;
     return true;
   }
@@ -2546,13 +2575,17 @@ inline std::ostream& operator<<(std::ostream& out, const LongColumnStatsData& ob
   return out;
 }
 
+typedef struct _StringColumnStatsData__isset {
+  _StringColumnStatsData__isset() : bitVectors(false) {}
+  bool bitVectors :1;
+} _StringColumnStatsData__isset;
 
 class StringColumnStatsData {
  public:
 
   StringColumnStatsData(const StringColumnStatsData&);
   StringColumnStatsData& operator=(const StringColumnStatsData&);
-  StringColumnStatsData() : maxColLen(0), avgColLen(0), numNulls(0), numDVs(0) {
+  StringColumnStatsData() : maxColLen(0), avgColLen(0), numNulls(0), numDVs(0), bitVectors() {
   }
 
   virtual ~StringColumnStatsData() throw();
@@ -2560,6 +2593,9 @@ class StringColumnStatsData {
   double avgColLen;
   int64_t numNulls;
   int64_t numDVs;
+  std::string bitVectors;
+
+  _StringColumnStatsData__isset __isset;
 
   void __set_maxColLen(const int64_t val);
 
@@ -2568,6 +2604,8 @@ class StringColumnStatsData {
   void __set_numNulls(const int64_t val);
 
   void __set_numDVs(const int64_t val);
+
+  void __set_bitVectors(const std::string& val);
 
   bool operator == (const StringColumnStatsData & rhs) const
   {
@@ -2578,6 +2616,10 @@ class StringColumnStatsData {
     if (!(numNulls == rhs.numNulls))
       return false;
     if (!(numDVs == rhs.numDVs))
+      return false;
+    if (__isset.bitVectors != rhs.__isset.bitVectors)
+      return false;
+    else if (__isset.bitVectors && !(bitVectors == rhs.bitVectors))
       return false;
     return true;
   }
@@ -2601,25 +2643,34 @@ inline std::ostream& operator<<(std::ostream& out, const StringColumnStatsData& 
   return out;
 }
 
+typedef struct _BinaryColumnStatsData__isset {
+  _BinaryColumnStatsData__isset() : bitVectors(false) {}
+  bool bitVectors :1;
+} _BinaryColumnStatsData__isset;
 
 class BinaryColumnStatsData {
  public:
 
   BinaryColumnStatsData(const BinaryColumnStatsData&);
   BinaryColumnStatsData& operator=(const BinaryColumnStatsData&);
-  BinaryColumnStatsData() : maxColLen(0), avgColLen(0), numNulls(0) {
+  BinaryColumnStatsData() : maxColLen(0), avgColLen(0), numNulls(0), bitVectors() {
   }
 
   virtual ~BinaryColumnStatsData() throw();
   int64_t maxColLen;
   double avgColLen;
   int64_t numNulls;
+  std::string bitVectors;
+
+  _BinaryColumnStatsData__isset __isset;
 
   void __set_maxColLen(const int64_t val);
 
   void __set_avgColLen(const double val);
 
   void __set_numNulls(const int64_t val);
+
+  void __set_bitVectors(const std::string& val);
 
   bool operator == (const BinaryColumnStatsData & rhs) const
   {
@@ -2628,6 +2679,10 @@ class BinaryColumnStatsData {
     if (!(avgColLen == rhs.avgColLen))
       return false;
     if (!(numNulls == rhs.numNulls))
+      return false;
+    if (__isset.bitVectors != rhs.__isset.bitVectors)
+      return false;
+    else if (__isset.bitVectors && !(bitVectors == rhs.bitVectors))
       return false;
     return true;
   }
@@ -2697,9 +2752,10 @@ inline std::ostream& operator<<(std::ostream& out, const Decimal& obj)
 }
 
 typedef struct _DecimalColumnStatsData__isset {
-  _DecimalColumnStatsData__isset() : lowValue(false), highValue(false) {}
+  _DecimalColumnStatsData__isset() : lowValue(false), highValue(false), bitVectors(false) {}
   bool lowValue :1;
   bool highValue :1;
+  bool bitVectors :1;
 } _DecimalColumnStatsData__isset;
 
 class DecimalColumnStatsData {
@@ -2707,7 +2763,7 @@ class DecimalColumnStatsData {
 
   DecimalColumnStatsData(const DecimalColumnStatsData&);
   DecimalColumnStatsData& operator=(const DecimalColumnStatsData&);
-  DecimalColumnStatsData() : numNulls(0), numDVs(0) {
+  DecimalColumnStatsData() : numNulls(0), numDVs(0), bitVectors() {
   }
 
   virtual ~DecimalColumnStatsData() throw();
@@ -2715,6 +2771,7 @@ class DecimalColumnStatsData {
   Decimal highValue;
   int64_t numNulls;
   int64_t numDVs;
+  std::string bitVectors;
 
   _DecimalColumnStatsData__isset __isset;
 
@@ -2725,6 +2782,8 @@ class DecimalColumnStatsData {
   void __set_numNulls(const int64_t val);
 
   void __set_numDVs(const int64_t val);
+
+  void __set_bitVectors(const std::string& val);
 
   bool operator == (const DecimalColumnStatsData & rhs) const
   {
@@ -2739,6 +2798,10 @@ class DecimalColumnStatsData {
     if (!(numNulls == rhs.numNulls))
       return false;
     if (!(numDVs == rhs.numDVs))
+      return false;
+    if (__isset.bitVectors != rhs.__isset.bitVectors)
+      return false;
+    else if (__isset.bitVectors && !(bitVectors == rhs.bitVectors))
       return false;
     return true;
   }
@@ -2803,9 +2866,10 @@ inline std::ostream& operator<<(std::ostream& out, const Date& obj)
 }
 
 typedef struct _DateColumnStatsData__isset {
-  _DateColumnStatsData__isset() : lowValue(false), highValue(false) {}
+  _DateColumnStatsData__isset() : lowValue(false), highValue(false), bitVectors(false) {}
   bool lowValue :1;
   bool highValue :1;
+  bool bitVectors :1;
 } _DateColumnStatsData__isset;
 
 class DateColumnStatsData {
@@ -2813,7 +2877,7 @@ class DateColumnStatsData {
 
   DateColumnStatsData(const DateColumnStatsData&);
   DateColumnStatsData& operator=(const DateColumnStatsData&);
-  DateColumnStatsData() : numNulls(0), numDVs(0) {
+  DateColumnStatsData() : numNulls(0), numDVs(0), bitVectors() {
   }
 
   virtual ~DateColumnStatsData() throw();
@@ -2821,6 +2885,7 @@ class DateColumnStatsData {
   Date highValue;
   int64_t numNulls;
   int64_t numDVs;
+  std::string bitVectors;
 
   _DateColumnStatsData__isset __isset;
 
@@ -2831,6 +2896,8 @@ class DateColumnStatsData {
   void __set_numNulls(const int64_t val);
 
   void __set_numDVs(const int64_t val);
+
+  void __set_bitVectors(const std::string& val);
 
   bool operator == (const DateColumnStatsData & rhs) const
   {
@@ -2845,6 +2912,10 @@ class DateColumnStatsData {
     if (!(numNulls == rhs.numNulls))
       return false;
     if (!(numDVs == rhs.numDVs))
+      return false;
+    if (__isset.bitVectors != rhs.__isset.bitVectors)
+      return false;
+    else if (__isset.bitVectors && !(bitVectors == rhs.bitVectors))
       return false;
     return true;
   }

@@ -19,6 +19,7 @@
 
 package org.apache.hadoop.hive.metastore.hbase.stats;
 
+import org.apache.hadoop.hive.metastore.NumDistinctValueEstimator;
 import org.apache.hadoop.hive.metastore.api.BinaryColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
@@ -34,23 +35,34 @@ public class ColumnStatsAggregatorFactory {
   private ColumnStatsAggregatorFactory() {
   }
 
-  public static ColumnStatsAggregator getColumnStatsAggregator(_Fields type) {
+  public static ColumnStatsAggregator getColumnStatsAggregator(_Fields type, int numBitVectors) {
+    ColumnStatsAggregator agg;
     switch (type) {
     case BOOLEAN_STATS:
-      return new BooleanColumnStatsAggregator();
+      agg = new BooleanColumnStatsAggregator();
+      break;
     case LONG_STATS:
-      return new LongColumnStatsAggregator();
+      agg = new LongColumnStatsAggregator();
+      break;
     case DOUBLE_STATS:
-      return new DoubleColumnStatsAggregator();
+      agg = new DoubleColumnStatsAggregator();
+      break;
     case STRING_STATS:
-      return new StringColumnStatsAggregator();
+      agg = new StringColumnStatsAggregator();
+      break;
     case BINARY_STATS:
-      return new BinaryColumnStatsAggregator();
+      agg = new BinaryColumnStatsAggregator();
+      break;
     case DECIMAL_STATS:
-      return new DecimalColumnStatsAggregator();
+      agg = new DecimalColumnStatsAggregator();
+      break;
     default:
       throw new RuntimeException("Woh, bad.  Unknown stats type " + type.toString());
     }
+    if (numBitVectors > 0) {
+      agg.ndvEstimator = new NumDistinctValueEstimator(numBitVectors);
+    }
+    return agg;
   }
 
   public static ColumnStatisticsObj newColumnStaticsObj(String colName, String colType, _Fields type) {

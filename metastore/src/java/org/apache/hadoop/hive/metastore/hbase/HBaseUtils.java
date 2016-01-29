@@ -1133,9 +1133,8 @@ class HBaseUtils {
     return proto.toByteArray();
   }
 
-  private static HbaseMetastoreProto.ColumnStats
-  protoBufStatsForOneColumn(ColumnStatistics partitionColumnStats, ColumnStatisticsObj colStats)
-      throws IOException {
+  private static HbaseMetastoreProto.ColumnStats protoBufStatsForOneColumn(
+      ColumnStatistics partitionColumnStats, ColumnStatisticsObj colStats) throws IOException {
     HbaseMetastoreProto.ColumnStats.Builder builder = HbaseMetastoreProto.ColumnStats.newBuilder();
     if (partitionColumnStats != null) {
       builder.setLastAnalyzed(partitionColumnStats.getStatsDesc().getLastAnalyzed());
@@ -1147,80 +1146,77 @@ class HBaseUtils {
 
     ColumnStatisticsData colData = colStats.getStatsData();
     switch (colData.getSetField()) {
-      case BOOLEAN_STATS:
-        BooleanColumnStatsData boolData = colData.getBooleanStats();
-        builder.setNumNulls(boolData.getNumNulls());
-        builder.setBoolStats(
-            HbaseMetastoreProto.ColumnStats.BooleanStats.newBuilder()
-                .setNumTrues(boolData.getNumTrues())
-                .setNumFalses(boolData.getNumFalses())
-                .build());
-        break;
+    case BOOLEAN_STATS:
+      BooleanColumnStatsData boolData = colData.getBooleanStats();
+      builder.setNumNulls(boolData.getNumNulls());
+      builder.setBoolStats(HbaseMetastoreProto.ColumnStats.BooleanStats.newBuilder()
+          .setNumTrues(boolData.getNumTrues()).setNumFalses(boolData.getNumFalses()).build());
+      break;
 
-      case LONG_STATS:
-        LongColumnStatsData longData = colData.getLongStats();
-        builder.setNumNulls(longData.getNumNulls());
-        builder.setNumDistinctValues(longData.getNumDVs());
-        builder.setLongStats(
-            HbaseMetastoreProto.ColumnStats.LongStats.newBuilder()
-                .setLowValue(longData.getLowValue())
-                .setHighValue(longData.getHighValue())
-                .build());
-        break;
+    case LONG_STATS:
+      LongColumnStatsData longData = colData.getLongStats();
+      builder.setNumNulls(longData.getNumNulls());
+      builder.setNumDistinctValues(longData.getNumDVs());
+      if (longData.isSetBitVectors()) {
+        builder.setBitVectors(longData.getBitVectors());
+      }
+      builder.setLongStats(HbaseMetastoreProto.ColumnStats.LongStats.newBuilder()
+          .setLowValue(longData.getLowValue()).setHighValue(longData.getHighValue()).build());
+      break;
 
-      case DOUBLE_STATS:
-        DoubleColumnStatsData doubleData = colData.getDoubleStats();
-        builder.setNumNulls(doubleData.getNumNulls());
-        builder.setNumDistinctValues(doubleData.getNumDVs());
-        builder.setDoubleStats(
-            HbaseMetastoreProto.ColumnStats.DoubleStats.newBuilder()
-                .setLowValue(doubleData.getLowValue())
-                .setHighValue(doubleData.getHighValue())
-                .build());
-        break;
+    case DOUBLE_STATS:
+      DoubleColumnStatsData doubleData = colData.getDoubleStats();
+      builder.setNumNulls(doubleData.getNumNulls());
+      builder.setNumDistinctValues(doubleData.getNumDVs());
+      if (doubleData.isSetBitVectors()) {
+        builder.setBitVectors(doubleData.getBitVectors());
+      }
+      builder.setDoubleStats(HbaseMetastoreProto.ColumnStats.DoubleStats.newBuilder()
+          .setLowValue(doubleData.getLowValue()).setHighValue(doubleData.getHighValue()).build());
+      break;
 
-      case STRING_STATS:
-        StringColumnStatsData stringData = colData.getStringStats();
-        builder.setNumNulls(stringData.getNumNulls());
-        builder.setNumDistinctValues(stringData.getNumDVs());
-        builder.setStringStats(
-            HbaseMetastoreProto.ColumnStats.StringStats.newBuilder()
-                .setMaxColLength(stringData.getMaxColLen())
-                .setAvgColLength(stringData.getAvgColLen())
-                .build());
-        break;
+    case STRING_STATS:
+      StringColumnStatsData stringData = colData.getStringStats();
+      builder.setNumNulls(stringData.getNumNulls());
+      builder.setNumDistinctValues(stringData.getNumDVs());
+      if (stringData.isSetBitVectors()) {
+        builder.setBitVectors(stringData.getBitVectors());
+      }
+      builder.setStringStats(HbaseMetastoreProto.ColumnStats.StringStats.newBuilder()
+          .setMaxColLength(stringData.getMaxColLen()).setAvgColLength(stringData.getAvgColLen())
+          .build());
+      break;
 
-      case BINARY_STATS:
-        BinaryColumnStatsData binaryData = colData.getBinaryStats();
-        builder.setNumNulls(binaryData.getNumNulls());
-        builder.setBinaryStats(
-            HbaseMetastoreProto.ColumnStats.StringStats.newBuilder()
-                .setMaxColLength(binaryData.getMaxColLen())
-                .setAvgColLength(binaryData.getAvgColLen())
-                .build());
-        break;
+    case BINARY_STATS:
+      BinaryColumnStatsData binaryData = colData.getBinaryStats();
+      builder.setNumNulls(binaryData.getNumNulls());
+      builder.setBinaryStats(HbaseMetastoreProto.ColumnStats.StringStats.newBuilder()
+          .setMaxColLength(binaryData.getMaxColLen()).setAvgColLength(binaryData.getAvgColLen())
+          .build());
+      break;
 
-      case DECIMAL_STATS:
-        DecimalColumnStatsData decimalData = colData.getDecimalStats();
-        builder.setNumNulls(decimalData.getNumNulls());
-        builder.setNumDistinctValues(decimalData.getNumDVs());
-        builder.setDecimalStats(
-            HbaseMetastoreProto.ColumnStats.DecimalStats.newBuilder()
-                .setLowValue(
-                    HbaseMetastoreProto.ColumnStats.DecimalStats.Decimal.newBuilder()
+    case DECIMAL_STATS:
+      DecimalColumnStatsData decimalData = colData.getDecimalStats();
+      builder.setNumNulls(decimalData.getNumNulls());
+      builder.setNumDistinctValues(decimalData.getNumDVs());
+      if (decimalData.isSetBitVectors()) {
+        builder.setBitVectors(decimalData.getBitVectors());
+      }
+      builder.setDecimalStats(
+          HbaseMetastoreProto.ColumnStats.DecimalStats
+              .newBuilder()
+              .setLowValue(
+                  HbaseMetastoreProto.ColumnStats.DecimalStats.Decimal.newBuilder()
                       .setUnscaled(ByteString.copyFrom(decimalData.getLowValue().getUnscaled()))
-                      .setScale(decimalData.getLowValue().getScale())
-                      .build())
-                .setHighValue(
-                    HbaseMetastoreProto.ColumnStats.DecimalStats.Decimal.newBuilder()
-                    .setUnscaled(ByteString.copyFrom(decimalData.getHighValue().getUnscaled()))
-                    .setScale(decimalData.getHighValue().getScale())
-                    .build()))
-                .build();
-        break;
+                      .setScale(decimalData.getLowValue().getScale()).build())
+              .setHighValue(
+                  HbaseMetastoreProto.ColumnStats.DecimalStats.Decimal.newBuilder()
+                      .setUnscaled(ByteString.copyFrom(decimalData.getHighValue().getUnscaled()))
+                      .setScale(decimalData.getHighValue().getScale()).build())).build();
+      break;
 
-      default:
-        throw new RuntimeException("Woh, bad.  Unknown stats type!");
+    default:
+      throw new RuntimeException("Woh, bad.  Unknown stats type!");
     }
     return builder.build();
   }
@@ -1265,6 +1261,7 @@ class HBaseUtils {
       }
       longData.setNumNulls(proto.getNumNulls());
       longData.setNumDVs(proto.getNumDistinctValues());
+      longData.setBitVectors(proto.getBitVectors());
       colData.setLongStats(longData);
     } else if (proto.hasDoubleStats()) {
       DoubleColumnStatsData doubleData = new DoubleColumnStatsData();
@@ -1276,6 +1273,7 @@ class HBaseUtils {
       }
       doubleData.setNumNulls(proto.getNumNulls());
       doubleData.setNumDVs(proto.getNumDistinctValues());
+      doubleData.setBitVectors(proto.getBitVectors());
       colData.setDoubleStats(doubleData);
     } else if (proto.hasStringStats()) {
       StringColumnStatsData stringData = new StringColumnStatsData();
@@ -1283,6 +1281,7 @@ class HBaseUtils {
       stringData.setAvgColLen(proto.getStringStats().getAvgColLength());
       stringData.setNumNulls(proto.getNumNulls());
       stringData.setNumDVs(proto.getNumDistinctValues());
+      stringData.setBitVectors(proto.getBitVectors());
       colData.setStringStats(stringData);
     } else if (proto.hasBinaryStats()) {
       BinaryColumnStatsData binaryData = new BinaryColumnStatsData();
@@ -1306,6 +1305,7 @@ class HBaseUtils {
       }
       decimalData.setNumNulls(proto.getNumNulls());
       decimalData.setNumDVs(proto.getNumDistinctValues());
+      decimalData.setBitVectors(proto.getBitVectors());
       colData.setDecimalStats(decimalData);
     } else {
       throw new RuntimeException("Woh, bad.  Unknown stats type!");

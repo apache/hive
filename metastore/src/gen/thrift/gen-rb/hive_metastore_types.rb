@@ -824,11 +824,13 @@ class BooleanColumnStatsData
   NUMTRUES = 1
   NUMFALSES = 2
   NUMNULLS = 3
+  BITVECTORS = 4
 
   FIELDS = {
     NUMTRUES => {:type => ::Thrift::Types::I64, :name => 'numTrues'},
     NUMFALSES => {:type => ::Thrift::Types::I64, :name => 'numFalses'},
-    NUMNULLS => {:type => ::Thrift::Types::I64, :name => 'numNulls'}
+    NUMNULLS => {:type => ::Thrift::Types::I64, :name => 'numNulls'},
+    BITVECTORS => {:type => ::Thrift::Types::STRING, :name => 'bitVectors', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -848,12 +850,14 @@ class DoubleColumnStatsData
   HIGHVALUE = 2
   NUMNULLS = 3
   NUMDVS = 4
+  BITVECTORS = 5
 
   FIELDS = {
     LOWVALUE => {:type => ::Thrift::Types::DOUBLE, :name => 'lowValue', :optional => true},
     HIGHVALUE => {:type => ::Thrift::Types::DOUBLE, :name => 'highValue', :optional => true},
     NUMNULLS => {:type => ::Thrift::Types::I64, :name => 'numNulls'},
-    NUMDVS => {:type => ::Thrift::Types::I64, :name => 'numDVs'}
+    NUMDVS => {:type => ::Thrift::Types::I64, :name => 'numDVs'},
+    BITVECTORS => {:type => ::Thrift::Types::STRING, :name => 'bitVectors', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -872,12 +876,14 @@ class LongColumnStatsData
   HIGHVALUE = 2
   NUMNULLS = 3
   NUMDVS = 4
+  BITVECTORS = 5
 
   FIELDS = {
     LOWVALUE => {:type => ::Thrift::Types::I64, :name => 'lowValue', :optional => true},
     HIGHVALUE => {:type => ::Thrift::Types::I64, :name => 'highValue', :optional => true},
     NUMNULLS => {:type => ::Thrift::Types::I64, :name => 'numNulls'},
-    NUMDVS => {:type => ::Thrift::Types::I64, :name => 'numDVs'}
+    NUMDVS => {:type => ::Thrift::Types::I64, :name => 'numDVs'},
+    BITVECTORS => {:type => ::Thrift::Types::STRING, :name => 'bitVectors', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -896,12 +902,14 @@ class StringColumnStatsData
   AVGCOLLEN = 2
   NUMNULLS = 3
   NUMDVS = 4
+  BITVECTORS = 5
 
   FIELDS = {
     MAXCOLLEN => {:type => ::Thrift::Types::I64, :name => 'maxColLen'},
     AVGCOLLEN => {:type => ::Thrift::Types::DOUBLE, :name => 'avgColLen'},
     NUMNULLS => {:type => ::Thrift::Types::I64, :name => 'numNulls'},
-    NUMDVS => {:type => ::Thrift::Types::I64, :name => 'numDVs'}
+    NUMDVS => {:type => ::Thrift::Types::I64, :name => 'numDVs'},
+    BITVECTORS => {:type => ::Thrift::Types::STRING, :name => 'bitVectors', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -921,11 +929,13 @@ class BinaryColumnStatsData
   MAXCOLLEN = 1
   AVGCOLLEN = 2
   NUMNULLS = 3
+  BITVECTORS = 4
 
   FIELDS = {
     MAXCOLLEN => {:type => ::Thrift::Types::I64, :name => 'maxColLen'},
     AVGCOLLEN => {:type => ::Thrift::Types::DOUBLE, :name => 'avgColLen'},
-    NUMNULLS => {:type => ::Thrift::Types::I64, :name => 'numNulls'}
+    NUMNULLS => {:type => ::Thrift::Types::I64, :name => 'numNulls'},
+    BITVECTORS => {:type => ::Thrift::Types::STRING, :name => 'bitVectors', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -965,12 +975,14 @@ class DecimalColumnStatsData
   HIGHVALUE = 2
   NUMNULLS = 3
   NUMDVS = 4
+  BITVECTORS = 5
 
   FIELDS = {
     LOWVALUE => {:type => ::Thrift::Types::STRUCT, :name => 'lowValue', :class => ::Decimal, :optional => true},
     HIGHVALUE => {:type => ::Thrift::Types::STRUCT, :name => 'highValue', :class => ::Decimal, :optional => true},
     NUMNULLS => {:type => ::Thrift::Types::I64, :name => 'numNulls'},
-    NUMDVS => {:type => ::Thrift::Types::I64, :name => 'numDVs'}
+    NUMDVS => {:type => ::Thrift::Types::I64, :name => 'numDVs'},
+    BITVECTORS => {:type => ::Thrift::Types::STRING, :name => 'bitVectors', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -1006,12 +1018,14 @@ class DateColumnStatsData
   HIGHVALUE = 2
   NUMNULLS = 3
   NUMDVS = 4
+  BITVECTORS = 5
 
   FIELDS = {
     LOWVALUE => {:type => ::Thrift::Types::STRUCT, :name => 'lowValue', :class => ::Date, :optional => true},
     HIGHVALUE => {:type => ::Thrift::Types::STRUCT, :name => 'highValue', :class => ::Date, :optional => true},
     NUMNULLS => {:type => ::Thrift::Types::I64, :name => 'numNulls'},
-    NUMDVS => {:type => ::Thrift::Types::I64, :name => 'numDVs'}
+    NUMDVS => {:type => ::Thrift::Types::I64, :name => 'numDVs'},
+    BITVECTORS => {:type => ::Thrift::Types::STRING, :name => 'bitVectors', :optional => true}
   }
 
   def struct_fields; FIELDS; end

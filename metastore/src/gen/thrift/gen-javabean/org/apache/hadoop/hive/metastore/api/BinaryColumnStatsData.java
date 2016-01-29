@@ -41,6 +41,7 @@ public class BinaryColumnStatsData implements org.apache.thrift.TBase<BinaryColu
   private static final org.apache.thrift.protocol.TField MAX_COL_LEN_FIELD_DESC = new org.apache.thrift.protocol.TField("maxColLen", org.apache.thrift.protocol.TType.I64, (short)1);
   private static final org.apache.thrift.protocol.TField AVG_COL_LEN_FIELD_DESC = new org.apache.thrift.protocol.TField("avgColLen", org.apache.thrift.protocol.TType.DOUBLE, (short)2);
   private static final org.apache.thrift.protocol.TField NUM_NULLS_FIELD_DESC = new org.apache.thrift.protocol.TField("numNulls", org.apache.thrift.protocol.TType.I64, (short)3);
+  private static final org.apache.thrift.protocol.TField BIT_VECTORS_FIELD_DESC = new org.apache.thrift.protocol.TField("bitVectors", org.apache.thrift.protocol.TType.STRING, (short)4);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -51,12 +52,14 @@ public class BinaryColumnStatsData implements org.apache.thrift.TBase<BinaryColu
   private long maxColLen; // required
   private double avgColLen; // required
   private long numNulls; // required
+  private String bitVectors; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     MAX_COL_LEN((short)1, "maxColLen"),
     AVG_COL_LEN((short)2, "avgColLen"),
-    NUM_NULLS((short)3, "numNulls");
+    NUM_NULLS((short)3, "numNulls"),
+    BIT_VECTORS((short)4, "bitVectors");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -77,6 +80,8 @@ public class BinaryColumnStatsData implements org.apache.thrift.TBase<BinaryColu
           return AVG_COL_LEN;
         case 3: // NUM_NULLS
           return NUM_NULLS;
+        case 4: // BIT_VECTORS
+          return BIT_VECTORS;
         default:
           return null;
       }
@@ -121,6 +126,7 @@ public class BinaryColumnStatsData implements org.apache.thrift.TBase<BinaryColu
   private static final int __AVGCOLLEN_ISSET_ID = 1;
   private static final int __NUMNULLS_ISSET_ID = 2;
   private byte __isset_bitfield = 0;
+  private static final _Fields optionals[] = {_Fields.BIT_VECTORS};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -130,6 +136,8 @@ public class BinaryColumnStatsData implements org.apache.thrift.TBase<BinaryColu
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.DOUBLE)));
     tmpMap.put(_Fields.NUM_NULLS, new org.apache.thrift.meta_data.FieldMetaData("numNulls", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.BIT_VECTORS, new org.apache.thrift.meta_data.FieldMetaData("bitVectors", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(BinaryColumnStatsData.class, metaDataMap);
   }
@@ -159,6 +167,9 @@ public class BinaryColumnStatsData implements org.apache.thrift.TBase<BinaryColu
     this.maxColLen = other.maxColLen;
     this.avgColLen = other.avgColLen;
     this.numNulls = other.numNulls;
+    if (other.isSetBitVectors()) {
+      this.bitVectors = other.bitVectors;
+    }
   }
 
   public BinaryColumnStatsData deepCopy() {
@@ -173,6 +184,7 @@ public class BinaryColumnStatsData implements org.apache.thrift.TBase<BinaryColu
     this.avgColLen = 0.0;
     setNumNullsIsSet(false);
     this.numNulls = 0;
+    this.bitVectors = null;
   }
 
   public long getMaxColLen() {
@@ -241,6 +253,29 @@ public class BinaryColumnStatsData implements org.apache.thrift.TBase<BinaryColu
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __NUMNULLS_ISSET_ID, value);
   }
 
+  public String getBitVectors() {
+    return this.bitVectors;
+  }
+
+  public void setBitVectors(String bitVectors) {
+    this.bitVectors = bitVectors;
+  }
+
+  public void unsetBitVectors() {
+    this.bitVectors = null;
+  }
+
+  /** Returns true if field bitVectors is set (has been assigned a value) and false otherwise */
+  public boolean isSetBitVectors() {
+    return this.bitVectors != null;
+  }
+
+  public void setBitVectorsIsSet(boolean value) {
+    if (!value) {
+      this.bitVectors = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case MAX_COL_LEN:
@@ -267,6 +302,14 @@ public class BinaryColumnStatsData implements org.apache.thrift.TBase<BinaryColu
       }
       break;
 
+    case BIT_VECTORS:
+      if (value == null) {
+        unsetBitVectors();
+      } else {
+        setBitVectors((String)value);
+      }
+      break;
+
     }
   }
 
@@ -280,6 +323,9 @@ public class BinaryColumnStatsData implements org.apache.thrift.TBase<BinaryColu
 
     case NUM_NULLS:
       return getNumNulls();
+
+    case BIT_VECTORS:
+      return getBitVectors();
 
     }
     throw new IllegalStateException();
@@ -298,6 +344,8 @@ public class BinaryColumnStatsData implements org.apache.thrift.TBase<BinaryColu
       return isSetAvgColLen();
     case NUM_NULLS:
       return isSetNumNulls();
+    case BIT_VECTORS:
+      return isSetBitVectors();
     }
     throw new IllegalStateException();
   }
@@ -342,6 +390,15 @@ public class BinaryColumnStatsData implements org.apache.thrift.TBase<BinaryColu
         return false;
     }
 
+    boolean this_present_bitVectors = true && this.isSetBitVectors();
+    boolean that_present_bitVectors = true && that.isSetBitVectors();
+    if (this_present_bitVectors || that_present_bitVectors) {
+      if (!(this_present_bitVectors && that_present_bitVectors))
+        return false;
+      if (!this.bitVectors.equals(that.bitVectors))
+        return false;
+    }
+
     return true;
   }
 
@@ -363,6 +420,11 @@ public class BinaryColumnStatsData implements org.apache.thrift.TBase<BinaryColu
     list.add(present_numNulls);
     if (present_numNulls)
       list.add(numNulls);
+
+    boolean present_bitVectors = true && (isSetBitVectors());
+    list.add(present_bitVectors);
+    if (present_bitVectors)
+      list.add(bitVectors);
 
     return list.hashCode();
   }
@@ -405,6 +467,16 @@ public class BinaryColumnStatsData implements org.apache.thrift.TBase<BinaryColu
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetBitVectors()).compareTo(other.isSetBitVectors());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetBitVectors()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.bitVectors, other.bitVectors);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -436,6 +508,16 @@ public class BinaryColumnStatsData implements org.apache.thrift.TBase<BinaryColu
     sb.append("numNulls:");
     sb.append(this.numNulls);
     first = false;
+    if (isSetBitVectors()) {
+      if (!first) sb.append(", ");
+      sb.append("bitVectors:");
+      if (this.bitVectors == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.bitVectors);
+      }
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -517,6 +599,14 @@ public class BinaryColumnStatsData implements org.apache.thrift.TBase<BinaryColu
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 4: // BIT_VECTORS
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.bitVectors = iprot.readString();
+              struct.setBitVectorsIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -539,6 +629,13 @@ public class BinaryColumnStatsData implements org.apache.thrift.TBase<BinaryColu
       oprot.writeFieldBegin(NUM_NULLS_FIELD_DESC);
       oprot.writeI64(struct.numNulls);
       oprot.writeFieldEnd();
+      if (struct.bitVectors != null) {
+        if (struct.isSetBitVectors()) {
+          oprot.writeFieldBegin(BIT_VECTORS_FIELD_DESC);
+          oprot.writeString(struct.bitVectors);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -559,6 +656,14 @@ public class BinaryColumnStatsData implements org.apache.thrift.TBase<BinaryColu
       oprot.writeI64(struct.maxColLen);
       oprot.writeDouble(struct.avgColLen);
       oprot.writeI64(struct.numNulls);
+      BitSet optionals = new BitSet();
+      if (struct.isSetBitVectors()) {
+        optionals.set(0);
+      }
+      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetBitVectors()) {
+        oprot.writeString(struct.bitVectors);
+      }
     }
 
     @Override
@@ -570,6 +675,11 @@ public class BinaryColumnStatsData implements org.apache.thrift.TBase<BinaryColu
       struct.setAvgColLenIsSet(true);
       struct.numNulls = iprot.readI64();
       struct.setNumNullsIsSet(true);
+      BitSet incoming = iprot.readBitSet(1);
+      if (incoming.get(0)) {
+        struct.bitVectors = iprot.readString();
+        struct.setBitVectorsIsSet(true);
+      }
     }
   }
 

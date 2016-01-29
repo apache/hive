@@ -19,8 +19,10 @@
 
 package org.apache.hadoop.hive.metastore.hbase.stats;
 
+import org.apache.hadoop.hive.metastore.NumDistinctValueEstimator;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 
-public interface ColumnStatsAggregator {
-  public void aggregate(ColumnStatisticsObj aggregateColStats, ColumnStatisticsObj newColStats);
+public abstract class ColumnStatsAggregator {
+  NumDistinctValueEstimator ndvEstimator = null;
+  public abstract void aggregate(ColumnStatisticsObj aggregateColStats, ColumnStatisticsObj newColStats);
 }

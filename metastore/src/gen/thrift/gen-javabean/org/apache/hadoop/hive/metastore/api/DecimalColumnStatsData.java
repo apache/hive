@@ -42,6 +42,7 @@ public class DecimalColumnStatsData implements org.apache.thrift.TBase<DecimalCo
   private static final org.apache.thrift.protocol.TField HIGH_VALUE_FIELD_DESC = new org.apache.thrift.protocol.TField("highValue", org.apache.thrift.protocol.TType.STRUCT, (short)2);
   private static final org.apache.thrift.protocol.TField NUM_NULLS_FIELD_DESC = new org.apache.thrift.protocol.TField("numNulls", org.apache.thrift.protocol.TType.I64, (short)3);
   private static final org.apache.thrift.protocol.TField NUM_DVS_FIELD_DESC = new org.apache.thrift.protocol.TField("numDVs", org.apache.thrift.protocol.TType.I64, (short)4);
+  private static final org.apache.thrift.protocol.TField BIT_VECTORS_FIELD_DESC = new org.apache.thrift.protocol.TField("bitVectors", org.apache.thrift.protocol.TType.STRING, (short)5);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -53,13 +54,15 @@ public class DecimalColumnStatsData implements org.apache.thrift.TBase<DecimalCo
   private Decimal highValue; // optional
   private long numNulls; // required
   private long numDVs; // required
+  private String bitVectors; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     LOW_VALUE((short)1, "lowValue"),
     HIGH_VALUE((short)2, "highValue"),
     NUM_NULLS((short)3, "numNulls"),
-    NUM_DVS((short)4, "numDVs");
+    NUM_DVS((short)4, "numDVs"),
+    BIT_VECTORS((short)5, "bitVectors");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -82,6 +85,8 @@ public class DecimalColumnStatsData implements org.apache.thrift.TBase<DecimalCo
           return NUM_NULLS;
         case 4: // NUM_DVS
           return NUM_DVS;
+        case 5: // BIT_VECTORS
+          return BIT_VECTORS;
         default:
           return null;
       }
@@ -125,7 +130,7 @@ public class DecimalColumnStatsData implements org.apache.thrift.TBase<DecimalCo
   private static final int __NUMNULLS_ISSET_ID = 0;
   private static final int __NUMDVS_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.LOW_VALUE,_Fields.HIGH_VALUE};
+  private static final _Fields optionals[] = {_Fields.LOW_VALUE,_Fields.HIGH_VALUE,_Fields.BIT_VECTORS};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -137,6 +142,8 @@ public class DecimalColumnStatsData implements org.apache.thrift.TBase<DecimalCo
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     tmpMap.put(_Fields.NUM_DVS, new org.apache.thrift.meta_data.FieldMetaData("numDVs", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.BIT_VECTORS, new org.apache.thrift.meta_data.FieldMetaData("bitVectors", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(DecimalColumnStatsData.class, metaDataMap);
   }
@@ -168,6 +175,9 @@ public class DecimalColumnStatsData implements org.apache.thrift.TBase<DecimalCo
     }
     this.numNulls = other.numNulls;
     this.numDVs = other.numDVs;
+    if (other.isSetBitVectors()) {
+      this.bitVectors = other.bitVectors;
+    }
   }
 
   public DecimalColumnStatsData deepCopy() {
@@ -182,6 +192,7 @@ public class DecimalColumnStatsData implements org.apache.thrift.TBase<DecimalCo
     this.numNulls = 0;
     setNumDVsIsSet(false);
     this.numDVs = 0;
+    this.bitVectors = null;
   }
 
   public Decimal getLowValue() {
@@ -274,6 +285,29 @@ public class DecimalColumnStatsData implements org.apache.thrift.TBase<DecimalCo
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __NUMDVS_ISSET_ID, value);
   }
 
+  public String getBitVectors() {
+    return this.bitVectors;
+  }
+
+  public void setBitVectors(String bitVectors) {
+    this.bitVectors = bitVectors;
+  }
+
+  public void unsetBitVectors() {
+    this.bitVectors = null;
+  }
+
+  /** Returns true if field bitVectors is set (has been assigned a value) and false otherwise */
+  public boolean isSetBitVectors() {
+    return this.bitVectors != null;
+  }
+
+  public void setBitVectorsIsSet(boolean value) {
+    if (!value) {
+      this.bitVectors = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case LOW_VALUE:
@@ -308,6 +342,14 @@ public class DecimalColumnStatsData implements org.apache.thrift.TBase<DecimalCo
       }
       break;
 
+    case BIT_VECTORS:
+      if (value == null) {
+        unsetBitVectors();
+      } else {
+        setBitVectors((String)value);
+      }
+      break;
+
     }
   }
 
@@ -324,6 +366,9 @@ public class DecimalColumnStatsData implements org.apache.thrift.TBase<DecimalCo
 
     case NUM_DVS:
       return getNumDVs();
+
+    case BIT_VECTORS:
+      return getBitVectors();
 
     }
     throw new IllegalStateException();
@@ -344,6 +389,8 @@ public class DecimalColumnStatsData implements org.apache.thrift.TBase<DecimalCo
       return isSetNumNulls();
     case NUM_DVS:
       return isSetNumDVs();
+    case BIT_VECTORS:
+      return isSetBitVectors();
     }
     throw new IllegalStateException();
   }
@@ -397,6 +444,15 @@ public class DecimalColumnStatsData implements org.apache.thrift.TBase<DecimalCo
         return false;
     }
 
+    boolean this_present_bitVectors = true && this.isSetBitVectors();
+    boolean that_present_bitVectors = true && that.isSetBitVectors();
+    if (this_present_bitVectors || that_present_bitVectors) {
+      if (!(this_present_bitVectors && that_present_bitVectors))
+        return false;
+      if (!this.bitVectors.equals(that.bitVectors))
+        return false;
+    }
+
     return true;
   }
 
@@ -423,6 +479,11 @@ public class DecimalColumnStatsData implements org.apache.thrift.TBase<DecimalCo
     list.add(present_numDVs);
     if (present_numDVs)
       list.add(numDVs);
+
+    boolean present_bitVectors = true && (isSetBitVectors());
+    list.add(present_bitVectors);
+    if (present_bitVectors)
+      list.add(bitVectors);
 
     return list.hashCode();
   }
@@ -475,6 +536,16 @@ public class DecimalColumnStatsData implements org.apache.thrift.TBase<DecimalCo
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetBitVectors()).compareTo(other.isSetBitVectors());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetBitVectors()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.bitVectors, other.bitVectors);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -522,6 +593,16 @@ public class DecimalColumnStatsData implements org.apache.thrift.TBase<DecimalCo
     sb.append("numDVs:");
     sb.append(this.numDVs);
     first = false;
+    if (isSetBitVectors()) {
+      if (!first) sb.append(", ");
+      sb.append("bitVectors:");
+      if (this.bitVectors == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.bitVectors);
+      }
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -615,6 +696,14 @@ public class DecimalColumnStatsData implements org.apache.thrift.TBase<DecimalCo
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 5: // BIT_VECTORS
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.bitVectors = iprot.readString();
+              struct.setBitVectorsIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -648,6 +737,13 @@ public class DecimalColumnStatsData implements org.apache.thrift.TBase<DecimalCo
       oprot.writeFieldBegin(NUM_DVS_FIELD_DESC);
       oprot.writeI64(struct.numDVs);
       oprot.writeFieldEnd();
+      if (struct.bitVectors != null) {
+        if (struct.isSetBitVectors()) {
+          oprot.writeFieldBegin(BIT_VECTORS_FIELD_DESC);
+          oprot.writeString(struct.bitVectors);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -674,12 +770,18 @@ public class DecimalColumnStatsData implements org.apache.thrift.TBase<DecimalCo
       if (struct.isSetHighValue()) {
         optionals.set(1);
       }
-      oprot.writeBitSet(optionals, 2);
+      if (struct.isSetBitVectors()) {
+        optionals.set(2);
+      }
+      oprot.writeBitSet(optionals, 3);
       if (struct.isSetLowValue()) {
         struct.lowValue.write(oprot);
       }
       if (struct.isSetHighValue()) {
         struct.highValue.write(oprot);
+      }
+      if (struct.isSetBitVectors()) {
+        oprot.writeString(struct.bitVectors);
       }
     }
 
@@ -690,7 +792,7 @@ public class DecimalColumnStatsData implements org.apache.thrift.TBase<DecimalCo
       struct.setNumNullsIsSet(true);
       struct.numDVs = iprot.readI64();
       struct.setNumDVsIsSet(true);
-      BitSet incoming = iprot.readBitSet(2);
+      BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
         struct.lowValue = new Decimal();
         struct.lowValue.read(iprot);
@@ -700,6 +802,10 @@ public class DecimalColumnStatsData implements org.apache.thrift.TBase<DecimalCo
         struct.highValue = new Decimal();
         struct.highValue.read(iprot);
         struct.setHighValueIsSet(true);
+      }
+      if (incoming.get(2)) {
+        struct.bitVectors = iprot.readString();
+        struct.setBitVectorsIsSet(true);
       }
     }
   }

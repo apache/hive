@@ -22,7 +22,7 @@ package org.apache.hadoop.hive.metastore.hbase.stats;
 import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 
-public class BooleanColumnStatsAggregator implements ColumnStatsAggregator {
+public class BooleanColumnStatsAggregator extends ColumnStatsAggregator {
 
   @Override
   public void aggregate(ColumnStatisticsObj aggregateColStats, ColumnStatisticsObj newColStats) {
