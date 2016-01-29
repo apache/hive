@@ -438,13 +438,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
    */
   static String canHandleQbForCbo(QueryProperties queryProperties, HiveConf conf,
       boolean topLevelQB, boolean verbose, QB qb) {
-    boolean isInTest = conf.getBoolVar(ConfVars.HIVE_IN_TEST);
-    // TODO: HIVEMAPREDMODE is deprecated. Why does this test-only exception exist?
-    boolean isStrictTest = isInTest
-        && "strict".equals(HiveConf.getVar(conf, ConfVars.HIVEMAPREDMODE));
 
-    if (!isStrictTest
-        && !queryProperties.hasClusterBy() && !queryProperties.hasDistributeBy()
+    if (!queryProperties.hasClusterBy() && !queryProperties.hasDistributeBy()
         && !queryProperties.hasSortBy() && !queryProperties.hasPTF() && !queryProperties.usesScript()
         && !queryProperties.hasMultiDestQuery() && !queryProperties.hasLateralViews()) {
       // Ok to run CBO.
@@ -454,8 +449,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
     // Not ok to run CBO, build error message.
     String msg = "";
     if (verbose) {
-      if (isStrictTest)
-        msg += "is in test running in strict mode (deprecated); ";
       if (queryProperties.hasClusterBy())
         msg += "has cluster by; ";
       if (queryProperties.hasDistributeBy())
@@ -1073,7 +1066,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER,
         "Calcite: Prejoin ordering transformation, factor out common filter elements and separating deterministic vs non-deterministic UDF");
 
-      // 3. Run exhaustive PPD, add not null filters, transitive inference, 
+      // 3. Run exhaustive PPD, add not null filters, transitive inference,
       // constant propagation, constant folding
       perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
       basePlan = hepPlan(basePlan, true, mdProvider, executorProvider, HepMatchOrder.BOTTOM_UP,

@@ -56,35 +56,43 @@ STAGE PLANS:
             Filter Operator
               predicate: (ds = '2011-09-01') (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-              Reduce Output Operator
-                key expressions: '2011-09-01' (type: string)
-                sort order: +
-                Map-reduce partition columns: '2011-09-01' (type: string)
+              Select Operator
+                expressions: bar (type: string)
+                outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                value expressions: bar (type: string)
+                Reduce Output Operator
+                  key expressions: '2011-09-01' (type: string)
+                  sort order: +
+                  Map-reduce partition columns: '2011-09-01' (type: string)
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  value expressions: _col0 (type: string)
           TableScan
             alias: invites2
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (ds = '2011-09-01') (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-              Reduce Output Operator
-                key expressions: '2011-09-01' (type: string)
-                sort order: +
-                Map-reduce partition columns: '2011-09-01' (type: string)
+              Select Operator
+                expressions: foo (type: int)
+                outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                value expressions: foo (type: int)
+                Reduce Output Operator
+                  key expressions: '2011-09-01' (type: string)
+                  sort order: +
+                  Map-reduce partition columns: '2011-09-01' (type: string)
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  value expressions: _col0 (type: int)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           keys:
-            0 ds (type: string)
-            1 ds (type: string)
-          outputColumnNames: _col1, _col6
+            0 _col1 (type: string)
+            1 _col1 (type: string)
+          outputColumnNames: _col0, _col2
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
-            expressions: _col1 (type: string), _col6 (type: int), '2011-09-01' (type: string)
+            expressions: _col0 (type: string), _col2 (type: int), '2011-09-01' (type: string)
             outputColumnNames: _col0, _col1, _col2
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             File Output Operator
