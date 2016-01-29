@@ -150,7 +150,7 @@ POSTHOOK: query: insert overwrite table smb_bucket4_1 select * from smb_bucket_i
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_input
 POSTHOOK: Output: default@smb_bucket4_1
-POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE []
 POSTHOOK: Lineage: smb_bucket4_1.value SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: insert overwrite table smb_bucket4_2 select * from smb_bucket_input where key=5000
 PREHOOK: type: QUERY
@@ -160,7 +160,7 @@ POSTHOOK: query: insert overwrite table smb_bucket4_2 select * from smb_bucket_i
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_input
 POSTHOOK: Output: default@smb_bucket4_2
-POSTHOOK: Lineage: smb_bucket4_2.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_bucket4_2.key SIMPLE []
 POSTHOOK: Lineage: smb_bucket4_2.value SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key
 PREHOOK: type: QUERY
@@ -335,7 +335,7 @@ POSTHOOK: query: insert overwrite table smb_bucket4_1 select * from smb_bucket_i
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_input
 POSTHOOK: Output: default@smb_bucket4_1
-POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE []
 POSTHOOK: Lineage: smb_bucket4_1.value SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: insert overwrite table smb_bucket4_2 select * from smb_bucket_input where key=5000
 PREHOOK: type: QUERY
@@ -345,7 +345,7 @@ POSTHOOK: query: insert overwrite table smb_bucket4_2 select * from smb_bucket_i
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_input
 POSTHOOK: Output: default@smb_bucket4_2
-POSTHOOK: Lineage: smb_bucket4_2.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_bucket4_2.key SIMPLE []
 POSTHOOK: Lineage: smb_bucket4_2.value SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: insert overwrite table smb_bucket4_3 select * from smb_bucket_input where key=4000
 PREHOOK: type: QUERY
@@ -355,7 +355,7 @@ POSTHOOK: query: insert overwrite table smb_bucket4_3 select * from smb_bucket_i
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_input
 POSTHOOK: Output: default@smb_bucket4_3
-POSTHOOK: Lineage: smb_bucket4_3.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_bucket4_3.key SIMPLE []
 POSTHOOK: Lineage: smb_bucket4_3.value SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: select /*+mapjoin(b,c)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key
 full outer join smb_bucket4_3 c on a.key=c.key
@@ -381,7 +381,7 @@ POSTHOOK: query: insert overwrite table smb_bucket4_1 select * from smb_bucket_i
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_input
 POSTHOOK: Output: default@smb_bucket4_1
-POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE []
 POSTHOOK: Lineage: smb_bucket4_1.value SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: insert overwrite table smb_bucket4_2 select * from smb_bucket_input where key=4000
 PREHOOK: type: QUERY
@@ -391,7 +391,7 @@ POSTHOOK: query: insert overwrite table smb_bucket4_2 select * from smb_bucket_i
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_input
 POSTHOOK: Output: default@smb_bucket4_2
-POSTHOOK: Lineage: smb_bucket4_2.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_bucket4_2.key SIMPLE []
 POSTHOOK: Lineage: smb_bucket4_2.value SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: insert overwrite table smb_bucket4_3 select * from smb_bucket_input where key=5000
 PREHOOK: type: QUERY
@@ -401,7 +401,7 @@ POSTHOOK: query: insert overwrite table smb_bucket4_3 select * from smb_bucket_i
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_input
 POSTHOOK: Output: default@smb_bucket4_3
-POSTHOOK: Lineage: smb_bucket4_3.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_bucket4_3.key SIMPLE []
 POSTHOOK: Lineage: smb_bucket4_3.value SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: select /*+mapjoin(b,c)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key
 full outer join smb_bucket4_3 c on a.key=c.key
@@ -427,7 +427,7 @@ POSTHOOK: query: insert overwrite table smb_bucket4_1 select * from smb_bucket_i
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_input
 POSTHOOK: Output: default@smb_bucket4_1
-POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE []
 POSTHOOK: Lineage: smb_bucket4_1.value SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: insert overwrite table smb_bucket4_2 select * from smb_bucket_input where key=4000
 PREHOOK: type: QUERY
@@ -437,7 +437,7 @@ POSTHOOK: query: insert overwrite table smb_bucket4_2 select * from smb_bucket_i
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_input
 POSTHOOK: Output: default@smb_bucket4_2
-POSTHOOK: Lineage: smb_bucket4_2.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_bucket4_2.key SIMPLE []
 POSTHOOK: Lineage: smb_bucket4_2.value SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: insert overwrite table smb_bucket4_3 select * from smb_bucket_input where key=5000
 PREHOOK: type: QUERY
@@ -447,7 +447,7 @@ POSTHOOK: query: insert overwrite table smb_bucket4_3 select * from smb_bucket_i
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_input
 POSTHOOK: Output: default@smb_bucket4_3
-POSTHOOK: Lineage: smb_bucket4_3.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_bucket4_3.key SIMPLE []
 POSTHOOK: Lineage: smb_bucket4_3.value SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: select /*+mapjoin(b,c)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key
 full outer join smb_bucket4_3 c on a.key=c.key

@@ -18,5 +18,5 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@xxx7
-FAILED: SemanticException [Error 10041]: No partition predicate found for Alias "default.xxx7:srcpart" Table "srcpart"
+FAILED: SemanticException Queries against partitioned tables without a partition filter are disabled for safety reasons. If you know what you are doing, please make sure that hive.strict.checks.large.query is set to false and that hive.mapred.mode is not set to 'strict' to enable them. No partition predicate for Alias "default.xxx7:srcpart" Table "srcpart"
 FAILED: SemanticException [Error 10056]: The query does not reference any valid partition. To run this query, set hive.mapred.mode=nonstrict

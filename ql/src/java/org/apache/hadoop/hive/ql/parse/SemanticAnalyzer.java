@@ -58,6 +58,7 @@ import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.common.StatsSetupConst.StatDB;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.conf.HiveConf.StrictChecks;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -7122,12 +7123,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (sortExprs != null) {
         assert numReducers == 1;
         // in strict mode, in the presence of order by, limit must be specified
-        Integer limit = qb.getParseInfo().getDestLimit(dest);
-        if (conf.getVar(HiveConf.ConfVars.HIVEMAPREDMODE).equalsIgnoreCase(
-            "strict")
-            && limit == null) {
-          throw new SemanticException(generateErrorMessage(sortExprs,
-              ErrorMsg.NO_LIMIT_WITH_ORDERBY.getMsg()));
+        if (qb.getParseInfo().getDestLimit(dest) == null) {
+          String error = StrictChecks.checkNoLimit(conf);
+          if (error != null) {
+            throw new SemanticException(generateErrorMessage(sortExprs, error));
+          }
         }
       }
     }
@@ -7488,12 +7488,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // Use only 1 reducer in case of cartesian product
     if (reduceKeys.size() == 0) {
       numReds = 1;
-
-      // Cartesian product is not supported in strict mode
-      if (conf.getVar(HiveConf.ConfVars.HIVEMAPREDMODE).equalsIgnoreCase(
-          "strict")) {
-        throw new SemanticException(ErrorMsg.NO_CARTESIAN_PRODUCT.getMsg());
-      }
+      String error = StrictChecks.checkCartesian(conf);
+      if (error != null) throw new SemanticException(error);
     }
 
     ReduceSinkDesc rsDesc = PlanUtils.getReduceSinkDesc(reduceKeys,

@@ -1,1 +1,1 @@
-FAILED: SemanticException [Error 10041]: No partition predicate found for Alias "srcpart" Table "srcpart"
+FAILED: SemanticException Queries against partitioned tables without a partition filter are disabled for safety reasons. If you know what you are doing, please make sure that hive.strict.checks.large.query is set to false and that hive.mapred.mode is not set to 'strict' to enable them. No partition predicate for Alias "srcpart" Table "srcpart"

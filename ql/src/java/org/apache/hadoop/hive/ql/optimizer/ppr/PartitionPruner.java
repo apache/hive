@@ -33,11 +33,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.StrictChecks;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -181,11 +181,13 @@ public class PartitionPruner extends Transform {
       return getAllPartsFromCacheOrServer(tab, key, false, prunedPartitionsMap);
     }
 
-    if ("strict".equalsIgnoreCase(HiveConf.getVar(conf, HiveConf.ConfVars.HIVEMAPREDMODE))
-        && !hasColumnExpr(prunerExpr)) {
+    if (!hasColumnExpr(prunerExpr)) {
       // If the "strict" mode is on, we have to provide partition pruner for each table.
-      throw new SemanticException(ErrorMsg.NO_PARTITION_PREDICATE
-          .getMsg("for Alias \"" + alias + "\" Table \"" + tab.getTableName() + "\""));
+      String error = StrictChecks.checkNoPartitionFilter(conf);
+      if (error != null) {
+        throw new SemanticException(error + " No partition predicate for Alias \""
+            + alias + "\" Table \"" + tab.getTableName() + "\"");
+      }
     }
 
     if (prunerExpr == null) {

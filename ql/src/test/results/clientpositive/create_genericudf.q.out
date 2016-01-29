@@ -50,13 +50,13 @@ SELECT
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1
-POSTHOOK: Lineage: dest1.c1 EXPRESSION []
-POSTHOOK: Lineage: dest1.c2 EXPRESSION []
+POSTHOOK: Lineage: dest1.c1 SIMPLE []
+POSTHOOK: Lineage: dest1.c2 SIMPLE []
 POSTHOOK: Lineage: dest1.c3 EXPRESSION []
 POSTHOOK: Lineage: dest1.c4 EXPRESSION []
 POSTHOOK: Lineage: dest1.c5 EXPRESSION []
-POSTHOOK: Lineage: dest1.c6 EXPRESSION []
-POSTHOOK: Lineage: dest1.c7 EXPRESSION []
+POSTHOOK: Lineage: dest1.c6 SIMPLE []
+POSTHOOK: Lineage: dest1.c7 SIMPLE []
 PREHOOK: query: SELECT dest1.* FROM dest1 LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1

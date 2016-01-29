@@ -38,12 +38,12 @@ STAGE PLANS:
             alias: count_case_groupby
             Statistics: Num rows: 5 Data size: 452 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: key (type: string), bool (type: boolean)
-              outputColumnNames: key, bool
+              expressions: key (type: string), CASE WHEN (bool) THEN (1) WHEN ((not bool)) THEN (0) ELSE (null) END (type: int)
+              outputColumnNames: _col0, _col1
               Statistics: Num rows: 5 Data size: 452 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(CASE WHEN (bool) THEN (1) WHEN ((not bool)) THEN (0) ELSE (null) END)
-                keys: key (type: string)
+                aggregations: count(_col1)
+                keys: _col0 (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 5 Data size: 452 Basic stats: COMPLETE Column stats: NONE

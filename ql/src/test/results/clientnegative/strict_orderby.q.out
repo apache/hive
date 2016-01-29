@@ -1,1 +1,1 @@
-FAILED: SemanticException 4:47 In strict mode, if ORDER BY is specified, LIMIT must also be specified. Error encountered near token 'key'
+FAILED: SemanticException 4:47 Order by-s without limit are disabled for safety reasons. If you know what you are doing, please make sure that hive.strict.checks.large.query is set to false and that hive.mapred.mode is not set to 'strict' to enable them.. Error encountered near token 'key'

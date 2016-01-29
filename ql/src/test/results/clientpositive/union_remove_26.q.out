@@ -151,10 +151,10 @@ STAGE PLANS:
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: val (type: int)
-              outputColumnNames: val
+              outputColumnNames: _col1
               Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(1), min(val), max(val)
+                aggregations: count(1), min(_col1), max(_col1)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
@@ -184,10 +184,10 @@ STAGE PLANS:
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: val (type: int)
-              outputColumnNames: val
+              outputColumnNames: _col1
               Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(1), min(val), max(val)
+                aggregations: count(1), min(_col1), max(_col1)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
@@ -217,10 +217,10 @@ STAGE PLANS:
             Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: val (type: int)
-              outputColumnNames: val
+              outputColumnNames: _col1
               Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(1), min(val), max(val)
+                aggregations: count(1), min(_col1), max(_col1)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
@@ -359,11 +359,11 @@ STAGE PLANS:
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), val (type: int)
-              outputColumnNames: key, val
+              outputColumnNames: _col0, _col2
               Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(1), min(val), max(val)
-                keys: key (type: string)
+                aggregations: count(1), min(_col2), max(_col2)
+                keys: _col0 (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
@@ -396,11 +396,11 @@ STAGE PLANS:
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), val (type: int)
-              outputColumnNames: key, val
+              outputColumnNames: _col0, _col2
               Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(1), min(val), max(val)
-                keys: key (type: string)
+                aggregations: count(1), min(_col2), max(_col2)
+                keys: _col0 (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
@@ -433,11 +433,11 @@ STAGE PLANS:
             Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), val (type: int)
-              outputColumnNames: key, val
+              outputColumnNames: _col0, _col2
               Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(1), min(val), max(val)
-                keys: key (type: string)
+                aggregations: count(1), min(_col2), max(_col2)
+                keys: _col0 (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: NONE
@@ -520,10 +520,10 @@ STAGE PLANS:
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: val (type: int)
-              outputColumnNames: val
+              outputColumnNames: _col1
               Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(1), min(val), max(val)
+                aggregations: count(1), min(_col1), max(_col1)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
@@ -553,10 +553,10 @@ STAGE PLANS:
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: val (type: int)
-              outputColumnNames: val
+              outputColumnNames: _col1
               Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(1), min(val), max(val)
+                aggregations: count(1), min(_col1), max(_col1)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
@@ -586,10 +586,10 @@ STAGE PLANS:
             Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: val (type: int)
-              outputColumnNames: val
+              outputColumnNames: _col1
               Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(1), min(val), max(val)
+                aggregations: count(1), min(_col1), max(_col1)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
@@ -670,10 +670,10 @@ STAGE PLANS:
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: val (type: int)
-              outputColumnNames: val
+              outputColumnNames: _col1
               Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(1), min(val), max(val)
+                aggregations: count(1), min(_col1), max(_col1)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
@@ -736,10 +736,10 @@ STAGE PLANS:
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: val (type: int)
-              outputColumnNames: val
+              outputColumnNames: _col1
               Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(1), min(val), max(val)
+                aggregations: count(1), min(_col1), max(_col1)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
@@ -768,10 +768,10 @@ STAGE PLANS:
             Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: val (type: int)
-              outputColumnNames: val
+              outputColumnNames: _col1
               Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(1), min(val), max(val)
+                aggregations: count(1), min(_col1), max(_col1)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE

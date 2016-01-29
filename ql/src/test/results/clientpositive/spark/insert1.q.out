@@ -26,7 +26,7 @@ POSTHOOK: query: insert overwrite table insert1 select a.key, a.value from inser
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert2
 POSTHOOK: Output: default@insert1
-POSTHOOK: Lineage: insert1.key SIMPLE [(insert2)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: insert1.key SIMPLE []
 POSTHOOK: Lineage: insert1.value SIMPLE [(insert2)a.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: explain insert into table insert1 select a.key, a.value from insert2 a WHERE (a.key=-1)
 PREHOOK: type: QUERY

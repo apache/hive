@@ -16,7 +16,7 @@ INSERT OVERWRITE TABLE dest1 SELECT concat('1234', 'abc', 'extra argument'), src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1
-POSTHOOK: Lineage: dest1.key EXPRESSION []
+POSTHOOK: Lineage: dest1.key SIMPLE []
 POSTHOOK: Lineage: dest1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: SELECT dest1.* FROM dest1
 PREHOOK: type: QUERY
