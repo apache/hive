@@ -1,4 +1,1024 @@
 
+Release Notes - Hive - Version 2.0.0
+
+** Sub-task
+    * [HIVE-8858] - Visualize generated Spark plan [Spark Branch]
+    * [HIVE-9139] - Clean up GenSparkProcContext.clonedReduceSinks and related code [Spark Branch]
+    * [HIVE-9152] - Dynamic Partition Pruning [Spark Branch]
+    * [HIVE-9605] - Remove parquet nested objects from wrapper writable objects
+    * [HIVE-10166] - Merge Spark branch to master 7/30/2015
+    * [HIVE-10180] - Loop optimization for SIMD in ColumnArithmeticColumn.txt
+    * [HIVE-10235] - Loop optimization for SIMD in ColumnDivideColumn.txt
+    * [HIVE-10238] - Loop optimization for SIMD in IfExprColumnColumn.txt
+    * [HIVE-10434] - Cancel connection when remote Spark driver process has failed [Spark Branch] 
+    * [HIVE-10458] - Enable parallel order by for spark [Spark Branch]
+    * [HIVE-10460] - change the key of Parquet Record to Nullwritable instead of void
+    * [HIVE-10476] - Hive query should fail when it fails to initialize a session in SetSparkReducerParallelism [Spark Branch]
+    * [HIVE-10479] - CBO: Calcite Operator To Hive Operator (Calcite Return Path) Empty tabAlias in columnInfo which triggers PPD
+    * [HIVE-10520] - LLAP: Must reset small table result columns for Native Vectorization of Map Join
+    * [HIVE-10527] - NPE in SparkUtilities::isDedicatedCluster [Spark Branch]
+    * [HIVE-10533] - CBO (Calcite Return Path): Join to MultiJoin support for outer joins
+    * [HIVE-10550] - Dynamic RDD caching optimization for HoS.[Spark Branch]
+    * [HIVE-10553] - Remove hardcoded Parquet references from SearchArgumentImpl
+    * [HIVE-10565] - LLAP: Native Vector Map Join doesn't handle filtering and matching on LEFT OUTER JOIN repeated key correctly
+    * [HIVE-10594] - Remote Spark client doesn't use Kerberos keytab to authenticate [Spark Branch]
+    * [HIVE-10643] - Refactoring Windowing for sum() to pass WindowFrameDef instead of two numbers (1 for number of preceding and 1 for number of following)
+    * [HIVE-10702] - COUNT(*) over windowing 'x preceding and y preceding' doesn't work properly
+    * [HIVE-10717] - Fix failed qtest encryption_insert_partition_static test in Jenkin
+    * [HIVE-10752] - Revert HIVE-5193
+    * [HIVE-10755] - Rework on HIVE-5193 to enhance the column oriented table access
+    * [HIVE-10793] - Hybrid Hybrid Grace Hash Join : Don't allocate all hash table memory upfront
+    * [HIVE-10794] - Remove the dependence from ErrorMsg to HiveUtils
+    * [HIVE-10795] - Remove use of PerfLogger from Orc
+    * [HIVE-10796] - Remove dependencies on NumericHistogram and NumDistinctValueEstimator from JavaDataModel
+    * [HIVE-10799] - Refactor the SearchArgumentFactory to remove the dependence on ExprNodeGenericFuncDesc
+    * [HIVE-10800] - CBO (Calcite Return Path): Setup correct information if CBO succeeds
+    * [HIVE-10825] - Add parquet branch profile to jenkins-submit-build.sh
+    * [HIVE-10826] - Support min()/max() functions over x preceding and y preceding windowing 
+    * [HIVE-10834] - Support First_value()/last_value() over x preceding and y preceding windowing
+    * [HIVE-10844] - Combine equivalent Works for HoS[Spark Branch]
+    * [HIVE-10855] - Make HIVE-10568 work with Spark [Spark Branch]
+    * [HIVE-10864] - CBO (Calcite Return Path): auto_join2.q returning wrong results
+    * [HIVE-10878] - Add tests to cover avg() function for 'x preceding and y preceding' windowing spec.
+    * [HIVE-10882] - CBO: Calcite Operator To Hive Operator (Calcite Return Path) empty filtersMap of join operator causes wrong results
+    * [HIVE-10906] - Value based UDAF function without orderby expression throws NPE
+    * [HIVE-10911] - Add support for date datatype in the value based windowing function
+    * [HIVE-10927] - Add number of HMS/HS2 connection metrics
+    * [HIVE-10975] - Parquet: Bump the parquet version up to 1.8.1
+    * [HIVE-10985] - Value based windowing on timestamp and double can't handle NULL value
+    * [HIVE-10989] - HoS can't control number of map tasks for runtime skew join [Spark Branch]
+    * [HIVE-10991] - CBO: Calcite Operator To Hive Operator (Calcite Return Path): NonBlockingOpDeDupProc did not kick in rcfile_merge2.q
+    * [HIVE-10999] - Upgrade Spark dependency to 1.4 [Spark Branch]
+    * [HIVE-11007] - CBO: Calcite Operator To Hive Operator (Calcite Return Path): dpCtx's mapInputToDP should depends on the last SEL
+    * [HIVE-11016] - MiniTez mergejoin test fails with Tez input error (issue in merge join under certain conditions)
+    * [HIVE-11025] - In windowing spec, when the datatype is decimal, it's comparing the value against NULL value incorrectly
+    * [HIVE-11053] - Add more tests for HIVE-10844[Spark Branch]
+    * [HIVE-11080] - Modify VectorizedRowBatch.toString() to not depend on VectorExpressionWriter
+    * [HIVE-11082] - Support multi edge between nodes in SparkPlan[Spark Branch]
+    * [HIVE-11086] - Remove use of ErrorMsg in Orc's RunLengthIntegerReaderV2
+    * [HIVE-11099] - Add support for running negative q-tests [Spark Branch]
+    * [HIVE-11108] - HashTableSinkOperator doesn't support vectorization [Spark Branch]
+    * [HIVE-11124] - Move OrcRecordUpdater.getAcidEventFields to RecordReaderFactory
+    * [HIVE-11130] - Refactoring the code so that HiveTxnManager interface will support lock/unlock table/database object
+    * [HIVE-11131] - Get row information on DataWritableWriter once for better writing performance
+    * [HIVE-11137] - In DateWritable remove the use of LazyBinaryUtils
+    * [HIVE-11138] - Query fails when there isn't a comparator for an operator [Spark Branch]
+    * [HIVE-11161] - create patch for branch-1 for HiveOnTez: make explain user level = true as default
+    * [HIVE-11180] - Enable native vectorized map join for spark [Spark Branch]
+    * [HIVE-11206] - CBO (Calcite Return Path): Join translation should update all ExprNode recursively
+    * [HIVE-11209] - Clean up dependencies in HiveDecimalWritable
+    * [HIVE-11210] - Remove dependency on HiveConf from Orc reader & writer
+    * [HIVE-11212] - Create vectorized types for complex types
+    * [HIVE-11223] - CBO (Calcite Return Path): MapJoin and SMBJoin conversion not triggered
+    * [HIVE-11231] - CBO: Calcite Operator To Hive Operator (Calcite Return Path): make the output of ba_table_union.q more stable
+    * [HIVE-11232] - CBO: Calcite Operator To Hive Operator (Calcite Return Path): fix the output of select_same_col.q
+    * [HIVE-11239] - Test encryption_insert_partition_static.q fails with different output results on other environments
+    * [HIVE-11251] - CBO (Calcite Return Path): Extending ExprNodeConverter to consider additional types
+    * [HIVE-11252] - CBO (Calcite Return Path): DUMMY project in plan
+    * [HIVE-11253] - Move SearchArgument and VectorizedRowBatch classes to storage-api.
+    * [HIVE-11257] - CBO: Calcite Operator To Hive Operator (Calcite Return Path): Method isCombinablePredicate in HiveJoinToMultiJoinRule should be extended to support MultiJoin operators merge
+    * [HIVE-11282] - CBO (Calcite Return Path): Inferring Hive type char/varchar of length zero which is not allowed
+    * [HIVE-11307] - Remove getWritableObject from ColumnVectorBatch
+    * [HIVE-11314] - Print "Execution completed successfully" as part of spark job info [Spark Branch]
+    * [HIVE-11318] - Move ORC table properties from OrcFile to OrcOutputFormat
+    * [HIVE-11321] - Move OrcFile.OrcTableProperties from OrcFile into OrcConf.
+    * [HIVE-11347] - CBO: Calcite Operator To Hive Operator (Calcite Return Path): fix CTAS
+    * [HIVE-11358] - LLAP: move LlapConfiguration into HiveConf and document the settings
+    * [HIVE-11363] - Prewarm Hive on Spark containers [Spark Branch]
+    * [HIVE-11367] - CBO: Calcite Operator To Hive Operator (Calcite Return Path): ExprNodeConverter should use HiveDecimal to create Decimal
+    * [HIVE-11387] - CBO: Calcite Operator To Hive Operator (Calcite Return Path) : fix reduce_deduplicate optimization
+    * [HIVE-11391] - CBO (Calcite Return Path): Add CBO tests with return path on
+    * [HIVE-11409] - CBO: Calcite Operator To Hive Operator (Calcite Return Path): add SEL before UNION
+    * [HIVE-11416] - CBO: Calcite Operator To Hive Operator (Calcite Return Path): Groupby Optimizer assumes the schema can match after removing RS and GBY
+    * [HIVE-11436] - CBO: Calcite Operator To Hive Operator (Calcite Return Path) : dealing with empty char
+    * [HIVE-11437] - CBO: Calcite Operator To Hive Operator (Calcite Return Path) : dealing with insert into
+    * [HIVE-11445] - CBO: Calcite Operator To Hive Operator (Calcite Return Path) : groupby distinct does not work
+    * [HIVE-11449] - "Capacity must be a power of two" error when HybridHashTableContainer memory threshold is too low
+    * [HIVE-11453] - Create PostExecutionHook for ORC file dump
+    * [HIVE-11467] - WriteBuffers rounding wbSize to next power of 2 may cause OOM
+    * [HIVE-11504] - Predicate pushing down doesn't work for float type for Parquet
+    * [HIVE-11521] - Loop optimization for SIMD in logical operators
+    * [HIVE-11533] - Loop optimization for SIMD in integer comparisons
+    * [HIVE-11557] - CBO (Calcite Return Path): Convert to flat AND/OR
+    * [HIVE-11562] - Typo in hive-log4j2.xml throws unknown level exception
+    * [HIVE-11563] - Perflogger loglines are repeated
+    * [HIVE-11565] - LLAP: Some counters are incorrect
+    * [HIVE-11567] - Some trace logs seeped through with new log4j2 changes
+    * [HIVE-11570] - Fix PTest2 log4j2.version 
+    * [HIVE-11571] - Fix Hive PTest2 logging configuration
+    * [HIVE-11572] - Datanucleus loads Log4j1.x Logger from AppClassLoader
+    * [HIVE-11575] - Fix test failures in master due to log4j changes
+    * [HIVE-11597] - [CBO new return path] Handling of strings of zero-length
+    * [HIVE-11646] - CBO: Calcite Operator To Hive Operator (Calcite Return Path): fix multiple window spec for PTF operator
+    * [HIVE-11664] - Make tez container logs work with new log4j2 changes
+    * [HIVE-11671] - Optimize RuleRegExp in DPP codepath
+    * [HIVE-11700] - exception in logs in Tez test with new logger
+    * [HIVE-11701] - Make tez tests AM logs work with new log4j2 changes
+    * [HIVE-11703] - Make RegExp and RLike reserved keywords
+    * [HIVE-11711] - Merge hbase-metastore branch to trunk
+    * [HIVE-11763] - Use * instead of sum(hash(*)) on Parquet predicate (PPD) integration tests
+    * [HIVE-11778] - Merge beeline-cli branch to trunk
+    * [HIVE-11815] - Correct the column/table names in subquery expression when creating a view
+    * [HIVE-11865] - Disable Hive PPD optimizer when CBO has optimized the plan
+    * [HIVE-11890] - Create ORC module
+    * [HIVE-11895] - CBO: Calcite Operator To Hive Operator (Calcite Return Path): fix udaf_percentile_approx_23.q
+    * [HIVE-11896] - CBO: Calcite Operator To Hive Operator (Calcite Return Path): deal with hive default partition when inserting data
+    * [HIVE-11903] - Add lock metrics to HS2
+    * [HIVE-11908] - LLAP: Merge branch to hive-2.0
+    * [HIVE-12016] - Update log4j2 version to 2.4
+    * [HIVE-12020] - Revert log4j2 xml configuration to properties based configuration
+    * [HIVE-12054] - Create vectorized write method
+    * [HIVE-12055] - Create row-by-row shims for the write path 
+    * [HIVE-12091] - Merge file doesn't work for ORC table when running on Spark. [Spark Branch]
+    * [HIVE-12196] - NPE when converting bad timestamp value
+    * [HIVE-12271] - Add metrics around HS2 query execution and job submission for Hive 
+    * [HIVE-12272] - CBO: Calcite Operator To Hive Operator (Calcite Return Path) : columnPruner prunes everything when union is the last operator before FS
+    * [HIVE-12273] - Improve user level explain
+    * [HIVE-12283] - Fix test failures after HIVE-11844 [Spark Branch]
+    * [HIVE-12284] - Merge master to Spark branch 10/28/2015 [Spark Branch]
+    * [HIVE-12297] - CBO: Calcite Operator To Hive Operator (Calcite Return Path) : dealing with '$' in typeInfo
+    * [HIVE-12305] - CBO: Calcite Operator To Hive Operator (Calcite Return Path): UDAF can not pull up constant expressions
+    * [HIVE-12358] - Categorize vectorization benchmarks into arithmetic, comparison, logic
+    * [HIVE-12402] - Split hive.root.logger separately to make it compatible with log4j1.x
+    * [HIVE-12447] - Fix LlapTaskReporter post TEZ-808 changes
+    * [HIVE-12448] - Change to tracking of dag status via dagIdentifier instead of dag name
+    * [HIVE-12471] - Secure HS2 web UI with SSL
+    * [HIVE-12485] - Secure HS2 web UI with kerberos
+    * [HIVE-12497] - Remove HADOOP_CLIENT_OPTS from hive script
+    * [HIVE-12525] - Cleanup unused metrics in HMS
+    * [HIVE-12574] - windowing function returns incorrect result when the window size is larger than the partition size
+    * [HIVE-12663] - Support quoted table names/columns when ACID is on
+    * [HIVE-12692] - Make use of the Tez HadoopShim in TaskRunner usage
+    * [HIVE-12711] - Document howto disable web ui in config of hive.server2.webui.port
+    * [HIVE-12739] - Log4j2.x needs HADOOP_USER_CLASSPATH_FIRST to be set
+    * [HIVE-12783] - fix the unit test failures in TestSparkClient and TestSparkSessionManagerImpl
+    * [HIVE-12798] - CBO: Calcite Operator To Hive Operator (Calcite Return Path): MiniTezCliDriver.vector* queries failures due to NPE in Vectorizer.onExpressionHasNullSafes()
+    * [HIVE-12832] - RDBMS schema changes for HIVE-11388
+    * [HIVE-12850] - Fixes after changes made in TEZ-2669 and TEZ-3024
+    * [HIVE-12863] - fix test failure for TestMiniTezCliDriver.testCliDriver_tez_union
+    * [HIVE-12883] - Support basic stats and column stats in table properties in HBaseStore
+    * [HIVE-12890] - Disable multi-statment transaction control statements until HIVE-11078
+
+
+
+
+
+
+
+** Bug
+    * [HIVE-4239] - Remove lock on compilation stage
+    * [HIVE-4243] - Fix column names in FileSinkOperator
+    * [HIVE-5277] - HBase handler skips rows with null valued first cells when only row key is selected
+    * [HIVE-5623] - ORC accessing array column that's empty will fail with java out of bound exception
+    * [HIVE-6026] - Ldap Authenticator should be more generic with BindDN
+    * [HIVE-6091] - Empty pipeout files are created for connection create/close
+    * [HIVE-6113] - Upgrade DataNucleus [was: Unable to instantiate org.apache.hadoop.hive.metastore.HiveMetaStoreClient]
+    * [HIVE-6705] - hive jdbc can not used by jmeter, because of unsupported auto commit feature
+    * [HIVE-6727] - Table level stats for external tables are set incorrectly
+    * [HIVE-6991] - History not able to disable/enable after session started
+    * [HIVE-7018] - Table and Partition tables have column LINK_TARGET_ID in Mysql scripts but not others
+    * [HIVE-7150] - FileInputStream is not closed in HiveConnection#getHttpClient()
+    * [HIVE-7180] - BufferedReader is not closed in MetaStoreSchemaInfo ctor
+    * [HIVE-7193] - Hive should support additional LDAP authentication parameters
+    * [HIVE-7476] - CTAS does not work properly for s3
+    * [HIVE-7575] - GetTables thrift call is very slow
+    * [HIVE-7723] - Explain plan for complex query with lots of partitions is slow due to in-efficient collection used to find a matching ReadEntity
+    * [HIVE-8396] - Hive CliDriver command splitting can be broken when comments are present
+    * [HIVE-8529] - HiveSessionImpl#fetchResults should not try to fetch operation log when hive.server2.logging.operation.enabled is false.
+    * [HIVE-9013] - Hive set command exposes metastore db password
+    * [HIVE-9069] - Simplify filter predicates for CBO
+    * [HIVE-9248] - Vectorization : Tez Reduce vertex not getting vectorized when GROUP BY is Hash mode
+    * [HIVE-9544] - Error dropping fully qualified partitioned table - Internal error processing get_partition_names
+    * [HIVE-9566] - HiveServer2 fails to start with NullPointerException
+    * [HIVE-9625] - Delegation tokens for HMS are not renewed
+    * [HIVE-9811] - Hive on Tez leaks WorkMap objects
+    * [HIVE-9880] - Support configurable username attribute for HiveServer2 LDAP authentication
+    * [HIVE-9974] - Sensitive data redaction: data appears in name of mapreduce job
+    * [HIVE-10021] - "Alter index rebuild" statements submitted through HiveServer2 fail when Sentry is enabled
+    * [HIVE-10061] - HiveConf Should not be used as part of the HS2 client side code
+    * [HIVE-10140] - Window boundary is not compared correctly
+    * [HIVE-10151] - insert into A select from B is broken when both A and B are Acid tables and bucketed the same way
+    * [HIVE-10173] - ThreadLocal synchronized initialvalue() is irrelevant in JDK7
+    * [HIVE-10190] - CBO: AST mode checks for TABLESAMPLE with AST.toString().contains("TOK_TABLESPLITSAMPLE")
+    * [HIVE-10191] - ORC: Cleanup writer per-row synchronization
+    * [HIVE-10286] - SARGs: Type Safety via PredicateLeaf.type
+    * [HIVE-10370] - Hive does not compile with -Phadoop-1 option
+    * [HIVE-10415] - hive.start.cleanup.scratchdir configuration is not taking effect
+    * [HIVE-10423] - HIVE-7948 breaks deploy_e2e_artifacts.sh
+    * [HIVE-10431] - HIVE-9555 broke hadoop-1 build
+    * [HIVE-10442] - HIVE-10098 broke hadoop-1 build
+    * [HIVE-10443] - HIVE-9870 broke hadoop-1 build
+    * [HIVE-10444] - HIVE-10223 breaks hadoop-1 build
+    * [HIVE-10450] - More than one TableScan in MapWork not supported in Vectorization -- causes  query to fail during vectorization
+    * [HIVE-10452] - Followup fix for HIVE-10202 to restrict it it for script mode.
+    * [HIVE-10453] - HS2 leaking open file descriptors when using UDFs
+    * [HIVE-10456] - Grace Hash Join should not load spilled partitions on abort
+    * [HIVE-10473] - Spark client is recreated even spark configuration is not changed
+    * [HIVE-10481] - ACID table update finishes but values not really updated if column names are not all lower case
+    * [HIVE-10483] - insert overwrite partition deadlocks on itself with DbTxnManager
+    * [HIVE-10509] - Bump trunk version to 1.3 as branch-1.2 has been created.
+    * [HIVE-10519] - Move TestGenericUDF classes to udf.generic package
+    * [HIVE-10521] - TxnHandler.timeOutTxns only times out some of the expired transactions
+    * [HIVE-10529] - Remove references to tez task context before storing operator plan in object cache
+    * [HIVE-10538] - Fix NPE in FileSinkOperator from hashcode mismatch
+    * [HIVE-10541] - Beeline requires newline at the end of each query in a file
+    * [HIVE-10542] - Full outer joins in tez produce incorrect results in certain cases
+    * [HIVE-10548] - Remove dependency to s3 repository in root pom
+    * [HIVE-10559] - IndexOutOfBoundsException with RemoveDynamicPruningBySize
+    * [HIVE-10569] - Hive CLI gets stuck when hive.exec.parallel=true; and some exception happens during SessionState.start
+    * [HIVE-10571] - HiveMetaStoreClient should close existing thrift connection before its reconnect
+    * [HIVE-10572] - Improve Hive service test to check empty string
+    * [HIVE-10587] - ExprNodeColumnDesc should be created with isPartitionColOrVirtualCol true for DP column
+    * [HIVE-10608] - Fix useless 'if' stamement in RetryingMetaStoreClient (135)
+    * [HIVE-10609] - Vectorization : Q64 fails with ClassCastException
+    * [HIVE-10613] - HCatSchemaUtils getHCatFieldSchema should include field comment
+    * [HIVE-10620] - ZooKeeperHiveLock overrides equal() method but not hashcode()
+    * [HIVE-10626] - Spark paln need to be updated [Spark Branch]
+    * [HIVE-10631] - create_table_core method has invalid update for Fast Stats
+    * [HIVE-10646] - ColumnValue does not handle NULL_TYPE
+    * [HIVE-10651] - ORC file footer cache should be bounded
+    * [HIVE-10655] - [PTest2] Propagate additionalProfiles flag to the source-prep.vm
+    * [HIVE-10660] - Fix typo in Type.getType(TTypeId) exception message
+    * [HIVE-10665] - Continue to make udaf_percentile_approx_23.q test more stable
+    * [HIVE-10670] - Duplicate declaration of curator-recipes at pom.xml
+    * [HIVE-10671] - yarn-cluster mode offers a degraded performance from yarn-client [Spark Branch]
+    * [HIVE-10687] - AvroDeserializer fails to deserialize evolved union fields
+    * [HIVE-10697] - ObjectInspectorConvertors#UnionConvertor does a faulty conversion
+    * [HIVE-10698] - query on view results fails with table not found error if view is created with subquery alias (CTE).
+    * [HIVE-10705] - Update tests for HIVE-9302 after removing binaries
+    * [HIVE-10706] - Make vectorized_timestamp_funcs test more stable
+    * [HIVE-10707] - CBO: debug logging OOMs
+    * [HIVE-10714] - Bloom filter column names specification should be case insensitive
+    * [HIVE-10721] - SparkSessionManagerImpl leaks SparkSessions [Spark Branch]
+    * [HIVE-10722] - external table creation with msck in Hive can create unusable partition
+    * [HIVE-10726] - Hive JDBC setQueryTimeout should not throw exception to make it work with JMeter
+    * [HIVE-10728] - deprecate unix_timestamp(void) and make it deterministic
+    * [HIVE-10731] - NullPointerException in HiveParser.g
+    * [HIVE-10732] - Hive JDBC driver does not close operation for metadata queries
+    * [HIVE-10734] - Remove COLUMNS_OLD table from a schema definition file of PostgreSQL
+    * [HIVE-10736] - HiveServer2 shutdown of cached tez app-masters is not clean
+    * [HIVE-10746] -  Hive 1.2.0+Tez produces 1-byte FileSplits from mapred.TextInputFormat
+    * [HIVE-10757] - Explain query plan should have operation name EXPLAIN
+    * [HIVE-10771] - "separatorChar" has no effect in "CREATE TABLE AS SELECT" statement
+    * [HIVE-10781] - HadoopJobExecHelper Leaks RunningJobs
+    * [HIVE-10787] - MatchPath misses the last matched row from the final result set
+    * [HIVE-10788] - Change sort_array to support non-primitive types
+    * [HIVE-10790] - orc write on viewFS throws exception
+    * [HIVE-10802] - Table join query with some constant field in select fails
+    * [HIVE-10807] - Invalidate basic stats for insert queries if autogather=false
+    * [HIVE-10808] - Inner join on Null throwing Cast Exception
+    * [HIVE-10816] - NPE in ExecDriver::handleSampling when submitted via child JVM
+    * [HIVE-10835] - Concurrency issues in JDBC driver
+    * [HIVE-10841] - [WHERE col is not null] does not work sometimes for queries with many JOIN statements
+    * [HIVE-10853] - Create ExplainTask in ATS hook through ExplainWork
+    * [HIVE-10880] - The bucket number is not respected in insert overwrite.
+    * [HIVE-10887] - TestCliDriver tests ordering issues with Mac and CentOS
+    * [HIVE-10895] - ObjectStore does not close Query objects in some calls, causing a potential leak in some metastore db resources
+    * [HIVE-10919] - Windows: create table with JsonSerDe failed via beeline unless you add hcatalog core jar to classpath
+    * [HIVE-10921] - Change trunk pom version to reflect the branch-1 split
+    * [HIVE-10929] - In Tez mode,dynamic partitioning query with union all fails at moveTask,Invalid partition key & values
+    * [HIVE-10932] - Unit test udf_nondeterministic failure due to HIVE-10728
+    * [HIVE-10940] - HiveInputFormat::pushFilters serializes PPD objects for each getRecordReader call
+    * [HIVE-10944] - Fix HS2 for Metrics
+    * [HIVE-10949] - Disable hive-minikdc tests in Windows
+    * [HIVE-10956] - HS2 leaks HMS connections
+    * [HIVE-10958] - Centos: TestMiniTezCliDriver.testCliDriver_mergejoin fails
+    * [HIVE-10963] - Hive throws NPE rather than meaningful error message when window is missing
+    * [HIVE-10968] - Windows: analyze json table via beeline failed throwing Class org.apache.hive.hcatalog.data.JsonSerDe not found
+    * [HIVE-10972] - DummyTxnManager always locks the current database in shared mode, which is incorrect.
+    * [HIVE-10974] - Use Configuration::getRaw() for the Base64 data
+    * [HIVE-10976] - Redundant HiveMetaStore connect check in HS2 CLIService start
+    * [HIVE-10977] - No need to instantiate MetaStoreDirectSql when HMS DirectSql is disabled
+    * [HIVE-10979] - Fix failed tests in TestSchemaTool after the version number change in HIVE-10921
+    * [HIVE-10980] - Merge of dynamic partitions loads all data to default partition
+    * [HIVE-10994] - Hive.moveFile should not fail on a no-op move
+    * [HIVE-10996] - Aggregation / Projection over Multi-Join Inner Query producing incorrect results
+    * [HIVE-11006] - improve logging wrt ACID module
+    * [HIVE-11013] - MiniTez tez_join_hash test on the branch fails with NPE (initializeOp not called?)
+    * [HIVE-11024] - Error inserting a date value via parameter marker (PreparedStatement.setDate)
+    * [HIVE-11028] - Tez: table self join and join with another table fails with IndexOutOfBoundsException
+    * [HIVE-11029] - hadoop.proxyuser.mapr.groups does not work to restrict the groups that can be impersonated
+    * [HIVE-11040] - Change Derby dependency version to 10.10.2.0
+    * [HIVE-11042] - Need fix Utilities.replaceTaskId method
+    * [HIVE-11043] - ORC split strategies should adapt based on number of files
+    * [HIVE-11044] - Some optimizable predicates being missed by constant propagation
+    * [HIVE-11051] - Hive 1.2.0  MapJoin w/Tez - LazyBinaryArray cannot be cast to [Ljava.lang.Object;
+    * [HIVE-11054] - Read error : Partition Varchar column cannot be cast to string
+    * [HIVE-11060] - Make test windowing.q robust
+    * [HIVE-11062] - Remove Exception stacktrace from Log.info when ACL is not supported.
+    * [HIVE-11071] - FIx the output of beeline dbinfo command
+    * [HIVE-11073] - ORC FileDump utility ignores errors when writing output
+    * [HIVE-11079] - Fix qfile tests that fail on Windows due to CR/character escape differences
+    * [HIVE-11095] - SerDeUtils  another bug ,when Text is reused
+    * [HIVE-11100] - Beeline should escape semi-colon in queries
+    * [HIVE-11102] - ReaderImpl: getColumnIndicesFromNames does not work for some cases
+    * [HIVE-11104] - Select operator doesn't propagate constants appearing in expressions
+    * [HIVE-11109] - Replication factor is not properly set in SparkHashTableSinkOperator [Spark Branch]
+    * [HIVE-11110] - Reorder applyPreJoinOrderingTransforms, add NotNULL/FilterMerge rules, improve Filter selectivity estimation
+    * [HIVE-11112] - ISO-8859-1 text output has fragments of previous longer rows appended
+    * [HIVE-11118] - Load data query should validate file formats with destination tables
+    * [HIVE-11119] - Spark reduce vectorization doesnt account for scratch columns
+    * [HIVE-11120] - Generic interface for file format validation
+    * [HIVE-11122] - ORC should not record the timezone information when there are no timestamp columns
+    * [HIVE-11123] - Fix how to confirm the RDBMS product name at Metastore.
+    * [HIVE-11128] - Stats Annotation misses extracting stats for cols in some cases
+    * [HIVE-11129] - Issue a warning when copied from UTF-8 to ISO 8859-1
+    * [HIVE-11132] - Queries using join and group by produce incorrect output when hive.auto.convert.join=false and hive.optimize.reducededuplication=true
+    * [HIVE-11134] - HS2 should log open session failure
+    * [HIVE-11135] - Fix the Beeline set and save command in order to avoid the NullPointerException
+    * [HIVE-11141] - Improve RuleRegExp when the Expression node stack gets huge
+    * [HIVE-11143] - Tests udf_from_utc_timestamp.q/udf_to_utc_timestamp.q do not work with updated Java timezone information
+    * [HIVE-11147] - MetaTool doesn't update FS root location for partitions with space in name
+    * [HIVE-11149] - Fix issue with sometimes HashMap in PerfLogger.java hangs 
+    * [HIVE-11151] - Calcite transitive predicate inference rule should not transitively add not null filter on non-nullable input
+    * [HIVE-11152] - Swapping join inputs in ASTConverter
+    * [HIVE-11157] - Hive.get(HiveConf) returns same Hive object to different user sessions
+    * [HIVE-11170] - port parts of HIVE-11015 to master for ease of future merging
+    * [HIVE-11171] - Join reordering algorithm might introduce projects between joins
+    * [HIVE-11172] - Vectorization wrong results for aggregate query with where clause without group by
+    * [HIVE-11174] - Hive does not treat floating point signed zeros as equal (-0.0 should equal 0.0 according to IEEE floating point spec) 
+    * [HIVE-11176] - Caused by: java.lang.ClassCastException: org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryStruct cannot be cast to [Ljava.lang.Object;
+    * [HIVE-11184] - Lineage - ExprProcFactory#getExprString may throw NullPointerException
+    * [HIVE-11185] - Fix compustat_avro.q/load_dyn_part14_win.q for Windows
+    * [HIVE-11190] - No prompting info or warning provided when METASTORE_FILTER_HOOK in authorization V2 is overridden
+    * [HIVE-11193] - ConstantPropagateProcCtx should use a Set instead of a List to hold operators to be deleted
+    * [HIVE-11194] - Exchange partition on external tables should fail with error message when target folder already exists
+    * [HIVE-11196] - Utilities.getPartitionDesc() should try to reuse TableDesc object 
+    * [HIVE-11197] - While extracting join conditions follow Hive rules for type conversion instead of Calcite
+    * [HIVE-11198] - Fix load data query file format check for partitioned tables
+    * [HIVE-11201] - HCatalog  is ignoring user specified avro schema in the table definition
+    * [HIVE-11202] - Update golden files on master
+    * [HIVE-11203] - Beeline force option doesn't force execution when errors occurred in a script.
+    * [HIVE-11211] - Reset the fields in JoinStatsRule in StatsRulesProcFactory
+    * [HIVE-11214] - Insert into ACID table switches vectorization off 
+    * [HIVE-11215] - Vectorized grace hash-join throws FileUtil warnings
+    * [HIVE-11216] - UDF GenericUDFMapKeys throws NPE when a null map value is passed in
+    * [HIVE-11217] - CTAS statements throws error, when the table is stored as ORC File format and select clause has NULL/VOID type column 
+    * [HIVE-11221] - In Tez mode, alter table concatenate orc files can intermittently fail with NPE
+    * [HIVE-11224] - AggregateStatsCache triggers java.util.ConcurrentModificationException under some conditions
+    * [HIVE-11228] - Mutation API should use semi-shared locks.
+    * [HIVE-11229] - Mutation API: Coordinator communication with meta store should be optional
+    * [HIVE-11230] - IMetaStoreClient getPartition method arguments incorrectly named
+    * [HIVE-11241] - Database prefix does not work properly if table has same name
+    * [HIVE-11243] - Changing log level in Utilities.getBaseWork
+    * [HIVE-11250] - Change in spark.executor.instances (and others) doesn't take effect after RSC is launched for HS2 [Spark Brnach]
+    * [HIVE-11255] - get_table_objects_by_name() in HiveMetaStore.java needs to retrieve table objects in multiple batches 
+    * [HIVE-11258] - The function drop_database_core() of HiveMetaStore.java may not drop all the tables
+    * [HIVE-11261] - DESCRIBE database qualifier does not work when calling DESCRIBE on column or nested columns.
+    * [HIVE-11271] - java.lang.IndexOutOfBoundsException when union all with if function
+    * [HIVE-11278] - Partition.setOutputFormatClass should not do toString for Class object 
+    * [HIVE-11279] - Hive should emit lineage information in json compact format
+    * [HIVE-11284] - Fix cbo_rp_join0 failure on master
+    * [HIVE-11285] - ObjectInspector for partition columns in FetchOperator in SMBJoin causes exception
+    * [HIVE-11288] - Avro SerDe InstanceCache returns incorrect schema
+    * [HIVE-11293] - HiveConnection.setAutoCommit(true) throws exception
+    * [HIVE-11301] - thrift metastore issue when getting stats results in disconnect
+    * [HIVE-11303] - Getting Tez LimitExceededException after dag execution on large query
+    * [HIVE-11310] - Avoid expensive AST tree conversion to String for expressions in WHERE clause
+    * [HIVE-11311] - Avoid dumping AST tree String in Explain unless necessary
+    * [HIVE-11312] - ORC format: where clause with CHAR data type not returning any rows
+    * [HIVE-11316] - Use datastructure that doesnt duplicate any part of string for ASTNode::toStringTree()
+    * [HIVE-11319] - CTAS with location qualifier overwrites directories
+    * [HIVE-11328] - Avoid String representation of expression nodes in ConstantPropagateProcFactory unless necessary
+    * [HIVE-11330] - Add early termination for recursion in StatsRulesProcFactory$FilterStatsRule.evaluateExpression
+    * [HIVE-11333] - ColumnPruner prunes columns of UnionOperator that should be kept
+    * [HIVE-11340] - Create ORC based table using like clause doesn't copy compression property
+    * [HIVE-11344] - HIVE-9845 makes HCatSplit.write modify the split so that PartInfo objects are unusable after it
+    * [HIVE-11356] - SMB join on tez fails when one of the tables is empty
+    * [HIVE-11369] - Mapjoins in HiveServer2 fail when jmxremote is used
+    * [HIVE-11371] - Null pointer exception for nested table query when using ORC versus text
+    * [HIVE-11372] - join with between predicate comparing integer types returns no rows when ORC format used
+    * [HIVE-11375] - Broken processing of queries containing NOT (x IS NOT NULL and x <> 0)
+    * [HIVE-11376] - CombineHiveInputFormat is falling back to HiveInputFormat in case codecs are found for one of the input files
+    * [HIVE-11380] - NPE when FileSinkOperator is not initialized
+    * [HIVE-11397] - Parse Hive OR clauses as they are written into the AST
+    * [HIVE-11401] - Predicate push down does not work with Parquet when partitions are in the expression
+    * [HIVE-11405] - Add early termination for recursion in StatsRulesProcFactory$FilterStatsRule.evaluateExpression  for OR expression
+    * [HIVE-11406] - Vectorization: StringExpr::compare() == 0 is bad for performance
+    * [HIVE-11407] - JDBC DatabaseMetaData.getTables with large no of tables call leads to HS2 OOM 
+    * [HIVE-11413] - Error in detecting availability of HiveSemanticAnalyzerHooks
+    * [HIVE-11422] - Join a ACID table with non-ACID table fail with MR
+    * [HIVE-11425] - submitting a query via CLI against a running cluster fails with ClassNotFoundException: org.apache.hadoop.hive.common.type.HiveDecimal
+    * [HIVE-11426] - lineage3.q fails with -Phadoop-1
+    * [HIVE-11428] - Performance: Struct IN() clauses are extremely slow (~10x slower) 
+    * [HIVE-11429] - Increase default JDBC result set fetch size (# rows it fetches in one RPC call) to 1000 from 50
+    * [HIVE-11430] - Followup HIVE-10166: investigate and fix the two test failures
+    * [HIVE-11432] - Hive macro give same result for different arguments
+    * [HIVE-11433] - NPE for a multiple inner join query
+    * [HIVE-11434] - Followup for HIVE-10166: reuse existing configurations for prewarming Spark executors
+    * [HIVE-11441] - No DDL allowed on table if user accidentally set table location wrong
+    * [HIVE-11448] - Support vectorization of Multi-OR and Multi-AND
+    * [HIVE-11450] - Resources are not cleaned up properly at multiple places
+    * [HIVE-11451] - SemanticAnalyzer throws IndexOutOfBounds Exception
+    * [HIVE-11452] - HIVE-11321 broke ORC bloom filter index creation
+    * [HIVE-11456] - HCatStorer should honor mapreduce.output.basename
+    * [HIVE-11462] - GenericUDFStruct should constant fold at compile time
+    * [HIVE-11464] - lineage info missing if there are multiple outputs
+    * [HIVE-11466] - HIVE-10166 generates more data on hive.log causing Jenkins to fill all the disk.
+    * [HIVE-11468] - Vectorize: Struct IN() clauses
+    * [HIVE-11469] - Update doc for InstanceCache to clearly define the contract on the SeedObject
+    * [HIVE-11472] - ORC StringDirectTreeReader is thrashing the GC due to byte[] allocation per row
+    * [HIVE-11473] - Upgrade Spark dependency to 1.5 [Spark Branch]
+    * [HIVE-11476] - TypeInfoParser cannot handle column names with spaces in them
+    * [HIVE-11490] - Lazily call ASTNode::toStringTree() after tree modification
+    * [HIVE-11493] - Predicate with integer column equals double evaluates to false
+    * [HIVE-11497] - Make sure --orcfiledump utility includes OrcRecordUpdate.AcidStats
+    * [HIVE-11498] - HIVE Authorization v2 should not check permission for dummy entity
+    * [HIVE-11499] - Datanucleus leaks classloaders when used using embedded metastore with HiveServer2 with UDFs
+    * [HIVE-11501] - HiveConnection.readOnly always throws a "Method not supported" exception
+    * [HIVE-11502] - Map side aggregation is extremely slow
+    * [HIVE-11510] - Metatool updateLocation warning on views
+    * [HIVE-11511] - Output the message of orcfiledump when ORC files are not specified
+    * [HIVE-11517] - Vectorized auto_smb_mapjoin_14.q produces different results
+    * [HIVE-11523] - org.apache.hadoop.hive.ql.io.orc.FileDump should handle errors
+    * [HIVE-11540] - Too many delta files during Compaction - OOM
+    * [HIVE-11541] - ORC: Split Strategy should depend on global file count, not per-partition
+    * [HIVE-11542] - port fileId support on shims and splits from llap branch
+    * [HIVE-11546] - Projected columns read size should be scaled to split size for ORC Splits
+    * [HIVE-11549] - Hide Hive configuration from spark driver launching process
+    * [HIVE-11553] - use basic file metadata cache in ETLSplitStrategy-related paths
+    * [HIVE-11556] - HiveFilter.copy should take the condition given as a parameter
+    * [HIVE-11573] - PointLookupOptimizer can be pessimistic at a low nDV
+    * [HIVE-11578] - ATS hook fails for ExplainWork
+    * [HIVE-11580] - ThriftUnionObjectInspector#toString throws NPE
+    * [HIVE-11581] - HiveServer2 should store connection params in ZK when using dynamic service discovery for simpler client connection string.
+    * [HIVE-11583] - When PTF is used over a large partitions result could be corrupted
+    * [HIVE-11586] - ObjectInspectorFactory.getReflectionObjectInspector is not thread-safe
+    * [HIVE-11587] - Fix memory estimates for mapjoin hashtable
+    * [HIVE-11590] - AvroDeserializer is very chatty
+    * [HIVE-11591] - upgrade thrift to 0.9.3 and change generation to use undated annotations
+    * [HIVE-11592] - ORC metadata section can sometimes exceed protobuf message size limit
+    * [HIVE-11594] - Analyze Table For Columns cannot handle columns with embedded spaces
+    * [HIVE-11595] - refactor ORC footer reading to make it usable from outside
+    * [HIVE-11596] - nvl(x, y) throws NPE if type x and type y doesn't match, rather than throwing the meaningful error
+    * [HIVE-11602] - Support Struct with different field types in query
+    * [HIVE-11604] - HIVE return wrong results in some queries with PTF function
+    * [HIVE-11605] - Incorrect results with bucket map join in tez.
+    * [HIVE-11606] - Bucket map joins fail at hash table construction time
+    * [HIVE-11607] - Export tables broken for data > 32 MB
+    * [HIVE-11613] - schematool should return non zero exit status for info command, if state is inconsistent
+    * [HIVE-11616] - DelegationTokenSecretManager reuses the same objectstore, which has concurrency issues
+    * [HIVE-11628] - DB type detection code is failing on Oracle 12
+    * [HIVE-11634] - Support partition pruning for IN(STRUCT(partcol, nonpartcol..)...)
+    * [HIVE-11652] - Avoid expensive call to removeAll in DefaultGraphWalker
+    * [HIVE-11657] - HIVE-2573 introduces some issues during metastore init (and CLI init)
+    * [HIVE-11658] - Load data file format validation does not work with directories
+    * [HIVE-11668] - make sure directsql calls pre-query init when needed
+    * [HIVE-11669] - OrcFileDump service should support directories
+    * [HIVE-11670] - Strip out password information from TezSessionState configuration
+    * [HIVE-11676] - implement metastore API to do file footer PPD
+    * [HIVE-11688] - OrcRawRecordMerger does not close primary reader if not fully consumed
+    * [HIVE-11689] - minor flow changes to ORC split generation
+    * [HIVE-11695] - If user have no permission to  create LOCAL DIRECTORY ，the Hql does not throw any exception and fail silently.
+    * [HIVE-11696] - Exception when table-level serde is Parquet while partition-level serde is JSON
+    * [HIVE-11698] - Add additional test for PointLookupOptimizer
+    * [HIVE-11704] - Create errata.txt file
+    * [HIVE-11705] - refactor SARG stripe filtering for ORC into a separate method
+    * [HIVE-11710] - Beeline embedded mode doesn't output query progress after setting any session property
+    * [HIVE-11712] - Duplicate groupby keys cause ClassCastException
+    * [HIVE-11714] - Turn off hybrid grace hash join for cross product join
+    * [HIVE-11718] - JDBC ResultSet.setFetchSize(0) returns no results
+    * [HIVE-11721] - non-ascii characters shows improper with "insert into"
+    * [HIVE-11723] - Incorrect string literal escaping
+    * [HIVE-11726] - Pushed IN predicates to the metastore
+    * [HIVE-11735] - Different results when multiple if() functions are used 
+    * [HIVE-11737] - IndexOutOfBounds compiling query with duplicated groupby keys
+    * [HIVE-11745] - Alter table Exchange partition with multiple partition_spec is not working
+    * [HIVE-11747] - Unnecessary error log is shown when executing a "INSERT OVERWRITE LOCAL DIRECTORY" cmd in the embedded mode
+    * [HIVE-11748] - HivePreparedStatement's setTimestamp() does not quote value as required
+    * [HIVE-11751] - hive-exec-log4j2.xml settings causes DEBUG messages to be generated and ignored
+    * [HIVE-11755] - Incorrect method called with Kerberos enabled in AccumuloStorageHandler
+    * [HIVE-11761] - DoubleWritable hashcode for GroupBy is not properly generated
+    * [HIVE-11762] - TestHCatLoaderEncryption failures when using Hadoop 2.7
+    * [HIVE-11768] - java.io.DeleteOnExitHook leaks memory on long running Hive Server2 Instances
+    * [HIVE-11771] - Parquet timestamp conversion errors
+    * [HIVE-11777] - implement an option to have single ETL strategy for multiple directories
+    * [HIVE-11781] - Remove HiveLimit operator and rename HiveSort operator
+    * [HIVE-11786] - Deprecate the use of redundant column in colunm stats related tables
+    * [HIVE-11792] - User explain in tez does not preserve ordering
+    * [HIVE-11794] - GBY vectorization appears to process COMPLETE reduce-side GBY incorrectly
+    * [HIVE-11801] - In HMS HA env, "show databases" fails when"current" HMS is stopped.
+    * [HIVE-11802] - Float-point numbers are displayed with different precision in Beeline/JDBC
+    * [HIVE-11813] - Avoid expensive AST tree conversion to String for expressions in WHERE clause in CBO
+    * [HIVE-11817] - Window function max NullPointerException
+    * [HIVE-11819] - HiveServer2 catches OOMs on request threads
+    * [HIVE-11820] - export tables with size of >32MB throws "java.lang.IllegalArgumentException: Skip CRC is valid only with update options"
+    * [HIVE-11821] - JDK8 strict build broken for master 
+    * [HIVE-11822] - vectorize NVL UDF
+    * [HIVE-11823] - create a self-contained translation for SARG to be used by metastore
+    * [HIVE-11824] - Insert to local directory causes staging directory to be copied
+    * [HIVE-11825] - get_json_object(col,'$.a') is null in where clause didn`t work
+    * [HIVE-11826] - 'hadoop.proxyuser.hive.groups' configuration doesn't prevent unauthorized user to access metastore
+    * [HIVE-11827] - STORED AS AVRO fails SELECT COUNT(*) when empty
+    * [HIVE-11829] - Create test for HIVE-11216
+    * [HIVE-11831] - TXN tables in Oracle should be created with ROWDEPENDENCIES
+    * [HIVE-11832] - HIVE-11802 breaks compilation in JDK 8
+    * [HIVE-11833] - TxnHandler heartbeat txn doesn't need serializable DB txn level
+    * [HIVE-11834] - Lineage doesn't work with dynamic partitioning query
+    * [HIVE-11835] - Type decimal(1,1) reads 0.0, 0.00, etc from text file as NULL
+    * [HIVE-11838] - Another positive test case for HIVE-11658
+    * [HIVE-11839] - Vectorization wrong results with filter of (CAST AS CHAR)
+    * [HIVE-11841] - KeyValuesInputMerger creates huge logs
+    * [HIVE-11842] - Improve RuleRegExp by caching some internal data structures
+    * [HIVE-11843] - Add 'sort by c' to Parquet PPD q-tests to avoid different output issues with hadoop-1
+    * [HIVE-11846] - CliDriver shutdown tries to drop index table again which was already dropped when dropping the original table 
+    * [HIVE-11849] - NPE in HiveHBaseTableShapshotInputFormat in query with just count(*)
+    * [HIVE-11856] - allow split strategies to run on threadpool
+    * [HIVE-11860] - StatsNoJobTask fails to collect fast stats when table have subdirectories
+    * [HIVE-11875] - JDBC Driver does not honor delegation token mechanism when readings params from ZooKeeper
+    * [HIVE-11878] - ClassNotFoundException can possibly  occur if multiple jars are registered one at a time in Hive
+    * [HIVE-11889] - Add unit test for HIVE-11449
+    * [HIVE-11892] - UDTF run in local fetch task does not return rows forwarded during GenericUDTF.close()
+    * [HIVE-11897] - JDO rollback can throw pointless exceptions
+    * [HIVE-11898] - support default partition in metastoredirectsql
+    * [HIVE-11901] - StorageBasedAuthorizationProvider requires write permission on table for SELECT statements
+    * [HIVE-11902] - Abort txn cleanup thread throws SyntaxErrorException
+    * [HIVE-11910] - TestHCatLoaderEncryption should shutdown created MiniDFS instance
+    * [HIVE-11911] - The stats table limits are too large for innodb
+    * [HIVE-11915] - BoneCP returns closed connections from the pool
+    * [HIVE-11919] - Hive Union Type Mismatch
+    * [HIVE-11920] - ADD JAR failing with URL schemes other than file/ivy/hdfs
+    * [HIVE-11922] - Better error message when ORC split generation fails
+    * [HIVE-11925] - Hive file format checking breaks load from named pipes
+    * [HIVE-11926] - Stats annotation might not extract stats for varchar/decimal columns
+    * [HIVE-11928] - ORC footer and metadata section can also exceed protobuf message limit
+    * [HIVE-11932] - JDBC Driver appends an extra "/" when configuring connection by reading httpPath from ZooKeeper
+    * [HIVE-11939] - TxnDbUtil should turn off jdbc auto commit
+    * [HIVE-11940] - "INSERT OVERWRITE" query is very slow because it creates one "distcp" per file to copy data from staging directory to target directory
+    * [HIVE-11945] - ORC with non-local reads may not be reusing connection to DN
+    * [HIVE-11950] - WebHCat status file doesn't show UTF8 character
+    * [HIVE-11952] - disable q tests that are both slow and less relevant
+    * [HIVE-11954] - Extend logic to choose side table in MapJoin Conversion algorithm
+    * [HIVE-11960] - braces in join conditions are not supported
+    * [HIVE-11964] - RelOptHiveTable.hiveColStatsMap might contain mismatched column stats
+    * [HIVE-11969] - start Tez session in background when starting CLI
+    * [HIVE-11970] - COLUMNS_V2 table in metastore should have a longer name field
+    * [HIVE-11973] - IN operator fails when the column type is DATE 
+    * [HIVE-11975] - mssql scripts contains invalid 'GO' statement
+    * [HIVE-11977] - Hive should handle an external avro table with zero length files present
+    * [HIVE-11980] - Follow up on HIVE-11696, exception is thrown from CTAS from the table with table-level serde is Parquet while partition-level serde is JSON
+    * [HIVE-11981] - ORC Schema Evolution Issues (Vectorized, ACID, and Non-Vectorized)
+    * [HIVE-11982] - Some test cases for union all fail with recent changes
+    * [HIVE-11985] - don't store type names in metastore when metastore type names are not used
+    * [HIVE-11988] - [hive] security issue with hive & ranger for import table command
+    * [HIVE-11989] - vector_groupby_reduce.q is failing on CLI and MiniTez drivers on master
+    * [HIVE-11990] - Loading data inpath from a temporary table dir fails on Windows
+    * [HIVE-11995] - Remove repetitively setting permissions in insert/load overwrite partition
+    * [HIVE-12004] - SDPO doesnt set colExprMap correctly on new RS
+    * [HIVE-12008] - Hive queries failing when using count(*) on column in view
+    * [HIVE-12011] - unable to create temporary table using CTAS if regular table with that name already exists
+    * [HIVE-12012] - select query on json table with map containing numeric values fails
+    * [HIVE-12018] - beeline --help doesn't return to original prompt
+    * [HIVE-12021] - HivePreFilteringRule may introduce wrong common operands
+    * [HIVE-12026] - Add test case to check permissions when truncating partition
+    * [HIVE-12027] - simplify file metadata cache ppd api
+    * [HIVE-12032] - Add unit test for HIVE-9855
+    * [HIVE-12046] - Re-create spark client if connection is dropped
+    * [HIVE-12048] - metastore file metadata cache should not be used when deltas are present
+    * [HIVE-12053] - Stats performance regression caused by HIVE-11786
+    * [HIVE-12057] - ORC sarg is logged too much
+    * [HIVE-12058] - Change hive script to record errors when calling hbase fails
+    * [HIVE-12060] - LLAP: create separate variable for llap tests
+    * [HIVE-12061] - add file type support to file metadata by expr call
+    * [HIVE-12062] - enable HBase metastore file metadata cache for tez tests
+    * [HIVE-12065] - FS stats collection may generate incorrect stats for multi-insert query
+    * [HIVE-12076] - WebHCat listing jobs after the given JobId even when templeton.jobs.listorder is set to lexicographicaldesc
+    * [HIVE-12082] - Null comparison for greatest and least operator
+    * [HIVE-12083] - HIVE-10965 introduces thrift error if partNames or colNames are empty
+    * [HIVE-12084] - Hive queries with ORDER BY and large LIMIT fails with OutOfMemoryError Java heap space
+    * [HIVE-12087] - IMPORT TABLE fails
+    * [HIVE-12090] - Dead-code: Vectorized map-join murmur hash is run twice
+    * [HIVE-12156] - expanding view doesn't quote reserved keyword
+    * [HIVE-12166] - LLAP: Cache read error at 1000 Gb scale tests
+    * [HIVE-12170] - normalize HBase metastore connection configuration
+    * [HIVE-12171] - LLAP: BuddyAllocator failures when querying uncompressed data
+    * [HIVE-12178] - LLAP: NPE in LRFU policy
+    * [HIVE-12179] - Add option to not add spark-assembly.jar to Hive classpath
+    * [HIVE-12182] - ALTER TABLE PARTITION COLUMN does not set partition column comments
+    * [HIVE-12184] - DESCRIBE of fully qualified table fails when db and table name match and non-default database is in use
+    * [HIVE-12188] - DoAs does not work properly in non-kerberos secured HS2
+    * [HIVE-12189] - The list in pushdownPreds of ppd.ExprWalkerInfo should not be allowed to grow very large
+    * [HIVE-12198] - LLAP: reader failures when querying uncompressed data
+    * [HIVE-12200] - INSERT INTO table using a select statement w/o a FROM clause fails
+    * [HIVE-12201] - Tez settings need to be shown in set -v output when execution engine is tez.
+    * [HIVE-12202] - NPE thrown when reading legacy ACID delta files
+    * [HIVE-12204] - Tez queries stopped running with ApplicationNotRunningException
+    * [HIVE-12206] - ClassNotFound Exception during query compilation with Tez and Union query and GenericUDFs
+    * [HIVE-12207] - Query fails when non-ascii characters are used in string literals
+    * [HIVE-12208] - Vectorized JOIN NPE on dynamically partitioned hash-join + map-join
+    * [HIVE-12210] - Fix a few failing tests: testCliDriver_udf_explode and testCliDriver_udtf_explode
+    * [HIVE-12215] - Exchange partition does not show outputs field for post/pre execute hooks
+    * [HIVE-12218] - Unable to create a like table for an hbase backed table
+    * [HIVE-12220] - LLAP: Usability issues with hive.llap.io.cache.orc.size
+    * [HIVE-12223] - Filter on Grouping__ID does not work properly
+    * [HIVE-12224] - Remove HOLD_DDLTIME
+    * [HIVE-12225] - LineageCtx should release all resources at clear
+    * [HIVE-12227] - LLAP: better column vector object pools
+    * [HIVE-12229] - Custom script in query cannot be executed in yarn-cluster mode [Spark Branch].
+    * [HIVE-12230] - custom UDF configure() not called in Vectorization mode
+    * [HIVE-12234] - Beeline quit tries to connect again if no existing connections
+    * [HIVE-12238] - Vectorization: Thread-safety errors in VectorUDFDate
+    * [HIVE-12246] - Orc FileDump fails with Missing CLI jar
+    * [HIVE-12249] - Improve logging with tez
+    * [HIVE-12250] - Zookeeper connection leaks in Hive's HBaseHandler.
+    * [HIVE-12253] - revert HIVE-12061
+    * [HIVE-12257] - Enhance ORC FileDump utility to handle flush_length files and recovery
+    * [HIVE-12260] - Fix TestColumnStatistics and TestJsonFileDump test failures in master
+    * [HIVE-12261] - schematool version info exit status should depend on compatibility, not equality
+    * [HIVE-12262] - Session log dir cannot be created in some cases
+    * [HIVE-12263] - Hive SchemaTool does not tolerate leading spaces in JDBC url
+    * [HIVE-12266] - When client exists abnormally, it doesn't release ACID locks
+    * [HIVE-12268] - Context leaks deleteOnExit paths
+    * [HIVE-12277] - Hive macro results on macro_duplicate.q different after adding ORDER BY
+    * [HIVE-12278] - Skip logging lineage for explain queries
+    * [HIVE-12280] - HiveConnection does not try other HS2 after failure for service discovery
+    * [HIVE-12281] - Vectorized MapJoin - use Operator::isLogDebugEnabled
+    * [HIVE-12282] - beeline - update command printing in verbose mode
+    * [HIVE-12287] - Lineage for lateral view shows wrong dependencies
+    * [HIVE-12291] - Master: Update errata.txt for HIVE-12272
+    * [HIVE-12292] - revert the if removal from HIVE-12237
+    * [HIVE-12294] - log line "Duplicate ID <number> in column ID list" appears in the logs
+    * [HIVE-12295] - change some logs from info to debug
+    * [HIVE-12302] - Use KryoPool instead of thread-local caching
+    * [HIVE-12304] - "drop database cascade" needs to unregister functions
+    * [HIVE-12306] - fix hbase_queries.q failure
+    * [HIVE-12307] - Streaming API TransactionBatch.close() must abort any remaining transactions in the batch
+    * [HIVE-12310] - Update memory estimation login in TopNHash
+    * [HIVE-12311] - explain CTAS fails if the table already exists
+    * [HIVE-12312] - Excessive logging in PPD code
+    * [HIVE-12315] - vectorization_short_regress.q has a wrong result issue for a double calculation
+    * [HIVE-12318] - qtest failing due to NPE in logStats
+    * [HIVE-12327] - WebHCat e2e tests TestJob_1 and TestJob_2 fail
+    * [HIVE-12330] - Fix precommit Spark test part2
+    * [HIVE-12332] - BucketingSortingReduceSinkOptimizer throws IOB exception for duplicate columns
+    * [HIVE-12333] - tez_union_with_udf.q added to wrong section in testconfiguration.properties
+    * [HIVE-12340] - ExecDriver.execute() unnecessarily sets METASTOREPWD to HIVE 
+    * [HIVE-12341] - LLAP: add security to daemon protocol endpoint (excluding shuffle)
+    * [HIVE-12343] - when column type is decimal and the literal value contains space will return null
+    * [HIVE-12344] - Wrong types inferred for SemiJoin generation in CBO
+    * [HIVE-12345] - Followup for HIVE-9013 : Hidden conf vars still visible through beeline
+    * [HIVE-12346] - Internally used variables in HiveConf should not be settable via command
+    * [HIVE-12349] - NPE in ORC SARG for IS NULL queries on Timestamp and Date columns
+    * [HIVE-12352] - CompactionTxnHandler.markCleaned() may delete too much
+    * [HIVE-12353] - When Compactor fails it calls CompactionTxnHandler.markedCleaned().  it should not.
+    * [HIVE-12354] - MapJoin with double keys is slow on MR
+    * [HIVE-12357] - Allow user to set tez job name
+    * [HIVE-12363] - Incorrect results with orc ppd across ORC versions
+    * [HIVE-12364] - Distcp job fails when run under Tez
+    * [HIVE-12365] - Added resource path is sent to cluster as an empty string when externally removed
+    * [HIVE-12366] - Refactor Heartbeater logic for transaction
+    * [HIVE-12372] - Improve to support the multibyte character at lpad and rpad
+    * [HIVE-12378] - Exception on HBaseSerDe.serialize binary field
+    * [HIVE-12384] - Union Operator may produce incorrect result on TEZ
+    * [HIVE-12385] - schematool failed on MySQL
+    * [HIVE-12388] - GetTables cannot get external tables when TABLE type argument is given
+    * [HIVE-12391] - SkewJoinOptimizer might not kick in if columns are renamed after TableScanOperator
+    * [HIVE-12396] - BucketingSortingReduceSinkOptimizer may still throw IOB exception for duplicate columns
+    * [HIVE-12397] - LLAP: add security to daemon-hosted shuffle
+    * [HIVE-12399] - Native Vector MapJoin can encounter  "Null key not expected in MapJoin" and "Unexpected NULL in map join small table" exceptions
+    * [HIVE-12404] - Orc ppd throws exception if types don't match
+    * [HIVE-12406] - HIVE-9500 introduced incompatible change to LazySimpleSerDe public interface
+    * [HIVE-12407] - Check fetch property to determine if a SortLimit contains a limit operation
+    * [HIVE-12417] - Support for exclamation mark missing in regexp
+    * [HIVE-12418] - HiveHBaseTableInputFormat.getRecordReader() causes Zookeeper connection leak.
+    * [HIVE-12419] - hive.log.trace.id needs to be whitelisted
+    * [HIVE-12422] - LLAP: add security to Web UI endpoint
+    * [HIVE-12435] - SELECT COUNT(CASE WHEN...) GROUPBY returns 1 for 'NULL' in a case of ORC and vectorization is enabled.
+    * [HIVE-12437] - SMB join in tez fails when one of the tables is empty
+    * [HIVE-12444] - Global Limit optimization on ACID table without base directory may throw exception
+    * [HIVE-12445] - Tracking of completed dags is a slow memory leak
+    * [HIVE-12450] - OrcFileMergeOperator does not use correct compression buffer size
+    * [HIVE-12456] - QueryId can't be stored in the configuration of the SessionState since multiple queries can run in a single session
+    * [HIVE-12462] - DPP: DPP optimizers need to run on the TS predicate not FIL 
+    * [HIVE-12463] - VectorMapJoinFastKeyStore has Array OOB errors
+    * [HIVE-12465] - Hive might produce wrong results when (outer) joins are merged
+    * [HIVE-12469] - Bump Commons-Collections dependency from 3.2.1 to 3.2.2. to address vulnerability
+    * [HIVE-12473] - DPP: UDFs on the partition column side does not evaluate correctly
+    * [HIVE-12475] - Parquet schema evolution within array<struct<>> doesn't work
+    * [HIVE-12476] - Metastore NPE on Oracle with Direct SQL
+    * [HIVE-12477] - Left Semijoins are incompatible with a cross-product
+    * [HIVE-12479] - Vectorization: Vectorized Date UDFs with up-stream Joins
+    * [HIVE-12487] - Fix broken MiniLlap tests
+    * [HIVE-12489] - Analyze for partition fails if partition value has special characters
+    * [HIVE-12490] - Metastore: Mysql ANSI_QUOTES is not there for some cases
+    * [HIVE-12491] - Improve ndv heuristic for functions
+    * [HIVE-12498] - ACID: Setting OrcRecordUpdater.OrcOptions.tableProperties() has no effect
+    * [HIVE-12500] - JDBC driver not overlaying params supplied via properties object when reading params from ZK
+    * [HIVE-12501] - LLAP: don't use read(ByteBuffer) in IO
+    * [HIVE-12503] - GBY-Join transpose rule may go in infinite loop
+    * [HIVE-12505] - Insert overwrite in same encrypted zone silently fails to remove some existing files
+    * [HIVE-12506] - SHOW CREATE TABLE command creates a table that does not work for RCFile format
+    * [HIVE-12508] - HiveAggregateJoinTransposeRule places a heavy load on the metadata system
+    * [HIVE-12509] - Regenerate q files after HIVE-12017 went in
+    * [HIVE-12510] - LLAP: Append attempt id either to thread name or NDC
+    * [HIVE-12512] - Include driver logs in execution-level Operation logs
+    * [HIVE-12517] - Beeline's use of failed connection(s) causes failures and leaks.
+    * [HIVE-12522] - Wrong FS error during Tez merge files when warehouse and scratchdir are on different FS
+    * [HIVE-12526] - PerfLogger for hive compiler and optimizer
+    * [HIVE-12532] - LLAP Cache: Uncompressed data cache has NPE
+    * [HIVE-12537] - RLEv2 doesn't seem to work
+    * [HIVE-12542] - Create HiveRelFactories
+    * [HIVE-12556] - Ctrl-C in beeline doesn't kill Tez query on HS2
+    * [HIVE-12557] - NPE while removing entry in LRFU cache
+    * [HIVE-12563] - NullPointerException with 3-way Tez merge join
+    * [HIVE-12565] - VectorUDAFCount.aggregateInputSelection does not handle isRepeated case
+    * [HIVE-12566] - Incorrect result returns when using COALESCE in WHERE condition with LEFT JOIN
+    * [HIVE-12576] - Add missing license headers in preparation for the 2.0 release
+    * [HIVE-12577] - NPE in LlapTaskCommunicator when unregistering containers
+    * [HIVE-12578] - Hive query failing with error ClassCastException org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc cannot be cast to org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc
+    * [HIVE-12583] - HS2 ShutdownHookManager holds extra of Driver instance 
+    * [HIVE-12584] - Vectorized join with partition column of type char does not trim spaces 
+    * [HIVE-12585] - fix TxnHandler connection leak
+    * [HIVE-12589] - LLAP service gen is broken for log4j2
+    * [HIVE-12590] - Repeated UDAFs with literals can produce incorrect result
+    * [HIVE-12591] - LLAP cache counters displays -ve value for CacheCapacityUsed
+    * [HIVE-12596] - Delete timestamp row throws java.lang.IllegalArgumentException: Timestamp format must be yyyy-mm-dd hh:mm:ss[.fffffffff]
+    * [HIVE-12597] - LLAP - allow using elevator without cache
+    * [HIVE-12598] - LLAP: disable fileId when not supported
+    * [HIVE-12599] - Add logging to debug rare unexpected refCount error from the LLAP IO layer
+    * [HIVE-12601] - HIVE-11985 change does not use partition deserializer
+    * [HIVE-12605] - Implement JDBC Connection.isValid
+    * [HIVE-12609] - Remove javaXML serialization
+    * [HIVE-12610] - Hybrid Grace Hash Join should fail task faster if processing first batch fails, instead of continuing processing the rest
+    * [HIVE-12632] - LLAP: don't use IO elevator for ACID tables 
+    * [HIVE-12633] - LLAP: package included serde jars
+    * [HIVE-12640] - Allow StatsOptimizer to optimize the query for Constant GroupBy keys 
+    * [HIVE-12644] - Support for offset in HiveSortMergeRule
+    * [HIVE-12645] - ConstantPropagateProcCtx.resolve() should verify internal names in addition to alias to match 2 columns from different row schemas 
+    * [HIVE-12648] - LLAP IO was disabled in CliDriver by accident (and tests are broken)
+    * [HIVE-12657] - selectDistinctStar.q results differ with jdk 1.7 vs jdk 1.8
+    * [HIVE-12660] - HS2 memory leak with .hiverc file use
+    * [HIVE-12661] - StatsSetupConst.COLUMN_STATS_ACCURATE is not used correctly
+    * [HIVE-12662] - StackOverflowError in HiveSortJoinReduceRule when limit=0
+    * [HIVE-12664] - Bug in reduce deduplication optimization causing ArrayOutOfBoundException
+    * [HIVE-12666] - PCRExprProcFactory.GenericFuncExprProcessor.process() aggressively removes dynamic partition pruner generated synthetic join predicates.
+    * [HIVE-12667] - Proper fix for HIVE-12473
+    * [HIVE-12668] - package script for LLAP was broken by recent config changes
+    * [HIVE-12674] - HS2 Tez sessions should have maximum age
+    * [HIVE-12675] - PerfLogger should log performance metrics at debug level
+    * [HIVE-12682] - Reducers in dynamic partitioning job spend a lot of time running hadoop.conf.Configuration.getOverlay
+    * [HIVE-12684] - NPE in stats annotation when all values in decimal column are NULLs
+    * [HIVE-12685] - Remove redundant hive-site.xml under common/src/test/resources/
+    * [HIVE-12687] - LLAP Workdirs need to default to YARN local
+    * [HIVE-12688] - HIVE-11826 makes hive unusable in properly secured cluster
+    * [HIVE-12694] - LLAP: Slider destroy semantics require force
+    * [HIVE-12698] - Remove exposure to internal privilege and principal classes in HiveAuthorizer
+    * [HIVE-12699] - LLAP: hive.llap.daemon.work.dirs setting backward compat name doesn't work 
+    * [HIVE-12706] - Incorrect output from from_utc_timestamp()/to_utc_timestamp when local timezone has DST
+    * [HIVE-12710] - add better logging for Tez session creation thread failures
+    * [HIVE-12712] - HiveInputFormat may fail to column names to read in some cases
+    * [HIVE-12717] - Enabled to accept quoting of all character backslash qooting mechanism to json_tuple UDTF
+    * [HIVE-12722] - Create abstract subclass for HiveAuthorizer to shield implementations from interface changes
+    * [HIVE-12724] - ACID: Major compaction fails to include the original bucket files into MR job
+    * [HIVE-12726] - exclude hadoop jars from webhcat hcatalog/share/webhcat/svr/lib
+    * [HIVE-12727] - refactor Hive strict checks to be more granular, allow order by no limit and no partition filter by default for now
+    * [HIVE-12728] - Apply DDL restrictions for ORC schema evolution
+    * [HIVE-12735] - Constant folding for WHEN/CASE expression does not set return type correctly
+    * [HIVE-12738] - subquery with NOT IN failing due to ClassCastException
+    * [HIVE-12740] - NPE with HS2 when using null input format
+    * [HIVE-12741] - HS2 ShutdownHookManager holds extra of Driver instance in master/branch-2.0
+    * [HIVE-12742] - NULL table comparison within CASE does not work as previous hive versions
+    * [HIVE-12743] - RCFileInputFormat needs to be registered with kryo
+    * [HIVE-12744] - GROUPING__ID failed to be recognized in multiple insert
+    * [HIVE-12758] - Parallel compilation: Operator::resetId() is not thread-safe
+    * [HIVE-12762] - Common join on parquet tables returns incorrect result when hive.optimize.index.filter set to true
+    * [HIVE-12766] - TezTask does not close DagClient after execution
+    * [HIVE-12768] - Thread safety: binary sortable serde decimal deserialization
+    * [HIVE-12772] - Beeline/JDBC output of decimal values is not 0-padded, does not match with CLI output
+    * [HIVE-12785] - View with union type and UDF to `cast` the struct is broken
+    * [HIVE-12786] - CBO may fail for recoverable errors
+    * [HIVE-12788] - Setting hive.optimize.union.remove to TRUE will break UNION ALL with aggregate functions
+    * [HIVE-12794] - LLAP cannot run queries against HBase due to missing HBase jars
+    * [HIVE-12797] - Synchronization issues with tez/llap session pool in hs2
+    * [HIVE-12800] - HiveFilterSetOpTransposeRule might be executed over non deterministic filter predicates
+    * [HIVE-12809] - Vectorization: fast-path for coalesce if input.noNulls = true
+    * [HIVE-12813] - LLAP: issues in setup, shutdown
+    * [HIVE-12815] - column stats NPE for a query w/o a table
+    * [HIVE-12820] - Remove the check if carriage return and new line are used for separator or escape character
+    * [HIVE-12824] - CBO doesnt get triggered when aggregate function is used within windowing function 
+    * [HIVE-12826] - Vectorization: fix VectorUDAF* suspect isNull checks
+    * [HIVE-12827] - Vectorization: VectorCopyRow/VectorAssignRow/VectorDeserializeRow assign needs explicit isNull[offset] modification
+    * [HIVE-12851] - Add slider security setting support to LLAP packager
+    * [HIVE-12864] - StackOverflowError parsing queries with very large predicates
+    * [HIVE-12875] - Verify sem.getInputs() and sem.getOutputs()
+    * [HIVE-12879] - RowResolver of Semijoin not updated in CalcitePlanner
+    * [HIVE-12904] - LLAP: deadlock in task scheduling
+    * [HIVE-12905] - Issue with mapjoin in tez under certain conditions
+    * [HIVE-12911] - PPD might get exercised even when flag is false if CBO is on
+    * [HIVE-12915] - Tez session pool has concurrency issues during init
+    * [HIVE-12920] - LLAP fails to start with java.lang.NumberFormatException
+    * [HIVE-12926] - Another synchronization issue with tez/llap session pool in hs2
+
+
+
+
+
+
+** Improvement
+    * [HIVE-1841] -  datanucleus.fixedDatastore should be true in hive-default.xml
+    * [HIVE-2327] - Optimize REGEX UDFs with constant parameter information
+    * [HIVE-6758] - Beeline doesn't work with -e option when started in background
+    * [HIVE-8190] - LDAP user match for authentication on hiveserver2
+    * [HIVE-8583] - HIVE-8341 Cleanup & Test for hive.script.operator.env.blacklist
+    * [HIVE-9365] - The Metastore should take port configuration from hive-site.xml
+    * [HIVE-9599] - remove derby, datanucleus and other not related to jdbc client classes from hive-jdbc-standalone.jar
+    * [HIVE-9695] - Redundant filter operator in reducer Vertex when CBO is disabled
+    * [HIVE-10048] - JDBC - Support SSL encryption regardless of Authentication mechanism
+    * [HIVE-10165] - Improve hive-hcatalog-streaming extensibility and support updates and deletes.
+    * [HIVE-10239] - Create scripts to do metastore upgrade tests on jenkins for Derby and PostgreSQL
+    * [HIVE-10302] - Load small tables (for map join) in executor memory only once [Spark Branch]
+    * [HIVE-10319] - Hive CLI startup takes a long time with a large number of databases
+    * [HIVE-10403] - Add n-way join support for Hybrid Grace Hash Join
+    * [HIVE-10435] - Make HiveSession implementation pluggable through configuration
+    * [HIVE-10531] - Implement isClosed() to HiveQueryResultSet
+    * [HIVE-10555] - Improve windowing spec of range based windowing to support additional range formats
+    * [HIVE-10639] - create SHA1 UDF
+    * [HIVE-10641] - create CRC32 UDF
+    * [HIVE-10644] - create SHA2 UDF
+    * [HIVE-10657] - Remove copyBytes operation from MD5 UDF
+    * [HIVE-10709] - Update Avro version to 1.7.7
+    * [HIVE-10710] - Delete GenericUDF.getConstantLongValue
+    * [HIVE-10748] - Replace StringBuffer with StringBuilder where possible
+    * [HIVE-11037] - HiveOnTez: make explain user level = true as default
+    * [HIVE-11052] - Unify HiveSessionBase#getusername method
+    * [HIVE-11055] - HPL/SQL - Implementing Procedural SQL in Hive (PL/HQL Contribution)
+    * [HIVE-11076] - Explicitly set hive.cbo.enable=true for some tests
+    * [HIVE-11136] - Unused Logger in org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCount
+    * [HIVE-11139] - Emit more lineage information
+    * [HIVE-11145] - Remove OFFLINE and NO_DROP from tables and partitions
+    * [HIVE-11179] - HIVE should allow custom converting from HivePrivilegeObjectDesc to privilegeObject for different authorizers
+    * [HIVE-11182] - Enable optimized hash tables for spark [Spark Branch]
+    * [HIVE-11240] - Change value type from int to long for HiveConf.ConfVars.METASTORESERVERMAXMESSAGESIZE
+    * [HIVE-11244] - Beeline prompt info improvement for cluster mode
+    * [HIVE-11254] - Process result sets returned by a stored procedure
+    * [HIVE-11262] - Skip MapJoin processing if the join hash table is empty
+    * [HIVE-11290] - Cursor attributes %ISOPEN, %FOUND, %NOTFOUND and SYS_REFCURSOR variable
+    * [HIVE-11291] - Avoid allocation storm while doing rule matching on operator/expression trees
+    * [HIVE-11304] - Migrate to Log4j2 from Log4j 1.x
+    * [HIVE-11306] - Add a bloom-1 filter for Hybrid MapJoin spills
+    * [HIVE-11329] - Column prefix in key of hbase column prefix map
+    * [HIVE-11354] - HPL/SQL extending compatibility with Transact-SQL
+    * [HIVE-11366] - Avoid right leaning tree hashCode depth during ExprNodeDescEqualityWrapper HashMaps
+    * [HIVE-11383] - Upgrade Hive to Calcite 1.4
+    * [HIVE-11442] - Remove commons-configuration.jar from Hive distribution
+    * [HIVE-11457] - Vectorization: Improve SIMD JIT in GenVectorCode StringExpr instrinsics 
+    * [HIVE-11482] - Add retrying thrift client for HiveServer2
+    * [HIVE-11496] - Better tests for evaluating ORC predicate pushdown
+    * [HIVE-11506] - Casting varchar/char type to string cannot be vectorized
+    * [HIVE-11512] - Hive LDAP Authenticator should also support full DN in Authenticate() 
+    * [HIVE-11513] - AvroLazyObjectInspector could handle empty data better
+    * [HIVE-11525] - Bucket pruning
+    * [HIVE-11531] - Add mysql-style LIMIT support to Hive, or improve ROW_NUMBER performance-wise
+    * [HIVE-11534] - Improve validateTableCols error message
+    * [HIVE-11536] - %TYPE and %ROWTYPE attributes in data type declaration
+    * [HIVE-11538] - Add an option to skip init script while running tests
+    * [HIVE-11544] - LazyInteger should avoid throwing NumberFormatException
+    * [HIVE-11564] - HBaseSchemaTool should be able to list objects
+    * [HIVE-11569] - Use PreOrderOnceWalker where feasible
+    * [HIVE-11617] - Explain plan for multiple lateral views is very slow
+    * [HIVE-11627] - Reduce the number of accesses to hashmaps in PPD
+    * [HIVE-11638] - ExprNodeDesc hashMap accidentally degrades into O(N) instead of O(1)
+    * [HIVE-11645] - Add in-place updates for dynamic partitions loading
+    * [HIVE-11659] - Make Vectorization use the fast StringExpr everywhere
+    * [HIVE-11720] - Allow HiveServer2 to set custom http request/response header size
+    * [HIVE-11724] - WebHcat get jobs to order jobs on time order with latest at top
+    * [HIVE-11780] - Add "set role none" support
+    * [HIVE-11783] - Extending HPL/SQL parser
+    * [HIVE-11789] - Better support for functions recognition in CBO
+    * [HIVE-11807] - Set ORC buffer size in relation to set stripe size
+    * [HIVE-11814] - Emit query time in lineage info
+    * [HIVE-11816] - Upgrade groovy to 2.4.4
+    * [HIVE-11881] - Supporting HPL/SQL Packages
+    * [HIVE-11882] - Fetch optimizer should stop source files traversal once it exceeds the hive.fetch.task.conversion.threshold
+    * [HIVE-11891] - Add basic performance logging to metastore calls
+    * [HIVE-11923] - allow qtests to run via a single client session for tez and llap
+    * [HIVE-11937] - Improve StatsOptimizer to deal with query with additional constant columns
+    * [HIVE-11955] - Add costing for join-groupby transpose rule
+    * [HIVE-11972] - [Refactor] Improve determination of dynamic partitioning columns in FileSink Operator
+    * [HIVE-11984] - Add HS2 open operation metrics
+    * [HIVE-12002] - correct implementation typo
+    * [HIVE-12006] - Enable Columnar Pushdown for RC/ORC File for HCatLoader
+    * [HIVE-12017] - Do not disable CBO by default when number of joins in a query is equal or less than 1
+    * [HIVE-12038] - Fix the 'overall' section in the HiveQA report
+    * [HIVE-12040] - CBO: Use CBO, even for the 1 JOIN + GROUP BY case
+    * [HIVE-12059] - Clean up reference to deprecated constants in AvroSerdeUtils
+    * [HIVE-12063] - Pad Decimal numbers with trailing zeros to the scale of the column
+    * [HIVE-12070] - Relax type restrictions on 'Greatest' and 'Least'
+    * [HIVE-12175] - Upgrade Kryo version to 3.0.x
+    * [HIVE-12186] - Upgrade Hive to Calcite 1.5
+    * [HIVE-12187] - Release plan once a query is executed 
+    * [HIVE-12209] - Vectorized simple CASE expressions with nulls
+    * [HIVE-12235] - Improve beeline logging for dynamic service discovery
+    * [HIVE-12236] - Enable SimpleFetchOptimizer for more query types
+    * [HIVE-12265] - Generate lineage info only if requested
+    * [HIVE-12288] - Extend HIVE-11306 changes to apply to Native vectorized map-joins
+    * [HIVE-12289] - Make sure slf4j-log4j12 jar is not in classpath
+    * [HIVE-12290] - Native Vector ReduceSink
+    * [HIVE-12300] - deprecate MR in Hive 2.0
+    * [HIVE-12309] - TableScan should use column stats when available for better data size estimate
+    * [HIVE-12317] - Emit current database in lineage info
+    * [HIVE-12319] - Remove HadoopShims::getHadoopConfNames()
+    * [HIVE-12320] - hive.metastore.disallow.incompatible.col.type.changes should be true by default
+    * [HIVE-12325] - Turn hive.map.groupby.sorted on by default
+    * [HIVE-12329] - Turn on limit pushdown optimization by default
+    * [HIVE-12331] - Remove hive.enforce.bucketing & hive.enforce.sorting configs
+    * [HIVE-12443] - Hive Streaming should expose encoding and serdes for testing
+    * [HIVE-12470] - Allow splits to provide custom consistent locations, instead of being tied to data locality
+    * [HIVE-12496] - Open ServerTransport After MetaStore Initialization 
+    * [HIVE-12523] - display Hive query name in explain plan
+    * [HIVE-12623] - Add an option to force allocation of fragments on requested nodes
+    * [HIVE-12693] - LLAP: Use Slider Anti-Affinity scheduling mode for daemon distribution
+    * [HIVE-12713] - Miscellaneous improvements in driver compile and execute logging
+    * [HIVE-12751] - Fix NVL explain syntax
+    * [HIVE-12761] - Add stack trace servlet to HS2 web ui
+    * [HIVE-12769] - LLAP: Pick up java_home from System properties for Slider
+
+
+
+** New Feature
+    * [HIVE-686] - add UDF substring_index
+    * [HIVE-3404] - Create quarter UDF
+    * [HIVE-7926] - long-lived daemons for query fragment execution, I/O and caching
+    * [HIVE-10591] - Support limited integer type promotion in ORC
+    * [HIVE-10592] - ORC file dump in JSON format
+    * [HIVE-10673] - Dynamically partitioned hash join for Tez
+    * [HIVE-10761] - Create codahale-based metrics system for Hive
+    * [HIVE-10785] - Support aggregate push down through joins
+    * [HIVE-11103] - Add banker's rounding BROUND UDF
+    * [HIVE-11461] - Transform flat AND/OR into IN struct clause
+    * [HIVE-11488] - Add sessionId and queryId info to HS2 log
+    * [HIVE-11593] - Add aes_encrypt and aes_decrypt UDFs
+    * [HIVE-11600] - Hive Parser to Support multi col in clause (x,y..) in ((..),..., ())
+    * [HIVE-11684] - Implement limit pushdown through outer join in CBO
+    * [HIVE-11699] - Support special characters in quoted table names
+    * [HIVE-11706] - Implement "show create database"
+    * [HIVE-11775] - Implement limit push down through union all in CBO
+    * [HIVE-11785] - Support escaping carriage return and new line for LazySimpleSerDe
+    * [HIVE-11976] - Extend CBO rules to being able to apply rules only once on a given operator
+    * [HIVE-12080] - Support auto type widening (int->bigint & float->double) for Parquet table
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+** Task
+    * [HIVE-10485] - Create md5 UDF
+    * [HIVE-10667] - Upgrade Calcite dependency to newest version
+    * [HIVE-10868] - Update release note for 1.2.0 and 1.1.0
+    * [HIVE-10870] - Merge Spark branch to trunk 5/29/2015
+    * [HIVE-11018] - Turn on cbo in more q files
+    * [HIVE-11096] - Bump the parquet version to 1.7.0
+    * [HIVE-11158] - Add tests for HPL/SQL
+    * [HIVE-11378] - Remove hadoop-1 support from master branch
+    * [HIVE-11489] - Jenkins PreCommit-HIVE-SPARK-Build fails with TestCliDriver.initializationError
+    * [HIVE-11582] - Remove conf variable hive.mapred.supports.subdirectories
+    * [HIVE-11754] - Not reachable code parts in StatsUtils
+    * [HIVE-12005] - Remove hbase based stats collection mechanism
+    * [HIVE-12010] - Tests should use FileSystem based stats collection mechanism
+    * [HIVE-12164] - Remove jdbc stats collection mechanism
+    * [HIVE-12237] - Use slf4j as logging facade
+    * [HIVE-12239] - Constants in hive.common.metrics.common.MetricsConstant are not final
+    * [HIVE-12256] - Move LLAP registry into llap-client module
+    * [HIVE-12383] - Update golden file for cbo_rp_annotate_stats_groupby test
+    * [HIVE-12411] - Remove counter based stats collection mechanism
+    * [HIVE-12413] - Default mode for hive.mapred.mode should be strict
+    * [HIVE-12429] - Switch default Hive authorization to SQLStandardAuth in 2.0
+    * [HIVE-12430] - Remove remaining reference to the hadoop-2 profile
+    * [HIVE-12434] - Merge spark into master 11/17/1015
+    * [HIVE-12436] - Default hive.metastore.schema.verification to true
+    * [HIVE-12520] - Fix schema_evol* tests on master
+    * [HIVE-12658] - Task rejection by an llap daemon spams the log with RejectedExecutionExceptions
+
+
+** Test
+    * [HIVE-7375] - Add option in test infra to compile in other profiles (like hadoop-1)
+    * [HIVE-10583] - Switch precommit from ASF to Github repo to avoid clone failures
+    * [HIVE-10903] - Add hive.in.test for HoS tests
+    * [HIVE-10969] - Test autogen_colalias failing on trunk
+    * [HIVE-11026] - Make vector_outer_join* test more robust
+    * [HIVE-11083] - Make test cbo_windowing robust
+    * [HIVE-11384] - Add Test case which cover both HIVE-11271 and HIVE-11333
+    * [HIVE-11620] - Fix several qtest output order
+    * [HIVE-11791] - Add unit test for HIVE-10122
+    * [HIVE-11946] - TestNotificationListener is flaky
+    * [HIVE-11962] - Improve windowing_windowspec2.q tests to return consistent results
+    * [HIVE-12213] - Investigating the test failure TestHCatClient.testTableSchemaPropagation
+    * [HIVE-12560] - Few tests hang forever
+    * [HIVE-12697] - Remove deprecated post option from webhcat test files
+
+
+** Wish
+    * [HIVE-10427] - collect_list() and collect_set() should accept struct types as argument
+
 Release Notes - Hive - Version 1.2.1
 
 ** Sub-task

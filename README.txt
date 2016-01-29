@@ -81,7 +81,7 @@ Requirements
 
 - Java 1.7
 
-- Hadoop 1.x, 2.x
+- Hadoop 2.x
 
 
 Upgrading from older versions of Hive
