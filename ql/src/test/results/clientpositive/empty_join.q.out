@@ -59,14 +59,14 @@ STAGE PLANS:
   Stage: Stage-5
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_1:t2
+        $hdt$_1:t2 
           Fetch Operator
             limit: -1
-        $hdt$_2:t3
+        $hdt$_2:t3 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_1:t2
+        $hdt$_1:t2 
           TableScan
             alias: t2
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
@@ -82,7 +82,7 @@ STAGE PLANS:
                     0 _col0 (type: int)
                     1 _col0 (type: int)
                     2 _col0 (type: int)
-        $hdt$_2:t3
+        $hdt$_2:t3 
           TableScan
             alias: t3
             Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
