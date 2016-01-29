@@ -217,7 +217,8 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
       for (int pos = len-1; pos >= 0; pos--) {
         HiveLock hiveLock = hiveLocks.get(pos);
         try {
-          LOG.info(" about to release lock for " + hiveLock.getHiveLockObject().getName());
+          LOG.debug("About to release lock for {}",
+              hiveLock.getHiveLockObject().getName());
           unlock(hiveLock);
         } catch (LockException e) {
           // The lock may have been released. Ignore and continue
@@ -263,7 +264,8 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
 
   private ZooKeeperHiveLock lock (HiveLockObject key, HiveLockMode mode,
       boolean keepAlive, boolean parentCreated) throws LockException {
-    LOG.info("Acquiring lock for " + key.getName() + " with mode " + key.getData().getLockMode());
+    LOG.debug("Acquiring lock for {} with mode {}", key.getName(),
+        key.getData().getLockMode());
 
     int tryNum = 0;
     ZooKeeperHiveLock ret = null;
