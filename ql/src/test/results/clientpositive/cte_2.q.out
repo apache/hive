@@ -40,7 +40,7 @@ select *
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@s1
-POSTHOOK: Lineage: s1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: s1.key SIMPLE []
 POSTHOOK: Lineage: s1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select * from s1
 PREHOOK: type: QUERY

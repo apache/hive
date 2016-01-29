@@ -1,1 +1,1 @@
-FAILED: SemanticException [Error 10052]: In strict mode, cartesian product is not allowed. If you really want to perform the operation, set hive.mapred.mode=nonstrict
+FAILED: SemanticException Cartesian products are disabled for safety reasons. If you know what you are doing, please make sure that hive.strict.checks.cartesian.product is set to false and that hive.mapred.mode is not set to 'strict' to enable them.

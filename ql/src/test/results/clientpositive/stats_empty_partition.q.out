@@ -20,7 +20,7 @@ POSTHOOK: query: insert overwrite table tmptable partition (part = '1') select *
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@tmptable@part=1
-POSTHOOK: Lineage: tmptable PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tmptable PARTITION(part=1).key SIMPLE []
 POSTHOOK: Lineage: tmptable PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: describe formatted tmptable partition (part = '1')
 PREHOOK: type: DESCTABLE

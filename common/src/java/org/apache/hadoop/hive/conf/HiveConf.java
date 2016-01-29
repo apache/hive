@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.conf;
 
+import com.google.common.base.Joiner;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -55,8 +56,6 @@ import org.apache.hadoop.util.Shell;
 import org.apache.hive.common.HiveCompat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Joiner;
 
 /**
  * Hive Configuration.
@@ -780,14 +779,21 @@ public class HiveConf extends Configuration {
         "hive.txn.valid.txns,hive.script.operator.env.blacklist",
         "Comma separated list of keys from the configuration file not to convert to environment " +
         "variables when envoking the script operator"),
-    HIVEMAPREDMODE("hive.mapred.mode", "strict",
-        "The mode in which the Hive operations are being performed. \n" +
-        "In strict mode, some risky queries are not allowed to run. They include:\n" +
-        "  Cartesian Product.\n" +
-        "  No partition being picked up for a query.\n" +
+    HIVE_STRICT_CHECKS_LARGE_QUERY("hive.strict.checks.large.query", false,
+        "Enabling strict large query checks disallows the following:\n" +
+        "  Orderby without limit.\n" +
+        "  No partition being picked up for a query against partitioned table.\n" +
+        "Note that these checks currently do not consider data size, only the query pattern."),
+    HIVE_STRICT_CHECKS_TYPE_SAFETY("hive.strict.checks.type.safety", true,
+        "Enabling strict type safety checks disallows the following:\n" +
         "  Comparing bigints and strings.\n" +
-        "  Comparing bigints and doubles.\n" +
-        "  Orderby without limit."),
+        "  Comparing bigints and doubles."),
+    HIVE_STRICT_CHECKS_CARTESIAN("hive.strict.checks.cartesian.product", true,
+        "Enabling strict large query checks disallows the following:\n" +
+        "  Cartesian product (cross join)."),
+    @Deprecated
+    HIVEMAPREDMODE("hive.mapred.mode", "nonstrict",
+        "Deprecated; use hive.strict.checks.* settings instead."),
     HIVEALIAS("hive.alias", "", ""),
     HIVEMAPSIDEAGGREGATE("hive.map.aggr", true, "Whether to use map-side aggregation in Hive Group By queries"),
     HIVEGROUPBYSKEW("hive.groupby.skewindata", false, "Whether there is skew in data to optimize group by queries"),
@@ -3694,6 +3700,47 @@ public class HiveConf extends Configuration {
 
   public static void setLoadHiveServer2Config(boolean loadHiveServer2Config) {
     HiveConf.loadHiveServer2Config = loadHiveServer2Config;
+  }
+
+  public static class StrictChecks {
+
+    private static final String NO_LIMIT_MSG = makeMessage(
+        "Order by-s without limit", ConfVars.HIVE_STRICT_CHECKS_LARGE_QUERY);
+    private static final String NO_PARTITIONLESS_MSG = makeMessage(
+        "Queries against partitioned tables without a partition filter",
+        ConfVars.HIVE_STRICT_CHECKS_LARGE_QUERY);
+    private static final String NO_COMPARES_MSG = makeMessage(
+        "Unsafe compares between different types", ConfVars.HIVE_STRICT_CHECKS_TYPE_SAFETY);
+    private static final String NO_CARTESIAN_MSG = makeMessage(
+        "Cartesian products", ConfVars.HIVE_STRICT_CHECKS_CARTESIAN);
+
+    private static String makeMessage(String what, ConfVars setting) {
+      return what + " are disabled for safety reasons. If you know what you are doing, please make"
+          + " sure that " + setting.varname + " is set to false and that "
+          + ConfVars.HIVEMAPREDMODE.varname + " is not set to 'strict' to enable them.";
+    }
+
+    public static String checkNoLimit(Configuration conf) {
+      return isAllowed(conf, ConfVars.HIVE_STRICT_CHECKS_LARGE_QUERY) ? null : NO_LIMIT_MSG;
+    }
+
+    public static String checkNoPartitionFilter(Configuration conf) {
+      return isAllowed(conf, ConfVars.HIVE_STRICT_CHECKS_LARGE_QUERY)
+          ? null : NO_PARTITIONLESS_MSG;
+    }
+
+    public static String checkTypeSafety(Configuration conf) {
+      return isAllowed(conf, ConfVars.HIVE_STRICT_CHECKS_TYPE_SAFETY) ? null : NO_COMPARES_MSG;
+    }
+
+    public static String checkCartesian(Configuration conf) {
+      return isAllowed(conf, ConfVars.HIVE_STRICT_CHECKS_CARTESIAN) ? null : NO_CARTESIAN_MSG;
+    }
+
+    private static boolean isAllowed(Configuration conf, ConfVars setting) {
+      String mode = HiveConf.getVar(conf, ConfVars.HIVEMAPREDMODE, null);
+      return (mode != null) ? !"strict".equals(mode) : !HiveConf.getBoolVar(conf, setting);
+    }
   }
 
   public static String getNonMrEngines() {

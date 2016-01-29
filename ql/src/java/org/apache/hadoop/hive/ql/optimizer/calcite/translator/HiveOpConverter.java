@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -43,7 +44,7 @@ import org.apache.calcite.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.conf.HiveConf.StrictChecks;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
@@ -120,17 +121,14 @@ public class HiveOpConverter {
   private final HiveConf                                      hiveConf;
   private final UnparseTranslator                             unparseTranslator;
   private final Map<String, Operator<? extends OperatorDesc>> topOps;
-  private final boolean                                       strictMode;
   private int                                                 uniqueCounter;
 
   public HiveOpConverter(SemanticAnalyzer semanticAnalyzer, HiveConf hiveConf,
-      UnparseTranslator unparseTranslator, Map<String, Operator<? extends OperatorDesc>> topOps,
-      boolean strictMode) {
+      UnparseTranslator unparseTranslator, Map<String, Operator<? extends OperatorDesc>> topOps) {
     this.semanticAnalyzer = semanticAnalyzer;
     this.hiveConf = hiveConf;
     this.unparseTranslator = unparseTranslator;
     this.topOps = topOps;
-    this.strictMode = strictMode;
     this.uniqueCounter = 0;
   }
 
@@ -424,10 +422,10 @@ public class HiveOpConverter {
     // of their columns
     if (sortRel.getCollation() != RelCollations.EMPTY) {
 
-      // In strict mode, in the presence of order by, limit must be
-      // specified
-      if (strictMode && sortRel.fetch == null) {
-        throw new SemanticException(ErrorMsg.NO_LIMIT_WITH_ORDERBY.getMsg());
+      // In strict mode, in the presence of order by, limit must be specified.
+      if (sortRel.fetch == null) {
+        String error = StrictChecks.checkNoLimit(hiveConf);
+        if (error != null) throw new SemanticException(error);
       }
 
       // 1.a. Extract order for each column from collation
@@ -476,7 +474,7 @@ public class HiveOpConverter {
       // 1.b. Generate reduce sink and project operator
       resultOp = genReduceSinkAndBacktrackSelect(resultOp,
           sortCols.toArray(new ExprNodeDesc[sortCols.size()]), 0, new ArrayList<ExprNodeDesc>(),
-          order.toString(), numReducers, Operation.NOT_ACID, strictMode, keepColumns);
+          order.toString(), numReducers, Operation.NOT_ACID, hiveConf, keepColumns);
     }
 
     // 2. If we need to generate limit
@@ -606,7 +604,7 @@ public class HiveOpConverter {
     exchangeRel.setJoinExpressions(expressions);
 
     ReduceSinkOperator rsOp = genReduceSink(inputOpAf.inputs.get(0), tabAlias, expressions,
-        -1, -1, Operation.NOT_ACID, strictMode);
+        -1, -1, Operation.NOT_ACID, hiveConf);
 
     return new OpAttr(tabAlias, inputOpAf.vcolsInCalcite, rsOp);
   }
@@ -654,7 +652,7 @@ public class HiveOpConverter {
 
       SelectOperator selectOp = genReduceSinkAndBacktrackSelect(input,
           keyCols.toArray(new ExprNodeDesc[keyCols.size()]), 0, partCols,
-          order.toString(), -1, Operation.NOT_ACID, strictMode);
+          order.toString(), -1, Operation.NOT_ACID, hiveConf);
 
       // 2. Finally create PTF
       PTFTranslator translator = new PTFTranslator();
@@ -679,14 +677,15 @@ public class HiveOpConverter {
 
   private static SelectOperator genReduceSinkAndBacktrackSelect(Operator<?> input,
           ExprNodeDesc[] keys, int tag, ArrayList<ExprNodeDesc> partitionCols, String order,
-          int numReducers, Operation acidOperation, boolean strictMode) throws SemanticException {
+          int numReducers, Operation acidOperation, HiveConf hiveConf)
+              throws SemanticException {
     return genReduceSinkAndBacktrackSelect(input, keys, tag, partitionCols, order,
-        numReducers, acidOperation, strictMode, input.getSchema().getColumnNames());
+        numReducers, acidOperation, hiveConf, input.getSchema().getColumnNames());
   }
 
   private static SelectOperator genReduceSinkAndBacktrackSelect(Operator<?> input,
       ExprNodeDesc[] keys, int tag, ArrayList<ExprNodeDesc> partitionCols, String order,
-      int numReducers, Operation acidOperation, boolean strictMode,
+      int numReducers, Operation acidOperation, HiveConf hiveConf,
       List<String> keepColNames) throws SemanticException {
     // 1. Generate RS operator
     // 1.1 Prune the tableNames, only count the tableNames that are not empty strings
@@ -716,7 +715,7 @@ public class HiveOpConverter {
           "In CBO return path, genReduceSinkAndBacktrackSelect is expecting only one tableAlias but there is none");
     }
     // 1.2 Now generate RS operator
-    ReduceSinkOperator rsOp = genReduceSink(input, tableAlias, keys, tag, partitionCols, order, numReducers, acidOperation, strictMode);
+    ReduceSinkOperator rsOp = genReduceSink(input, tableAlias, keys, tag, partitionCols, order, numReducers, acidOperation, hiveConf);
 
     // 2. Generate backtrack Select operator
     Map<String, ExprNodeDesc> descriptors = buildBacktrackFromReduceSink(keepColNames,
@@ -737,15 +736,15 @@ public class HiveOpConverter {
   }
 
   private static ReduceSinkOperator genReduceSink(Operator<?> input, String tableAlias, ExprNodeDesc[] keys, int tag,
-      int numReducers, Operation acidOperation, boolean strictMode) throws SemanticException {
+      int numReducers, Operation acidOperation, HiveConf hiveConf) throws SemanticException {
     return genReduceSink(input, tableAlias, keys, tag, new ArrayList<ExprNodeDesc>(), "", numReducers,
-        acidOperation, strictMode);
+        acidOperation, hiveConf);
   }
 
   @SuppressWarnings({ "rawtypes", "unchecked" })
   private static ReduceSinkOperator genReduceSink(Operator<?> input, String tableAlias, ExprNodeDesc[] keys, int tag,
       ArrayList<ExprNodeDesc> partitionCols, String order, int numReducers,
-      Operation acidOperation, boolean strictMode) throws SemanticException {
+      Operation acidOperation, HiveConf hiveConf) throws SemanticException {
     Operator dummy = Operator.createDummy(); // dummy for backtracking
     dummy.setParentOperators(Arrays.asList(input));
 
@@ -809,9 +808,8 @@ public class HiveOpConverter {
       numReducers = 1;
 
       // Cartesian product is not supported in strict mode
-      if (strictMode) {
-        throw new SemanticException(ErrorMsg.NO_CARTESIAN_PRODUCT.getMsg());
-      }
+      String error = StrictChecks.checkCartesian(hiveConf);
+      if (error != null) throw new SemanticException(error);
     }
 
     ReduceSinkDesc rsDesc;

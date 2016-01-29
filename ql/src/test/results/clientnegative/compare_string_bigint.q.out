@@ -1,1 +1,1 @@
-FAILED: SemanticException Line 0:-1 Wrong arguments ''1'': In strict mode, comparing bigints and strings is not allowed, it may result in a loss of precision. If you really want to perform the operation, set hive.mapred.mode=nonstrict
+FAILED: SemanticException Line 0:-1 Wrong arguments ''1'': Unsafe compares between different types are disabled for safety reasons. If you know what you are doing, please make sure that hive.strict.checks.type.safety is set to false and that hive.mapred.mode is not set to 'strict' to enable them.
