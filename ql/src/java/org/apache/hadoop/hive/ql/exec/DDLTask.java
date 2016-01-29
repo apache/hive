@@ -3504,8 +3504,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       String newLocation = alterTbl.getNewLocation();
       try {
         URI locUri = new URI(newLocation);
-        if (!locUri.isAbsolute() || locUri.getScheme() == null
-            || locUri.getScheme().trim().equals("")) {
+        if (!new Path(locUri).isAbsolute()) {
           throw new HiveException(ErrorMsg.BAD_LOCATION_VALUE, newLocation);
         }
         sd.setLocation(newLocation);

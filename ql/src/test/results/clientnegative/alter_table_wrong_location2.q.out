@@ -1,0 +1,14 @@
+PREHOOK: query: create table testwrongloc(id int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testwrongloc
+POSTHOOK: query: create table testwrongloc(id int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testwrongloc
+PREHOOK: query: alter table testwrongloc set location "relative/testwrongloc"
+PREHOOK: type: ALTERTABLE_LOCATION
+PREHOOK: Input: default@testwrongloc
+PREHOOK: Output: default@testwrongloc
+#### A masked pattern was here ####
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. {0}  is not absolute.  Please specify a complete absolute uri. relative/testwrongloc
