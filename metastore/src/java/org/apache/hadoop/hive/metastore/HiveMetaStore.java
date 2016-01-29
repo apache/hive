@@ -3310,6 +3310,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
       }
 
+      // Adds the missing scheme/authority for the new partition location
+      if (new_part.getSd() != null) {
+        String newLocation = new_part.getSd().getLocation();
+        if (org.apache.commons.lang.StringUtils.isNotEmpty(newLocation)) {
+          Path tblPath = wh.getDnsPath(new Path(newLocation));
+          new_part.getSd().setLocation(tblPath.toString());
+        }
+      }
+
       Partition oldPart = null;
       Exception ex = null;
       try {
@@ -3505,6 +3514,16 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         newTable.putToParameters(hive_metastoreConstants.DDL_TIME, Long.toString(System
             .currentTimeMillis() / 1000));
       }
+
+      // Adds the missing scheme/authority for the new table location
+      if (newTable.getSd() != null) {
+        String newLocation = newTable.getSd().getLocation();
+        if (org.apache.commons.lang.StringUtils.isNotEmpty(newLocation)) {
+          Path tblPath = wh.getDnsPath(new Path(newLocation));
+          newTable.getSd().setLocation(tblPath.toString());
+        }
+      }
+
       boolean success = false;
       Exception ex = null;
       try {
