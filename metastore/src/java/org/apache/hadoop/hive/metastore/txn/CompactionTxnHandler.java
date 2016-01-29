@@ -17,30 +17,35 @@
  */
 package org.apache.hadoop.hive.metastore.txn;
 
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.hadoop.hive.common.ValidTxnList;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.*;
-import org.apache.hadoop.util.StringUtils;
-
-import java.sql.*;
-import java.util.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Extends the transaction handler with methods needed only by the compactor threads.  These
  * methods are not available through the thrift interface.
  */
-public class CompactionTxnHandler extends TxnHandler {
+class CompactionTxnHandler extends TxnHandler {
   static final private String CLASS_NAME = CompactionTxnHandler.class.getName();
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
   // Always access COMPACTION_QUEUE before COMPLETED_TXN_COMPONENTS
   // See TxnHandler for notes on how to deal with deadlocks.  Follow those notes.
 
-  public CompactionTxnHandler(HiveConf conf) {
-    super(conf);
+  public CompactionTxnHandler() {
   }
 
   /**
@@ -620,27 +625,6 @@ public class CompactionTxnHandler extends TxnHandler {
     }
   }
 
-  /**
-   * Transform a {@link org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse} to a
-   * {@link org.apache.hadoop.hive.common.ValidTxnList}.  This assumes that the caller intends to
-   * compact the files, and thus treats only open transactions as invalid.  Additionally any
-   * txnId > highestOpenTxnId is also invalid.  This is avoid creating something like
-   * delta_17_120 where txnId 80, for example, is still open.
-   * @param txns txn list from the metastore
-   * @return a valid txn list.
-   */
-  public static ValidTxnList createValidCompactTxnList(GetOpenTxnsInfoResponse txns) {
-    long highWater = txns.getTxn_high_water_mark();
-    long minOpenTxn = Long.MAX_VALUE;
-    long[] exceptions = new long[txns.getOpen_txnsSize()];
-    int i = 0;
-    for (TxnInfo txn : txns.getOpen_txns()) {
-      if (txn.getState() == TxnState.OPEN) minOpenTxn = Math.min(minOpenTxn, txn.getId());
-      exceptions[i++] = txn.getId();
-    }
-    highWater = minOpenTxn == Long.MAX_VALUE ? highWater : minOpenTxn - 1;
-    return new ValidCompactorTxnList(exceptions, -1, highWater);
-  }
   /**
    * Record the highest txn id that the {@code ci} compaction job will pay attention to.
    */

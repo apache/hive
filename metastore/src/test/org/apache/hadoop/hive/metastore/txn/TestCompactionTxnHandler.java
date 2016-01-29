@@ -17,19 +17,6 @@
  */
 package org.apache.hadoop.hive.metastore.txn;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertNull;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.fail;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
@@ -49,10 +36,22 @@ import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
-import org.apache.hadoop.hive.metastore.api.UnlockRequest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertNull;
+import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.fail;
 
 /**
  * Tests for TxnHandler.
@@ -60,7 +59,7 @@ import org.junit.Test;
 public class TestCompactionTxnHandler {
 
   private HiveConf conf = new HiveConf();
-  private CompactionTxnHandler txnHandler;
+  private TxnStore txnHandler;
 
   public TestCompactionTxnHandler() throws Exception {
     TxnDbUtil.setConfValues(conf);
@@ -440,7 +439,7 @@ public class TestCompactionTxnHandler {
   @Before
   public void setUp() throws Exception {
     TxnDbUtil.prepDb();
-    txnHandler = new CompactionTxnHandler(conf);
+    txnHandler = TxnUtils.getTxnStore(conf);
   }
 
   @After

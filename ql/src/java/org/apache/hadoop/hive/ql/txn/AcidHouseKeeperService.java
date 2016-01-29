@@ -17,11 +17,12 @@
  */
 package org.apache.hadoop.hive.ql.txn;
 
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.txn.compactor.HouseKeeperServiceBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.txn.TxnHandler;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -52,10 +53,10 @@ public class AcidHouseKeeperService extends HouseKeeperServiceBase {
   }
 
   private static final class TimedoutTxnReaper implements Runnable {
-    private final TxnHandler txnHandler;
+    private final TxnStore txnHandler;
     private final AtomicInteger isAliveCounter;
     private TimedoutTxnReaper(HiveConf hiveConf, AtomicInteger isAliveCounter) {
-      txnHandler = new TxnHandler(hiveConf);
+      txnHandler = TxnUtils.getTxnStore(hiveConf);
       this.isAliveCounter = isAliveCounter;
     }
     @Override

@@ -18,20 +18,12 @@
 package org.apache.hadoop.hive.ql.txn;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.HouseKeeperService;
-import org.apache.hadoop.hive.metastore.txn.CompactionTxnHandler;
-import org.apache.hadoop.hive.metastore.txn.TxnHandler;
-import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
-import org.apache.hadoop.hive.ql.lockmgr.TxnManagerFactory;
-import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.txn.compactor.HouseKeeperServiceBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -60,10 +52,10 @@ public class AcidCompactionHistoryService extends HouseKeeperServiceBase {
   }
   
   private static final class ObsoleteEntryReaper implements Runnable {
-    private final CompactionTxnHandler txnHandler;
+    private final TxnStore txnHandler;
     private final AtomicInteger isAliveCounter;
     private ObsoleteEntryReaper(HiveConf hiveConf, AtomicInteger isAliveCounter) {
-      txnHandler = new CompactionTxnHandler(hiveConf);
+      txnHandler = TxnUtils.getTxnStore(hiveConf);
       this.isAliveCounter = isAliveCounter;
     }
     
