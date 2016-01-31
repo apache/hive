@@ -105,6 +105,7 @@ public class ParseContext {
 
   private AnalyzeRewriteContext analyzeRewrite;
   private CreateTableDesc createTableDesc;
+  private boolean reduceSinkAddedBySortedDynPartition;
 
 
   public ParseContext() {
@@ -530,4 +531,12 @@ public class ParseContext {
     this.createTableDesc = createTableDesc;
   }
 
+  public void setReduceSinkAddedBySortedDynPartition(
+      final boolean reduceSinkAddedBySortedDynPartition) {
+    this.reduceSinkAddedBySortedDynPartition = reduceSinkAddedBySortedDynPartition;
+  }
+
+  public boolean isReduceSinkAddedBySortedDynPartition() {
+    return reduceSinkAddedBySortedDynPartition;
+  }
 }

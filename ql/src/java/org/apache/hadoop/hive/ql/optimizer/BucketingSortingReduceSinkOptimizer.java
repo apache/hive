@@ -58,6 +58,8 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.SMBJoinDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This transformation does optimization for enforcing bucketing and sorting.
@@ -120,6 +122,7 @@ public class BucketingSortingReduceSinkOptimizer extends Transform {
    *
    */
   public class BucketSortReduceSinkProcessor implements NodeProcessor {
+    private final Logger LOG = LoggerFactory.getLogger(BucketSortReduceSinkProcessor.class);
     protected ParseContext pGraphContext;
 
     public BucketSortReduceSinkProcessor(ParseContext pGraphContext) {
@@ -363,6 +366,14 @@ public class BucketingSortingReduceSinkOptimizer extends Transform {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
+
+      // We should not use this optimization if sorted dynamic partition optimizer is used,
+      // as RS will be required.
+      if (pGraphContext.isReduceSinkAddedBySortedDynPartition()) {
+        LOG.info("Reduce Sink is added by Sorted Dynamic Partition Optimizer. Bailing out of" +
+            " Bucketing Sorting Reduce Sink Optimizer");
+        return null;
+      }
 
       // If the reduce sink has not been introduced due to bucketing/sorting, ignore it
       FileSinkOperator fsOp = (FileSinkOperator) nd;
