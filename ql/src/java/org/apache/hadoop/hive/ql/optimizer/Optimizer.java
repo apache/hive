@@ -88,11 +88,20 @@ public class Optimizer {
       transformations.add(new SyntheticJoinPredicate());
       transformations.add(new PredicatePushDown());
     }
+
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTCONSTANTPROPAGATION)) {
       // We run constant propagation twice because after predicate pushdown, filter expressions
       // are combined and may become eligible for reduction (like is not null filter).
         transformations.add(new ConstantPropagate());
     }
+
+    if(HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.DYNAMICPARTITIONING) &&
+        HiveConf.getVar(hiveConf, HiveConf.ConfVars.DYNAMICPARTITIONINGMODE).equals("nonstrict") &&
+        HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTSORTDYNAMICPARTITION) &&
+        !HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTLISTBUCKETING)) {
+      transformations.add(new SortedDynPartitionOptimizer());
+    }
+
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTPPD)) {
       transformations.add(new PartitionPruner());
       transformations.add(new PartitionConditionRemover());
