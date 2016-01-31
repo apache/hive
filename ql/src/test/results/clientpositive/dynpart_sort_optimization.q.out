@@ -2258,3 +2258,806 @@ POSTHOOK: Input: default@over1k_part_buck_sort2@t=27
 POSTHOOK: Input: default@over1k_part_buck_sort2@t=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 19
+PREHOOK: query: create table over1k_part3(
+           si smallint,
+           b bigint,
+           f float)
+       partitioned by (s string, t tinyint, i int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@over1k_part3
+POSTHOOK: query: create table over1k_part3(
+           si smallint,
+           b bigint,
+           f float)
+       partitioned by (s string, t tinyint, i int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@over1k_part3
+PREHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where s="foo"
+PREHOOK: type: QUERY
+POSTHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where s="foo"
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: over1k
+            Statistics: Num rows: 3949 Data size: 106636 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (s = 'foo') (type: boolean)
+              Statistics: Num rows: 1974 Data size: 53304 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: si (type: smallint), b (type: bigint), f (type: float), t (type: tinyint), i (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col4, _col5
+                Statistics: Num rows: 1974 Data size: 53304 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: 'foo' (type: string), _col4 (type: tinyint), _col5 (type: int)
+                  sort order: +++
+                  Map-reduce partition columns: 'foo' (type: string), _col4 (type: tinyint), _col5 (type: int)
+                  Statistics: Num rows: 1974 Data size: 53304 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: smallint), _col1 (type: bigint), _col2 (type: float), 'foo' (type: string), _col4 (type: tinyint), _col5 (type: int)
+      Reduce Operator Tree:
+        Select Operator
+          expressions: VALUE._col0 (type: smallint), VALUE._col1 (type: bigint), VALUE._col2 (type: float), VALUE._col3 (type: string), VALUE._col4 (type: tinyint), VALUE._col5 (type: int)
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+          Statistics: Num rows: 1974 Data size: 53304 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1974 Data size: 53304 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: default.over1k_part3
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            i 
+            s 
+            t 
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.over1k_part3
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+
+PREHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where t=27
+PREHOOK: type: QUERY
+POSTHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where t=27
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: over1k
+            Statistics: Num rows: 859 Data size: 106636 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (t = 27) (type: boolean)
+              Statistics: Num rows: 429 Data size: 53255 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: si (type: smallint), b (type: bigint), f (type: float), s (type: string), i (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col5
+                Statistics: Num rows: 429 Data size: 53255 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col3 (type: string), 27 (type: tinyint), _col5 (type: int)
+                  sort order: +++
+                  Map-reduce partition columns: _col3 (type: string), 27 (type: tinyint), _col5 (type: int)
+                  Statistics: Num rows: 429 Data size: 53255 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: smallint), _col1 (type: bigint), _col2 (type: float), _col3 (type: string), 27 (type: tinyint), _col5 (type: int)
+      Reduce Operator Tree:
+        Select Operator
+          expressions: VALUE._col0 (type: smallint), VALUE._col1 (type: bigint), VALUE._col2 (type: float), VALUE._col3 (type: string), VALUE._col4 (type: tinyint), VALUE._col5 (type: int)
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+          Statistics: Num rows: 429 Data size: 53255 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 429 Data size: 53255 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: default.over1k_part3
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            i 
+            s 
+            t 
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.over1k_part3
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+
+PREHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100
+PREHOOK: type: QUERY
+POSTHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: over1k
+            Statistics: Num rows: 859 Data size: 106636 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (i = 100) (type: boolean)
+              Statistics: Num rows: 429 Data size: 53255 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: si (type: smallint), b (type: bigint), f (type: float), s (type: string), t (type: tinyint)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 429 Data size: 53255 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col3 (type: string), _col4 (type: tinyint), 100 (type: int)
+                  sort order: +++
+                  Map-reduce partition columns: _col3 (type: string), _col4 (type: tinyint), 100 (type: int)
+                  Statistics: Num rows: 429 Data size: 53255 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: smallint), _col1 (type: bigint), _col2 (type: float), _col3 (type: string), _col4 (type: tinyint), 100 (type: int)
+      Reduce Operator Tree:
+        Select Operator
+          expressions: VALUE._col0 (type: smallint), VALUE._col1 (type: bigint), VALUE._col2 (type: float), VALUE._col3 (type: string), VALUE._col4 (type: tinyint), VALUE._col5 (type: int)
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+          Statistics: Num rows: 429 Data size: 53255 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 429 Data size: 53255 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: default.over1k_part3
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            i 
+            s 
+            t 
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.over1k_part3
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+
+PREHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100 and t=27
+PREHOOK: type: QUERY
+POSTHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100 and t=27
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: over1k
+            Statistics: Num rows: 859 Data size: 106636 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: ((i = 100) and (t = 27)) (type: boolean)
+              Statistics: Num rows: 214 Data size: 26565 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: si (type: smallint), b (type: bigint), f (type: float), s (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 214 Data size: 26565 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col3 (type: string), 27 (type: tinyint), 100 (type: int)
+                  sort order: +++
+                  Map-reduce partition columns: _col3 (type: string), 27 (type: tinyint), 100 (type: int)
+                  Statistics: Num rows: 214 Data size: 26565 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: smallint), _col1 (type: bigint), _col2 (type: float), _col3 (type: string), 27 (type: tinyint), 100 (type: int)
+      Reduce Operator Tree:
+        Select Operator
+          expressions: VALUE._col0 (type: smallint), VALUE._col1 (type: bigint), VALUE._col2 (type: float), VALUE._col3 (type: string), VALUE._col4 (type: tinyint), VALUE._col5 (type: int)
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+          Statistics: Num rows: 214 Data size: 26565 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 214 Data size: 26565 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: default.over1k_part3
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            i 
+            s 
+            t 
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.over1k_part3
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+
+PREHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100 and s="foo"
+PREHOOK: type: QUERY
+POSTHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100 and s="foo"
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: over1k
+            Statistics: Num rows: 3949 Data size: 106636 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: ((i = 100) and (s = 'foo')) (type: boolean)
+              Statistics: Num rows: 987 Data size: 26652 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: si (type: smallint), b (type: bigint), f (type: float), t (type: tinyint)
+                outputColumnNames: _col0, _col1, _col2, _col4
+                Statistics: Num rows: 987 Data size: 26652 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: 'foo' (type: string), _col4 (type: tinyint), 100 (type: int)
+                  sort order: +++
+                  Map-reduce partition columns: 'foo' (type: string), _col4 (type: tinyint), 100 (type: int)
+                  Statistics: Num rows: 987 Data size: 26652 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: smallint), _col1 (type: bigint), _col2 (type: float), 'foo' (type: string), _col4 (type: tinyint), 100 (type: int)
+      Reduce Operator Tree:
+        Select Operator
+          expressions: VALUE._col0 (type: smallint), VALUE._col1 (type: bigint), VALUE._col2 (type: float), VALUE._col3 (type: string), VALUE._col4 (type: tinyint), VALUE._col5 (type: int)
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+          Statistics: Num rows: 987 Data size: 26652 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 987 Data size: 26652 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: default.over1k_part3
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            i 
+            s 
+            t 
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.over1k_part3
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+
+PREHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where t=27 and s="foo"
+PREHOOK: type: QUERY
+POSTHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where t=27 and s="foo"
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: over1k
+            Statistics: Num rows: 3949 Data size: 106636 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: ((t = 27) and (s = 'foo')) (type: boolean)
+              Statistics: Num rows: 987 Data size: 26652 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: si (type: smallint), b (type: bigint), f (type: float), i (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col5
+                Statistics: Num rows: 987 Data size: 26652 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: 'foo' (type: string), 27 (type: tinyint), _col5 (type: int)
+                  sort order: +++
+                  Map-reduce partition columns: 'foo' (type: string), 27 (type: tinyint), _col5 (type: int)
+                  Statistics: Num rows: 987 Data size: 26652 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: smallint), _col1 (type: bigint), _col2 (type: float), 'foo' (type: string), 27 (type: tinyint), _col5 (type: int)
+      Reduce Operator Tree:
+        Select Operator
+          expressions: VALUE._col0 (type: smallint), VALUE._col1 (type: bigint), VALUE._col2 (type: float), VALUE._col3 (type: string), VALUE._col4 (type: tinyint), VALUE._col5 (type: int)
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+          Statistics: Num rows: 987 Data size: 26652 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 987 Data size: 26652 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: default.over1k_part3
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            i 
+            s 
+            t 
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.over1k_part3
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+
+PREHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100 and t=27 and s="foo"
+PREHOOK: type: QUERY
+POSTHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100 and t=27 and s="foo"
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
+  Stage-4
+  Stage-0 depends on stages: Stage-4, Stage-3, Stage-6
+  Stage-2 depends on stages: Stage-0
+  Stage-3
+  Stage-5
+  Stage-6 depends on stages: Stage-5
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: over1k
+            Statistics: Num rows: 3949 Data size: 106636 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (((i = 100) and (t = 27)) and (s = 'foo')) (type: boolean)
+              Statistics: Num rows: 493 Data size: 13312 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: si (type: smallint), b (type: bigint), f (type: float), 'foo' (type: string), 27 (type: tinyint), 100 (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                Statistics: Num rows: 493 Data size: 13312 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 493 Data size: 13312 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.over1k_part3
+
+  Stage: Stage-7
+    Conditional Operator
+
+  Stage: Stage-4
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            i 
+            s 
+            t 
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.over1k_part3
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.over1k_part3
+
+  Stage: Stage-5
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.over1k_part3
+
+  Stage: Stage-6
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+PREHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where s="foo"
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k
+PREHOOK: Output: default@over1k_part3
+POSTHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where s="foo"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k
+PREHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where t=27
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k
+PREHOOK: Output: default@over1k_part3
+POSTHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where t=27
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k
+POSTHOOK: Output: default@over1k_part3@s=alice quirinius/t=27/i=65636
+POSTHOOK: Output: default@over1k_part3@s=bob ovid/t=27/i=65619
+POSTHOOK: Output: default@over1k_part3@s=david allen/t=27/i=65617
+POSTHOOK: Output: default@over1k_part3@s=ethan laertes/t=27/i=65628
+POSTHOOK: Output: default@over1k_part3@s=irene underhill/t=27/i=65787
+POSTHOOK: Output: default@over1k_part3@s=jessica zipper/t=27/i=65778
+POSTHOOK: Output: default@over1k_part3@s=mike zipper/t=27/i=65779
+POSTHOOK: Output: default@over1k_part3@s=oscar carson/t=27/i=65624
+POSTHOOK: Output: default@over1k_part3@s=oscar ovid/t=27/i=65536
+POSTHOOK: Output: default@over1k_part3@s=priscilla zipper/t=27/i=65622
+POSTHOOK: Output: default@over1k_part3@s=quinn allen/t=27/i=65708
+POSTHOOK: Output: default@over1k_part3@s=rachel carson/t=27/i=65677
+POSTHOOK: Output: default@over1k_part3@s=tom brown/t=27/i=65675
+POSTHOOK: Output: default@over1k_part3@s=ulysses underhill/t=27/i=65570
+POSTHOOK: Output: default@over1k_part3@s=wendy van buren/t=27/i=65680
+POSTHOOK: Output: default@over1k_part3@s=xavier quirinius/t=27/i=65599
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=alice quirinius,t=27,i=65636).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=alice quirinius,t=27,i=65636).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=alice quirinius,t=27,i=65636).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=bob ovid,t=27,i=65619).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=bob ovid,t=27,i=65619).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=bob ovid,t=27,i=65619).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=david allen,t=27,i=65617).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=david allen,t=27,i=65617).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=david allen,t=27,i=65617).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=ethan laertes,t=27,i=65628).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=ethan laertes,t=27,i=65628).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=ethan laertes,t=27,i=65628).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=irene underhill,t=27,i=65787).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=irene underhill,t=27,i=65787).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=irene underhill,t=27,i=65787).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=jessica zipper,t=27,i=65778).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=jessica zipper,t=27,i=65778).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=jessica zipper,t=27,i=65778).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=mike zipper,t=27,i=65779).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=mike zipper,t=27,i=65779).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=mike zipper,t=27,i=65779).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=oscar carson,t=27,i=65624).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=oscar carson,t=27,i=65624).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=oscar carson,t=27,i=65624).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=oscar ovid,t=27,i=65536).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=oscar ovid,t=27,i=65536).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=oscar ovid,t=27,i=65536).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=priscilla zipper,t=27,i=65622).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=priscilla zipper,t=27,i=65622).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=priscilla zipper,t=27,i=65622).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=quinn allen,t=27,i=65708).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=quinn allen,t=27,i=65708).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=quinn allen,t=27,i=65708).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=rachel carson,t=27,i=65677).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=rachel carson,t=27,i=65677).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=rachel carson,t=27,i=65677).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=tom brown,t=27,i=65675).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=tom brown,t=27,i=65675).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=tom brown,t=27,i=65675).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=ulysses underhill,t=27,i=65570).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=ulysses underhill,t=27,i=65570).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=ulysses underhill,t=27,i=65570).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=wendy van buren,t=27,i=65680).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=wendy van buren,t=27,i=65680).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=wendy van buren,t=27,i=65680).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=xavier quirinius,t=27,i=65599).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=xavier quirinius,t=27,i=65599).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=xavier quirinius,t=27,i=65599).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
+PREHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k
+PREHOOK: Output: default@over1k_part3
+POSTHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k
+PREHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100 and t=27
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k
+PREHOOK: Output: default@over1k_part3
+POSTHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100 and t=27
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k
+PREHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100 and s="foo"
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k
+PREHOOK: Output: default@over1k_part3
+POSTHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100 and s="foo"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k
+PREHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where t=27 and s="foo"
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k
+PREHOOK: Output: default@over1k_part3
+POSTHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where t=27 and s="foo"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k
+PREHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100 and t=27 and s="foo"
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k
+PREHOOK: Output: default@over1k_part3
+POSTHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100 and t=27 and s="foo"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k
+PREHOOK: query: select sum(hash(*)) from over1k_part3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k_part3
+PREHOOK: Input: default@over1k_part3@s=alice quirinius/t=27/i=65636
+PREHOOK: Input: default@over1k_part3@s=bob ovid/t=27/i=65619
+PREHOOK: Input: default@over1k_part3@s=david allen/t=27/i=65617
+PREHOOK: Input: default@over1k_part3@s=ethan laertes/t=27/i=65628
+PREHOOK: Input: default@over1k_part3@s=irene underhill/t=27/i=65787
+PREHOOK: Input: default@over1k_part3@s=jessica zipper/t=27/i=65778
+PREHOOK: Input: default@over1k_part3@s=mike zipper/t=27/i=65779
+PREHOOK: Input: default@over1k_part3@s=oscar carson/t=27/i=65624
+PREHOOK: Input: default@over1k_part3@s=oscar ovid/t=27/i=65536
+PREHOOK: Input: default@over1k_part3@s=priscilla zipper/t=27/i=65622
+PREHOOK: Input: default@over1k_part3@s=quinn allen/t=27/i=65708
+PREHOOK: Input: default@over1k_part3@s=rachel carson/t=27/i=65677
+PREHOOK: Input: default@over1k_part3@s=tom brown/t=27/i=65675
+PREHOOK: Input: default@over1k_part3@s=ulysses underhill/t=27/i=65570
+PREHOOK: Input: default@over1k_part3@s=wendy van buren/t=27/i=65680
+PREHOOK: Input: default@over1k_part3@s=xavier quirinius/t=27/i=65599
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(hash(*)) from over1k_part3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k_part3
+POSTHOOK: Input: default@over1k_part3@s=alice quirinius/t=27/i=65636
+POSTHOOK: Input: default@over1k_part3@s=bob ovid/t=27/i=65619
+POSTHOOK: Input: default@over1k_part3@s=david allen/t=27/i=65617
+POSTHOOK: Input: default@over1k_part3@s=ethan laertes/t=27/i=65628
+POSTHOOK: Input: default@over1k_part3@s=irene underhill/t=27/i=65787
+POSTHOOK: Input: default@over1k_part3@s=jessica zipper/t=27/i=65778
+POSTHOOK: Input: default@over1k_part3@s=mike zipper/t=27/i=65779
+POSTHOOK: Input: default@over1k_part3@s=oscar carson/t=27/i=65624
+POSTHOOK: Input: default@over1k_part3@s=oscar ovid/t=27/i=65536
+POSTHOOK: Input: default@over1k_part3@s=priscilla zipper/t=27/i=65622
+POSTHOOK: Input: default@over1k_part3@s=quinn allen/t=27/i=65708
+POSTHOOK: Input: default@over1k_part3@s=rachel carson/t=27/i=65677
+POSTHOOK: Input: default@over1k_part3@s=tom brown/t=27/i=65675
+POSTHOOK: Input: default@over1k_part3@s=ulysses underhill/t=27/i=65570
+POSTHOOK: Input: default@over1k_part3@s=wendy van buren/t=27/i=65680
+POSTHOOK: Input: default@over1k_part3@s=xavier quirinius/t=27/i=65599
+#### A masked pattern was here ####
+17814641134
+PREHOOK: query: -- cross verify results with SDPO disabled
+drop table over1k_part3
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@over1k_part3
+PREHOOK: Output: default@over1k_part3
+POSTHOOK: query: -- cross verify results with SDPO disabled
+drop table over1k_part3
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@over1k_part3
+POSTHOOK: Output: default@over1k_part3
+PREHOOK: query: create table over1k_part3(
+           si smallint,
+           b bigint,
+           f float)
+       partitioned by (s string, t tinyint, i int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@over1k_part3
+POSTHOOK: query: create table over1k_part3(
+           si smallint,
+           b bigint,
+           f float)
+       partitioned by (s string, t tinyint, i int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@over1k_part3
+PREHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where s="foo"
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k
+PREHOOK: Output: default@over1k_part3
+POSTHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where s="foo"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k
+PREHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where t=27
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k
+PREHOOK: Output: default@over1k_part3
+POSTHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where t=27
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k
+POSTHOOK: Output: default@over1k_part3@s=alice quirinius/t=27/i=65636
+POSTHOOK: Output: default@over1k_part3@s=bob ovid/t=27/i=65619
+POSTHOOK: Output: default@over1k_part3@s=david allen/t=27/i=65617
+POSTHOOK: Output: default@over1k_part3@s=ethan laertes/t=27/i=65628
+POSTHOOK: Output: default@over1k_part3@s=irene underhill/t=27/i=65787
+POSTHOOK: Output: default@over1k_part3@s=jessica zipper/t=27/i=65778
+POSTHOOK: Output: default@over1k_part3@s=mike zipper/t=27/i=65779
+POSTHOOK: Output: default@over1k_part3@s=oscar carson/t=27/i=65624
+POSTHOOK: Output: default@over1k_part3@s=oscar ovid/t=27/i=65536
+POSTHOOK: Output: default@over1k_part3@s=priscilla zipper/t=27/i=65622
+POSTHOOK: Output: default@over1k_part3@s=quinn allen/t=27/i=65708
+POSTHOOK: Output: default@over1k_part3@s=rachel carson/t=27/i=65677
+POSTHOOK: Output: default@over1k_part3@s=tom brown/t=27/i=65675
+POSTHOOK: Output: default@over1k_part3@s=ulysses underhill/t=27/i=65570
+POSTHOOK: Output: default@over1k_part3@s=wendy van buren/t=27/i=65680
+POSTHOOK: Output: default@over1k_part3@s=xavier quirinius/t=27/i=65599
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=alice quirinius,t=27,i=65636).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=alice quirinius,t=27,i=65636).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=alice quirinius,t=27,i=65636).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=bob ovid,t=27,i=65619).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=bob ovid,t=27,i=65619).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=bob ovid,t=27,i=65619).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=david allen,t=27,i=65617).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=david allen,t=27,i=65617).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=david allen,t=27,i=65617).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=ethan laertes,t=27,i=65628).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=ethan laertes,t=27,i=65628).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=ethan laertes,t=27,i=65628).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=irene underhill,t=27,i=65787).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=irene underhill,t=27,i=65787).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=irene underhill,t=27,i=65787).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=jessica zipper,t=27,i=65778).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=jessica zipper,t=27,i=65778).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=jessica zipper,t=27,i=65778).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=mike zipper,t=27,i=65779).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=mike zipper,t=27,i=65779).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=mike zipper,t=27,i=65779).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=oscar carson,t=27,i=65624).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=oscar carson,t=27,i=65624).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=oscar carson,t=27,i=65624).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=oscar ovid,t=27,i=65536).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=oscar ovid,t=27,i=65536).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=oscar ovid,t=27,i=65536).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=priscilla zipper,t=27,i=65622).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=priscilla zipper,t=27,i=65622).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=priscilla zipper,t=27,i=65622).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=quinn allen,t=27,i=65708).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=quinn allen,t=27,i=65708).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=quinn allen,t=27,i=65708).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=rachel carson,t=27,i=65677).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=rachel carson,t=27,i=65677).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=rachel carson,t=27,i=65677).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=tom brown,t=27,i=65675).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=tom brown,t=27,i=65675).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=tom brown,t=27,i=65675).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=ulysses underhill,t=27,i=65570).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=ulysses underhill,t=27,i=65570).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=ulysses underhill,t=27,i=65570).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=wendy van buren,t=27,i=65680).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=wendy van buren,t=27,i=65680).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=wendy van buren,t=27,i=65680).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=xavier quirinius,t=27,i=65599).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=xavier quirinius,t=27,i=65599).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=xavier quirinius,t=27,i=65599).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
+PREHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k
+PREHOOK: Output: default@over1k_part3
+POSTHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k
+PREHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100 and t=27
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k
+PREHOOK: Output: default@over1k_part3
+POSTHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100 and t=27
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k
+PREHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100 and s="foo"
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k
+PREHOOK: Output: default@over1k_part3
+POSTHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100 and s="foo"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k
+PREHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where t=27 and s="foo"
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k
+PREHOOK: Output: default@over1k_part3
+POSTHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where t=27 and s="foo"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k
+PREHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100 and t=27 and s="foo"
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k
+PREHOOK: Output: default@over1k_part3
+POSTHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100 and t=27 and s="foo"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k
+PREHOOK: query: select sum(hash(*)) from over1k_part3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k_part3
+PREHOOK: Input: default@over1k_part3@s=alice quirinius/t=27/i=65636
+PREHOOK: Input: default@over1k_part3@s=bob ovid/t=27/i=65619
+PREHOOK: Input: default@over1k_part3@s=david allen/t=27/i=65617
+PREHOOK: Input: default@over1k_part3@s=ethan laertes/t=27/i=65628
+PREHOOK: Input: default@over1k_part3@s=irene underhill/t=27/i=65787
+PREHOOK: Input: default@over1k_part3@s=jessica zipper/t=27/i=65778
+PREHOOK: Input: default@over1k_part3@s=mike zipper/t=27/i=65779
+PREHOOK: Input: default@over1k_part3@s=oscar carson/t=27/i=65624
+PREHOOK: Input: default@over1k_part3@s=oscar ovid/t=27/i=65536
+PREHOOK: Input: default@over1k_part3@s=priscilla zipper/t=27/i=65622
+PREHOOK: Input: default@over1k_part3@s=quinn allen/t=27/i=65708
+PREHOOK: Input: default@over1k_part3@s=rachel carson/t=27/i=65677
+PREHOOK: Input: default@over1k_part3@s=tom brown/t=27/i=65675
+PREHOOK: Input: default@over1k_part3@s=ulysses underhill/t=27/i=65570
+PREHOOK: Input: default@over1k_part3@s=wendy van buren/t=27/i=65680
+PREHOOK: Input: default@over1k_part3@s=xavier quirinius/t=27/i=65599
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(hash(*)) from over1k_part3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k_part3
+POSTHOOK: Input: default@over1k_part3@s=alice quirinius/t=27/i=65636
+POSTHOOK: Input: default@over1k_part3@s=bob ovid/t=27/i=65619
+POSTHOOK: Input: default@over1k_part3@s=david allen/t=27/i=65617
+POSTHOOK: Input: default@over1k_part3@s=ethan laertes/t=27/i=65628
+POSTHOOK: Input: default@over1k_part3@s=irene underhill/t=27/i=65787
+POSTHOOK: Input: default@over1k_part3@s=jessica zipper/t=27/i=65778
+POSTHOOK: Input: default@over1k_part3@s=mike zipper/t=27/i=65779
+POSTHOOK: Input: default@over1k_part3@s=oscar carson/t=27/i=65624
+POSTHOOK: Input: default@over1k_part3@s=oscar ovid/t=27/i=65536
+POSTHOOK: Input: default@over1k_part3@s=priscilla zipper/t=27/i=65622
+POSTHOOK: Input: default@over1k_part3@s=quinn allen/t=27/i=65708
+POSTHOOK: Input: default@over1k_part3@s=rachel carson/t=27/i=65677
+POSTHOOK: Input: default@over1k_part3@s=tom brown/t=27/i=65675
+POSTHOOK: Input: default@over1k_part3@s=ulysses underhill/t=27/i=65570
+POSTHOOK: Input: default@over1k_part3@s=wendy van buren/t=27/i=65680
+POSTHOOK: Input: default@over1k_part3@s=xavier quirinius/t=27/i=65599
+#### A masked pattern was here ####
+17814641134

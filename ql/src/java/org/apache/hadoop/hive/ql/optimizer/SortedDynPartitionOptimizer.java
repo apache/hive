@@ -143,6 +143,15 @@ public class SortedDynPartitionOptimizer extends Transform {
         return null;
       }
 
+      // unlink connection between FS and its parent
+      Operator<? extends OperatorDesc> fsParent = fsOp.getParentOperators().get(0);
+      // if all dp columns got constant folded then disable this optimization
+      if (allStaticPartitions(fsParent, fsOp.getConf().getDynPartCtx())) {
+        LOG.debug("Bailing out of sorted dynamic partition optimizer as all dynamic partition" +
+            " columns got constant folded (static partitioning)");
+        return null;
+      }
+
       // if RS is inserted by enforce bucketing or sorting, we need to remove it
       // since ReduceSinkDeDuplication will not merge them to single RS.
       // RS inserted by enforce bucketing/sorting will have bucketing column in
@@ -158,7 +167,7 @@ public class SortedDynPartitionOptimizer extends Transform {
       }
 
       // unlink connection between FS and its parent
-      Operator<? extends OperatorDesc> fsParent = fsOp.getParentOperators().get(0);
+      fsParent = fsOp.getParentOperators().get(0);
       fsParent.getChildOperators().clear();
 
       DynamicPartitionCtx dpCtx = fsOp.getConf().getDynPartCtx();
@@ -261,7 +270,36 @@ public class SortedDynPartitionOptimizer extends Transform {
 
       LOG.info("Inserted " + rsOp.getOperatorId() + " and " + selOp.getOperatorId()
           + " as parent of " + fsOp.getOperatorId() + " and child of " + fsParent.getOperatorId());
+
+      parseCtx.setReduceSinkAddedBySortedDynPartition(true);
       return null;
+    }
+
+    private boolean allStaticPartitions(Operator<? extends OperatorDesc> op,
+        final DynamicPartitionCtx dynPartCtx) {
+      int numDpCols = dynPartCtx.getNumDPCols();
+      int numCols = op.getSchema().getColumnNames().size();
+      List<String> dpCols = op.getSchema().getColumnNames().subList(numCols - numDpCols, numCols);
+      if (op.getColumnExprMap() == null) {
+        // find first operator upstream with valid (non-null) column expression map
+        for(Operator<? extends OperatorDesc> parent : op.getParentOperators()) {
+          if (parent.getColumnExprMap() != null) {
+            op = parent;
+            break;
+          }
+        }
+      }
+      if (op.getColumnExprMap() != null) {
+        for(String dpCol : dpCols) {
+          ExprNodeDesc end = op.getColumnExprMap().get(dpCol);
+          if (!(end instanceof ExprNodeConstantDesc)) {
+            return false;
+          }
+        }
+      } else {
+        return false;
+      }
+      return true;
     }
 
     // Remove RS and SEL introduced by enforce bucketing/sorting config
