@@ -61,8 +61,8 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
  * the join is unnecessarily processing these rows. With predicate pushdown,
  * these two predicates will be processed before the join.
  *
- * Predicate pushdown is enabled by setting hive.optimize.ppd to true. It is
- * disable by default.
+ * Predicate pushdown is disabled by setting hive.optimize.ppd to false. It is
+ * enabled by default.
  *
  * The high-level algorithm is describe here - An operator is processed after
  * all its children have been processed - An operator processes its own
