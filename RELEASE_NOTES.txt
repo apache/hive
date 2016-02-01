@@ -802,13 +802,17 @@ Release Notes - Hive - Version 2.0.0
     * [HIVE-12864] - StackOverflowError parsing queries with very large predicates
     * [HIVE-12875] - Verify sem.getInputs() and sem.getOutputs()
     * [HIVE-12879] - RowResolver of Semijoin not updated in CalcitePlanner
+    * [HIVE-12893] - Sorted dynamic partition does not work if subset of partition columns are constant folded
     * [HIVE-12904] - LLAP: deadlock in task scheduling
     * [HIVE-12905] - Issue with mapjoin in tez under certain conditions
     * [HIVE-12911] - PPD might get exercised even when flag is false if CBO is on
     * [HIVE-12915] - Tez session pool has concurrency issues during init
     * [HIVE-12920] - LLAP fails to start with java.lang.NumberFormatException
     * [HIVE-12926] - Another synchronization issue with tez/llap session pool in hs2
-
+    * [HIVE-12931] - Shuffle tokens stay around forever in LLAP
+    * [HIVE-12945] - Bucket pruning: bucketing for -ve hashcodes have historical issues
+    * [HIVE-12947] - SMB join in tez has ClassCastException when container reuse is on
+    * [HIVE-12964] - TestOperationLoggingAPIWithMr,TestOperationLoggingAPIWithTez fail on branch-2.0 (with Java 7, at least)
 
 
 
@@ -997,6 +1001,7 @@ Release Notes - Hive - Version 2.0.0
     * [HIVE-12436] - Default hive.metastore.schema.verification to true
     * [HIVE-12520] - Fix schema_evol* tests on master
     * [HIVE-12658] - Task rejection by an llap daemon spams the log with RejectedExecutionExceptions
+    * [HIVE-12934] - Refactor llap module structure to allow for a usable client
 
 
 ** Test
@@ -1018,6 +1023,7 @@ Release Notes - Hive - Version 2.0.0
 
 ** Wish
     * [HIVE-10427] - collect_list() and collect_set() should accept struct types as argument
+
 
 Release Notes - Hive - Version 1.2.1
 
