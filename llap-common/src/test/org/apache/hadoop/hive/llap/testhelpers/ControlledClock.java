@@ -15,24 +15,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.llap.security;
+package org.apache.hadoop.hive.llap.testhelpers;
 
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.llap.protocol.LlapProtocolBlockingPB;
-import org.apache.hadoop.hive.llap.protocol.LlapManagementProtocolPB;
-import org.apache.hadoop.security.authorize.PolicyProvider;
-import org.apache.hadoop.security.authorize.Service;
+import org.apache.hadoop.yarn.util.Clock;
 
-public class LlapDaemonPolicyProvider extends PolicyProvider {
-  private static final Service[] services = new Service[] {
-    new Service(HiveConf.ConfVars.LLAP_SECURITY_ACL.varname,
-        LlapProtocolBlockingPB.class),
-    new Service(HiveConf.ConfVars.LLAP_MANAGEMENT_ACL.varname,
-        LlapManagementProtocolPB.class)
-  };
+public class ControlledClock implements Clock {
+  private long time = -1;
+  private final Clock actualClock;
+  public ControlledClock(Clock actualClock) {
+    this.actualClock = actualClock;
+  }
+  public synchronized void setTime(long time) {
+    this.time = time;
+  }
+  public synchronized void reset() {
+    time = -1;
+  }
 
   @Override
-  public Service[] getServices() {
-    return services;
+  public synchronized long getTime() {
+    if (time != -1) {
+      return time;
+    }
+    return actualClock.getTime();
   }
+
 }

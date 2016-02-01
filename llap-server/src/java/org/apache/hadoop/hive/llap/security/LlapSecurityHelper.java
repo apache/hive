@@ -27,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 import javax.net.SocketFactory;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.llap.daemon.impl.LlapManagementProtocolClientImpl;
+import org.apache.hadoop.hive.llap.impl.LlapManagementProtocolClientImpl;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetTokenRequestProto;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.hive.llap.registry.ServiceInstance;

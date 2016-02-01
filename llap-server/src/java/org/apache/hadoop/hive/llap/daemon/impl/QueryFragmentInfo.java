@@ -23,7 +23,7 @@ import org.apache.hadoop.hive.llap.daemon.FinishableStateUpdateHandler;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentSpecProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.IOSpecProto;
-import org.apache.tez.mapreduce.input.MRInputLegacy;
+import org.apache.hadoop.hive.llap.tezplugins.LlapTezUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,7 +89,7 @@ public class QueryFragmentInfo {
     boolean canFinish = true;
     if (inputSpecList != null && !inputSpecList.isEmpty()) {
       for (IOSpecProto inputSpec : inputSpecList) {
-        if (isSourceOfInterest(inputSpec)) {
+        if (LlapTezUtils.isSourceOfInterest(inputSpec.getIoDescriptor().getClassName())) {
           // Lookup the state in the map.
           LlapDaemonProtocolProtos.SourceStateProto state = queryInfo.getSourceStateMap()
               .get(inputSpec.getConnectedVertexName());
@@ -129,7 +129,7 @@ public class QueryFragmentInfo {
     List<IOSpecProto> inputSpecList = fragmentSpec.getInputSpecsList();
     if (inputSpecList != null && !inputSpecList.isEmpty()) {
       for (IOSpecProto inputSpec : inputSpecList) {
-        if (isSourceOfInterest(inputSpec)) {
+        if (LlapTezUtils.isSourceOfInterest(inputSpec.getIoDescriptor().getClassName())) {
           sourcesOfInterest.add(inputSpec.getConnectedVertexName());
         }
       }
@@ -142,13 +142,6 @@ public class QueryFragmentInfo {
   public void unregisterForFinishableStateUpdates(FinishableStateUpdateHandler handler) {
     queryInfo.unregisterFinishableStateUpdate(handler);
   }
-
-  private boolean isSourceOfInterest(IOSpecProto inputSpec) {
-    String inputClassName = inputSpec.getIoDescriptor().getClassName();
-    // MRInput is not of interest since it'll always be ready.
-    return !inputClassName.equals(MRInputLegacy.class.getName());
-  }
-
 
   @Override
   public boolean equals(Object o) {

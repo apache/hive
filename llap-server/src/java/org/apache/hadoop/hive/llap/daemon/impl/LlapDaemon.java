@@ -19,7 +19,6 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryPoolMXBean;
 import java.lang.management.MemoryType;
 import java.net.InetSocketAddress;
-import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
@@ -48,7 +47,6 @@ import org.apache.hadoop.hive.llap.metrics.LlapMetricsSystem;
 import org.apache.hadoop.hive.llap.metrics.MetricsUtils;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.hive.llap.shufflehandler.ShuffleHandler;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.metrics2.util.MBeans;
 import org.apache.hadoop.service.CompositeService;
 import org.apache.hadoop.util.ExitUtil;
@@ -67,7 +65,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
   private static final Logger LOG = LoggerFactory.getLogger(LlapDaemon.class);
 
   private final Configuration shuffleHandlerConf;
-  private final LlapDaemonProtocolServerImpl server;
+  private final LlapProtocolServerImpl server;
   private final ContainerRunnerImpl containerRunner;
   private final AMReporter amReporter;
   private final LlapRegistryService registry;
@@ -166,7 +164,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
 
     this.amReporter = new AMReporter(srvAddress, new QueryFailedHandlerProxy(), daemonConf);
 
-    this.server = new LlapDaemonProtocolServerImpl(
+    this.server = new LlapProtocolServerImpl(
         numHandlers, this, srvAddress, mngAddress, srvPort, mngPort);
 
     ClassLoader executorClassLoader = null;

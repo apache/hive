@@ -49,8 +49,10 @@
     <module>serde</module>
     <module>service-rpc</module>
     <module>service</module>
-    <module>llap-server</module>
+    <module>llap-common</module>
     <module>llap-client</module>
+    <module>llap-tez</module>
+    <module>llap-server</module>
     <module>shims</module>
     <module>spark-client</module>
     <module>storage-api</module>
