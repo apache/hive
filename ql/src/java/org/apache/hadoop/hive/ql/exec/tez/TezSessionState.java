@@ -20,8 +20,6 @@ package org.apache.hadoop.hive.ql.exec.tez;
 
 import java.util.Collection;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -44,7 +42,6 @@ import java.util.concurrent.TimeoutException;
 
 import javax.security.auth.login.LoginException;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.hadoop.fs.FileStatus;
@@ -53,9 +50,14 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.llap.impl.LlapProtocolClientImpl;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.llap.security.LlapTokenIdentifier;
 import org.apache.hadoop.hive.llap.security.LlapTokenProvider;
+import org.apache.hadoop.hive.llap.tez.LlapProtocolClientProxy;
+import org.apache.hadoop.hive.llap.tezplugins.LlapContainerLauncher;
+import org.apache.hadoop.hive.llap.tezplugins.LlapTaskCommunicator;
+import org.apache.hadoop.hive.llap.tezplugins.LlapTaskSchedulerService;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
@@ -88,9 +90,9 @@ public class TezSessionState {
   private static final Logger LOG = LoggerFactory.getLogger(TezSessionState.class.getName());
   private static final String TEZ_DIR = "_tez_session_dir";
   public static final String LLAP_SERVICE = "LLAP";
-  private static final String LLAP_SCHEDULER = "org.apache.tez.dag.app.rm.LlapTaskSchedulerService";
-  private static final String LLAP_LAUNCHER = "org.apache.hadoop.hive.llap.tezplugins.LlapContainerLauncher";
-  private static final String LLAP_TASK_COMMUNICATOR = "org.apache.hadoop.hive.llap.tezplugins.LlapTaskCommunicator";
+  private static final String LLAP_SCHEDULER = LlapTaskSchedulerService.class.getName();
+  private static final String LLAP_LAUNCHER = LlapContainerLauncher.class.getName();
+  private static final String LLAP_TASK_COMMUNICATOR = LlapTaskCommunicator.class.getName();
 
   private HiveConf conf;
   private Path tezScratchDir;
@@ -251,27 +253,11 @@ public class TezSessionState {
       // add configs for llap-daemon-site.xml + localize llap jars
       // they cannot be referred to directly as it would be a circular depedency
       conf.addResource("llap-daemon-site.xml");
-      try {
-        final File daemonJar =
-            new File(Utilities.jarFinderGetJar(Class
-                .forName("org.apache.hadoop.hive.llap.io.api.impl.LlapInputFormat")));
-        final LocalResource daemonLr =
-            createJarLocalResource(daemonJar.toURI().toURL().toExternalForm());
-        commonLocalResources.put(utils.getBaseName(daemonLr), daemonLr);
-      } catch (ClassNotFoundException ce) {
-        throw new IOException("Cannot find LlapInputFormat in the classpath", ce);
-      }
 
-      try {
-        final File registryJar =
-            new File(Utilities.jarFinderGetJar(Class
-                .forName("org.apache.hadoop.registry.client.api.RegistryOperations")));
-        final LocalResource registryLr =
-            createJarLocalResource(registryJar.toURI().toURL().toExternalForm());
-        commonLocalResources.put(utils.getBaseName(registryLr), registryLr);
-      } catch (ClassNotFoundException ce) {
-        throw new IOException("Cannot find Hadoop Registry in the classpath", ce);
-      }
+      addJarLRByClass(LlapTaskSchedulerService.class, commonLocalResources);
+      addJarLRByClass(LlapProtocolClientImpl.class, commonLocalResources);
+      addJarLRByClass(LlapProtocolClientProxy.class, commonLocalResources);
+      addJarLRByClassName("org.apache.hadoop.registry.client.api.RegistryOperations", commonLocalResources);
     }
 
     // Create environment for AM.
@@ -585,6 +571,26 @@ public class TezSessionState {
     //       list need to be refactored out to be done only once.
     Path destFile = new Path(destDirPath.toString() + "/" + destFileName);
     return utils.localizeResource(localFile, destFile, LocalResourceType.FILE, conf);
+  }
+
+  private void addJarLRByClassName(String className, final Map<String, LocalResource> lrMap) throws
+      IOException, LoginException {
+    Class<?> clazz;
+    try {
+      clazz = Class.forName(className);
+    } catch (ClassNotFoundException e) {
+      throw new IOException("Cannot find " + className + " in classpath", e);
+    }
+    addJarLRByClass(clazz, lrMap);
+  }
+
+  private void addJarLRByClass(Class<?> clazz, final Map<String, LocalResource> lrMap) throws IOException,
+      LoginException {
+    final File jar =
+        new File(Utilities.jarFinderGetJar(clazz));
+    final LocalResource jarLr =
+        createJarLocalResource(jar.toURI().toURL().toExternalForm());
+    lrMap.put(utils.getBaseName(jarLr), jarLr);
   }
 
   private String getSha(Path localFile) throws IOException, IllegalArgumentException {

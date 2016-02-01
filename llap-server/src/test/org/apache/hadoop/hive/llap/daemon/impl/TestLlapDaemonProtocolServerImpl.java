@@ -27,10 +27,11 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.configuration.LlapConfiguration;
 import org.apache.hadoop.hive.llap.daemon.ContainerRunner;
-import org.apache.hadoop.hive.llap.daemon.LlapDaemonProtocolBlockingPB;
+import org.apache.hadoop.hive.llap.protocol.LlapProtocolBlockingPB;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmissionStateProto;
+import org.apache.hadoop.hive.llap.impl.LlapProtocolClientImpl;
 import org.junit.Test;
 
 public class TestLlapDaemonProtocolServerImpl {
@@ -42,8 +43,8 @@ public class TestLlapDaemonProtocolServerImpl {
     int rpcPort = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_DAEMON_RPC_PORT);
     int numHandlers = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_DAEMON_RPC_NUM_HANDLERS);
     ContainerRunner containerRunnerMock = mock(ContainerRunner.class);
-    LlapDaemonProtocolServerImpl server =
-        new LlapDaemonProtocolServerImpl(numHandlers, containerRunnerMock,
+    LlapProtocolServerImpl server =
+        new LlapProtocolServerImpl(numHandlers, containerRunnerMock,
            new AtomicReference<InetSocketAddress>(), new AtomicReference<InetSocketAddress>(),
            rpcPort, rpcPort + 1);
     when(containerRunnerMock.submitWork(any(SubmitWorkRequestProto.class))).thenReturn(
@@ -56,8 +57,8 @@ public class TestLlapDaemonProtocolServerImpl {
       server.start();
       InetSocketAddress serverAddr = server.getBindAddress();
 
-      LlapDaemonProtocolBlockingPB client =
-          new LlapDaemonProtocolClientImpl(new Configuration(), serverAddr.getHostName(),
+      LlapProtocolBlockingPB client =
+          new LlapProtocolClientImpl(new Configuration(), serverAddr.getHostName(),
               serverAddr.getPort(), null, null);
       SubmitWorkResponseProto responseProto = client.submitWork(null,
           SubmitWorkRequestProto.newBuilder()

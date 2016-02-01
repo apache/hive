@@ -65,7 +65,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
   private static final Logger LOG = LoggerFactory.getLogger(LlapDaemon.class);
 
   private final Configuration shuffleHandlerConf;
-  private final LlapDaemonProtocolServerImpl server;
+  private final LlapProtocolServerImpl server;
   private final ContainerRunnerImpl containerRunner;
   private final AMReporter amReporter;
   private final LlapRegistryService registry;
@@ -164,7 +164,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
 
     this.amReporter = new AMReporter(srvAddress, new QueryFailedHandlerProxy(), daemonConf);
 
-    this.server = new LlapDaemonProtocolServerImpl(
+    this.server = new LlapProtocolServerImpl(
         numHandlers, this, srvAddress, mngAddress, srvPort, mngPort);
 
     this.containerRunner = new ContainerRunnerImpl(daemonConf,
