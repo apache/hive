@@ -20,15 +20,11 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.Future;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -36,7 +32,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.persistence.RowContainer;
 import org.apache.hadoop.hive.ql.exec.tez.RecordSource;
-import org.apache.hadoop.hive.ql.exec.tez.ReduceRecordSource;
 import org.apache.hadoop.hive.ql.exec.tez.TezContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.CommonMergeJoinDesc;
@@ -638,13 +633,16 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
     if (parent == null) {
       throw new HiveException("No valid parents.");
     }
-    Map<Integer, DummyStoreOperator> dummyOps =
-        ((TezContext) (MapredContext.get())).getDummyOpsMap();
-    for (Entry<Integer, DummyStoreOperator> connectOp : dummyOps.entrySet()) {
-      if (connectOp.getValue().getChildOperators() == null
-          || connectOp.getValue().getChildOperators().isEmpty()) {
-        parentOperators.add(connectOp.getKey(), connectOp.getValue());
-        connectOp.getValue().getChildOperators().add(this);
+
+    if (parentOperators.size() == 1) {
+      Map<Integer, DummyStoreOperator> dummyOps =
+          ((TezContext) (MapredContext.get())).getDummyOpsMap();
+      for (Entry<Integer, DummyStoreOperator> connectOp : dummyOps.entrySet()) {
+        if (connectOp.getValue().getChildOperators() == null
+            || connectOp.getValue().getChildOperators().isEmpty()) {
+          parentOperators.add(connectOp.getKey(), connectOp.getValue());
+          connectOp.getValue().getChildOperators().add(this);
+        }
       }
     }
     super.initializeLocalWork(hconf);
