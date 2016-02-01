@@ -332,7 +332,6 @@ public class LlapServiceDriver {
     }
   }
 
-// TODO#: assumes throw
   private void localizeJarForClass(FileSystem lfs, Path libDir, String className, boolean doThrow)
       throws IOException {
     String jarPath = null;

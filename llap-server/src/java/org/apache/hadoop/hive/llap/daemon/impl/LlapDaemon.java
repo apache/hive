@@ -47,6 +47,10 @@ import org.apache.hadoop.hive.llap.metrics.LlapMetricsSystem;
 import org.apache.hadoop.hive.llap.metrics.MetricsUtils;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.hive.llap.shufflehandler.ShuffleHandler;
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
+import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.metrics2.util.MBeans;
 import org.apache.hadoop.service.CompositeService;
 import org.apache.hadoop.util.ExitUtil;
@@ -149,6 +153,20 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     // Less frequently set parameter, not passing in as a param.
     int numHandlers = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_DAEMON_RPC_NUM_HANDLERS);
 
+    // Initialize the function localizer.
+    ClassLoader executorClassLoader = null;
+    if (HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_DAEMON_ALLOW_PERMANENT_FNS)) {
+      this.fnLocalizer = new FunctionLocalizer(daemonConf, localDirs[0]);
+      executorClassLoader = fnLocalizer.getClassLoader();
+      // Set up the hook that will disallow creating non-whitelisted UDFs anywhere in the plan.
+      // We are not using a specific hook for GenericUDFBridge - that doesn't work in MiniLlap
+      // because the daemon is embedded, so the client also gets this hook and Kryo is brittle.
+      SerializationUtilities.setGlobalHook(new LlapGlobalUdfChecker(fnLocalizer));
+    } else {
+      this.fnLocalizer = null;
+      executorClassLoader = Thread.currentThread().getContextClassLoader();
+    }
+
     // Initialize the metrics system
     LlapMetricsSystem.initialize("LlapDaemon");
     this.pauseMonitor = new JvmPauseMonitor(daemonConf);
@@ -166,15 +184,6 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
 
     this.server = new LlapProtocolServerImpl(
         numHandlers, this, srvAddress, mngAddress, srvPort, mngPort);
-
-    ClassLoader executorClassLoader = null;
-    if (HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_DAEMON_ALLOW_PERMANENT_FNS)) {
-      this.fnLocalizer = new FunctionLocalizer(daemonConf, localDirs[0]);
-      executorClassLoader = fnLocalizer.getClassLoader();
-    } else {
-      this.fnLocalizer = null;
-      executorClassLoader = Thread.currentThread().getContextClassLoader();
-    }
 
     this.containerRunner = new ContainerRunnerImpl(daemonConf, numExecutors, waitQueueSize,
         enablePreemption, localDirs, this.shufflePort, srvAddress, executorMemoryBytes, metrics,
@@ -407,6 +416,39 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
   @Override
   public long getMaxJvmMemory() {
     return maxJvmMemory;
+  }
+
+  /**
+   * A global hook that checks all subclasses of GenericUDF against the whitelist. It also injects
+   * us into GenericUDFBridge-s, to check with the whitelist before instantiating a UDF.
+   */
+  private static final class LlapGlobalUdfChecker extends SerializationUtilities.Hook {
+    private FunctionLocalizer fnLocalizer;
+    public LlapGlobalUdfChecker(FunctionLocalizer fnLocalizer) {
+      this.fnLocalizer = fnLocalizer;
+    }
+
+    @Override
+    public boolean preRead(Class<?> type) {
+      // 1) Don't call postRead - we will have checked everything here.
+      // 2) Ignore GenericUDFBridge, it's checked separately in LlapUdfBridgeChecker.
+      if (GenericUDFBridge.class == type) return true; // Run post-hook.
+      if (!(GenericUDF.class.isAssignableFrom(type) || UDF.class.isAssignableFrom(type))
+          || fnLocalizer.isUdfAllowed(type)) return false;
+      throw new SecurityException("UDF " + type.getCanonicalName() + " is not allowed");
+    }
+
+    @Override
+    public Object postRead(Object o) {
+      if (o == null) return o;
+      Class<?> type = o.getClass();
+      if (GenericUDFBridge.class == type)  {
+        ((GenericUDFBridge)o).setUdfChecker(fnLocalizer);
+      }
+      // This won't usually be called otherwise.
+      preRead(type);
+      return o;
+    }
   }
 
   private static class LlapDaemonUncaughtExceptionHandler implements Thread.UncaughtExceptionHandler {

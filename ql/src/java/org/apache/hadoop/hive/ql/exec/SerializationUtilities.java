@@ -30,7 +30,9 @@ import java.lang.reflect.Field;
 import java.net.URI;
 import java.sql.Timestamp;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.tuple.Pair;
@@ -60,6 +62,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.Registration;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.esotericsoftware.kryo.pool.KryoFactory;
@@ -72,14 +75,154 @@ import com.esotericsoftware.kryo.serializers.FieldSerializer;
 public class SerializationUtilities {
   private static final String CLASS_NAME = SerializationUtilities.class.getName();
   private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
+  public static class Hook {
+    public boolean preRead(Class<?> type) {
+      return true;
+    }
+
+    public Object postRead(Object o) {
+      return o;
+    }
+  }
+  private static final Map<Class<?>, Hook> kryoTypeHooks = new HashMap<>();
+  private static Hook globalHook = null;
+
+  /**
+   * Must be called before any serialization takes place (e.g. in some static/service init)!
+   * Not thread safe.
+   *
+   * Will not work if different classes are added in different order on two sides of the
+   * communication, due to explicit class registration that we use causing class ID mismatch.
+   * Some processing might be added for this later (e.g. sorting the overrides here if the order
+   * is hard to enforce, and making sure they are added symmetrically everywhere, or just
+   * reverting back to hardcoding stuff if all else fails).
+   * For now, this seems to work, but Kryo seems pretty brittle. Seems to be ok to add class on
+   * read side but not write side, the other way doesn't work. Kryo needs a proper event system,
+   * otherwise this is all rather brittle.
+   */
+  public static void addKryoTypeHook(Class<?> clazz, Hook hook) {
+    kryoTypeHooks.put(clazz, hook);
+  }
+
+  /**
+   * Must be called before any serialization takes place (e.g. in some static/service init)!
+   * Not thread safe.
+   *
+   * This is somewhat brittle because there's no way to add proper superclass hook in Kryo.
+   * On the other hand, it doesn't suffer from the mismatch problems that register() causes!
+   */
+  public static void setGlobalHook(Hook hook) {
+    globalHook = hook;
+  }
+
+  /**
+   * Provides general-purpose hooks for specific types, as well as a global hook.
+   */
+  private static class KryoWithHooks extends Kryo {
+    private Hook globalHook;
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static final class SerializerWithHook extends com.esotericsoftware.kryo.Serializer {
+      private final com.esotericsoftware.kryo.Serializer old;
+      private final Hook hook;
+
+      private SerializerWithHook(com.esotericsoftware.kryo.Serializer old, Hook hook) {
+        this.old = old;
+        this.hook = hook;
+      }
+
+      @Override
+      public Object read(Kryo kryo, Input input, Class type) {
+        return hook.preRead(type)
+            ? hook.postRead(old.read(kryo, input, type)) : old.read(kryo, input, type);
+      }
+
+      @Override
+      public void write(Kryo kryo, Output output, Object object) {
+        // Add write hooks if needed.
+        old.write(kryo, output, object);
+      }
+    }
+
+    public Kryo processHooks(Map<Class<?>, Hook> hooks, Hook globalHook) {
+      for (Map.Entry<Class<?>, Hook> e : hooks.entrySet()) {
+        register(e.getKey(), new SerializerWithHook(
+            newDefaultSerializer(e.getKey()), e.getValue()));
+      }
+      this.globalHook = globalHook;
+      return this; // To make it more explicit below that processHooks needs to be called last.
+    }
+
+    // The globalHook stuff. There's no proper way to insert this, so we add it everywhere.
+
+    private Hook ponderGlobalPreReadHook(Class<?> clazz) {
+      Hook globalHook = this.globalHook;
+      return (globalHook != null && globalHook.preRead(clazz)) ? globalHook : null;
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> T ponderGlobalPostReadHook(Hook hook, T result) {
+      return (hook == null) ? result : (T)hook.postRead(result);
+    }
+
+    private Object ponderGlobalPostHook(Object result) {
+      Hook globalHook = this.globalHook;
+      return (globalHook != null) ? globalHook.postRead(result) : result;
+    }
+
+    @Override
+    public Object readClassAndObject(Input input) {
+      return ponderGlobalPostHook(super.readClassAndObject(input));
+    }
+
+    @Override
+    public Registration readClass(Input input) {
+      Registration reg = super.readClass(input);
+      if (reg != null) {
+        ponderGlobalPreReadHook(reg.getType()); // Needed to intercept readClassAndObject.
+      }
+      return reg;
+    }
+
+    @Override
+    public <T> T readObjectOrNull(Input input, Class<T> type) {
+      Hook hook = ponderGlobalPreReadHook(type);
+      T result = super.readObjectOrNull(input, type);
+      return ponderGlobalPostReadHook(hook, result);
+    }
+
+    @Override
+    public <T> T readObjectOrNull(Input input, Class<T> type,
+        @SuppressWarnings("rawtypes") com.esotericsoftware.kryo.Serializer serializer) {
+      Hook hook = ponderGlobalPreReadHook(type);
+      T result = super.readObjectOrNull(input, type, serializer);
+      return ponderGlobalPostReadHook(hook, result);
+    }
+
+    @Override
+    public <T> T readObject(Input input, Class<T> type) {
+      Hook hook = ponderGlobalPreReadHook(type);
+      T result = super.readObject(input, type);
+      return ponderGlobalPostReadHook(hook, result);
+    }
+
+    @Override
+    public <T> T readObject(Input input, Class<T> type,
+        @SuppressWarnings("rawtypes") com.esotericsoftware.kryo.Serializer serializer) {
+      Hook hook = ponderGlobalPreReadHook(type);
+      T result = super.readObject(input, type, serializer);
+      return ponderGlobalPostReadHook(hook, result);
+    }
+  }
 
   private static KryoFactory factory = new KryoFactory() {
     public Kryo create() {
-      Kryo kryo = new Kryo();
+      KryoWithHooks kryo = new KryoWithHooks();
       kryo.register(java.sql.Date.class, new SqlDateSerializer());
       kryo.register(java.sql.Timestamp.class, new TimestampSerializer());
       kryo.register(Path.class, new PathSerializer());
       kryo.register(Arrays.asList("").getClass(), new ArraysAsListSerializer());
+
       ((Kryo.DefaultInstantiatorStrategy) kryo.getInstantiatorStrategy())
           .setFallbackInstantiatorStrategy(
               new StdInstantiatorStrategy());
@@ -100,7 +243,9 @@ public class SerializationUtilities {
       kryo.register(SparkEdgeProperty.class);
       kryo.register(SparkWork.class);
       kryo.register(Pair.class);
-      return kryo;
+
+      // This must be called after all the explicit register calls.
+      return kryo.processHooks(kryoTypeHooks, globalHook);
     }
   };
 

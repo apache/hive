@@ -81,6 +81,8 @@ public class GenericUDFBridge extends GenericUDF implements Serializable {
    */
   private transient Object[] realArguments;
 
+  private transient UdfWhitelistChecker udfChecker;
+
   /**
    * Create a new GenericUDFBridge object.
    *
@@ -127,17 +129,29 @@ public class GenericUDFBridge extends GenericUDF implements Serializable {
 
   public Class<? extends UDF> getUdfClass() {
     try {
-      return (Class<? extends UDF>) Class.forName(udfClassName, true, Utilities.getSessionSpecifiedClassLoader());
+      return getUdfClassInternal();
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  /** Gets the UDF class and checks it against the whitelist, if any. */
+  private Class<? extends UDF> getUdfClassInternal()
+      throws ClassNotFoundException {
+    @SuppressWarnings("unchecked")
+    Class<? extends UDF> clazz = (Class<? extends UDF>) Class.forName(
+        udfClassName, true, Utilities.getSessionSpecifiedClassLoader());
+    if (udfChecker != null && !udfChecker.isUdfAllowed(clazz)) {
+      throw new SecurityException("UDF " + clazz.getCanonicalName() + " is not allowed");
+    }
+    return clazz;
   }
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
 
     try {
-      udf = (UDF) Class.forName(udfClassName, true, Utilities.getSessionSpecifiedClassLoader()).newInstance();
+      udf = (UDF)getUdfClassInternal().newInstance();
     } catch (Exception e) {
       throw new UDFArgumentException(
           "Unable to instantiate UDF implementation class " + udfClassName + ": " + e);
@@ -228,4 +242,11 @@ public class GenericUDFBridge extends GenericUDF implements Serializable {
     return udf.getRequiredFiles();
   }
 
+  public void setUdfChecker(UdfWhitelistChecker udfChecker) {
+    this.udfChecker = udfChecker;
+  }
+
+  public interface UdfWhitelistChecker {
+    boolean isUdfAllowed(Class<?> clazz);
+  }
 }

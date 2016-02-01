@@ -147,6 +147,17 @@ public class Registry {
     return fI;
   }
 
+  /**
+   * Registers the UDF class as a built-in function; used for dynamically created UDFs, like
+   * GenericUDFOP*Minus/Plus.
+   */
+  public synchronized void registerHiddenBuiltIn(Class<? extends GenericUDF> functionClass) {
+    if (!isNative) {
+      throw new RuntimeException("Builtin is not for this registry");
+    }
+    builtIns.add(functionClass);
+  }
+
   public FunctionInfo registerGenericUDTF(String functionName,
       Class<? extends GenericUDTF> genericUDTFClass, FunctionResource... resources) {
     validateClass(genericUDTFClass, GenericUDTF.class);

@@ -20,6 +20,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -29,12 +30,14 @@ import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.ResourceUri;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.FunctionTask;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo.FunctionResource;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState.ResourceType;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.ql.util.ResourceDownloader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,18 +45,21 @@ import org.slf4j.LoggerFactory;
 /**
  * This class localizes and manages jars for the functions allowed inside LLAP.
  */
-public class FunctionLocalizer {
+public class FunctionLocalizer implements GenericUDFBridge.UdfWhitelistChecker {
   private static final String DIR_NAME = "fnresources";
   private static final Logger LOG = LoggerFactory.getLogger(FunctionLocalizer.class);
   private ResourceDownloader resourceDownloader;
   private final LinkedBlockingQueue<LocalizerWork> workQueue = new LinkedBlockingQueue<>();
   private volatile boolean isClosed = false;
   private final List<String> recentlyLocalizedJars = new LinkedList<String>();
+  private final List<String> recentlyLocalizedClasses = new LinkedList<String>();
   private final Thread workThread;
   private final File localDir;
   private final Configuration conf;
   private final URLClassLoader executorClassloader;
 
+
+  private final IdentityHashMap<Class<?>, Boolean> allowedUdfClasses = new IdentityHashMap<>();
   private final ConcurrentHashMap<String, FnResources> resourcesByFn = new ConcurrentHashMap<>();
   private final ConcurrentHashMap<URI, RefCountedResource> localFiles = new ConcurrentHashMap<>();
 
@@ -70,7 +76,7 @@ public class FunctionLocalizer {
     });
   }
 
-  void init() throws IOException {
+  public void init() throws IOException {
     if (localDir.exists()) {
       // TODO: We don't want some random jars of unknown provenance sitting around. Or do we care?
       //       Ideally, we should try to reuse jars and verify using some checksum.
@@ -78,6 +84,10 @@ public class FunctionLocalizer {
     }
     this.resourceDownloader = new ResourceDownloader(conf, localDir.getAbsolutePath());
     workThread.start();
+  }
+
+  public boolean isUdfAllowed(Class<?> clazz) {
+    return FunctionRegistry.isBuiltInFuncClass(clazz) || allowedUdfClasses.containsKey(clazz);
   }
 
   public ClassLoader getClassLoader() {
@@ -92,7 +102,7 @@ public class FunctionLocalizer {
       if (resources == null || resources.isEmpty()) continue; // Nothing to localize.
       FnResources result = new FnResources();
       resourcesByFn.put(fqfn, result);
-      workQueue.add(new LocalizeFn(fqfn, resources, result, false));
+      workQueue.add(new LocalizeFn(fqfn, resources, result, fn.getClassName(), false));
     }
     workQueue.add(new RefreshClassloader());
   }
@@ -145,16 +155,18 @@ public class FunctionLocalizer {
     private final FnResources result;
     private final String fqfn;
     private final boolean doRefreshClassloader;
+    private final String className;
     public LocalizeFn(String fqfn, List<ResourceUri> resources, FnResources result,
-        boolean doRefreshClassloader) {
+        String className, boolean doRefreshClassloader) {
       this.resources = resources;
       this.result = result;
       this.fqfn = fqfn;
+      this.className = className;
       this.doRefreshClassloader = doRefreshClassloader;
     }
 
     public void run(FunctionLocalizer parent) throws URISyntaxException, IOException {
-      parent.localizeFunctionResources(fqfn, resources, result, doRefreshClassloader);
+      parent.localizeFunctionResources(fqfn, resources, className, result, doRefreshClassloader);
     }
 
     public String toString() {
@@ -206,20 +218,35 @@ public class FunctionLocalizer {
       }
     } catch (Throwable t) {
       // TODO: we could fall back to trying one by one and only ignore the failed ones.
-      String jarringError = "Unable to register jars: ";
-      for (String jar : jars) {
-        jarringError += (jar + ", ");
-      }
-      throw new IOException(jarringError, t);
+      logRefreshError("Unable to localize jars: ", jars, t);
+      return; // logRefreshError always throws.
     }
     if (updatedCl != executorClassloader) {
       throw new AssertionError("Classloader was replaced despite using UDFClassLoader: new "
           + updatedCl + ", old " + executorClassloader);
     }
+    String[] classNames = recentlyLocalizedClasses.toArray(jars);
+    recentlyLocalizedClasses.clear();
+    try {
+      for (String className : classNames) {
+        allowedUdfClasses.put(Class.forName(className, false, executorClassloader), Boolean.TRUE);
+      }
+    } catch (Throwable t) {
+      // TODO: we could fall back to trying one by one and only ignore the failed ones.
+      logRefreshError("Unable to instantiate localized classes: ", classNames, t);
+      return;  // logRefreshError always throws.
+    }
+  }
+
+  private void logRefreshError(String what, String[] items, Throwable t) throws IOException {
+    for (String item : items) {
+      what += (item + ", ");
+    }
+    throw new IOException(what, t);
   }
 
   private void localizeFunctionResources(String fqfn, List<ResourceUri> resources,
-      FnResources result, boolean doRefreshClassloader) throws URISyntaxException, IOException {
+      String className, FnResources result, boolean doRefreshClassloader) throws URISyntaxException, IOException {
     // We will download into fn-scoped subdirectories to avoid name collisions (we assume there
     // are no collisions within the same fn). That doesn't mean we download for every fn.
     if (LOG.isInfoEnabled()) {
@@ -230,6 +257,7 @@ public class FunctionLocalizer {
       ResourceType rt = FunctionTask.getResourceType(resource.getResourceType());
       localizeOneResource(fqfn, srcUri, rt, result);
     }
+    recentlyLocalizedClasses.add(className);
     if (doRefreshClassloader) {
       refreshClassloader();
     }
