@@ -164,6 +164,7 @@ public class LogDivertAppender
       // and set the pattern and excludeMatches accordingly.
       if (currentLoggingMode != loggingMode) {
         loggingMode = currentLoggingMode;
+        excludeMatches = (loggingMode == OperationLog.LoggingLevel.VERBOSE);
         setCurrentNamePattern(loggingMode);
       }
 
