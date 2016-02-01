@@ -201,6 +201,17 @@ public class CLIService extends CompositeService implements ICLIService {
     return sessionHandle;
   }
 
+  /**
+   * Used to restore session
+   */
+  public void createSessionWithSessionHandle(SessionHandle sessionHandle, String username, String password,
+    Map<String, String> configuration)
+    throws HiveSQLException {
+    sessionManager.createSession(sessionHandle, SERVER_VERSION, username, password, null,
+      configuration, false, null);
+    LOG.debug(sessionHandle + ": createSessionWithSessionHandle()");
+  }
+
   /* (non-Javadoc)
    * @see org.apache.hive.service.cli.ICLIService#openSession(java.lang.String, java.lang.String, java.util.Map)
    */

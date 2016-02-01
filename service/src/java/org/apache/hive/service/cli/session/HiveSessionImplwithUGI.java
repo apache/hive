@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.cli.HiveSQLException;
+import org.apache.hive.service.cli.SessionHandle;
 import org.apache.hive.service.rpc.thrift.TProtocolVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,9 +50,13 @@ public class HiveSessionImplwithUGI extends HiveSessionImpl {
   private HiveSession proxySession = null;
 
 
-  public HiveSessionImplwithUGI(TProtocolVersion protocol, String username, String password,
-      HiveConf hiveConf, String ipAddress, String delegationToken) throws HiveSQLException {
-    super(protocol, username, password, hiveConf, ipAddress);
+  public HiveSessionImplwithUGI(TProtocolVersion protocol, String username,
+    String password, HiveConf hiveConf, String ipAddress, String delegationToken) throws HiveSQLException {
+    this(null, protocol, username, password, hiveConf, ipAddress, delegationToken);
+  }
+  public HiveSessionImplwithUGI(SessionHandle sessionHandle, TProtocolVersion protocol, String username,
+    String password, HiveConf hiveConf, String ipAddress, String delegationToken) throws HiveSQLException {
+    super(sessionHandle, protocol, username, password, hiveConf, ipAddress);
     setSessionUGI(username);
     setDelegationToken(delegationToken);
   }
