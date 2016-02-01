@@ -46,7 +46,6 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWor
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.TerminateFragmentRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.TerminateFragmentResponseProto;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
-import org.apache.hadoop.hive.llap.shufflehandler.ShuffleHandler;
 import org.apache.hadoop.hive.ql.exec.tez.TezProcessor;
 import org.apache.hadoop.io.DataInputBuffer;
 import org.apache.hadoop.security.Credentials;
@@ -178,21 +177,6 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
 
       QueryIdentifier queryIdentifier = new QueryIdentifier(request.getApplicationIdString(), dagIdentifier);
 
-      QueryFragmentInfo fragmentInfo = queryTracker
-          .registerFragment(queryIdentifier, request.getApplicationIdString(), fragmentSpec.getDagName(),
-              dagIdentifier,
-              fragmentSpec.getVertexName(), fragmentSpec.getFragmentNumber(),
-              fragmentSpec.getAttemptNumber(), request.getUser(), request.getFragmentSpec());
-
-      String[] localDirs = fragmentInfo.getLocalDirs();
-      Preconditions.checkNotNull(localDirs);
-
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Dirs are: " + Arrays.toString(localDirs));
-      }
-      // May need to setup localDir for re-localization, which is usually setup as Environment.PWD.
-      // Used for re-localization, to add the user specified configuration (conf_pb_binary_stream)
-
       Credentials credentials = new Credentials();
       DataInputBuffer dib = new DataInputBuffer();
       byte[] tokenBytes = request.getCredentialsBinary().toByteArray();
@@ -201,12 +185,21 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
 
       Token<JobTokenIdentifier> jobToken = TokenCache.getSessionToken(credentials);
 
+      QueryFragmentInfo fragmentInfo = queryTracker
+          .registerFragment(queryIdentifier, request.getApplicationIdString(),
+              fragmentSpec.getDagName(),
+              dagIdentifier,
+              fragmentSpec.getVertexName(), fragmentSpec.getFragmentNumber(),
+              fragmentSpec.getAttemptNumber(), request.getUser(), request.getFragmentSpec(),
+              jobToken);
+
+      String[] localDirs = fragmentInfo.getLocalDirs();
+      Preconditions.checkNotNull(localDirs);
       if (LOG.isDebugEnabled()) {
-        LOG.debug("Registering request with the ShuffleHandler");
+        LOG.debug("Dirs are: " + Arrays.toString(localDirs));
       }
-      ShuffleHandler.get()
-          .registerDag(request.getApplicationIdString(), dagIdentifier, jobToken,
-              request.getUser(), localDirs);
+      // May need to setup localDir for re-localization, which is usually setup as Environment.PWD.
+      // Used for re-localization, to add the user specified configuration (conf_pb_binary_stream)
 
       TaskRunnerCallable callable = new TaskRunnerCallable(request, fragmentInfo, new Configuration(getConfig()),
           new LlapExecutionContext(localAddress.get().getHostName(), queryTracker), env,

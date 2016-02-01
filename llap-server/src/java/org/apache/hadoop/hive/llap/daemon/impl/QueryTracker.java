@@ -19,6 +19,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.security.token.Token;
 import org.apache.tez.common.CallableWithNdc;
 
 import org.apache.hadoop.service.AbstractService;
@@ -31,6 +32,7 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentS
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateProto;
 import org.apache.hadoop.hive.llap.shufflehandler.ShuffleHandler;
 import org.apache.hadoop.hive.ql.exec.ObjectCacheFactory;
+import org.apache.tez.common.security.JobTokenIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -120,8 +122,8 @@ public class QueryTracker extends AbstractService {
    * @throws IOException
    */
   QueryFragmentInfo registerFragment(QueryIdentifier queryIdentifier, String appIdString, String dagName,
-      int dagIdentifier, String vertexName, int fragmentNumber, int attemptNumber, String user,
-      FragmentSpecProto fragmentSpec) throws IOException {
+                                     int dagIdentifier, String vertexName, int fragmentNumber, int attemptNumber, String user,
+                                     FragmentSpecProto fragmentSpec, Token<JobTokenIdentifier> appToken) throws IOException {
     ReadWriteLock dagLock = getDagLock(queryIdentifier);
     dagLock.readLock().lock();
     try {
@@ -132,6 +134,14 @@ public class QueryTracker extends AbstractService {
               getSourceCompletionMap(queryIdentifier), localDirsBase, localFs);
           queryInfoMap.putIfAbsent(queryIdentifier, queryInfo);
         }
+
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Registering request for {} with the ShuffleHandler", queryIdentifier);
+        }
+        ShuffleHandler.get()
+            .registerDag(appIdString, dagIdentifier, appToken,
+                user, queryInfo.getLocalDirs());
+
         return queryInfo.registerFragment(vertexName, fragmentNumber, attemptNumber, fragmentSpec);
       } else {
         // Cleanup the dag lock here, since it may have been created after the query completed
