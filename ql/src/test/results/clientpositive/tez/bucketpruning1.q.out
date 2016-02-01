@@ -1237,6 +1237,92 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
+PREHOOK: query: -- compat case (-15 = 1 & 15)
+
+explain extended
+select * from srcbucket_pruned where key = -15
+PREHOOK: type: QUERY
+POSTHOOK: query: -- compat case (-15 = 1 & 15)
+
+explain extended
+select * from srcbucket_pruned where key = -15
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_TABREF
+         TOK_TABNAME
+            srcbucket_pruned
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_SELEXPR
+            TOK_ALLCOLREF
+      TOK_WHERE
+         =
+            TOK_TABLE_OR_COL
+               key
+            -
+               15
+
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: srcbucket_pruned
+                  filterExpr: (key = -15) (type: boolean)
+                  buckets included: [1,15,] of 16
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: (key = -15) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                    Select Operator
+                      expressions: -15 (type: int), value (type: string), ds (type: string)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        GlobalTableId: 0
+#### A masked pattern was here ####
+                        NumFilesPerFileSink: 1
+                        Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+#### A masked pattern was here ####
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            properties:
+                              columns _col0,_col1,_col2
+                              columns.types int:string:string
+                              escape.delim \
+                              hive.serialization.extend.additional.nesting.levels true
+                              serialization.escape.crlf true
+                              serialization.format 1
+                              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        TotalFiles: 1
+                        GatherStats: false
+                        MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: -- valid but irrelevant case (all buckets selected)
 
 explain extended

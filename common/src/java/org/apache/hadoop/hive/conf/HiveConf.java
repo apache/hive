@@ -2366,6 +2366,10 @@ public class HiveConf extends Configuration {
          "When pruning is enabled, filters on bucket columns will be processed by \n" +
          "filtering the splits against a bitset of included buckets. This needs predicates \n"+
          "produced by hive.optimize.ppd and hive.optimize.index.filters."),
+    TEZ_OPTIMIZE_BUCKET_PRUNING_COMPAT(
+        "hive.tez.bucket.pruning.compat", true,
+        "When pruning is enabled, handle possibly broken inserts due to negative hashcodes.\n" +
+        "This occasionally doubles the data scan cost, but is default enabled for safety"),
     TEZ_DYNAMIC_PARTITION_PRUNING(
         "hive.tez.dynamic.partition.pruning", true,
         "When dynamic pruning is enabled, joins on partition keys will be processed by sending\n" +

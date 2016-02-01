@@ -54,6 +54,11 @@ select * from srcbucket_pruned where (key=1 or key=2) and ds='2008-04-08';
 explain extended
 select * from srcbucket_pruned where (key=1 or key=2) and value = 'One' and ds='2008-04-08';
 
+-- compat case (-15 = 1 & 15)
+
+explain extended
+select * from srcbucket_pruned where key = -15;
+
 -- valid but irrelevant case (all buckets selected)
 
 explain extended
@@ -95,4 +100,3 @@ select * from srcbucket_unpruned where key in (3, 5);
 
 explain extended
 select * from srcbucket_unpruned where key = 1;
-
