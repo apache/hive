@@ -65,6 +65,12 @@ public class FixedBucketPruningOptimizer extends Transform {
   private static final Log LOG = LogFactory
       .getLog(FixedBucketPruningOptimizer.class.getName());
 
+  private final boolean compat;
+
+  public FixedBucketPruningOptimizer(boolean compat) {
+    this.compat = compat;
+  }
+
   public class NoopWalker implements NodeProcessor {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -229,6 +235,14 @@ public class FixedBucketPruningOptimizer extends Transform {
         Object convCols[] = new Object[] {conv.convert(literal)};
         int n = ObjectInspectorUtils.getBucketNumber(convCols, new ObjectInspector[]{constOI}, ctxt.getNumBuckets());
         bs.set(n);
+        if (ctxt.isCompat()) {
+          int h = ObjectInspectorUtils.getBucketHashCode(convCols, new ObjectInspector[]{constOI});
+          // -ve hashcodes had conversion to positive done in different ways in the past
+          // abs() is now obsolete and all inserts now use & Integer.MAX_VALUE 
+          // the compat mode assumes that old data could've been loaded using the other conversion
+          n = ObjectInspectorUtils.getBucketNumber(Math.abs(h), ctxt.getNumBuckets());
+          bs.set(n);
+        }
       }
       if (bs.cardinality() < ctxt.getNumBuckets()) {
         // there is a valid bucket pruning filter
@@ -252,12 +266,14 @@ public class FixedBucketPruningOptimizer extends Transform {
   public final class FixedBucketPruningOptimizerCtxt implements
       NodeProcessorCtx {
     public final ParseContext pctx;
+    private final boolean compat;
     private int numBuckets;
     private PrunedPartitionList partitions;
     private List<String> bucketCols;
     private List<StructField> schema;
 
-    public FixedBucketPruningOptimizerCtxt(ParseContext pctx) {
+    public FixedBucketPruningOptimizerCtxt(boolean compat, ParseContext pctx) {
+      this.compat = compat;
       this.pctx = pctx;
     }
 
@@ -292,12 +308,17 @@ public class FixedBucketPruningOptimizer extends Transform {
     public void setNumBuckets(int numBuckets) {
       this.numBuckets = numBuckets;
     }
+
+    // compatibility mode enabled
+    public boolean isCompat() {
+      return this.compat;
+    }
   }
 
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
     // create a the context for walking operators
-    FixedBucketPruningOptimizerCtxt opPartWalkerCtx = new FixedBucketPruningOptimizerCtxt(
+    FixedBucketPruningOptimizerCtxt opPartWalkerCtx = new FixedBucketPruningOptimizerCtxt(compat,
         pctx);
 
     // Retrieve all partitions generated from partition pruner and partition

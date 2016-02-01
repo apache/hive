@@ -187,7 +187,9 @@ public class Optimizer {
         HiveConf.ConfVars.TEZ_OPTIMIZE_BUCKET_PRUNING)
         && HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTPPD)
         && HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTINDEXFILTER)) {
-      transformations.add(new FixedBucketPruningOptimizer());
+      final boolean compatMode =
+          HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.TEZ_OPTIMIZE_BUCKET_PRUNING_COMPAT);
+      transformations.add(new FixedBucketPruningOptimizer(compatMode));
     }
 
     if(HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTREDUCEDEDUPLICATION)) {
