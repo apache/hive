@@ -113,6 +113,9 @@
       <includes>
         <include>/*.*</include>
       </includes>
+      <excludes>
+        <exclude>/*.jar</exclude>
+      </excludes>
       <outputDirectory>examples/files</outputDirectory>
     </fileSet>
 
@@ -131,10 +134,15 @@
         <include>hive</include>
         <include>llap/**/*</include>
         <include>metatool</include>
+        <include>hplsql</include>
         <include>schematool</include>
         <include>beeline</include>
         <include>hiveserver2</include>
         <include>hive-config.sh</include>
+        <include>hive-config.cmd</include>
+        <include>hive.cmd</include>
+        <include>hplsql.cmd</include>
+        <include>beeline.cmd</include>
         <include>ext/**/*</include>
       </includes>
       <outputDirectory>bin</outputDirectory>
