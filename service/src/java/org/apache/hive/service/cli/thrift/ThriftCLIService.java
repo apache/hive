@@ -159,6 +159,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
         if (metrics != null) {
           try {
             metrics.incrementCounter(MetricsConstant.OPEN_CONNECTIONS);
+            metrics.incrementCounter(MetricsConstant.CUMULATIVE_CONNECTION_COUNT);
           } catch (Exception e) {
             LOG.warn("Error Reporting JDO operation to Metrics system", e);
           }

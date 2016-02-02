@@ -28,6 +28,7 @@ public class MetricsConstant {
 
   public static final String OPEN_CONNECTIONS = "open_connections";
   public static final String OPEN_OPERATIONS = "open_operations";
+  public static final String CUMULATIVE_CONNECTION_COUNT = "cumulative_connection_count";
 
   public static final String METASTORE_HIVE_LOCKS = "metastore_hive_locks";
   public static final String ZOOKEEPER_HIVE_SHAREDLOCKS = "zookeeper_hive_sharedlocks";
