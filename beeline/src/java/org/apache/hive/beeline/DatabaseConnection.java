@@ -29,7 +29,6 @@ import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -44,8 +43,6 @@ import jline.console.completer.ArgumentCompleter;
 import jline.console.completer.Completer;
 
 class DatabaseConnection {
-  private static final String HIVE_AUTH_USER = "user";
-  private static final String HIVE_AUTH_PASSWD = "password";
   private static final String HIVE_VAR_PREFIX = "hivevar:";
   private static final String HIVE_CONF_PREFIX = "hiveconf:";
 

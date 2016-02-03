@@ -384,14 +384,17 @@ class Utils {
     }
     // Extract user/password from JDBC connection properties if its not supplied
     // in the connection URL
-    if (info.containsKey(JdbcConnectionParams.AUTH_USER)) {
-      connParams.getSessionVars().put(JdbcConnectionParams.AUTH_USER,
-          info.getProperty(JdbcConnectionParams.AUTH_USER));
-      if (info.containsKey(JdbcConnectionParams.AUTH_PASSWD)) {
-        connParams.getSessionVars().put(JdbcConnectionParams.AUTH_PASSWD,
-            info.getProperty(JdbcConnectionParams.AUTH_PASSWD));
-      }
+    if (!connParams.getSessionVars().containsKey(JdbcConnectionParams.AUTH_USER)) {
+        if (info.containsKey(JdbcConnectionParams.AUTH_USER)) {
+            connParams.getSessionVars().put(JdbcConnectionParams.AUTH_USER,
+              info.getProperty(JdbcConnectionParams.AUTH_USER));
+        }
+        if (info.containsKey(JdbcConnectionParams.AUTH_PASSWD)) {
+          connParams.getSessionVars().put(JdbcConnectionParams.AUTH_PASSWD,
+              info.getProperty(JdbcConnectionParams.AUTH_PASSWD));
+        }
     }
+
     if (info.containsKey(JdbcConnectionParams.AUTH_TYPE)) {
       connParams.getSessionVars().put(JdbcConnectionParams.AUTH_TYPE,
           info.getProperty(JdbcConnectionParams.AUTH_TYPE));
