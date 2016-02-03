@@ -44,6 +44,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.google.common.collect.ImmutableMap;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -3400,7 +3401,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     metaCallTimeMap.clear();
   }
 
-  public void dumpAndClearMetaCallTiming(String phase) {
+  public ImmutableMap<String, Long> dumpAndClearMetaCallTiming(String phase) {
     boolean phaseInfoLogged = false;
     if (LOG.isDebugEnabled()) {
       phaseInfoLogged = logDumpPhase(phase);
@@ -3420,7 +3421,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
         }
       }
     }
+
+    ImmutableMap<String, Long> result = ImmutableMap.copyOf(metaCallTimeMap);
     metaCallTimeMap.clear();
+    return result;
   }
 
   private boolean logDumpPhase(String phase) {

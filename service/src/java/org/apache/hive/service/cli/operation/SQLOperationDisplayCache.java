@@ -17,32 +17,23 @@
  */
 package org.apache.hive.service.cli.operation;
 
-import org.apache.hive.service.cli.OperationState;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
- * Used to display some info in the HS2 WebUI.
+ * Cache some SQLOperation information for WebUI
  */
-public class SQLOperationInfo {
-  public String userName;
-  public String queryStr;
-  public String executionEngine;
-  public OperationState endState; //state before CLOSED (one of CANCELLED, FINISHED, ERROR)
-  public int elapsedTime;
-  public long endTime;
+public class SQLOperationDisplayCache extends LinkedHashMap<String, SQLOperationDisplay> {
 
-  public SQLOperationInfo(
-    String userName,
-    String queryStr,
-    String executionEngine,
-    OperationState endState,
-    int elapsedTime,
-    long endTime
-  ) {
-    this.userName = userName;
-    this.queryStr = queryStr;
-    this.executionEngine = executionEngine;
-    this.endState = endState;
-    this.elapsedTime = elapsedTime;
-    this.endTime = endTime;
+  private final int capacity;
+
+  public SQLOperationDisplayCache(int capacity) {
+      super(capacity + 1, 1.1f, false);
+      this.capacity = capacity;
+  }
+
+  @Override
+  protected boolean removeEldestEntry(Map.Entry eldest) {
+    return size() > capacity;
   }
 }

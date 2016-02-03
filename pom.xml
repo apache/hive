@@ -140,6 +140,8 @@
     <!-- jackson 1 and 2 lines can coexist without issue, as they have different artifactIds -->
     <jackson.new.version>2.4.2</jackson.new.version>
     <jasper.version>5.5.23</jasper.version>
+    <jamon.plugin.version>2.3.4</jamon.plugin.version>
+    <jamon-runtime.version>2.3.1</jamon-runtime.version>
     <javaewah.version>0.3.2</javaewah.version>
     <javax-servlet.version>3.0.0.v201112011016</javax-servlet.version>
     <javolution.version>5.5.1</javolution.version>
@@ -725,6 +727,11 @@
           </exclusion>
         </exclusions>
       </dependency>
+      <dependency>
+        <groupId>org.jamon</groupId>
+        <artifactId>jamon-runtime</artifactId>
+        <version>${jamon-runtime.version}</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -1063,6 +1070,11 @@
       <exclude>**/test/queries/**/*.sql</exclude>
 	  </excludes>
 	</configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.jamon</groupId>
+        <artifactId>jamon-maven-plugin</artifactId>
+        <version>${jamon.plugin.version}</version>
       </plugin>
     </plugins>
   </build>

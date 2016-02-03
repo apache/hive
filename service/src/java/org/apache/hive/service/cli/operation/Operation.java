@@ -157,6 +157,7 @@ public abstract class Operation {
     state.validateTransition(newState);
     this.state = newState;
     setMetrics(state);
+    onNewState(state);
     this.lastAccessTime = System.currentTimeMillis();
     return this.state;
   }
@@ -419,5 +420,8 @@ public abstract class Operation {
 
   protected OperationState getState() {
     return state;
+  }
+
+  protected void onNewState(OperationState state) {
   }
 }

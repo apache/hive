@@ -435,7 +435,7 @@ public class HttpServer {
    * @param pathSpec The path spec for the servlet
    * @param clazz The servlet class
    */
-  void addServlet(String name, String pathSpec,
+  public void addServlet(String name, String pathSpec,
       Class<? extends HttpServlet> clazz) {
     ServletHolder holder = new ServletHolder(clazz);
     if (name != null) {

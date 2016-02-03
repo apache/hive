@@ -64,6 +64,7 @@ import org.apache.hive.service.cli.CLIService;
 import org.apache.hive.service.cli.thrift.ThriftBinaryCLIService;
 import org.apache.hive.service.cli.thrift.ThriftCLIService;
 import org.apache.hive.service.cli.thrift.ThriftHttpCLIService;
+import org.apache.hive.service.servlet.QueryProfileServlet;
 import org.apache.logging.log4j.util.Strings;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
@@ -180,6 +181,7 @@ public class HiveServer2 extends CompositeService {
             builder.setUseSPNEGO(true);
           }
           webServer = builder.build();
+          webServer.addServlet("query_page", "/query_page", QueryProfileServlet.class);
         }
       }
     } catch (IOException ie) {
