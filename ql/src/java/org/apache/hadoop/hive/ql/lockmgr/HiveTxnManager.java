@@ -117,6 +117,12 @@ public interface HiveTxnManager {
   ValidTxnList getValidTxns() throws LockException;
 
   /**
+   * Get the name for currently installed transaction manager.
+   * @return transaction manager name
+   */
+  String getTxnManagerName();
+
+  /**
    * This call closes down the transaction manager.  All open transactions
    * are aborted.  If no transactions are open but locks are held those locks
    * are released.  This method should be called if processing of a session

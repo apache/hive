@@ -6,4 +6,4 @@ POSTHOOK: query: create table acid_notbucketed(a int, b varchar(128)) partitione
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@acid_notbucketed
-FAILED: SemanticException [Error 10297]: Attempt to do update or delete on table acid_notbucketed that does not use an AcidOutputFormat or is not bucketed
+FAILED: SemanticException [Error 10297]: Attempt to do update or delete on table default.acid_notbucketed that does not use an AcidOutputFormat or is not bucketed

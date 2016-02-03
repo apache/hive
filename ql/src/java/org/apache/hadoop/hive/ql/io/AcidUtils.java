@@ -30,9 +30,10 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.mapred.InputFormat;
+import org.apache.hadoop.mapred.OutputFormat;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -620,17 +621,42 @@ public class AcidUtils {
     HiveConf.setBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN, isAcidTable);
   }
 
-  // If someone is trying to read a table with transactional=true they must be using the
-  // right TxnManager.  We do not look at SessionState.get().getTxnMgr().supportsAcid().
+  /** Checks metadata to make sure it's a valid ACID table at metadata level
+   * Three things we will check:
+   * 1. TBLPROPERTIES 'transactional'='true'
+   * 2. The table should be bucketed
+   * 3. InputFormatClass/OutputFormatClass should implement AcidInputFormat/AcidOutputFormat
+   *    Currently OrcInputFormat/OrcOutputFormat is the only implementer
+   * Note, users are responsible for using the correct TxnManager. We do not look at
+   * SessionState.get().getTxnMgr().supportsAcid() here
+   * @param table table
+   * @return true if table is a legit ACID table, false otherwise
+   */
   public static boolean isAcidTable(Table table) {
     if (table == null) {
       return false;
     }
-    String tableIsTransactional =
-        table.getProperty(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
-    if(tableIsTransactional == null) {
+    String tableIsTransactional = table.getProperty(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
+    if (tableIsTransactional == null) {
       tableIsTransactional = table.getProperty(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL.toUpperCase());
     }
-    return tableIsTransactional != null && tableIsTransactional.equalsIgnoreCase("true");
+    if (tableIsTransactional == null || !tableIsTransactional.equalsIgnoreCase("true")) {
+      return false;
+    }
+
+    List<String> bucketCols = table.getBucketCols();
+    if (bucketCols == null || bucketCols.isEmpty()) {
+      return false;
+    }
+
+    Class<? extends InputFormat> inputFormatClass = table.getInputFormatClass();
+    Class<? extends OutputFormat> outputFormatClass = table.getOutputFormatClass();
+    if (inputFormatClass == null || outputFormatClass == null ||
+        !AcidInputFormat.class.isAssignableFrom(inputFormatClass) ||
+        !AcidOutputFormat.class.isAssignableFrom(outputFormatClass)) {
+      return false;
+    }
+
+    return true;
   }
 }
