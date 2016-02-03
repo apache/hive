@@ -1621,8 +1621,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if ((updating() || deleting()) && !isAcid && isTableWrittenTo) {
           //isTableWrittenTo: delete from acidTbl where a in (select id from nonAcidTable)
           //so only assert this if we are actually writing to this table
-          // isAcidTable above also checks for whether we are using an acid compliant
-          // transaction manager.  But that has already been caught in
+          // Whether we are using an acid compliant transaction manager has already been caught in
           // UpdateDeleteSemanticAnalyzer, so if we are updating or deleting and getting nonAcid
           // here, it means the table itself doesn't support it.
           throw new SemanticException(ErrorMsg.ACID_OP_ON_NONACID_TABLE, tab_name);
@@ -10591,6 +10590,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       Table tbl = readEntity.getTable();
       Partition p = readEntity.getPartition();
+
+      if (p != null) {
+        tbl = p.getTable();
+      }
+      if (tbl != null && AcidUtils.isAcidTable(tbl)) {
+        checkAcidTxnManager(tbl);
+      }
     }
 
     for (WriteEntity writeEntity : getOutputs()) {
@@ -10648,6 +10654,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       else {
         LOG.debug("Not a partition.");
         tbl = writeEntity.getTable();
+      }
+
+      if (tbl != null && AcidUtils.isAcidTable(tbl)) {
+        checkAcidTxnManager(tbl);
       }
     }
 
@@ -12219,6 +12229,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   protected boolean deleting() {
     return false;
   }
+
+  // Make sure the proper transaction manager that supports ACID is being used
+  protected void checkAcidTxnManager(Table table) throws SemanticException {
+    if (SessionState.get() != null && !SessionState.get().getTxnMgr().supportsAcid()) {
+      throw new SemanticException(ErrorMsg.TXNMGR_NOT_ACID, table.getDbName(), table.getTableName());
+    }
+  }
+
   public static ASTNode genSelectDIAST(RowResolver rr) {
     LinkedHashMap<String, LinkedHashMap<String, ColumnInfo>> map = rr.getRslvMap();
     ASTNode selectDI = new ASTNode(new CommonToken(HiveParser.TOK_SELECTDI, "TOK_SELECTDI"));

@@ -42,6 +42,7 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -400,13 +401,19 @@ public class SessionState {
 
   /**
    * Initialize the transaction manager.  This is done lazily to avoid hard wiring one
-   * transaction manager at the beginning of the session.  In general users shouldn't change
-   * this, but it's useful for testing.
+   * transaction manager at the beginning of the session.
    * @param conf Hive configuration to initialize transaction manager
    * @return transaction manager
    * @throws LockException
    */
   public synchronized HiveTxnManager initTxnMgr(HiveConf conf) throws LockException {
+    // Only change txnMgr if the setting has changed
+    if (txnMgr != null &&
+        !txnMgr.getTxnManagerName().equals(conf.getVar(HiveConf.ConfVars.HIVE_TXN_MANAGER))) {
+      txnMgr.closeTxnManager();
+      txnMgr = null;
+    }
+
     if (txnMgr == null) {
       txnMgr = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
     }

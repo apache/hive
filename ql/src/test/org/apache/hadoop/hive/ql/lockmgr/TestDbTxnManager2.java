@@ -27,7 +27,6 @@ import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.ErrorMsg;
-import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.After;
@@ -239,6 +238,42 @@ public class TestDbTxnManager2 {
     Assert.assertEquals("Unexpected lock count", 1, locks.size());
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T9", null, locks.get(0));
     otherTxnMgr.closeTxnManager();
+  }
+
+  @Test
+  public void testDummyTxnManagerOnAcidTable() throws Exception {
+    // Create an ACID table with DbTxnManager
+    CommandProcessorResponse cpr = driver.run("create table T10 (a int, b int) clustered by(b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')");
+    checkCmdOnDriver(cpr);
+    cpr = driver.run("create table T11 (a int, b int) clustered by(b) into 2 buckets stored as orc");
+    checkCmdOnDriver(cpr);
+
+    // Now switch to DummyTxnManager
+    conf.setVar(HiveConf.ConfVars.HIVE_TXN_MANAGER, "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager");
+    txnMgr = SessionState.get().initTxnMgr(conf);
+    Assert.assertTrue(txnMgr instanceof DummyTxnManager);
+
+    // All DML should fail with DummyTxnManager on ACID table
+    cpr = driver.compileAndRespond("select * from T10");
+    Assert.assertEquals(ErrorMsg.TXNMGR_NOT_ACID.getErrorCode(), cpr.getResponseCode());
+    Assert.assertTrue(cpr.getErrorMessage().contains("This command is not allowed on an ACID table"));
+
+    cpr = driver.compileAndRespond("insert into table T10 values (1, 2)");
+    Assert.assertEquals(ErrorMsg.TXNMGR_NOT_ACID.getErrorCode(), cpr.getResponseCode());
+    Assert.assertTrue(cpr.getErrorMessage().contains("This command is not allowed on an ACID table"));
+
+    cpr = driver.compileAndRespond("insert overwrite table T10 select a, b from T11");
+    Assert.assertEquals(ErrorMsg.NO_INSERT_OVERWRITE_WITH_ACID.getErrorCode(), cpr.getResponseCode());
+    Assert.assertTrue(cpr.getErrorMessage().contains("INSERT OVERWRITE not allowed on table with OutputFormat" +
+        " that implements AcidOutputFormat while transaction manager that supports ACID is in use"));
+
+    cpr = driver.compileAndRespond("update T10 set a=0 where b=1");
+    Assert.assertEquals(ErrorMsg.ACID_OP_ON_NONACID_TXNMGR.getErrorCode(), cpr.getResponseCode());
+    Assert.assertTrue(cpr.getErrorMessage().contains("Attempt to do update or delete using transaction manager that does not support these operations."));
+
+    cpr = driver.compileAndRespond("delete from T10");
+    Assert.assertEquals(ErrorMsg.ACID_OP_ON_NONACID_TXNMGR.getErrorCode(), cpr.getResponseCode());
+    Assert.assertTrue(cpr.getErrorMessage().contains("Attempt to do update or delete using transaction manager that does not support these operations."));
   }
 
   private void checkLock(LockType type, LockState state, String db, String table, String partition, ShowLocksResponseElement l) {

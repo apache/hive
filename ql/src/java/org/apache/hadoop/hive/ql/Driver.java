@@ -541,6 +541,10 @@ public class Driver implements CommandProcessor {
         errorMessage += " " + e.getMessage();
       }
 
+      if (error == ErrorMsg.TXNMGR_NOT_ACID) {
+        errorMessage += ". Failed command: " + queryStr;
+      }
+
       SQLState = error.getSQLState();
       downstreamError = e;
       console.printError(errorMessage, "\n"
