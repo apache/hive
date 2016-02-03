@@ -2326,6 +2326,8 @@ public class HiveConf extends Configuration {
     HIVE_SECURITY_COMMAND_WHITELIST("hive.security.command.whitelist", "set,reset,dfs,add,list,delete,reload,compile",
         "Comma separated list of non-SQL Hive commands users are authorized to execute"),
 
+     HIVE_MOVE_FILES_THREAD_COUNT("hive.mv.files.thread", 25, new  SizeValidator(1L, true, 1024L, true), "Number of threads"
+         + " used to move files in move task"),
     // If this is set all move tasks at the end of a multi-insert query will only begin once all
     // outputs are ready
     HIVE_MULTI_INSERT_MOVE_TASKS_SHARE_DEPENDENCIES(
@@ -2771,7 +2773,7 @@ public class HiveConf extends Configuration {
     SPARK_RPC_SASL_MECHANISM("hive.spark.client.rpc.sasl.mechanisms", "DIGEST-MD5",
       "Name of the SASL mechanism to use for authentication."),
     SPARK_RPC_SERVER_ADDRESS("hive.spark.client.rpc.server.address", "",
-      "The server address of HiverServer2 host to be used for communication between Hive client and remote Spark driver. " + 
+      "The server address of HiverServer2 host to be used for communication between Hive client and remote Spark driver. " +
       "Default is empty, which means the address will be determined in the same way as for hive.server2.thrift.bind.host." +
       "This is only necessary if the host has mutiple network addresses and if a different network address other than " +
       "hive.server2.thrift.bind.host is to be used."),
