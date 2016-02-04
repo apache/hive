@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
+import org.apache.hadoop.hive.ql.optimizer.calcite.functions.CanAggregateDistinct;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlCountAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlMinMaxAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlSumAggFunction;
@@ -217,23 +218,19 @@ public class SqlFunctionConverter {
         } else if (op.kind == SqlKind.PLUS_PREFIX) {
           node = (ASTNode) ParseDriver.adaptor.create(HiveParser.PLUS, "PLUS");
         } else {
-          // Handle 'COUNT' function for the case of COUNT(*) and COUNT(DISTINCT)
-          if (op instanceof HiveSqlCountAggFunction) {
+          // Handle COUNT/SUM/AVG function for the case of COUNT(*) and COUNT(DISTINCT)
+          if (op instanceof HiveSqlCountAggFunction ||
+              op instanceof HiveSqlSumAggFunction ||
+              (op instanceof CalciteUDAF && op.getName().equalsIgnoreCase(SqlStdOperatorTable.AVG.getName()))) {
             if (children.size() == 0) {
               node = (ASTNode) ParseDriver.adaptor.create(HiveParser.TOK_FUNCTIONSTAR,
                 "TOK_FUNCTIONSTAR");
             } else {
-              HiveSqlCountAggFunction countFunction = (HiveSqlCountAggFunction)op;
-              if (countFunction.isDistinct()) {
+              CanAggregateDistinct distinctFunction = (CanAggregateDistinct) op;
+              if (distinctFunction.isDistinct()) {
                 node = (ASTNode) ParseDriver.adaptor.create(HiveParser.TOK_FUNCTIONDI,
                     "TOK_FUNCTIONDI");
               }
-            }
-          } else if (op instanceof HiveSqlSumAggFunction) { // case SUM(DISTINCT)
-            HiveSqlSumAggFunction sumFunction = (HiveSqlSumAggFunction) op;
-            if (sumFunction.isDistinct()) {
-              node = (ASTNode) ParseDriver.adaptor.create(HiveParser.TOK_FUNCTIONDI,
-                  "TOK_FUNCTIONDI");
             }
           }
           node.addChild((ASTNode) ParseDriver.adaptor.create(HiveParser.Identifier, op.getName()));
@@ -364,11 +361,18 @@ public class SqlFunctionConverter {
   }
 
   // UDAF is assumed to be deterministic
-  public static class CalciteUDAF extends SqlAggFunction {
-    public CalciteUDAF(String opName, SqlReturnTypeInference returnTypeInference,
+  public static class CalciteUDAF extends SqlAggFunction implements CanAggregateDistinct {
+    private boolean isDistinct;
+    public CalciteUDAF(boolean isDistinct, String opName, SqlReturnTypeInference returnTypeInference,
         SqlOperandTypeInference operandTypeInference, SqlOperandTypeChecker operandTypeChecker) {
       super(opName, SqlKind.OTHER_FUNCTION, returnTypeInference, operandTypeInference,
           operandTypeChecker, SqlFunctionCategory.USER_DEFINED_FUNCTION);
+      this.isDistinct = isDistinct;
+    }
+
+    @Override
+    public boolean isDistinct() {
+      return isDistinct;
     }
   }
 
@@ -466,6 +470,7 @@ public class SqlFunctionConverter {
           break;
         default:
           calciteAggFn = new CalciteUDAF(
+              isDistinct,
               udfInfo.udfName,
               udfInfo.returnTypeInference,
               udfInfo.operandTypeInference,

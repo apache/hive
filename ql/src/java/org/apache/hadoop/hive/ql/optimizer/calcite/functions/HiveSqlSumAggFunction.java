@@ -46,7 +46,7 @@ import com.google.common.collect.ImmutableList;
  * <code>long</code>, <code>float</code>, <code>double</code>), and the result
  * is the same type.
  */
-public class HiveSqlSumAggFunction extends SqlAggFunction {
+public class HiveSqlSumAggFunction extends SqlAggFunction implements CanAggregateDistinct{
   final boolean isDistinct;
   final SqlReturnTypeInference returnTypeInference;
   final SqlOperandTypeInference operandTypeInference;
@@ -70,7 +70,7 @@ public class HiveSqlSumAggFunction extends SqlAggFunction {
   }
 
   //~ Methods ----------------------------------------------------------------
-
+  @Override
   public boolean isDistinct() {
     return isDistinct;
   }

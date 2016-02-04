@@ -30,7 +30,7 @@ import org.apache.calcite.sql.type.SqlReturnTypeInference;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.ImmutableIntList;
 
-public class HiveSqlCountAggFunction extends SqlAggFunction {
+public class HiveSqlCountAggFunction extends SqlAggFunction implements CanAggregateDistinct {
 
   final boolean                isDistinct;
   final SqlReturnTypeInference returnTypeInference;
@@ -52,6 +52,7 @@ public class HiveSqlCountAggFunction extends SqlAggFunction {
     this.operandTypeInference = operandTypeInference;
   }
 
+  @Override
   public boolean isDistinct() {
     return isDistinct;
   }

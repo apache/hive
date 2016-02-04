@@ -36,3 +36,11 @@ SELECT SUM(DISTINCT t) OVER (PARTITION BY index),
        SUM(DISTINCT ts) OVER (PARTITION BY index),
        SUM(DISTINCT dec) OVER (PARTITION BY index)
 FROM windowing_distinct;
+
+SELECT AVG(DISTINCT t) OVER (PARTITION BY index),
+       AVG(DISTINCT d) OVER (PARTITION BY index),
+       AVG(DISTINCT s) OVER (PARTITION BY index),
+       AVG(DISTINCT concat('Mr.', s)) OVER (PARTITION BY index),
+       AVG(DISTINCT ts) OVER (PARTITION BY index),
+       AVG(DISTINCT dec) OVER (PARTITION BY index)
+FROM windowing_distinct;

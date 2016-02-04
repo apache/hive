@@ -26,8 +26,6 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.parse.WindowingSpec.BoundarySpec;
-import org.apache.hadoop.hive.ql.plan.ptf.BoundaryDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AggregationBuffer;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
@@ -35,9 +33,11 @@ import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
@@ -95,6 +95,19 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
     }
   }
 
+  @Override
+  public GenericUDAFEvaluator getEvaluator(GenericUDAFParameterInfo paramInfo)
+  throws SemanticException {
+    if (paramInfo.isAllColumns()) {
+      throw new SemanticException(
+          "The specified syntax for UDAF invocation is invalid.");
+    }
+
+    AbstractGenericUDAFAverageEvaluator eval =
+        (AbstractGenericUDAFAverageEvaluator) getEvaluator(paramInfo.getParameters());
+    eval.avgDistinct = paramInfo.isDistinct();
+    return eval;
+  }
 
   public static class GenericUDAFAverageEvaluatorDouble extends AbstractGenericUDAFAverageEvaluator<Double> {
 
@@ -102,6 +115,7 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
     public void doReset(AverageAggregationBuffer<Double> aggregation) throws HiveException {
       aggregation.count = 0;
       aggregation.sum = new Double(0);
+      aggregation.previousValue = null;
     }
 
     @Override
@@ -319,15 +333,18 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
   }
 
   private static class AverageAggregationBuffer<TYPE> implements AggregationBuffer {
+    private Object previousValue;
     private long count;
     private TYPE sum;
   };
 
   @SuppressWarnings("unchecked")
   public static abstract class AbstractGenericUDAFAverageEvaluator<TYPE> extends GenericUDAFEvaluator {
+    protected boolean avgDistinct;
 
     // For PARTIAL1 and COMPLETE
     protected transient PrimitiveObjectInspector inputOI;
+    protected transient ObjectInspector copiedOI;
     // For PARTIAL2 and FINAL
     private transient StructObjectInspector soi;
     private transient StructField countField;
@@ -359,6 +376,8 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
       // init input
       if (mode == Mode.PARTIAL1 || mode == Mode.COMPLETE) {
         inputOI = (PrimitiveObjectInspector) parameters[0];
+        copiedOI = ObjectInspectorUtils.getStandardObjectInspector(inputOI,
+            ObjectInspectorCopyOption.JAVA);
       } else {
         soi = (StructObjectInspector) parameters[0];
         countField = soi.getStructFieldRef("count");
@@ -412,6 +431,14 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
       if (parameter != null) {
         AverageAggregationBuffer<TYPE> averageAggregation = (AverageAggregationBuffer<TYPE>) aggregation;
         try {
+          // Skip the same value if avgDistinct is true
+          if (this.avgDistinct &&
+              ObjectInspectorUtils.compare(parameter, inputOI, averageAggregation.previousValue, copiedOI) == 0) {
+            return;
+          }
+          averageAggregation.previousValue = ObjectInspectorUtils.copyToStandardObject(
+              parameter, inputOI, ObjectInspectorCopyOption.JAVA);
+
           doIterate(averageAggregation, inputOI, parameter);
         } catch (NumberFormatException e) {
           if (!warned) {
