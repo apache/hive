@@ -100,6 +100,17 @@ public final class ObjectInspectorUtils {
   }
 
   /**
+   * This enum controls how we interpret null value when compare two objects.
+   *
+   * MINVALUE means treating null value as the minimum value.
+   * MAXVALUE means treating null value as the maximum value.
+   *
+   */
+  public enum NullValueOption {
+	MINVALUE, MAXVALUE
+  }
+
+  /**
    * Calculates the hash code for array of Objects that contains writables. This is used
    * to work around the buggy Hadoop DoubleWritable hashCode implementation. This should
    * only be used for process-local hash codes; don't replace stored hash codes like bucketing.
@@ -682,17 +693,38 @@ public final class ObjectInspectorUtils {
 
   /**
    * Compare two objects with their respective ObjectInspectors.
+   * Treat null as minimum value.
    */
   public static int compare(Object o1, ObjectInspector oi1, Object o2,
       ObjectInspector oi2, MapEqualComparer mapEqualComparer) {
+    return compare(o1, oi1, o2, oi2, mapEqualComparer, NullValueOption.MINVALUE);
+  }
+
+  /**
+   * Compare two objects with their respective ObjectInspectors.
+   * if nullValueOpt is MAXVALUE, treat null as maximum value.
+   * if nullValueOpt is MINVALUE, treat null as minimum value.
+   */
+  public static int compare(Object o1, ObjectInspector oi1, Object o2,
+      ObjectInspector oi2, MapEqualComparer mapEqualComparer, NullValueOption nullValueOpt) {
     if (oi1.getCategory() != oi2.getCategory()) {
       return oi1.getCategory().compareTo(oi2.getCategory());
     }
 
+    int nullCmpRtn = -1;
+    switch (nullValueOpt) {
+    case MAXVALUE:
+      nullCmpRtn = 1;
+      break;
+    case MINVALUE:
+      nullCmpRtn = -1;
+      break;
+    }
+
     if (o1 == null) {
-      return o2 == null ? 0 : -1;
+      return o2 == null ? 0 : nullCmpRtn;
     } else if (o2 == null) {
-      return 1;
+      return -nullCmpRtn;
     }
 
     switch (oi1.getCategory()) {
@@ -821,7 +853,7 @@ public final class ObjectInspectorUtils {
         int r = compare(soi1.getStructFieldData(o1, fields1.get(i)), fields1
             .get(i).getFieldObjectInspector(), soi2.getStructFieldData(o2,
             fields2.get(i)), fields2.get(i).getFieldObjectInspector(),
-            mapEqualComparer);
+            mapEqualComparer, nullValueOpt);
         if (r != 0) {
           return r;
         }
@@ -836,7 +868,7 @@ public final class ObjectInspectorUtils {
         int r = compare(loi1.getListElement(o1, i), loi1
             .getListElementObjectInspector(), loi2.getListElement(o2, i), loi2
             .getListElementObjectInspector(),
-            mapEqualComparer);
+            mapEqualComparer, nullValueOpt);
         if (r != 0) {
           return r;
         }
@@ -861,7 +893,7 @@ public final class ObjectInspectorUtils {
       return compare(uoi1.getField(o1),
           uoi1.getObjectInspectors().get(tag1),
           uoi2.getField(o2), uoi2.getObjectInspectors().get(tag2),
-          mapEqualComparer);
+          mapEqualComparer, nullValueOpt);
     }
     default:
       throw new RuntimeException("Compare on unknown type: "

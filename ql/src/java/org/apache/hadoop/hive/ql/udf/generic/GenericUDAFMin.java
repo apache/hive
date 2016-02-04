@@ -28,7 +28,9 @@ import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMax.MaxStreamingFixedWindow;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.FullMapEqualComparer;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.NullValueOption;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
@@ -109,7 +111,7 @@ public class GenericUDAFMin extends AbstractGenericUDAFResolver {
         throws HiveException {
       if (partial != null) {
         MinAgg myagg = (MinAgg) agg;
-        int r = ObjectInspectorUtils.compare(myagg.o, outputOI, partial, inputOI);
+        int r = ObjectInspectorUtils.compare(myagg.o, outputOI, partial, inputOI, new FullMapEqualComparer(), NullValueOption.MAXVALUE);
         if (myagg.o == null || r > 0) {
           myagg.o = ObjectInspectorUtils.copyToStandardObject(partial, inputOI,
               ObjectInspectorCopyOption.JAVA);
