@@ -11,6 +11,10 @@ import re
 import sys
 import xml.etree.ElementTree as ET
 
+PREFIX_XMLNS = "{http://maven.apache.org/POM/4.0.0}"
+
+POM_HADOOP_VERSION_NAME = "active.hadoop.version"
+POM_HADOOP2_VERSION_VALUE = "hadoop-23.version"
 
 def load_properties(filepath, sep='=', comment_char='#'):
     """
@@ -41,12 +45,13 @@ def replace_vars(line, propsVars):
         line = line.replace("${" + var + "}", propsVars[var])
     return line
 
+def get_tag(name):
+    return "%s%s" % (PREFIX_XMLNS, name)
+
 #
 # Find all <qtestgen ... /> sections from the pom.xml file.
 #
-def find_qtestgen(pomtree):
-    PREFIX_XMLNS = "{http://maven.apache.org/POM/4.0.0}"
-
+def find_qtestgen(pomtree, properties):
     '''
     Example of a XML structure to find:
 
@@ -73,20 +78,37 @@ def find_qtestgen(pomtree):
     '''
 
     plugins = pomtree.getroot() \
-        .find("%sbuild" % PREFIX_XMLNS) \
-        .find("%splugins" % PREFIX_XMLNS)
+        .find(get_tag("build")) \
+        .find(get_tag("plugins"))
 
-    for plugin in plugins.findall("%splugin" % PREFIX_XMLNS):
-        if plugin.find("%sgroupId" % PREFIX_XMLNS).text == "org.apache.maven.plugins":
-            executions = plugin.find("%sexecutions" % PREFIX_XMLNS)
-            for execution in executions.findall("%sexecution" % PREFIX_XMLNS):
+    qtestgen = None
+
+    for plugin in plugins.findall(get_tag("plugin")):
+        groupId = plugin.find(get_tag("groupId")).text
+        artifactId = plugin.find(get_tag("artifactId")).text
+        if groupId == "org.apache.maven.plugins" and artifactId == "maven-antrun-plugin":
+            executions = plugin.find(get_tag("executions"))
+            for execution in executions.findall(get_tag("execution")):
                 if execution.find("%sid" % PREFIX_XMLNS).text == "generate-tests-sources":
-                    target = execution.find("%sconfiguration" % PREFIX_XMLNS) \
-                        .find("%starget" % PREFIX_XMLNS)
+                    target = execution.find(get_tag("configuration")) \
+                        .find(get_tag("target"))
 
-                    return target.findall("%sqtestgen" % PREFIX_XMLNS)
+                    # Get the list of all <qtestgen>. This is excluding the ones inside <if> tags.
+                    qtestgen = target.findall(get_tag("qtestgen"))
 
-    return None
+                    # Get the list of all <qtestgen> found inside <if> tags
+                    for iftag in target.findall(get_tag("if")):
+                        equals = iftag.find(get_tag("equals"))
+                        arg1 = equals.get("arg1")
+                        arg2 = equals.get("arg2")
+
+                        thentag = iftag.find(get_tag("then"), None)
+                        if POM_HADOOP_VERSION_NAME in arg1:
+                            if properties[POM_HADOOP_VERSION_NAME] in arg2:
+                                for qtest in thentag.findall(get_tag("qtestgen")):
+                                    qtestgen.append(qtest)
+
+    return qtestgen
 
 # Check if a qfile is included in the <qtestgen> tag by looking into the following
 # attributes:
@@ -134,7 +156,7 @@ def is_qfile_include(qtestgen, qfile, testproperties):
 def get_drivers_for_qfile(pomtree, testproperties, qdir, qfile):
     drivers = []
 
-    for qtestgen in find_qtestgen(pomtree):
+    for qtestgen in find_qtestgen(pomtree, testproperties):
         # Search for the <qtestgen> that matches the desired 'queryDirectory'
         if re.compile(qdir).search(qtestgen.get("queryDirectory")) is not None:
             if is_qfile_include(qtestgen, qfile, testproperties):
@@ -146,7 +168,7 @@ def get_drivers_for_qfile(pomtree, testproperties, qdir, qfile):
 def get_drivers_for_qresults(pomtree, testproperties, qresults, qfile):
     drivers = []
 
-    for qtestgen in find_qtestgen(pomtree):
+    for qtestgen in find_qtestgen(pomtree, testproperties):
         if qtestgen.get("resultsDirectory"):
             # Search for the <qtestgen> that matches the desired 'resultsDirectory'
             if re.compile(qresults).search(qtestgen.get("resultsDirectory")) is not None:
@@ -167,6 +189,7 @@ if __name__ == "__main__":
     parser.add_argument("--paths")
     parser.add_argument("--pom")
     parser.add_argument("--properties")
+    parser.add_argument("--hadoopVersion")
     args = parser.parse_args()
 
     if args.pom is None:
@@ -186,6 +209,10 @@ if __name__ == "__main__":
 
     pomtree = ET.parse(args.pom)
     testproperties = load_properties(args.properties)
+
+    testproperties[POM_HADOOP_VERSION_NAME] = POM_HADOOP2_VERSION_VALUE
+    if args.hadoopVersion is not None:
+        testproperties[POM_HADOOP_VERSION_NAME] = args.hadoopVersion
 
     # Get all paths information, and get the correct Test driver
     if args.paths:

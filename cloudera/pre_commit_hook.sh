@@ -72,10 +72,18 @@ mvn clean install -Phadoop-2 -Dmaven.repo.local="$MVN_REPO_LOCAL" -DskipTests
 # Execute .q tests that were modified in the patch
 tests_modified=`get_qtests_to_execute`
 if [ -n "$tests_modified" ]; then
-  for t in `python ../cloudera/qtest-driver-info.py --pom ../itests/qtest/pom.xml --properties ../itests/src/test/resources/testconfiguration.properties --paths $tests_modified`; do
-    driver=`echo $t | cut -d: -f1`
-    files=`echo $t | cut -d: -f2`
+  declare -a QTEST_POM_PATHS=(
+    "../itests/qtest/pom.xml"
+    "../itests/qtest-spark/pom.xml"
+  )
 
-    mvn test -Phadoop-2 -Dmaven.repo.local="$MVN_REPO_LOCAL" -Dtest=$driver -Dqfile=$files
+  for pom in ${QTEST_POM_PATHS[@]}; do
+    for t in `python ../cloudera/qtest-driver-info.py --hadoopVersion "hadoop-23" --pom $pom --properties ../itests/src/test/resources/testconfiguration.properties --paths $tests_modified`
+    do
+      driver=`echo $t | cut -d: -f1`
+      files=`echo $t | cut -d: -f2`
+
+      mvn test -Phadoop-2 -Dmaven.repo.local="$MVN_REPO_LOCAL" -Dtest=$driver -Dqfile=$files
+    done
   done
 fi
