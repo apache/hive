@@ -1,1 +1,1 @@
-FAILED: SemanticException Partition spec {key=null} contains non-partition columns
+FAILED: ValidationFailureSemanticException Partition spec {key=null} contains non-partition columns

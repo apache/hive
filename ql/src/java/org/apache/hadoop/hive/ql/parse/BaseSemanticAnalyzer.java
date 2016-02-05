@@ -110,7 +110,7 @@ public abstract class BaseSemanticAnalyzer {
   public static int HIVE_COLUMN_ORDER_DESC = 0;
 
   /**
-   * ReadEntitites that are passed to the hooks.
+   * ReadEntities that are passed to the hooks.
    */
   protected HashSet<ReadEntity> inputs;
   /**
@@ -1476,5 +1476,17 @@ public abstract class BaseSemanticAnalyzer {
 
   protected String toMessage(ErrorMsg message, Object detail) {
     return detail == null ? message.getMsg() : message.getMsg(detail.toString());
+  }
+
+  public List<Task<? extends Serializable>> getAllRootTasks() {
+    return rootTasks;
+  }
+
+  public HashSet<ReadEntity> getAllInputs() {
+    return inputs;
+  }
+
+  public HashSet<WriteEntity> getAllOutputs() {
+    return outputs;
   }
 }

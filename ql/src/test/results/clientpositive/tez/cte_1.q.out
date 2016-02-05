@@ -1,0 +1,111 @@
+PREHOOK: query: explain
+with q1 as ( select key from src where key = '5')
+select *
+from q1
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+with q1 as ( select key from src where key = '5')
+select *
+from q1
+POSTHOOK: type: QUERY
+Plan optimized by CBO.
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Select Operator [SEL_2]
+      Output:["_col0"]
+      Filter Operator [FIL_4]
+        predicate:(key = '5')
+        TableScan [TS_0]
+          Output:["key"]
+
+PREHOOK: query: with q1 as ( select key from src where key = '5')
+select *
+from q1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: with q1 as ( select key from src where key = '5')
+select *
+from q1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+5
+5
+5
+PREHOOK: query: -- in subquery
+explain
+with q1 as ( select key from src where key = '5')
+select * from (select key from q1) a
+PREHOOK: type: QUERY
+POSTHOOK: query: -- in subquery
+explain
+with q1 as ( select key from src where key = '5')
+select * from (select key from q1) a
+POSTHOOK: type: QUERY
+Plan optimized by CBO.
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Select Operator [SEL_2]
+      Output:["_col0"]
+      Filter Operator [FIL_4]
+        predicate:(key = '5')
+        TableScan [TS_0]
+          Output:["key"]
+
+PREHOOK: query: with q1 as ( select key from src where key = '5')
+select * from (select key from q1) a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: with q1 as ( select key from src where key = '5')
+select * from (select key from q1) a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+5
+5
+5
+PREHOOK: query: -- chaining
+explain
+with q1 as ( select key from q2 where key = '5'),
+q2 as ( select key from src where key = '5')
+select * from (select key from q1) a
+PREHOOK: type: QUERY
+POSTHOOK: query: -- chaining
+explain
+with q1 as ( select key from q2 where key = '5'),
+q2 as ( select key from src where key = '5')
+select * from (select key from q1) a
+POSTHOOK: type: QUERY
+Plan optimized by CBO.
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Select Operator [SEL_2]
+      Output:["_col0"]
+      Filter Operator [FIL_4]
+        predicate:(key = '5')
+        TableScan [TS_0]
+          Output:["key"]
+
+PREHOOK: query: with q1 as ( select key from q2 where key = '5'),
+q2 as ( select key from src where key = '5')
+select * from (select key from q1) a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: with q1 as ( select key from q2 where key = '5'),
+q2 as ( select key from src where key = '5')
+select * from (select key from q1) a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+5
+5
+5

@@ -29,6 +29,7 @@ import java.util.LinkedHashMap;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
@@ -42,6 +43,7 @@ import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.TezWork;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -64,9 +66,17 @@ public class TestGenTezWork {
   @SuppressWarnings("unchecked")
   @Before
   public void setUp() throws Exception {
+    // Init conf
+    final HiveConf conf = new HiveConf(SemanticAnalyzer.class);
+    SessionState.start(conf);
+
+    // Init parse context
+    final ParseContext pctx = new ParseContext();
+    pctx.setContext(new Context(conf));
+
     ctx = new GenTezProcContext(
-        new HiveConf(),
-        new ParseContext(),
+        conf,
+        pctx,
         Collections.EMPTY_LIST,
         new ArrayList<Task<? extends Serializable>>(),
         Collections.EMPTY_SET,

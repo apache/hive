@@ -1,0 +1,187 @@
+PREHOOK: query: explain
+with q1 as ( select key from src where key = '5')
+select *
+from q1
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+with q1 as ( select key from src where key = '5')
+select *
+from q1
+POSTHOOK: type: QUERY
+Plan optimized by CBO.
+
+Stage-2
+  Dependency Collection{}
+    Stage-1
+      Map 1
+      File Output Operator [FS_3]
+        table:{"name:":"default.q1"}
+        Select Operator [SEL_2] (rows=250 width=10)
+          Output:["_col0"]
+          Filter Operator [FIL_4] (rows=250 width=10)
+            predicate:(key = '5')
+            TableScan [TS_0] (rows=500 width=10)
+              default@src,src,Tbl:COMPLETE,Col:NONE,Output:["key"]
+Stage-0
+  Move Operator
+     Please refer to the previous Stage-1
+Stage-3
+  Fetch Operator
+    limit:-1
+    Select Operator [SEL_6]
+      Output:["_col0"]
+      TableScan [TS_5]
+        Output:["key"]
+
+PREHOOK: query: with q1 as ( select key from src where key = '5')
+select *
+from q1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@q1
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@q1
+#### A masked pattern was here ####
+POSTHOOK: query: with q1 as ( select key from src where key = '5')
+select *
+from q1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@q1
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@q1
+#### A masked pattern was here ####
+5
+5
+5
+PREHOOK: query: -- in subquery
+explain
+with q1 as ( select key from src where key = '5')
+select * from (select key from q1) a
+PREHOOK: type: QUERY
+POSTHOOK: query: -- in subquery
+explain
+with q1 as ( select key from src where key = '5')
+select * from (select key from q1) a
+POSTHOOK: type: QUERY
+Plan optimized by CBO.
+
+Stage-2
+  Dependency Collection{}
+    Stage-1
+      Map 1
+      File Output Operator [FS_3]
+        table:{"name:":"default.q1"}
+        Select Operator [SEL_2] (rows=250 width=10)
+          Output:["_col0"]
+          Filter Operator [FIL_4] (rows=250 width=10)
+            predicate:(key = '5')
+            TableScan [TS_0] (rows=500 width=10)
+              default@src,src,Tbl:COMPLETE,Col:NONE,Output:["key"]
+Stage-0
+  Move Operator
+     Please refer to the previous Stage-1
+Stage-3
+  Fetch Operator
+    limit:-1
+    Select Operator [SEL_6]
+      Output:["_col0"]
+      TableScan [TS_5]
+        Output:["key"]
+
+PREHOOK: query: with q1 as ( select key from src where key = '5')
+select * from (select key from q1) a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@q1
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@q1
+#### A masked pattern was here ####
+POSTHOOK: query: with q1 as ( select key from src where key = '5')
+select * from (select key from q1) a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@q1
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@q1
+#### A masked pattern was here ####
+5
+5
+5
+PREHOOK: query: -- chaining
+explain
+with q1 as ( select key from q2 where key = '5'),
+q2 as ( select key from src where key = '5')
+select * from (select key from q1) a
+PREHOOK: type: QUERY
+POSTHOOK: query: -- chaining
+explain
+with q1 as ( select key from q2 where key = '5'),
+q2 as ( select key from src where key = '5')
+select * from (select key from q1) a
+POSTHOOK: type: QUERY
+Plan optimized by CBO.
+
+Stage-5
+  Dependency Collection{}
+    Stage-4
+      Map 2
+      File Output Operator [FS_8]
+        table:{"name:":"default.q1"}
+        Select Operator [SEL_7] (rows=1 width=0)
+          Output:["_col0"]
+          Filter Operator [FIL_9] (rows=1 width=0)
+            predicate:(key = '5')
+            TableScan [TS_5] (rows=1 width=0)
+              default@q2,q2,Tbl:PARTIAL,Col:NONE,Output:["key"]
+        Stage-2
+          Dependency Collection{}
+            Stage-1
+              Map 1
+              File Output Operator [FS_3]
+                table:{"name:":"default.q2"}
+                Select Operator [SEL_2] (rows=250 width=10)
+                  Output:["_col0"]
+                  Filter Operator [FIL_4] (rows=250 width=10)
+                    predicate:(key = '5')
+                    TableScan [TS_0] (rows=500 width=10)
+                      default@src,src,Tbl:COMPLETE,Col:NONE,Output:["key"]
+        Stage-0
+          Move Operator
+             Please refer to the previous Stage-1
+Stage-3
+  Move Operator
+     Please refer to the previous Stage-4
+Stage-6
+  Fetch Operator
+    limit:-1
+    Select Operator [SEL_11]
+      Output:["_col0"]
+      TableScan [TS_10]
+        Output:["key"]
+
+PREHOOK: query: with q1 as ( select key from q2 where key = '5'),
+q2 as ( select key from src where key = '5')
+select * from (select key from q1) a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@q1
+PREHOOK: Input: default@q2
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@q1
+PREHOOK: Output: default@q2
+#### A masked pattern was here ####
+POSTHOOK: query: with q1 as ( select key from q2 where key = '5'),
+q2 as ( select key from src where key = '5')
+select * from (select key from q1) a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@q1
+POSTHOOK: Input: default@q2
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@q1
+POSTHOOK: Output: default@q2
+#### A masked pattern was here ####
+5
+5
+5

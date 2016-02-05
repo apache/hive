@@ -228,7 +228,7 @@ public abstract class TaskCompiler {
 
     decideExecMode(rootTasks, ctx, globalLimitCtx);
 
-    if (pCtx.getQueryProperties().isCTAS()) {
+    if (pCtx.getQueryProperties().isCTAS() && !pCtx.getCreateTable().isMaterialization()) {
       // generate a DDL task and make it a dependent task of the leaf
       CreateTableDesc crtTblDesc = pCtx.getCreateTable();
 

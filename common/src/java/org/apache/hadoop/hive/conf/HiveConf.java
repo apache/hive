@@ -1363,6 +1363,11 @@ public class HiveConf extends Configuration {
         "If the skew information is correctly stored in the metadata, hive.optimize.skewjoin.compiletime\n" +
         "would change the query plan to take care of it, and hive.optimize.skewjoin will be a no-op."),
 
+    // CTE
+    HIVE_CTE_MATERIALIZE_THRESHOLD("hive.optimize.cte.materialize.threshold", -1,
+        "If the number of references to a CTE clause exceeds this threshold, Hive will materialize it\n" +
+        "before executing the main query block. -1 will disable this feature."),
+
     // Indexes
     HIVEOPTINDEXFILTER_COMPACT_MINSIZE("hive.optimize.index.filter.compact.minsize", (long) 5 * 1024 * 1024 * 1024,
         "Minimum size (in bytes) of the inputs on which a compact index is automatically used."), // 5G

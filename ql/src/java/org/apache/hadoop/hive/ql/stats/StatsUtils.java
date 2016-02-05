@@ -18,12 +18,16 @@
 
 package org.apache.hadoop.hive.ql.stats;
 
-import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
-import com.google.common.math.LongMath;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -44,7 +48,6 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.optimizer.stats.annotation.StatsRulesProcFactory;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
@@ -93,16 +96,12 @@ import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hive.common.util.AnnotationUtils;
 import org.apache.tez.mapreduce.hadoop.MRJobConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
+import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
+import com.google.common.math.LongMath;
 
 public class StatsUtils {
 
@@ -745,6 +744,10 @@ public class StatsUtils {
    */
   public static List<ColStatistics> getTableColumnStats(
       Table table, List<ColumnInfo> schema, List<String> neededColumns) {
+    if (table.isMaterializedTable()) {
+      LOG.debug("Materialized table does not contain table statistics");
+      return null;
+    }
     String dbName = table.getDbName();
     String tabName = table.getTableName();
     List<String> neededColsInTable = processNeededColumns(schema, neededColumns);

@@ -24,23 +24,30 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.exec.DDLTask;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.OutputFormat;
-import org.apache.hadoop.hive.ql.plan.Explain.Level;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -78,6 +85,7 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
   List<List<String>> skewedColValues;
   boolean isStoredAsSubDirectories = false;
   boolean isTemporary = false;
+  private boolean isMaterialization = false;
   private boolean replaceMode = false;
 
   public CreateTableDesc() {
@@ -553,6 +561,21 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
   }
 
   /**
+   * @return the isMaterialization
+   */
+  @Explain(displayName = "isMaterialization", displayOnlyOnTrue = true)
+  public boolean isMaterialization() {
+    return isMaterialization;
+  }
+
+  /**
+   * @param isMaterialization table is a materialization or not.
+   */
+  public void setMaterialization(boolean isMaterialization) {
+    this.isMaterialization = isMaterialization;
+  }
+
+  /**
    * @param replaceMode Determine if this CreateTable should behave like a replace-into alter instead
    */
   public void setReplaceMode(boolean replaceMode) {
@@ -565,4 +588,170 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
   public boolean getReplaceMode() {
     return replaceMode;
   }
+
+  public Table toTable(HiveConf conf) throws HiveException {
+    String databaseName = getDatabaseName();
+    String tableName = getTableName();
+
+    if (databaseName == null || tableName.contains(".")) {
+      String[] names = Utilities.getDbTableName(tableName);
+      databaseName = names[0];
+      tableName = names[1];
+    }
+
+    Table tbl = new Table(databaseName, tableName);
+
+    if (getTblProps() != null) {
+      tbl.getTTable().getParameters().putAll(getTblProps());
+    }
+
+    if (getPartCols() != null) {
+      tbl.setPartCols(getPartCols());
+    }
+    if (getNumBuckets() != -1) {
+      tbl.setNumBuckets(getNumBuckets());
+    }
+
+    if (getStorageHandler() != null) {
+      tbl.setProperty(
+              org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE,
+              getStorageHandler());
+    }
+    HiveStorageHandler storageHandler = tbl.getStorageHandler();
+
+    /*
+     * We use LazySimpleSerDe by default.
+     *
+     * If the user didn't specify a SerDe, and any of the columns are not simple
+     * types, we will have to use DynamicSerDe instead.
+     */
+    if (getSerName() == null) {
+      if (storageHandler == null) {
+        LOG.info("Default to LazySimpleSerDe for table " + tableName);
+        tbl.setSerializationLib(LazySimpleSerDe.class.getName());
+      } else {
+        String serDeClassName = storageHandler.getSerDeClass().getName();
+        LOG.info("Use StorageHandler-supplied " + serDeClassName
+                + " for table " + tableName);
+        tbl.setSerializationLib(serDeClassName);
+      }
+    } else {
+      // let's validate that the serde exists
+      DDLTask.validateSerDe(getSerName(), conf);
+      tbl.setSerializationLib(getSerName());
+    }
+
+    if (getFieldDelim() != null) {
+      tbl.setSerdeParam(serdeConstants.FIELD_DELIM, getFieldDelim());
+      tbl.setSerdeParam(serdeConstants.SERIALIZATION_FORMAT, getFieldDelim());
+    }
+    if (getFieldEscape() != null) {
+      tbl.setSerdeParam(serdeConstants.ESCAPE_CHAR, getFieldEscape());
+    }
+
+    if (getCollItemDelim() != null) {
+      tbl.setSerdeParam(serdeConstants.COLLECTION_DELIM, getCollItemDelim());
+    }
+    if (getMapKeyDelim() != null) {
+      tbl.setSerdeParam(serdeConstants.MAPKEY_DELIM, getMapKeyDelim());
+    }
+    if (getLineDelim() != null) {
+      tbl.setSerdeParam(serdeConstants.LINE_DELIM, getLineDelim());
+    }
+    if (getNullFormat() != null) {
+      tbl.setSerdeParam(serdeConstants.SERIALIZATION_NULL_FORMAT, getNullFormat());
+    }
+    if (getSerdeProps() != null) {
+      Iterator<Map.Entry<String, String>> iter = getSerdeProps().entrySet()
+              .iterator();
+      while (iter.hasNext()) {
+        Map.Entry<String, String> m = iter.next();
+        tbl.setSerdeParam(m.getKey(), m.getValue());
+      }
+    }
+
+    if (getCols() != null) {
+      tbl.setFields(getCols());
+    }
+    if (getBucketCols() != null) {
+      tbl.setBucketCols(getBucketCols());
+    }
+    if (getSortCols() != null) {
+      tbl.setSortCols(getSortCols());
+    }
+    if (getComment() != null) {
+      tbl.setProperty("comment", getComment());
+    }
+    if (getLocation() != null) {
+      tbl.setDataLocation(new Path(getLocation()));
+    }
+
+    if (getSkewedColNames() != null) {
+      tbl.setSkewedColNames(getSkewedColNames());
+    }
+    if (getSkewedColValues() != null) {
+      tbl.setSkewedColValues(getSkewedColValues());
+    }
+
+    tbl.getTTable().setTemporary(isTemporary());
+
+    tbl.setStoredAsSubDirectories(isStoredAsSubDirectories());
+
+    tbl.setInputFormatClass(getInputFormat());
+    tbl.setOutputFormatClass(getOutputFormat());
+
+    // only persist input/output format to metadata when it is explicitly specified.
+    // Otherwise, load lazily via StorageHandler at query time.
+    if (getInputFormat() != null && !getInputFormat().isEmpty()) {
+      tbl.getTTable().getSd().setInputFormat(tbl.getInputFormatClass().getName());
+    }
+    if (getOutputFormat() != null && !getOutputFormat().isEmpty()) {
+      tbl.getTTable().getSd().setOutputFormat(tbl.getOutputFormatClass().getName());
+    }
+
+    if (!Utilities.isDefaultNameNode(conf) && DDLTask.doesTableNeedLocation(tbl)) {
+      // If location is specified - ensure that it is a full qualified name
+      DDLTask.makeLocationQualified(tbl.getDbName(), tbl.getTTable().getSd(), tableName, conf);
+    }
+
+    if (isExternal()) {
+      tbl.setProperty("EXTERNAL", "TRUE");
+      tbl.setTableType(TableType.EXTERNAL_TABLE);
+    }
+
+    // If the sorted columns is a superset of bucketed columns, store this fact.
+    // It can be later used to
+    // optimize some group-by queries. Note that, the order does not matter as
+    // long as it in the first
+    // 'n' columns where 'n' is the length of the bucketed columns.
+    if ((tbl.getBucketCols() != null) && (tbl.getSortCols() != null)) {
+      List<String> bucketCols = tbl.getBucketCols();
+      List<Order> sortCols = tbl.getSortCols();
+
+      if ((sortCols.size() > 0) && (sortCols.size() >= bucketCols.size())) {
+        boolean found = true;
+
+        Iterator<String> iterBucketCols = bucketCols.iterator();
+        while (iterBucketCols.hasNext()) {
+          String bucketCol = iterBucketCols.next();
+          boolean colFound = false;
+          for (int i = 0; i < bucketCols.size(); i++) {
+            if (bucketCol.equals(sortCols.get(i).getCol())) {
+              colFound = true;
+              break;
+            }
+          }
+          if (colFound == false) {
+            found = false;
+            break;
+          }
+        }
+        if (found) {
+          tbl.setProperty("SORTBUCKETCOLSPREFIX", "TRUE");
+        }
+      }
+    }
+    return tbl;
+  }
+
 }

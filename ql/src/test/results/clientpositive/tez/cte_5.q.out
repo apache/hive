@@ -1,0 +1,127 @@
+PREHOOK: query: create database mydb
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:mydb
+POSTHOOK: query: create database mydb
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:mydb
+PREHOOK: query: use mydb
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:mydb
+POSTHOOK: query: use mydb
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:mydb
+PREHOOK: query: create table q1 (colnum int, colstring string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:mydb
+PREHOOK: Output: mydb@q1
+POSTHOOK: query: create table q1 (colnum int, colstring string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:mydb
+POSTHOOK: Output: mydb@q1
+PREHOOK: query: insert into q1 values (5, 'A')
+PREHOOK: type: QUERY
+PREHOOK: Input: mydb@values__tmp__table__1
+PREHOOK: Output: mydb@q1
+POSTHOOK: query: insert into q1 values (5, 'A')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: mydb@values__tmp__table__1
+POSTHOOK: Output: mydb@q1
+POSTHOOK: Lineage: q1.colnum EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: q1.colstring SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: use default
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
+POSTHOOK: query: use default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
+PREHOOK: query: show tables in mydb
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:mydb
+POSTHOOK: query: show tables in mydb
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:mydb
+q1
+values__tmp__table__1
+PREHOOK: query: show tables
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:default
+POSTHOOK: query: show tables
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:default
+alltypesorc
+cbo_t1
+cbo_t2
+cbo_t3
+lineitem
+part
+src
+src1
+src_cbo
+src_json
+src_sequencefile
+src_thrift
+srcbucket
+srcbucket2
+srcpart
+PREHOOK: query: explain
+with q1 as (select * from src where key= '5')
+select a.colnum
+from mydb.q1 as a join q1 as b
+on a.colnum=b.key
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+with q1 as (select * from src where key= '5')
+select a.colnum
+from mydb.q1 as a join q1 as b
+on a.colnum=b.key
+POSTHOOK: type: QUERY
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 2
+      File Output Operator [FS_10]
+        Merge Join Operator [MERGEJOIN_15] (rows=275 width=10)
+          Conds:RS_6.UDFToDouble(_col0)=RS_7.5.0(Inner),Output:["_col0"]
+        <-Map 1 [SIMPLE_EDGE]
+          SHUFFLE [RS_6]
+            PartitionCols:UDFToDouble(_col0)
+            Select Operator [SEL_2] (rows=1 width=3)
+              Output:["_col0"]
+              Filter Operator [FIL_13] (rows=1 width=3)
+                predicate:colnum is not null
+                TableScan [TS_0] (rows=1 width=3)
+                  mydb@q1,a,Tbl:COMPLETE,Col:NONE,Output:["colnum"]
+        <-Map 3 [SIMPLE_EDGE]
+          SHUFFLE [RS_7]
+            PartitionCols:5.0
+            Select Operator [SEL_5] (rows=250 width=10)
+              Filter Operator [FIL_14] (rows=250 width=10)
+                predicate:(key = '5')
+                TableScan [TS_3] (rows=500 width=10)
+                  default@src,src,Tbl:COMPLETE,Col:NONE,Output:["key"]
+
+PREHOOK: query: with q1 as (select * from src where key= '5')
+select a.colnum
+from mydb.q1 as a join q1 as b
+on a.colnum=b.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: mydb@q1
+#### A masked pattern was here ####
+POSTHOOK: query: with q1 as (select * from src where key= '5')
+select a.colnum
+from mydb.q1 as a join q1 as b
+on a.colnum=b.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: mydb@q1
+#### A masked pattern was here ####
+5
+5
+5

@@ -29,10 +29,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.antlr.runtime.TokenRewriteStream;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileStatus;
@@ -45,13 +44,15 @@ import org.apache.hadoop.hive.ql.exec.TaskRunner;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
-import org.apache.hadoop.hive.ql.lockmgr.HiveLockManager;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObj;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Context for Semantic Analyzers. Usage: not reusable - construct a new one for
@@ -107,6 +108,10 @@ public class Context {
   private AcidUtils.Operation acidOperation = AcidUtils.Operation.NOT_ACID;
 
   private boolean needLockMgr;
+
+  private AtomicInteger sequencer = new AtomicInteger();
+
+  private final Map<String, Table> cteTables = new HashMap<String, Table>();
 
   // Keep track of the mapping from load table desc to the output and the lock
   private final Map<LoadTableDesc, WriteEntity> loadTableOutputMap =
@@ -360,6 +365,28 @@ public class Context {
     fsScratchDirs.clear();
   }
 
+  /**
+   * Remove any created directories for CTEs.
+   */
+  public void removeMaterializedCTEs() {
+    // clean CTE tables
+    for (Table materializedTable : cteTables.values()) {
+      Path location = materializedTable.getDataLocation();
+      try {
+        FileSystem fs = location.getFileSystem(conf);
+        if (fs.exists(location)) {
+          fs.delete(location, true);
+          LOG.info("Removed " + location + " for materialized " + materializedTable.getTableName());
+        }
+      } catch (IOException e) {
+        // ignore
+        LOG.warn("Error removing " + location + " for materialized " + materializedTable.getTableName() +
+                ": " + StringUtils.stringifyException(e));
+      }
+    }
+    cteTables.clear();
+  }
+
   private String nextPathId() {
     return Integer.toString(pathid++);
   }
@@ -484,6 +511,7 @@ public class Context {
         LOG.info("Context clear error: " + StringUtils.stringifyException(e));
       }
     }
+    removeMaterializedCTEs();
     removeScratchDir();
     originalTracker = null;
     setNeedLockMgr(false);
@@ -715,6 +743,18 @@ public class Context {
 
   public void setCboSucceeded(boolean cboSucceeded) {
     this.cboSucceeded = cboSucceeded;
+  }
+
+  public Table getMaterializedTable(String cteName) {
+    return cteTables.get(cteName);
+  }
+
+  public void addMaterializedTable(String cteName, Table table) {
+    cteTables.put(cteName, table);
+  }
+
+  public AtomicInteger getSequencer() {
+    return sequencer;
   }
 
   public CompilationOpContext getOpContext() {

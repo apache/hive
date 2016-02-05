@@ -6,4 +6,4 @@ POSTHOOK: query: create table dynamic_partition (key string) partitioned by (val
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dynamic_partition
-FAILED: SemanticException Partition spec {hr=null} contains non-partition columns
+FAILED: ValidationFailureSemanticException Partition spec {hr=null} contains non-partition columns

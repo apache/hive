@@ -1405,7 +1405,6 @@ POSTHOOK: Input: default@table1
 POSTHOOK: Input: default@table2
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@TABLE3
-POSTHOOK: Output: default@table3
 PREHOOK: query: explain formatted select count(*) from TABLE3
 PREHOOK: type: QUERY
 POSTHOOK: query: explain formatted select count(*) from TABLE3

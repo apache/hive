@@ -1,0 +1,444 @@
+PREHOOK: query: explain
+with q1 as ( select key from src where key = '5')
+select *
+from q1
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+with q1 as ( select key from src where key = '5')
+select *
+from q1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-6 depends on stages: Stage-1 , consists of Stage-3, Stage-2, Stage-4
+  Stage-3
+  Stage-0 depends on stages: Stage-3, Stage-2, Stage-5
+  Stage-2
+  Stage-4
+  Stage-5 depends on stages: Stage-4
+  Stage-7 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: src
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (key = '5') (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: '5' (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.q1
+
+  Stage: Stage-6
+    Conditional Operator
+
+  Stage: Stage-3
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-0
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.q1
+
+  Stage: Stage-4
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.q1
+
+  Stage: Stage-5
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-7
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: q1
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Select Operator
+            expressions: key (type: string)
+            outputColumnNames: _col0
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            ListSink
+
+PREHOOK: query: with q1 as ( select key from src where key = '5')
+select *
+from q1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@q1
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@q1
+#### A masked pattern was here ####
+POSTHOOK: query: with q1 as ( select key from src where key = '5')
+select *
+from q1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@q1
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@q1
+#### A masked pattern was here ####
+5
+5
+5
+PREHOOK: query: -- in subquery
+explain
+with q1 as ( select key from src where key = '5')
+select * from (select key from q1) a
+PREHOOK: type: QUERY
+POSTHOOK: query: -- in subquery
+explain
+with q1 as ( select key from src where key = '5')
+select * from (select key from q1) a
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-6 depends on stages: Stage-1 , consists of Stage-3, Stage-2, Stage-4
+  Stage-3
+  Stage-0 depends on stages: Stage-3, Stage-2, Stage-5
+  Stage-2
+  Stage-4
+  Stage-5 depends on stages: Stage-4
+  Stage-7 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: src
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (key = '5') (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: '5' (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.q1
+
+  Stage: Stage-6
+    Conditional Operator
+
+  Stage: Stage-3
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-0
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.q1
+
+  Stage: Stage-4
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.q1
+
+  Stage: Stage-5
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-7
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: q1
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Select Operator
+            expressions: key (type: string)
+            outputColumnNames: _col0
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            ListSink
+
+PREHOOK: query: with q1 as ( select key from src where key = '5')
+select * from (select key from q1) a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@q1
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@q1
+#### A masked pattern was here ####
+POSTHOOK: query: with q1 as ( select key from src where key = '5')
+select * from (select key from q1) a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@q1
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@q1
+#### A masked pattern was here ####
+5
+5
+5
+PREHOOK: query: -- chaining
+explain
+with q1 as ( select key from q2 where key = '5'),
+q2 as ( select key from src where key = '5')
+select * from (select key from q1) a
+PREHOOK: type: QUERY
+POSTHOOK: query: -- chaining
+explain
+with q1 as ( select key from q2 where key = '5'),
+q2 as ( select key from src where key = '5')
+select * from (select key from q1) a
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-6 depends on stages: Stage-1 , consists of Stage-3, Stage-2, Stage-4
+  Stage-3
+  Stage-0 depends on stages: Stage-3, Stage-2, Stage-5
+  Stage-8 depends on stages: Stage-0
+  Stage-13 depends on stages: Stage-8 , consists of Stage-10, Stage-9, Stage-11
+  Stage-10
+  Stage-7 depends on stages: Stage-10, Stage-9, Stage-12
+  Stage-9
+  Stage-11
+  Stage-12 depends on stages: Stage-11
+  Stage-2
+  Stage-4
+  Stage-5 depends on stages: Stage-4
+  Stage-14 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: src
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (key = '5') (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: '5' (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.q2
+
+  Stage: Stage-6
+    Conditional Operator
+
+  Stage: Stage-3
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-0
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-8
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: q2
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Filter Operator
+              predicate: (key = '5') (type: boolean)
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Select Operator
+                expressions: '5' (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.q1
+
+  Stage: Stage-13
+    Conditional Operator
+
+  Stage: Stage-10
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-7
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-9
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.q1
+
+  Stage: Stage-11
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.q1
+
+  Stage: Stage-12
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.q2
+
+  Stage: Stage-4
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.q2
+
+  Stage: Stage-5
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-14
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: q1
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Select Operator
+            expressions: key (type: string)
+            outputColumnNames: _col0
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            ListSink
+
+PREHOOK: query: with q1 as ( select key from q2 where key = '5'),
+q2 as ( select key from src where key = '5')
+select * from (select key from q1) a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@q1
+PREHOOK: Input: default@q2
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@q1
+PREHOOK: Output: default@q2
+#### A masked pattern was here ####
+POSTHOOK: query: with q1 as ( select key from q2 where key = '5'),
+q2 as ( select key from src where key = '5')
+select * from (select key from q1) a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@q1
+POSTHOOK: Input: default@q2
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@q1
+POSTHOOK: Output: default@q2
+#### A masked pattern was here ####
+5
+5
+5

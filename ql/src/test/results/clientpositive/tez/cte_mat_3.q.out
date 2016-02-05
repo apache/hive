@@ -1,0 +1,59 @@
+PREHOOK: query: explain
+with q1 as (select * from src where key= '5')
+select a.key
+from q1 a join q1 b
+on a.key=b.key
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+with q1 as (select * from src where key= '5')
+select a.key
+from q1 a join q1 b
+on a.key=b.key
+POSTHOOK: type: QUERY
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Reducer 3 <- Map 2 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+
+Stage-3
+  Fetch Operator
+    limit:-1
+    Stage-4
+      Reducer 3
+      File Output Operator [FS_15]
+        Merge Join Operator [MERGEJOIN_20] (rows=1 width=0)
+          Conds:RS_11._col0=RS_12._col0(Inner),Output:["_col0"]
+        <-Map 2 [SIMPLE_EDGE]
+          SHUFFLE [RS_11]
+            PartitionCols:_col0
+            Select Operator [SEL_7] (rows=1 width=0)
+              Output:["_col0"]
+              Filter Operator [FIL_18] (rows=1 width=0)
+                predicate:key is not null
+                TableScan [TS_5] (rows=1 width=0)
+                  default@q1,a,Tbl:PARTIAL,Col:NONE,Output:["key"]
+        <-Map 4 [SIMPLE_EDGE]
+          SHUFFLE [RS_12]
+            PartitionCols:_col0
+            Select Operator [SEL_10] (rows=1 width=0)
+              Output:["_col0"]
+              Filter Operator [FIL_19] (rows=1 width=0)
+                predicate:key is not null
+                TableScan [TS_8] (rows=1 width=0)
+                  default@q1,a,Tbl:PARTIAL,Col:NONE,Output:["key"]
+        Stage-2
+          Dependency Collection{}
+            Stage-1
+              Map 1
+              File Output Operator [FS_3]
+                table:{"name:":"default.q1"}
+                Select Operator [SEL_2] (rows=250 width=10)
+                  Output:["_col0","_col1"]
+                  Filter Operator [FIL_4] (rows=250 width=10)
+                    predicate:(key = '5')
+                    TableScan [TS_0] (rows=500 width=10)
+                      default@src,src,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+        Stage-0
+          Move Operator
+             Please refer to the previous Stage-1
+

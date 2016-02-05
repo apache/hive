@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.UndeclaredThrowableException;
@@ -36,6 +37,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.antlr.runtime.ClassicToken;
 import org.antlr.runtime.tree.TreeVisitor;
 import org.antlr.runtime.tree.TreeVisitorAction;
 import org.apache.calcite.plan.RelOptCluster;
@@ -96,6 +98,7 @@ import org.apache.calcite.util.CompositeList;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.ImmutableIntList;
 import org.apache.calcite.util.Pair;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveConf.StrictChecks;
@@ -110,6 +113,7 @@ import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
@@ -185,6 +189,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
+import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
@@ -493,6 +498,54 @@ public class CalcitePlanner extends SemanticAnalyzer {
   @Override
   boolean continueJoinMerge() {
     return !(runCBO && disableSemJoinReordering);
+  }
+
+  @Override
+  Table materializeCTE(String cteName, CTEClause cte) throws HiveException {
+
+    ASTNode createTable = new ASTNode(new ClassicToken(HiveParser.TOK_CREATETABLE));
+
+    ASTNode tableName = new ASTNode(new ClassicToken(HiveParser.TOK_TABNAME));
+    tableName.addChild(new ASTNode(new ClassicToken(HiveParser.Identifier, cteName)));
+
+    ASTNode temporary = new ASTNode(new ClassicToken(HiveParser.KW_TEMPORARY, MATERIALIZATION_MARKER));
+
+    createTable.addChild(tableName);
+    createTable.addChild(temporary);
+    createTable.addChild(cte.cteNode);
+
+    CalcitePlanner analyzer = new CalcitePlanner(conf);
+    analyzer.initCtx(ctx);
+    analyzer.init(false);
+
+    // should share cte contexts
+    analyzer.aliasToCTEs.putAll(aliasToCTEs);
+
+    HiveOperation operation = SessionState.get().getHiveOperation();
+    try {
+      analyzer.analyzeInternal(createTable);
+    } finally {
+      SessionState.get().setCommandType(operation);
+    }
+
+    Table table = analyzer.tableDesc.toTable(conf);
+    Path location = table.getDataLocation();
+    try {
+      location.getFileSystem(conf).mkdirs(location);
+    } catch (IOException e) {
+      throw new HiveException(e);
+    }
+    table.setMaterializedTable(true);
+
+    LOG.info(cteName + " will be materialized into " + location);
+    cte.table = table;
+    cte.source = analyzer;
+
+    ctx.addMaterializedTable(cteName, table);
+    // For CalcitePlanner, store qualified name too
+    ctx.addMaterializedTable(table.getDbName() + "." + table.getTableName(), table);
+
+    return table;
   }
 
   @Override

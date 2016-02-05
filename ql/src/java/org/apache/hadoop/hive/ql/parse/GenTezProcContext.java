@@ -26,6 +26,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -84,7 +85,7 @@ public class GenTezProcContext implements NodeProcessorCtx{
   public Operator<? extends OperatorDesc> parentOfRoot;
 
   // sequence number is used to name vertices (e.g.: Map 1, Reduce 14, ...)
-  private int sequenceNumber = 0;
+  private AtomicInteger sequenceNumber;
 
   // tez task we're currently processing
   public TezTask currentTask;
@@ -200,12 +201,12 @@ public class GenTezProcContext implements NodeProcessorCtx{
     this.opMergeJoinWorkMap = new LinkedHashMap<Operator<?>, MergeJoinWork>();
     this.currentMergeJoinOperator = null;
     this.mapJoinToUnprocessedSmallTableReduceSinks = new HashMap<MapJoinOperator, Set<ReduceSinkOperator>>();
+    this.sequenceNumber = parseContext.getContext().getSequencer();
 
     rootTasks.add(currentTask);
   }
 
-  /** Not thread-safe. */
   public int nextSequenceNumber() {
-     return ++sequenceNumber;
+     return sequenceNumber.incrementAndGet();
   }
 }

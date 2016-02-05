@@ -51,6 +51,7 @@ public class FileSinkDesc extends AbstractOperatorDesc {
   private String compressType;
   private boolean multiFileSpray;
   private boolean temporary;
+  private boolean materialization;
   // Whether the files output by this FileSink can be merged, e.g. if they are to be put into a
   // bucketed or sorted table/partition they cannot be merged.
   private boolean canBeMerged;
@@ -239,6 +240,14 @@ public class FileSinkDesc extends AbstractOperatorDesc {
 
   public void setTemporary(boolean temporary) {
     this.temporary = temporary;
+  }
+
+  public boolean isMaterialization() {
+    return materialization;
+  }
+
+  public void setMaterialization(boolean materialization) {
+    this.materialization = materialization;
   }
 
 

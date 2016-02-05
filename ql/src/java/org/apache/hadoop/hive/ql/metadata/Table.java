@@ -18,9 +18,16 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -57,15 +64,8 @@ import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hive.common.util.ReflectionUtil;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A Hive Table: is a fundamental unit of data in Hive that shares a common schema/DDL.
@@ -94,6 +94,7 @@ public class Table implements Serializable {
 
   private transient TableSpec tableSpec;
 
+  private transient boolean materializedTable;
 
   /**
    * Used only for serialization.
@@ -336,6 +337,14 @@ public class Table implements Serializable {
       }
     }
     return outputFormatClass;
+  }
+
+  public boolean isMaterializedTable() {
+    return materializedTable;
+  }
+
+  public void setMaterializedTable(boolean materializedTable) {
+    this.materializedTable = materializedTable;
   }
 
   /**

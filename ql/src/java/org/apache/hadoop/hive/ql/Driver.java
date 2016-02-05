@@ -475,7 +475,7 @@ public class Driver implements CommandProcessor {
         sem.analyze(tree, ctx);
         hookCtx.update(sem);
         for (HiveSemanticAnalyzerHook hook : saHooks) {
-          hook.postAnalyze(hookCtx, sem.getRootTasks());
+          hook.postAnalyze(hookCtx, sem.getAllRootTasks());
         }
       } else {
         sem.analyze(tree, ctx);
@@ -598,7 +598,7 @@ public class Driver implements CommandProcessor {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     PrintStream ps = new PrintStream(baos);
     try {
-      List<Task<?>> rootTasks = sem.getRootTasks();
+      List<Task<?>> rootTasks = sem.getAllRootTasks();
       task.getJSONPlan(ps, astTree, rootTasks, sem.getFetchTask(), false, true, true);
       ret = baos.toString();
     } catch (Exception e) {
