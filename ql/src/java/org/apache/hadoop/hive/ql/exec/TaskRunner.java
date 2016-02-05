@@ -21,8 +21,11 @@ package org.apache.hadoop.hive.ql.exec;
 import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.session.OperationLog;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * TaskRunner implementation.
@@ -43,6 +46,8 @@ public class TaskRunner extends Thread {
   };
 
   protected Thread runner;
+
+  private static transient final Logger LOG = LoggerFactory.getLogger(TaskRunner.class);
 
   public TaskRunner(Task<? extends Serializable> tsk, TaskResult result) {
     this.tsk = tsk;
@@ -74,6 +79,13 @@ public class TaskRunner extends Thread {
       SessionState.start(ss);
       runSequential();
     } finally {
+      try {
+        // Call Hive.closeCurrent() that closes the HMS connection, causes
+        // HMS connection leaks otherwise.
+        Hive.closeCurrent();
+      } catch (Exception e) {
+        LOG.warn("Exception closing Metastore connection:" + e.getMessage());
+      }
       runner = null;
     }
   }
