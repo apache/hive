@@ -29,9 +29,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map.Entry;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -478,6 +478,24 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       splitPathWithNoSchema, false);
   }
 
+  private static boolean isMatch(String splitPath, String key) {
+    if (splitPath.equals(key)) {
+      return true;
+    }
+    // Take care of these cases:
+    //    splitPath:  hdfs://ns/user/hive/warehouse/src/data.txt
+    //    key:        [hdfs://ns]/user/hive/warehouse/src
+    //                [hdfs://ns]/user/hive/warehouse/src_2
+    //                [hdfs://ns]/user/hive/warehouse/src/
+    //                [hdfs://ns]/user/hive/warehouse/src/data.txt
+    key = StringUtils.removeEnd(key, "/");
+    int index = splitPath.indexOf(key);
+    if (index == -1) {
+      return false;
+    }
+    return splitPath.substring(index).equals(key) || splitPath.charAt(index+key.length()) == '/';
+  }
+
   protected void pushProjectionsAndFilters(JobConf jobConf, Class inputFormatClass,
       String splitPath, String splitPathWithNoSchema, boolean nonNative) {
     if (this.mrwork == null) {
@@ -507,8 +525,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         // subdirectories.  (Unlike non-native tables, prefix mixups don't seem
         // to be a potential problem here since we are always dealing with the
         // path to something deeper than the table location.)
-        match =
-          splitPath.startsWith(key) || splitPathWithNoSchema.startsWith(key);
+        match = isMatch(splitPath, key) || isMatch(splitPathWithNoSchema, key);
       }
       if (match) {
         ArrayList<String> list = entry.getValue();
