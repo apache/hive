@@ -1525,10 +1525,15 @@ public class SessionState {
       tezSessionState = null;
     }
 
-    closeSparkSession();
-    registry.closeCUDFLoaders();
-    dropSessionPaths(conf);
-    unCacheDataNucleusClassLoaders();
+    try {
+      closeSparkSession();
+      registry.closeCUDFLoaders();
+      dropSessionPaths(conf);
+      unCacheDataNucleusClassLoaders();
+    } finally {
+      // removes the threadlocal variables, closes underlying HMS connection
+      Hive.closeCurrent();
+    }
   }
 
   private void unCacheDataNucleusClassLoaders() {
