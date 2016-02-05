@@ -74,7 +74,7 @@ public final class PlainSaslHelper {
     throw new UnsupportedOperationException("Can't initialize class");
   }
 
-  private static final class PlainServerCallbackHandler implements CallbackHandler {
+  public static final class PlainServerCallbackHandler implements CallbackHandler {
 
     private final AuthMethods authMethod;
 

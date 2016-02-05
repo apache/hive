@@ -17,6 +17,8 @@
  */
 package org.apache.hive.service.auth;
 
+import static org.apache.hadoop.fs.CommonConfigurationKeys.HADOOP_SECURITY_AUTHENTICATION;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
@@ -28,8 +30,10 @@ import java.util.Map;
 
 import javax.net.ssl.SSLServerSocket;
 import javax.security.auth.login.LoginException;
+import javax.security.sasl.AuthenticationException;
 import javax.security.sasl.Sasl;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
@@ -47,6 +51,7 @@ import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.thrift.ThriftCLIService;
 import org.apache.thrift.TProcessorFactory;
 import org.apache.thrift.transport.TSSLTransportFactory;
+import org.apache.thrift.transport.TSaslServerTransport;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
@@ -87,6 +92,7 @@ public class HiveAuthFactory {
   private String authTypeStr;
   private final String transportMode;
   private final HiveConf conf;
+  private String hadoopAuth;
 
   public static final String HS2_PROXY_USER = "hive.server2.proxy.user";
   public static final String HS2_CLIENT_TOKEN = "hiveserver2ClientToken";
@@ -95,6 +101,10 @@ public class HiveAuthFactory {
     this.conf = conf;
     transportMode = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_TRANSPORT_MODE);
     authTypeStr = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_AUTHENTICATION);
+
+    // ShimLoader.getHadoopShims().isSecurityEnabled() will only check that·
+    // hadoopAuth is not simple, it does not guarantee it is kerberos
+    hadoopAuth = conf.get(HADOOP_SECURITY_AUTHENTICATION, "simple");
 
     // In http mode we use NOSASL as the default auth type
     if ("http".equalsIgnoreCase(transportMode)) {
@@ -105,7 +115,8 @@ public class HiveAuthFactory {
       if (authTypeStr == null) {
         authTypeStr = AuthTypes.NONE.getAuthName();
       }
-      if (authTypeStr.equalsIgnoreCase(AuthTypes.KERBEROS.getAuthName())) {
+      if (hadoopAuth.equalsIgnoreCase("kerberos") && !authTypeStr.equalsIgnoreCase(
+          AuthTypes.NOSASL.getAuthName())) {
         saslServer = ShimLoader.getHadoopThriftAuthBridge()
           .createServer(conf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB),
                         conf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL));
@@ -141,22 +152,40 @@ public class HiveAuthFactory {
 
   public TTransportFactory getAuthTransFactory() throws LoginException {
     TTransportFactory transportFactory;
-    if (authTypeStr.equalsIgnoreCase(AuthTypes.KERBEROS.getAuthName())) {
+    TSaslServerTransport.Factory serverTransportFactory;
+
+    if (hadoopAuth.equalsIgnoreCase("kerberos") && !authTypeStr.equalsIgnoreCase(
+          AuthTypes.NOSASL.getAuthName())) {
       try {
-        transportFactory = saslServer.createTransportFactory(getSaslProperties());
+        serverTransportFactory = saslServer.createSaslServerTransportFactory(
+            getSaslProperties());
       } catch (TTransportException e) {
         throw new LoginException(e.getMessage());
       }
-    } else if (authTypeStr.equalsIgnoreCase(AuthTypes.NONE.getAuthName())) {
-      transportFactory = PlainSaslHelper.getPlainTransportFactory(authTypeStr);
-    } else if (authTypeStr.equalsIgnoreCase(AuthTypes.LDAP.getAuthName())) {
-      transportFactory = PlainSaslHelper.getPlainTransportFactory(authTypeStr);
-    } else if (authTypeStr.equalsIgnoreCase(AuthTypes.PAM.getAuthName())) {
-      transportFactory = PlainSaslHelper.getPlainTransportFactory(authTypeStr);
+      if (authTypeStr.equalsIgnoreCase(AuthTypes.KERBEROS.getAuthName())) {
+        // no-op
+      } else if (authTypeStr.equalsIgnoreCase(AuthTypes.NONE.getAuthName()) || 
+          authTypeStr.equalsIgnoreCase(AuthTypes.LDAP.getAuthName()) ||
+          authTypeStr.equalsIgnoreCase(AuthTypes.PAM.getAuthName()) ||
+          authTypeStr.equalsIgnoreCase(AuthTypes.CUSTOM.getAuthName())) {
+        try {
+          serverTransportFactory.addServerDefinition("PLAIN",
+              authTypeStr, null, new HashMap<String, String>(),
+              new PlainSaslHelper.PlainServerCallbackHandler(authTypeStr));
+        } catch (AuthenticationException e) {
+          throw new LoginException ("Error setting callback handler" + e); 
+        }
+      } else {
+        throw new LoginException("Unsupported authentication type " + authTypeStr);
+      }
+      transportFactory = saslServer.wrapTransportFactory(serverTransportFactory);
+    } else if (authTypeStr.equalsIgnoreCase(AuthTypes.NONE.getAuthName()) ||
+          authTypeStr.equalsIgnoreCase(AuthTypes.LDAP.getAuthName()) ||
+          authTypeStr.equalsIgnoreCase(AuthTypes.PAM.getAuthName()) ||
+          authTypeStr.equalsIgnoreCase(AuthTypes.CUSTOM.getAuthName())) {
+       transportFactory = PlainSaslHelper.getPlainTransportFactory(authTypeStr);
     } else if (authTypeStr.equalsIgnoreCase(AuthTypes.NOSASL.getAuthName())) {
       transportFactory = new TTransportFactory();
-    } else if (authTypeStr.equalsIgnoreCase(AuthTypes.CUSTOM.getAuthName())) {
-      transportFactory = PlainSaslHelper.getPlainTransportFactory(authTypeStr);
     } else {
       throw new LoginException("Unsupported authentication type " + authTypeStr);
     }
