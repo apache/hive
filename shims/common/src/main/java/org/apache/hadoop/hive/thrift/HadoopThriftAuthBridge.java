@@ -369,6 +369,20 @@ public abstract class HadoopThriftAuthBridge {
 
     public TTransportFactory createTransportFactory(Map<String, String> saslProps)
         throws TTransportException {
+
+      TSaslServerTransport.Factory transFactory = createSaslServerTransportFactory(saslProps);
+
+      return new TUGIAssumingTransportFactory(transFactory, realUgi);
+    }
+
+    /**
+     * Create a TSaslServerTransport.Factory that, upon connection of a client
+     * socket, negotiates a Kerberized SASL transport. 
+     *
+     * @param saslProps Map of SASL properties
+     */
+    public TSaslServerTransport.Factory createSaslServerTransportFactory(
+        Map<String, String> saslProps) throws TTransportException {
       // Parse out the kerberos principal, host, realm.
       String kerberosName = realUgi.getUserName();
       final String names[] = SaslRpcServer.splitKerberosName(kerberosName);
@@ -386,6 +400,15 @@ public abstract class HadoopThriftAuthBridge {
           null, SaslRpcServer.SASL_DEFAULT_REALM,
           saslProps, new SaslDigestCallbackHandler(secretManager));
 
+      return transFactory;
+    }
+
+    /**
+     * Wrap a TTransportFactory in such a way that, before processing any RPC, it
+     * assumes the UserGroupInformation of the user authenticated by
+     * the SASL transport.
+     */
+    public TTransportFactory wrapTransportFactory(TTransportFactory transFactory) {
       return new TUGIAssumingTransportFactory(transFactory, realUgi);
     }
 
