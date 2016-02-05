@@ -25,6 +25,7 @@ import org.apache.hive.service.ServiceUtils;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.ListIterator;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
@@ -74,11 +75,12 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
           if (groupTokens[i].contains(",") && groupTokens[i].contains("=")) {
             groupBases.add(groupTokens[i]);
           } else {
-            LOG.warn("Unexpected format for groupDNPattern..ignoring " + groupTokens[i]);
+            LOG.warn("Unexpected format for " + HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPDNPATTERN
+                         + "..ignoring " + groupTokens[i]);
           }
         }
       } else if (baseDN != null) {
-        groupBases.add("CN=%s," + baseDN);
+        groupBases.add("uid=%s," + baseDN);
       }
 
       if (groupFilterVal != null && groupFilterVal.trim().length() > 0) {
@@ -98,11 +100,12 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
           if (userTokens[i].contains(",") && userTokens[i].contains("=")) {
             userBases.add(userTokens[i]);
           } else {
-            LOG.warn("Unexpected format for userDNPattern..ignoring " + userTokens[i]);
+            LOG.warn("Unexpected format for " + HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_USERDNPATTERN
+                         + "..ignoring " + userTokens[i]);
           }
         }
       } else if (baseDN != null) {
-        userBases.add("CN=%s," + baseDN);
+        userBases.add("uid=%s," + baseDN);
       }
 
       if (userFilterVal != null && userFilterVal.trim().length() > 0) {
@@ -137,27 +140,44 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
           " a null or blank password has been provided");
     }
 
-    // setup the security principal
-    String bindDN;
-    if (baseDN == null) {
-      bindDN = user;
-    } else {
-      bindDN = "uid=" + user + "," + baseDN;
-    }
-
     env.put(Context.SECURITY_AUTHENTICATION, "simple");
-    env.put(Context.SECURITY_PRINCIPAL, user);
     env.put(Context.SECURITY_CREDENTIALS, password);
 
-    LOG.debug("Connecting using principal=" + user + " at url=" + ldapURL);
-
-    DirContext ctx = null;
-    String userDN = null;
+    // setup the security principal
+    String bindDN   = null;
+    DirContext ctx  = null;
+    String userDN   = null;
     String userName = null;
-    try {
-      // Create initial context
-      ctx = new InitialDirContext(env);
+    Exception ex    = null;
 
+    if (!isDN(user) && !hasDomain(user) && userBases.size() > 0) {
+      ListIterator<String> listIter = userBases.listIterator();
+      while (listIter.hasNext()) {
+        try {
+          bindDN = listIter.next().replaceAll("%s", user);
+          env.put(Context.SECURITY_PRINCIPAL, bindDN);
+          LOG.debug("Connecting using principal=" + user + " at url=" + ldapURL);
+          ctx = new InitialDirContext(env);
+          break;
+        } catch (NamingException e) {
+          ex = e;
+        }
+      }
+    } else {
+      env.put(Context.SECURITY_PRINCIPAL, user);
+      LOG.debug("Connecting using principal=" + user + " at url=" + ldapURL);
+      try {
+        ctx = new InitialDirContext(env);
+      } catch (NamingException e) {
+        ex = e;
+      }
+    }
+
+    if (ctx == null) {
+      throw new AuthenticationException("LDAP Authentication failed for user", ex);
+    }
+
+    try {
       if (isDN(user) || hasDomain(user)) {
         userName = extractName(user);
       } else {
@@ -166,7 +186,7 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
 
       if (userFilter == null && groupFilter == null && customQuery == null && userBases.size() > 0) {
         if (isDN(user)) {
-          userDN = findUserDNByDN(ctx, userName);
+          userDN = findUserDNByDN(ctx, user);
         } else {
           if (userDN == null) {
             userDN = findUserDNByPattern(ctx, userName);
@@ -350,14 +370,14 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
     SearchResult searchResult = null;
     NamingEnumeration<SearchResult> results;
 
-    String[] returnAttributes     = { DN_ATTR };
+    String[] returnAttributes     = new String[0]; // empty set
     SearchControls searchControls = new SearchControls();
 
     searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
     searchControls.setReturningAttributes(returnAttributes);
 
     for (String node : nodes) {
-      searchFilter = "(" + DN_ATTR + "=" + node.replaceAll("%s", name) + ")";
+      searchFilter = "(" + (node.substring(0,node.indexOf(","))).replaceAll("%s", name) + ")";
       searchBase   = node.split(",",2)[1];
       results      = ctx.search(searchBase, searchFilter, searchControls);
 
@@ -368,7 +388,7 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
           LOG.warn("Matched multiple entities for the name: " + name);
           return null;
         }
-        return (String)searchResult.getAttributes().get(DN_ATTR).get();
+        return searchResult.getNameInNamespace();
       }
     }
     return null;
@@ -389,7 +409,11 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
    */
   public static String findUserDNByName(DirContext ctx, String baseDN, String userName)
       throws NamingException {
-    String baseFilter    = "(&(|(objectClass=person)(objectClass=user))";
+    if (baseDN == null) {
+      return null;
+    }
+
+    String baseFilter    = "(&(|(objectClass=person)(objectClass=user)(objectClass=inetOrgPerson))";
     String suffix[]      = new String[] {
                              "(|(uid=" + userName + ")(sAMAccountName=" + userName + ")))",
                              "(|(cn=*" + userName + "*)))"
@@ -436,8 +460,10 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
 
     String baseDN        = extractBaseDN(userDN);
     List<String> results = null;
-    String searchFilter  = "(&(|(objectClass=person)(objectClass=user))(" + DN_ATTR + "="
-                             + userDN + "))";
+    // we are using the first part of the userDN in the search criteria.
+    // We know the DN is legal as we are able to bind with it, this is to confirm that its a user.
+    String searchFilter  = "(&(|(objectClass=person)(objectClass=user)(objectClass=inetOrgPerson))("
+                             +  userDN.substring(0,userDN.indexOf(",")) + "))";
 
     results = findDNByName(ctx, baseDN, searchFilter, 2);
 
@@ -450,7 +476,7 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
       LOG.info("Matched multiple users for the user: " + userDN + ",returning null");
       return null;
     }
-    return userDN;
+    return results.get(0);
   }
 
   public static List<String> findDNByName(DirContext ctx, String baseDN,
@@ -459,7 +485,7 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
     List<String> retValues        = null;
     String matchedDN              = null;
     SearchControls searchControls = new SearchControls();
-    String[] returnAttributes     = { DN_ATTR };
+    String[] returnAttributes     = new String[0]; //empty set
 
     searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
     searchControls.setReturningAttributes(returnAttributes);
@@ -470,7 +496,7 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
     NamingEnumeration<SearchResult> results = ctx.search(baseDN, searchString, searchControls);
     while(results.hasMoreElements()) {
       searchResult = results.nextElement();
-      matchedDN    = (String)searchResult.getAttributes().get(DN_ATTR).get();
+      matchedDN    = searchResult.getNameInNamespace();
 
       if (retValues == null) {
         retValues = new ArrayList<String>();
@@ -550,7 +576,7 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
       throws NamingException {
     SearchControls searchControls = new SearchControls();
     List<String> list             = new ArrayList<String>();
-    String[] returnAttributes     = { DN_ATTR };
+    String[] returnAttributes     = new String[0]; //empty set
 
     searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
     searchControls.setReturningAttributes(returnAttributes);
@@ -560,7 +586,7 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
     SearchResult searchResult = null;
     while(results.hasMoreElements()) {
       searchResult = results.nextElement();
-      list.add((String)searchResult.getAttributes().get(DN_ATTR).get());
+      list.add(searchResult.getNameInNamespace());
       LOG.debug("LDAPAtn:executeLDAPQuery()::Return set size " + list.get(list.size() - 1));
     }
     return list;
