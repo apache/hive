@@ -106,7 +106,7 @@ class EncodedReaderImpl implements EncodedReader {
   private ByteBufferAllocatorPool pool;
   private boolean isDebugTracingEnabled;
 
-  public EncodedReaderImpl(long fileId, List<OrcProto.Type> types, CompressionCodec codec,
+  public EncodedReaderImpl(Long fileId, List<OrcProto.Type> types, CompressionCodec codec,
       int bufferSize, long strideRate, DataCache cache, DataReader dataReader, PoolFactory pf)
           throws IOException {
     this.fileId = fileId;

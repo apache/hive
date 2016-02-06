@@ -394,8 +394,8 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
             counters.incrCounter(Counter.METADATA_CACHE_MISS);
             ensureMetadataReader();
             long startTimeHdfs = counters.startTimeCounter();
-            stripeMetadata = new OrcStripeMetadata(
-                stripeKey, metadataReader, stripe, stripeIncludes, sargColumns);
+            stripeMetadata = new OrcStripeMetadata(new OrcBatchKey(fileId, stripeIx, 0),
+                metadataReader, stripe, stripeIncludes, sargColumns);
             counters.incrTimeCounter(Counter.HDFS_TIME_US, startTimeHdfs);
             if (hasFileId && metadataCache != null) {
               stripeMetadata = metadataCache.putStripeMetadata(stripeMetadata);
@@ -403,9 +403,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
                 LlapIoImpl.LOG.info("Caching stripe " + stripeKey.stripeIx
                     + " metadata with includes: " + DebugUtils.toString(stripeIncludes));
               }
-              stripeKey = new OrcBatchKey(fileId, -1, 0);
             }
-
           }
           consumer.setStripeMetadata(stripeMetadata);
         }
@@ -658,7 +656,8 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
         StripeInformation si = fileMetadata.getStripes().get(stripeIx);
         if (value == null) {
           long startTime = counters.startTimeCounter();
-          value = new OrcStripeMetadata(stripeKey, metadataReader, si, globalInc, sargColumns);
+          value = new OrcStripeMetadata(new OrcBatchKey(fileId, stripeIx, 0),
+              metadataReader, si, globalInc, sargColumns);
           counters.incrTimeCounter(Counter.HDFS_TIME_US, startTime);
           if (hasFileId && metadataCache != null) {
             value = metadataCache.putStripeMetadata(value);
@@ -666,8 +665,6 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
               LlapIoImpl.LOG.info("Caching stripe " + stripeKey.stripeIx
                   + " metadata with includes: " + DebugUtils.toString(globalInc));
             }
-            // Create new key object to reuse for gets; we've used the old one to put in cache.
-            stripeKey = new OrcBatchKey(fileId, 0, 0);
           }
         }
         // We might have got an old value from cache; recheck it has indexes.
