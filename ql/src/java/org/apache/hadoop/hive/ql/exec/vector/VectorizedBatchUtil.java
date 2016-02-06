@@ -160,6 +160,41 @@ public class VectorizedBatchUtil {
                 + primitiveTypeInfo.getPrimitiveCategory());
         }
       }
+    case STRUCT:
+      {
+        StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
+        List<TypeInfo> typeInfoList = structTypeInfo.getAllStructFieldTypeInfos();
+        ColumnVector[] children = new ColumnVector[typeInfoList.size()];
+        for(int i=0; i < children.length; ++i) {
+          children[i] =
+              createColumnVector(typeInfoList.get(i));
+        }
+        return new StructColumnVector(VectorizedRowBatch.DEFAULT_SIZE,
+            children);
+      }
+    case UNION:
+      {
+        UnionTypeInfo unionTypeInfo = (UnionTypeInfo) typeInfo;
+        List<TypeInfo> typeInfoList = unionTypeInfo.getAllUnionObjectTypeInfos();
+        ColumnVector[] children = new ColumnVector[typeInfoList.size()];
+        for(int i=0; i < children.length; ++i) {
+          children[i] = createColumnVector(typeInfoList.get(i));
+        }
+        return new UnionColumnVector(VectorizedRowBatch.DEFAULT_SIZE, children);
+      }
+    case LIST:
+      {
+        ListTypeInfo listTypeInfo = (ListTypeInfo) typeInfo;
+        return new ListColumnVector(VectorizedRowBatch.DEFAULT_SIZE,
+            createColumnVector(listTypeInfo.getListElementTypeInfo()));
+      }
+    case MAP:
+      {
+        MapTypeInfo mapTypeInfo = (MapTypeInfo) typeInfo;
+        return new MapColumnVector(VectorizedRowBatch.DEFAULT_SIZE,
+            createColumnVector(mapTypeInfo.getMapKeyTypeInfo()),
+            createColumnVector(mapTypeInfo.getMapValueTypeInfo()));
+      }
     default:
       throw new RuntimeException("Vectorization is not supported for datatype:"
           + typeInfo.getCategory());
@@ -532,6 +567,48 @@ public class VectorizedBatchUtil {
     return typeInfoList.toArray(new TypeInfo[0]);
   }
 
+  static ColumnVector cloneColumnVector(ColumnVector source
+                                        ) throws HiveException{
+    if (source instanceof LongColumnVector) {
+      return new LongColumnVector(((LongColumnVector) source).vector.length);
+    } else if (source instanceof DoubleColumnVector) {
+      return new DoubleColumnVector(((DoubleColumnVector) source).vector.length);
+    } else if (source instanceof BytesColumnVector) {
+      return new BytesColumnVector(((BytesColumnVector) source).vector.length);
+    } else if (source instanceof DecimalColumnVector) {
+      DecimalColumnVector decColVector = (DecimalColumnVector) source;
+      return new DecimalColumnVector(decColVector.vector.length,
+          decColVector.precision,
+          decColVector.scale);
+    } else if (source instanceof ListColumnVector) {
+      ListColumnVector src = (ListColumnVector) source;
+      ColumnVector child = cloneColumnVector(src.child);
+      return new ListColumnVector(src.offsets.length, child);
+    } else if (source instanceof MapColumnVector) {
+      MapColumnVector src = (MapColumnVector) source;
+      ColumnVector keys = cloneColumnVector(src.keys);
+      ColumnVector values = cloneColumnVector(src.values);
+      return new MapColumnVector(src.offsets.length, keys, values);
+    } else if (source instanceof StructColumnVector) {
+      StructColumnVector src = (StructColumnVector) source;
+      ColumnVector[] copy = new ColumnVector[src.fields.length];
+      for(int i=0; i < copy.length; ++i) {
+        copy[i] = cloneColumnVector(src.fields[i]);
+      }
+      return new StructColumnVector(VectorizedRowBatch.DEFAULT_SIZE, copy);
+    } else if (source instanceof UnionColumnVector) {
+      UnionColumnVector src = (UnionColumnVector) source;
+      ColumnVector[] copy = new ColumnVector[src.fields.length];
+      for(int i=0; i < copy.length; ++i) {
+        copy[i] = cloneColumnVector(src.fields[i]);
+      }
+      return new UnionColumnVector(src.tags.length, copy);
+    } else
+      throw new HiveException("Column vector class " +
+          source.getClass().getName() +
+          " is not supported!");
+  }
+
   /**
    * Make a new (scratch) batch, which is exactly "like" the batch provided, except that it's empty
    * @param batch the batch to imitate
@@ -541,23 +618,8 @@ public class VectorizedBatchUtil {
   public static VectorizedRowBatch makeLike(VectorizedRowBatch batch) throws HiveException {
     VectorizedRowBatch newBatch = new VectorizedRowBatch(batch.numCols);
     for (int i = 0; i < batch.numCols; i++) {
-      ColumnVector colVector = batch.cols[i];
-      if (colVector != null) {
-        ColumnVector newColVector;
-        if (colVector instanceof LongColumnVector) {
-          newColVector = new LongColumnVector();
-        } else if (colVector instanceof DoubleColumnVector) {
-          newColVector = new DoubleColumnVector();
-        } else if (colVector instanceof BytesColumnVector) {
-          newColVector = new BytesColumnVector();
-        } else if (colVector instanceof DecimalColumnVector) {
-          DecimalColumnVector decColVector = (DecimalColumnVector) colVector;
-          newColVector = new DecimalColumnVector(decColVector.precision, decColVector.scale);
-        } else {
-          throw new HiveException("Column vector class " + colVector.getClass().getName() +
-          " is not supported!");
-        }
-        newBatch.cols[i] = newColVector;
+      if (batch.cols[i] != null) {
+        newBatch.cols[i] = cloneColumnVector(batch.cols[i]);
         newBatch.cols[i].init();
       }
     }
