@@ -788,6 +788,7 @@ Release Notes - Hive - Version 2.0.0
     * [HIVE-12785] - View with union type and UDF to `cast` the struct is broken
     * [HIVE-12786] - CBO may fail for recoverable errors
     * [HIVE-12788] - Setting hive.optimize.union.remove to TRUE will break UNION ALL with aggregate functions
+    * [HIVE-12790] - Metastore connection leaks in HiveServer2
     * [HIVE-12794] - LLAP cannot run queries against HBase due to missing HBase jars
     * [HIVE-12797] - Synchronization issues with tez/llap session pool in hs2
     * [HIVE-12800] - HiveFilterSetOpTransposeRule might be executed over non deterministic filter predicates
@@ -814,7 +815,6 @@ Release Notes - Hive - Version 2.0.0
     * [HIVE-12947] - SMB join in tez has ClassCastException when container reuse is on
     * [HIVE-12964] - TestOperationLoggingAPIWithMr,TestOperationLoggingAPIWithTez fail on branch-2.0 (with Java 7, at least)
     * [HIVE-12985] - distribution configs are wrong and out of date
-
 
 
 
