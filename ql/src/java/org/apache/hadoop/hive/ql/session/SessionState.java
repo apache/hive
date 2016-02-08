@@ -551,6 +551,12 @@ public class SessionState {
           throw new RuntimeException(e);
         }
       }
+    } catch (RuntimeException e) {
+      throw e;
+    } catch (Hive.SchemaException e) {
+      RuntimeException ex = new RuntimeException(e.getMessage());
+      ex.setStackTrace(new StackTraceElement[0]);
+      throw ex;
     } catch (Exception e) {
       // Catch-all due to some exec time dependencies on session state
       // that would cause ClassNoFoundException otherwise
