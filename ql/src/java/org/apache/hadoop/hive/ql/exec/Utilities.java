@@ -2917,10 +2917,7 @@ public final class Utilities {
   public static List<Path> getInputPathsTez(JobConf job, MapWork work) throws Exception {
     String scratchDir = job.get(DagUtils.TEZ_TMP_DIR_KEY);
 
-    // we usually don't want to create dummy files for tez, however the metadata only
-    // optimization relies on it.
-    List<Path> paths = getInputPaths(job, work, new Path(scratchDir), null,
-        !work.isUseOneNullRowInputFormat());
+    List<Path> paths = getInputPaths(job, work, new Path(scratchDir), null, true);
 
     return paths;
   }

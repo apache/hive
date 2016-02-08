@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.io;
 
 import java.io.IOException;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
@@ -31,15 +33,21 @@ import org.apache.hadoop.mapred.Reporter;
  * metadata only queries.
  *
  */
-public class OneNullRowInputFormat extends NullRowsInputFormat {
+public class OneNullRowInputFormat extends NullRowsInputFormat
+  implements VectorizedInputFormatInterface {
 
+  @SuppressWarnings("unchecked")
   @Override
-  public RecordReader<NullWritable, NullWritable> getRecordReader(InputSplit arg0,
-      JobConf arg1, Reporter arg2) throws IOException {
-    return new OneNullRowRecordReader();
+  public RecordReader<NullWritable, NullWritable> getRecordReader(InputSplit split,
+      JobConf conf, Reporter arg2) throws IOException {
+    return new OneNullRowRecordReader(conf, split);
   }
 
   public static class OneNullRowRecordReader extends NullRowsRecordReader {
+    public OneNullRowRecordReader(Configuration conf, InputSplit split) throws IOException {
+      super(conf, split);
+    }
+
     private boolean processed;
 
     @Override
@@ -53,11 +61,14 @@ public class OneNullRowInputFormat extends NullRowsInputFormat {
     }
 
     @Override
-    public boolean next(NullWritable key, NullWritable value) throws IOException {
+    public boolean next(Object key, Object value) throws IOException {
       if (processed) {
         return false;
       }
       processed = true;
+      if (rbCtx != null) {
+        makeNullVrb(value, 1);
+      }
       return true;
     }
   }

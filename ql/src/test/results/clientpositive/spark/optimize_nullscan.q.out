@@ -274,9 +274,9 @@ STAGE PLANS:
                         tag: 0
                         auto parallelism: false
             Path -> Alias:
-              -mr-10003default.src{} [src]
+              nullscan://null/default.src/part_ [src]
             Path -> Partition:
-              -mr-10003default.src{} 
+              nullscan://null/default.src/part_ 
                 Partition
                   input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -320,7 +320,7 @@ STAGE PLANS:
                     name: default.src
                   name: default.src
             Truncated Path -> Alias:
-              -mr-10003default.src{} [src]
+              nullscan://null/default.src/part_ [src]
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -341,12 +341,12 @@ STAGE PLANS:
                         value expressions: _col0 (type: string)
                         auto parallelism: false
             Path -> Alias:
-              -mr-10004default.srcpart{ds=2008-04-08, hr=11} [srcpart]
-              -mr-10005default.srcpart{ds=2008-04-08, hr=12} [srcpart]
-              -mr-10006default.srcpart{ds=2008-04-09, hr=11} [srcpart]
-              -mr-10007default.srcpart{ds=2008-04-09, hr=12} [srcpart]
+              nullscan://null/default.srcpart/part_ds=2008-04-08_hr=11_ [srcpart]
+              nullscan://null/default.srcpart/part_ds=2008-04-08_hr=12_ [srcpart]
+              nullscan://null/default.srcpart/part_ds=2008-04-09_hr=11_ [srcpart]
+              nullscan://null/default.srcpart/part_ds=2008-04-09_hr=12_ [srcpart]
             Path -> Partition:
-              -mr-10004default.srcpart{ds=2008-04-08, hr=11} 
+              nullscan://null/default.srcpart/part_ds=2008-04-08_hr=11_ 
                 Partition
                   input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -391,7 +391,7 @@ STAGE PLANS:
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.srcpart
                   name: default.srcpart
-              -mr-10005default.srcpart{ds=2008-04-08, hr=12} 
+              nullscan://null/default.srcpart/part_ds=2008-04-08_hr=12_ 
                 Partition
                   input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -436,7 +436,7 @@ STAGE PLANS:
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.srcpart
                   name: default.srcpart
-              -mr-10006default.srcpart{ds=2008-04-09, hr=11} 
+              nullscan://null/default.srcpart/part_ds=2008-04-09_hr=11_ 
                 Partition
                   input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -481,7 +481,7 @@ STAGE PLANS:
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.srcpart
                   name: default.srcpart
-              -mr-10007default.srcpart{ds=2008-04-09, hr=12} 
+              nullscan://null/default.srcpart/part_ds=2008-04-09_hr=12_ 
                 Partition
                   input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -527,10 +527,10 @@ STAGE PLANS:
                     name: default.srcpart
                   name: default.srcpart
             Truncated Path -> Alias:
-              -mr-10004default.srcpart{ds=2008-04-08, hr=11} [srcpart]
-              -mr-10005default.srcpart{ds=2008-04-08, hr=12} [srcpart]
-              -mr-10006default.srcpart{ds=2008-04-09, hr=11} [srcpart]
-              -mr-10007default.srcpart{ds=2008-04-09, hr=12} [srcpart]
+              nullscan://null/default.srcpart/part_ds=2008-04-08_hr=11_ [srcpart]
+              nullscan://null/default.srcpart/part_ds=2008-04-08_hr=12_ [srcpart]
+              nullscan://null/default.srcpart/part_ds=2008-04-09_hr=11_ [srcpart]
+              nullscan://null/default.srcpart/part_ds=2008-04-09_hr=12_ [srcpart]
         Reducer 2 
             Needs Tagging: true
             Reduce Operator Tree:
@@ -694,9 +694,9 @@ STAGE PLANS:
                         value expressions: _col0 (type: bigint)
                         auto parallelism: false
             Path -> Alias:
-              -mr-10003default.src{} [src]
+              nullscan://null/default.src/part_ [src]
             Path -> Partition:
-              -mr-10003default.src{} 
+              nullscan://null/default.src/part_ 
                 Partition
                   input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -740,7 +740,7 @@ STAGE PLANS:
                     name: default.src
                   name: default.src
             Truncated Path -> Alias:
-              -mr-10003default.src{} [src]
+              nullscan://null/default.src/part_ [src]
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -1129,9 +1129,9 @@ STAGE PLANS:
                         value expressions: _col0 (type: string)
                         auto parallelism: false
             Path -> Alias:
-              -mr-10003default.src{} [src]
+              nullscan://null/default.src/part_ [src]
             Path -> Partition:
-              -mr-10003default.src{} 
+              nullscan://null/default.src/part_ 
                 Partition
                   input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1175,7 +1175,7 @@ STAGE PLANS:
                     name: default.src
                   name: default.src
             Truncated Path -> Alias:
-              -mr-10003default.src{} [src]
+              nullscan://null/default.src/part_ [src]
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -1196,12 +1196,12 @@ STAGE PLANS:
                         value expressions: _col0 (type: string)
                         auto parallelism: false
             Path -> Alias:
-              -mr-10004default.srcpart{ds=2008-04-08, hr=11} [srcpart]
-              -mr-10005default.srcpart{ds=2008-04-08, hr=12} [srcpart]
-              -mr-10006default.srcpart{ds=2008-04-09, hr=11} [srcpart]
-              -mr-10007default.srcpart{ds=2008-04-09, hr=12} [srcpart]
+              nullscan://null/default.srcpart/part_ds=2008-04-08_hr=11_ [srcpart]
+              nullscan://null/default.srcpart/part_ds=2008-04-08_hr=12_ [srcpart]
+              nullscan://null/default.srcpart/part_ds=2008-04-09_hr=11_ [srcpart]
+              nullscan://null/default.srcpart/part_ds=2008-04-09_hr=12_ [srcpart]
             Path -> Partition:
-              -mr-10004default.srcpart{ds=2008-04-08, hr=11} 
+              nullscan://null/default.srcpart/part_ds=2008-04-08_hr=11_ 
                 Partition
                   input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1246,7 +1246,7 @@ STAGE PLANS:
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.srcpart
                   name: default.srcpart
-              -mr-10005default.srcpart{ds=2008-04-08, hr=12} 
+              nullscan://null/default.srcpart/part_ds=2008-04-08_hr=12_ 
                 Partition
                   input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1291,7 +1291,7 @@ STAGE PLANS:
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.srcpart
                   name: default.srcpart
-              -mr-10006default.srcpart{ds=2008-04-09, hr=11} 
+              nullscan://null/default.srcpart/part_ds=2008-04-09_hr=11_ 
                 Partition
                   input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1336,7 +1336,7 @@ STAGE PLANS:
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.srcpart
                   name: default.srcpart
-              -mr-10007default.srcpart{ds=2008-04-09, hr=12} 
+              nullscan://null/default.srcpart/part_ds=2008-04-09_hr=12_ 
                 Partition
                   input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1382,10 +1382,10 @@ STAGE PLANS:
                     name: default.srcpart
                   name: default.srcpart
             Truncated Path -> Alias:
-              -mr-10004default.srcpart{ds=2008-04-08, hr=11} [srcpart]
-              -mr-10005default.srcpart{ds=2008-04-08, hr=12} [srcpart]
-              -mr-10006default.srcpart{ds=2008-04-09, hr=11} [srcpart]
-              -mr-10007default.srcpart{ds=2008-04-09, hr=12} [srcpart]
+              nullscan://null/default.srcpart/part_ds=2008-04-08_hr=11_ [srcpart]
+              nullscan://null/default.srcpart/part_ds=2008-04-08_hr=12_ [srcpart]
+              nullscan://null/default.srcpart/part_ds=2008-04-09_hr=11_ [srcpart]
+              nullscan://null/default.srcpart/part_ds=2008-04-09_hr=12_ [srcpart]
         Reducer 2 
             Needs Tagging: true
             Reduce Operator Tree:
@@ -1640,9 +1640,9 @@ STAGE PLANS:
                       tag: 0
                       auto parallelism: false
             Path -> Alias:
-              -mr-10003default.src{} [src]
+              nullscan://null/default.src/part_ [src]
             Path -> Partition:
-              -mr-10003default.src{} 
+              nullscan://null/default.src/part_ 
                 Partition
                   input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1686,7 +1686,7 @@ STAGE PLANS:
                     name: default.src
                   name: default.src
             Truncated Path -> Alias:
-              -mr-10003default.src{} [src]
+              nullscan://null/default.src/part_ [src]
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -1821,9 +1821,9 @@ STAGE PLANS:
                       value expressions: key (type: string)
                       auto parallelism: false
             Path -> Alias:
-              -mr-10003default.src{} [s1]
+              nullscan://null/default.src/part_ [s1]
             Path -> Partition:
-              -mr-10003default.src{} 
+              nullscan://null/default.src/part_ 
                 Partition
                   input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1867,7 +1867,7 @@ STAGE PLANS:
                     name: default.src
                   name: default.src
             Truncated Path -> Alias:
-              -mr-10003default.src{} [s1]
+              nullscan://null/default.src/part_ [s1]
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -1887,9 +1887,9 @@ STAGE PLANS:
                       value expressions: key (type: string)
                       auto parallelism: false
             Path -> Alias:
-              -mr-10004default.src{} [s2]
+              nullscan://null/default.src/part_ [s2]
             Path -> Partition:
-              -mr-10004default.src{} 
+              nullscan://null/default.src/part_ 
                 Partition
                   input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1933,7 +1933,7 @@ STAGE PLANS:
                     name: default.src
                   name: default.src
             Truncated Path -> Alias:
-              -mr-10004default.src{} [s2]
+              nullscan://null/default.src/part_ [s2]
         Reducer 2 
             Needs Tagging: true
             Reduce Operator Tree:
@@ -2047,9 +2047,9 @@ STAGE PLANS:
                         value expressions: _col0 (type: bigint)
                         auto parallelism: false
             Path -> Alias:
-              -mr-10003default.src{} [src]
+              nullscan://null/default.src/part_ [src]
             Path -> Partition:
-              -mr-10003default.src{} 
+              nullscan://null/default.src/part_ 
                 Partition
                   input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -2093,7 +2093,7 @@ STAGE PLANS:
                     name: default.src
                   name: default.src
             Truncated Path -> Alias:
-              -mr-10003default.src{} [src]
+              nullscan://null/default.src/part_ [src]
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:

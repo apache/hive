@@ -275,9 +275,8 @@ public class SplitGrouper {
                                        MapWork work) throws IOException {
     boolean retval = false;
     Path path = ((FileSplit) s).getPath();
-    PartitionDesc pd =
-        HiveFileFormatUtils.getPartitionDescFromPathRecursively(work.getPathToPartitionInfo(),
-            path, cache);
+    PartitionDesc pd = HiveFileFormatUtils.getPartitionDescFromPathRecursively(
+        work.getPathToPartitionInfo(), path, cache);
     String currentDeserializerClass = pd.getDeserializerClassName();
     Class<?> currentInputFormatClass = pd.getInputFileFormatClass();
 

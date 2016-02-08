@@ -330,10 +330,10 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
   private transient String partitionName ;
 
   @Override
-  public void setInputContext(String inputPath, String tableName, String partitionName) {
+  public void setInputContext(String tableName, String partitionName) {
     this.tableName = tableName;
     this.partitionName = partitionName;
-    super.setInputContext(inputPath, tableName, partitionName);
+    super.setInputContext(tableName, partitionName);
   }
 
   @Override

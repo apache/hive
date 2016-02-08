@@ -128,7 +128,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       if (inputSplit instanceof FileSplit) {
         return ((FileSplit) inputSplit).getPath();
       }
-      return new Path("");
+      throw new RuntimeException(inputSplit + " is not a FileSplit");
     }
 
     /** The position of the first byte in the file to process. */
@@ -282,7 +282,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       throw new IOException("cannot find class " + inputFormatClassName, e);
     }
 
-    if (this.mrwork == null) {
+    if (this.mrwork == null || pathToPartitionInfo == null) {
       init(job);
     }
 

@@ -134,12 +134,12 @@ public class LlapDecider implements PhysicalPlanResolver {
       throws SemanticException {
 
       if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_AUTO_ALLOW_UBER)) {
-	// let's see if we can go one step further and just uber this puppy
-	if (tezWork.getChildren(work).isEmpty()
-	    && work instanceof ReduceWork
-	    && ((ReduceWork) work).getNumReduceTasks() == 1) {
-	  work.setUberMode(true);
-	}
+        // let's see if we can go one step further and just uber this puppy
+        if (tezWork.getChildren(work).isEmpty()
+            && work instanceof ReduceWork
+            && ((ReduceWork) work).getNumReduceTasks() == 1) {
+          work.setUberMode(true);
+        }
       }
 
       // always mark as llap
@@ -158,10 +158,10 @@ public class LlapDecider implements PhysicalPlanResolver {
 
       // first we check if we *can* run in llap. If we need to use
       // user code to do so (script/udf) we don't.
-      if (work instanceof MapWork && ((MapWork)work).isUseOneNullRowInputFormat()) {
+      /*if (work instanceof MapWork && ((MapWork)work).isUseOneNullRowInputFormat()) {
         // LLAP doesn't support file-based splits that this forces.
         return false;
-      }
+      }*/
 
       if (!evaluateOperators(work)) {
         LOG.info("some operators cannot be run in llap");

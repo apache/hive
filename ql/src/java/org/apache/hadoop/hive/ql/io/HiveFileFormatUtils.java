@@ -365,12 +365,8 @@ public final class HiveFileFormatUtils {
 
     if (part == null
         && (ignoreSchema
-            || (dir.toUri().getScheme() == null || dir.toUri().getScheme().trim()
-            .equals(""))
-            || pathsContainNoScheme(pathToPartitionInfo)
-            )
-
-        ) {
+            || (dir.toUri().getScheme() == null || dir.toUri().getScheme().trim().equals(""))
+            || pathsContainNoScheme(pathToPartitionInfo))) {
 
       Map<String, PartitionDesc> newPathToPartitionInfo = null;
       if (cacheMap != null) {

@@ -529,7 +529,7 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
     for (Entry<Operator<?>, MapOpCtx> entry : contexts.entrySet()) {
       Operator<?> operator = entry.getKey();
       MapOpCtx context = entry.getValue();
-      operator.setInputContext(nominalPath, context.tableName, context.partName);
+      operator.setInputContext(context.tableName, context.partName);
     }
     currentCtxs = contexts.values().toArray(new MapOpCtx[contexts.size()]);
   }

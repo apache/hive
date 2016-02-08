@@ -224,10 +224,6 @@ public class DagUtils {
       inpFormat = BucketizedHiveInputFormat.class.getName();
     }
 
-    if (mapWork.isUseOneNullRowInputFormat()) {
-      inpFormat = CombineHiveInputFormat.class.getName();
-    }
-
     if (mapWork.getDummyTableScan()) {
       // hive input format doesn't handle the special condition of no paths + 1
       // split correctly.
@@ -599,8 +595,7 @@ public class DagUtils {
 
     // remember mapping of plan to input
     conf.set(Utilities.INPUT_NAME, mapWork.getName());
-    if (HiveConf.getBoolVar(conf, ConfVars.HIVE_AM_SPLIT_GENERATION)
-        && !mapWork.isUseOneNullRowInputFormat()) {
+    if (HiveConf.getBoolVar(conf, ConfVars.HIVE_AM_SPLIT_GENERATION)) {
 
       // set up the operator plan. (before setting up splits on the AM)
       Utilities.setMapWork(conf, mapWork, mrScratchDir, false);

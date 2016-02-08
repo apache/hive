@@ -42,7 +42,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
  */
 @SuppressWarnings({"serial"})
 public abstract class BaseWork extends AbstractOperatorDesc {
-  static final private Logger LOG = LoggerFactory.getLogger(BaseWork.class);
+  protected static final Logger LOG = LoggerFactory.getLogger(BaseWork.class);
 
   // dummyOps is a reference to all the HashTableDummy operators in the
   // plan. These have to be separately initialized when we setup a task.

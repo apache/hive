@@ -883,7 +883,6 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
   @Override
   public void process(Object row, int tag) throws HiveException {
     VectorizedRowBatch batch = (VectorizedRowBatch) row;
-
     if (batch.size > 0) {
       processingMode.processBatch(batch);
     }

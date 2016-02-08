@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.Map.Entry;
 import java.util.Stack;
 
@@ -37,6 +38,7 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
+import org.apache.hadoop.hive.ql.io.NullScanFileSystem;
 import org.apache.hadoop.hive.ql.io.OneNullRowInputFormat;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
@@ -104,13 +106,14 @@ public class NullScanTaskDispatcher implements Dispatcher {
       }
     }
     if (allowed.size() > 0) {
-      work.setUseOneNullRowInputFormat(true);
       PartitionDesc partDesc = work.getPathToPartitionInfo().get(path).clone();
       PartitionDesc newPartition = changePartitionToMetadataOnly(partDesc);
-      Path fakePath = new Path(physicalContext.getContext().getMRTmpPath()
-          + newPartition.getTableName() + encode(newPartition.getPartSpec()));
-      work.getPathToPartitionInfo().put(fakePath.getName(), newPartition);
-      work.getPathToAliases().put(fakePath.getName(), new ArrayList<String>(allowed));
+      // Prefix partition with something to avoid it being a hidden file.
+      Path fakePath = new Path(NullScanFileSystem.getBase() + newPartition.getTableName()
+          + "/part" + encode(newPartition.getPartSpec()));
+      String fakeStr = fakePath.toString();
+      work.getPathToPartitionInfo().put(fakeStr, newPartition);
+      work.getPathToAliases().put(fakeStr, new ArrayList<String>(allowed));
       aliasesAffected.removeAll(allowed);
       if (aliasesAffected.isEmpty()) {
         work.getPathToAliases().remove(path);
@@ -143,7 +146,7 @@ public class NullScanTaskDispatcher implements Dispatcher {
 
   // considered using URLEncoder, but it seemed too much
   private String encode(Map<String, String> partSpec) {
-    return partSpec.toString().replaceAll("[:/#\\?]", "_");
+    return partSpec.toString().replaceAll("[{}:/#\\?, ]+", "_");
   }
 
   @Override

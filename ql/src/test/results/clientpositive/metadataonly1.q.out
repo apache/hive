@@ -159,9 +159,9 @@ STAGE PLANS:
                   value expressions: _col0 (type: string)
                   auto parallelism: false
       Path -> Alias:
-        -mr-10004default.test1{ds=1} [test1]
+        nullscan://null/default.test1/part_ds=1_ [test1]
       Path -> Partition:
-        -mr-10004default.test1{ds=1} 
+        nullscan://null/default.test1/part_ds=1_ 
           Partition
             input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -201,7 +201,7 @@ STAGE PLANS:
               name: default.test1
             name: default.test1
       Truncated Path -> Alias:
-        -mr-10004default.test1{ds=1} [test1]
+        nullscan://null/default.test1/part_ds=1_ [test1]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -301,9 +301,9 @@ STAGE PLANS:
                   tag: -1
                   auto parallelism: false
       Path -> Alias:
-        -mr-10004default.test1{ds=1} [test1]
+        nullscan://null/default.test1/part_ds=1_ [test1]
       Path -> Partition:
-        -mr-10004default.test1{ds=1} 
+        nullscan://null/default.test1/part_ds=1_ 
           Partition
             input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -343,7 +343,7 @@ STAGE PLANS:
               name: default.test1
             name: default.test1
       Truncated Path -> Alias:
-        -mr-10004default.test1{ds=1} [test1]
+        nullscan://null/default.test1/part_ds=1_ [test1]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -622,10 +622,10 @@ STAGE PLANS:
                   value expressions: _col0 (type: string)
                   auto parallelism: false
       Path -> Alias:
-        -mr-10006default.test1{ds=1} [$hdt$_1:$hdt$_1:a2]
-        -mr-10007default.test1{ds=2} [$hdt$_1:$hdt$_1:a2]
+        nullscan://null/default.test1/part_ds=1_ [$hdt$_1:$hdt$_1:a2]
+        nullscan://null/default.test1/part_ds=2_ [$hdt$_1:$hdt$_1:a2]
       Path -> Partition:
-        -mr-10006default.test1{ds=1} 
+        nullscan://null/default.test1/part_ds=1_ 
           Partition
             input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -664,7 +664,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test1
             name: default.test1
-        -mr-10007default.test1{ds=2} 
+        nullscan://null/default.test1/part_ds=2_ 
           Partition
             input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -704,8 +704,8 @@ STAGE PLANS:
               name: default.test1
             name: default.test1
       Truncated Path -> Alias:
-        -mr-10006default.test1{ds=1} [$hdt$_1:$hdt$_1:a2]
-        -mr-10007default.test1{ds=2} [$hdt$_1:$hdt$_1:a2]
+        nullscan://null/default.test1/part_ds=1_ [$hdt$_1:$hdt$_1:a2]
+        nullscan://null/default.test1/part_ds=2_ [$hdt$_1:$hdt$_1:a2]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -1074,11 +1074,11 @@ STAGE PLANS:
                   tag: -1
                   auto parallelism: false
       Path -> Alias:
-        -mr-10004default.test2{ds=1, hr=1} [test2]
-        -mr-10005default.test2{ds=1, hr=2} [test2]
-        -mr-10006default.test2{ds=1, hr=3} [test2]
+        nullscan://null/default.test2/part_ds=1_hr=1_ [test2]
+        nullscan://null/default.test2/part_ds=1_hr=2_ [test2]
+        nullscan://null/default.test2/part_ds=1_hr=3_ [test2]
       Path -> Partition:
-        -mr-10004default.test2{ds=1, hr=1} 
+        nullscan://null/default.test2/part_ds=1_hr=1_ 
           Partition
             input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1118,7 +1118,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test2
             name: default.test2
-        -mr-10005default.test2{ds=1, hr=2} 
+        nullscan://null/default.test2/part_ds=1_hr=2_ 
           Partition
             input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1158,7 +1158,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test2
             name: default.test2
-        -mr-10006default.test2{ds=1, hr=3} 
+        nullscan://null/default.test2/part_ds=1_hr=3_ 
           Partition
             input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1199,9 +1199,9 @@ STAGE PLANS:
               name: default.test2
             name: default.test2
       Truncated Path -> Alias:
-        -mr-10004default.test2{ds=1, hr=1} [test2]
-        -mr-10005default.test2{ds=1, hr=2} [test2]
-        -mr-10006default.test2{ds=1, hr=3} [test2]
+        nullscan://null/default.test2/part_ds=1_hr=1_ [test2]
+        nullscan://null/default.test2/part_ds=1_hr=2_ [test2]
+        nullscan://null/default.test2/part_ds=1_hr=3_ [test2]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -1545,10 +1545,10 @@ STAGE PLANS:
                   value expressions: _col0 (type: string)
                   auto parallelism: false
       Path -> Alias:
-        -mr-10004default.test1{ds=1} [test1]
-        -mr-10005default.test1{ds=2} [test1]
+        nullscan://null/default.test1/part_ds=1_ [test1]
+        nullscan://null/default.test1/part_ds=2_ [test1]
       Path -> Partition:
-        -mr-10004default.test1{ds=1} 
+        nullscan://null/default.test1/part_ds=1_ 
           Partition
             input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1587,7 +1587,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test1
             name: default.test1
-        -mr-10005default.test1{ds=2} 
+        nullscan://null/default.test1/part_ds=2_ 
           Partition
             input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1627,8 +1627,8 @@ STAGE PLANS:
               name: default.test1
             name: default.test1
       Truncated Path -> Alias:
-        -mr-10004default.test1{ds=1} [test1]
-        -mr-10005default.test1{ds=2} [test1]
+        nullscan://null/default.test1/part_ds=1_ [test1]
+        nullscan://null/default.test1/part_ds=2_ [test1]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -1788,13 +1788,13 @@ STAGE PLANS:
                   tag: -1
                   auto parallelism: false
       Path -> Alias:
-        -mr-10004default.test2{ds=01_10_10, hr=01} [test2]
-        -mr-10005default.test2{ds=01_10_20, hr=02} [test2]
-        -mr-10006default.test2{ds=1, hr=1} [test2]
-        -mr-10007default.test2{ds=1, hr=2} [test2]
-        -mr-10008default.test2{ds=1, hr=3} [test2]
+        nullscan://null/default.test2/part_ds=01_10_10_hr=01_ [test2]
+        nullscan://null/default.test2/part_ds=01_10_20_hr=02_ [test2]
+        nullscan://null/default.test2/part_ds=1_hr=1_ [test2]
+        nullscan://null/default.test2/part_ds=1_hr=2_ [test2]
+        nullscan://null/default.test2/part_ds=1_hr=3_ [test2]
       Path -> Partition:
-        -mr-10004default.test2{ds=01_10_10, hr=01} 
+        nullscan://null/default.test2/part_ds=01_10_10_hr=01_ 
           Partition
             input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1834,7 +1834,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test2
             name: default.test2
-        -mr-10005default.test2{ds=01_10_20, hr=02} 
+        nullscan://null/default.test2/part_ds=01_10_20_hr=02_ 
           Partition
             input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1874,7 +1874,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test2
             name: default.test2
-        -mr-10006default.test2{ds=1, hr=1} 
+        nullscan://null/default.test2/part_ds=1_hr=1_ 
           Partition
             input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1914,7 +1914,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test2
             name: default.test2
-        -mr-10007default.test2{ds=1, hr=2} 
+        nullscan://null/default.test2/part_ds=1_hr=2_ 
           Partition
             input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1954,7 +1954,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test2
             name: default.test2
-        -mr-10008default.test2{ds=1, hr=3} 
+        nullscan://null/default.test2/part_ds=1_hr=3_ 
           Partition
             input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1995,11 +1995,11 @@ STAGE PLANS:
               name: default.test2
             name: default.test2
       Truncated Path -> Alias:
-        -mr-10004default.test2{ds=01_10_10, hr=01} [test2]
-        -mr-10005default.test2{ds=01_10_20, hr=02} [test2]
-        -mr-10006default.test2{ds=1, hr=1} [test2]
-        -mr-10007default.test2{ds=1, hr=2} [test2]
-        -mr-10008default.test2{ds=1, hr=3} [test2]
+        nullscan://null/default.test2/part_ds=01_10_10_hr=01_ [test2]
+        nullscan://null/default.test2/part_ds=01_10_20_hr=02_ [test2]
+        nullscan://null/default.test2/part_ds=1_hr=1_ [test2]
+        nullscan://null/default.test2/part_ds=1_hr=2_ [test2]
+        nullscan://null/default.test2/part_ds=1_hr=3_ [test2]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator

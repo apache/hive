@@ -1083,11 +1083,11 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   }
 
   // called by map operator. propagated recursively to single parented descendants
-  public void setInputContext(String inputPath, String tableName, String partitionName) {
+  public void setInputContext(String tableName, String partitionName) {
     if (childOperators != null) {
       for (Operator<? extends OperatorDesc> child : childOperators) {
         if (child.getNumParent() == 1) {
-          child.setInputContext(inputPath, tableName, partitionName);
+          child.setInputContext(tableName, partitionName);
         }
       }
     }

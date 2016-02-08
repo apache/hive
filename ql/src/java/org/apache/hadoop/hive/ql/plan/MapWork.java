@@ -115,8 +115,6 @@ public class MapWork extends BaseWork {
 
   private boolean useBucketizedHiveInputFormat;
 
-  private boolean useOneNullRowInputFormat;
-
   private boolean dummyTableScan = false;
 
   // used for dynamic partitioning
@@ -465,14 +463,6 @@ public class MapWork extends BaseWork {
 
   public void setUseBucketizedHiveInputFormat(boolean useBucketizedHiveInputFormat) {
     this.useBucketizedHiveInputFormat = useBucketizedHiveInputFormat;
-  }
-
-  public void setUseOneNullRowInputFormat(boolean useOneNullRowInputFormat) {
-    this.useOneNullRowInputFormat = useOneNullRowInputFormat;
-  }
-
-  public boolean isUseOneNullRowInputFormat() {
-    return useOneNullRowInputFormat;
   }
 
   public void setMapperCannotSpanPartns(boolean mapperCannotSpanPartns) {
