@@ -69,7 +69,7 @@ public final class FileDump {
   public static final String UNKNOWN = "UNKNOWN";
   public static final String SEPARATOR = Strings.repeat("_", 120) + "\n";
   public static final int DEFAULT_BLOCK_SIZE = 256 * 1024 * 1024;
-  public static final String DEFAULT_BACKUP_PATH = "/tmp";
+  public static final String DEFAULT_BACKUP_PATH = System.getProperty("java.io.tmpdir");
   public static final PathFilter HIDDEN_AND_SIDE_FILE_FILTER = new PathFilter() {
     public boolean accept(Path p) {
       String name = p.getName();
@@ -534,7 +534,7 @@ public final class FileDump {
       if (backup.equals(DEFAULT_BACKUP_PATH)) {
         backupDataPath = new Path(scheme, authority, DEFAULT_BACKUP_PATH + filePath);
       } else {
-        backupDataPath = new Path(backup + filePath);
+        backupDataPath = Path.mergePaths(new Path(backup), corruptPath);
       }
 
       // Move data file to backup path
