@@ -907,7 +907,7 @@ public class HiveConf extends Configuration {
   "Default file format for CREATE TABLE statement applied to managed tables only. External tables will be \n" +
   "created with format specified by hive.default.fileformat. Leaving this null will result in using hive.default.fileformat \n" +
   "for all tables."),
-    HIVEQUERYRESULTFILEFORMAT("hive.query.result.fileformat", "TextFile", new StringSet("TextFile", "SequenceFile", "RCfile"),
+    HIVEQUERYRESULTFILEFORMAT("hive.query.result.fileformat", "SequenceFile", new StringSet("TextFile", "SequenceFile", "RCfile"),
         "Default file format for storing result of the query."),
     HIVECHECKFILEFORMAT("hive.fileformat.check", true, "Whether to check file format or not when loading data files"),
 

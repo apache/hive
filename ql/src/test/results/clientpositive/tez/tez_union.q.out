@@ -47,8 +47,8 @@ STAGE PLANS:
                           compressed: false
                           Statistics: Num rows: 1050 Data size: 11155 Basic stats: COMPLETE Column stats: NONE
                           table:
-                              input format: org.apache.hadoop.mapred.TextInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Map 3 
             Map Operator Tree:
@@ -80,8 +80,8 @@ STAGE PLANS:
                       compressed: false
                       Statistics: Num rows: 1050 Data size: 11155 Basic stats: COMPLETE Column stats: NONE
                       table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Union 2 
             Vertex: Union 2
@@ -268,8 +268,8 @@ STAGE PLANS:
                   compressed: false
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Union 2 
             Vertex: Union 2
@@ -385,8 +385,8 @@ STAGE PLANS:
                           compressed: false
                           Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
                           table:
-                              input format: org.apache.hadoop.mapred.TextInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Map 4 
             Map Operator Tree:
@@ -415,8 +415,8 @@ STAGE PLANS:
                           compressed: false
                           Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
                           table:
-                              input format: org.apache.hadoop.mapred.TextInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Union 3 
             Vertex: Union 3
@@ -763,8 +763,8 @@ STAGE PLANS:
                   compressed: false
                   Statistics: Num rows: 3630 Data size: 38563 Basic stats: COMPLETE Column stats: NONE
                   table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Union 2 
             Vertex: Union 2
@@ -963,8 +963,8 @@ STAGE PLANS:
                           compressed: false
                           Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
                           table:
-                              input format: org.apache.hadoop.mapred.TextInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Map 3 
             Map Operator Tree:
@@ -1010,8 +1010,8 @@ STAGE PLANS:
                           compressed: false
                           Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
                           table:
-                              input format: org.apache.hadoop.mapred.TextInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Map 5 
             Map Operator Tree:
@@ -1146,8 +1146,8 @@ STAGE PLANS:
                         compressed: false
                         Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
                         table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Map 3 
             Map Operator Tree:
@@ -1173,8 +1173,8 @@ STAGE PLANS:
                         compressed: false
                         Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
                         table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Map 4 
             Map Operator Tree:
@@ -1282,8 +1282,8 @@ STAGE PLANS:
                         compressed: false
                         Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
                         table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Union 2 
             Vertex: Union 2

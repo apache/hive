@@ -157,8 +157,8 @@ STAGE PLANS:
                                     compressed: false
                                     Statistics: Num rows: 3 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                                     table:
-                                        input format: org.apache.hadoop.mapred.TextInputFormat
-                                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       Select Operator
                         expressions: av (type: array<string>)
@@ -196,8 +196,8 @@ STAGE PLANS:
                                       compressed: false
                                       Statistics: Num rows: 3 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                                       table:
-                                          input format: org.apache.hadoop.mapred.TextInputFormat
-                                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Map 2 
             Map Operator Tree:

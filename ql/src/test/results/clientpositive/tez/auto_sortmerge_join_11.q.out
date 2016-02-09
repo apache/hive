@@ -367,8 +367,8 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                   table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       properties:
                         columns _col0
                         columns.types bigint
@@ -679,8 +679,8 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                   table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       properties:
                         columns _col0
                         columns.types bigint
@@ -982,8 +982,8 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                   table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       properties:
                         columns _col0
                         columns.types bigint
@@ -1414,8 +1414,8 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                   table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       properties:
                         columns _col0
                         columns.types bigint

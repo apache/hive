@@ -104,8 +104,8 @@ STAGE PLANS:
                   compressed: false
                   Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
                   table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
@@ -132,6 +132,13 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
+238	2
+401	2
+98	2
+146	2
+311	2
+128	2
+278	2
 273	2
 224	2
 255	2
@@ -142,10 +149,3 @@ tst1	1
 66	2
 406	2
 150	2
-238	2
-401	2
-98	2
-146	2
-311	2
-128	2
-278	2

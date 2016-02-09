@@ -21,12 +21,12 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Edges:
         Map 1 <- Union 2 (CONTAINS)
         Map 4 <- Union 2 (CONTAINS)
         Map 5 <- Union 2 (CONTAINS)
         Reducer 3 <- Union 2 (SIMPLE_EDGE)
-#### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
@@ -93,8 +93,8 @@ STAGE PLANS:
                   compressed: false
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Union 2 
             Vertex: Union 2

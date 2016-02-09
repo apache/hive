@@ -130,8 +130,8 @@ $hdt$_0:srcpart
               compressed: false
               Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
               table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
 PREHOOK: query: EXPLAIN LOGICAL 
@@ -210,8 +210,8 @@ $hdt$_0:src
               compressed: false
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
 PREHOOK: query: EXPLAIN LOGICAL 
@@ -292,8 +292,8 @@ null-subquery1:$hdt$_0-subquery1:src
           compressed: false
           Statistics: Num rows: 2500 Data size: 26560 Basic stats: COMPLETE Column stats: NONE
           table:
-              input format: org.apache.hadoop.mapred.TextInputFormat
-              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 null-subquery2:$hdt$_0-subquery2:srcpart 
   TableScan (TS_2)
@@ -389,8 +389,8 @@ $hdt$_0:s1
                 compressed: false
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 $hdt$_1:s2 
   TableScan (TS_3)
@@ -535,8 +535,8 @@ $hdt$_0:srcpart
                 compressed: false
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 $hdt$_1:src2 
   TableScan (TS_3)
@@ -620,8 +620,8 @@ $hdt$_0:srcpart
                 compressed: false
                 Statistics: Num rows: 4400 Data size: 46745 Basic stats: COMPLETE Column stats: NONE
                 table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 $hdt$_1:src 
   TableScan (TS_3)
@@ -856,8 +856,8 @@ $hdt$_0:src
                         compressed: false
                         Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                         table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 $hdt$_1:src 
   TableScan (TS_7)

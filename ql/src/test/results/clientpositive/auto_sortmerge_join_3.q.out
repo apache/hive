@@ -221,8 +221,8 @@ STAGE PLANS:
             NumFilesPerFileSink: 1
 #### A masked pattern was here ####
             table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 properties:
                   columns _col0
                   columns.types bigint
@@ -395,8 +395,8 @@ STAGE PLANS:
             NumFilesPerFileSink: 1
 #### A masked pattern was here ####
             table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 properties:
                   columns _col0
                   columns.types bigint
@@ -779,8 +779,8 @@ STAGE PLANS:
             NumFilesPerFileSink: 1
 #### A masked pattern was here ####
             table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 properties:
                   columns _col0
                   columns.types bigint
@@ -1050,8 +1050,8 @@ STAGE PLANS:
             NumFilesPerFileSink: 1
 #### A masked pattern was here ####
             table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 properties:
                   columns _col0
                   columns.types bigint
@@ -1160,8 +1160,8 @@ STAGE PLANS:
             NumFilesPerFileSink: 1
 #### A masked pattern was here ####
             table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 properties:
                   columns _col0
                   columns.types bigint

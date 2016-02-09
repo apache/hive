@@ -723,8 +723,8 @@ STAGE PLANS:
             Statistics: Num rows: 500 Data size: 5301 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
             table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 properties:
                   columns _col0,_col1
                   columns.types int:string
@@ -1122,8 +1122,8 @@ STAGE PLANS:
             Statistics: Num rows: 500 Data size: 5301 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
             table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 properties:
                   columns _col0,_col1
                   columns.types int:string
@@ -1774,8 +1774,8 @@ STAGE PLANS:
             Statistics: Num rows: 500 Data size: 5301 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
             table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 properties:
                   columns _col0,_col1
                   columns.types int:string
@@ -2269,8 +2269,8 @@ STAGE PLANS:
             Statistics: Num rows: 500 Data size: 5301 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
             table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 properties:
                   columns _col0,_col1
                   columns.types int:string
@@ -2798,8 +2798,8 @@ STAGE PLANS:
             Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
             table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 properties:
                   columns _col0,_col1
                   columns.types int:string
@@ -3080,8 +3080,8 @@ STAGE PLANS:
             Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
             table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 properties:
                   columns _col0,_col1
                   columns.types int:string
@@ -3235,8 +3235,8 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
 #### A masked pattern was here ####
             table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 properties:
                   columns _col0,_col1
                   columns.types int:string
