@@ -417,6 +417,7 @@ Release Notes - Hive - Version 2.0.0
     * [HIVE-11466] - HIVE-10166 generates more data on hive.log causing Jenkins to fill all the disk.
     * [HIVE-11468] - Vectorize: Struct IN() clauses
     * [HIVE-11469] - Update doc for InstanceCache to clearly define the contract on the SeedObject
+    * [HIVE-11470] - NPE in DynamicPartFileRecordWriterContainer on null part-keys.
     * [HIVE-11472] - ORC StringDirectTreeReader is thrashing the GC due to byte[] allocation per row
     * [HIVE-11473] - Upgrade Spark dependency to 1.5 [Spark Branch]
     * [HIVE-11476] - TypeInfoParser cannot handle column names with spaces in them
@@ -565,6 +566,7 @@ Release Notes - Hive - Version 2.0.0
     * [HIVE-11990] - Loading data inpath from a temporary table dir fails on Windows
     * [HIVE-11995] - Remove repetitively setting permissions in insert/load overwrite partition
     * [HIVE-12004] - SDPO doesnt set colExprMap correctly on new RS
+    * [HIVE-12007] - Hive LDAP Authenticator should allow just Domain without baseDN (for AD)
     * [HIVE-12008] - Hive queries failing when using count(*) on column in view
     * [HIVE-12011] - unable to create temporary table using CTAS if regular table with that name already exists
     * [HIVE-12012] - select query on json table with map containing numeric values fails
@@ -815,6 +817,8 @@ Release Notes - Hive - Version 2.0.0
     * [HIVE-12947] - SMB join in tez has ClassCastException when container reuse is on
     * [HIVE-12964] - TestOperationLoggingAPIWithMr,TestOperationLoggingAPIWithTez fail on branch-2.0 (with Java 7, at least)
     * [HIVE-12985] - distribution configs are wrong and out of date
+    * [HIVE-13024] - schematool does not log anywhere
+
 
 
 
@@ -938,7 +942,7 @@ Release Notes - Hive - Version 2.0.0
     * [HIVE-12751] - Fix NVL explain syntax
     * [HIVE-12761] - Add stack trace servlet to HS2 web ui
     * [HIVE-12769] - LLAP: Pick up java_home from System properties for Slider
-
+    * [HIVE-13025] - need a better error message for when one needs to run schematool
 
 
 ** New Feature

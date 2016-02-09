@@ -44,6 +44,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.jdo.JDODataStoreException;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -3080,6 +3082,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  public static class SchemaException extends MetaException {
+    private static final long serialVersionUID = 1L;
+    public SchemaException(String message) {
+      super(message);
+    }
+  }
+
   /**
    * @return the metastore client for the current thread
    * @throws MetaException
@@ -3095,7 +3104,24 @@ private void constructOneLBLocationMap(FileStatus fSta,
         LOG.error(msg, e);
         throw new MetaException(msg + "\n" + StringUtils.stringifyException(e));
       }
-      metaStoreClient = createMetaStoreClient();
+      try {
+        metaStoreClient = createMetaStoreClient();
+      } catch (RuntimeException ex) {
+        Throwable t = ex.getCause();
+        while (t != null) {
+          if (t instanceof JDODataStoreException && t.getMessage() != null
+              && t.getMessage().contains("autoCreate")) {
+            LOG.error("Cannot initialize metastore due to autoCreate error", t);
+            // DataNucleus wants us to auto-create, but we shall do no such thing.
+            throw new SchemaException("Hive metastore database is not initialized. Please use "
+              + "schematool (e.g. ./schematool -initSchema -dbType ...) to create the schema. If "
+              + "needed, don't forget to include the option to auto-create the underlying database"
+              + " in your JDBC connection string (e.g. ?createDatabaseIfNotExist=true for mysql)");
+          }
+          t = t.getCause();
+        }
+        throw ex;
+      }
       String metaStoreUris = conf.getVar(HiveConf.ConfVars.METASTOREURIS);
       if (!org.apache.commons.lang3.StringUtils.isEmpty(metaStoreUris)) {
         // get a synchronized wrapper if the meta store is remote.
