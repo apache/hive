@@ -3804,12 +3804,18 @@ public final class Utilities {
 
     Map<String, ArrayList<String>> pa = mWork.getPathToAliases();
     if (pa != null) {
+      // common case: 1 table scan per map-work
+      // rare case: smb joins
+      HashSet<String> aliases = new HashSet<String>(1);
       List<Operator<? extends OperatorDesc>> ops =
-        new ArrayList<Operator<? extends OperatorDesc>>();
+          new ArrayList<Operator<? extends OperatorDesc>>();
       for (List<String> ls : pa.values()) {
         for (String a : ls) {
-          ops.add(mWork.getAliasToWork().get(a));
+          aliases.add(a);
         }
+      }
+      for (String a : aliases) {
+        ops.add(mWork.getAliasToWork().get(a));
       }
       createTmpDirs(conf, ops);
     }
