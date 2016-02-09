@@ -34,6 +34,7 @@ import org.apache.calcite.rel.metadata.Metadata;
 import org.apache.calcite.rel.metadata.ReflectiveRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMdUniqueKeys;
 import org.apache.calcite.rel.metadata.RelMetadataProvider;
+import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.util.BitSets;
@@ -59,15 +60,12 @@ public class HiveRelMdUniqueKeys {
    * Inferring Uniqueness for all columns is very expensive right now. The flip
    * side of doing this is, it only works post Field Trimming.
    */
-  public Set<ImmutableBitSet> getUniqueKeys(Project rel, boolean ignoreNulls) {
+  public Set<ImmutableBitSet> getUniqueKeys(Project rel, RelMetadataQuery mq, boolean ignoreNulls) {
 
     HiveTableScan tScan = getTableScan(rel.getInput(), false);
 
-    if ( tScan == null ) {
-      Function<RelNode, Metadata> fn = RelMdUniqueKeys.SOURCE.apply(
-          rel.getClass(), BuiltInMetadata.UniqueKeys.class);
-      return ((BuiltInMetadata.UniqueKeys) fn.apply(rel))
-          .getUniqueKeys(ignoreNulls);
+    if (tScan == null) {
+      return mq.getUniqueKeys(rel, ignoreNulls);
     }
 
     Map<Integer, Integer> posMap = new HashMap<Integer, Integer>();

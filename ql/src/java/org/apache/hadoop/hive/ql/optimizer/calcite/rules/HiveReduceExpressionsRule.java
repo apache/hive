@@ -128,7 +128,7 @@ public abstract class HiveReduceExpressionsRule extends RelOptRule {
       RexNode newConditionExp;
       boolean reduced;
       final RelOptPredicateList predicates =
-          RelMetadataQuery.getPulledUpPredicates(filter.getInput());
+          RelMetadataQuery.instance().getPulledUpPredicates(filter.getInput());
       if (reduceExpressions(filter, expList, predicates)) {
         assert expList.size() == 1;
         newConditionExp = expList.get(0);
@@ -242,7 +242,7 @@ public abstract class HiveReduceExpressionsRule extends RelOptRule {
         registry.registerVisited(this, project);
       }
       final RelOptPredicateList predicates =
-          RelMetadataQuery.getPulledUpPredicates(project.getInput());
+          RelMetadataQuery.instance().getPulledUpPredicates(project.getInput());
       final List<RexNode> expList =
           Lists.newArrayList(project.getProjects());
       if (reduceExpressions(project, expList, predicates)) {
@@ -273,10 +273,11 @@ public abstract class HiveReduceExpressionsRule extends RelOptRule {
       final HiveJoin join = call.rel(0);
       final List<RexNode> expList = Lists.newArrayList(join.getCondition());
       final int fieldCount = join.getLeft().getRowType().getFieldCount();
+      RelMetadataQuery mq = RelMetadataQuery.instance();
       final RelOptPredicateList leftPredicates =
-          RelMetadataQuery.getPulledUpPredicates(join.getLeft());
+          mq.getPulledUpPredicates(join.getLeft());
       final RelOptPredicateList rightPredicates =
-          RelMetadataQuery.getPulledUpPredicates(join.getRight());
+          mq.getPulledUpPredicates(join.getRight());
       final RelOptPredicateList predicates =
           leftPredicates.union(rightPredicates.shift(fieldCount));
       if (!reduceExpressions(join, expList, predicates)) {

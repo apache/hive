@@ -96,7 +96,7 @@ public class HiveSortJoinReduceRule extends RelOptRule {
     // Finally, if we do not reduce the input size, we bail out
     final int offset = sortLimit.offset == null ? 0 : RexLiteral.intValue(sortLimit.offset);
     if (offset + RexLiteral.intValue(sortLimit.fetch)
-            >= RelMetadataQuery.getRowCount(reducedInput)) {
+            >= RelMetadataQuery.instance().getRowCount(reducedInput)) {
       return false;
     }
 

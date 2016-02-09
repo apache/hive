@@ -78,7 +78,7 @@ public class HiveOnTezCostModel extends HiveCostModel {
 
   @Override
   public RelOptCost getScanCost(HiveTableScan ts) {
-    return algoUtils.computeScanCost(ts.getRows(), RelMetadataQuery.getAverageRowSize(ts));
+    return algoUtils.computeScanCost(ts.getRows(), RelMetadataQuery.instance().getAverageRowSize(ts));
   }
 
   @Override
@@ -86,8 +86,9 @@ public class HiveOnTezCostModel extends HiveCostModel {
     if (aggregate.isBucketedInput()) {
       return HiveCost.FACTORY.makeZeroCost();
     } else {
+      RelMetadataQuery mq = RelMetadataQuery.instance();
       // 1. Sum of input cardinalities
-      final Double rCount = RelMetadataQuery.getRowCount(aggregate.getInput());
+      final Double rCount = mq.getRowCount(aggregate.getInput());
       if (rCount == null) {
         return null;
       }
@@ -96,7 +97,7 @@ public class HiveOnTezCostModel extends HiveCostModel {
       // 3. IO cost = cost of writing intermediary results to local FS +
       //              cost of reading from local FS for transferring to GBy +
       //              cost of transferring map outputs to GBy operator
-      final Double rAverageSize = RelMetadataQuery.getAverageRowSize(aggregate.getInput());
+      final Double rAverageSize = mq.getAverageRowSize(aggregate.getInput());
       if (rAverageSize == null) {
         return null;
       }
@@ -128,9 +129,10 @@ public class HiveOnTezCostModel extends HiveCostModel {
 
     @Override
     public RelOptCost getCost(HiveJoin join) {
+      RelMetadataQuery mq = RelMetadataQuery.instance();
       // 1. Sum of input cardinalities
-      final Double leftRCount = RelMetadataQuery.getRowCount(join.getLeft());
-      final Double rightRCount = RelMetadataQuery.getRowCount(join.getRight());
+      final Double leftRCount = mq.getRowCount(join.getLeft());
+      final Double rightRCount = mq.getRowCount(join.getRight());
       if (leftRCount == null || rightRCount == null) {
         return null;
       }
@@ -151,8 +153,8 @@ public class HiveOnTezCostModel extends HiveCostModel {
       // 3. IO cost = cost of writing intermediary results to local FS +
       //              cost of reading from local FS for transferring to join +
       //              cost of transferring map outputs to Join operator
-      final Double leftRAverageSize = RelMetadataQuery.getAverageRowSize(join.getLeft());
-      final Double rightRAverageSize = RelMetadataQuery.getAverageRowSize(join.getRight());
+      final Double leftRAverageSize = mq.getAverageRowSize(join.getLeft());
+      final Double rightRAverageSize = mq.getAverageRowSize(join.getRight());
       if (leftRAverageSize == null || rightRAverageSize == null) {
         return null;
       }
@@ -187,8 +189,8 @@ public class HiveOnTezCostModel extends HiveCostModel {
       join.setJoinAlgorithm(TezCommonJoinAlgorithm.INSTANCE);
 
       final Double memoryWithinPhase =
-          RelMetadataQuery.cumulativeMemoryWithinPhase(join);
-      final Integer splitCount = RelMetadataQuery.splitCount(join);
+          RelMetadataQuery.instance().cumulativeMemoryWithinPhase(join);
+      final Integer splitCount = RelMetadataQuery.instance().splitCount(join);
       join.setJoinAlgorithm(oldAlgo);
 
       if (memoryWithinPhase == null || splitCount == null) {
@@ -238,9 +240,10 @@ public class HiveOnTezCostModel extends HiveCostModel {
 
     @Override
     public RelOptCost getCost(HiveJoin join) {
+      RelMetadataQuery mq = RelMetadataQuery.instance();
       // 1. Sum of input cardinalities
-      final Double leftRCount = RelMetadataQuery.getRowCount(join.getLeft());
-      final Double rightRCount = RelMetadataQuery.getRowCount(join.getRight());
+      final Double leftRCount = mq.getRowCount(join.getLeft());
+      final Double rightRCount = mq.getRowCount(join.getRight());
       if (leftRCount == null || rightRCount == null) {
         return null;
       }
@@ -251,7 +254,7 @@ public class HiveOnTezCostModel extends HiveCostModel {
               add(leftRCount).
               add(rightRCount).
               build();
-      ImmutableBitSet.Builder streamingBuilder = new ImmutableBitSet.Builder();
+      ImmutableBitSet.Builder streamingBuilder = ImmutableBitSet.builder();
       switch (join.getStreamingSide()) {
         case LEFT_RELATION:
           streamingBuilder.set(0);
@@ -266,8 +269,8 @@ public class HiveOnTezCostModel extends HiveCostModel {
       final double cpuCost = HiveAlgorithmsUtil.computeMapJoinCPUCost(cardinalities, streaming);
       // 3. IO cost = cost of transferring small tables to join node *
       //              degree of parallelism
-      final Double leftRAverageSize = RelMetadataQuery.getAverageRowSize(join.getLeft());
-      final Double rightRAverageSize = RelMetadataQuery.getAverageRowSize(join.getRight());
+      final Double leftRAverageSize = mq.getAverageRowSize(join.getLeft());
+      final Double rightRAverageSize = mq.getAverageRowSize(join.getRight());
       if (leftRAverageSize == null || rightRAverageSize == null) {
         return null;
       }
@@ -277,8 +280,8 @@ public class HiveOnTezCostModel extends HiveCostModel {
               build();
       JoinAlgorithm oldAlgo = join.getJoinAlgorithm();
       join.setJoinAlgorithm(TezMapJoinAlgorithm.INSTANCE);
-      final int parallelism = RelMetadataQuery.splitCount(join) == null
-              ? 1 : RelMetadataQuery.splitCount(join);
+      final int parallelism = mq.splitCount(join) == null
+              ? 1 : mq.splitCount(join);
       join.setJoinAlgorithm(oldAlgo);
       final double ioCost = algoUtils.computeMapJoinIOCost(relationInfos, streaming, parallelism);
       // 4. Result
@@ -322,7 +325,7 @@ public class HiveOnTezCostModel extends HiveCostModel {
         return null;
       }
       // If simple map join, the whole relation goes in memory
-      return RelMetadataQuery.cumulativeMemoryWithinPhase(inMemoryInput);
+      return RelMetadataQuery.instance().cumulativeMemoryWithinPhase(inMemoryInput);
     }
 
     @Override
@@ -376,7 +379,7 @@ public class HiveOnTezCostModel extends HiveCostModel {
       // What we need is a way to get buckets not splits
       JoinAlgorithm oldAlgo = join.getJoinAlgorithm();
       join.setJoinAlgorithm(TezBucketJoinAlgorithm.INSTANCE);
-      Integer buckets = RelMetadataQuery.splitCount(smallInput);
+      Integer buckets = RelMetadataQuery.instance().splitCount(smallInput);
       join.setJoinAlgorithm(oldAlgo);
 
       if (buckets == null) {
@@ -388,7 +391,7 @@ public class HiveOnTezCostModel extends HiveCostModel {
       for (int i=0; i<join.getInputs().size(); i++) {
         RelNode input = join.getInputs().get(i);
         // Is bucketJoin possible? We need correct bucketing
-        RelDistribution distribution = RelMetadataQuery.distribution(input);
+        RelDistribution distribution = RelMetadataQuery.instance().distribution(input);
         if (distribution.getType() != Type.HASH_DISTRIBUTED) {
           return false;
         }
@@ -401,9 +404,10 @@ public class HiveOnTezCostModel extends HiveCostModel {
 
     @Override
     public RelOptCost getCost(HiveJoin join) {
+      RelMetadataQuery mq = RelMetadataQuery.instance();
       // 1. Sum of input cardinalities
-      final Double leftRCount = RelMetadataQuery.getRowCount(join.getLeft());
-      final Double rightRCount = RelMetadataQuery.getRowCount(join.getRight());
+      final Double leftRCount = mq.getRowCount(join.getLeft());
+      final Double rightRCount = mq.getRowCount(join.getRight());
       if (leftRCount == null || rightRCount == null) {
         return null;
       }
@@ -414,7 +418,7 @@ public class HiveOnTezCostModel extends HiveCostModel {
               add(leftRCount).
               add(rightRCount).
               build();
-      ImmutableBitSet.Builder streamingBuilder = new ImmutableBitSet.Builder();
+      ImmutableBitSet.Builder streamingBuilder = ImmutableBitSet.builder();
       switch (join.getStreamingSide()) {
         case LEFT_RELATION:
           streamingBuilder.set(0);
@@ -429,8 +433,8 @@ public class HiveOnTezCostModel extends HiveCostModel {
       final double cpuCost = algoUtils.computeBucketMapJoinCPUCost(cardinalities, streaming);
       // 3. IO cost = cost of transferring small tables to join node *
       //              degree of parallelism
-      final Double leftRAverageSize = RelMetadataQuery.getAverageRowSize(join.getLeft());
-      final Double rightRAverageSize = RelMetadataQuery.getAverageRowSize(join.getRight());
+      final Double leftRAverageSize = mq.getAverageRowSize(join.getLeft());
+      final Double rightRAverageSize = mq.getAverageRowSize(join.getRight());
       if (leftRAverageSize == null || rightRAverageSize == null) {
         return null;
       }
@@ -441,8 +445,8 @@ public class HiveOnTezCostModel extends HiveCostModel {
       //TODO: No Of buckets is not same as no of splits
       JoinAlgorithm oldAlgo = join.getJoinAlgorithm();
       join.setJoinAlgorithm(TezBucketJoinAlgorithm.INSTANCE);
-      final int parallelism = RelMetadataQuery.splitCount(join) == null
-              ? 1 : RelMetadataQuery.splitCount(join);
+      final int parallelism = mq.splitCount(join) == null
+              ? 1 : mq.splitCount(join);
       join.setJoinAlgorithm(oldAlgo);
 
       final double ioCost = algoUtils.computeBucketMapJoinIOCost(relationInfos, streaming, parallelism);
@@ -483,8 +487,8 @@ public class HiveOnTezCostModel extends HiveCostModel {
       }
       // If bucket map join, only a split goes in memory
       final Double memoryInput =
-              RelMetadataQuery.cumulativeMemoryWithinPhase(inMemoryInput);
-      final Integer splitCount = RelMetadataQuery.splitCount(inMemoryInput);
+              RelMetadataQuery.instance().cumulativeMemoryWithinPhase(inMemoryInput);
+      final Integer splitCount = RelMetadataQuery.instance().splitCount(inMemoryInput);
       if (memoryInput == null || splitCount == null) {
         return null;
       }
@@ -543,7 +547,7 @@ public class HiveOnTezCostModel extends HiveCostModel {
           return false;
         }
         // Is smbJoin possible? We need correct bucketing
-        RelDistribution distribution = RelMetadataQuery.distribution(input);
+        RelDistribution distribution = RelMetadataQuery.instance().distribution(input);
         if (distribution.getType() != Type.HASH_DISTRIBUTED) {
           return false;
         }
@@ -556,9 +560,10 @@ public class HiveOnTezCostModel extends HiveCostModel {
 
     @Override
     public RelOptCost getCost(HiveJoin join) {
+      RelMetadataQuery mq = RelMetadataQuery.instance();
       // 1. Sum of input cardinalities
-      final Double leftRCount = RelMetadataQuery.getRowCount(join.getLeft());
-      final Double rightRCount = RelMetadataQuery.getRowCount(join.getRight());
+      final Double leftRCount = mq.getRowCount(join.getLeft());
+      final Double rightRCount = mq.getRowCount(join.getRight());
       if (leftRCount == null || rightRCount == null) {
         return null;
       }
@@ -569,7 +574,7 @@ public class HiveOnTezCostModel extends HiveCostModel {
               add(leftRCount).
               add(rightRCount).
               build();
-      ImmutableBitSet.Builder streamingBuilder = new ImmutableBitSet.Builder();
+      ImmutableBitSet.Builder streamingBuilder = ImmutableBitSet.builder();
       switch (join.getStreamingSide()) {
         case LEFT_RELATION:
           streamingBuilder.set(0);
@@ -584,8 +589,8 @@ public class HiveOnTezCostModel extends HiveCostModel {
       final double cpuCost = HiveAlgorithmsUtil.computeSMBMapJoinCPUCost(cardinalities);
       // 3. IO cost = cost of transferring small tables to join node *
       //              degree of parallelism
-      final Double leftRAverageSize = RelMetadataQuery.getAverageRowSize(join.getLeft());
-      final Double rightRAverageSize = RelMetadataQuery.getAverageRowSize(join.getRight());
+      final Double leftRAverageSize = mq.getAverageRowSize(join.getLeft());
+      final Double rightRAverageSize = mq.getAverageRowSize(join.getRight());
       if (leftRAverageSize == null || rightRAverageSize == null) {
         return null;
       }
@@ -597,7 +602,7 @@ public class HiveOnTezCostModel extends HiveCostModel {
       // TODO: Split count is not the same as no of buckets
       JoinAlgorithm oldAlgo = join.getJoinAlgorithm();
       join.setJoinAlgorithm(TezSMBJoinAlgorithm.INSTANCE);
-      final int parallelism = RelMetadataQuery.splitCount(join) == null ? 1 : RelMetadataQuery
+      final int parallelism = mq.splitCount(join) == null ? 1 : mq
           .splitCount(join);
       join.setJoinAlgorithm(oldAlgo);
 
@@ -624,12 +629,13 @@ public class HiveOnTezCostModel extends HiveCostModel {
 
     @Override
     public Double getCumulativeMemoryWithinPhaseSplit(HiveJoin join) {
+      RelMetadataQuery mq = RelMetadataQuery.instance();
       // TODO: Split count is not same as no of buckets
       JoinAlgorithm oldAlgo = join.getJoinAlgorithm();
       join.setJoinAlgorithm(TezSMBJoinAlgorithm.INSTANCE);
 
-      final Double memoryWithinPhase = RelMetadataQuery.cumulativeMemoryWithinPhase(join);
-      final Integer splitCount = RelMetadataQuery.splitCount(join);
+      final Double memoryWithinPhase = mq.cumulativeMemoryWithinPhase(join);
+      final Integer splitCount = mq.splitCount(join);
       join.setJoinAlgorithm(oldAlgo);
 
       if (memoryWithinPhase == null || splitCount == null) {

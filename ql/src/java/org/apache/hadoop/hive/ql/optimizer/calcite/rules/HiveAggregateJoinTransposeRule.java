@@ -119,9 +119,10 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
     }
 
     // Do the columns used by the join appear in the output of the aggregate?
+    RelMetadataQuery mq = RelMetadataQuery.instance();
     final ImmutableBitSet aggregateColumns = aggregate.getGroupSet();
     final ImmutableBitSet keyColumns = keyColumns(aggregateColumns,
-        RelMetadataQuery.getPulledUpPredicates(join).pulledUpPredicates);
+        mq.getPulledUpPredicates(join).pulledUpPredicates);
     final ImmutableBitSet joinColumns =
         RelOptUtil.InputFinder.bits(join.getCondition());
     final boolean allColumnsInAggregate =
@@ -179,7 +180,7 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
         unique = true;
       } else {
         final Boolean unique0 =
-            RelMetadataQuery.areColumnsUnique(joinInput, belowAggregateKey);
+            mq.areColumnsUnique(joinInput, belowAggregateKey);
         unique = unique0 != null && unique0;
       }
       if (unique) {
@@ -299,8 +300,8 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
     }
 
     // Make a cost based decision to pick cheaper plan
-    RelOptCost afterCost = RelMetadataQuery.getCumulativeCost(r);
-    RelOptCost beforeCost = RelMetadataQuery.getCumulativeCost(aggregate);
+    RelOptCost afterCost = mq.getCumulativeCost(r);
+    RelOptCost beforeCost = mq.getCumulativeCost(aggregate);
     if (afterCost.isLt(beforeCost)) {
       call.transformTo(r);
     }

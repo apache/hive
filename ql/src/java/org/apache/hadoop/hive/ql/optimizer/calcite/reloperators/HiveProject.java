@@ -174,8 +174,8 @@ public class HiveProject extends Project implements HiveRelNode {
   }
 
   @Override
-  public RelOptCost computeSelfCost(RelOptPlanner planner) {
-    return RelMetadataQuery.getNonCumulativeCost(this);
+  public RelOptCost computeSelfCost(RelOptPlanner planner, RelMetadataQuery mq) {
+    return mq.getNonCumulativeCost(this);
   }
 
   @Override

@@ -47,7 +47,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
   protected FilterSelectivityEstimator(RelNode childRel) {
     super(true);
     this.childRel = childRel;
-    this.childCardinality = RelMetadataQuery.getRowCount(childRel);
+    this.childCardinality = RelMetadataQuery.instance().getRowCount(childRel);
   }
 
   public Double estimateSelectivity(RexNode predicate) {
@@ -251,10 +251,10 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     double tmpNDV;
     double maxNDV = 1.0;
     InputReferencedVisitor irv;
-
+    RelMetadataQuery mq = RelMetadataQuery.instance();
     for (RexNode op : call.getOperands()) {
       if (op instanceof RexInputRef) {
-        tmpNDV = HiveRelMdDistinctRowCount.getDistinctRowCount(this.childRel,
+        tmpNDV = HiveRelMdDistinctRowCount.getDistinctRowCount(this.childRel, mq,
             ((RexInputRef) op).getIndex());
         if (tmpNDV > maxNDV)
           maxNDV = tmpNDV;
@@ -262,7 +262,8 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
         irv = new InputReferencedVisitor();
         irv.apply(op);
         for (Integer childProjIndx : irv.inputPosReferenced) {
-          tmpNDV = HiveRelMdDistinctRowCount.getDistinctRowCount(this.childRel, childProjIndx);
+          tmpNDV = HiveRelMdDistinctRowCount.getDistinctRowCount(this.childRel,
+              mq, childProjIndx);
           if (tmpNDV > maxNDV)
             maxNDV = tmpNDV;
         }

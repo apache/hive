@@ -84,8 +84,9 @@ public class HiveDefaultCostModel extends HiveCostModel {
 
     @Override
     public RelOptCost getCost(HiveJoin join) {
-      double leftRCount = RelMetadataQuery.getRowCount(join.getLeft());
-      double rightRCount = RelMetadataQuery.getRowCount(join.getRight());
+      RelMetadataQuery mq = RelMetadataQuery.instance();
+      double leftRCount = mq.getRowCount(join.getLeft());
+      double rightRCount = mq.getRowCount(join.getRight());
       return HiveCost.FACTORY.makeCost(leftRCount + rightRCount, 0.0, 0.0);
     }
 

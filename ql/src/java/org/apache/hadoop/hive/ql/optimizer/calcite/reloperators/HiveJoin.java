@@ -160,8 +160,9 @@ public class HiveJoin extends Join implements HiveRelNode {
   }
 
   public MapJoinStreamingRelation getStreamingSide() {
-    Double leftInputSize = RelMetadataQuery.memory(left);
-    Double rightInputSize = RelMetadataQuery.memory(right);
+    RelMetadataQuery mq = RelMetadataQuery.instance();
+    Double leftInputSize = mq.memory(left);
+    Double rightInputSize = mq.memory(right);
     if (leftInputSize == null && rightInputSize == null) {
       return MapJoinStreamingRelation.NONE;
     } else if (leftInputSize != null &&
@@ -190,7 +191,7 @@ public class HiveJoin extends Join implements HiveRelNode {
   }
 
   public ImmutableBitSet getSortedInputs() throws CalciteSemanticException {
-    ImmutableBitSet.Builder sortedInputsBuilder = new ImmutableBitSet.Builder();
+    ImmutableBitSet.Builder sortedInputsBuilder = ImmutableBitSet.builder();
     JoinPredicateInfo joinPredInfo = HiveCalciteUtil.JoinPredicateInfo.
             constructJoinPredicateInfo(this);
     List<ImmutableIntList> joinKeysInChildren = new ArrayList<ImmutableIntList>();
@@ -203,8 +204,8 @@ public class HiveJoin extends Join implements HiveRelNode {
 
     for (int i=0; i<this.getInputs().size(); i++) {
       boolean correctOrderFound = RelCollations.contains(
-              RelMetadataQuery.collations(this.getInputs().get(i)),
-              joinKeysInChildren.get(i));
+          RelMetadataQuery.instance().collations(this.getInputs().get(i)),
+          joinKeysInChildren.get(i));
       if (correctOrderFound) {
         sortedInputsBuilder.set(i);
       }
@@ -224,8 +225,8 @@ public class HiveJoin extends Join implements HiveRelNode {
    * Model cost of join as size of Inputs.
    */
   @Override
-  public RelOptCost computeSelfCost(RelOptPlanner planner) {
-    return RelMetadataQuery.getNonCumulativeCost(this);
+  public RelOptCost computeSelfCost(RelOptPlanner planner, RelMetadataQuery mq) {
+    return mq.getNonCumulativeCost(this);
   }
 
   @Override

@@ -48,21 +48,21 @@ public class HiveRelMdParallelism extends RelMdParallelism {
 
   //~ Methods ----------------------------------------------------------------
 
-  public Boolean isPhaseTransition(HiveJoin join) {
+  public Boolean isPhaseTransition(HiveJoin join, RelMetadataQuery mq) {
     return join.isPhaseTransition();
   }
 
-  public Boolean isPhaseTransition(HiveSortLimit sort) {
+  public Boolean isPhaseTransition(HiveSortLimit sort, RelMetadataQuery mq) {
     // As Exchange operator is introduced later on, we make a
     // sort operator create a new stage for the moment
     return true;
   }
 
-  public Integer splitCount(HiveJoin join) {
+  public Integer splitCount(HiveJoin join, RelMetadataQuery mq) {
     return join.getSplitCount();
   }
 
-  public Integer splitCount(HiveTableScan scan) {
+  public Integer splitCount(HiveTableScan scan, RelMetadataQuery mq) {
     Integer splitCount;
 
     RelOptHiveTable table = (RelOptHiveTable) scan.getTable();
@@ -70,7 +70,7 @@ public class HiveRelMdParallelism extends RelMdParallelism {
     if (bucketCols != null && !bucketCols.isEmpty()) {
       splitCount = table.getHiveTableMD().getNumBuckets();
     } else {
-      splitCount = splitCountRepartition(scan);
+      splitCount = splitCountRepartition(scan, mq);
       if (splitCount == null) {
         throw new RuntimeException("Could not get split count for table: "
             + scan.getTable().getQualifiedName());
@@ -80,8 +80,8 @@ public class HiveRelMdParallelism extends RelMdParallelism {
     return splitCount;
   }
 
-  public Integer splitCount(RelNode rel) {
-    Boolean newPhase = RelMetadataQuery.isPhaseTransition(rel);
+  public Integer splitCount(RelNode rel, RelMetadataQuery mq) {
+    Boolean newPhase = mq.isPhaseTransition(rel);
 
     if (newPhase == null) {
       return null;
@@ -89,21 +89,21 @@ public class HiveRelMdParallelism extends RelMdParallelism {
 
     if (newPhase) {
       // We repartition: new number of splits
-      return splitCountRepartition(rel);
+      return splitCountRepartition(rel, mq);
     }
 
     // We do not repartition: take number of splits from children
     Integer splitCount = 0;
     for (RelNode input : rel.getInputs()) {
-      splitCount += RelMetadataQuery.splitCount(input);
+      splitCount += mq.splitCount(input);
     }
     return splitCount;
   }
 
-  public Integer splitCountRepartition(RelNode rel) {
+  public Integer splitCountRepartition(RelNode rel, RelMetadataQuery mq) {
     // We repartition: new number of splits
-    final Double averageRowSize = RelMetadataQuery.getAverageRowSize(rel);
-    final Double rowCount = RelMetadataQuery.getRowCount(rel);
+    final Double averageRowSize = mq.getAverageRowSize(rel);
+    final Double rowCount = mq.getRowCount(rel);
     if (averageRowSize == null || rowCount == null) {
       return null;
     }

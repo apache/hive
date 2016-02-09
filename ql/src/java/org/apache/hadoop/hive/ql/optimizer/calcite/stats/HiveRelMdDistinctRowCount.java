@@ -58,19 +58,19 @@ public class HiveRelMdDistinctRowCount extends RelMdDistinctRowCount {
 
   // Catch-all rule when none of the others apply.
   @Override
-  public Double getDistinctRowCount(RelNode rel, ImmutableBitSet groupKey,
+  public Double getDistinctRowCount(RelNode rel, RelMetadataQuery mq, ImmutableBitSet groupKey,
       RexNode predicate) {
     if (rel instanceof HiveTableScan) {
-      return getDistinctRowCount((HiveTableScan) rel, groupKey, predicate);
+      return getDistinctRowCount((HiveTableScan) rel, mq, groupKey, predicate);
     }
     /*
      * For now use Calcite' default formulas for propagating NDVs up the Query
      * Tree.
      */
-    return super.getDistinctRowCount(rel, groupKey, predicate);
+    return super.getDistinctRowCount(rel, mq, groupKey, predicate);
   }
 
-  private Double getDistinctRowCount(HiveTableScan htRel, ImmutableBitSet groupKey,
+  private Double getDistinctRowCount(HiveTableScan htRel, RelMetadataQuery mq, ImmutableBitSet groupKey,
       RexNode predicate) {
     List<Integer> projIndxLst = HiveCalciteUtil
         .translateBitSetToProjIndx(groupKey);
@@ -83,39 +83,39 @@ public class HiveRelMdDistinctRowCount extends RelMdDistinctRowCount {
     return Math.min(noDistinctRows, htRel.getRows());
   }
 
-  public static Double getDistinctRowCount(RelNode r, int indx) {
+  public static Double getDistinctRowCount(RelNode r, RelMetadataQuery mq, int indx) {
     ImmutableBitSet bitSetOfRqdProj = ImmutableBitSet.of(indx);
-    return RelMetadataQuery.getDistinctRowCount(r, bitSetOfRqdProj, r
+    return mq.getDistinctRowCount(r, bitSetOfRqdProj, r
         .getCluster().getRexBuilder().makeLiteral(true));
   }
 
   @Override
-  public Double getDistinctRowCount(Join rel, ImmutableBitSet groupKey,
+  public Double getDistinctRowCount(Join rel, RelMetadataQuery mq, ImmutableBitSet groupKey,
       RexNode predicate) {
     if (rel instanceof HiveJoin) {
       HiveJoin hjRel = (HiveJoin) rel;
       //TODO: Improve this
       if (hjRel.isLeftSemiJoin()) {
-        return RelMetadataQuery.getDistinctRowCount(hjRel.getLeft(), groupKey,
+        return mq.getDistinctRowCount(hjRel.getLeft(), groupKey,
             rel.getCluster().getRexBuilder().makeLiteral(true));
       } else {
-        return RelMdUtil.getJoinDistinctRowCount(rel, rel.getJoinType(),
+        return RelMdUtil.getJoinDistinctRowCount(mq, rel, rel.getJoinType(),
             groupKey, predicate, true);
       }
     }
 
-    return RelMetadataQuery.getDistinctRowCount(rel, groupKey, predicate);
+    return mq.getDistinctRowCount(rel, groupKey, predicate);
   }
 
   /*
    * Favor Broad Plans over Deep Plans.
    */
-  public RelOptCost getCumulativeCost(HiveJoin rel) {
-    RelOptCost cost = RelMetadataQuery.getNonCumulativeCost(rel);
+  public RelOptCost getCumulativeCost(HiveJoin rel, RelMetadataQuery mq) {
+    RelOptCost cost = mq.getNonCumulativeCost(rel);
     List<RelNode> inputs = rel.getInputs();
     RelOptCost maxICost = HiveCost.ZERO;
     for (RelNode input : inputs) {
-      RelOptCost iCost = RelMetadataQuery.getCumulativeCost(input);
+      RelOptCost iCost = mq.getCumulativeCost(input);
       if (maxICost.isLt(iCost)) {
         maxICost = iCost;
       }

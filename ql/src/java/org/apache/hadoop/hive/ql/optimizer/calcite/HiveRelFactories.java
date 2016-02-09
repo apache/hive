@@ -28,6 +28,7 @@ import org.apache.calcite.rel.InvalidRelException;
 import org.apache.calcite.rel.RelCollation;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.AggregateCall;
+import org.apache.calcite.rel.core.CorrelationId;
 import org.apache.calcite.rel.core.JoinInfo;
 import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.core.RelFactories.AggregateFactory;
@@ -146,6 +147,14 @@ public class HiveRelFactories {
     public RelNode createJoin(RelNode left, RelNode right, RexNode condition, JoinRelType joinType,
         Set<String> variablesStopped, boolean semiJoinDone) {
       return HiveJoin.getJoin(left.getCluster(), left, right, condition, joinType, false);
+    }
+
+    @Override
+    public RelNode createJoin(RelNode left, RelNode right, RexNode condition,
+        Set<CorrelationId> variablesSet, JoinRelType joinType, boolean semiJoinDone) {
+      // According to calcite, it is going to be removed before Calcite-2.0
+      // TODO: to handle CorrelationId
+      return HiveJoin.getJoin(left.getCluster(), left, right, condition, joinType, semiJoinDone);
     }
   }
 

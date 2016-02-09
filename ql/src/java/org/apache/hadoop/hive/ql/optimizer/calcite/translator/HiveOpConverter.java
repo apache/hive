@@ -430,8 +430,8 @@ public class HiveOpConverter {
 
       // 1.a. Extract order for each column from collation
       // Generate sortCols and order
-      ImmutableBitSet.Builder sortColsPosBuilder = new ImmutableBitSet.Builder();
-      ImmutableBitSet.Builder sortOutputColsPosBuilder = new ImmutableBitSet.Builder();
+      ImmutableBitSet.Builder sortColsPosBuilder = ImmutableBitSet.builder();
+      ImmutableBitSet.Builder sortOutputColsPosBuilder = ImmutableBitSet.builder();
       Map<Integer, RexNode> obRefToCallMap = sortRel.getInputRefToCallMap();
       List<ExprNodeDesc> sortCols = new ArrayList<ExprNodeDesc>();
       StringBuilder order = new StringBuilder();

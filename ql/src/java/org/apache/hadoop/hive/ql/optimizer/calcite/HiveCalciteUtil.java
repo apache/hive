@@ -47,6 +47,7 @@ import org.apache.calcite.rex.RexLocalRef;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexOver;
 import org.apache.calcite.rex.RexRangeRef;
+import org.apache.calcite.rex.RexSubQuery;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.rex.RexVisitor;
 import org.apache.calcite.rex.RexVisitorImpl;
@@ -666,7 +667,7 @@ public class HiveCalciteUtil {
     // Note: this is the last step, trying to avoid the expensive call to the metadata provider
     //       if possible
     Set<String> predicatesInSubtree = Sets.newHashSet();
-    for (RexNode pred : RelMetadataQuery.getPulledUpPredicates(inp).pulledUpPredicates) {
+    for (RexNode pred : RelMetadataQuery.instance().getPulledUpPredicates(inp).pulledUpPredicates) {
       predicatesInSubtree.add(pred.toString());
       predicatesInSubtree.addAll(Lists.transform(RelOptUtil.conjunctions(pred), REX_STR_FN));
     }
@@ -934,6 +935,12 @@ public class HiveCalciteUtil {
     public Boolean visitFieldAccess(RexFieldAccess fieldAccess) {
       // "<expr>.FIELD" is constant iff "<expr>" is constant.
       return fieldAccess.getReferenceExpr().accept(this);
+    }
+
+    @Override
+    public Boolean visitSubQuery(RexSubQuery subQuery) {
+      // it seems that it is not used by anything.
+      return false;
     }
   }
 

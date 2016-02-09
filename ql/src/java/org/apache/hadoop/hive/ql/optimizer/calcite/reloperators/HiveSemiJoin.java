@@ -108,8 +108,8 @@ public class HiveSemiJoin extends SemiJoin implements HiveRelNode {
   }
 
   @Override
-  public RelOptCost computeSelfCost(RelOptPlanner planner) {
-    return RelMetadataQuery.getNonCumulativeCost(this);
+  public RelOptCost computeSelfCost(RelOptPlanner planner, RelMetadataQuery mq) {
+    return mq.getNonCumulativeCost(this);
   }
 
 }

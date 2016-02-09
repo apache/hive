@@ -47,24 +47,24 @@ public class HiveRelMdMemory extends RelMdMemory {
 
   //~ Methods ----------------------------------------------------------------
 
-  public Double memory(HiveTableScan tableScan) {
+  public Double memory(HiveTableScan tableScan, RelMetadataQuery mq) {
     return 0.0d;
   }
 
-  public Double memory(HiveAggregate aggregate) {
-    final Double avgRowSize = RelMetadataQuery.getAverageRowSize(aggregate.getInput());
-    final Double rowCount = RelMetadataQuery.getRowCount(aggregate.getInput());
+  public Double memory(HiveAggregate aggregate, RelMetadataQuery mq) {
+    final Double avgRowSize = mq.getAverageRowSize(aggregate.getInput());
+    final Double rowCount = mq.getRowCount(aggregate.getInput());
     if (avgRowSize == null || rowCount == null) {
       return null;
     }
     return avgRowSize * rowCount;
   }
 
-  public Double memory(HiveFilter filter) {
+  public Double memory(HiveFilter filter, RelMetadataQuery mq) {
     return 0.0;
   }
 
-  public Double memory(HiveJoin join) {
+  public Double memory(HiveJoin join, RelMetadataQuery mq) {
     return join.getMemory();
   }
 
@@ -72,15 +72,15 @@ public class HiveRelMdMemory extends RelMdMemory {
     return join.getCumulativeMemoryWithinPhaseSplit();
   }
 
-  public Double memory(HiveProject project) {
+  public Double memory(HiveProject project, RelMetadataQuery mq) {
     return 0.0;
   }
 
-  public Double memory(HiveSortLimit sort) {
+  public Double memory(HiveSortLimit sort, RelMetadataQuery mq) {
     if (sort.getCollation() != RelCollations.EMPTY) {
       // It sorts
-      final Double avgRowSize = RelMetadataQuery.getAverageRowSize(sort.getInput());
-      final Double rowCount = RelMetadataQuery.getRowCount(sort.getInput());
+      final Double avgRowSize = mq.getAverageRowSize(sort.getInput());
+      final Double rowCount = mq.getRowCount(sort.getInput());
       if (avgRowSize == null || rowCount == null) {
         return null;
       }
@@ -90,7 +90,7 @@ public class HiveRelMdMemory extends RelMdMemory {
     return 0.0;
   }
 
-  public Double memory(HiveUnion union) {
+  public Double memory(HiveUnion union, RelMetadataQuery mq) {
     return 0.0;
   }
 

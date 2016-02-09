@@ -68,18 +68,18 @@ public class HiveAggregate extends Aggregate implements HiveRelNode {
   }
 
   @Override
-  public RelOptCost computeSelfCost(RelOptPlanner planner) {
-    return RelMetadataQuery.getNonCumulativeCost(this);
+  public RelOptCost computeSelfCost(RelOptPlanner planner, RelMetadataQuery mq) {
+    return mq.getNonCumulativeCost(this);
   }
 
+  // getRows will call estimateRowCount
   @Override
-  public double getRows() {
-    return RelMetadataQuery.getDistinctRowCount(this, groupSet, getCluster().getRexBuilder()
-        .makeLiteral(true));
+  public double estimateRowCount(RelMetadataQuery mq) {
+    return mq.getDistinctRowCount(this, groupSet, getCluster().getRexBuilder().makeLiteral(true));
   }
 
   public boolean isBucketedInput() {
-    return RelMetadataQuery.distribution(this.getInput()).getKeys().
+    return RelMetadataQuery.instance().distribution(this.getInput()).getKeys().
             containsAll(groupSet.asList());
   }
 

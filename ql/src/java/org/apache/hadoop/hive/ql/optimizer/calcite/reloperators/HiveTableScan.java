@@ -122,8 +122,8 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
   }
 
   @Override
-  public RelOptCost computeSelfCost(RelOptPlanner planner) {
-    return RelMetadataQuery.getNonCumulativeCost(this);
+  public RelOptCost computeSelfCost(RelOptPlanner planner, RelMetadataQuery mq) {
+    return mq.getNonCumulativeCost(this);
   }
 
   @Override public RelWriter explainTerms(RelWriter pw) {
@@ -147,7 +147,7 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
   }
 
   @Override
-  public double getRows() {
+  public double estimateRowCount(RelMetadataQuery mq) {
     return ((RelOptHiveTable) table).getRowCount();
   }
 

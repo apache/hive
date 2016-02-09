@@ -99,10 +99,10 @@ public class HiveRelMdPredicates extends RelMdPredicates {
    * </ol>
    */
   @Override
-  public RelOptPredicateList getPredicates(Project project) {
+  public RelOptPredicateList getPredicates(Project project, RelMetadataQuery mq) {
     RelNode child = project.getInput();
     final RexBuilder rexBuilder = project.getCluster().getRexBuilder();
-    RelOptPredicateList childInfo = RelMetadataQuery.getPulledUpPredicates(child);
+    RelOptPredicateList childInfo = mq.getPulledUpPredicates(child);
 
     List<RexNode> projectPullUpPredicates = new ArrayList<RexNode>();
     HashMultimap<Integer, Integer> inpIndxToOutIndxMap = HashMultimap.create();
@@ -151,13 +151,13 @@ public class HiveRelMdPredicates extends RelMdPredicates {
 
   /** Infers predicates for a {@link org.apache.calcite.rel.core.Join}. */
   @Override
-  public RelOptPredicateList getPredicates(Join join) {
+  public RelOptPredicateList getPredicates(Join join, RelMetadataQuery mq) {
     RexBuilder rB = join.getCluster().getRexBuilder();
     RelNode left = join.getInput(0);
     RelNode right = join.getInput(1);
 
-    RelOptPredicateList leftInfo = RelMetadataQuery.getPulledUpPredicates(left);
-    RelOptPredicateList rightInfo = RelMetadataQuery.getPulledUpPredicates(right);
+    RelOptPredicateList leftInfo = mq.getPulledUpPredicates(left);
+    RelOptPredicateList rightInfo = mq.getPulledUpPredicates(right);
 
     HiveJoinConditionBasedPredicateInference jI = new HiveJoinConditionBasedPredicateInference(join,
         RexUtil.composeConjunction(rB, leftInfo.pulledUpPredicates, false),

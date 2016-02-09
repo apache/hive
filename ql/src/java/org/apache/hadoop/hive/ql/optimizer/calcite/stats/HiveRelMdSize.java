@@ -50,7 +50,7 @@ public class HiveRelMdSize extends RelMdSize {
 
   //~ Methods ----------------------------------------------------------------
 
-  public List<Double> averageColumnSizes(HiveTableScan scan) {
+  public List<Double> averageColumnSizes(HiveTableScan scan, RelMetadataQuery mq) {
     List<Integer> neededcolsLst = scan.getNeededColIndxsFrmReloptHT();
     List<ColStatistics> columnStatistics = ((RelOptHiveTable) scan.getTable())
         .getColStat(neededcolsLst, true);
@@ -77,14 +77,14 @@ public class HiveRelMdSize extends RelMdSize {
     return list.build();
   }
 
-  public List<Double> averageColumnSizes(HiveJoin rel) {
+  public List<Double> averageColumnSizes(HiveJoin rel, RelMetadataQuery mq) {
     final RelNode left = rel.getLeft();
     final RelNode right = rel.getRight();
     final List<Double> lefts =
-        RelMetadataQuery.getAverageColumnSizes(left);
+        mq.getAverageColumnSizes(left);
     List<Double> rights = null;
     if (!rel.isLeftSemiJoin()) {
-        rights = RelMetadataQuery.getAverageColumnSizes(right);
+        rights = mq.getAverageColumnSizes(right);
     }
     if (lefts == null && rights == null) {
       return null;

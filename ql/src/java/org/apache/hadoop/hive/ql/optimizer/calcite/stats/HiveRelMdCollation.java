@@ -24,6 +24,7 @@ import org.apache.calcite.rel.metadata.ChainedRelMetadataProvider;
 import org.apache.calcite.rel.metadata.ReflectiveRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMdCollation;
 import org.apache.calcite.rel.metadata.RelMetadataProvider;
+import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.util.BuiltInMethod;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelCollation;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
@@ -46,7 +47,7 @@ public class HiveRelMdCollation {
 
   //~ Methods ----------------------------------------------------------------
 
-  public ImmutableList<RelCollation> collations(HiveAggregate aggregate) {
+  public ImmutableList<RelCollation> collations(HiveAggregate aggregate, RelMetadataQuery mq) {
     // Compute collations
     ImmutableList.Builder<RelFieldCollation> collationListBuilder =
             new ImmutableList.Builder<RelFieldCollation>();
@@ -60,7 +61,7 @@ public class HiveRelMdCollation {
                         new HiveRelCollation(collationListBuilder.build())));
   }
 
-  public ImmutableList<RelCollation> collations(HiveJoin join) {
+  public ImmutableList<RelCollation> collations(HiveJoin join, RelMetadataQuery mq) {
     return join.getCollation();
   }
 

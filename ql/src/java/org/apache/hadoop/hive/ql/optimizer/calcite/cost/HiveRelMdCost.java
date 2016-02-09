@@ -23,6 +23,7 @@ import org.apache.calcite.rel.metadata.ChainedRelMetadataProvider;
 import org.apache.calcite.rel.metadata.ReflectiveRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMdPercentageOriginalRows;
 import org.apache.calcite.rel.metadata.RelMetadataProvider;
+import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.util.BuiltInMethod;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
@@ -49,20 +50,20 @@ public class HiveRelMdCost {
                    RelMdPercentageOriginalRows.SOURCE));
   }
 
-  public RelOptCost getNonCumulativeCost(HiveAggregate aggregate) {
+  public RelOptCost getNonCumulativeCost(HiveAggregate aggregate, RelMetadataQuery mq) {
     return hiveCostModel.getAggregateCost(aggregate);
   }
 
-  public RelOptCost getNonCumulativeCost(HiveJoin join) {
+  public RelOptCost getNonCumulativeCost(HiveJoin join, RelMetadataQuery mq) {
     return hiveCostModel.getJoinCost(join);
   }
 
-  public RelOptCost getNonCumulativeCost(HiveTableScan ts) {
+  public RelOptCost getNonCumulativeCost(HiveTableScan ts, RelMetadataQuery mq) {
     return hiveCostModel.getScanCost(ts);
   }
 
   // Default case
-  public RelOptCost getNonCumulativeCost(RelNode rel) {
+  public RelOptCost getNonCumulativeCost(RelNode rel, RelMetadataQuery mq) {
     return hiveCostModel.getDefaultCost();
   }
 

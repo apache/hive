@@ -22,6 +22,7 @@ import org.apache.calcite.rel.metadata.ChainedRelMetadataProvider;
 import org.apache.calcite.rel.metadata.ReflectiveRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMdDistribution;
 import org.apache.calcite.rel.metadata.RelMetadataProvider;
+import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.util.BuiltInMethod;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelDistribution;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
@@ -35,8 +36,7 @@ public class HiveRelMdDistribution {
           ChainedRelMetadataProvider.of(
                   ImmutableList.of(
                           ReflectiveRelMetadataProvider.reflectiveSource(
-                                  BuiltInMethod.DISTRIBUTION.method, new HiveRelMdDistribution()),
-                          RelMdDistribution.SOURCE));
+                              BuiltInMethod.DISTRIBUTION.method, new HiveRelMdDistribution())));
   
   //~ Constructors -----------------------------------------------------------
 
@@ -44,12 +44,12 @@ public class HiveRelMdDistribution {
 
   //~ Methods ----------------------------------------------------------------
 
-  public RelDistribution distribution(HiveAggregate aggregate) {
+  public RelDistribution distribution(HiveAggregate aggregate, RelMetadataQuery mq) {
     return new HiveRelDistribution(RelDistribution.Type.HASH_DISTRIBUTED,
             aggregate.getGroupSet().asList());
   }
 
-  public RelDistribution distribution(HiveJoin join) {
+  public RelDistribution distribution(HiveJoin join, RelMetadataQuery mq) {
     return join.getDistribution();
   }
 
