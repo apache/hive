@@ -831,6 +831,11 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   public FileMetadataHandler getFileMetadataHandler(FileMetadataExprType type) {
     return null;
   }
+
+  @Override
+  public long getChangeVersion(String topic) throws MetaException {
+    return 0;
+  }
 }
 
 

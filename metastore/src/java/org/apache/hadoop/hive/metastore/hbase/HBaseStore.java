@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.FileMetadataHandler;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.PartFilterExprUtil;
 import org.apache.hadoop.hive.metastore.PartitionExpressionProxy;
 import org.apache.hadoop.hive.metastore.RawStore;
@@ -2249,7 +2250,9 @@ public class HBaseStore implements RawStore {
     boolean commit = false;
     openTransaction();
     try {
-      getHBase().putFunction(func);
+      HBaseReadWrite hbase = getHBase();
+      hbase.putFunction(func);
+      hbase.incrementChangeVersion(IMetaStoreClient.PERMANENT_FUNCTION_CV);
       commit = true;
     } catch (IOException e) {
       LOG.error("Unable to create function", e);
@@ -2265,7 +2268,9 @@ public class HBaseStore implements RawStore {
     boolean commit = false;
     openTransaction();
     try {
-      getHBase().putFunction(newFunction);
+      HBaseReadWrite hbase = getHBase();
+      hbase.putFunction(newFunction);
+      hbase.incrementChangeVersion(IMetaStoreClient.PERMANENT_FUNCTION_CV);
       commit = true;
     } catch (IOException e) {
       LOG.error("Unable to alter function ", e);
@@ -2281,7 +2286,9 @@ public class HBaseStore implements RawStore {
     boolean commit = false;
     openTransaction();
     try {
-      getHBase().deleteFunction(dbName, funcName);
+      HBaseReadWrite hbase = getHBase();
+      hbase.deleteFunction(dbName, funcName);
+      hbase.incrementChangeVersion(IMetaStoreClient.PERMANENT_FUNCTION_CV);
       commit = true;
     } catch (IOException e) {
       LOG.error("Unable to delete function" + e);
@@ -2565,6 +2572,21 @@ public class HBaseStore implements RawStore {
     } catch (IOException | InterruptedException e) {
       LOG.error("Unable to store file metadata", e);
       throw new MetaException("Error storing file metadata " + e.getMessage());
+    } finally {
+      commitOrRoleBack(commit);
+    }
+  }
+
+  @Override
+  public long getChangeVersion(String topic) throws MetaException {
+    openTransaction();
+    boolean commit = true;
+    try {
+      return getHBase().getChangeVersion(topic);
+    } catch (IOException e) {
+      commit = false;
+      LOG.error("Unable to get change version", e);
+      throw new MetaException("Unable to get change version " + e.getMessage());
     } finally {
       commitOrRoleBack(commit);
     }

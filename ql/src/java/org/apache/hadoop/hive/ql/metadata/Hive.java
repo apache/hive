@@ -3494,4 +3494,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
       throw new HiveException(e);
     }
   }
+
+  public long getPermanenFunctionsChangeVersion() throws HiveException {
+    try {
+      return getMSC().getChangeVersion(IMetaStoreClient.PERMANENT_FUNCTION_CV);
+    } catch (TException e) {
+      throw new HiveException(e);
+    }
+  }
 };

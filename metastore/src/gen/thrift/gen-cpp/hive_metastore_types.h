@@ -329,6 +329,10 @@ class FireEventRequest;
 
 class FireEventResponse;
 
+class GetChangeVersionRequest;
+
+class GetChangeVersionResult;
+
 class MetadataPpdResult;
 
 class GetFileMetadataByExprResult;
@@ -5955,6 +5959,86 @@ class FireEventResponse {
 void swap(FireEventResponse &a, FireEventResponse &b);
 
 inline std::ostream& operator<<(std::ostream& out, const FireEventResponse& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class GetChangeVersionRequest {
+ public:
+
+  GetChangeVersionRequest(const GetChangeVersionRequest&);
+  GetChangeVersionRequest& operator=(const GetChangeVersionRequest&);
+  GetChangeVersionRequest() : topic() {
+  }
+
+  virtual ~GetChangeVersionRequest() throw();
+  std::string topic;
+
+  void __set_topic(const std::string& val);
+
+  bool operator == (const GetChangeVersionRequest & rhs) const
+  {
+    if (!(topic == rhs.topic))
+      return false;
+    return true;
+  }
+  bool operator != (const GetChangeVersionRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetChangeVersionRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(GetChangeVersionRequest &a, GetChangeVersionRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const GetChangeVersionRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class GetChangeVersionResult {
+ public:
+
+  GetChangeVersionResult(const GetChangeVersionResult&);
+  GetChangeVersionResult& operator=(const GetChangeVersionResult&);
+  GetChangeVersionResult() : version(0) {
+  }
+
+  virtual ~GetChangeVersionResult() throw();
+  int64_t version;
+
+  void __set_version(const int64_t val);
+
+  bool operator == (const GetChangeVersionResult & rhs) const
+  {
+    if (!(version == rhs.version))
+      return false;
+    return true;
+  }
+  bool operator != (const GetChangeVersionResult &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetChangeVersionResult & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(GetChangeVersionResult &a, GetChangeVersionResult &b);
+
+inline std::ostream& operator<<(std::ostream& out, const GetChangeVersionResult& obj)
 {
   obj.printTo(out);
   return out;

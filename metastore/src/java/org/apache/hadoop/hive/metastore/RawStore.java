@@ -660,4 +660,7 @@ public interface RawStore extends Configurable {
    */
   @InterfaceStability.Evolving
   int getDatabaseCount() throws MetaException;
+
+  @InterfaceStability.Evolving
+  long getChangeVersion(String topic) throws MetaException;
 }

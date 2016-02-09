@@ -2231,6 +2231,21 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'cache_file_metadata failed: unknown result')
     end
 
+    def get_change_version(req)
+      send_get_change_version(req)
+      return recv_get_change_version()
+    end
+
+    def send_get_change_version(req)
+      send_message('get_change_version', Get_change_version_args, :req => req)
+    end
+
+    def recv_get_change_version()
+      result = receive_message(Get_change_version_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_change_version failed: unknown result')
+    end
+
   end
 
   class Processor < ::FacebookService::Processor 
@@ -3903,6 +3918,13 @@ module ThriftHiveMetastore
       result = Cache_file_metadata_result.new()
       result.success = @handler.cache_file_metadata(args.req)
       write_result(result, oprot, 'cache_file_metadata', seqid)
+    end
+
+    def process_get_change_version(seqid, iprot, oprot)
+      args = read_args(iprot, Get_change_version_args)
+      result = Get_change_version_result.new()
+      result.success = @handler.get_change_version(args.req)
+      write_result(result, oprot, 'get_change_version', seqid)
     end
 
   end
@@ -8945,6 +8967,38 @@ module ThriftHiveMetastore
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::CacheFileMetadataResult}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_change_version_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQ = 1
+
+    FIELDS = {
+      REQ => {:type => ::Thrift::Types::STRUCT, :name => 'req', :class => ::GetChangeVersionRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_change_version_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::GetChangeVersionResult}
     }
 
     def struct_fields; FIELDS; end

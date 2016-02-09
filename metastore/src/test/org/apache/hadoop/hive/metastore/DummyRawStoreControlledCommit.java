@@ -815,4 +815,9 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   public FileMetadataHandler getFileMetadataHandler(FileMetadataExprType type) {
     return null;
   }
+
+  @Override
+  public long getChangeVersion(String topic) throws MetaException {
+    return 0;
+  }
 }

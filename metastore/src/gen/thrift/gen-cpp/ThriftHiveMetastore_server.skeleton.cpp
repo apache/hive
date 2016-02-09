@@ -687,6 +687,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("cache_file_metadata\n");
   }
 
+  void get_change_version(GetChangeVersionResult& _return, const GetChangeVersionRequest& req) {
+    // Your implementation goes here
+    printf("get_change_version\n");
+  }
+
 };
 
 int main(int argc, char **argv) {

@@ -113,6 +113,7 @@ import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
+import org.apache.hadoop.hive.metastore.model.MChangeVersion;
 import org.apache.hadoop.hive.metastore.model.MColumnDescriptor;
 import org.apache.hadoop.hive.metastore.model.MDBPrivilege;
 import org.apache.hadoop.hive.metastore.model.MDatabase;
@@ -166,6 +167,7 @@ import com.google.common.collect.Lists;
  * to be made into a interface that can read both from a database and a
  * filestore.
  */
+@SuppressWarnings("unchecked")
 public class ObjectStore implements RawStore, Configurable {
   private static Properties prop = null;
   private static PersistenceManagerFactory pmf = null;
@@ -181,11 +183,11 @@ public class ObjectStore implements RawStore, Configurable {
     NO_STATE, OPEN, COMMITED, ROLLBACK
   }
 
-  private static final Map<String, Class> PINCLASSMAP;
+  private static final Map<String, Class<?>> PINCLASSMAP;
   private static final String HOSTNAME;
   private static final String USER;
   static {
-    Map<String, Class> map = new HashMap<String, Class>();
+    Map<String, Class<?>> map = new HashMap<String, Class<?>>();
     map.put("table", MTable.class);
     map.put("storagedescriptor", MStorageDescriptor.class);
     map.put("serdeinfo", MSerDeInfo.class);
@@ -735,9 +737,9 @@ public class ObjectStore implements RawStore, Configurable {
       query = pm.newQuery(queryStr);
       query.setResult("name");
       query.setOrdering("name ascending");
-      Collection names = (Collection) query.execute();
+      Collection<?> names = (Collection<?>) query.execute();
       databases = new ArrayList<String>();
-      for (Iterator i = names.iterator(); i.hasNext();) {
+      for (Iterator<?> i = names.iterator(); i.hasNext();) {
         databases.add((String) i.next());
       }
       commited = commitTransaction();
@@ -1037,9 +1039,9 @@ public class ObjectStore implements RawStore, Configurable {
       query.declareParameters("java.lang.String dbName");
       query.setResult("tableName");
       query.setOrdering("tableName ascending");
-      Collection names = (Collection) query.execute(dbName);
+      Collection<?> names = (Collection<?>) query.execute(dbName);
       tbls = new ArrayList<String>();
-      for (Iterator i = names.iterator(); i.hasNext();) {
+      for (Iterator<?> i = names.iterator(); i.hasNext();) {
         tbls.add((String) i.next());
       }
       commited = commitTransaction();
@@ -1225,8 +1227,8 @@ public class ObjectStore implements RawStore, Configurable {
       query = pm.newQuery(MTable.class);
       query.setFilter("database.name == db && tbl_names.contains(tableName)");
       query.declareParameters("java.lang.String db, java.util.Collection tbl_names");
-      Collection mtables = (Collection) query.execute(db, lowered_tbl_names);
-      for (Iterator iter = mtables.iterator(); iter.hasNext();) {
+      Collection<?> mtables = (Collection<?>) query.execute(db, lowered_tbl_names);
+      for (Iterator<?> iter = mtables.iterator(); iter.hasNext();) {
         tables.add(convertToTable((MTable) iter.next()));
       }
       committed = commitTransaction();
@@ -2075,8 +2077,8 @@ public class ObjectStore implements RawStore, Configurable {
     if (max > 0) {
       query.setRange(0, max);
     }
-    Collection names = (Collection) query.execute(dbName, tableName);
-    for (Iterator i = names.iterator(); i.hasNext();) {
+    Collection<?> names = (Collection<?>) query.execute(dbName, tableName);
+    for (Iterator<?> i = names.iterator(); i.hasNext();) {
       pns.add((String) i.next());
     }
     if (query != null) {
@@ -2100,7 +2102,7 @@ public class ObjectStore implements RawStore, Configurable {
    *          you want results for.  E.g., if resultsCol is partitionName, the Collection
    *          has types of String, and if resultsCol is null, the types are MPartition.
    */
-  private Collection getPartitionPsQueryResults(String dbName, String tableName,
+  private Collection<?> getPartitionPsQueryResults(String dbName, String tableName,
       List<String> part_vals, short max_parts, String resultsCol, QueryWrapper queryWrapper)
       throws MetaException, NoSuchObjectException {
     dbName = HiveStringUtils.normalizeIdentifier(dbName);
@@ -2140,7 +2142,7 @@ public class ObjectStore implements RawStore, Configurable {
       query.setResult(resultsCol);
     }
 
-    return (Collection) query.execute(dbName, tableName, partNameMatcher);
+    return (Collection<?>) query.execute(dbName, tableName, partNameMatcher);
   }
 
   @Override
@@ -2154,7 +2156,7 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       openTransaction();
       LOG.debug("executing listPartitionNamesPsWithAuth");
-      Collection parts = getPartitionPsQueryResults(db_name, tbl_name,
+      Collection<?> parts = getPartitionPsQueryResults(db_name, tbl_name,
           part_vals, max_parts, null, queryWrapper);
       MTable mtbl = getMTable(db_name, tbl_name);
       for (Object o : parts) {
@@ -2190,7 +2192,7 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       openTransaction();
       LOG.debug("Executing listPartitionNamesPs");
-      Collection names = getPartitionPsQueryResults(dbName, tableName,
+      Collection<?> names = getPartitionPsQueryResults(dbName, tableName,
           part_vals, max_parts, "partitionName", queryWrapper);
       for (Object o : names) {
         partitionNames.add((String) o);
@@ -2836,10 +2838,10 @@ public class ObjectStore implements RawStore, Configurable {
       String parameterDeclaration = makeParameterDeclarationStringObj(params);
       query.declareParameters(parameterDeclaration);
       query.setFilter(queryFilterString);
-      Collection names = (Collection)query.executeWithMap(params);
+      Collection<?> names = (Collection<?>)query.executeWithMap(params);
       // have to emulate "distinct", otherwise tables with the same name may be returned
       Set<String> tableNamesSet = new HashSet<String>();
-      for (Iterator i = names.iterator(); i.hasNext();) {
+      for (Iterator<?> i = names.iterator(); i.hasNext();) {
         tableNamesSet.add((String) i.next());
       }
       tableNames = new ArrayList<String>(tableNamesSet);
@@ -2889,9 +2891,9 @@ public class ObjectStore implements RawStore, Configurable {
       query.declareParameters(parameterDeclaration);
       query.setOrdering("partitionName ascending");
       query.setResult("partitionName");
-      Collection names = (Collection) query.executeWithMap(params);
+      Collection<?> names = (Collection<?>) query.executeWithMap(params);
       partNames = new ArrayList<String>();
-      for (Iterator i = names.iterator(); i.hasNext();) {
+      for (Iterator<?> i = names.iterator(); i.hasNext();) {
         partNames.add((String) i.next());
       }
       LOG.debug("Done executing query for listMPartitionNamesByFilter");
@@ -3364,8 +3366,8 @@ public class ObjectStore implements RawStore, Configurable {
               + "order by indexName asc");
       query.declareParameters("java.lang.String t1, java.lang.String t2");
       query.setResult("indexName");
-      Collection names = (Collection) query.execute(dbName, origTableName);
-      for (Iterator i = names.iterator(); i.hasNext();) {
+      Collection<?> names = (Collection<?>) query.execute(dbName, origTableName);
+      for (Iterator<?> i = names.iterator(); i.hasNext();) {
         pns.add((String) i.next());
       }
       success = commitTransaction();
@@ -3770,9 +3772,9 @@ public class ObjectStore implements RawStore, Configurable {
       LOG.debug("Executing listAllRoleNames");
       query = pm.newQuery("select roleName from org.apache.hadoop.hive.metastore.model.MRole");
       query.setResult("roleName");
-      Collection names = (Collection) query.execute();
+      Collection<?> names = (Collection<?>) query.execute();
       List<String> roleNames = new ArrayList<String>();
-      for (Iterator i = names.iterator(); i.hasNext();) {
+      for (Iterator<?> i = names.iterator(); i.hasNext();) {
         roleNames.add((String) i.next());
       }
       success = commitTransaction();
@@ -7514,6 +7516,7 @@ public class ObjectStore implements RawStore, Configurable {
       openTransaction();
       MFunction mfunc = convertToMFunction(func);
       pm.makePersistent(mfunc);
+      incrementChangeVersionNoTx(IMetaStoreClient.PERMANENT_FUNCTION_CV);
       committed = commitTransaction();
     } finally {
       if (!committed) {
@@ -7540,6 +7543,8 @@ public class ObjectStore implements RawStore, Configurable {
         throw new MetaException("function " + funcName + " doesn't exist");
       }
 
+      incrementChangeVersionNoTx(IMetaStoreClient.PERMANENT_FUNCTION_CV);
+
       // For now only alter name, owner, class name, type
       oldf.setFunctionName(HiveStringUtils.normalizeIdentifier(newf.getFunctionName()));
       oldf.setDatabase(newf.getDatabase());
@@ -7557,6 +7562,15 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
+  private void incrementChangeVersionNoTx(String topic) {
+    MChangeVersion cv = getMChangeVersionNoTx(topic);
+    if (cv == null) {
+      cv = new MChangeVersion(topic, 1);
+      pm.makePersistent(cv);
+    }
+    cv.setVersion(cv.getVersion() + 1);
+  }
+
   @Override
   public void dropFunction(String dbName, String funcName) throws MetaException,
   NoSuchObjectException, InvalidObjectException, InvalidInputException {
@@ -7569,6 +7583,7 @@ public class ObjectStore implements RawStore, Configurable {
         // TODO: When function privileges are implemented, they should be deleted here.
         pm.deletePersistentAll(mfunc);
       }
+      incrementChangeVersionNoTx(IMetaStoreClient.PERMANENT_FUNCTION_CV);
       success = commitTransaction();
     } finally {
       if (!success) {
@@ -7602,6 +7617,27 @@ public class ObjectStore implements RawStore, Configurable {
     return mfunc;
   }
 
+  private MChangeVersion getMChangeVersionNoTx(String topic) {
+    Query query = null;
+    try {
+      query = pm.newQuery(MChangeVersion.class, "topic == topicName");
+      query.declareParameters("java.lang.String topicName");
+      query.setUnique(true);
+      Object obj = query.execute(topic);
+      if (obj == null) {
+        return null;
+      } else {
+        MChangeVersion mversion = (MChangeVersion)obj;
+        pm.retrieve(mversion);
+        return mversion;
+      }
+    } finally {
+      if (query != null) {
+        query.closeAll();
+      }
+    }
+  }
+
   @Override
   public Function getFunction(String dbName, String funcName) throws MetaException {
     boolean commited = false;
@@ -7616,6 +7652,21 @@ public class ObjectStore implements RawStore, Configurable {
       }
     }
     return func;
+  }
+
+  @Override
+  public long getChangeVersion(String topic) throws MetaException {
+    boolean commited = false;
+    try {
+      openTransaction();
+      long result = getMChangeVersionNoTx(topic).getVersion();
+      commited = commitTransaction();
+      return result;
+    } finally {
+      if (!commited) {
+        rollbackTransaction();
+      }
+    }
   }
 
   @Override
@@ -7663,9 +7714,9 @@ public class ObjectStore implements RawStore, Configurable {
       query.declareParameters("java.lang.String dbName");
       query.setResult("functionName");
       query.setOrdering("functionName ascending");
-      Collection names = (Collection) query.execute(dbName);
+      Collection<?> names = (Collection<?>) query.execute(dbName);
       funcs = new ArrayList<String>();
-      for (Iterator i = names.iterator(); i.hasNext();) {
+      for (Iterator<?> i = names.iterator(); i.hasNext();) {
         funcs.add((String) i.next());
       }
       commited = commitTransaction();
@@ -7690,7 +7741,8 @@ public class ObjectStore implements RawStore, Configurable {
       query = pm.newQuery(MNotificationLog.class, "eventId > lastEvent");
       query.declareParameters("java.lang.Long lastEvent");
       query.setOrdering("eventId ascending");
-      Collection<MNotificationLog> events = (Collection) query.execute(lastEvent);
+      Collection<MNotificationLog> events = (Collection<MNotificationLog>)
+          query.execute(lastEvent);
       commited = commitTransaction();
       if (events == null) {
         return null;
