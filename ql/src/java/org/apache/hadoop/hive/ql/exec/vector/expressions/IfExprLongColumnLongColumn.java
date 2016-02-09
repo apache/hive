@@ -173,8 +173,8 @@ public class IfExprLongColumnLongColumn extends VectorExpression {
         .setNumArguments(3)
         .setArgumentTypes(
             VectorExpressionDescriptor.ArgumentType.getType("long"),
-            VectorExpressionDescriptor.ArgumentType.getType("int_datetime_interval_family"),
-            VectorExpressionDescriptor.ArgumentType.getType("int_datetime_interval_family"))
+            VectorExpressionDescriptor.ArgumentType.getType("int_date_interval_year_month"),
+            VectorExpressionDescriptor.ArgumentType.getType("int_date_interval_year_month"))
         .setInputExpressionTypes(
             VectorExpressionDescriptor.InputExpressionType.COLUMN,
             VectorExpressionDescriptor.InputExpressionType.COLUMN,

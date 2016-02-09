@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.List;
 
+import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
+import org.apache.hadoop.hive.common.type.PisaTimestamp;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -254,7 +256,7 @@ public final class VectorSerializeRow<T extends SerializeWrite> {
     }
   }
 
-  private class TimestampWriter extends AbstractLongWriter {
+  private class TimestampWriter extends Writer {
 
     Timestamp scratchTimestamp;
 
@@ -265,11 +267,11 @@ public final class VectorSerializeRow<T extends SerializeWrite> {
 
     @Override
     boolean apply(VectorizedRowBatch batch, int batchIndex) throws IOException {
-      LongColumnVector colVector = (LongColumnVector) batch.cols[columnIndex];
+      TimestampColumnVector colVector = (TimestampColumnVector) batch.cols[columnIndex];
 
       if (colVector.isRepeating) {
         if (colVector.noNulls || !colVector.isNull[0]) {
-          TimestampUtils.assignTimeInNanoSec(colVector.vector[0], scratchTimestamp);
+          colVector.timestampUpdate(scratchTimestamp, 0);
           serializeWrite.writeTimestamp(scratchTimestamp);
           return true;
         } else {
@@ -278,7 +280,7 @@ public final class VectorSerializeRow<T extends SerializeWrite> {
         }
       } else {
         if (colVector.noNulls || !colVector.isNull[batchIndex]) {
-          TimestampUtils.assignTimeInNanoSec(colVector.vector[batchIndex], scratchTimestamp);
+          colVector.timestampUpdate(scratchTimestamp, batchIndex);
           serializeWrite.writeTimestamp(scratchTimestamp);
           return true;
         } else {
@@ -319,19 +321,23 @@ public final class VectorSerializeRow<T extends SerializeWrite> {
     }
   }
 
-  private class IntervalDayTimeWriter extends AbstractLongWriter {
+  private class IntervalDayTimeWriter extends Writer {
+
+    private HiveIntervalDayTime hiveIntervalDayTime;
 
     IntervalDayTimeWriter(int columnIndex) {
       super(columnIndex);
+      hiveIntervalDayTime = new HiveIntervalDayTime();
     }
 
     @Override
     boolean apply(VectorizedRowBatch batch, int batchIndex) throws IOException {
-      LongColumnVector colVector = (LongColumnVector) batch.cols[columnIndex];
+      TimestampColumnVector colVector = (TimestampColumnVector) batch.cols[columnIndex];
 
       if (colVector.isRepeating) {
         if (colVector.noNulls || !colVector.isNull[0]) {
-          serializeWrite.writeHiveIntervalDayTime(colVector.vector[0]);
+          hiveIntervalDayTime.set(colVector.asScratchPisaTimestamp(0));
+          serializeWrite.writeHiveIntervalDayTime(hiveIntervalDayTime);
           return true;
         } else {
           serializeWrite.writeNull();
@@ -339,7 +345,8 @@ public final class VectorSerializeRow<T extends SerializeWrite> {
         }
       } else {
         if (colVector.noNulls || !colVector.isNull[batchIndex]) {
-          serializeWrite.writeHiveIntervalDayTime(colVector.vector[batchIndex]);
+          hiveIntervalDayTime.set(colVector.asScratchPisaTimestamp(batchIndex));
+          serializeWrite.writeHiveIntervalDayTime(hiveIntervalDayTime);
           return true;
         } else {
           serializeWrite.writeNull();

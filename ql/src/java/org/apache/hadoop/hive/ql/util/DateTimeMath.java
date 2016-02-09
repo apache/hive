@@ -25,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
+import org.apache.hadoop.hive.common.type.PisaTimestamp;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hive.common.util.DateUtils;
 
@@ -88,6 +89,26 @@ public class DateTimeMath {
   public long addMonthsToNanosLocal(long nanos, int months) {
     long result = addMonthsToMillisLocal(nanos / 1000000, months) * 1000000 + (nanos % 1000000);
     return result;
+  }
+
+  /**
+   * Perform month arithmetic to millis value using local time zone.
+   * @param pisaTimestamp
+   * @param months
+   * @return
+   */
+  public PisaTimestamp addMonthsToPisaTimestamp(PisaTimestamp pisaTimestamp, int months,
+      PisaTimestamp scratchPisaTimestamp) {
+    calLocal.setTimeInMillis(pisaTimestamp.getTimestampMilliseconds());
+    calLocal.add(Calendar.MONTH, months);
+    scratchPisaTimestamp.updateFromTimestampMilliseconds(calLocal.getTimeInMillis());
+
+    // Add in portion of nanos below a millisecond...
+    PisaTimestamp.add(
+        scratchPisaTimestamp.getEpochDay(), scratchPisaTimestamp.getNanoOfDay(),
+        0, pisaTimestamp.getNanoOfDay() % 1000000,
+        scratchPisaTimestamp);
+    return scratchPisaTimestamp;
   }
 
   public long addMonthsToDays(long days, int months) {

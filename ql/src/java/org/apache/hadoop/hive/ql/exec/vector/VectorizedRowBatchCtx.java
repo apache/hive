@@ -370,18 +370,18 @@ public class VectorizedRowBatchCtx {
           } else { 
             lcv.fill(DateWritable.dateToDays((Date) value));
             lcv.isNull[0] = false;
-          }          
+          }
         }
         break;
-        
+
         case TIMESTAMP: {
-          LongColumnVector lcv = (LongColumnVector) batch.cols[colIndex];
+          TimestampColumnVector lcv = (TimestampColumnVector) batch.cols[colIndex];
           if (value == null) {
             lcv.noNulls = false;
             lcv.isNull[0] = true;
             lcv.isRepeating = true;
-          } else { 
-            lcv.fill(TimestampUtils.getTimeNanoSec((Timestamp) value));
+          } else {
+            lcv.fill((Timestamp) value);
             lcv.isNull[0] = false;
           }
         }
@@ -400,14 +400,14 @@ public class VectorizedRowBatchCtx {
         }
 
         case INTERVAL_DAY_TIME: {
-          LongColumnVector lcv = (LongColumnVector) batch.cols[colIndex];
+          TimestampColumnVector tcv = (TimestampColumnVector) batch.cols[colIndex];
           if (value == null) {
-            lcv.noNulls = false;
-            lcv.isNull[0] = true;
-            lcv.isRepeating = true;
+            tcv.noNulls = false;
+            tcv.isNull[0] = true;
+            tcv.isRepeating = true;
           } else {
-            lcv.fill(DateUtils.getIntervalDayTimeTotalNanos((HiveIntervalDayTime) value));
-            lcv.isNull[0] = false;
+            tcv.fill(((HiveIntervalDayTime) value).pisaTimestampUpdate(tcv.useScratchPisaTimestamp()));
+            tcv.isNull[0] = false;
           }
         }
 

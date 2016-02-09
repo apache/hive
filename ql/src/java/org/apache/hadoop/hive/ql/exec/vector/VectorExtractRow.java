@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.List;
+
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -31,6 +32,7 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.common.type.PisaTimestamp;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -255,10 +257,29 @@ public abstract class VectorExtractRow {
     }
   }
 
-  private class TimestampExtractor extends AbstractLongExtractor {
+  private abstract class AbstractTimestampExtractor extends Extractor {
 
-    private Timestamp timestamp;
-    
+    protected TimestampColumnVector colVector;
+
+    AbstractTimestampExtractor(int columnIndex) {
+      super(columnIndex);
+    }
+
+    @Override
+    void setColumnVector(VectorizedRowBatch batch) {
+      colVector = (TimestampColumnVector) batch.cols[columnIndex];
+    }
+
+    @Override
+    void forgetColumnVector() {
+      colVector = null;
+    }
+  }
+
+  private class TimestampExtractor extends AbstractTimestampExtractor {
+
+    protected Timestamp timestamp;
+
     TimestampExtractor(int columnIndex) {
       super(columnIndex);
       object = PrimitiveObjectInspectorFactory.writableTimestampObjectInspector.create(new Timestamp(0));
@@ -269,8 +290,7 @@ public abstract class VectorExtractRow {
     Object extract(int batchIndex) {
       int adjustedIndex = (colVector.isRepeating ? 0 : batchIndex);
       if (colVector.noNulls || !colVector.isNull[adjustedIndex]) {
-        long value = vector[adjustedIndex];
-        TimestampUtils.assignTimeInNanoSec(value, timestamp);
+        colVector.timestampUpdate(timestamp, adjustedIndex);
         PrimitiveObjectInspectorFactory.writableTimestampObjectInspector.set(object, timestamp);
         return object;
       } else {
@@ -282,7 +302,7 @@ public abstract class VectorExtractRow {
   private class IntervalYearMonthExtractor extends AbstractLongExtractor {
 
     private HiveIntervalYearMonth hiveIntervalYearMonth;
-    
+
     IntervalYearMonthExtractor(int columnIndex) {
       super(columnIndex);
       object = PrimitiveObjectInspectorFactory.writableHiveIntervalYearMonthObjectInspector.create(new HiveIntervalYearMonth(0));
@@ -303,10 +323,10 @@ public abstract class VectorExtractRow {
     }
   }
 
-  private class IntervalDayTimeExtractor extends AbstractLongExtractor {
+  private class IntervalDayTimeExtractor extends AbstractTimestampExtractor {
 
     private HiveIntervalDayTime hiveIntervalDayTime;
-    
+
     IntervalDayTimeExtractor(int columnIndex) {
       super(columnIndex);
       object = PrimitiveObjectInspectorFactory.writableHiveIntervalDayTimeObjectInspector.create(new HiveIntervalDayTime(0, 0));
@@ -317,8 +337,7 @@ public abstract class VectorExtractRow {
     Object extract(int batchIndex) {
       int adjustedIndex = (colVector.isRepeating ? 0 : batchIndex);
       if (colVector.noNulls || !colVector.isNull[adjustedIndex]) {
-        long value = vector[adjustedIndex];
-        DateUtils.setIntervalDayTimeTotalNanos(hiveIntervalDayTime, value);
+        hiveIntervalDayTime.set(colVector.asScratchPisaTimestamp(adjustedIndex));
         PrimitiveObjectInspectorFactory.writableHiveIntervalDayTimeObjectInspector.set(object, hiveIntervalDayTime);
         return object;
       } else {

@@ -19,10 +19,12 @@
 package org.apache.hadoop.hive.ql.io.orc;
 
 import com.google.common.collect.Lists;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.PisaTimestamp;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
@@ -30,6 +32,7 @@ import org.apache.hadoop.hive.ql.exec.vector.ListColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.MapColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampUtils;
 import org.apache.hadoop.hive.ql.exec.vector.UnionColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -518,13 +521,13 @@ public class TestVectorOrcFile {
     tslist.add(Timestamp.valueOf("2008-10-02 00:00:00"));
 
     VectorizedRowBatch batch = new VectorizedRowBatch(1, 1024);
-    LongColumnVector vec = new LongColumnVector(1024);
+    TimestampColumnVector vec = new TimestampColumnVector(1024);
     batch.cols[0] = vec;
     batch.reset();
     batch.size = tslist.size();
     for (int i=0; i < tslist.size(); ++i) {
       Timestamp ts = tslist.get(i);
-      vec.vector[i] = TimestampUtils.getTimeNanoSec(ts);
+      vec.set(i, new PisaTimestamp(ts));
     }
     writer.addRowBatch(batch);
     writer.close();
@@ -1340,9 +1343,10 @@ public class TestVectorOrcFile {
     batch.size = 1000;
     for (int year = minYear; year < maxYear; ++year) {
       for (int ms = 1000; ms < 2000; ++ms) {
-        ((LongColumnVector) batch.cols[0]).vector[ms - 1000] =
-            TimestampUtils.getTimeNanoSec(Timestamp.valueOf(year +
-                "-05-05 12:34:56." + ms));
+        TimestampColumnVector timestampColVector = (TimestampColumnVector) batch.cols[0];
+        timestampColVector.set(ms - 1000,
+            new PisaTimestamp(Timestamp.valueOf(year +
+                "-05-05 12:34:56." + ms)));
         ((LongColumnVector) batch.cols[1]).vector[ms - 1000] =
             new DateWritable(new Date(year - 1900, 11, 25)).getDays();
       }
@@ -1380,8 +1384,8 @@ public class TestVectorOrcFile {
                                HiveDecimalWritable dec) {
     UnionColumnVector union = (UnionColumnVector) batch.cols[1];
     if (ts != null) {
-      ((LongColumnVector) batch.cols[0]).vector[rowId] =
-          TimestampUtils.getTimeNanoSec(ts);
+      TimestampColumnVector timestampColVector = (TimestampColumnVector) batch.cols[0];
+      timestampColVector.set(rowId, new PisaTimestamp(ts));
     } else {
       batch.cols[0].isNull[rowId] = true;
       batch.cols[0].noNulls = false;
@@ -2173,9 +2177,9 @@ public class TestVectorOrcFile {
     ((DoubleColumnVector) batch.cols[5]).vector[0] = 0.0009765625;
     ((LongColumnVector) batch.cols[6]).vector[0] =
         new DateWritable(new Date(111, 6, 1)).getDays();
-    ((LongColumnVector) batch.cols[7]).vector[0] =
-        TimestampUtils.getTimeNanoSec(new Timestamp(115, 9, 23, 10, 11, 59,
-            999999999));
+    ((TimestampColumnVector) batch.cols[7]).set(0,
+        new PisaTimestamp(new Timestamp(115, 9, 23, 10, 11, 59,
+            999999999)));
     ((DecimalColumnVector) batch.cols[8]).vector[0] =
         new HiveDecimalWritable("1.234567");
     ((BytesColumnVector) batch.cols[9]).setVal(0, "Echelon".getBytes());
@@ -2228,9 +2232,11 @@ public class TestVectorOrcFile {
       ((DoubleColumnVector) batch.cols[5]).vector[r] = 0.0009765625 * r;
       ((LongColumnVector) batch.cols[6]).vector[r] =
           new DateWritable(new Date(111, 6, 1)).getDays() + r;
-      ((LongColumnVector) batch.cols[7]).vector[r] =
-          TimestampUtils.getTimeNanoSec(new Timestamp(115, 9, 23, 10, 11, 59,
-              999999999)) + r * 1000000000L;
+
+      Timestamp ts = new Timestamp(115, 9, 23, 10, 11, 59, 999999999);
+      PisaTimestamp pisaTimestamp = new PisaTimestamp(ts);
+      pisaTimestamp.addSeconds(pisaTimestamp, r, pisaTimestamp);
+      ((TimestampColumnVector) batch.cols[7]).set(r, pisaTimestamp);
       ((DecimalColumnVector) batch.cols[8]).vector[r] =
           new HiveDecimalWritable("1.234567");
       ((BytesColumnVector) batch.cols[9]).setVal(r,

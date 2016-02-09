@@ -145,9 +145,6 @@ public interface SerializeWrite {
    */
   void writeHiveIntervalDayTime(HiveIntervalDayTime vidt) throws IOException;
 
-  // We provide a faster way to write a hive interval day time without a HiveIntervalDayTime object.
-  void writeHiveIntervalDayTime(long totalNanos) throws IOException;
-
   /*
    * DECIMAL.
    */

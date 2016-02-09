@@ -25,8 +25,10 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.PisaTimestamp;
 import org.apache.hadoop.hive.serde2.ByteStream.RandomAccessOutput;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils.VInt;
@@ -148,6 +150,21 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
     } else {
       set(t.currentBytes, 0);
     }
+  }
+
+  public static void updateTimestamp(Timestamp timestamp, long secondsAsMillis, int nanos) {
+    ((Date) timestamp).setTime(secondsAsMillis);
+    timestamp.setNanos(nanos);
+  }
+
+  public void setInternal(long secondsAsMillis, int nanos) {
+
+    // This is our way of documenting that we are MUTATING the contents of
+    // this writable's internal timestamp.
+    updateTimestamp(timestamp, secondsAsMillis, nanos);
+
+    bytesEmpty = true;
+    timestampEmpty = false;
   }
 
   private void clearTimestamp() {
@@ -656,7 +673,7 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
    * Rounds the number of milliseconds relative to the epoch down to the nearest whole number of
    * seconds. 500 would round to 0, -500 would round to -1.
    */
-  static long millisToSeconds(long millis) {
+  public static long millisToSeconds(long millis) {
     if (millis >= 0) {
       return millis / 1000;
     } else {

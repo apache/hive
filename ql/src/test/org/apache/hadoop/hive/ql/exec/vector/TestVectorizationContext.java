@@ -50,6 +50,10 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprStringGroupColumn
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprStringGroupColumnVarCharScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprStringScalarStringGroupColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprStringScalarStringScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprTimestampColumnColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprTimestampColumnScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprTimestampScalarColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprTimestampScalarScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprVarCharScalarStringGroupColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IsNotNull;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IsNull;
@@ -67,11 +71,13 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.StringLTrim;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringLower;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringUpper;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFUnixTimeStampLong;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFYearLong;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFUnixTimeStampDate;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFUnixTimeStampTimestamp;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFYearDate;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterStringColumnInList;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterLongColumnInList;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterDoubleColumnInList;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFYearTimestamp;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprLongColumnLongScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprLongScalarLongScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprLongScalarLongColumn;
@@ -151,10 +157,10 @@ public class TestVectorizationContext {
 
   @Test
   public void testVectorExpressionDescriptor() {
-    VectorUDFUnixTimeStampLong v1 = new VectorUDFUnixTimeStampLong();
+    VectorUDFUnixTimeStampDate v1 = new VectorUDFUnixTimeStampDate();
     VectorExpressionDescriptor.Builder builder1 = new VectorExpressionDescriptor.Builder();
     VectorExpressionDescriptor.Descriptor d1 = builder1.setMode(VectorExpressionDescriptor.Mode.PROJECTION)
-        .setNumArguments(1).setArgumentTypes(VectorExpressionDescriptor.ArgumentType.INT_DATETIME_INTERVAL_FAMILY)
+        .setNumArguments(1).setArgumentTypes(VectorExpressionDescriptor.ArgumentType.INT_DATE_INTERVAL_YEAR_MONTH)
         .setInputExpressionTypes(VectorExpressionDescriptor.InputExpressionType.COLUMN).build();
     assertTrue(d1.matches(v1.getDescriptor()));
 
@@ -1086,14 +1092,14 @@ public class TestVectorizationContext {
     tsFuncExpr.setGenericUDF(gudfBridge);
     tsFuncExpr.setChildren(children);
     VectorExpression ve = vc.getVectorExpression(tsFuncExpr);
-    Assert.assertEquals(VectorUDFYearLong.class, ve.getClass());
+    Assert.assertEquals(VectorUDFYearTimestamp.class, ve.getClass());
 
     //GenericUDFToUnixTimeStamp
     GenericUDFToUnixTimeStamp gudf = new GenericUDFToUnixTimeStamp();
     tsFuncExpr.setGenericUDF(gudf);
     tsFuncExpr.setTypeInfo(TypeInfoFactory.longTypeInfo);
     ve = vc.getVectorExpression(tsFuncExpr);
-    Assert.assertEquals(VectorUDFUnixTimeStampLong.class, ve.getClass());
+    Assert.assertEquals(VectorUDFUnixTimeStampTimestamp.class, ve.getClass());
   }
 
   @Test
@@ -1353,7 +1359,7 @@ public class TestVectorizationContext {
     children1.set(1, col2Expr);
     children1.set(2, col3Expr);
     ve = vc.getVectorExpression(exprDesc);
-    assertTrue(ve instanceof IfExprLongColumnLongColumn);
+    assertTrue(ve instanceof IfExprTimestampColumnColumn);
 
     // timestamp column/scalar IF where scalar is really a CAST of a constant to timestamp.
     ExprNodeGenericFuncDesc f = new ExprNodeGenericFuncDesc();
@@ -1368,20 +1374,20 @@ public class TestVectorizationContext {
     // We check for two different classes below because initially the result
     // is IfExprLongColumnLongColumn but in the future if the system is enhanced
     // with constant folding then the result will be IfExprLongColumnLongScalar.
-    assertTrue(IfExprLongColumnLongColumn.class == ve.getClass()
-               || IfExprLongColumnLongScalar.class == ve.getClass());
+    assertTrue(IfExprTimestampColumnColumn.class == ve.getClass()
+               || IfExprTimestampColumnScalar.class == ve.getClass());
 
     // timestamp scalar/scalar
     children1.set(1, f);
     ve = vc.getVectorExpression(exprDesc);
-    assertTrue(IfExprLongColumnLongColumn.class == ve.getClass()
-        || IfExprLongScalarLongScalar.class == ve.getClass());
+    assertTrue(IfExprTimestampColumnColumn.class == ve.getClass()
+        || IfExprTimestampScalarScalar.class == ve.getClass());
 
     // timestamp scalar/column
     children1.set(2, col3Expr);
     ve = vc.getVectorExpression(exprDesc);
-    assertTrue(IfExprLongColumnLongColumn.class == ve.getClass()
-        || IfExprLongScalarLongColumn.class == ve.getClass());
+    assertTrue(IfExprTimestampColumnColumn.class == ve.getClass()
+        || IfExprTimestampScalarColumn.class == ve.getClass());
 
     // test for boolean type
     col2Expr = new  ExprNodeColumnDesc(Boolean.class, "col2", "table", false);

@@ -160,8 +160,8 @@ public class LongColLessLongColumn extends VectorExpression {
             VectorExpressionDescriptor.Mode.PROJECTION)
         .setNumArguments(2)
         .setArgumentTypes(
-            VectorExpressionDescriptor.ArgumentType.getType("int_datetime_interval_family"),
-            VectorExpressionDescriptor.ArgumentType.getType("int_datetime_interval_family"))
+            VectorExpressionDescriptor.ArgumentType.getType("int_date_interval_year_month"),
+            VectorExpressionDescriptor.ArgumentType.getType("int_date_interval_year_month"))
         .setInputExpressionTypes(
             VectorExpressionDescriptor.InputExpressionType.COLUMN,
             VectorExpressionDescriptor.InputExpressionType.COLUMN).build();

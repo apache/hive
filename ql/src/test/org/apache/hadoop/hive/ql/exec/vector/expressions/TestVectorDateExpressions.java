@@ -114,7 +114,7 @@ public class TestVectorDateExpressions {
 
   private void verifyUDFYear(VectorizedRowBatch batch) {
     VectorExpression udf = null;
-    udf = new VectorUDFYearLong(0, 1);
+    udf = new VectorUDFYearDate(0, 1);
     udf.setInputTypes(VectorExpression.Type.DATE);
     udf.evaluate(batch);
     final int in = 0;
@@ -176,7 +176,7 @@ public class TestVectorDateExpressions {
 
   private void verifyUDFDayOfMonth(VectorizedRowBatch batch) {
     VectorExpression udf = null;
-    udf = new VectorUDFDayOfMonthLong(0, 1);
+    udf = new VectorUDFDayOfMonthDate(0, 1);
     udf.setInputTypes(VectorExpression.Type.DATE);
     udf.evaluate(batch);
     final int in = 0;
@@ -238,7 +238,7 @@ public class TestVectorDateExpressions {
 
   private void verifyUDFMonth(VectorizedRowBatch batch) {
     VectorExpression udf;
-      udf = new VectorUDFMonthLong(0, 1);
+      udf = new VectorUDFMonthDate(0, 1);
     udf.setInputTypes(VectorExpression.Type.DATE);
     udf.evaluate(batch);
     final int in = 0;
@@ -314,7 +314,7 @@ public class TestVectorDateExpressions {
 
   private void verifyUDFUnixTimeStamp(VectorizedRowBatch batch) {
     VectorExpression udf;
-    udf = new VectorUDFUnixTimeStampLong(0, 1);
+    udf = new VectorUDFUnixTimeStampDate(0, 1);
     udf.setInputTypes(VectorExpression.Type.DATE);
     udf.evaluate(batch);
     final int in = 0;
@@ -376,7 +376,7 @@ public class TestVectorDateExpressions {
 
   private void verifyUDFWeekOfYear(VectorizedRowBatch batch) {
     VectorExpression udf;
-    udf = new VectorUDFWeekOfYearLong(0, 1);
+    udf = new VectorUDFWeekOfYearDate(0, 1);
     udf.setInputTypes(VectorExpression.Type.DATE);
     udf.evaluate(batch);
     final int in = 0;

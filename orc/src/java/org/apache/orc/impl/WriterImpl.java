@@ -60,6 +60,7 @@ import org.apache.hadoop.hive.ql.exec.vector.ListColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.MapColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.UnionColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.io.Text;
@@ -1732,17 +1733,20 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     void writeBatch(ColumnVector vector, int offset,
                     int length) throws IOException {
       super.writeBatch(vector, offset, length);
-      LongColumnVector vec = (LongColumnVector) vector;
+      TimestampColumnVector vec = (TimestampColumnVector) vector;
       if (vector.isRepeating) {
         if (vector.noNulls || !vector.isNull[0]) {
-          long value = vec.vector[0];
-          long valueMillis = value / MILLIS_PER_NANO;
-          indexStatistics.updateTimestamp(valueMillis);
-          if (createBloomFilter) {
-            bloomFilter.addLong(valueMillis);
+          long millis = vec.getEpochMilliseconds(0);
+          int adjustedNanos = vec.getSignedNanos(0);
+          if (adjustedNanos < 0) {
+            adjustedNanos += NANOS_PER_SECOND;
           }
-          final long secs = value / NANOS_PER_SECOND - base_timestamp;
-          final long nano = formatNanos((int) (value % NANOS_PER_SECOND));
+          indexStatistics.updateTimestamp(millis);
+          if (createBloomFilter) {
+            bloomFilter.addLong(millis);
+          }
+          final long secs = vec.getEpochSeconds(0) - base_timestamp;
+          final long nano = formatNanos(adjustedNanos);
           for(int i=0; i < length; ++i) {
             seconds.write(secs);
             nanos.write(nano);
@@ -1751,18 +1755,17 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       } else {
         for(int i=0; i < length; ++i) {
           if (vec.noNulls || !vec.isNull[i + offset]) {
-            long value = vec.vector[i + offset];
-            long valueMillis = value / MILLIS_PER_NANO;
-            long valueSecs = value /NANOS_PER_SECOND - base_timestamp;
-            int valueNanos = (int) (value % NANOS_PER_SECOND);
-            if (valueNanos < 0) {
-              valueNanos += NANOS_PER_SECOND;
+            long secs = vec.getEpochSeconds(i + offset) - base_timestamp;
+            long millis = vec.getEpochMilliseconds(i + offset);
+            int adjustedNanos = vec.getSignedNanos(i + offset);
+            if (adjustedNanos < 0) {
+              adjustedNanos += NANOS_PER_SECOND;
             }
-            seconds.write(valueSecs);
-            nanos.write(formatNanos(valueNanos));
-            indexStatistics.updateTimestamp(valueMillis);
+            seconds.write(secs);
+            nanos.write(formatNanos(adjustedNanos));
+            indexStatistics.updateTimestamp(millis);
             if (createBloomFilter) {
-              bloomFilter.addLong(valueMillis);
+              bloomFilter.addLong(millis);
             }
           }
         }

@@ -15,23 +15,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
 
-import org.apache.hadoop.hive.ql.exec.vector.TimestampUtils;
+import java.sql.Timestamp;
+
+import org.apache.hadoop.hive.common.type.PisaTimestamp;
 
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 
 /**
- * Generated from template FilterTimestampColumnCompareTimestampScalar.txt, which covers comparison 
- * expressions between a timestamp column and a timestamp scalar, however output is not
- * produced in a separate column. 
+ * Generated from template FilterTimestampColumnCompareScalar.txt, which covers comparison
+ * expressions between a datetime/interval column and a scalar of the same type, however output is not
+ * produced in a separate column.
  * The selected vector of the input {@link VectorizedRowBatch} is updated for in-place filtering.
  */
 public class <ClassName> extends <BaseClassName> {
 
-  public <ClassName>(int colNum, long value) { 
-    super(colNum, value);
+  public <ClassName>(int colNum, Timestamp value) {
+    super(colNum, new PisaTimestamp(value));
   }
 
   public <ClassName>() {

@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.common.type.RandomTypeUtil;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -258,7 +259,7 @@ public class RandomRowObjectSource {
     case BINARY:
       return getRandBinary(r, 1 + r.nextInt(100));
     case TIMESTAMP:
-      return getRandTimestamp(r);
+      return RandomTypeUtil.getRandTimestamp(r);
     case INTERVAL_YEAR_MONTH:
       return getRandIntervalYearMonth(r);
     case INTERVAL_DAY_TIME:
@@ -353,24 +354,6 @@ public class RandomRowObjectSource {
         Integer.valueOf(1 + r.nextInt(28)));     // day
     Date dateVal = Date.valueOf(dateStr);
     return dateVal;
-  }
-
-  public static Timestamp getRandTimestamp(Random r) {
-    String optionalNanos = "";
-    if (r.nextInt(2) == 1) {
-      optionalNanos = String.format(".%09d",
-          Integer.valueOf(0 + r.nextInt(DateUtils.NANOS_PER_SEC)));
-    }
-    String timestampStr = String.format("%d-%02d-%02d %02d:%02d:%02d%s",
-        Integer.valueOf(1970 + r.nextInt(200)),  // year
-        Integer.valueOf(1 + r.nextInt(12)),      // month
-        Integer.valueOf(1 + r.nextInt(28)),      // day
-        Integer.valueOf(0 + r.nextInt(24)),      // hour
-        Integer.valueOf(0 + r.nextInt(60)),      // minute
-        Integer.valueOf(0 + r.nextInt(60)),      // second
-        optionalNanos);
-    Timestamp timestampVal = Timestamp.valueOf(timestampStr);
-    return timestampVal;
   }
 
   public static HiveIntervalYearMonth getRandIntervalYearMonth(Random r) {

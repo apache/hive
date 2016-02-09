@@ -26,8 +26,9 @@ import java.util.Date;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFDayOfMonthLong;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFDayOfMonthDate;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFDayOfMonthString;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFDayOfMonthTimestamp;
 import org.apache.hadoop.hive.ql.udf.generic.NDV;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
@@ -48,7 +49,7 @@ import org.apache.hadoop.io.Text;
     + "4. A day-time interval value"
     + "Example:\n "
     + "  > SELECT _FUNC_('2009-07-30') FROM src LIMIT 1;\n" + "  30")
-@VectorizedExpressions({VectorUDFDayOfMonthLong.class, VectorUDFDayOfMonthString.class})
+@VectorizedExpressions({VectorUDFDayOfMonthDate.class, VectorUDFDayOfMonthString.class, VectorUDFDayOfMonthTimestamp.class})
 @NDV(maxNdv = 31)
 public class UDFDayOfMonth extends UDF {
   private final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");

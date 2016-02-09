@@ -29,22 +29,22 @@ import junit.framework.Assert;
 
 import org.apache.hadoop.hive.common.type.Decimal128;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.PisaTimestamp;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.*;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.*;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.junit.Test;
 
 /**
  * Test VectorExpression classes for vectorized implementations of type casts.
  */
 public class TestVectorTypeCasts {
-
-  // Number of nanoseconds in one second
-  private static final long NANOS_PER_SECOND = 1000000000;
 
   @Test
   public void testVectorCastLongToDouble() {
@@ -79,13 +79,13 @@ public class TestVectorTypeCasts {
 
   @Test
   public void testCastDoubleToTimestamp() {
-    VectorizedRowBatch b = TestVectorMathFunctions.getVectorizedRowBatchDoubleInLongOut();
-    LongColumnVector resultV = (LongColumnVector) b.cols[1];
+    VectorizedRowBatch b = TestVectorMathFunctions.getVectorizedRowBatchDoubleInTimestampOut();
+    TimestampColumnVector resultV = (TimestampColumnVector) b.cols[1];
     b.cols[0].noNulls = true;
-    VectorExpression expr = new CastDoubleToTimestampViaDoubleToLong(0, 1);
+    VectorExpression expr = new CastDoubleToTimestamp(0, 1);
     expr.evaluate(b);
-    Assert.assertEquals(0, resultV.vector[3]);
-    Assert.assertEquals((long) (0.5d * NANOS_PER_SECOND), resultV.vector[4]);
+    Assert.assertEquals(0.0, resultV.getTimestampSecondsWithFractionalNanos(3));
+    Assert.assertEquals(0.5d, resultV.getTimestampSecondsWithFractionalNanos(4));
   }
 
   @Test
@@ -103,36 +103,36 @@ public class TestVectorTypeCasts {
 
   @Test
   public void testCastLongToTimestamp() {
-    VectorizedRowBatch b = TestVectorMathFunctions.getVectorizedRowBatchLongInLongOut();
-    LongColumnVector resultV = (LongColumnVector) b.cols[1];
+    VectorizedRowBatch b = TestVectorMathFunctions.getVectorizedRowBatchLongInTimestampOut();
+    TimestampColumnVector resultV = (TimestampColumnVector) b.cols[1];
     b.cols[0].noNulls = true;
-    VectorExpression expr = new CastLongToTimestampViaLongToLong(0, 1);
+    VectorExpression expr = new CastLongToTimestamp(0, 1);
     expr.evaluate(b);
-    Assert.assertEquals(-2 * NANOS_PER_SECOND, resultV.vector[0]);
-    Assert.assertEquals(2 * NANOS_PER_SECOND, resultV.vector[1]);
+    Assert.assertEquals(-2, resultV.getTimestampSeconds(0));
+    Assert.assertEquals(2, resultV.getTimestampSeconds(1));
   }
 
   @Test
   public void testCastTimestampToLong() {
-    VectorizedRowBatch b = TestVectorMathFunctions.getVectorizedRowBatchLongInLongOut();
-    LongColumnVector inV = (LongColumnVector) b.cols[0];
-    inV.vector[0] = NANOS_PER_SECOND;  // Make one entry produce interesting result
+    VectorizedRowBatch b = TestVectorMathFunctions.getVectorizedRowBatchTimestampInLongOut();
+    TimestampColumnVector inV = (TimestampColumnVector) b.cols[0];
+    inV.set(0, new PisaTimestamp(0, PisaTimestamp.NANOSECONDS_PER_SECOND));  // Make one entry produce interesting result
       // (1 sec after epoch).
 
     LongColumnVector resultV = (LongColumnVector) b.cols[1];
     b.cols[0].noNulls = true;
-    VectorExpression expr = new CastTimestampToLongViaLongToLong(0, 1);
+    VectorExpression expr = new CastTimestampToLong(0, 1);
     expr.evaluate(b);
     Assert.assertEquals(1, resultV.vector[0]);
   }
 
   @Test
   public void testCastTimestampToDouble() {
-    VectorizedRowBatch b = TestVectorMathFunctions.getVectorizedRowBatchLongInDoubleOut();
-    LongColumnVector inV = (LongColumnVector) b.cols[0];
+    VectorizedRowBatch b = TestVectorMathFunctions.getVectorizedRowBatchTimestampInDoubleOut();
+    TimestampColumnVector inV = (TimestampColumnVector) b.cols[0];
     DoubleColumnVector resultV = (DoubleColumnVector) b.cols[1];
     b.cols[0].noNulls = true;
-    VectorExpression expr = new CastTimestampToDoubleViaLongToDouble(0, 1);
+    VectorExpression expr = new CastTimestampToDouble(0, 1);
     expr.evaluate(b);
     Assert.assertEquals(-1E-9D , resultV.vector[1]);
     Assert.assertEquals(1E-9D, resultV.vector[3]);
@@ -356,13 +356,16 @@ public class TestVectorTypeCasts {
 
   @Test
   public void testCastDecimalToTimestamp() {
-    VectorizedRowBatch b = getBatchDecimalLong2();
+    VectorizedRowBatch b = getBatchDecimalTimestamp();
     VectorExpression expr = new CastDecimalToTimestamp(0, 1);
     expr.evaluate(b);
-    LongColumnVector r = (LongColumnVector) b.cols[1];
-    assertEquals(1111111111L, r.vector[0]);
-    assertEquals(-2222222222L, r.vector[1]);
-    assertEquals(31536000999999999L, r.vector[2]);
+    TimestampColumnVector r = (TimestampColumnVector) b.cols[1];
+    assertEquals(1111111111L, r.getNanoOfDay(0));
+    assertEquals(0L, r.getEpochDay(0));
+    assertEquals(-2222222222L, r.getNanoOfDay(1));
+    assertEquals(0L, r.getEpochDay(1));
+    assertEquals(999999999L, r.getNanoOfDay(2));
+    assertEquals(365L, r.getEpochDay(2));
   }
 
   private VectorizedRowBatch getBatchDecimalLong2() {
@@ -371,6 +374,22 @@ public class TestVectorTypeCasts {
     short scale = 9;
     b.cols[0] = dv = new DecimalColumnVector(18, scale);
     b.cols[1] = new LongColumnVector();
+
+    b.size = 3;
+
+    dv.vector[0].set(HiveDecimal.create("1.111111111").setScale(scale));
+    dv.vector[1].set(HiveDecimal.create("-2.222222222").setScale(scale));
+    dv.vector[2].set(HiveDecimal.create("31536000.999999999").setScale(scale));
+
+    return b;
+  }
+
+  private VectorizedRowBatch getBatchDecimalTimestamp() {
+    VectorizedRowBatch b = new VectorizedRowBatch(2);
+    DecimalColumnVector dv;
+    short scale = 9;
+    b.cols[0] = dv = new DecimalColumnVector(18, scale);
+    b.cols[1] = new TimestampColumnVector();
 
     b.size = 3;
 
@@ -400,6 +419,17 @@ public class TestVectorTypeCasts {
     lv.vector[0] = 0;
     lv.vector[1] = -1;
     lv.vector[2] = 99999999999999L;
+    return b;
+  }
+
+  private VectorizedRowBatch getBatchTimestampDecimal() {
+    VectorizedRowBatch b = new VectorizedRowBatch(2);
+    TimestampColumnVector tcv;
+    b.cols[0] = tcv = new TimestampColumnVector();
+    b.cols[1] = new DecimalColumnVector(18, 2);
+    tcv.set(0, new PisaTimestamp( 0, 0));
+    tcv.set(1, new PisaTimestamp( 0, -1));
+    tcv.set(2, new PisaTimestamp( 99999999999999L / PisaTimestamp.NANOSECONDS_PER_DAY, 99999999999999L % PisaTimestamp.NANOSECONDS_PER_DAY));
     return b;
   }
 
@@ -466,10 +496,10 @@ public class TestVectorTypeCasts {
 
     // The input timestamps are stored as long values
     // measured in nanoseconds from the epoch.
-    VectorizedRowBatch b = getBatchLongDecimal();
+    VectorizedRowBatch b = getBatchTimestampDecimal();
     VectorExpression expr = new CastTimestampToDecimal(0, 1);
-    LongColumnVector inL = (LongColumnVector) b.cols[0];
-    inL.vector[1] = -1990000000L;
+    TimestampColumnVector inT = (TimestampColumnVector) b.cols[0];
+    inT.set(1, new PisaTimestamp(0, -1990000000L));
     expr.evaluate(b);
     DecimalColumnVector r = (DecimalColumnVector) b.cols[1];
     assertTrue(r.vector[0].getHiveDecimal().equals(HiveDecimal.create("0.00")));
@@ -478,7 +508,7 @@ public class TestVectorTypeCasts {
 
     // Try again with a value that won't fit in 5 digits, to make
     // sure that NULL is produced.
-    b = getBatchLongDecimalPrec5Scale2();
+    b = getBatchTimestampDecimalPrec5Scale2();
     expr.evaluate(b);
     r = (DecimalColumnVector) b.cols[1];
     assertFalse(r.noNulls);
@@ -500,6 +530,17 @@ public class TestVectorTypeCasts {
     lv.vector[0] = 0;
     lv.vector[1] = -1;
     lv.vector[2] = 99999999999999L;
+    return b;
+  }
+
+  private VectorizedRowBatch getBatchTimestampDecimalPrec5Scale2() {
+    VectorizedRowBatch b = new VectorizedRowBatch(2);
+    TimestampColumnVector tcv;
+    b.cols[0] = tcv = new TimestampColumnVector();
+    b.cols[1] = new DecimalColumnVector(5, 2);
+    tcv.set(0, new PisaTimestamp(0, 0));
+    tcv.set(1, new PisaTimestamp(0, -1));
+    tcv.set(2, new PisaTimestamp(99999999999999L / PisaTimestamp.NANOSECONDS_PER_DAY, 99999999999999L % PisaTimestamp.NANOSECONDS_PER_DAY));
     return b;
   }
 

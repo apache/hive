@@ -43,7 +43,7 @@ public class VectorExpressionDescriptor {
   // LongColumnVector -->
   //    INT_FAMILY
   //    DATE
-  //    TIMESTAMP
+  //    INTERVAL_FAMILY
   //
   // DoubleColumnVector -->
   //    FLOAT_FAMILY
@@ -55,6 +55,9 @@ public class VectorExpressionDescriptor {
   //    STRING
   //    CHAR
   //    VARCHAR
+  //
+  // TimestampColumnVector -->
+  //    TIMESTAMP
   //
   public enum ArgumentType {
     NONE                    (0x000),
@@ -71,9 +74,9 @@ public class VectorExpressionDescriptor {
     INTERVAL_DAY_TIME       (0x200),
     DATETIME_FAMILY         (DATE.value | TIMESTAMP.value),
     INTERVAL_FAMILY         (INTERVAL_YEAR_MONTH.value | INTERVAL_DAY_TIME.value),
-    INT_TIMESTAMP_FAMILY    (INT_FAMILY.value | TIMESTAMP.value),
-    INT_INTERVAL_FAMILY     (INT_FAMILY.value | INTERVAL_FAMILY.value),
-    INT_DATETIME_INTERVAL_FAMILY  (INT_FAMILY.value | DATETIME_FAMILY.value | INTERVAL_FAMILY.value),
+    INT_INTERVAL_YEAR_MONTH     (INT_FAMILY.value | INTERVAL_YEAR_MONTH.value),
+    INT_DATE_INTERVAL_YEAR_MONTH  (INT_FAMILY.value | DATE.value | INTERVAL_YEAR_MONTH.value),
+    TIMESTAMP_INTERVAL_DAY_TIME (TIMESTAMP.value | INTERVAL_DAY_TIME.value),
     STRING_DATETIME_FAMILY  (STRING_FAMILY.value | DATETIME_FAMILY.value),
     ALL_FAMILY              (0xFFF);
 
@@ -146,10 +149,12 @@ public class VectorExpressionDescriptor {
     public static String getVectorColumnSimpleName(ArgumentType argType) {
       if (argType == INT_FAMILY ||
           argType == DATE ||
-          argType == TIMESTAMP ||
-          argType == INTERVAL_YEAR_MONTH ||
-          argType == INTERVAL_DAY_TIME) {
+          argType == INTERVAL_YEAR_MONTH
+          ) {
         return "Long";
+      } else if (argType == TIMESTAMP ||
+                 argType == INTERVAL_DAY_TIME) {
+        return "Timestamp";
       } else if (argType == FLOAT_FAMILY) {
         return "Double";
       } else if (argType == DECIMAL) {

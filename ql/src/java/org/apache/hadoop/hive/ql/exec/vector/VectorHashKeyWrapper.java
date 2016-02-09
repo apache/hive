@@ -21,7 +21,9 @@ package org.apache.hadoop.hive.ql.exec.vector;
 import java.util.Arrays;
 
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.PisaTimestamp;
 import org.apache.hadoop.hive.ql.exec.KeyWrapper;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -42,6 +44,7 @@ public class VectorHashKeyWrapper extends KeyWrapper {
   private static final double[] EMPTY_DOUBLE_ARRAY = new double[0];
   private static final byte[][] EMPTY_BYTES_ARRAY = new byte[0][];
   private static final HiveDecimalWritable[] EMPTY_DECIMAL_ARRAY = new HiveDecimalWritable[0];
+  private static final PisaTimestamp[] EMPTY_TIMESTAMP_ARRAY = new PisaTimestamp[0];
 
   private long[] longValues;
   private double[] doubleValues;
@@ -52,14 +55,17 @@ public class VectorHashKeyWrapper extends KeyWrapper {
 
   private HiveDecimalWritable[] decimalValues;
 
+  private PisaTimestamp[] timestampValues;
+
   private boolean[] isNull;
   private int hashcode;
 
   public VectorHashKeyWrapper(int longValuesCount, int doubleValuesCount,
-          int byteValuesCount, int decimalValuesCount) {
+          int byteValuesCount, int decimalValuesCount, int timestampValuesCount) {
     longValues = longValuesCount > 0 ? new long[longValuesCount] : EMPTY_LONG_ARRAY;
     doubleValues = doubleValuesCount > 0 ? new double[doubleValuesCount] : EMPTY_DOUBLE_ARRAY;
     decimalValues = decimalValuesCount > 0 ? new HiveDecimalWritable[decimalValuesCount] : EMPTY_DECIMAL_ARRAY;
+    timestampValues = timestampValuesCount > 0 ? new PisaTimestamp[timestampValuesCount] : EMPTY_TIMESTAMP_ARRAY;
     for(int i = 0; i < decimalValuesCount; ++i) {
       decimalValues[i] = new HiveDecimalWritable(HiveDecimal.ZERO);
     }
@@ -72,7 +78,11 @@ public class VectorHashKeyWrapper extends KeyWrapper {
       byteStarts = EMPTY_INT_ARRAY;
       byteLengths = EMPTY_INT_ARRAY;
     }
-    isNull = new boolean[longValuesCount + doubleValuesCount + byteValuesCount + decimalValuesCount];
+    for(int i = 0; i < timestampValuesCount; ++i) {
+      timestampValues[i] = new PisaTimestamp();
+    }
+    isNull = new boolean[longValuesCount + doubleValuesCount + byteValuesCount +
+                         decimalValuesCount + timestampValuesCount];
     hashcode = 0;
   }
 
@@ -92,6 +102,10 @@ public class VectorHashKeyWrapper extends KeyWrapper {
 
     for (int i = 0; i < decimalValues.length; i++) {
       hashcode ^= decimalValues[i].getHiveDecimal().hashCode();
+    }
+
+    for (int i = 0; i < timestampValues.length; i++) {
+      hashcode ^= timestampValues[i].hashCode();
     }
 
     // This code, with branches and all, is not executed if there are no string keys
@@ -131,6 +145,7 @@ public class VectorHashKeyWrapper extends KeyWrapper {
           Arrays.equals(longValues, keyThat.longValues) &&
           Arrays.equals(doubleValues, keyThat.doubleValues) &&
           Arrays.equals(decimalValues,  keyThat.decimalValues) &&
+          Arrays.equals(timestampValues,  keyThat.timestampValues) &&
           Arrays.equals(isNull, keyThat.isNull) &&
           byteValues.length == keyThat.byteValues.length &&
           (0 == byteValues.length || bytesEquals(keyThat));
@@ -196,6 +211,16 @@ public class VectorHashKeyWrapper extends KeyWrapper {
       clone.byteStarts = EMPTY_INT_ARRAY;
       clone.byteLengths = EMPTY_INT_ARRAY;
     }
+    if (timestampValues.length > 0) {
+      clone.timestampValues = new PisaTimestamp[timestampValues.length];
+      for(int i = 0; i < timestampValues.length; ++i) {
+        clone.timestampValues[i] = new PisaTimestamp();
+        clone.timestampValues[i].update(timestampValues[i]);
+      }
+    } else {
+      clone.timestampValues = EMPTY_TIMESTAMP_ARRAY;
+    }
+
     clone.hashcode = hashcode;
     assert clone.equals(this);
   }
@@ -256,14 +281,32 @@ public class VectorHashKeyWrapper extends KeyWrapper {
       isNull[longValues.length + doubleValues.length + byteValues.length + index] = true;
   }
 
+  public void assignTimestamp(int index, PisaTimestamp value) {
+    timestampValues[index].update(value);
+    isNull[longValues.length + doubleValues.length + byteValues.length +
+           decimalValues.length + index] = false;
+  }
+
+  public void assignTimestamp(int index, TimestampColumnVector colVector, int elementNum) {
+    colVector.pisaTimestampUpdate(timestampValues[index], elementNum);
+    isNull[longValues.length + doubleValues.length + byteValues.length +
+           decimalValues.length + index] = false;
+  }
+
+  public void assignNullTimestamp(int index) {
+      isNull[longValues.length + doubleValues.length + byteValues.length +
+             decimalValues.length + index] = true;
+  }
+
   @Override
   public String toString()
   {
-    return String.format("%d[%s] %d[%s] %d[%s] %d[%s]",
+    return String.format("%d[%s] %d[%s] %d[%s] %d[%s] %d[%s]",
         longValues.length, Arrays.toString(longValues),
         doubleValues.length, Arrays.toString(doubleValues),
         byteValues.length, Arrays.toString(byteValues),
-        decimalValues.length, Arrays.toString(decimalValues));
+        decimalValues.length, Arrays.toString(decimalValues),
+        timestampValues.length, Arrays.toString(timestampValues));
   }
 
   public boolean getIsLongNull(int i) {
@@ -315,5 +358,15 @@ public class VectorHashKeyWrapper extends KeyWrapper {
   public HiveDecimalWritable getDecimal(int i) {
     return decimalValues[i];
   }
+
+  public boolean getIsTimestampNull(int i) {
+    return isNull[longValues.length + doubleValues.length + byteValues.length +
+                  decimalValues.length + i];
+  }
+
+  public PisaTimestamp getTimestamp(int i) {
+    return timestampValues[i];
+  }
+
 }
 

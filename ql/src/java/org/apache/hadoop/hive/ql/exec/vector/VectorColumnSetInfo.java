@@ -22,8 +22,6 @@ import java.util.Arrays;
 
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
@@ -57,6 +55,11 @@ public class VectorColumnSetInfo {
   protected int[] decimalIndices;
 
   /**
+   * indices of TIMESTAMP primitive keys.
+   */
+  protected int[] timestampIndices;
+
+  /**
    * Helper class for looking up a key value based on key index.
    */
   public class KeyLookupHelper {
@@ -64,11 +67,13 @@ public class VectorColumnSetInfo {
     public int doubleIndex;
     public int stringIndex;
     public int decimalIndex;
+    public int timestampIndex;
 
     private static final int INDEX_UNUSED = -1;
 
     private void resetIndices() {
-        this.longIndex = this.doubleIndex = this.stringIndex = this.decimalIndex = INDEX_UNUSED;
+        this.longIndex = this.doubleIndex = this.stringIndex = this.decimalIndex =
+            timestampIndex = INDEX_UNUSED;
     }
     public void setLong(int index) {
       resetIndices();
@@ -89,6 +94,11 @@ public class VectorColumnSetInfo {
       resetIndices();
       this.decimalIndex = index;
     }
+
+    public void setTimestamp(int index) {
+      resetIndices();
+      this.timestampIndex= index;
+    }
   }
 
   /**
@@ -103,6 +113,7 @@ public class VectorColumnSetInfo {
   protected int doubleIndicesIndex;
   protected int stringIndicesIndex;
   protected int decimalIndicesIndex;
+  protected int timestampIndicesIndex;
 
   protected VectorColumnSetInfo(int keyCount) {
     this.keyCount = keyCount;
@@ -117,6 +128,8 @@ public class VectorColumnSetInfo {
     stringIndicesIndex = 0;
     decimalIndices = new int[this.keyCount];
     decimalIndicesIndex = 0;
+    timestampIndices = new int[this.keyCount];
+    timestampIndicesIndex = 0;
     indexLookup = new KeyLookupHelper[this.keyCount];
   }
 
@@ -153,6 +166,12 @@ public class VectorColumnSetInfo {
       ++decimalIndicesIndex;
       break;
 
+    case TIMESTAMP:
+      timestampIndices[timestampIndicesIndex] = addIndex;
+      indexLookup[addIndex].setTimestamp(timestampIndicesIndex);
+      ++timestampIndicesIndex;
+      break;
+
     default:
       throw new HiveException("Unexpected column vector type " + columnVectorType);
     }
@@ -165,5 +184,6 @@ public class VectorColumnSetInfo {
     doubleIndices = Arrays.copyOf(doubleIndices, doubleIndicesIndex);
     stringIndices = Arrays.copyOf(stringIndices, stringIndicesIndex);
     decimalIndices = Arrays.copyOf(decimalIndices, decimalIndicesIndex);
+    timestampIndices = Arrays.copyOf(timestampIndices, timestampIndicesIndex);
   }
 }

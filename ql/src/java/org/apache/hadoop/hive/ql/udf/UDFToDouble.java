@@ -22,7 +22,7 @@ import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastDecimalToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.CastLongToDouble;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.CastTimestampToDoubleViaLongToDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.CastTimestampToDouble;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -38,7 +38,7 @@ import org.apache.hadoop.io.Text;
  * UDFToDouble.
  *
  */
-@VectorizedExpressions({CastTimestampToDoubleViaLongToDouble.class, CastLongToDouble.class,
+@VectorizedExpressions({CastTimestampToDouble.class, CastLongToDouble.class,
     CastDecimalToDouble.class})
 public class UDFToDouble extends UDF {
   private final DoubleWritable doubleWritable = new DoubleWritable();
