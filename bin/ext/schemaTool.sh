@@ -17,7 +17,6 @@ THISSERVICE=schemaTool
 export SERVICE_LIST="${SERVICE_LIST}${THISSERVICE} "
 
 schemaTool() {
-  export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Dlog4j.configurationFile=hive-log4j2.properties"
   HIVE_OPTS=''
   CLASS=org.apache.hive.beeline.HiveSchemaTool
   execHiveCmd $CLASS "$@"
