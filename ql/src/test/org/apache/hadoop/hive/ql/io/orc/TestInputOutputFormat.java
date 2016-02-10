@@ -529,11 +529,11 @@ public class TestInputOutputFormat {
   public void testFileGenerator() throws Exception {
     OrcInputFormat.Context context = new OrcInputFormat.Context(conf);
     MockFileSystem fs = new MockFileSystem(conf,
-        new MockFile("mock:/a/b/part-00", 1000, new byte[0]),
-        new MockFile("mock:/a/b/part-01", 1000, new byte[0]),
-        new MockFile("mock:/a/b/_part-02", 1000, new byte[0]),
-        new MockFile("mock:/a/b/.part-03", 1000, new byte[0]),
-        new MockFile("mock:/a/b/part-04", 1000, new byte[0]));
+        new MockFile("mock:/a/b/part-00", 1000, new byte[1]),
+        new MockFile("mock:/a/b/part-01", 1000, new byte[1]),
+        new MockFile("mock:/a/b/_part-02", 1000, new byte[1]),
+        new MockFile("mock:/a/b/.part-03", 1000, new byte[1]),
+        new MockFile("mock:/a/b/part-04", 1000, new byte[1]));
     OrcInputFormat.FileGenerator gen =
       new OrcInputFormat.FileGenerator(context, fs,
           new MockPath(fs, "mock:/a/b"), false, null);
@@ -560,14 +560,14 @@ public class TestInputOutputFormat {
     conf.set(HiveConf.ConfVars.HIVE_ORC_SPLIT_DIRECTORY_BATCH_MS.varname, "1000000");
     OrcInputFormat.Context context = new OrcInputFormat.Context(conf);
     MockFileSystem fs = new MockFileSystem(conf,
-        new MockFile("mock:/a/1/part-00", 1000, new byte[0]),
-        new MockFile("mock:/a/1/part-01", 1000, new byte[0]),
-        new MockFile("mock:/a/2/part-00", 1000, new byte[0]),
-        new MockFile("mock:/a/2/part-01", 1000, new byte[0]),
-        new MockFile("mock:/a/3/base_0/1", 1000, new byte[0]),
-        new MockFile("mock:/a/4/base_0/1", 1000, new byte[0]),
-        new MockFile("mock:/a/5/base_0/1", 1000, new byte[0]),
-        new MockFile("mock:/a/5/delta_0_25/1", 1000, new byte[0])
+        new MockFile("mock:/a/1/part-00", 1000, new byte[1]),
+        new MockFile("mock:/a/1/part-01", 1000, new byte[1]),
+        new MockFile("mock:/a/2/part-00", 1000, new byte[1]),
+        new MockFile("mock:/a/2/part-01", 1000, new byte[1]),
+        new MockFile("mock:/a/3/base_0/1", 1000, new byte[1]),
+        new MockFile("mock:/a/4/base_0/1", 1000, new byte[1]),
+        new MockFile("mock:/a/5/base_0/1", 1000, new byte[1]),
+        new MockFile("mock:/a/5/delta_0_25/1", 1000, new byte[1])
     );
 
     OrcInputFormat.CombinedCtx combineCtx = new OrcInputFormat.CombinedCtx();
@@ -575,7 +575,7 @@ public class TestInputOutputFormat {
     SplitStrategy<?> ss = createOrCombineStrategy(context, fs, "mock:/a/1", combineCtx);
     assertNull(ss);
     assertTrue(combineCtx.combined instanceof OrcInputFormat.ETLSplitStrategy);
-    OrcInputFormat.ETLSplitStrategy etlSs = (OrcInputFormat.ETLSplitStrategy)combineCtx.combined;
+    OrcInputFormat.ETLSplitStrategy etlSs = combineCtx.combined;
     assertEquals(2, etlSs.files.size());
     assertTrue(etlSs.isOriginal);
     assertEquals(1, etlSs.dirs.size());
@@ -591,7 +591,7 @@ public class TestInputOutputFormat {
     assertEquals(4, etlSs.files.size());
     assertEquals(2, etlSs.dirs.size());
     assertTrue(combineCtx.combined instanceof OrcInputFormat.ETLSplitStrategy);
-    etlSs = (OrcInputFormat.ETLSplitStrategy)combineCtx.combined;
+    etlSs = combineCtx.combined;
     assertEquals(1, etlSs.files.size());
     assertFalse(etlSs.isOriginal);
     assertEquals(1, etlSs.dirs.size());
@@ -1478,6 +1478,7 @@ public class TestInputOutputFormat {
     org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter writer =
         outFormat.getHiveRecordWriter(conf, testFilePath, MyRow.class, true,
             properties, Reporter.NULL);
+    writer.write(new OrcSerde().serialize(null,null));
     writer.close(true);
     InputFormat<?,?> in = new OrcInputFormat();
     fs.setPermission(testFilePath, FsPermission.createImmutable((short) 0333));

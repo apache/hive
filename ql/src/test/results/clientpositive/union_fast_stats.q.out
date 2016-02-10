@@ -117,10 +117,10 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
-	numFiles            	4                   
+	numFiles            	3                   
 	numRows             	15                  
 	rawDataSize         	3483                
-	totalSize           	4211                
+	totalSize           	4003                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -170,10 +170,10 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
-	numFiles            	4                   
+	numFiles            	3                   
 	numRows             	15                  
-	rawDataSize         	3651                
-	totalSize           	4211                
+	rawDataSize         	3483                
+	totalSize           	4003                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -235,10 +235,10 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
-	numFiles            	5                   
+	numFiles            	4                   
 	numRows             	20                  
-	rawDataSize         	4720                
-	totalSize           	5568                
+	rawDataSize         	4552                
+	totalSize           	5360                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

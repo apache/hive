@@ -1161,10 +1161,10 @@ Table:              	over1k_part_buck_orc
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
-	numFiles            	8                   
+	numFiles            	4                   
 	numRows             	6                   
 	rawDataSize         	120                 
-	totalSize           	2400                
+	totalSize           	2004                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1243,10 +1243,10 @@ Table:              	over1k_part_buck_sort_orc
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
-	numFiles            	8                   
+	numFiles            	4                   
 	numRows             	6                   
 	rawDataSize         	120                 
-	totalSize           	2400                
+	totalSize           	2004                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

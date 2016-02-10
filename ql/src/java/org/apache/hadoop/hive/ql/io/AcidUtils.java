@@ -106,6 +106,7 @@ public class AcidUtils {
       Pattern.compile("[0-9]+_[0-9]+");
 
   public static final PathFilter hiddenFileFilter = new PathFilter(){
+    @Override
     public boolean accept(Path p){
       String name = p.getName();
       return !name.startsWith("_") && !name.startsWith(".");
@@ -446,7 +447,7 @@ public class AcidUtils {
       Configuration conf,
       ValidTxnList txnList
       ) throws IOException {
-    return getAcidState(directory, conf, txnList, false);
+    return getAcidState(directory, conf, txnList, false, false);
   }
 
   /** State class for getChildState; cannot modify 2 things in a method. */
@@ -469,7 +470,8 @@ public class AcidUtils {
   public static Directory getAcidState(Path directory,
                                        Configuration conf,
                                        ValidTxnList txnList,
-                                       boolean useFileIds
+                                       boolean useFileIds,
+                                       boolean ignoreEmptyFiles
                                        ) throws IOException {
     FileSystem fs = directory.getFileSystem(conf);
     final List<ParsedDelta> deltas = new ArrayList<ParsedDelta>();
@@ -490,13 +492,13 @@ public class AcidUtils {
     if (childrenWithId != null) {
       for (HdfsFileStatusWithId child : childrenWithId) {
         getChildState(child.getFileStatus(), child, txnList, working,
-            originalDirectories, original, obsolete, bestBase);
+            originalDirectories, original, obsolete, bestBase, ignoreEmptyFiles);
       }
     } else {
       List<FileStatus> children = SHIMS.listLocatedStatus(fs, directory, hiddenFileFilter);
       for (FileStatus child : children) {
         getChildState(
-            child, null, txnList, working, originalDirectories, original, obsolete, bestBase);
+            child, null, txnList, working, originalDirectories, original, obsolete, bestBase, ignoreEmptyFiles);
       }
     }
 
@@ -577,7 +579,7 @@ public class AcidUtils {
 
   private static void getChildState(FileStatus child, HdfsFileStatusWithId childWithId,
       ValidTxnList txnList, List<ParsedDelta> working, List<FileStatus> originalDirectories,
-      List<HdfsFileStatusWithId> original, List<FileStatus> obsolete, TxnBase bestBase) {
+      List<HdfsFileStatusWithId> original, List<FileStatus> obsolete, TxnBase bestBase, boolean ignoreEmptyFiles) {
     Path p = child.getPath();
     String fn = p.getName();
     if (fn.startsWith(BASE_PREFIX) && child.isDir()) {
@@ -605,7 +607,7 @@ public class AcidUtils {
       // it is possible that the cleaner is running and removing these original files,
       // in which case recursing through them could cause us to get an error.
       originalDirectories.add(child);
-    } else {
+    } else if (!ignoreEmptyFiles || child.getLen() != 0){
       original.add(createOriginalObj(childWithId, child));
     }
   }
@@ -616,7 +618,7 @@ public class AcidUtils {
   }
 
   private static class HdfsFileStatusWithoutId implements HdfsFileStatusWithId {
-    private FileStatus fs;
+    private final FileStatus fs;
 
     public HdfsFileStatusWithoutId(FileStatus fs) {
       this.fs = fs;

@@ -897,11 +897,13 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       List<OrcSplit> splits = Lists.newArrayList();
       for (HdfsFileStatusWithId file : fileStatuses) {
         FileStatus fileStatus = file.getFileStatus();
-        String[] hosts = SHIMS.getLocationsWithOffset(fs, fileStatus).firstEntry().getValue()
-            .getHosts();
-        OrcSplit orcSplit = new OrcSplit(fileStatus.getPath(), file.getFileId(), 0,
-            fileStatus.getLen(), hosts, null, isOriginal, true, deltas, -1);
-        splits.add(orcSplit);
+        if (fileStatus.getLen() != 0) {
+          String[] hosts = SHIMS.getLocationsWithOffset(fs, fileStatus).firstEntry().getValue()
+              .getHosts();
+          OrcSplit orcSplit = new OrcSplit(fileStatus.getPath(), file.getFileId(), 0,
+              fileStatus.getLen(), hosts, null, isOriginal, true, deltas, -1);
+          splits.add(orcSplit);
+        }
       }
 
       // add uncovered ACID delta splits
@@ -992,7 +994,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
 
     private AcidDirInfo callInternal() throws IOException {
       AcidUtils.Directory dirInfo = AcidUtils.getAcidState(dir,
-          context.conf, context.transactionList, useFileIds);
+          context.conf, context.transactionList, useFileIds, true);
       Path base = dirInfo.getBaseDirectory();
       // find the base files (original or new style)
       List<HdfsFileStatusWithId> children = (base == null)

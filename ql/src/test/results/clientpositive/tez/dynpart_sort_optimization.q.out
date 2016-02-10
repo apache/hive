@@ -1074,7 +1074,7 @@ Table:              	over1k_part_buck
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
-	numFiles            	8                   
+	numFiles            	4                   
 	numRows             	6                   
 	rawDataSize         	156                 
 	totalSize           	162                 
@@ -1156,7 +1156,7 @@ Table:              	over1k_part_buck_sort
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
-	numFiles            	8                   
+	numFiles            	4                   
 	numRows             	6                   
 	rawDataSize         	156                 
 	totalSize           	162                 
