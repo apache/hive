@@ -72,7 +72,7 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
 
   private static final String MR_JAR_PROPERTY = "tmpjars";
   private static final transient Log LOG = LogFactory.getLog(RemoteHiveSparkClient.class);
-  private static final long MAX_PREWARM_TIME = 30000; // 30s
+  private static final long MAX_PREWARM_TIME = 5000; // 5s
   private static final transient Splitter CSV_SPLITTER = Splitter.on(",").omitEmptyStrings();
 
   private transient Map<String, String> conf;
@@ -115,10 +115,11 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
           LOG.info("Finished prewarming Spark executors. The current number of executors is " + curExecutors);
           return;
         }
-        Thread.sleep(1000); // sleep 1 second
+        Thread.sleep(500); // sleep half a second
       } while (System.currentTimeMillis() - ts < MAX_PREWARM_TIME);
 
-      LOG.info("Timeout (60s) occurred while prewarming executors. The current number of executors is " + curExecutors);
+      LOG.info("Timeout (" + MAX_PREWARM_TIME + 
+          "s) occurred while prewarming executors. The current number of executors is " + curExecutors);
     }
   }
 
