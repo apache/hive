@@ -312,6 +312,9 @@ for j in $SERVICE_LIST ; do
   fi
 done
 
+# to initialize logging for all services
+export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Dlog4j.configurationFile=hive-log4j2.properties "
+
 if [ "$TORUN" = "" ] ; then
   echo "Service $SERVICE not found"
   echo "Available Services: $SERVICE_LIST"

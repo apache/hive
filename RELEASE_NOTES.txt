@@ -818,6 +818,7 @@ Release Notes - Hive - Version 2.0.0
     * [HIVE-12964] - TestOperationLoggingAPIWithMr,TestOperationLoggingAPIWithTez fail on branch-2.0 (with Java 7, at least)
     * [HIVE-12985] - distribution configs are wrong and out of date
     * [HIVE-13024] - schematool does not log anywhere
+    * [HIVE-13032] - Hive services need HADOOP_CLIENT_OPTS for proper log4j2 initialization
 
 
 
