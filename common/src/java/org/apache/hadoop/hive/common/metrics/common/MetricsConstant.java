@@ -41,6 +41,9 @@ public class MetricsConstant {
   public static final String OPERATION_PREFIX = "hs2_operation_";
   public static final String COMPLETED_OPERATION_PREFIX = "hs2_completed_operation_";
 
+  public static final String SQL_OPERATION_PREFIX = "hs2_sql_operation_";
+  public static final String COMPLETED_SQL_OPERATION_PREFIX = "hs2_completed_sql_operation_";
+
   public static final String INIT_TOTAL_DATABASES = "init_total_count_dbs";
   public static final String INIT_TOTAL_TABLES = "init_total_count_tables";
   public static final String INIT_TOTAL_PARTITIONS = "init_total_count_partitions";
