@@ -123,7 +123,6 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
   protected transient Object[] cachedValues;
   protected transient List<List<Integer>> distinctColIndices;
   protected transient Random random;
-  protected transient int bucketNumber = -1;
 
   /**
    * This two dimensional array holds key data and a corresponding Union object
@@ -340,6 +339,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
       populateCachedDistributionKeys(row, 0);
 
       // replace bucketing columns with hashcode % numBuckets
+      int bucketNumber = -1;
       if (bucketEval != null) {
         bucketNumber = computeBucketNumber(row, conf.getNumBuckets());
         cachedKeys[0][buckColIdxInKey] = new Text(String.valueOf(bucketNumber));
@@ -541,13 +541,6 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
 
   private BytesWritable makeValueWritable(Object row) throws Exception {
     int length = valueEval.length;
-
-    // in case of bucketed table, insert the bucket number as the last column in value
-    if (bucketEval != null) {
-      length -= 1;
-      assert bucketNumber >= 0;
-      cachedValues[length] = new Text(String.valueOf(bucketNumber));
-    }
 
     // Evaluate the value
     for (int i = 0; i < length; i++) {
