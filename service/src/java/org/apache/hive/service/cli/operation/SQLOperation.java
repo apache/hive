@@ -25,13 +25,19 @@ import java.io.UnsupportedEncodingException;
 import java.security.PrivilegedExceptionAction;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang3.CharEncoding;
+import org.apache.hadoop.hive.common.metrics.common.Metrics;
+import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
+import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
+import org.apache.hadoop.hive.common.metrics.common.MetricsScope;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveVariableSource;
 import org.apache.hadoop.hive.conf.VariableSubstitution;
@@ -69,6 +75,7 @@ import org.apache.hive.service.server.ThreadWithGarbageCleanup;
  * SQLOperation.
  *
  */
+@SuppressWarnings("deprecation")
 public class SQLOperation extends ExecuteStatementOperation {
 
   private Driver driver = null;
@@ -77,10 +84,16 @@ public class SQLOperation extends ExecuteStatementOperation {
   private Schema mResultSchema = null;
   private SerDe serde = null;
   private boolean fetchStarted = false;
+  private volatile MetricsScope currentSQLStateScope;
 
   //Display for WebUI.
   private SQLOperationDisplay sqlOpDisplay;
 
+  /**
+   * A map to track query count running by each user
+   */
+  private static Map<String, AtomicInteger> userQueries = new HashMap<String, AtomicInteger>();
+  private static final String ACTIVE_SQL_USER = MetricsConstant.SQL_OPERATION_PREFIX + "active_user";
 
   public SQLOperation(HiveSession parentSession, String statement, Map<String,
       String> confOverlay, boolean runInBackground) {
@@ -493,12 +506,63 @@ public class SQLOperation extends ExecuteStatementOperation {
   }
 
   @Override
-  protected void onNewState(OperationState state) {
+  protected void onNewState(OperationState state, OperationState prevState) {
+    currentSQLStateScope = setMetrics(currentSQLStateScope, MetricsConstant.SQL_OPERATION_PREFIX,
+      MetricsConstant.COMPLETED_SQL_OPERATION_PREFIX, state);
+
+    Metrics metrics = MetricsFactory.getInstance();
+    if (metrics != null) {
+      try {
+        // New state is changed to running from something else (user is active)
+        if (state == OperationState.RUNNING && prevState != state) {
+          incrementUserQueries(metrics);
+        }
+        // New state is not running (user not active) any more
+        if (prevState == OperationState.RUNNING && prevState != state) {
+          decrementUserQueries(metrics);
+        }
+      } catch (IOException e) {
+        LOG.warn("Error metrics", e);
+      }
+    }
+
     if (state == OperationState.CLOSED) {
       sqlOpDisplay.closed();
     } else {
       //CLOSED state not interesting, state before (FINISHED, ERROR) is.
       sqlOpDisplay.updateState(state);
+    }
+  }
+
+  private void incrementUserQueries(Metrics metrics) throws IOException {
+    String username = parentSession.getUserName();
+    if (username != null) {
+      synchronized (userQueries) {
+        AtomicInteger count = userQueries.get(username);
+        if (count == null) {
+          count = new AtomicInteger(0);
+          AtomicInteger prev = userQueries.put(username, count);
+          if (prev == null) {
+            metrics.incrementCounter(ACTIVE_SQL_USER);
+          } else {
+            count = prev;
+          }
+        }
+        count.incrementAndGet();
+      }
+    }
+  }
+
+  private void decrementUserQueries(Metrics metrics) throws IOException {
+    String username = parentSession.getUserName();
+    if (username != null) {
+      synchronized (userQueries) {
+        AtomicInteger count = userQueries.get(username);
+        if (count != null && count.decrementAndGet() <= 0) {
+          metrics.decrementCounter(ACTIVE_SQL_USER);
+          userQueries.remove(username);
+        }
+      }
     }
   }
 }

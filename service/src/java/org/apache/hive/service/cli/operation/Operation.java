@@ -55,8 +55,8 @@ public abstract class Operation {
   public static final String QUERYID_LOG_KEY = "queryId";
 
   protected final HiveSession parentSession;
-  private OperationState state = OperationState.INITIALIZED;
-  private MetricsScope currentStateScope;
+  private volatile OperationState state = OperationState.INITIALIZED;
+  private volatile MetricsScope currentStateScope;
   private final OperationHandle opHandle;
   private HiveConf configuration;
   public static final Log LOG = LogFactory.getLog(Operation.class.getName());
@@ -150,9 +150,10 @@ public abstract class Operation {
 
   protected final OperationState setState(OperationState newState) throws HiveSQLException {
     state.validateTransition(newState);
+    OperationState prevState = state;
     this.state = newState;
     setMetrics(state);
-    onNewState(state);
+    onNewState(state, prevState);
     this.lastAccessTime = System.currentTimeMillis();
     return this.state;
   }
@@ -395,24 +396,31 @@ public abstract class Operation {
     OperationState.UNKNOWN
   );
 
-  protected void setMetrics(OperationState state) {
-     Metrics metrics = MetricsFactory.getInstance();
-     if (metrics != null) {
-       try {
-         if (currentStateScope != null) {
-           metrics.endScope(currentStateScope);
-           currentStateScope = null;
-         }
-         if (scopeStates.contains(state)) {
-           currentStateScope = metrics.createScope(MetricsConstant.OPERATION_PREFIX + state.toString());
-         }
-         if (terminalStates.contains(state)) {
-           metrics.incrementCounter(MetricsConstant.COMPLETED_OPERATION_PREFIX + state.toString());
-         }
-       } catch (IOException e) {
-         LOG.warn("Error metrics", e);
-       }
+  private void setMetrics(OperationState state) {
+    currentStateScope = setMetrics(currentStateScope, MetricsConstant.OPERATION_PREFIX,
+      MetricsConstant.COMPLETED_OPERATION_PREFIX, state);
+  }
+
+  protected static MetricsScope setMetrics(MetricsScope stateScope, String operationPrefix,
+      String completedOperationPrefix, OperationState state) {
+    Metrics metrics = MetricsFactory.getInstance();
+    if (metrics != null) {
+      try {
+        if (stateScope != null) {
+          metrics.endScope(stateScope);
+          stateScope = null;
+        }
+        if (scopeStates.contains(state)) {
+          stateScope = metrics.createScope(operationPrefix + state);
+        }
+        if (terminalStates.contains(state)) {
+          metrics.incrementCounter(completedOperationPrefix + state);
+        }
+      } catch (IOException e) {
+        LOG.warn("Error metrics", e);
+      }
     }
+    return stateScope;
   }
 
   public long getBeginTime() {
@@ -423,6 +431,6 @@ public abstract class Operation {
     return state;
   }
 
-  protected void onNewState(OperationState state) {
+  protected void onNewState(OperationState state, OperationState prevState) {
   }
 }
