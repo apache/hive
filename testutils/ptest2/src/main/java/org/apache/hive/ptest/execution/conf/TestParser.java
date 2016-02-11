@@ -23,7 +23,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -35,8 +34,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.PatternLayout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,13 +52,36 @@ public class TestParser {
   private final File sourceDirectory;
   private final Logger logger;
 
+  private final Set<String> excludedDirectories;
+
   public TestParser(Context context, String testCasePropertyName, 
       File sourceDirectory, Logger logger) {
     this.context = context;
     this.testCasePropertyName = testCasePropertyName;
     this.sourceDirectory = sourceDirectory;
     this.logger = logger;
+    this.excludedDirectories = getExcludedDirectories();
   }
+
+  private Set<String> getExcludedDirectories() {
+    Context unitContext = new Context(context.getSubProperties(Joiner.on(".").join("unitTests", "")));
+    return Sets.newHashSet(TEST_SPLITTER.split(unitContext.getString("excludeDirectories", "")));
+  }
+
+  private boolean isDirectoryExcluded(String pathName) {
+    boolean excludeDirectory = false;
+
+    // Exclude directories that are not part of the Test profile
+    for (String excludeDir : excludedDirectories) {
+      if (pathName.contains(excludeDir)) {
+        excludeDirectory = true;
+        break;
+      }
+    }
+
+    return excludeDirectory;
+  }
+
   private List<TestBatch> parseTests() {
     Context unitContext = new Context(context.getSubProperties(
         Joiner.on(".").join("unitTests", "")));
@@ -89,6 +109,10 @@ public class TestParser {
     }
     for(File unitTestDir : unitTestsDirs) {
       for(File classFile : FileUtils.listFiles(unitTestDir, new String[]{"class"}, true)) {
+        if (isDirectoryExcluded(classFile.getAbsolutePath())) {
+          continue;
+        }
+
         String className = classFile.getName();
         logger.debug("In  " + unitTestDir  + ", found " + className);
         if(className.startsWith("Test") && !className.contains("$")) {
