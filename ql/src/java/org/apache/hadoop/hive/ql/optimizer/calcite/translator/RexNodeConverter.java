@@ -25,7 +25,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -40,8 +39,10 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlCollation;
 import org.apache.calcite.sql.SqlIntervalQualifier;
+import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlCastFunction;
+import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.parser.SqlParserPos;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.ConversionUtil;
@@ -67,15 +68,17 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseBinary;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCase;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFTimestamp;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToBinary;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToChar;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToDate;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToDecimal;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToVarchar;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFWhen;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping;
@@ -88,6 +91,7 @@ import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
 
 public class RexNodeConverter {
+
   private static class InputCtx {
     private final RelDataType                   calciteInpDataType;
     private final ImmutableMap<String, Integer> hiveNameToPosMap;
@@ -157,7 +161,7 @@ public class RexNodeConverter {
     ExprNodeDesc tmpExprNode;
     RexNode tmpRN;
 
-    List<RexNode> childRexNodeLst = new LinkedList<RexNode>();
+    List<RexNode> childRexNodeLst = new ArrayList<RexNode>();
     Builder<RelDataType> argTypeBldr = ImmutableList.<RelDataType> builder();
 
     // TODO: 1) Expand to other functions as needed 2) What about types other than primitive.
@@ -169,6 +173,7 @@ public class RexNodeConverter {
         && (PrimitiveGrouping.NUMERIC_GROUP == PrimitiveObjectInspectorUtils.getPrimitiveGrouping(
             ((PrimitiveTypeInfo) func.getTypeInfo()).getPrimitiveCategory())));
     boolean isCompare = !isNumeric && tgtUdf instanceof GenericUDFBaseCompare;
+    boolean isWhenCase = tgtUdf instanceof GenericUDFWhen || tgtUdf instanceof GenericUDFCase;
 
     if (isNumeric) {
       tgtDT = func.getTypeInfo();
@@ -178,8 +183,13 @@ public class RexNodeConverter {
     } else if (isCompare && (func.getChildren().size() == 2)) {
       tgtDT = FunctionRegistry.getCommonClassForComparison(func.getChildren().get(0)
             .getTypeInfo(), func.getChildren().get(1).getTypeInfo());
+    } else if (isWhenCase) {
+      // If it is a CASE or WHEN, we need to check that children do not contain stateful functions
+      // as they are not allowed
+      if (checkForStatefulFunctions(func.getChildren())) {
+        throw new SemanticException("Stateful expressions cannot be used inside of CASE");
+      }
     }
-
 
     for (ExprNodeDesc childExpr : func.getChildren()) {
       tmpExprNode = childExpr;
@@ -196,8 +206,8 @@ public class RexNodeConverter {
         } else {
           throw new AssertionError("Unexpected " + tgtDT + " - not a numeric op or compare");
         }
-
       }
+
       argTypeBldr.add(TypeConverter.convert(tmpExprNode.getTypeInfo(), cluster.getTypeFactory()));
       tmpRN = convert(tmpExprNode);
       childRexNodeLst.add(tmpRN);
@@ -213,6 +223,10 @@ public class RexNodeConverter {
       retType = TypeConverter.convert(func.getTypeInfo(), cluster.getTypeFactory());
       SqlOperator calciteOp = SqlFunctionConverter.getCalciteOperator(func.getFuncText(),
           func.getGenericUDF(), argTypeBldr.build(), retType);
+      // If it is a case operator, we need to rewrite it
+      if (calciteOp.getKind() == SqlKind.CASE) {
+        childRexNodeLst = rewriteCaseChildren(func, childRexNodeLst);
+      }
       expr = cluster.getRexBuilder().makeCall(calciteOp, childRexNodeLst);
     } else {
       retType = expr.getType();
@@ -270,6 +284,70 @@ public class RexNodeConverter {
     }
 
     return castExpr;
+  }
+
+  /*
+   * Hive syntax allows to define CASE expressions in two ways:
+   * - CASE a WHEN b THEN c [WHEN d THEN e]* [ELSE f] END (translated into the
+   *   "case" function, ELSE clause is optional)
+   * - CASE WHEN a THEN b [WHEN c THEN d]* [ELSE e] END (translated into the
+   *   "when" function, ELSE clause is optional)
+   * However, Calcite only has the equivalent to the "when" Hive function. Thus,
+   * we need to transform the "case" function into "when". Further, ELSE clause is
+   * not optional in Calcite.
+   *
+   * Example. Consider the following statement:
+   * CASE x + y WHEN 1 THEN 'fee' WHEN 2 THEN 'fie' END
+   * It will be transformed into:
+   * CASE WHEN =(x + y, 1) THEN 'fee' WHEN =(x + y, 2) THEN 'fie' ELSE null END
+   */
+  private List<RexNode> rewriteCaseChildren(ExprNodeGenericFuncDesc func, List<RexNode> childRexNodeLst)
+      throws SemanticException {
+    List<RexNode> newChildRexNodeLst = new ArrayList<RexNode>();
+    if (FunctionRegistry.getNormalizedFunctionName(func.getFuncText()).equals("case")) {
+      RexNode firstPred = childRexNodeLst.get(0);
+      int length = childRexNodeLst.size() % 2 == 1 ?
+              childRexNodeLst.size() : childRexNodeLst.size() - 1;
+      for (int i = 1; i < length; i++) {
+        if (i % 2 == 1) {
+          // We rewrite it
+          newChildRexNodeLst.add(
+                  cluster.getRexBuilder().makeCall(
+                          SqlStdOperatorTable.EQUALS, firstPred, childRexNodeLst.get(i)));
+        } else {
+          newChildRexNodeLst.add(childRexNodeLst.get(i));
+        }
+      }
+      // The else clause
+      if (length != childRexNodeLst.size()) {
+        newChildRexNodeLst.add(childRexNodeLst.get(childRexNodeLst.size()-1));
+      }
+    } else {
+      newChildRexNodeLst.addAll(childRexNodeLst);
+    }
+    // Calcite always needs the else clause to be defined explicitly
+    if (newChildRexNodeLst.size() % 2 == 0) {
+      newChildRexNodeLst.add(cluster.getRexBuilder().makeNullLiteral(
+              newChildRexNodeLst.get(newChildRexNodeLst.size()-1).getType().getSqlTypeName()));
+    }
+    return newChildRexNodeLst;
+  }
+
+  private static boolean checkForStatefulFunctions(List<ExprNodeDesc> list) {
+    for (ExprNodeDesc node : list) {
+      if (node instanceof ExprNodeGenericFuncDesc) {
+        GenericUDF nodeUDF = ((ExprNodeGenericFuncDesc) node).getGenericUDF();
+        // Stateful?
+        if (FunctionRegistry.isStateful(nodeUDF)) {
+          return true;
+        }
+        if (node.getChildren() != null && !node.getChildren().isEmpty() &&
+                checkForStatefulFunctions(node.getChildren())) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   private InputCtx getInputCtx(ExprNodeColumnDesc col) throws SemanticException {

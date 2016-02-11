@@ -53,7 +53,7 @@ Stage-0
                             Select Operator [SEL_22] (rows=36524 width=1119)
                               Output:["_col0"]
                               Filter Operator [FIL_77] (rows=36524 width=1119)
-                                predicate:(d_date_sk is not null and d_date BETWEEN '1999-05-01' AND '1999-07-01')
+                                predicate:(d_date BETWEEN '1999-05-01' AND '1999-07-01' and d_date_sk is not null)
                                 TableScan [TS_20] (rows=73049 width=1119)
                                   default@date_dim,d,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_date"]
                         <-Reducer 4 [SIMPLE_EDGE]
@@ -67,7 +67,7 @@ Stage-0
                                 Select Operator [SEL_19] (rows=42 width=1850)
                                   Output:["_col0"]
                                   Filter Operator [FIL_76] (rows=42 width=1850)
-                                    predicate:(web_site_sk is not null and (web_company_name = 'pri'))
+                                    predicate:((web_company_name = 'pri') and web_site_sk is not null)
                                     TableScan [TS_17] (rows=84 width=1850)
                                       default@web_site,s,Tbl:COMPLETE,Col:NONE,Output:["web_site_sk","web_company_name"]
                             <-Reducer 3 [SIMPLE_EDGE]
@@ -81,7 +81,7 @@ Stage-0
                                     Select Operator [SEL_16] (rows=20000000 width=1014)
                                       Output:["_col0"]
                                       Filter Operator [FIL_75] (rows=20000000 width=1014)
-                                        predicate:(ca_address_sk is not null and (ca_state = 'TX'))
+                                        predicate:((ca_state = 'TX') and ca_address_sk is not null)
                                         TableScan [TS_14] (rows=40000000 width=1014)
                                           default@customer_address,ca,Tbl:COMPLETE,Col:NONE,Output:["ca_address_sk","ca_state"]
                                 <-Reducer 2 [SIMPLE_EDGE]

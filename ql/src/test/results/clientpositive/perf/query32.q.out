@@ -69,7 +69,7 @@ Stage-0
                       Select Operator [SEL_12] (rows=231000 width=1436)
                         Output:["_col0"]
                         Filter Operator [FIL_54] (rows=231000 width=1436)
-                          predicate:(i_item_sk is not null and (i_manufact_id = 436))
+                          predicate:((i_manufact_id = 436) and i_item_sk is not null)
                           TableScan [TS_10] (rows=462000 width=1436)
                             default@item,i,Tbl:COMPLETE,Col:NONE,Output:["i_item_sk","i_manufact_id"]
                   <-Reducer 2 [SIMPLE_EDGE]
@@ -94,7 +94,7 @@ Stage-0
                             Select Operator [SEL_5] (rows=36524 width=1119)
                               Output:["_col0"]
                               Filter Operator [FIL_53] (rows=36524 width=1119)
-                                predicate:(d_date_sk is not null and d_date BETWEEN '2000-01-27' AND '2000-04-27')
+                                predicate:(d_date BETWEEN '2000-01-27' AND '2000-04-27' and d_date_sk is not null)
                                 TableScan [TS_3] (rows=73049 width=1119)
                                   default@date_dim,d,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_date"]
                   <-Reducer 9 [SIMPLE_EDGE]
@@ -117,7 +117,7 @@ Stage-0
                                   Select Operator [SEL_18] (rows=36524 width=1119)
                                     Output:["_col0"]
                                     Filter Operator [FIL_56] (rows=36524 width=1119)
-                                      predicate:(d_date_sk is not null and d_date BETWEEN '2000-01-27' AND '2000-04-27')
+                                      predicate:(d_date BETWEEN '2000-01-27' AND '2000-04-27' and d_date_sk is not null)
                                       TableScan [TS_16] (rows=73049 width=1119)
                                         default@date_dim,d,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_date"]
                               <-Map 7 [SIMPLE_EDGE]

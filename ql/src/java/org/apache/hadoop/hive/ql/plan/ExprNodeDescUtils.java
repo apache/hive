@@ -28,7 +28,6 @@ import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.UDF;
-import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
@@ -605,5 +604,33 @@ public class ExprNodeDescUtils {
     }
     // constant or null expr, just return
     return source;
+  }
+
+  public static String extractColName(ExprNodeDesc root) {
+    if (root instanceof ExprNodeColumnDesc) {
+      return ((ExprNodeColumnDesc) root).getColumn();
+    } else {
+      if (root.getChildren() == null) {
+        return null;
+      }
+
+      String column = null;
+      for (ExprNodeDesc d: root.getChildren()) {
+        String candidate = extractColName(d);
+        if (column != null && candidate != null) {
+          return null;
+        } else if (candidate != null) {
+          column = candidate;
+        }
+      }
+      return column;
+    }
+  }
+
+  public static ExprNodeColumnDesc getColumnExpr(ExprNodeDesc expr) {
+    while (FunctionRegistry.isOpCast(expr)) {
+      expr = expr.getChildren().get(0);
+    }
+    return (expr instanceof ExprNodeColumnDesc) ? (ExprNodeColumnDesc)expr : null;
   }
 }

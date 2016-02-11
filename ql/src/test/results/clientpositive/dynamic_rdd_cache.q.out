@@ -1025,7 +1025,7 @@ STAGE PLANS:
             alias: date_dim
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (((d_year = 1999) and d_date_sk is not null) and (d_moy = 3)) (type: boolean)
+              predicate: (((d_year = 1999) and (d_moy = 3)) and d_date_sk is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: d_date_sk (type: int)
@@ -1084,10 +1084,10 @@ STAGE PLANS:
             outputColumnNames: _col1, _col2, _col4, _col5
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (CASE (_col4) WHEN (0) THEN (0) ELSE ((_col5 / _col4)) END > 1.0) (type: boolean)
+              predicate: CASE WHEN ((_col4 = 0.0)) THEN (false) ELSE (((_col5 / _col4) > 1.0)) END (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
-                expressions: _col1 (type: int), _col2 (type: int), _col4 (type: double), CASE (_col4) WHEN (0) THEN (null) ELSE ((_col5 / _col4)) END (type: double)
+                expressions: _col1 (type: int), _col2 (type: int), _col4 (type: double), CASE WHEN ((_col4 = 0.0)) THEN (null) ELSE ((_col5 / _col4)) END (type: double)
                 outputColumnNames: _col1, _col2, _col4, _col5
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator
@@ -1262,7 +1262,7 @@ STAGE PLANS:
             alias: date_dim
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (((d_year = 1999) and d_date_sk is not null) and (d_moy = 4)) (type: boolean)
+              predicate: (((d_year = 1999) and (d_moy = 4)) and d_date_sk is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: d_date_sk (type: int)
@@ -1321,10 +1321,10 @@ STAGE PLANS:
             outputColumnNames: _col1, _col2, _col4, _col5
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (CASE (_col4) WHEN (0) THEN (0) ELSE ((_col5 / _col4)) END > 1.0) (type: boolean)
+              predicate: CASE WHEN ((_col4 = 0.0)) THEN (false) ELSE (((_col5 / _col4) > 1.0)) END (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
-                expressions: _col1 (type: int), _col2 (type: int), _col4 (type: double), CASE (_col4) WHEN (0) THEN (null) ELSE ((_col5 / _col4)) END (type: double)
+                expressions: _col1 (type: int), _col2 (type: int), _col4 (type: double), CASE WHEN ((_col4 = 0.0)) THEN (null) ELSE ((_col5 / _col4)) END (type: double)
                 outputColumnNames: _col1, _col2, _col4, _col5
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator

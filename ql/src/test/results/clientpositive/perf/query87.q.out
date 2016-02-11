@@ -78,7 +78,7 @@ Stage-0
                                       Select Operator [SEL_50] (rows=36524 width=1119)
                                         Output:["_col0","_col1"]
                                         Filter Operator [FIL_103] (rows=36524 width=1119)
-                                          predicate:(d_date_sk is not null and d_month_seq BETWEEN 1193 AND 1204)
+                                          predicate:(d_month_seq BETWEEN 1193 AND 1204 and d_date_sk is not null)
                                           TableScan [TS_48] (rows=73049 width=1119)
                                             default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_date","d_month_seq"]
                   <-Reducer 5 [SIMPLE_EDGE]
@@ -133,7 +133,7 @@ Stage-0
                                               Select Operator [SEL_25] (rows=36524 width=1119)
                                                 Output:["_col0","_col1"]
                                                 Filter Operator [FIL_100] (rows=36524 width=1119)
-                                                  predicate:(d_date_sk is not null and d_month_seq BETWEEN 1193 AND 1204)
+                                                  predicate:(d_month_seq BETWEEN 1193 AND 1204 and d_date_sk is not null)
                                                   TableScan [TS_23] (rows=73049 width=1119)
                                                     default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_date","d_month_seq"]
                           <-Reducer 4 [SIMPLE_EDGE]
@@ -179,7 +179,7 @@ Stage-0
                                               Select Operator [SEL_5] (rows=36524 width=1119)
                                                 Output:["_col0","_col1"]
                                                 Filter Operator [FIL_97] (rows=36524 width=1119)
-                                                  predicate:(d_date_sk is not null and d_month_seq BETWEEN 1193 AND 1204)
+                                                  predicate:(d_month_seq BETWEEN 1193 AND 1204 and d_date_sk is not null)
                                                   TableScan [TS_3] (rows=73049 width=1119)
                                                     default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_date","d_month_seq"]
 

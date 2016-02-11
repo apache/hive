@@ -78,7 +78,7 @@ STAGE PLANS:
                   alias: b
                   Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (id is not null and (d <= 1)) (type: boolean)
+                    predicate: ((d <= 1) and id is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: id (type: string), d (type: int)
@@ -198,7 +198,7 @@ STAGE PLANS:
                   alias: b
                   Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (id is not null and (d <= 1)) (type: boolean)
+                    predicate: ((d <= 1) and id is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: id (type: string), d (type: int)

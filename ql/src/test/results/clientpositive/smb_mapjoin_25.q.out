@@ -46,6 +46,8 @@ POSTHOOK: query: load data local inpath '../../data/files/smbbucket_3.rc' overwr
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@smb_bucket_3
+Warning: Shuffle Join JOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[20][tables = [$hdt$_1, $hdt$_2]] in Stage 'Stage-4:MAPRED' is a cross product
 PREHOOK: query: explain 
 select * from (select a.key from smb_bucket_1 a join smb_bucket_2 b on (a.key = b.key) where a.key = 5) t1 left outer join (select c.key from smb_bucket_2 c join smb_bucket_3 d on (c.key = d.key) where c.key=5) t2 on (t1.key=t2.key) where t2.key=5
 PREHOOK: type: QUERY
@@ -71,9 +73,7 @@ STAGE PLANS:
               Select Operator
                 Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: 5 (type: int)
-                  sort order: +
-                  Map-reduce partition columns: 5 (type: int)
+                  sort order: 
                   Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: b
@@ -84,17 +84,15 @@ STAGE PLANS:
               Select Operator
                 Statistics: Num rows: 25 Data size: 100 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: 5 (type: int)
-                  sort order: +
-                  Map-reduce partition columns: 5 (type: int)
+                  sort order: 
                   Statistics: Num rows: 25 Data size: 100 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           keys:
-            0 _col0 (type: int)
-            1 _col0 (type: int)
+            0 
+            1 
           Statistics: Num rows: 28 Data size: 114 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
@@ -123,8 +121,8 @@ STAGE PLANS:
           condition map:
                Inner Join 0 to 1
           keys:
-            0 _col0 (type: int)
-            1 _col0 (type: int)
+            0 5 (type: int)
+            1 5 (type: int)
           Statistics: Num rows: 31 Data size: 129 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: 5 (type: int), 5 (type: int)
@@ -150,9 +148,7 @@ STAGE PLANS:
               Select Operator
                 Statistics: Num rows: 25 Data size: 100 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: 5 (type: int)
-                  sort order: +
-                  Map-reduce partition columns: 5 (type: int)
+                  sort order: 
                   Statistics: Num rows: 25 Data size: 100 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: d
@@ -163,17 +159,15 @@ STAGE PLANS:
               Select Operator
                 Statistics: Num rows: 27 Data size: 108 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: 5 (type: int)
-                  sort order: +
-                  Map-reduce partition columns: 5 (type: int)
+                  sort order: 
                   Statistics: Num rows: 27 Data size: 108 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           keys:
-            0 _col0 (type: int)
-            1 _col0 (type: int)
+            0 
+            1 
           Statistics: Num rows: 29 Data size: 118 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
@@ -188,6 +182,8 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
+Warning: Map Join MAPJOIN[37][bigTable=?] in task 'Stage-9:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[38][bigTable=?] in task 'Stage-10:MAPRED' is a cross product
 PREHOOK: query: -- explain
 -- select * from smb_bucket_1 a left outer join smb_bucket_2 b on a.key = b.key left outer join src c on a.key=c.value
 
@@ -236,8 +232,8 @@ STAGE PLANS:
                 Statistics: Num rows: 25 Data size: 100 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
-                    0 5 (type: int)
-                    1 5 (type: int)
+                    0 
+                    1 
 
   Stage: Stage-9
     Map Reduce
@@ -254,8 +250,8 @@ STAGE PLANS:
                   condition map:
                        Inner Join 0 to 1
                   keys:
-                    0 5 (type: int)
-                    1 5 (type: int)
+                    0 
+                    1 
                   Statistics: Num rows: 28 Data size: 114 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
@@ -367,8 +363,8 @@ STAGE PLANS:
           condition map:
                Inner Join 0 to 1
           keys:
-            0 _col0 (type: int)
-            1 _col0 (type: int)
+            0 5 (type: int)
+            1 5 (type: int)
           Statistics: Num rows: 31 Data size: 129 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: 5 (type: int), 5 (type: int)
@@ -400,8 +396,8 @@ STAGE PLANS:
                 Statistics: Num rows: 25 Data size: 100 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
-                    0 5 (type: int)
-                    1 5 (type: int)
+                    0 
+                    1 
 
   Stage: Stage-10
     Map Reduce
@@ -418,8 +414,8 @@ STAGE PLANS:
                   condition map:
                        Inner Join 0 to 1
                   keys:
-                    0 5 (type: int)
-                    1 5 (type: int)
+                    0 
+                    1 
                   Statistics: Num rows: 29 Data size: 118 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
@@ -436,6 +432,8 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
+Warning: Map Join MAPJOIN[37][bigTable=?] in task 'Stage-9:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[38][bigTable=?] in task 'Stage-10:MAPRED' is a cross product
 PREHOOK: query: select * from (select a.key from smb_bucket_1 a join smb_bucket_2 b on (a.key = b.key) where a.key = 5) t1 left outer join (select c.key from smb_bucket_2 c join smb_bucket_3 d on (c.key = d.key) where c.key=5) t2 on (t1.key=t2.key) where t2.key=5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_1

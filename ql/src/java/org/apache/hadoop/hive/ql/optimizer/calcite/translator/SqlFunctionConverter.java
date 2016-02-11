@@ -204,6 +204,7 @@ public class SqlFunctionConverter {
         case BETWEEN:
         case ROW:
         case IS_NOT_NULL:
+        case CASE:
           node = (ASTNode) ParseDriver.adaptor.create(HiveParser.TOK_FUNCTION, "TOK_FUNCTION");
           node.addChild((ASTNode) ParseDriver.adaptor.create(hToken.type, hToken.text));
           break;
@@ -323,10 +324,13 @@ public class SqlFunctionConverter {
           hToken(HiveParser.GREATERTHANOREQUALTO, ">="));
       registerFunction("!", SqlStdOperatorTable.NOT, hToken(HiveParser.KW_NOT, "not"));
       registerFunction("<>", SqlStdOperatorTable.NOT_EQUALS, hToken(HiveParser.NOTEQUAL, "<>"));
+      registerDuplicateFunction("!=", SqlStdOperatorTable.NOT_EQUALS, hToken(HiveParser.NOTEQUAL, "<>"));
       registerFunction("in", HiveIn.INSTANCE, hToken(HiveParser.Identifier, "in"));
       registerFunction("between", HiveBetween.INSTANCE, hToken(HiveParser.Identifier, "between"));
       registerFunction("struct", SqlStdOperatorTable.ROW, hToken(HiveParser.Identifier, "struct"));
       registerFunction("isnotnull", SqlStdOperatorTable.IS_NOT_NULL, hToken(HiveParser.TOK_ISNOTNULL, "TOK_ISNOTNULL"));
+      registerFunction("when", SqlStdOperatorTable.CASE, hToken(HiveParser.Identifier, "when"));
+      registerDuplicateFunction("case", SqlStdOperatorTable.CASE, hToken(HiveParser.Identifier, "when"));
     }
 
     private void registerFunction(String name, SqlOperator calciteFn, HiveToken hiveToken) {

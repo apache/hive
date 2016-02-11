@@ -16,7 +16,7 @@ STAGE PLANS:
             alias: alltypesorc
             Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (cboolean1 is not null and cboolean1) (type: boolean)
+              predicate: (cboolean1 and cboolean1 is not null) (type: boolean)
               Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: cboolean1 (type: boolean), if(cboolean1, 'first', 'second') (type: string)

@@ -203,7 +203,7 @@ Stage-0
                                       Select Operator [SEL_85] (rows=36524 width=1119)
                                         Output:["_col1"]
                                         Filter Operator [FIL_188] (rows=36524 width=1119)
-                                          predicate:(d_week_seq is not null and (d_date = '1998-08-04'))
+                                          predicate:((d_date = '1998-08-04') and d_week_seq is not null)
                                           TableScan [TS_83] (rows=73049 width=1119)
                                             default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date","d_week_seq"]
                   <-Reducer 6 [SIMPLE_EDGE]
@@ -284,7 +284,7 @@ Stage-0
                                             Select Operator [SEL_47] (rows=36524 width=1119)
                                               Output:["_col1"]
                                               Filter Operator [FIL_183] (rows=36524 width=1119)
-                                                predicate:(d_week_seq is not null and (d_date = '1998-08-04'))
+                                                predicate:((d_date = '1998-08-04') and d_week_seq is not null)
                                                 TableScan [TS_45] (rows=73049 width=1119)
                                                   default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date","d_week_seq"]
                         <-Reducer 5 [SIMPLE_EDGE]
@@ -321,7 +321,7 @@ Stage-0
                                             Select Operator [SEL_14] (rows=36524 width=1119)
                                               Output:["_col1"]
                                               Filter Operator [FIL_178] (rows=36524 width=1119)
-                                                predicate:(d_week_seq is not null and (d_date = '1998-08-04'))
+                                                predicate:((d_date = '1998-08-04') and d_week_seq is not null)
                                                 TableScan [TS_12] (rows=73049 width=1119)
                                                   default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date","d_week_seq"]
                                     <-Reducer 3 [SIMPLE_EDGE]

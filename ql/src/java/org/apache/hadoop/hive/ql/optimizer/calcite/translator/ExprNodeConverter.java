@@ -41,8 +41,6 @@ import org.apache.calcite.rex.RexWindow;
 import org.apache.calcite.rex.RexWindowBound;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.type.SqlTypeUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
@@ -70,6 +68,8 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -151,71 +151,108 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
     return gfDesc;
   }
 
-  /**
-   * TODO: 1. Handle NULL
-   */
   @Override
   public ExprNodeDesc visitLiteral(RexLiteral literal) {
     RelDataType lType = literal.getType();
 
-    switch (literal.getType().getSqlTypeName()) {
-    case BOOLEAN:
-      return new ExprNodeConstantDesc(TypeInfoFactory.booleanTypeInfo, Boolean.valueOf(RexLiteral
-          .booleanValue(literal)));
-    case TINYINT:
-      return new ExprNodeConstantDesc(TypeInfoFactory.byteTypeInfo, Byte.valueOf(((Number) literal
-          .getValue3()).byteValue()));
-    case SMALLINT:
-      return new ExprNodeConstantDesc(TypeInfoFactory.shortTypeInfo,
-          Short.valueOf(((Number) literal.getValue3()).shortValue()));
-    case INTEGER:
-      return new ExprNodeConstantDesc(TypeInfoFactory.intTypeInfo,
-          Integer.valueOf(((Number) literal.getValue3()).intValue()));
-    case BIGINT:
-      return new ExprNodeConstantDesc(TypeInfoFactory.longTypeInfo, Long.valueOf(((Number) literal
-          .getValue3()).longValue()));
-    case FLOAT:
-    case REAL:
-      return new ExprNodeConstantDesc(TypeInfoFactory.floatTypeInfo,
-          Float.valueOf(((Number) literal.getValue3()).floatValue()));
-    case DOUBLE:
-      return new ExprNodeConstantDesc(TypeInfoFactory.doubleTypeInfo,
-          Double.valueOf(((Number) literal.getValue3()).doubleValue()));
-    case DATE:
-      return new ExprNodeConstantDesc(TypeInfoFactory.dateTypeInfo,
-        new Date(((Calendar)literal.getValue()).getTimeInMillis()));
-    case TIME:
-    case TIMESTAMP: {
-      Object value = literal.getValue3();
-      if (value instanceof Long) {
-        value = new Timestamp((Long)value);
+    if (RexLiteral.value(literal) == null) {
+      switch (literal.getType().getSqlTypeName()) {
+      case BOOLEAN:
+        return new ExprNodeConstantDesc(TypeInfoFactory.booleanTypeInfo, null);
+      case TINYINT:
+        return new ExprNodeConstantDesc(TypeInfoFactory.byteTypeInfo, null);
+      case SMALLINT:
+        return new ExprNodeConstantDesc(TypeInfoFactory.shortTypeInfo, null);
+      case INTEGER:
+        return new ExprNodeConstantDesc(TypeInfoFactory.intTypeInfo, null);
+      case BIGINT:
+        return new ExprNodeConstantDesc(TypeInfoFactory.longTypeInfo, null);
+      case FLOAT:
+      case REAL:
+        return new ExprNodeConstantDesc(TypeInfoFactory.floatTypeInfo, null);
+      case DOUBLE:
+        return new ExprNodeConstantDesc(TypeInfoFactory.doubleTypeInfo, null);
+      case DATE:
+        return new ExprNodeConstantDesc(TypeInfoFactory.dateTypeInfo, null);
+      case TIME:
+      case TIMESTAMP:
+        return new ExprNodeConstantDesc(TypeInfoFactory.timestampTypeInfo, null);
+      case BINARY:
+        return new ExprNodeConstantDesc(TypeInfoFactory.binaryTypeInfo, null);
+      case DECIMAL:
+        return new ExprNodeConstantDesc(
+                TypeInfoFactory.getDecimalTypeInfo(lType.getPrecision(), lType.getScale()), null);
+      case VARCHAR:
+      case CHAR:
+        return new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, null);
+      case INTERVAL_YEAR_MONTH:
+        return new ExprNodeConstantDesc(TypeInfoFactory.intervalYearMonthTypeInfo, null);
+      case INTERVAL_DAY_TIME:
+        return new ExprNodeConstantDesc(TypeInfoFactory.intervalDayTimeTypeInfo, null);
+      case OTHER:
+      default:
+        return new ExprNodeConstantDesc(TypeInfoFactory.voidTypeInfo, null);
       }
-      return new ExprNodeConstantDesc(TypeInfoFactory.timestampTypeInfo, value);
-    }
-    case BINARY:
-      return new ExprNodeConstantDesc(TypeInfoFactory.binaryTypeInfo, literal.getValue3());
-    case DECIMAL:
-      return new ExprNodeConstantDesc(TypeInfoFactory.getDecimalTypeInfo(lType.getPrecision(),
-          lType.getScale()), HiveDecimal.create((BigDecimal)literal.getValue3()));
-    case VARCHAR:
-    case CHAR: {
-      return new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, literal.getValue3());
-    }
-    case INTERVAL_YEAR_MONTH: {
-      BigDecimal monthsBd = (BigDecimal) literal.getValue();
-      return new ExprNodeConstantDesc(TypeInfoFactory.intervalYearMonthTypeInfo,
-              new HiveIntervalYearMonth(monthsBd.intValue()));
-    }
-    case INTERVAL_DAY_TIME: {
-      BigDecimal millisBd = (BigDecimal) literal.getValue();
-      // Calcite literal is in millis, we need to convert to seconds
-      BigDecimal secsBd = millisBd.divide(BigDecimal.valueOf(1000));
-      return new ExprNodeConstantDesc(TypeInfoFactory.intervalDayTimeTypeInfo,
-              new HiveIntervalDayTime(secsBd));
-    }
-    case OTHER:
-    default:
-      return new ExprNodeConstantDesc(TypeInfoFactory.voidTypeInfo, literal.getValue3());
+    } else {
+      switch (literal.getType().getSqlTypeName()) {
+      case BOOLEAN:
+        return new ExprNodeConstantDesc(TypeInfoFactory.booleanTypeInfo, Boolean.valueOf(RexLiteral
+            .booleanValue(literal)));
+      case TINYINT:
+        return new ExprNodeConstantDesc(TypeInfoFactory.byteTypeInfo, Byte.valueOf(((Number) literal
+            .getValue3()).byteValue()));
+      case SMALLINT:
+        return new ExprNodeConstantDesc(TypeInfoFactory.shortTypeInfo,
+            Short.valueOf(((Number) literal.getValue3()).shortValue()));
+      case INTEGER:
+        return new ExprNodeConstantDesc(TypeInfoFactory.intTypeInfo,
+            Integer.valueOf(((Number) literal.getValue3()).intValue()));
+      case BIGINT:
+        return new ExprNodeConstantDesc(TypeInfoFactory.longTypeInfo, Long.valueOf(((Number) literal
+            .getValue3()).longValue()));
+      case FLOAT:
+      case REAL:
+        return new ExprNodeConstantDesc(TypeInfoFactory.floatTypeInfo,
+            Float.valueOf(((Number) literal.getValue3()).floatValue()));
+      case DOUBLE:
+        return new ExprNodeConstantDesc(TypeInfoFactory.doubleTypeInfo,
+            Double.valueOf(((Number) literal.getValue3()).doubleValue()));
+      case DATE:
+        return new ExprNodeConstantDesc(TypeInfoFactory.dateTypeInfo,
+          new Date(((Calendar)literal.getValue()).getTimeInMillis()));
+      case TIME:
+      case TIMESTAMP: {
+        Object value = literal.getValue3();
+        if (value instanceof Long) {
+          value = new Timestamp((Long)value);
+        }
+        return new ExprNodeConstantDesc(TypeInfoFactory.timestampTypeInfo, value);
+      }
+      case BINARY:
+        return new ExprNodeConstantDesc(TypeInfoFactory.binaryTypeInfo, literal.getValue3());
+      case DECIMAL:
+        return new ExprNodeConstantDesc(TypeInfoFactory.getDecimalTypeInfo(lType.getPrecision(),
+            lType.getScale()), HiveDecimal.create((BigDecimal)literal.getValue3()));
+      case VARCHAR:
+      case CHAR: {
+        return new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, literal.getValue3());
+      }
+      case INTERVAL_YEAR_MONTH: {
+        BigDecimal monthsBd = (BigDecimal) literal.getValue();
+        return new ExprNodeConstantDesc(TypeInfoFactory.intervalYearMonthTypeInfo,
+                new HiveIntervalYearMonth(monthsBd.intValue()));
+      }
+      case INTERVAL_DAY_TIME: {
+        BigDecimal millisBd = (BigDecimal) literal.getValue();
+        // Calcite literal is in millis, we need to convert to seconds
+        BigDecimal secsBd = millisBd.divide(BigDecimal.valueOf(1000));
+        return new ExprNodeConstantDesc(TypeInfoFactory.intervalDayTimeTypeInfo,
+                new HiveIntervalDayTime(secsBd));
+      }
+      case OTHER:
+      default:
+        return new ExprNodeConstantDesc(TypeInfoFactory.voidTypeInfo, literal.getValue3());
+      }
     }
   }
 

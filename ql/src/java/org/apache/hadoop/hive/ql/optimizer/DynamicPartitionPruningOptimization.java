@@ -26,8 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
@@ -59,12 +57,15 @@ import org.apache.hadoop.hive.ql.plan.DynamicPruningEventDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicListDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This optimization looks for expressions of the kind "x IN (RS[n])". If such
@@ -77,7 +78,7 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
   static final private Logger LOG = LoggerFactory.getLogger(DynamicPartitionPruningOptimization.class
       .getName());
 
-  public static class DynamicPartitionPrunerProc implements NodeProcessor {
+  private static class DynamicPartitionPrunerProc implements NodeProcessor {
 
     /**
      * process simply remembers all the dynamic partition pruning expressions
@@ -130,27 +131,6 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
     }
   }
 
-  private String extractColName(ExprNodeDesc root) {
-    if (root instanceof ExprNodeColumnDesc) {
-      return ((ExprNodeColumnDesc) root).getColumn();
-    } else {
-      if (root.getChildren() == null) {
-        return null;
-      }
-
-      String column = null;
-      for (ExprNodeDesc d: root.getChildren()) {
-        String candidate = extractColName(d);
-        if (column != null && candidate != null) {
-          return null;
-        } else if (candidate != null) {
-          column = candidate;
-        }
-      }
-      return column;
-    }
-  }
-
   @Override
   public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
       throws SemanticException {
@@ -191,16 +171,16 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
 
     // collect the dynamic pruning conditions
     removerContext.dynLists.clear();
-    walkExprTree(desc.getPredicate(), removerContext);
+    collectDynamicPruningConditions(desc.getPredicate(), removerContext);
 
     for (DynamicListContext ctx : removerContext) {
-      String column = extractColName(ctx.parent);
+      String column = ExprNodeDescUtils.extractColName(ctx.parent);
 
       if (ts != null && column != null) {
         Table table = ts.getConf().getTableMetadata();
 
         if (table != null && table.isPartitionKey(column)) {
-	  String columnType = table.getPartColByName(column).getType();
+          String columnType = table.getPartColByName(column).getType();
           String alias = ts.getConf().getAlias();
           PrunedPartitionList plist = parseContext.getPrunedPartitions(alias, ts);
           if (LOG.isDebugEnabled()) {
@@ -212,6 +192,8 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
               }
             }
           }
+          // If partKey is a constant, we can check whether the partitions
+          // have been already filtered
           if (plist == null || plist.getPartitions().size() != 0) {
             LOG.info("Dynamic partitioning: " + table.getCompleteName() + "." + column);
             generateEventOperatorPlan(ctx, parseContext, ts, column, columnType);
@@ -253,7 +235,7 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
 
     // collect the dynamic pruning conditions
     removerContext.dynLists.clear();
-    walkExprTree(ts.getConf().getFilterExpr(), removerContext);
+    collectDynamicPruningConditions(ts.getConf().getFilterExpr(), removerContext);
 
     for (DynamicListContext ctx : removerContext) {
       // remove the condition by replacing it with "true"
@@ -345,7 +327,7 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
     }
   }
 
-  private Map<Node, Object> walkExprTree(ExprNodeDesc pred, NodeProcessorCtx ctx)
+  private Map<Node, Object> collectDynamicPruningConditions(ExprNodeDesc pred, NodeProcessorCtx ctx)
       throws SemanticException {
 
     // create a walker which walks the tree in a DFS manner while maintaining

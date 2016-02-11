@@ -1291,7 +1291,7 @@ STAGE PLANS:
             alias: srcpart_merge_dp
             Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: key (type: string), value (type: string), '2008-04-08' (type: string), '11' (type: string)
+              expressions: key (type: string), value (type: string), '2008-04-08' (type: string), hr (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3
               Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
               File Output Operator

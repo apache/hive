@@ -226,7 +226,7 @@ STAGE PLANS:
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: ((key is not null and value is not null) and (value <> '')) (type: boolean)
+                    predicate: ((value <> '') and key is not null) (type: boolean)
                     Statistics: Num rows: 25 Data size: 211 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int), value (type: string)
@@ -298,7 +298,7 @@ STAGE PLANS:
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (value is not null and (value <> '')) (type: boolean)
+                    predicate: (value <> '') (type: boolean)
                     Statistics: Num rows: 25 Data size: 211 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: value (type: string)

@@ -2678,7 +2678,7 @@ STAGE PLANS:
                   alias: alltypesorc
                   Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (cboolean1 is not null and (((cdouble < UDFToDouble(csmallint)) and (cboolean2 = cboolean1) and (UDFToDouble(cbigint) <= -863.257)) or ((cint >= -257) and cstring1 is not null and (cboolean1 >= 1)) or cstring2 regexp 'b' or ((csmallint >= UDFToShort(ctinyint)) and ctimestamp2 is null))) (type: boolean)
+                    predicate: ((((cdouble < UDFToDouble(csmallint)) and (cboolean2 = cboolean1) and (UDFToDouble(cbigint) <= -863.257)) or ((cint >= -257) and cstring1 is not null and (cboolean1 >= 1)) or cstring2 regexp 'b' or ((csmallint >= UDFToShort(ctinyint)) and ctimestamp2 is null)) and cboolean1 is not null) (type: boolean)
                     Statistics: Num rows: 10239 Data size: 314333 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cboolean1 (type: boolean), cfloat (type: float), cbigint (type: bigint), cint (type: int), cdouble (type: double), ctinyint (type: tinyint), csmallint (type: smallint)

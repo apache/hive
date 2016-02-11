@@ -46,7 +46,7 @@ STAGE PLANS:
             alias: src_orc
             Statistics: Num rows: 1000 Data size: 266000 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: if(CASE WHEN (bool0) THEN (true) WHEN ((not bool0)) THEN (false) END, key0, if(CASE WHEN (bool0) THEN (false) WHEN ((not bool0)) THEN (true) END, key1, key2)) (type: string)
+              expressions: if(CASE WHEN (bool0) THEN (true) WHEN ((not bool0)) THEN (false) ELSE (null) END, key0, if(CASE WHEN (bool0) THEN (false) WHEN ((not bool0)) THEN (true) ELSE (null) END, key1, key2)) (type: string)
               outputColumnNames: _col0
               Statistics: Num rows: 1000 Data size: 266000 Basic stats: COMPLETE Column stats: NONE
               File Output Operator

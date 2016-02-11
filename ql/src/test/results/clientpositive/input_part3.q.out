@@ -16,7 +16,7 @@ STAGE PLANS:
           alias: x
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: key (type: string), value (type: string), '2008-04-08' (type: string), '11' (type: string)
+            expressions: key (type: string), value (type: string), '2008-04-08' (type: string), hr (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             ListSink

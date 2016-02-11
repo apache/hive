@@ -1130,13 +1130,13 @@ public class CalcitePlanner extends SemanticAnalyzer {
           HiveFilterJoinRule.FILTER_ON_JOIN,
           new HiveFilterAggregateTransposeRule(Filter.class, HiveRelFactories.HIVE_FILTER_FACTORY, Aggregate.class),
           new FilterMergeRule(HiveRelFactories.HIVE_FILTER_FACTORY),
+          HiveReduceExpressionsRule.PROJECT_INSTANCE,
+          HiveReduceExpressionsRule.FILTER_INSTANCE,
+          HiveReduceExpressionsRule.JOIN_INSTANCE,
           HiveJoinAddNotNullRule.INSTANCE_JOIN,
           HiveJoinAddNotNullRule.INSTANCE_SEMIJOIN,
           HiveJoinPushTransitivePredicatesRule.INSTANCE_JOIN,
-          HiveJoinPushTransitivePredicatesRule.INSTANCE_SEMIJOIN,
-          HiveReduceExpressionsRule.PROJECT_INSTANCE,
-          HiveReduceExpressionsRule.FILTER_INSTANCE,
-          HiveReduceExpressionsRule.JOIN_INSTANCE);
+          HiveJoinPushTransitivePredicatesRule.INSTANCE_SEMIJOIN);
       perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER,
         "Calcite: Prejoin ordering transformation, PPD, not null predicates, transitive inference, constant folding");
 

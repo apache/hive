@@ -312,7 +312,7 @@ STAGE PLANS:
             alias: hbase_pushdown
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (CASE WHEN ((key = 90)) THEN (2) ELSE (4) END > 3) (type: boolean)
+              predicate: (key <> 90) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: key (type: int), value (type: string)

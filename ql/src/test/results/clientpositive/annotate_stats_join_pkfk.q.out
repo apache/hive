@@ -406,7 +406,7 @@ STAGE PLANS:
             alias: s
             Statistics: Num rows: 12 Data size: 48 Basic stats: COMPLETE Column stats: PARTIAL
             Filter Operator
-              predicate: (s_store_sk is not null and (s_company_id > 0)) (type: boolean)
+              predicate: ((s_company_id > 0) and s_store_sk is not null) (type: boolean)
               Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: PARTIAL
               Select Operator
                 expressions: s_store_sk (type: int)
@@ -421,7 +421,7 @@ STAGE PLANS:
             alias: ss
             Statistics: Num rows: 1000 Data size: 7668 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (ss_store_sk is not null and (ss_quantity > 10)) (type: boolean)
+              predicate: ((ss_quantity > 10) and ss_store_sk is not null) (type: boolean)
               Statistics: Num rows: 321 Data size: 2460 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: ss_store_sk (type: int)
@@ -471,7 +471,7 @@ STAGE PLANS:
             alias: s
             Statistics: Num rows: 12 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (s_store_sk is not null and (s_floor_space > 0)) (type: boolean)
+              predicate: ((s_floor_space > 0) and s_store_sk is not null) (type: boolean)
               Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: s_store_sk (type: int)
@@ -551,7 +551,7 @@ STAGE PLANS:
             alias: ss
             Statistics: Num rows: 1000 Data size: 7668 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (ss_store_sk is not null and (ss_quantity > 10)) (type: boolean)
+              predicate: ((ss_quantity > 10) and ss_store_sk is not null) (type: boolean)
               Statistics: Num rows: 321 Data size: 2460 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: ss_store_sk (type: int)
@@ -788,7 +788,7 @@ STAGE PLANS:
             alias: s
             Statistics: Num rows: 12 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (s_store_sk is not null and (s_floor_space > 1000)) (type: boolean)
+              predicate: ((s_floor_space > 1000) and s_store_sk is not null) (type: boolean)
               Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: s_store_sk (type: int)
@@ -859,7 +859,7 @@ STAGE PLANS:
             alias: ss
             Statistics: Num rows: 1000 Data size: 7668 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (ss_store_sk is not null and (ss_quantity > 10)) (type: boolean)
+              predicate: ((ss_quantity > 10) and ss_store_sk is not null) (type: boolean)
               Statistics: Num rows: 321 Data size: 2460 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: ss_store_sk (type: int)

@@ -37,7 +37,7 @@ STAGE PLANS:
             alias: f
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((value is not null and (value <> '')) and key is not null) (type: boolean)
+              predicate: ((value <> '') and key is not null) (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
@@ -79,7 +79,7 @@ STAGE PLANS:
             alias: f
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (value is not null and (value <> '')) (type: boolean)
+              predicate: (value <> '') (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: value (type: string)
@@ -163,7 +163,7 @@ STAGE PLANS:
             alias: f
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((value is not null and (value <> '')) and key is not null) (type: boolean)
+              predicate: ((value <> '') and key is not null) (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
@@ -205,7 +205,7 @@ STAGE PLANS:
             alias: f
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (value is not null and (value <> '')) (type: boolean)
+              predicate: (value <> '') (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: value (type: string)
@@ -419,7 +419,7 @@ STAGE PLANS:
             alias: f
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((key is not null and ((value = '2008-04-10') or (value = '2008-04-08'))) and value is not null) and (value <> '')) (type: boolean)
+              predicate: ((((value = '2008-04-10') or (value = '2008-04-08')) and (value <> '')) and key is not null) (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)

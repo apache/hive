@@ -84,7 +84,7 @@ Stage-0
                                   Select Operator [SEL_76] (rows=57750 width=1436)
                                     Output:["_col0","_col3"]
                                     Filter Operator [FIL_660] (rows=57750 width=1436)
-                                      predicate:(((i_item_sk is not null and (i_color) IN ('maroon', 'burnished', 'dim', 'steel', 'navajo', 'chocolate')) and i_current_price BETWEEN 35 AND 45) and i_current_price BETWEEN 36 AND 50)
+                                      predicate:((((i_color) IN ('maroon', 'burnished', 'dim', 'steel', 'navajo', 'chocolate') and i_current_price BETWEEN 35 AND 45) and i_current_price BETWEEN 36 AND 50) and i_item_sk is not null)
                                       TableScan [TS_74] (rows=462000 width=1436)
                                         default@item,item,Tbl:COMPLETE,Col:NONE,Output:["i_item_sk","i_current_price","i_color","i_product_name"]
                               <-Reducer 16 [SIMPLE_EDGE]
@@ -270,7 +270,7 @@ Stage-0
                                                                                           Select Operator [SEL_11] (rows=36524 width=1119)
                                                                                             Output:["_col0"]
                                                                                             Filter Operator [FIL_647] (rows=36524 width=1119)
-                                                                                              predicate:(d_date_sk is not null and (d_year = 2000))
+                                                                                              predicate:((d_year = 2000) and d_date_sk is not null)
                                                                                               TableScan [TS_9] (rows=73049 width=1119)
                                                                                                 default@date_dim,d1,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year"]
                                                                                       <-Reducer 3 [SIMPLE_EDGE]
@@ -368,7 +368,7 @@ Stage-0
                                   Select Operator [SEL_200] (rows=57750 width=1436)
                                     Output:["_col0","_col3"]
                                     Filter Operator [FIL_679] (rows=57750 width=1436)
-                                      predicate:(((i_item_sk is not null and (i_color) IN ('maroon', 'burnished', 'dim', 'steel', 'navajo', 'chocolate')) and i_current_price BETWEEN 35 AND 45) and i_current_price BETWEEN 36 AND 50)
+                                      predicate:((((i_color) IN ('maroon', 'burnished', 'dim', 'steel', 'navajo', 'chocolate') and i_current_price BETWEEN 35 AND 45) and i_current_price BETWEEN 36 AND 50) and i_item_sk is not null)
                                       TableScan [TS_198] (rows=462000 width=1436)
                                         default@item,item,Tbl:COMPLETE,Col:NONE,Output:["i_item_sk","i_current_price","i_color","i_product_name"]
                               <-Reducer 56 [SIMPLE_EDGE]
@@ -554,7 +554,7 @@ Stage-0
                                                                                           Select Operator [SEL_135] (rows=36524 width=1119)
                                                                                             Output:["_col0"]
                                                                                             Filter Operator [FIL_666] (rows=36524 width=1119)
-                                                                                              predicate:(d_date_sk is not null and (d_year = 2001))
+                                                                                              predicate:((d_year = 2001) and d_date_sk is not null)
                                                                                               TableScan [TS_133] (rows=73049 width=1119)
                                                                                                 default@date_dim,d1,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year"]
                                                                                       <-Reducer 43 [SIMPLE_EDGE]

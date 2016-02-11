@@ -1475,7 +1475,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((key < '11') and CASE WHEN ((key > '104')) THEN (null) ELSE (key) END is null) (type: boolean)
+              predicate: ((key < '11') and CASE WHEN ((key > '104')) THEN (true) ELSE (key is null) END) (type: boolean)
               Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
