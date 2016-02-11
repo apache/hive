@@ -146,6 +146,8 @@ public class Driver implements CommandProcessor {
 
   // A list of FileSinkOperators writing in an ACID compliant manner
   private Set<FileSinkDesc> acidSinks;
+  // whether any ACID table is involved in a query
+  private boolean acidInQuery;
 
   // A limit on the number of threads that can be launched
   private int maxthreads;
@@ -486,6 +488,7 @@ public class Driver implements CommandProcessor {
 
       // validate the plan
       sem.validate();
+      acidInQuery = sem.hasAcidInQuery();
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.ANALYZE);
 
       // get the output schema
@@ -1001,12 +1004,12 @@ public class Driver implements CommandProcessor {
       For multi-stmt txns this is not sufficient and will be managed via WriteSet tracking
       in the lock manager.*/
       txnMgr.acquireLocks(plan, ctx, userFromUGI);
-      if(initiatingTransaction || readOnlyQueryInAutoCommit) {
+      if(initiatingTransaction || (readOnlyQueryInAutoCommit && acidInQuery)) {
         //For multi-stmt txns we should record the snapshot when txn starts but
         // don't update it after that until txn completes.  Thus the check for {@code initiatingTransaction}
         //For autoCommit=true, Read-only statements, txn is implicit, i.e. lock in the snapshot
         //for each statement.
-        recordValidTxns();//todo: we should only need to do this for RO query if it has ACID resources in it.
+        recordValidTxns();
       }
 
       return 0;
