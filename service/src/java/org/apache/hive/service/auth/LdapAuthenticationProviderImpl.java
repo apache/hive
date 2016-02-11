@@ -43,29 +43,33 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
   private static final Logger LOG     = LoggerFactory.getLogger(LdapAuthenticationProviderImpl.class);
   private static final String DN_ATTR = "distinguishedName";
 
-  private final String ldapURL;
-  private final String baseDN;
-  private final String ldapDomain;
+  private String ldapURL;
+  private String baseDN;
+  private String ldapDomain;
   private static List<String> groupBases;
   private static List<String> userBases;
   private static List<String> userFilter;
   private static List<String> groupFilter;
-  private final String customQuery;
+  private String customQuery;
 
   LdapAuthenticationProviderImpl() {
     HiveConf conf = new HiveConf();
-    ldapURL       = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_URL);
-    baseDN        = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_BASEDN);
-    ldapDomain    = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_DOMAIN);
-    customQuery   = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_CUSTOMLDAPQUERY);
+    init(conf);
+  }
+
+  protected void init(HiveConf conf) {
+    ldapURL     = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_URL);
+    baseDN      = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_BASEDN);
+    ldapDomain  = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_DOMAIN);
+    customQuery = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_CUSTOMLDAPQUERY);
 
     if (customQuery == null) {
-      groupBases               = new ArrayList<String>();
-      userBases                = new ArrayList<String>();
-      String groupDNPatterns   = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPDNPATTERN);
-      String groupFilterVal    = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPFILTER);
-      String userDNPatterns    = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_USERDNPATTERN);
-      String userFilterVal     = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_USERFILTER);
+      groupBases             = new ArrayList<String>();
+      userBases              = new ArrayList<String>();
+      String groupDNPatterns = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPDNPATTERN);
+      String groupFilterVal  = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPFILTER);
+      String userDNPatterns  = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_USERDNPATTERN);
+      String userFilterVal   = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_USERFILTER);
 
       // parse COLON delimited root DNs for users/groups that may or may not be under BaseDN.
       // Expect the root DNs be fully qualified including the baseDN
