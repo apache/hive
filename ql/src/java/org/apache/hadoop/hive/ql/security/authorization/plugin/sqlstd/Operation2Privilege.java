@@ -338,6 +338,8 @@ public class Operation2Privilege {
 (null, ADMIN_PRIV_AR));
     op2Priv.put(HiveOperationType.DROPFUNCTION, PrivRequirement.newIOPrivRequirement
 (null, ADMIN_PRIV_AR));
+    op2Priv.put(HiveOperationType.RELOADFUNCTION, PrivRequirement.newIOPrivRequirement
+(null, null));
     op2Priv.put(HiveOperationType.CREATEMACRO, PrivRequirement.newIOPrivRequirement
 (null, ADMIN_PRIV_AR));
     op2Priv.put(HiveOperationType.DROPMACRO, PrivRequirement.newIOPrivRequirement
