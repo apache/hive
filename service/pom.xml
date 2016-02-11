@@ -146,6 +146,27 @@
       <artifactId>jamon-runtime</artifactId>
       <version>${jamon-runtime.version}</version>
     </dependency>
+
+    <dependency>
+      <groupId>org.apache.directory.client.ldap</groupId>
+      <artifactId>ldap-client-api</artifactId>
+      <version>${apache-directory-clientapi.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.directory.server</groupId>
+      <artifactId>apacheds-server-integ</artifactId>
+      <version>${apache-directory-server.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.directory.server</groupId>
+      <artifactId>apacheds-test-framework</artifactId>
+      <version>${apache-directory-server.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <profiles>
@@ -299,5 +320,4 @@
       </plugin>
     </plugins>
   </build>
-
 </project>
