@@ -39,6 +39,9 @@ import org.apache.zookeeper.client.ZooKeeperSaslClient;
 
 public class Utils {
 
+  private static final boolean IBM_JAVA = System.getProperty("java.vendor")
+      .contains("IBM");
+
   public static UserGroupInformation getUGI() throws LoginException, IOException {
     String doAs = System.getenv("HADOOP_USER_NAME");
     if(doAs != null && doAs.length() > 0) {
@@ -143,6 +146,8 @@ public class Utils {
    */
   private static class JaasConfiguration extends javax.security.auth.login.Configuration {
     // Current installed Configuration
+    private static final boolean IBM_JAVA = System.getProperty("java.vendor")
+      .contains("IBM");
     private final javax.security.auth.login.Configuration baseConfig = javax.security.auth.login.Configuration
         .getConfiguration();
     private final String loginContextName;
@@ -159,11 +164,16 @@ public class Utils {
     public AppConfigurationEntry[] getAppConfigurationEntry(String appName) {
       if (loginContextName.equals(appName)) {
         Map<String, String> krbOptions = new HashMap<String, String>();
-        krbOptions.put("doNotPrompt", "true");
-        krbOptions.put("storeKey", "true");
-        krbOptions.put("useKeyTab", "true");
-        krbOptions.put("principal", principal);
-        krbOptions.put("keyTab", keyTabFile);
+        if (IBM_JAVA) {
+          krbOptions.put("credsType", "both");
+          krbOptions.put("useKeytab", keyTabFile);
+        } else {
+          krbOptions.put("doNotPrompt", "true");
+          krbOptions.put("storeKey", "true");
+          krbOptions.put("useKeyTab", "true");
+          krbOptions.put("keyTab", keyTabFile);
+        }
+	krbOptions.put("principal", principal);
         krbOptions.put("refreshKrb5Config", "true");
         AppConfigurationEntry hiveZooKeeperClientEntry = new AppConfigurationEntry(
             KerberosUtil.getKrb5LoginModuleName(), LoginModuleControlFlag.REQUIRED, krbOptions);
