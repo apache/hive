@@ -865,16 +865,20 @@ public final class FileDump {
     OutputStreamWriter out = new OutputStreamWriter(printStream, "UTF-8");
     RecordReader rows = reader.rows(null);
     Object row = null;
-    List<OrcProto.Type> types = reader.getTypes();
-    while (rows.hasNext()) {
-      row = rows.next(row);
-      JSONWriter writer = new JSONWriter(out);
-      printObject(writer, row, types, 0);
-      out.write("\n");
-      out.flush();
-      if (printStream.checkError()) {
-        throw new IOException("Error encountered when writing to stdout.");
+    try {
+      List<OrcProto.Type> types = reader.getTypes();
+      while (rows.hasNext()) {
+        row = rows.next(row);
+        JSONWriter writer = new JSONWriter(out);
+        printObject(writer, row, types, 0);
+        out.write("\n");
+        out.flush();
+        if (printStream.checkError()) {
+          throw new IOException("Error encountered when writing to stdout.");
+        }
       }
+    } finally {
+      rows.close();
     }
   }
 }
