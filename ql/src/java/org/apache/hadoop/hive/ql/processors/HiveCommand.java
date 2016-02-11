@@ -75,6 +75,10 @@ public enum HiveCommand {
       } else if(command.length > 1 && "from".equalsIgnoreCase(command[1])) {
         //special handling for SQL "delete from <table> where..."
         return null;
+      } else if(command.length > 1 && "reload".equalsIgnoreCase(command[0])
+          && "function".equalsIgnoreCase(command[1])) {
+        //special handling for SQL "reload function"
+        return null;
       } else if (COMMANDS.contains(cmd)) {
         HiveCommand hiveCommand = HiveCommand.valueOf(cmd);
 

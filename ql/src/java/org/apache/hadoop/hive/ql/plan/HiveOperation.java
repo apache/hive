@@ -72,6 +72,7 @@ public enum HiveOperation {
   SHOWCONF("SHOWCONF", null, null),
   CREATEFUNCTION("CREATEFUNCTION", null, null),
   DROPFUNCTION("DROPFUNCTION", null, null),
+  RELOADFUNCTION("RELOADFUNCTION", null, null),
   CREATEMACRO("CREATEMACRO", null, null),
   DROPMACRO("DROPMACRO", null, null),
   CREATEVIEW("CREATEVIEW", new Privilege[]{Privilege.SELECT}, new Privilege[]{Privilege.CREATE}),
