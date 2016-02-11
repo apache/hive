@@ -103,6 +103,9 @@ public abstract class BaseSemanticAnalyzer {
    * back and set it once we actually start running the query.
    */
   protected Set<FileSinkDesc> acidFileSinks = new HashSet<FileSinkDesc>();
+  
+  // whether any ACID table is involved in a query
+  protected boolean acidInQuery;
 
   public static int HIVE_COLUMN_ORDER_ASC = 1;
   public static int HIVE_COLUMN_ORDER_DESC = 0;
@@ -1078,6 +1081,10 @@ public abstract class BaseSemanticAnalyzer {
 
   public Set<FileSinkDesc> getAcidFileSinks() {
     return acidFileSinks;
+  }
+  
+  public boolean hasAcidInQuery() {
+    return acidInQuery;
   }
 
   /**

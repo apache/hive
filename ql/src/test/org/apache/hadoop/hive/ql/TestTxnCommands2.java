@@ -23,6 +23,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HouseKeeperService;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
@@ -398,6 +399,19 @@ public class TestTxnCommands2 {
     rs = runStatementOnDriver("select count(*) from " + Table.NONACIDORCTBL);
     resultCount = 2;
     Assert.assertEquals(resultCount, Integer.parseInt(rs.get(0)));
+  }
+
+  @Test
+  public void testValidTxnsBookkeeping() throws Exception {
+    // 1. Run a query against a non-ACID table, and we shouldn't have txn logged in conf
+    runStatementOnDriver("select * from " + Table.NONACIDORCTBL);
+    String value = hiveConf.get(ValidTxnList.VALID_TXNS_KEY);
+    Assert.assertNull("The entry should be null for query that doesn't involve ACID tables", value);
+
+    // 2. Run a query against an ACID table, and we should have txn logged in conf
+    runStatementOnDriver("select * from " + Table.ACIDTBL);
+    value = hiveConf.get(ValidTxnList.VALID_TXNS_KEY);
+    Assert.assertNotNull("The entry shouldn't be null for query that involves ACID tables", value);
   }
 
   @Test

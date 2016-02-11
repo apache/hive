@@ -10631,6 +10631,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         tbl = p.getTable();
       }
       if (tbl != null && AcidUtils.isAcidTable(tbl)) {
+        acidInQuery = true;
         checkAcidTxnManager(tbl);
       }
     }
@@ -10707,6 +10708,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       if (tbl != null && AcidUtils.isAcidTable(tbl)) {
+        acidInQuery = true;
         checkAcidTxnManager(tbl);
       }
     }
