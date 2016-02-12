@@ -26,6 +26,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.logging.log4j.Level;
 
 /**
  * Reusable code for Hive Cli's.
@@ -94,9 +95,29 @@ public class CommonCliOptions {
         System.err.println(
             "hiveconf: " + propKey + "=" + confProps.getProperty(propKey));
       }
-      System.setProperty(propKey, confProps.getProperty(propKey));
+      if (propKey.equalsIgnoreCase("hive.root.logger")) {
+        splitAndSetLogger(propKey, confProps);
+      } else {
+        System.setProperty(propKey, confProps.getProperty(propKey));
+      }
     }
     return confProps;
+  }
+
+  public static void splitAndSetLogger(final String propKey, final Properties confProps) {
+    String propVal = confProps.getProperty(propKey);
+    if (propVal.contains(",")) {
+      String[] tokens = propVal.split(",");
+      for (String token : tokens) {
+        if (Level.getLevel(token) == null) {
+          System.setProperty("hive.root.logger", token);
+        } else {
+          System.setProperty("hive.log.level", token);
+        }
+      }
+    } else {
+      System.setProperty(propKey, confProps.getProperty(propKey));
+    }
   }
 
   /**

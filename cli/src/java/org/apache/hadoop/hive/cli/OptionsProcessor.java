@@ -29,7 +29,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.logging.log4j.Level;
+import org.apache.hadoop.hive.common.cli.CommonCliOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -122,19 +122,7 @@ public class OptionsProcessor {
         // if we still see it, split logger and level separately for hive.root.logger
         // and hive.log.level respectively
         if (propKey.equalsIgnoreCase("hive.root.logger")) {
-          String propVal = confProps.getProperty(propKey);
-          if (propVal.contains(",")) {
-            String[] tokens = propVal.split(",");
-            for (String token : tokens) {
-              if (Level.getLevel(token) == null) {
-                System.setProperty("hive.root.logger", token);
-              } else {
-                System.setProperty("hive.log.level", token);
-              }
-            }
-          } else {
-            System.setProperty(propKey, confProps.getProperty(propKey));
-          }
+          CommonCliOptions.splitAndSetLogger(propKey, confProps);
         } else {
           System.setProperty(propKey, confProps.getProperty(propKey));
         }
