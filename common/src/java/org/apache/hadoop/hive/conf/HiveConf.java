@@ -549,7 +549,12 @@ public class HiveConf extends Configuration {
         "Set this to true if multiple threads access metastore through JDO concurrently."),
     METASTORECONNECTURLKEY("javax.jdo.option.ConnectionURL",
         "jdbc:derby:;databaseName=metastore_db;create=true",
-        "JDBC connect string for a JDBC metastore"),
+        "JDBC connect string for a JDBC metastore.\n" +
+        "To use SSL to encrypt/authenticate the connection, provide database-specific SSL flag in the connection URL.\n" +
+        "For example, jdbc:postgresql://myhost/db?ssl=true for postgres database."),
+    METASTORE_DBACCESS_SSL_PROPS("hive.metastore.dbaccess.ssl.properties", "",
+           "Comma-separated SSL properties for metastore to access database when JDO connection URL\n" +
+           "enables SSL access. e.g. javax.net.ssl.trustStore=/tmp/truststore,javax.net.ssl.trustStorePassword=pwd."),
     HMSHANDLERATTEMPTS("hive.hmshandler.retry.attempts", 10,
         "The number of times to retry a HMSHandler call if there were a connection error."),
     HMSHANDLERINTERVAL("hive.hmshandler.retry.interval", "2000ms",

@@ -269,6 +269,7 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       isInitialized = false;
       hiveConf = conf;
+      configureSSL(conf);
       Properties propsFromConf = getDataSourceProps(conf);
       boolean propsChanged = !propsFromConf.equals(prop);
 
@@ -354,6 +355,25 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
+  /**
+   * Configure the SSL properties of the connection from provided config
+   * @param conf
+   */
+  private static void configureSSL(Configuration conf) {
+    // SSL support
+    String sslPropString = conf.get(HiveConf.ConfVars.METASTORE_DBACCESS_SSL_PROPS.varname);
+    if (org.apache.commons.lang.StringUtils.isNotEmpty(sslPropString)) {
+      LOG.info("Metastore setting SSL properties of the connection to backed DB");
+      for (String sslProp : sslPropString.split(",")) {
+        String[] pair = sslProp.trim().split("=");
+        if (pair != null && pair.length == 2) {
+          System.setProperty(pair[0].trim(), pair[1].trim());
+        } else {
+          LOG.warn("Invalid metastore property value for " + HiveConf.ConfVars.METASTORE_DBACCESS_SSL_PROPS);
+        }
+      }
+    }
+  }
 
   /**
    * Properties specified in hive-default.xml override the properties specified
@@ -393,6 +413,7 @@ public class ObjectStore implements RawStore, Configurable {
         }
       }
     }
+
     return prop;
   }
 
