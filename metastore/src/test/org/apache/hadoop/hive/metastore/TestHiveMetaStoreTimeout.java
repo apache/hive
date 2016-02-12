@@ -49,7 +49,7 @@ public class TestHiveMetaStoreTimeout {
         TimeUnit.MILLISECONDS);
     warehouse = new Warehouse(hiveConf);
     try {
-      client = new HiveMetaStoreClient(hiveConf, null);
+      client = new HiveMetaStoreClient(hiveConf);
     } catch (Throwable e) {
       System.err.println("Unable to open the metastore");
       System.err.println(StringUtils.stringifyException(e));

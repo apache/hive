@@ -60,7 +60,7 @@ public class TestMetaStoreEventListenerOnlyOnCommit extends TestCase {
     hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
     SessionState.start(new CliSessionState(hiveConf));
-    msc = new HiveMetaStoreClient(hiveConf, null);
+    msc = new HiveMetaStoreClient(hiveConf);
     driver = new Driver(hiveConf);
 
     DummyListener.notifyList.clear();

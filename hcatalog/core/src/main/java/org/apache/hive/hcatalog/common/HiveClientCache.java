@@ -82,7 +82,7 @@ class HiveClientCache {
   }
 
   public static IMetaStoreClient getNonCachedHiveMetastoreClient(HiveConf hiveConf) throws MetaException {
-    return RetryingMetaStoreClient.getProxy(hiveConf);
+    return RetryingMetaStoreClient.getProxy(hiveConf, true);
   }
 
   public HiveClientCache(HiveConf hiveConf) {
@@ -227,10 +227,11 @@ class HiveClientCache {
       return hiveCache.get(cacheKey, new Callable<ICacheableMetaStoreClient>() {
         @Override
         public ICacheableMetaStoreClient call() throws MetaException {
+          // This is called from HCat, so always allow embedded metastore (as was the default).
           return
               (ICacheableMetaStoreClient) RetryingMetaStoreClient.getProxy(cacheKey.getHiveConf(),
-                  new Class<?>[]{HiveConf.class, Integer.class},
-                  new Object[]{cacheKey.getHiveConf(), timeout},
+                  new Class<?>[]{HiveConf.class, Integer.class, Boolean.class},
+                  new Object[]{cacheKey.getHiveConf(), timeout, true},
                   CacheableHiveMetaStoreClient.class.getName());
         }
       });
@@ -326,8 +327,9 @@ class HiveClientCache {
     private final long expiryTime;
     private static final int EXPIRY_TIME_EXTENSION_IN_MILLIS = 60 * 1000;
 
-    CacheableHiveMetaStoreClient(final HiveConf conf, final Integer timeout) throws MetaException {
-      super(conf);
+    CacheableHiveMetaStoreClient(final HiveConf conf, final Integer timeout, Boolean allowEmbedded)
+        throws MetaException {
+      super(conf, null, allowEmbedded);
       // Extend the expiry time with some extra time on top of guava expiry time to make sure
       // that items closed() are for sure expired and would never be returned by guava.
       this.expiryTime = System.currentTimeMillis() + timeout * 1000 + EXPIRY_TIME_EXTENSION_IN_MILLIS;

@@ -178,7 +178,7 @@ public class TestFilterHooks {
     MetaStoreUtils.startMetaStore(port, ShimLoader.getHadoopThriftAuthBridge(), hiveConf);
 
     SessionState.start(new CliSessionState(hiveConf));
-    msc = new HiveMetaStoreClient(hiveConf, null);
+    msc = new HiveMetaStoreClient(hiveConf);
     driver = new Driver(hiveConf);
 
     driver.run("drop database if exists " + DBNAME1  + " cascade");

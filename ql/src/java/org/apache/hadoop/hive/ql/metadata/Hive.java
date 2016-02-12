@@ -3092,7 +3092,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @throws HiveMetaException
    *           if a working client can't be created
    */
-  private IMetaStoreClient createMetaStoreClient() throws MetaException {
+  private IMetaStoreClient createMetaStoreClient(boolean allowEmbedded) throws MetaException {
 
     HiveMetaHookLoader hookLoader = new HiveMetaHookLoader() {
         @Override
@@ -3120,10 +3120,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
       };
 
     if (conf.getBoolVar(ConfVars.METASTORE_FASTPATH)) {
-      return new SessionHiveMetaStoreClient(conf, hookLoader);
+      return new SessionHiveMetaStoreClient(conf, hookLoader, allowEmbedded);
     } else {
       return RetryingMetaStoreClient.getProxy(conf, hookLoader, metaCallTimeMap,
-          SessionHiveMetaStoreClient.class.getName());
+          SessionHiveMetaStoreClient.class.getName(), allowEmbedded);
     }
   }
 
@@ -3141,7 +3141,18 @@ private void constructOneLBLocationMap(FileStatus fSta,
   @LimitedPrivate(value = {"Hive"})
   @Unstable
   public synchronized IMetaStoreClient getMSC() throws MetaException {
-    if (metaStoreClient == null) {
+    return getMSC(true, false);
+  }
+
+  /**
+   * @return the metastore client for the current thread
+   * @throws MetaException
+   */
+  @LimitedPrivate(value = {"Hive"})
+  @Unstable
+  public synchronized IMetaStoreClient getMSC(
+      boolean allowEmbedded, boolean forceCreate) throws MetaException {
+    if (metaStoreClient == null || forceCreate) {
       try {
         owner = UserGroupInformation.getCurrentUser();
       } catch(IOException e) {
@@ -3150,7 +3161,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         throw new MetaException(msg + "\n" + StringUtils.stringifyException(e));
       }
       try {
-        metaStoreClient = createMetaStoreClient();
+        metaStoreClient = createMetaStoreClient(allowEmbedded);
       } catch (RuntimeException ex) {
         Throwable t = ex.getCause();
         while (t != null) {

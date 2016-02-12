@@ -115,7 +115,7 @@ public class TestMetastoreAuthorizationProvider extends TestCase {
     ugi = Utils.getUGI();
 
     SessionState.start(new CliSessionState(clientHiveConf));
-    msc = new HiveMetaStoreClient(clientHiveConf, null);
+    msc = new HiveMetaStoreClient(clientHiveConf);
     driver = new Driver(clientHiveConf);
   }
 

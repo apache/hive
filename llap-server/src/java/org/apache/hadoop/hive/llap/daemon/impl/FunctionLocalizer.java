@@ -28,8 +28,12 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.ResourceUri;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.FunctionTask;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -95,7 +99,14 @@ public class FunctionLocalizer implements GenericUDFBridge.UdfWhitelistChecker {
   }
 
   public void startLocalizeAllFunctions() throws HiveException {
-    List<Function> fns = Hive.get(false).getAllFunctions();
+    Hive hive = Hive.get(false);
+    // Do not allow embedded metastore in LLAP unless we are in test.
+    try {
+      hive.getMSC(HiveConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST), true);
+    } catch (MetaException e) {
+      throw new HiveException(e);
+    }
+    List<Function> fns = hive.getAllFunctions();
     for (Function fn : fns) {
       String fqfn = fn.getDbName() + "." + fn.getFunctionName();
       List<ResourceUri> resources = fn.getResourceUris();

@@ -192,12 +192,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
 
   static final protected Logger LOG = LoggerFactory.getLogger("hive.metastore");
 
-  public HiveMetaStoreClient(HiveConf conf)
-    throws MetaException {
-    this(conf, null);
+  public HiveMetaStoreClient(HiveConf conf) throws MetaException {
+    this(conf, null, true);
   }
 
-  public HiveMetaStoreClient(HiveConf conf, HiveMetaHookLoader hookLoader)
+  public HiveMetaStoreClient(HiveConf conf, HiveMetaHookLoader hookLoader, Boolean allowEmbedded)
     throws MetaException {
 
     this.hookLoader = hookLoader;
@@ -209,9 +208,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     fileMetadataBatchSize = HiveConf.getIntVar(
         conf, HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_OBJECTS_MAX);
 
-    String msUri = conf.getVar(HiveConf.ConfVars.METASTOREURIS);
+    String msUri = conf.getVar(ConfVars.METASTOREURIS);
     localMetaStore = HiveConfUtil.isEmbeddedMetaStore(msUri);
     if (localMetaStore) {
+      if (!allowEmbedded) {
+        throw new MetaException("Embedded metastore is not allowed here. Please configure "
+            + ConfVars.METASTOREURIS.varname + "; it is currently set to [" + msUri + "]");
+      }
       // instantiate the metastore server handler directly instead of connecting
       // through the network
       if (conf.getBoolVar(ConfVars.METASTORE_FASTPATH)) {

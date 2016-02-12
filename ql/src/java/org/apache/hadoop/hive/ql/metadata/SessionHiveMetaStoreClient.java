@@ -59,12 +59,13 @@ import org.apache.thrift.TException;
 
 public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements IMetaStoreClient {
 
-  SessionHiveMetaStoreClient(HiveConf conf) throws MetaException {
-    super(conf);
+  SessionHiveMetaStoreClient(HiveConf conf, Boolean allowEmbedded) throws MetaException {
+    super(conf, null, allowEmbedded);
   }
 
-  SessionHiveMetaStoreClient(HiveConf conf, HiveMetaHookLoader hookLoader) throws MetaException {
-    super(conf, hookLoader);
+  SessionHiveMetaStoreClient(
+      HiveConf conf, HiveMetaHookLoader hookLoader, Boolean allowEmbedded) throws MetaException {
+    super(conf, hookLoader, allowEmbedded);
   }
 
   private Warehouse wh = null;

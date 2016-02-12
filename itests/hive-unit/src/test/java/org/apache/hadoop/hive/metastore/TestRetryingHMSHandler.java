@@ -61,7 +61,7 @@ public class TestRetryingHMSHandler extends TestCase {
     hiveConf.setIntVar(HiveConf.ConfVars.HMSHANDLERATTEMPTS, 2);
     hiveConf.setTimeVar(HiveConf.ConfVars.HMSHANDLERINTERVAL, 0, TimeUnit.MILLISECONDS);
     hiveConf.setBoolVar(HiveConf.ConfVars.HMSHANDLERFORCERELOADCONF, false);
-    msc = new HiveMetaStoreClient(hiveConf, null);
+    msc = new HiveMetaStoreClient(hiveConf);
   }
 
   @Override

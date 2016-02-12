@@ -53,7 +53,7 @@ public class TestPartitionNameWhitelistValidation extends TestCase {
     hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
     hiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
     SessionState.start(new CliSessionState(hiveConf));
-    msc = new HiveMetaStoreClient(hiveConf, null);
+    msc = new HiveMetaStoreClient(hiveConf);
     driver = new Driver(hiveConf);
   }
 

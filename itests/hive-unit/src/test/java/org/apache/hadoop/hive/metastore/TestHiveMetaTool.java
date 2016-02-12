@@ -73,7 +73,7 @@ public class TestHiveMetaTool extends TestCase {
 
     try {
       HiveConf hiveConf = new HiveConf(HiveMetaTool.class);
-      client = new HiveMetaStoreClient(hiveConf, null);
+      client = new HiveMetaStoreClient(hiveConf);
 
       // Setup output stream to redirect output to
       os = new ByteArrayOutputStream();

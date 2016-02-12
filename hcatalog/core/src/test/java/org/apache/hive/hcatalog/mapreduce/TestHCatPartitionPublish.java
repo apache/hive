@@ -125,7 +125,7 @@ public class TestHCatPartitionPublish {
     hcatConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
     hcatConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname,
         "false");
-    msc = new HiveMetaStoreClient(hcatConf, null);
+    msc = new HiveMetaStoreClient(hcatConf);
     System.setProperty(HiveConf.ConfVars.PREEXECHOOKS.varname, " ");
     System.setProperty(HiveConf.ConfVars.POSTEXECHOOKS.varname, " ");
   }

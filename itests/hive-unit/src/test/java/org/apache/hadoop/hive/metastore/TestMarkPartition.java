@@ -60,7 +60,7 @@ public class TestMarkPartition extends TestCase{
   public void testMarkingPartitionSet() throws CommandNeedRetryException, MetaException,
   TException, NoSuchObjectException, UnknownDBException, UnknownTableException,
   InvalidPartitionException, UnknownPartitionException, InterruptedException {
-    HiveMetaStoreClient msc = new HiveMetaStoreClient(hiveConf, null);
+    HiveMetaStoreClient msc = new HiveMetaStoreClient(hiveConf);
     driver = new Driver(hiveConf);
     driver.run("drop database if exists hive2215 cascade");
     driver.run("create database hive2215");

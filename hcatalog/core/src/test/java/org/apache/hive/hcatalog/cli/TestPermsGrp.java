@@ -99,7 +99,7 @@ public class TestPermsGrp extends TestCase {
     hcatConf.setTimeVar(HiveConf.ConfVars.METASTORE_CLIENT_SOCKET_TIMEOUT, 60, TimeUnit.SECONDS);
     hcatConf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     clientWH = new Warehouse(hcatConf);
-    msc = new HiveMetaStoreClient(hcatConf, null);
+    msc = new HiveMetaStoreClient(hcatConf);
     System.setProperty(HiveConf.ConfVars.PREEXECHOOKS.varname, " ");
     System.setProperty(HiveConf.ConfVars.POSTEXECHOOKS.varname, " ");
   }

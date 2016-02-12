@@ -75,7 +75,7 @@ public class TestAuthorizationPreEventListener extends TestCase {
 
 
     SessionState.start(new CliSessionState(clientHiveConf));
-    msc = new HiveMetaStoreClient(clientHiveConf, null);
+    msc = new HiveMetaStoreClient(clientHiveConf);
     driver = new Driver(clientHiveConf);
   }
 

@@ -79,7 +79,7 @@ public class TestMetastoreExpr extends TestCase {
   protected void setUp() throws Exception {
     super.setUp();
     try {
-      client = new HiveMetaStoreClient(new HiveConf(this.getClass()), null);
+      client = new HiveMetaStoreClient(new HiveConf(this.getClass()));
     } catch (Throwable e) {
       System.err.println("Unable to open the metastore");
       System.err.println(StringUtils.stringifyException(e));

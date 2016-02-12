@@ -64,7 +64,7 @@ public class TestHCatOutputFormat extends TestCase {
     hiveConf = new HiveConf(this.getClass());
 
     try {
-      client = new HiveMetaStoreClient(hiveConf, null);
+      client = new HiveMetaStoreClient(hiveConf);
 
       initTable();
     } catch (Throwable e) {

@@ -66,7 +66,7 @@ public abstract class AbstractTestAuthorizationApiAuthorizer {
     hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
 
-    msc = new HiveMetaStoreClient(hiveConf, null);
+    msc = new HiveMetaStoreClient(hiveConf);
 
   }
 

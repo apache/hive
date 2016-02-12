@@ -70,7 +70,7 @@ public class TestMultiAuthorizationPreEventListener {
     clientHiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
 
     SessionState.start(new CliSessionState(clientHiveConf));
-    msc = new HiveMetaStoreClient(clientHiveConf, null);
+    msc = new HiveMetaStoreClient(clientHiveConf);
     driver = new Driver(clientHiveConf);
   }
 
