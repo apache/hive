@@ -18,9 +18,9 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
-import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -30,7 +30,6 @@ import java.util.Map;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
@@ -86,76 +85,81 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
   }
 
   private void moveFile(Path sourcePath, Path targetPath, boolean isDfsDir)
-      throws Exception {
-    FileSystem fs = sourcePath.getFileSystem(conf);
-    if (isDfsDir) {
-      // Just do a rename on the URIs, they belong to the same FS
-      String mesg = "Moving data to: " + targetPath.toString();
+      throws HiveException {
+    try {
+      String mesg = "Moving data to " + (isDfsDir ? "" : "local ") + "directory "
+          + targetPath.toString();
       String mesg_detail = " from " + sourcePath.toString();
       console.printInfo(mesg, mesg_detail);
 
-      // if source exists, rename. Otherwise, create a empty directory
-      if (fs.exists(sourcePath)) {
-        Path deletePath = null;
-        // If it multiple level of folder are there fs.rename is failing so first
-        // create the targetpath.getParent() if it not exist
-        if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_INSERT_INTO_MULTILEVEL_DIRS)) {
-          deletePath = createTargetPath(targetPath, fs);
-        }
-        if (!Hive.moveFile(conf, sourcePath, targetPath, true, false)) {
-          try {
-            if (deletePath != null) {
-              fs.delete(deletePath, true);
-            }
-          } catch (IOException e) {
-            LOG.info("Unable to delete the path created for facilitating rename"
-                + deletePath);
-          }
-          throw new HiveException("Unable to rename: " + sourcePath
-              + " to: " + targetPath);
-        }
-      } else if (!fs.mkdirs(targetPath)) {
-        throw new HiveException("Unable to make directory: " + targetPath);
+      FileSystem fs = sourcePath.getFileSystem(conf);
+      if (isDfsDir) {
+        moveFileInDfs (sourcePath, targetPath, fs);
+      } else {
+        // This is a local file
+        FileSystem dstFs = FileSystem.getLocal(conf);
+        moveFileFromDfsToLocal(sourcePath, targetPath, fs, dstFs);
       }
-    } else {
-      // This is a local file
-      String mesg = "Copying data to local directory " + targetPath.toString();
-      String mesg_detail = " from " + sourcePath.toString();
-      console.printInfo(mesg, mesg_detail);
+    } catch (Exception e) {
+      throw new HiveException("Unable to move source " + sourcePath + " to destination "
+          + targetPath, e);
+    }
+  }
 
-      // delete the existing dest directory
-      LocalFileSystem dstFs = FileSystem.getLocal(conf);
-
-      if (dstFs.delete(targetPath, true) || !dstFs.exists(targetPath)) {
-        // if source exists, rename. Otherwise, create a empty directory
-        if (fs.exists(sourcePath)) {
-          try {
-            // create the destination if it does not exist
-            if (!dstFs.exists(targetPath)) {
-              if (!FileUtils.mkdir(dstFs, targetPath, false, conf)) {
-                throw new HiveException(
-                    "Failed to create local target directory for copy:" + targetPath);
-              }
-            }
-          } catch (IOException e) {
-            throw new HiveException("Unable to create target directory for copy" + targetPath, e);
+  private void moveFileInDfs (Path sourcePath, Path targetPath, FileSystem fs)
+      throws HiveException, IOException {
+    // if source exists, rename. Otherwise, create a empty directory
+    if (fs.exists(sourcePath)) {
+      Path deletePath = null;
+      // If it multiple level of folder are there fs.rename is failing so first
+      // create the targetpath.getParent() if it not exist
+      if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_INSERT_INTO_MULTILEVEL_DIRS)) {
+        deletePath = createTargetPath(targetPath, fs);
+      }
+      if (!Hive.moveFile(conf, sourcePath, targetPath, true, false)) {
+        try {
+          if (deletePath != null) {
+            fs.delete(deletePath, true);
           }
+        } catch (IOException e) {
+          LOG.info("Unable to delete the path created for facilitating rename"
+              + deletePath);
+        }
+        throw new HiveException("Unable to rename: " + sourcePath
+            + " to: " + targetPath);
+      }
+    } else if (!fs.mkdirs(targetPath)) {
+      throw new HiveException("Unable to make directory: " + targetPath);
+    }
+  }
 
-          FileSystem srcFs = sourcePath.getFileSystem(conf);
-          FileStatus[] srcs = srcFs.listStatus(sourcePath, FileUtils.HIDDEN_FILES_PATH_FILTER);
-          for (FileStatus status : srcs) {
-            fs.copyToLocalFile(status.getPath(), targetPath);
-          }
-        } else {
-          if (!dstFs.mkdirs(targetPath)) {
-            throw new HiveException("Unable to make local directory: "
-                + targetPath);
+  private void moveFileFromDfsToLocal(Path sourcePath, Path targetPath, FileSystem fs,
+      FileSystem dstFs) throws HiveException, IOException {
+      // RawLocalFileSystem seems not able to get the right permissions for a local file, it
+      // always returns hdfs default permission (00666). So we can not overwrite a directory
+      // by deleting and recreating the directory and restoring its permissions. We should
+      // delete all its files and subdirectories instead.
+    if (dstFs.exists(targetPath)) {
+      if (dstFs.isDirectory(targetPath)) {
+        FileStatus[] destFiles = dstFs.listStatus(targetPath);
+        for (FileStatus destFile : destFiles) {
+          if (!dstFs.delete(destFile.getPath(), true)) {
+            throw new IOException("Unable to clean the destination directory: " + targetPath);
           }
         }
       } else {
-        throw new AccessControlException(
-            "Unable to delete the existing destination directory: "
-            + targetPath);
+        throw new HiveException("Target " + targetPath + " is not a local directory.");
+      }
+    } else {
+      if (!FileUtils.mkdir(dstFs, targetPath, false, conf)) {
+        throw new HiveException("Failed to create local target directory " + targetPath);
+      }
+    }
+
+    if (fs.exists(sourcePath)) {
+      FileStatus[] srcs = fs.listStatus(sourcePath, FileUtils.HIDDEN_FILES_PATH_FILTER);
+      for (FileStatus status : srcs) {
+        fs.copyToLocalFile(status.getPath(), targetPath);
       }
     }
   }
