@@ -217,7 +217,9 @@ class SchemaToTypeInfo {
     if (seenSchemas == null) {
         seenSchemas = Collections.newSetFromMap(new IdentityHashMap<Schema, Boolean>());
     } else if (seenSchemas.contains(schema)) {
-        return primitiveTypeToTypeInfo.get(Schema.Type.NULL);
+      throw new AvroSerdeException(
+          "Recursive schemas are not supported. Recursive schema was " + schema
+              .getFullName());
     }
     seenSchemas.add(schema);
 
