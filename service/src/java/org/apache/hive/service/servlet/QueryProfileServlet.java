@@ -21,6 +21,9 @@ import org.apache.hive.service.cli.operation.OperationManager;
 import org.apache.hive.service.cli.operation.SQLOperationDisplay;
 import org.apache.hive.service.cli.session.SessionManager;
 import org.apache.hive.tmpl.QueryProfileTmpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -33,6 +36,8 @@ import java.io.IOException;
  * Renders a query page
  */
 public class QueryProfileServlet extends HttpServlet {
+  private static final Logger LOG = LoggerFactory.getLogger(QueryProfileServlet.class);
+
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
@@ -42,8 +47,11 @@ public class QueryProfileServlet extends HttpServlet {
       (SessionManager)ctx.getAttribute("hive.sm");
     OperationManager opManager = sessionManager.getOperationManager();
     SQLOperationDisplay sod = opManager.getSQLOperationDisplay(opId);
+    if (sod == null) {
+      LOG.debug("No display object found for operation {} ", opId);
+      return;
+    }
 
     new QueryProfileTmpl().render(response.getWriter(), sod);
   }
-
 }
