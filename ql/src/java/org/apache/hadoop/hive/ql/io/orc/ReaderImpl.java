@@ -189,7 +189,8 @@ public class ReaderImpl implements Reader {
   @Override
   public OrcFile.Version getFileVersion() {
     for (OrcFile.Version version: OrcFile.Version.values()) {
-      if (version.getMajor() == versionList.get(0) &&
+      if ((versionList != null && !versionList.isEmpty()) &&
+          version.getMajor() == versionList.get(0) &&
           version.getMinor() == versionList.get(1)) {
         return version;
       }
