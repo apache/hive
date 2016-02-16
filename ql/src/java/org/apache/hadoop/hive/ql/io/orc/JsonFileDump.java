@@ -54,6 +54,9 @@ public class JsonFileDump {
       Configuration conf,
       List<Integer> rowIndexCols, boolean prettyPrint, boolean printTimeZone)
       throws JSONException, IOException {
+    if (files.isEmpty()) {
+      return;
+    }
     JSONStringer writer = new JSONStringer();
     boolean multiFile = files.size() > 1;
     if (multiFile) {
