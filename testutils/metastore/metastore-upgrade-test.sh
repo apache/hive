@@ -119,15 +119,14 @@ if ! execute_test $HIVE_SCHEMA_BASE; then
 fi
 
 begin_upgrade_test="false"
-find $HMS_UPGRADE_DIR/$DB_SERVER/upgrade-* |  sort -V | while read script
+while read script
 do
-	name=$(basename $script)
-	if [ $begin_upgrade_test = "true" ] || echo $name | grep "upgrade-$VERSION_BASE"; then
+	if [ $begin_upgrade_test = "true" ] || echo upgrade-$name | grep "upgrade-$VERSION_BASE"; then
 		begin_upgrade_test="true"
-		if ! execute_test $script; then
-			echo "Error: Cannot execute SQL file: $script"
+		if ! execute_test $HMS_UPGRADE_DIR/$DB_SERVER/upgrade-$script.$DB_SERVER.sql; then
+			echo "Error: Cannot execute SQL file: $HMS_UPGRADE_DIR/$DB_SERVER/upgrade-$script.$DB_SERVER.sql"
 		fi
 	fi
-done
+done < $HMS_UPGRADE_DIR/$DB_SERVER/upgrade.order.$DB_SERVER
 
 log "Tests executed."
