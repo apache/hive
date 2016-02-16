@@ -687,6 +687,8 @@ public class HiveSessionImpl implements HiveSession {
     if (isOperationLogEnabled) {
       try {
         FileUtils.forceDelete(sessionLogDir);
+        LOG.info("Operation log session directory is deleted: "
+            + sessionLogDir.getAbsolutePath());
       } catch (Exception e) {
         LOG.error("Failed to cleanup session log dir: " + sessionHandle, e);
       }

@@ -747,9 +747,11 @@ public class SessionState {
   private void dropSessionPaths(Configuration conf) throws IOException {
     if (hdfsSessionPath != null) {
       hdfsSessionPath.getFileSystem(conf).delete(hdfsSessionPath, true);
+      LOG.info("Deleted HDFS directory: " + hdfsSessionPath);
     }
     if (localSessionPath != null) {
       FileSystem.getLocal(conf).delete(localSessionPath, true);
+      LOG.info("Deleted local directory: " + localSessionPath);
     }
     deleteTmpOutputFile();
     deleteTmpErrOutputFile();
