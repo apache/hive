@@ -1274,8 +1274,8 @@ public class TestConvertAstToSearchArg {
     assertEquals(3, leaves.size());
 
     String[] conditions = new String[]{
-      "lt(id, 45)",                         /* id between 23 and 45 */
-      "not(lteq(id, 23))",                   /* id between 23 and 45 */
+      "lteq(id, 45)",                         /* id between 23 and 45 */
+      "not(lt(id, 23))",                   /* id between 23 and 45 */
       "eq(first_name, Binary{\"alan\"})",   /* first_name = 'alan'  */
       "eq(last_name, Binary{\"smith\"})"    /* 'smith' = last_name  */
     };
@@ -1772,7 +1772,7 @@ public class TestConvertAstToSearchArg {
             " required binary first_name; }");
     FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema);
     String expected =
-      "and(lt(first_name, Binary{\"greg\"}), not(lteq(first_name, Binary{\"david\"})))";
+      "and(lteq(first_name, Binary{\"greg\"}), not(lt(first_name, Binary{\"david\"})))";
     assertEquals(p.toString(), expected);
 
     assertEquals(PredicateLeaf.Type.STRING, leaves.get(0).getType());

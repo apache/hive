@@ -66,7 +66,36 @@ public class TestParquetFilterPredicate {
     FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema);
 
     String expected =
-        "and(and(not(eq(a, null)), not(and(lt(a, 20.3), not(lteq(a, 10.2))))), not(or(or(eq(b, 1), eq(b, 2)), eq(b, 3))))";
+        "and(and(not(eq(a, null)), not(and(lteq(a, 20.3), not(lt(a, 10.2))))), not(or(or(eq(b, 1), eq(b, 2)), eq(b, 3))))";
+    assertEquals(expected, p.toString());
+  }
+
+  @Test
+  public void testFilterBetween() {
+    MessageType schema =
+        MessageTypeParser.parseMessageType("message test {  required int32 bCol; }");
+    SearchArgument sarg = SearchArgumentFactory.newBuilder()
+        .between("bCol", PredicateLeaf.Type.LONG, 1L, 5L)
+        .build();
+    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema);
+    String expected =
+        "and(lteq(bCol, 5), not(lt(bCol, 1)))";
+    assertEquals(expected, p.toString());
+
+    sarg = SearchArgumentFactory.newBuilder()
+            .between("bCol", PredicateLeaf.Type.LONG, 5L, 1L)
+            .build();
+    p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema);
+    expected =
+            "and(lteq(bCol, 1), not(lt(bCol, 5)))";
+    assertEquals(expected, p.toString());
+
+    sarg = SearchArgumentFactory.newBuilder()
+            .between("bCol", PredicateLeaf.Type.LONG, 1L, 1L)
+            .build();
+    p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema);
+    expected =
+            "and(lteq(bCol, 1), not(lt(bCol, 1)))";
     assertEquals(expected, p.toString());
   }
 }
