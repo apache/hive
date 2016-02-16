@@ -64,7 +64,7 @@ public class TestParquetRecordReaderWrapper {
     FilterPredicate p =
         ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema);
     String expected =
-      "and(and(and(not(eq(x, null)), not(and(lt(y, 20), not(lteq(y, 10))))), not(or(or(eq(z, 1), " +
+      "and(and(and(not(eq(x, null)), not(and(lteq(y, 20), not(lt(y, 10))))), not(or(or(eq(z, 1), " +
         "eq(z, 2)), eq(z, 3)))), not(eq(a, Binary{\"stinger\"})))";
     assertEquals(expected, p.toString());
   }

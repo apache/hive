@@ -65,7 +65,8 @@ public class TestParquetFilterPredicate {
     FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema);
 
     String expected =
-        "and(and(not(eq(a, null)), not(and(lt(a, 20.3), not(lteq(a, 10.2))))), not(or(or(eq(b, 1), eq(b, 2)), eq(b, 3))))";
+        "and(and(not(eq(a, null)), not(and(lteq(a, 20.3), not(lt(a, 10.2))))), not(or(or(eq(b, 1), eq(b, 2)), eq(b, 3))))";
     assertEquals(expected, p.toString());
   }
+
 }
