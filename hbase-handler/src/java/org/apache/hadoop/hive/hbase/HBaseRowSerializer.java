@@ -271,8 +271,11 @@ public class HBaseRowSerializer {
               ss.write(sep);
             }
             serialize(entry.getKey(), koi, level+2, ss);
-            ss.write(keyValueSeparator);
-            serialize(entry.getValue(), voi, level+2, ss);
+
+            if ( entry.getValue() != null) {
+              ss.write(keyValueSeparator);
+              serialize(entry.getValue(), voi, level+2, ss);
+            }
           }
         }
         return true;
