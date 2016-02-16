@@ -22,13 +22,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.common.collect.EvictingQueue;
@@ -192,7 +189,9 @@ public class OperationManager extends AbstractService {
       synchronized (webuiLock) {
         String opKey = operationHandle.getHandleIdentifier().toString();
         SQLOperationDisplay display = liveSqlOperations.remove(opKey);
-        historicSqlOperations.put(opKey, display);
+        if (historicSqlOperations != null) {
+          historicSqlOperations.put(opKey, display);
+        }
       }
       return operation;
     }
@@ -214,7 +213,9 @@ public class OperationManager extends AbstractService {
     synchronized (webuiLock) {
       String opKey = opHandle.getHandleIdentifier().toString();
       SQLOperationDisplay display = liveSqlOperations.remove(opKey);
-      historicSqlOperations.put(opKey, display);
+      if (historicSqlOperations != null) {
+        historicSqlOperations.put(opKey, display);
+      }
     }
     return result;
   }
@@ -353,7 +354,9 @@ public class OperationManager extends AbstractService {
   public List<SQLOperationDisplay> getHistoricalSQLOperations() {
     List<SQLOperationDisplay> result = new LinkedList<>();
     synchronized (webuiLock) {
-      result.addAll(historicSqlOperations.values());
+      if (historicSqlOperations != null) {
+        result.addAll(historicSqlOperations.values());
+      }
     }
     return result;
   }
@@ -375,6 +378,10 @@ public class OperationManager extends AbstractService {
    */
   public SQLOperationDisplay getSQLOperationDisplay(String handle) {
     synchronized (webuiLock) {
+      if (historicSqlOperations == null) {
+        return null;
+      }
+
       SQLOperationDisplay result = liveSqlOperations.get(handle);
       if (result != null) {
         return result;
