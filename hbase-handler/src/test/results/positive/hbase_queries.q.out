@@ -919,6 +919,144 @@ WITH SERDEPROPERTIES (
 TBLPROPERTIES (
   'hbase.table.name'='hbase_table_0', 
 #### A masked pattern was here ####
+PREHOOK: query: DROP TABLE IF EXISTS hbase_table_9
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS hbase_table_9
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE hbase_table_9 (id bigint, data map<string, string>, str string)
+stored by 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+with serdeproperties ("hbase.columns.mapping" = ":key,cf:map_col#s:s,cf:str_col")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hbase_table_9
+POSTHOOK: query: CREATE TABLE hbase_table_9 (id bigint, data map<string, string>, str string)
+stored by 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+with serdeproperties ("hbase.columns.mapping" = ":key,cf:map_col#s:s,cf:str_col")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hbase_table_9
+PREHOOK: query: insert overwrite table hbase_table_9 select 1 as id, map('abcd', null) as data , null as str from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@hbase_table_9
+POSTHOOK: query: insert overwrite table hbase_table_9 select 1 as id, map('abcd', null) as data , null as str from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@hbase_table_9
+PREHOOK: query: insert into table hbase_table_9 select 2 as id, map('efgh', null) as data , '1234' as str from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@hbase_table_9
+POSTHOOK: query: insert into table hbase_table_9 select 2 as id, map('efgh', null) as data , '1234' as str from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@hbase_table_9
+PREHOOK: query: insert into table hbase_table_9 select 3 as id, map('hij', '') as data , '1234' as str from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@hbase_table_9
+POSTHOOK: query: insert into table hbase_table_9 select 3 as id, map('hij', '') as data , '1234' as str from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@hbase_table_9
+PREHOOK: query: insert into table hbase_table_9 select 4 as id, map('klm', 'avalue') as data , '1234' as str from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@hbase_table_9
+POSTHOOK: query: insert into table hbase_table_9 select 4 as id, map('klm', 'avalue') as data , '1234' as str from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@hbase_table_9
+PREHOOK: query: insert into table hbase_table_9 select 5 as id, map('key1',null, 'key2', 'avalue') as data , '1234' as str from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@hbase_table_9
+POSTHOOK: query: insert into table hbase_table_9 select 5 as id, map('key1',null, 'key2', 'avalue') as data , '1234' as str from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@hbase_table_9
+PREHOOK: query: select * from hbase_table_9
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hbase_table_9
+#### A masked pattern was here ####
+POSTHOOK: query: select * from hbase_table_9
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hbase_table_9
+#### A masked pattern was here ####
+1	{"abcd":null}	NULL
+2	{"efgh":null}	1234
+3	{"hij":""}	1234
+4	{"klm":"avalue"}	1234
+5	{"key1":null,"key2":"avalue"}	1234
+PREHOOK: query: DROP TABLE IF EXISTS hbase_table_10
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS hbase_table_10
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE hbase_table_10 (id bigint, data map<int, int>, str string)
+stored by 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+with serdeproperties ("hbase.columns.mapping" = ":key,cf:map_col2,cf:str2_col")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hbase_table_10
+POSTHOOK: query: CREATE TABLE hbase_table_10 (id bigint, data map<int, int>, str string)
+stored by 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+with serdeproperties ("hbase.columns.mapping" = ":key,cf:map_col2,cf:str2_col")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hbase_table_10
+PREHOOK: query: insert overwrite table hbase_table_10 select 1 as id, map(10, cast(null as int)) as data , null as str from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@hbase_table_10
+POSTHOOK: query: insert overwrite table hbase_table_10 select 1 as id, map(10, cast(null as int)) as data , null as str from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@hbase_table_10
+PREHOOK: query: insert into table hbase_table_10 select 2 as id, map(20, cast(null as int)) as data , '1234' as str from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@hbase_table_10
+POSTHOOK: query: insert into table hbase_table_10 select 2 as id, map(20, cast(null as int)) as data , '1234' as str from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@hbase_table_10
+PREHOOK: query: insert into table hbase_table_10 select 3 as id, map(30, 31) as data , '1234' as str from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@hbase_table_10
+POSTHOOK: query: insert into table hbase_table_10 select 3 as id, map(30, 31) as data , '1234' as str from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@hbase_table_10
+PREHOOK: query: insert into table hbase_table_10 select 4 as id, map(40, cast(null as int), 45, cast(null as int)) as data , '1234' as str from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@hbase_table_10
+POSTHOOK: query: insert into table hbase_table_10 select 4 as id, map(40, cast(null as int), 45, cast(null as int)) as data , '1234' as str from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@hbase_table_10
+PREHOOK: query: insert into table hbase_table_10 select 5 as id, map(50,cast(null as int), 55, 58) as data , '1234' as str from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@hbase_table_10
+POSTHOOK: query: insert into table hbase_table_10 select 5 as id, map(50,cast(null as int), 55, 58) as data , '1234' as str from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@hbase_table_10
+PREHOOK: query: select * from hbase_table_10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hbase_table_10
+#### A masked pattern was here ####
+POSTHOOK: query: select * from hbase_table_10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hbase_table_10
+#### A masked pattern was here ####
+1	{10:null}	NULL
+2	{20:null}	1234
+3	{30:31}	1234
+4	{40:null,45:null}	1234
+5	{50:null,55:58}	1234
 PREHOOK: query: DROP TABLE hbase_table_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hbase_table_1
@@ -1015,3 +1153,19 @@ POSTHOOK: query: DROP TABLE empty_normal_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@empty_normal_table
 POSTHOOK: Output: default@empty_normal_table
+PREHOOK: query: DROP TABLE hbase_table_9
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@hbase_table_9
+PREHOOK: Output: default@hbase_table_9
+POSTHOOK: query: DROP TABLE hbase_table_9
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@hbase_table_9
+POSTHOOK: Output: default@hbase_table_9
+PREHOOK: query: DROP TABLE hbase_table_10
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@hbase_table_10
+PREHOOK: Output: default@hbase_table_10
+POSTHOOK: query: DROP TABLE hbase_table_10
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@hbase_table_10
+POSTHOOK: Output: default@hbase_table_10
