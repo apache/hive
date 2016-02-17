@@ -30,6 +30,7 @@ llap () {
 
   set -e;
 
+  export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Dlog4j.configurationFile=llap-cli-log4j2.properties "
   # hadoop 20 or newer - skip the aux_jars option. picked up from hiveconf
   $HADOOP $CLASS $HIVE_OPTS -directory $TMPDIR "$@"
   

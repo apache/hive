@@ -119,10 +119,10 @@ public class ShuffleHandler implements AttemptRegistrationListener {
 
   public static final String SHUFFLE_HANDLER_LOCAL_DIRS = "llap.shuffle.handler.local-dirs";
 
-  public static final String SHUFFLE_MANAGE_OS_CACHE = "mapreduce.shuffle.manage.os.cache";
+  public static final String SHUFFLE_MANAGE_OS_CACHE = "lla[.shuffle.manage.os.cache";
   public static final boolean DEFAULT_SHUFFLE_MANAGE_OS_CACHE = true;
 
-  public static final String SHUFFLE_READAHEAD_BYTES = "mapreduce.shuffle.readahead.bytes";
+  public static final String SHUFFLE_READAHEAD_BYTES = "llap.shuffle.readahead.bytes";
   public static final int DEFAULT_SHUFFLE_READAHEAD_BYTES = 4 * 1024 * 1024;
 
   public static final String SHUFFLE_DIR_WATCHER_ENABLED = "llap.shuffle.dir-watcher.enabled";
@@ -163,40 +163,39 @@ public class ShuffleHandler implements AttemptRegistrationListener {
   public static final String SHUFFLE_PORT_CONFIG_KEY = "llap.shuffle.port";
   public static final int DEFAULT_SHUFFLE_PORT = 15551;
 
-  // TODO Change configs to remove mapreduce references.
   public static final String SHUFFLE_CONNECTION_KEEP_ALIVE_ENABLED =
-      "mapreduce.shuffle.connection-keep-alive.enable";
+      "llap.shuffle.connection-keep-alive.enable";
   public static final boolean DEFAULT_SHUFFLE_CONNECTION_KEEP_ALIVE_ENABLED = false;
 
   public static final String SHUFFLE_CONNECTION_KEEP_ALIVE_TIME_OUT =
-      "mapreduce.shuffle.connection-keep-alive.timeout";
+      "llap.shuffle.connection-keep-alive.timeout";
   public static final int DEFAULT_SHUFFLE_CONNECTION_KEEP_ALIVE_TIME_OUT = 5; //seconds
 
   public static final String SHUFFLE_MAPOUTPUT_META_INFO_CACHE_SIZE =
-      "mapreduce.shuffle.mapoutput-info.meta.cache.size";
+      "llap.shuffle.mapoutput-info.meta.cache.size";
   public static final int DEFAULT_SHUFFLE_MAPOUTPUT_META_INFO_CACHE_SIZE =
       10000;
 
   public static final String CONNECTION_CLOSE = "close";
 
   public static final String SUFFLE_SSL_FILE_BUFFER_SIZE_KEY =
-    "mapreduce.shuffle.ssl.file.buffer.size";
+    "llap.shuffle.ssl.file.buffer.size";
 
   public static final int DEFAULT_SUFFLE_SSL_FILE_BUFFER_SIZE = 60 * 1024;
 
-  public static final String MAX_SHUFFLE_CONNECTIONS = "mapreduce.shuffle.max.connections";
+  public static final String MAX_SHUFFLE_CONNECTIONS = "llap.shuffle.max.connections";
   public static final int DEFAULT_MAX_SHUFFLE_CONNECTIONS = 0; // 0 implies no limit
   
-  public static final String MAX_SHUFFLE_THREADS = "mapreduce.shuffle.max.threads";
+  public static final String MAX_SHUFFLE_THREADS = "llap.shuffle.max.threads";
   // 0 implies Netty default of 2 * number of available processors
   public static final int DEFAULT_MAX_SHUFFLE_THREADS = 0;
   
   public static final String SHUFFLE_BUFFER_SIZE = 
-      "mapreduce.shuffle.transfer.buffer.size";
+      "llap.shuffle.transfer.buffer.size";
   public static final int DEFAULT_SHUFFLE_BUFFER_SIZE = 128 * 1024;
   
   public static final String  SHUFFLE_TRANSFERTO_ALLOWED = 
-      "mapreduce.shuffle.transferTo.allowed";
+      "llap.shuffle.transferTo.allowed";
   public static final boolean DEFAULT_SHUFFLE_TRANSFERTO_ALLOWED = true;
   public static final boolean WINDOWS_DEFAULT_SHUFFLE_TRANSFERTO_ALLOWED = 
       false;

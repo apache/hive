@@ -14,28 +14,26 @@
 
 package org.apache.hadoop.hive.llap.configuration;
 
-import java.net.URL;
-
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 
-public class LlapConfiguration extends Configuration {
-  public static final String LLAP_PREFIX = "llap.";
-  public static final String LLAP_DAEMON_PREFIX = "llap.daemon.";
+/**
+ * Configuration for LLAP daemon processes only. This should not be used by any clients.
+ */
+public class LlapDaemonConfiguration extends Configuration {
 
-  public LlapConfiguration(Configuration conf) {
-    super(conf);
-    addResource(LLAP_DAEMON_SITE);
-  }
+  @InterfaceAudience.Private
+  public static final String LLAP_DAEMON_SITE = "llap-daemon-site.xml";
 
-  public LlapConfiguration() {
+  @InterfaceAudience.Private
+  public static final String[] DAEMON_CONFIGS = { /* in specific order */"core-site.xml",
+      "hdfs-site.xml", "yarn-site.xml", "tez-site.xml", "hive-site.xml" };
+  
+  public LlapDaemonConfiguration() {
     super(false);
+    for (String conf : DAEMON_CONFIGS) {
+      addResource(conf);
+    }
     addResource(LLAP_DAEMON_SITE);
   }
-
-  public LlapConfiguration(Configuration conf, URL llapDaemonConfLocation) {
-    super(conf);
-    addResource(llapDaemonConfLocation);
-  }
-
-  private static final String LLAP_DAEMON_SITE = "llap-daemon-site.xml";
 }

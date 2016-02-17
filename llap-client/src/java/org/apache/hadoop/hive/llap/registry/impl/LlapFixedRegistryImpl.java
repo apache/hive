@@ -31,7 +31,6 @@ import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.llap.configuration.LlapConfiguration;
 import org.apache.hadoop.hive.llap.registry.ServiceInstance;
 import org.apache.hadoop.hive.llap.registry.ServiceInstanceSet;
 import org.apache.hadoop.hive.llap.registry.ServiceRegistry;
@@ -67,9 +66,8 @@ public class LlapFixedRegistryImpl implements ServiceRegistry {
     this.mngPort = HiveConf.getIntVar(conf, ConfVars.LLAP_MANAGEMENT_RPC_PORT);
 
     for (Map.Entry<String, String> kv : conf) {
-      if (kv.getKey().startsWith(LlapConfiguration.LLAP_DAEMON_PREFIX)
-          || kv.getKey().startsWith("hive.llap.")
-          || kv.getKey().startsWith(LlapConfiguration.LLAP_PREFIX)) {
+      if (kv.getKey().startsWith(HiveConf.PREFIX_LLAP)
+          || kv.getKey().startsWith(HiveConf.PREFIX_HIVE_LLAP)) {
         // TODO: read this somewhere useful, like the task scheduler
         srv.put(kv.getKey(), kv.getValue());
       }

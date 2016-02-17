@@ -21,12 +21,14 @@ package org.apache.hadoop.hive.llap.cli;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.URL;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Collection;
+import java.util.Properties;
 
+import org.apache.hadoop.hive.llap.configuration.LlapDaemonConfiguration;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.tezplugins.LlapTezUtils;
+import org.apache.tez.dag.api.TezConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -52,14 +54,18 @@ import com.google.common.base.Preconditions;
 public class LlapServiceDriver {
 
   protected static final Logger LOG = LoggerFactory.getLogger(LlapServiceDriver.class.getName());
+
   private static final String[] DEFAULT_AUX_CLASSES = new String[] {
   "org.apache.hive.hcatalog.data.JsonSerDe" };
   private static final String HBASE_SERDE_CLASS = "org.apache.hadoop.hive.hbase.HBaseSerDe";
-  private static final String[] NEEDED_CONFIGS = {
-    "tez-site.xml", "hive-site.xml", "llap-daemon-site.xml", "core-site.xml" };
+  private static final String[] NEEDED_CONFIGS = LlapDaemonConfiguration.DAEMON_CONFIGS;
   private static final String[] OPTIONAL_CONFIGS = { "ssl-server.xml" };
 
 
+  /**
+   * This is a working configuration for the instance to merge various variables.
+   * It is not written out for llap server usage
+   */
   private final Configuration conf;
 
   public LlapServiceDriver() {
@@ -82,40 +88,56 @@ public class LlapServiceDriver {
     System.exit(ret);
   }
 
-  /**
-   * Intersect llap-daemon-site.xml configuration properties against an existing Configuration
-   * object, while resolving any ${} parameters that might be present.
-   * 
-   * @param raw
-   * @return configuration object which is a slice of configured
-   */
-  public static Configuration resolve(Configuration configured, String first, String... resources) {
-    Configuration defaults = new Configuration(false);
 
-    defaults.addResource(first);
+  private static Configuration resolve(Configuration configured, Properties direct,
+                                       Properties hiveconf) {
+    Configuration conf = new Configuration(false);
 
-    for (String resource : resources) {
-      defaults.addResource(resource);
+    populateConf(configured, conf, hiveconf, "CLI hiveconf");
+    populateConf(configured, conf, direct, "CLI direct");
+
+    return conf;
+  }
+
+  private static void populateConf(Configuration configured, Configuration target,
+                                   Properties properties, String source) {
+    for (Entry<Object, Object> entry : properties.entrySet()) {
+      String key = (String) entry.getKey();
+      String val = configured.get(key);
+      if (val != null) {
+        target.set(key, val, source);
+      }
     }
+  }
 
-    Configuration slice = new Configuration(false);
-    // for everything in defaults, slice out those from the configured
-    for (Map.Entry<String, String> kv : defaults) {
-      slice.set(kv.getKey(), configured.get(kv.getKey()));
+  private static void populateConfWithLlapProperties(Configuration conf, Properties properties) {
+    for(Entry<Object, Object> props : properties.entrySet()) {
+      String key = (String) props.getKey();
+      if (HiveConf.getLlapDaemonConfVars().contains(key)) {
+        conf.set(key, (String) props.getValue());
+      } else {
+        if (key.startsWith(HiveConf.PREFIX_LLAP) || key.startsWith(HiveConf.PREFIX_HIVE_LLAP)) {
+          LOG.warn("Adding key [{}] even though it is not in the set of known llap-server keys");
+          conf.set(key, (String) props.getValue());
+        } else {
+          LOG.warn("Ignoring unknown llap server parameter: [{}]", key);
+        }
+      }
     }
-
-    return slice;
   }
 
   private void run(String[] args) throws Exception {
     LlapOptionsProcessor optionsProcessor = new LlapOptionsProcessor();
     LlapOptions options = optionsProcessor.processOptions(args);
 
+    Properties propsDirectOptions = new Properties();
+
     if (options == null) {
       // help
       return;
     }
 
+    // Working directory.
     Path tmpDir = new Path(options.getDirectory());
 
     if (conf == null) {
@@ -135,7 +157,11 @@ public class LlapServiceDriver {
     for (String f : OPTIONAL_CONFIGS) {
       conf.addResource(f);
     }
+
     conf.reloadConfiguration();
+
+    populateConfWithLlapProperties(conf, options.getConfig());
+
 
     if (options.getName() != null) {
       // update service registry configs - caveat: this has nothing to do with the actual settings
@@ -143,6 +169,7 @@ public class LlapServiceDriver {
       // if needed, use --hiveconf llap.daemon.service.hosts=@llap0 to dynamically switch between
       // instances
       conf.set(ConfVars.LLAP_DAEMON_SERVICE_HOSTS.varname, "@" + options.getName());
+      propsDirectOptions.setProperty(ConfVars.LLAP_DAEMON_SERVICE_HOSTS.varname, "@" + options.getName());
     }
 
     if (options.getSize() != -1) {
@@ -160,35 +187,40 @@ public class LlapServiceDriver {
       }
     }
 
+    // This parameter is read in package.py - and nowhere else. Does not need to be part of HiveConf - that's just confusing.
     final long minAlloc = conf.getInt(YarnConfiguration.RM_SCHEDULER_MINIMUM_ALLOCATION_MB, -1);
+    long containerSize = -1;
     if (options.getSize() != -1) {
-      final long containerSize = options.getSize() / (1024 * 1024);
+      containerSize = options.getSize() / (1024 * 1024);
       Preconditions.checkArgument(containerSize >= minAlloc,
           "Container size should be greater than minimum allocation(%s)", minAlloc + "m");
       conf.setLong(ConfVars.LLAP_DAEMON_YARN_CONTAINER_MB.varname, containerSize);
+      propsDirectOptions.setProperty(ConfVars.LLAP_DAEMON_YARN_CONTAINER_MB.varname, String.valueOf(containerSize));
     }
 
     if (options.getExecutors() != -1) {
       conf.setLong(ConfVars.LLAP_DAEMON_NUM_EXECUTORS.varname, options.getExecutors());
+      propsDirectOptions.setProperty(ConfVars.LLAP_DAEMON_NUM_EXECUTORS.varname, String.valueOf(options.getExecutors()));
       // TODO: vcpu settings - possibly when DRFA works right
     }
 
     if (options.getCache() != -1) {
       conf.set(HiveConf.ConfVars.LLAP_IO_MEMORY_MAX_SIZE.varname,
           Long.toString(options.getCache()));
+      propsDirectOptions.setProperty(HiveConf.ConfVars.LLAP_IO_MEMORY_MAX_SIZE.varname,
+          Long.toString(options.getCache()));
     }
 
     if (options.getXmx() != -1) {
       // Needs more explanation here
       // Xmx is not the max heap value in JDK8
-      // You need to subtract 50% of the survivor fraction from this, to get actual usable memory before it goes into GC 
-      conf.setLong(ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB.varname, (long)(options.getXmx())
-          / (1024 * 1024));
+      // You need to subtract 50% of the survivor fraction from this, to get actual usable memory before it goes into GC
+      long xmx = (long) (options.getXmx() / (1024 * 1024));
+      conf.setLong(ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB.varname, xmx);
+      propsDirectOptions.setProperty(ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB.varname, String.valueOf(xmx));
     }
 
-    for (Entry<Object, Object> props : options.getConfig().entrySet()) {
-      conf.set((String) props.getKey(), (String) props.getValue());
-    }
+
 
     URL logger = conf.getResource("llap-daemon-log4j2.properties");
 
@@ -205,9 +237,10 @@ public class LlapServiceDriver {
       LOG.warn("Unable to find llap scripts:" + scripts);
     }
 
+
     Path libDir = new Path(tmpDir, "lib");
 
-    String tezLibs = conf.get("tez.lib.uris");
+    String tezLibs = conf.get(TezConfiguration.TEZ_LIB_URIS);
     if (tezLibs == null) {
       LOG.warn("Missing tez.lib.uris in tez-site.xml");
     }
@@ -264,30 +297,42 @@ public class LlapServiceDriver {
       }
     }
 
+    String java_home;
+    if (options.getJavaPath() == null || options.getJavaPath().isEmpty()) {
+      java_home = System.getenv("JAVA_HOME");
+      String jre_home = System.getProperty("java.home");
+      if (java_home == null) {
+        java_home = jre_home;
+      } else if (!java_home.equals(jre_home)) {
+        LOG.warn("Java versions might not match : JAVA_HOME=[{}],process jre=[{}]",
+            java_home, jre_home);
+      }
+    } else {
+      java_home = options.getJavaPath();
+    }
+    if (java_home == null || java_home.isEmpty()) {
+      throw new RuntimeException(
+          "Could not determine JAVA_HOME from command line parameters, environment or system properties");
+    }
+    LOG.info("Using [{}] for JAVA_HOME", java_home);
+
     Path confPath = new Path(tmpDir, "conf");
     lfs.mkdirs(confPath);
 
+    // Copy over the mandatory configs for the package.
     for (String f : NEEDED_CONFIGS) {
-      copyConfig(options, lfs, confPath, f);
+      copyConfig(lfs, confPath, f);
     }
     for (String f : OPTIONAL_CONFIGS) {
       try {
-        copyConfig(options, lfs, confPath, f);
+        copyConfig(lfs, confPath, f);
       } catch (Throwable t) {
         LOG.info("Error getting an optional config " + f + "; ignoring: " + t.getMessage());
       }
     }
+    createLlapDaemonConfig(lfs, confPath, conf, propsDirectOptions, options.getConfig());
 
     lfs.copyFromLocalFile(new Path(logger.toString()), confPath);
-
-    String java_home = System.getenv("JAVA_HOME");
-    String jre_home = System.getProperty("java.home");
-    if (java_home == null) {
-      java_home = jre_home;
-    } else if (!java_home.equals(jre_home)) {
-      LOG.warn("Java versions might not match : JAVA_HOME=%s,process jre=%s", 
-          java_home, jre_home);
-    }
 
     // extract configs for processing by the python fragments in Slider
     JSONObject configs = new JSONObject();
@@ -296,6 +341,7 @@ public class LlapServiceDriver {
 
     configs.put(ConfVars.LLAP_DAEMON_YARN_CONTAINER_MB.varname, HiveConf.getIntVar(conf,
         ConfVars.LLAP_DAEMON_YARN_CONTAINER_MB));
+    configs.put(ConfVars.LLAP_DAEMON_YARN_CONTAINER_MB.varname, containerSize);
 
     configs.put(HiveConf.ConfVars.LLAP_IO_MEMORY_MAX_SIZE.varname,
         HiveConf.getSizeVar(conf, HiveConf.ConfVars.LLAP_IO_MEMORY_MAX_SIZE));
@@ -362,23 +408,22 @@ public class LlapServiceDriver {
     }
   }
 
-  private void copyConfig(
-      LlapOptions options, FileSystem lfs, Path confPath, String f) throws IOException {
-    if (f.equals("llap-daemon-site.xml")) {
-      FSDataOutputStream confStream = lfs.create(new Path(confPath, f));
+  private void createLlapDaemonConfig(FileSystem lfs, Path confPath, Configuration configured,
+                                      Properties direct, Properties hiveconf) throws IOException {
+    FSDataOutputStream confStream =
+        lfs.create(new Path(confPath, LlapDaemonConfiguration.LLAP_DAEMON_SITE));
 
-      Configuration copy = resolve(conf, "llap-daemon-site.xml");
+    Configuration llapDaemonConf = resolve(configured, direct, hiveconf);
 
-      for (Entry<Object, Object> props : options.getConfig().entrySet()) {
-        // overrides
-        copy.set((String) props.getKey(), (String) props.getValue());
-      }
-
-      copy.writeXml(confStream);
-      confStream.close();
-    } else {
-      // they will be file:// URLs
-      lfs.copyFromLocalFile(new Path(conf.getResource(f).toString()), confPath);
-    }
+    llapDaemonConf.writeXml(confStream);
+    confStream.close();
   }
+
+  private void copyConfig(FileSystem lfs, Path confPath, String f) throws IOException {
+    HiveConf.getBoolVar(new Configuration(false), ConfVars.LLAP_CLIENT_CONSISTENT_SPLITS);
+    // they will be file:// URLs
+    lfs.copyFromLocalFile(new Path(conf.getResource(f).toString()), confPath);
+  }
+
+
 }
