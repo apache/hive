@@ -118,7 +118,7 @@ public class MetricsCollection {
     }
   }
 
-  void addMetrics(int jobId, int stageId, long taskId, Metrics metrics) {
+  public void addMetrics(int jobId, int stageId, long taskId, Metrics metrics) {
     lock.writeLock().lock();
     try {
       taskMetrics.add(new TaskInfo(jobId, stageId, taskId, metrics));

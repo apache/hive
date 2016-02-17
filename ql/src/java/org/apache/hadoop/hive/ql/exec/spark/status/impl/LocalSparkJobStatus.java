@@ -28,6 +28,8 @@ import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatistics;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatisticsBuilder;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobStatus;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkStageProgress;
+import org.apache.hive.spark.client.MetricsCollection;
+import org.apache.hive.spark.client.metrics.Metrics;
 import org.apache.hive.spark.counter.SparkCounters;
 import org.apache.spark.JobExecutionStatus;
 import org.apache.spark.SparkJobInfo;
@@ -135,7 +137,18 @@ public class LocalSparkJobStatus implements SparkJobStatus {
       return null;
     }
 
-    Map<String, Long> flatJobMetric = combineJobLevelMetrics(jobMetric);
+    MetricsCollection metricsCollection = new MetricsCollection();
+    Set<String> stageIds = jobMetric.keySet();
+    for (String stageId : stageIds) {
+      List<TaskMetrics> taskMetrics = jobMetric.get(stageId);
+      for (TaskMetrics taskMetric : taskMetrics) {
+        Metrics metrics = new Metrics(taskMetric);
+        metricsCollection.addMetrics(jobId, Integer.parseInt(stageId), 0, metrics);
+      }
+    }
+    SparkJobUtils sparkJobUtils = new SparkJobUtils();
+    Map<String, Long> flatJobMetric = sparkJobUtils.collectMetrics(metricsCollection
+        .getAllMetrics());
     for (Map.Entry<String, Long> entry : flatJobMetric.entrySet()) {
       sparkStatisticsBuilder.add(jobIdentifier, entry.getKey(), Long.toString(entry.getValue()));
     }
@@ -151,85 +164,6 @@ public class LocalSparkJobStatus implements SparkJobStatus {
         sparkContext.sc().unpersistRDD(cachedRDDId, false);
       }
     }
-  }
-
-  private Map<String, Long> combineJobLevelMetrics(Map<String, List<TaskMetrics>> jobMetric) {
-    Map<String, Long> results = Maps.newLinkedHashMap();
-
-    long executorDeserializeTime = 0;
-    long executorRunTime = 0;
-    long resultSize = 0;
-    long jvmGCTime = 0;
-    long resultSerializationTime = 0;
-    long memoryBytesSpilled = 0;
-    long diskBytesSpilled = 0;
-    long bytesRead = 0;
-    long remoteBlocksFetched = 0;
-    long localBlocksFetched = 0;
-    long fetchWaitTime = 0;
-    long remoteBytesRead = 0;
-    long shuffleBytesWritten = 0;
-    long shuffleWriteTime = 0;
-    boolean inputMetricExist = false;
-    boolean shuffleReadMetricExist = false;
-    boolean shuffleWriteMetricExist = false;
-
-    for (List<TaskMetrics> stageMetric : jobMetric.values()) {
-      if (stageMetric != null) {
-        for (TaskMetrics taskMetrics : stageMetric) {
-          if (taskMetrics != null) {
-            executorDeserializeTime += taskMetrics.executorDeserializeTime();
-            executorRunTime += taskMetrics.executorRunTime();
-            resultSize += taskMetrics.resultSize();
-            jvmGCTime += taskMetrics.jvmGCTime();
-            resultSerializationTime += taskMetrics.resultSerializationTime();
-            memoryBytesSpilled += taskMetrics.memoryBytesSpilled();
-            diskBytesSpilled += taskMetrics.diskBytesSpilled();
-            if (!taskMetrics.inputMetrics().isEmpty()) {
-              inputMetricExist = true;
-              bytesRead += taskMetrics.inputMetrics().get().bytesRead();
-            }
-            Option<ShuffleReadMetrics> shuffleReadMetricsOption = taskMetrics.shuffleReadMetrics();
-            if (!shuffleReadMetricsOption.isEmpty()) {
-              shuffleReadMetricExist = true;
-              remoteBlocksFetched += shuffleReadMetricsOption.get().remoteBlocksFetched();
-              localBlocksFetched += shuffleReadMetricsOption.get().localBlocksFetched();
-              fetchWaitTime += shuffleReadMetricsOption.get().fetchWaitTime();
-              remoteBytesRead += shuffleReadMetricsOption.get().remoteBytesRead();
-            }
-            Option<ShuffleWriteMetrics> shuffleWriteMetricsOption = taskMetrics.shuffleWriteMetrics();
-            if (!shuffleWriteMetricsOption.isEmpty()) {
-              shuffleWriteMetricExist = true;
-              shuffleBytesWritten += shuffleWriteMetricsOption.get().shuffleBytesWritten();
-              shuffleWriteTime += shuffleWriteMetricsOption.get().shuffleWriteTime();
-            }
-          }
-        }
-      }
-    }
-
-    results.put("ExecutorDeserializeTime", executorDeserializeTime);
-    results.put("ExecutorRunTime", executorRunTime);
-    results.put("ResultSize", resultSize);
-    results.put("JvmGCTime", jvmGCTime);
-    results.put("ResultSerializationTime", resultSerializationTime);
-    results.put("MemoryBytesSpilled", memoryBytesSpilled);
-    results.put("DiskBytesSpilled", diskBytesSpilled);
-    if (inputMetricExist) {
-      results.put("BytesRead", bytesRead);
-    }
-    if (shuffleReadMetricExist) {
-      results.put("RemoteBlocksFetched", remoteBlocksFetched);
-      results.put("LocalBlocksFetched", localBlocksFetched);
-      results.put("TotalBlocksFetched", localBlocksFetched + remoteBlocksFetched);
-      results.put("FetchWaitTime", fetchWaitTime);
-      results.put("RemoteBytesRead", remoteBytesRead);
-    }
-    if (shuffleWriteMetricExist) {
-      results.put("ShuffleBytesWritten", shuffleBytesWritten);
-      results.put("ShuffleWriteTime", shuffleWriteTime);
-    }
-    return results;
   }
 
   private SparkJobInfo getJobInfo() {
