@@ -20,6 +20,7 @@
 
 package org.apache.hadoop.hive.ql.optimizer.physical;
 
+import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
@@ -48,6 +49,10 @@ public class SamplingOptimizer implements PhysicalPlanResolver {
       if (reduceWork == null || reduceWork.getNumReduceTasks() != 1
           || mapWork.getAliasToWork().size() != 1 || mapWork.getSamplingType() > 0
           || reduceWork.getReducer() == null) {
+        continue;
+      }
+      // GROUPBY operator in reducer may not be processed in parallel. Skip optimizing.
+      if (OperatorUtils.findSingleOperator(reduceWork.getReducer(), GroupByOperator.class) != null) {
         continue;
       }
       Operator<?> operator = mapWork.getAliasToWork().values().iterator().next();
