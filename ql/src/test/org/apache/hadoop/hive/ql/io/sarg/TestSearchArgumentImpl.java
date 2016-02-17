@@ -1500,8 +1500,8 @@ public class TestSearchArgumentImpl {
     assertEquals(3, leaves.size());
 
     String[] conditions = new String[]{
-      "lt(id, 45)",                         /* id between 23 and 45 */
-      "not(lteq(id, 23))",                   /* id between 23 and 45 */
+      "lteq(id, 45)",                         /* id between 23 and 45 */
+      "not(lt(id, 23))",                   /* id between 23 and 45 */
       "eq(first_name, Binary{\"alan\"})",   /* first_name = 'alan'  */
       "eq(last_name, Binary{\"smith\"})"    /* 'smith' = last_name  */
     };
@@ -1988,7 +1988,7 @@ public class TestSearchArgumentImpl {
 
     FilterPredicate p = sarg.toFilterPredicate();
     String expected =
-      "and(lt(first_name, Binary{\"greg\"}), not(lteq(first_name, Binary{\"david\"})))";
+      "and(lteq(first_name, Binary{\"greg\"}), not(lt(first_name, Binary{\"david\"})))";
     assertEquals(p.toString(), expected);
 
     assertEquals(PredicateLeaf.Type.STRING, leaves.get(0).getType());
@@ -2936,7 +2936,7 @@ public class TestSearchArgumentImpl {
 
     FilterPredicate p = sarg.toFilterPredicate();
     String expected =
-      "and(and(and(not(eq(x, null)), not(and(lt(y, 20), not(lteq(y, 10))))), not(or(or(eq(z, 1), " +
+      "and(and(and(not(eq(x, null)), not(and(lteq(y, 20), not(lt(y, 10))))), not(or(or(eq(z, 1), " +
         "eq(z, 2)), eq(z, 3)))), not(eq(a, Binary{\"stinger\"})))";
     assertEquals(expected, p.toString());
   }
