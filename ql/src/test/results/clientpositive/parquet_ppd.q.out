@@ -1,0 +1,61 @@
+PREHOOK: query: CREATE TABLE parquet_tbl(
+  key int,
+  ldate string)
+ PARTITIONED BY (
+ lyear string )
+ ROW FORMAT SERDE
+ 'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'
+ STORED AS INPUTFORMAT
+ 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat'
+ OUTPUTFORMAT
+ 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_tbl
+POSTHOOK: query: CREATE TABLE parquet_tbl(
+  key int,
+  ldate string)
+ PARTITIONED BY (
+ lyear string )
+ ROW FORMAT SERDE
+ 'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'
+ STORED AS INPUTFORMAT
+ 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat'
+ OUTPUTFORMAT
+ 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_tbl
+PREHOOK: query: insert overwrite table parquet_tbl partition (lyear='2016') select
+  1,
+  '2016-02-03' from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@parquet_tbl@lyear=2016
+POSTHOOK: query: insert overwrite table parquet_tbl partition (lyear='2016') select
+  1,
+  '2016-02-03' from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@parquet_tbl@lyear=2016
+POSTHOOK: Lineage: parquet_tbl PARTITION(lyear=2016).key SIMPLE []
+POSTHOOK: Lineage: parquet_tbl PARTITION(lyear=2016).ldate SIMPLE []
+PREHOOK: query: select * from parquet_tbl where ldate between '2016-02-03' and '2016-02-03'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_tbl
+PREHOOK: Input: default@parquet_tbl@lyear=2016
+#### A masked pattern was here ####
+POSTHOOK: query: select * from parquet_tbl where ldate between '2016-02-03' and '2016-02-03'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_tbl
+POSTHOOK: Input: default@parquet_tbl@lyear=2016
+#### A masked pattern was here ####
+1	2016-02-03	2016
+PREHOOK: query: drop table parquet_tbl
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@parquet_tbl
+PREHOOK: Output: default@parquet_tbl
+POSTHOOK: query: drop table parquet_tbl
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@parquet_tbl
+POSTHOOK: Output: default@parquet_tbl
