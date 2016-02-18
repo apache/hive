@@ -308,4 +308,231 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
       assertTrue("testUserBindNegative: Authentication failed for user2 as expected", true);
     }
   }
+
+  @Test
+  public void testUserBindPositiveWithDN() throws Exception {
+    String user;
+    Map<String, String> ldapProperties = new HashMap<String, String>();
+
+    ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
+    ldapProperties.put("hive.server2.authentication.ldap.groupDNPattern", "uid=%s,ou=Groups,dc=example,dc=com");
+    initLdapAtn(ldapProperties);
+    assertTrue(ldapServer.getPort() > 0);
+
+    user = "uid=user1,ou=People,dc=example,dc=com";
+    try {
+      ldapProvider.Authenticate(user, "user1");
+      assertTrue("testUserBindPositive: Authentication succeeded for " + user + " as expected", true);
+    } catch (AuthenticationException e) {
+      Assert.fail("testUserBindPositive: Authentication failed for user:" + user +
+                    " with password user1, expected to succeed:" + e.getMessage());
+    }
+
+    user = "uid=user2,ou=People,dc=example,dc=com";
+    try {
+      ldapProvider.Authenticate(user, "user2");
+      assertTrue("testUserBindPositive: Authentication succeeded for " + user + " user as expected", true);
+    } catch (AuthenticationException e) {
+      Assert.fail("testUserBindPositive: Authentication failed for user:" + user +
+                    " with password user2, expected to succeed:" + e.getMessage());
+    }
+  }
+
+  @Test
+  public void testUserBindPositiveWithDNOldConfig() throws Exception {
+    String user;
+    Map<String, String> ldapProperties = new HashMap<String, String>();
+
+    ldapProperties.put("hive.server2.authentication.ldap.baseDN", "ou=People,dc=example,dc=com");
+    initLdapAtn(ldapProperties);
+    assertTrue(ldapServer.getPort() > 0);
+
+    user = "uid=user1,ou=People,dc=example,dc=com";
+    try {
+      ldapProvider.Authenticate(user, "user1");
+      assertTrue("testUserBindPositive: Authentication succeeded for " + user + " as expected", true);
+    } catch (AuthenticationException e) {
+      Assert.fail("testUserBindPositive: Authentication failed for user:" + user +
+                    " with password user1, expected to succeed");
+    }
+
+    user = "uid=user2,ou=People,dc=example,dc=com";
+    try {
+      ldapProvider.Authenticate(user, "user2");
+      assertTrue("testUserBindPositive: Authentication succeeded for " + user + " as expected", true);
+    } catch (AuthenticationException e) {
+      Assert.fail("testUserBindPositive: Authentication failed for user:" + user +
+                    " with password user2, expected to succeed");
+    }
+  }
+
+  @Test
+  public void testUserBindPositiveWithDNWrongOldConfig() throws Exception {
+    String user;
+    Map<String, String> ldapProperties = new HashMap<String, String>();
+
+    ldapProperties.put("hive.server2.authentication.ldap.baseDN", "ou=DummyPeople,dc=example,dc=com");
+    initLdapAtn(ldapProperties);
+    assertTrue(ldapServer.getPort() > 0);
+
+    user = "uid=user1,ou=People,dc=example,dc=com";
+    try {
+      ldapProvider.Authenticate(user, "user1");
+      assertTrue("testUserBindPositive: Authentication succeeded for " + user + " as expected", true);
+    } catch (AuthenticationException e) {
+      Assert.fail("testUserBindPositive: Authentication failed for user:" + user +
+                    " with password user1, expected to succeed");
+    }
+
+    user = "uid=user2,ou=People,dc=example,dc=com";
+    try {
+      ldapProvider.Authenticate(user, "user2");
+      assertTrue("testUserBindPositive: Authentication succeeded for " + user + " as expected", true);
+    } catch (AuthenticationException e) {
+      Assert.fail("testUserBindPositive: Authentication failed for user:" + user +
+                    " with password user2, expected to succeed");
+    }
+  }
+
+  @Test
+  public void testUserBindPositiveWithDNWrongConfig() throws Exception {
+    String user;
+    Map<String, String> ldapProperties = new HashMap<String, String>();
+
+    ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=DummyPeople,dc=example,dc=com");
+    ldapProperties.put("hive.server2.authentication.ldap.groupDNPattern", "uid=%s,ou=DummyGroups,dc=example,dc=com");
+    initLdapAtn(ldapProperties);
+    assertTrue(ldapServer.getPort() > 0);
+
+    user = "uid=user1,ou=People,dc=example,dc=com";
+    try {
+      ldapProvider.Authenticate(user, "user1");
+      assertTrue("testUserBindPositive: Authentication succeeded for " + user + " as expected", true);
+    } catch (AuthenticationException e) {
+      Assert.fail("testUserBindPositive: Authentication failed for user:" + user +
+                    " with password user1, expected to succeed");
+    }
+
+    user = "uid=user2,ou=People,dc=example,dc=com";
+    try {
+      ldapProvider.Authenticate(user, "user2");
+      assertTrue("testUserBindPositive: Authentication succeeded for " + user + " as expected", true);
+    } catch (AuthenticationException e) {
+      Assert.fail("testUserBindPositive: Authentication failed for user:" + user +
+                    " with password user2, expected to succeed");
+    }
+  }
+
+  @Test
+  public void testUserBindPositiveWithDNBlankConfig() throws Exception {
+    String user;
+    Map<String, String> ldapProperties = new HashMap<String, String>();
+
+    ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", " ");
+    ldapProperties.put("hive.server2.authentication.ldap.groupDNPattern", " ");
+    initLdapAtn(ldapProperties);
+    assertTrue(ldapServer.getPort() > 0);
+
+    user = "uid=user1,ou=People,dc=example,dc=com";
+    try {
+      ldapProvider.Authenticate(user, "user1");
+      assertTrue("testUserBindPositive: Authentication succeeded for " + user + " as expected", true);
+    } catch (AuthenticationException e) {
+      Assert.fail("testUserBindPositive: Authentication failed for user:" + user +
+                    " with password user1, expected to succeed");
+    }
+
+    user = "uid=user2,ou=People,dc=example,dc=com";
+    try {
+      ldapProvider.Authenticate(user, "user2");
+      assertTrue("testUserBindPositive: Authentication succeeded for " + user + " as expected", true);
+    } catch (AuthenticationException e) {
+      Assert.fail("testUserBindPositive: Authentication failed for user:" + user +
+                    " with password user2, expected to succeed");
+    }
+  }
+
+  @Test
+  public void testUserBindPositiveWithDNBlankOldConfig() throws Exception {
+    String user;
+    Map<String, String> ldapProperties = new HashMap<String, String>();
+
+    ldapProperties.put("hive.server2.authentication.ldap.baseDN", "");
+    initLdapAtn(ldapProperties);
+    assertTrue(ldapServer.getPort() > 0);
+
+    user = "uid=user1,ou=People,dc=example,dc=com";
+    try {
+      ldapProvider.Authenticate(user, "user1");
+      assertTrue("testUserBindPositive: Authentication succeeded for " + user + " as expected", true);
+    } catch (AuthenticationException e) {
+      Assert.fail("testUserBindPositive: Authentication failed for user:" + user +
+                    " with password user1, expected to succeed");
+    }
+
+    user = "uid=user2,ou=People,dc=example,dc=com";
+    try {
+      ldapProvider.Authenticate(user, "user2");
+      assertTrue("testUserBindPositive: Authentication succeeded for " + user + " as expected", true);
+    } catch (AuthenticationException e) {
+      Assert.fail("testUserBindPositive: Authentication failed for user:" + user +
+                    " with password user2, expected to succeed");
+    }
+  }
+
+  @Test
+  public void testUserBindNegativeWithDN() throws Exception {
+    String user;
+    Map<String, String> ldapProperties = new HashMap<String, String>();
+    ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
+    ldapProperties.put("hive.server2.authentication.ldap.groupDNPattern", "uid=%s,ou=Groups,dc=example,dc=com");
+    initLdapAtn(ldapProperties);
+    assertTrue(ldapServer.getPort() > 0);
+
+    user = "uid=user1,ou=People,dc=example,dc=com";
+    try {
+      ldapProvider.Authenticate(user, "user2");
+      Assert.fail("testUserBindNegative: Authentication succeeded for " + user + " with password " +
+                   "user2, expected to fail");
+    } catch (AuthenticationException e) {
+      assertTrue("testUserBindNegative: Authentication failed for " + user + " as expected", true);
+    }
+
+    user = "uid=user2,ou=People,dc=example,dc=com";
+    try {
+      ldapProvider.Authenticate(user, "user");
+      Assert.fail("testUserBindNegative: Authentication failed for " + user + " with password user, " +
+                    "expected to fail");
+    } catch (AuthenticationException e) {
+      assertTrue("testUserBindNegative: Authentication failed for " + user + " as expected", true);
+    }
+  }
+
+  @Test
+  public void testUserBindNegativeWithDNOldConfig() throws Exception {
+    String user;
+    Map<String, String> ldapProperties = new HashMap<String, String>();
+    ldapProperties.put("hive.server2.authentication.ldap.baseDN", "ou=People,dc=example,dc=com");
+    initLdapAtn(ldapProperties);
+    assertTrue(ldapServer.getPort() > 0);
+
+    user = "uid=user1,ou=People,dc=example,dc=com";
+    try {
+      ldapProvider.Authenticate(user, "user2");
+      Assert.fail("testUserBindNegative: Authentication succeeded for " + user + " with password " +
+                   "user2, expected to fail");
+    } catch (AuthenticationException e) {
+      assertTrue("testUserBindNegative: Authentication failed for " + user + " as expected", true);
+    }
+
+    user = "uid=user2,ou=People,dc=example,dc=com";
+    try {
+      ldapProvider.Authenticate(user, "user");
+      Assert.fail("testUserBindNegative: Authentication failed for " + user + " with password user, " +
+                    "expected to fail");
+    } catch (AuthenticationException e) {
+      assertTrue("testUserBindNegative: Authentication failed for " + user + " as expected", true);
+    }
+  }
+
 }
