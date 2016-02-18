@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -43,6 +45,7 @@ import org.apache.hive.common.util.AnnotationUtils;
 @UDFType(deterministic = true)
 public abstract class GenericUDAFEvaluator implements Closeable {
 
+  @Retention(RetentionPolicy.RUNTIME)
   public static @interface AggregationType {
     boolean estimable() default false;
   }
