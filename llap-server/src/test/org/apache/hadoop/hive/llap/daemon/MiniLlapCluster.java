@@ -25,8 +25,10 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileContext;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.daemon.impl.LlapDaemon;
+import org.apache.hadoop.hive.llap.shufflehandler.ShuffleHandler;
 import org.apache.hadoop.service.AbstractService;
 import org.apache.hadoop.service.Service;
 import org.apache.hadoop.util.Shell;
@@ -141,8 +143,18 @@ public class MiniLlapCluster extends AbstractService {
 
   @Override
   public void serviceInit(Configuration conf) {
+    int rpcPort = 0;
+    int mngPort = 0;
+    int shufflePort = 0;
+    boolean usePortsFromConf = conf.getBoolean("minillap.usePortsFromConf", false);
+    if (usePortsFromConf) {
+      rpcPort = HiveConf.getIntVar(conf, HiveConf.ConfVars.LLAP_DAEMON_RPC_PORT);
+      mngPort = HiveConf.getIntVar(conf, HiveConf.ConfVars.LLAP_MANAGEMENT_RPC_PORT);
+      shufflePort = conf.getInt(ShuffleHandler.SHUFFLE_PORT_CONFIG_KEY, ShuffleHandler.DEFAULT_SHUFFLE_PORT);
+    }
+
     llapDaemon = new LlapDaemon(conf, numExecutorsPerService, execBytesPerService, llapIoEnabled,
-        ioIsDirect, ioBytesPerService, localDirs, 0, 0, 0);
+        ioIsDirect, ioBytesPerService, localDirs, rpcPort, mngPort, shufflePort);
     llapDaemon.init(conf);
   }
 

@@ -68,6 +68,7 @@ public class MiniHS2 extends AbstractHiveService {
   public enum MiniClusterType {
     MR,
     TEZ,
+    LLAP,
     DFS_ONLY;
   }
 
@@ -79,6 +80,7 @@ public class MiniHS2 extends AbstractHiveService {
     private String serverKeytab;
     private boolean isHTTPTransMode = false;
     private boolean isMetastoreRemote;
+    private boolean usePortsFromConf = false;
 
     public Builder() {
     }
@@ -125,7 +127,7 @@ public class MiniHS2 extends AbstractHiveService {
         hiveConf.setVar(ConfVars.HIVE_SERVER2_TRANSPORT_MODE, HS2_BINARY_MODE);
       }
       return new MiniHS2(hiveConf, miniClusterType, useMiniKdc, serverPrincipal, serverKeytab,
-          isMetastoreRemote);
+          isMetastoreRemote, usePortsFromConf);
     }
   }
 
@@ -162,8 +164,11 @@ public class MiniHS2 extends AbstractHiveService {
   }
 
   private MiniHS2(HiveConf hiveConf, MiniClusterType miniClusterType, boolean useMiniKdc,
-      String serverPrincipal, String serverKeytab, boolean isMetastoreRemote) throws Exception {
-    super(hiveConf, "localhost", MetaStoreUtils.findFreePort(), MetaStoreUtils.findFreePort());
+      String serverPrincipal, String serverKeytab, boolean isMetastoreRemote,
+      boolean usePortsFromConf) throws Exception {
+    super(hiveConf, "localhost",
+        (usePortsFromConf ? hiveConf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_PORT) : MetaStoreUtils.findFreePort()),
+        (usePortsFromConf ? hiveConf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_PORT) : MetaStoreUtils.findFreePort()));
     this.miniClusterType = miniClusterType;
     this.useMiniKdc = useMiniKdc;
     this.serverPrincipal = serverPrincipal;
@@ -182,6 +187,12 @@ public class MiniHS2 extends AbstractHiveService {
       switch (miniClusterType) {
       case TEZ:
         mr = ShimLoader.getHadoopShims().getMiniTezCluster(hiveConf, 4, uriString, false);
+        break;
+      case LLAP:
+        if (usePortsFromConf) {
+          hiveConf.setBoolean("minillap.usePortsFromConf", true);
+        }
+        mr = ShimLoader.getHadoopShims().getMiniTezCluster(hiveConf, 4, uriString, true);
         break;
       case MR:
         mr = ShimLoader.getHadoopShims().getMiniMrCluster(hiveConf, 4, uriString, 1);
@@ -214,8 +225,10 @@ public class MiniHS2 extends AbstractHiveService {
     setWareHouseDir(wareHouseDir.toString());
     System.setProperty(HiveConf.ConfVars.METASTORECONNECTURLKEY.varname, metaStoreURL);
     hiveConf.setVar(HiveConf.ConfVars.METASTORECONNECTURLKEY, metaStoreURL);
-    // reassign a new port, just in case if one of the MR services grabbed the last one
-    setBinaryPort(MetaStoreUtils.findFreePort());
+    if (!usePortsFromConf) {
+      // reassign a new port, just in case if one of the MR services grabbed the last one
+      setBinaryPort(MetaStoreUtils.findFreePort());
+    }
     hiveConf.setVar(ConfVars.HIVE_SERVER2_THRIFT_BIND_HOST, getHost());
     hiveConf.setIntVar(ConfVars.HIVE_SERVER2_THRIFT_PORT, getBinaryPort());
     hiveConf.setIntVar(ConfVars.HIVE_SERVER2_THRIFT_HTTP_PORT, getHttpPort());
@@ -236,7 +249,12 @@ public class MiniHS2 extends AbstractHiveService {
   }
 
   public MiniHS2(HiveConf hiveConf, MiniClusterType clusterType) throws Exception {
-    this(hiveConf, clusterType, false, null, null, false);
+    this(hiveConf, clusterType, false);
+  }
+
+  public MiniHS2(HiveConf hiveConf, MiniClusterType clusterType,
+      boolean usePortsFromConf) throws Exception {
+    this(hiveConf, clusterType, false, null, null, false, usePortsFromConf);
   }
 
   public void start(Map<String, String> confOverlay) throws Exception {
