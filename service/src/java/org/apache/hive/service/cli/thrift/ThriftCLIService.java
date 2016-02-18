@@ -31,6 +31,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.shims.HadoopShims.KerberosNameShim;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.service.AbstractService;
 import org.apache.hive.service.ServiceException;
 import org.apache.hive.service.ServiceUtils;
@@ -343,7 +345,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
    * @return
    * @throws HiveSQLException
    */
-  private String getUserName(TOpenSessionReq req) throws HiveSQLException {
+  private String getUserName(TOpenSessionReq req) throws HiveSQLException, IOException {
     String userName = null;
     // Kerberos
     if (isKerberosAuthMode()) {
@@ -369,12 +371,12 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
     return effectiveClientUser;
   }
 
-  private String getShortName(String userName) {
+  private String getShortName(String userName) throws IOException {
     String ret = null;
+
     if (userName != null) {
-      int indexOfDomainMatch = ServiceUtils.indexOfDomainMatch(userName);
-      ret = (indexOfDomainMatch <= 0) ? userName :
-          userName.substring(0, indexOfDomainMatch);
+      KerberosNameShim fullKerberosName = ShimLoader.getHadoopShims().getKerberosNameShim(userName);
+      ret = fullKerberosName.getShortName();
     }
 
     return ret;
