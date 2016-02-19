@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
@@ -83,7 +84,7 @@ public class PartitionDesc implements Serializable, Cloneable {
   }
 
   public PartitionDesc(final Partition part) throws HiveException {
-    PartitionDescConstructorHelper(part, Utilities.getTableDesc(part.getTable()), true);
+    PartitionDescConstructorHelper(part, getTableDesc(part.getTable()), true);
     setProperties(part.getMetadataFromPartitionSchema());
   }
 
@@ -209,7 +210,17 @@ public class PartitionDesc implements Serializable, Cloneable {
   }
 
   public void setProperties(final Properties properties) {
+    internProperties(properties);
     this.properties = properties;
+  }
+
+  private static TableDesc getTableDesc(Table table) {
+    TableDesc tableDesc = Utilities.getTableDesc(table);
+    internProperties(tableDesc.getProperties());
+    return tableDesc;
+  }
+
+  private static void internProperties(Properties properties) {
     for (Enumeration<?> keys =  properties.propertyNames(); keys.hasMoreElements();) {
       String key = (String) keys.nextElement();
       String oldValue = properties.getProperty(key);
