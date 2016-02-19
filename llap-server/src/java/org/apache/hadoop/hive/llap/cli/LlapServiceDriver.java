@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.llap.cli;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.util.Map.Entry;
@@ -44,6 +45,7 @@ import org.apache.hadoop.hive.llap.io.api.impl.LlapInputFormat;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
@@ -332,7 +334,10 @@ public class LlapServiceDriver {
     }
     createLlapDaemonConfig(lfs, confPath, conf, propsDirectOptions, options.getConfig());
 
-    lfs.copyFromLocalFile(new Path(logger.toString()), confPath);
+    // logger can be a resource stream or a real file (cannot use copy)
+    InputStream loggerContent = logger.openStream();
+    IOUtils.copyBytes(loggerContent,
+        lfs.create(new Path(confPath, "llap-daemon-log4j2.properties"), true), conf, true);
 
     // extract configs for processing by the python fragments in Slider
     JSONObject configs = new JSONObject();
