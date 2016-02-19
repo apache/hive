@@ -151,21 +151,6 @@
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
-      <artifactId>log4j-api</artifactId>
-      <version>${log4j2.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.logging.log4j</groupId>
-      <artifactId>log4j-core</artifactId>
-      <version>${log4j2.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.logging.log4j</groupId>
-      <artifactId>log4j-jcl</artifactId>
-      <version>${log4j2.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-1.2-api</artifactId>
       <version>${log4j2.version}</version>
     </dependency>
@@ -173,11 +158,6 @@
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-slf4j-impl</artifactId>
       <version>${log4j2.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.lmax</groupId>
-      <artifactId>disruptor</artifactId>
-      <version>[3.3.0,)</version>
     </dependency>
     <dependency>
       <groupId>org.antlr</groupId>
@@ -828,13 +808,7 @@
                   <include>org.apache.hive:spark-client</include>
                   <include>org.apache.hive:hive-storage-api</include>
                   <include>org.apache.hive:hive-orc</include>
-		  <include>joda-time:joda-time</include>
-		  <include>org.apache.logging.log4j:log4j-slf4j-impl</include>
-		  <include>org.apache.logging.log4j:log4j-1.2-api</include>
-		  <include>org.apache.logging.log4j:log4j-jcl</include>
-		  <include>org.apache.logging.log4j:log4j-core</include>
-		  <include>org.apache.logging.log4j:log4j-api</include>
-		  <include>com.lmax:disruptor</include>
+                  <include>joda-time:joda-time</include>
                 </includes>
               </artifactSet>
               <relocations>
