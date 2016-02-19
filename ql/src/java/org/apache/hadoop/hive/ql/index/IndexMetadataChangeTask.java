@@ -71,13 +71,13 @@ public class IndexMetadataChangeTask extends Task<IndexMetadataChangeWork>{
         FileStatus fstat = fs.getFileStatus(path);
 
         part.getParameters().put(HiveIndex.INDEX_TABLE_CREATETIME, Long.toString(fstat.getModificationTime()));
-        db.alterPartition(tbl.getTableName(), part);
+        db.alterPartition(tbl.getTableName(), part, null);
       } else {
         Path url = new Path(tbl.getPath().toString());
         FileSystem fs = url.getFileSystem(conf);
         FileStatus fstat = fs.getFileStatus(url);
         tbl.getParameters().put(HiveIndex.INDEX_TABLE_CREATETIME, Long.toString(fstat.getModificationTime()));
-        db.alterTable(tbl.getDbName() + "." + tbl.getTableName(), tbl);
+        db.alterTable(tbl.getDbName() + "." + tbl.getTableName(), tbl, null);
       }
     } catch (Exception e) {
       e.printStackTrace();

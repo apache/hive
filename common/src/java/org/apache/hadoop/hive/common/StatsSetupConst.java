@@ -110,9 +110,13 @@ public class StatsSetupConst {
    */
   public static final String[] fastStats = new String[] {NUM_FILES,TOTAL_SIZE};
 
-  // This string constant is used by stats task to indicate to AlterHandler that
-  // alterPartition/alterTable is happening via statsTask.
-  public static final String STATS_GENERATED_VIA_STATS_TASK = "STATS_GENERATED_VIA_STATS_TASK";
+  // This string constant is used to indicate to AlterHandler that
+  // alterPartition/alterTable is happening via statsTask or via user.
+  public static final String STATS_GENERATED = "STATS_GENERATED";
+
+  public static final String TASK = "TASK";
+
+  public static final String USER = "USER";
 
   // This string constant is used by AlterHandler to figure out that it should not attempt to
   // update stats. It is set by any client-side task which wishes to signal that no stats
@@ -126,6 +130,8 @@ public class StatsSetupConst {
   public static final String COLUMN_STATS = "COLUMN_STATS";
 
   public static final String BASIC_STATS = "BASIC_STATS";
+
+  public static final String CASCADE = "CASCADE";
 
   public static final String TRUE = "true";
 

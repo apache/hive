@@ -1,0 +1,11 @@
+PREHOOK: query: create table s as select * from src limit 10
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@s
+POSTHOOK: query: create table s as select * from src limit 10
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@s
+FAILED: SemanticException AlterTable numRows failed with value NaN

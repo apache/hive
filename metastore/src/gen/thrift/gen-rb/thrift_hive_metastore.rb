@@ -1070,6 +1070,22 @@ module ThriftHiveMetastore
       return
     end
 
+    def alter_partitions_with_environment_context(db_name, tbl_name, new_parts, environment_context)
+      send_alter_partitions_with_environment_context(db_name, tbl_name, new_parts, environment_context)
+      recv_alter_partitions_with_environment_context()
+    end
+
+    def send_alter_partitions_with_environment_context(db_name, tbl_name, new_parts, environment_context)
+      send_message('alter_partitions_with_environment_context', Alter_partitions_with_environment_context_args, :db_name => db_name, :tbl_name => tbl_name, :new_parts => new_parts, :environment_context => environment_context)
+    end
+
+    def recv_alter_partitions_with_environment_context()
+      result = receive_message(Alter_partitions_with_environment_context_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      return
+    end
+
     def alter_partition_with_environment_context(db_name, tbl_name, new_part, environment_context)
       send_alter_partition_with_environment_context(db_name, tbl_name, new_part, environment_context)
       recv_alter_partition_with_environment_context()
@@ -3089,6 +3105,19 @@ module ThriftHiveMetastore
         result.o2 = o2
       end
       write_result(result, oprot, 'alter_partitions', seqid)
+    end
+
+    def process_alter_partitions_with_environment_context(seqid, iprot, oprot)
+      args = read_args(iprot, Alter_partitions_with_environment_context_args)
+      result = Alter_partitions_with_environment_context_result.new()
+      begin
+        @handler.alter_partitions_with_environment_context(args.db_name, args.tbl_name, args.new_parts, args.environment_context)
+      rescue ::InvalidOperationException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'alter_partitions_with_environment_context', seqid)
     end
 
     def process_alter_partition_with_environment_context(seqid, iprot, oprot)
@@ -6367,6 +6396,46 @@ module ThriftHiveMetastore
   end
 
   class Alter_partitions_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::InvalidOperationException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Alter_partitions_with_environment_context_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    DB_NAME = 1
+    TBL_NAME = 2
+    NEW_PARTS = 3
+    ENVIRONMENT_CONTEXT = 4
+
+    FIELDS = {
+      DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
+      TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'tbl_name'},
+      NEW_PARTS => {:type => ::Thrift::Types::LIST, :name => 'new_parts', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Partition}},
+      ENVIRONMENT_CONTEXT => {:type => ::Thrift::Types::STRUCT, :name => 'environment_context', :class => ::EnvironmentContext}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Alter_partitions_with_environment_context_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
     O1 = 1
     O2 = 2

@@ -158,6 +158,7 @@ TOK_ALTERTABLE_UNARCHIVE;
 TOK_ALTERTABLE_SERDEPROPERTIES;
 TOK_ALTERTABLE_SERIALIZER;
 TOK_ALTERTABLE_UPDATECOLSTATS;
+TOK_ALTERTABLE_UPDATESTATS;
 TOK_TABLE_PARTITION;
 TOK_ALTERTABLE_FILEFORMAT;
 TOK_ALTERTABLE_LOCATION;
@@ -1035,6 +1036,7 @@ alterTblPartitionStatementSuffix
   | alterStatementSuffixClusterbySortby
   | alterStatementSuffixCompact
   | alterStatementSuffixUpdateStatsCol
+  | alterStatementSuffixUpdateStats
   | alterStatementSuffixRenameCol
   | alterStatementSuffixAddCol
   ;
@@ -1119,6 +1121,13 @@ alterStatementSuffixUpdateStatsCol
 @after { popMsg(state); }
     : KW_UPDATE KW_STATISTICS KW_FOR KW_COLUMN? colName=identifier KW_SET tableProperties (KW_COMMENT comment=StringLiteral)?
     ->^(TOK_ALTERTABLE_UPDATECOLSTATS $colName tableProperties $comment?)
+    ;
+
+alterStatementSuffixUpdateStats
+@init { pushMsg("update basic statistics", state); }
+@after { popMsg(state); }
+    : KW_UPDATE KW_STATISTICS KW_SET tableProperties
+    ->^(TOK_ALTERTABLE_UPDATESTATS tableProperties)
     ;
 
 alterStatementChangeColPosition

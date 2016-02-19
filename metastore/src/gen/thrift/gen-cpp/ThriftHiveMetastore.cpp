@@ -17167,6 +17167,289 @@ uint32_t ThriftHiveMetastore_alter_partitions_presult::read(::apache::thrift::pr
 }
 
 
+ThriftHiveMetastore_alter_partitions_with_environment_context_args::~ThriftHiveMetastore_alter_partitions_with_environment_context_args() throw() {
+}
+
+
+uint32_t ThriftHiveMetastore_alter_partitions_with_environment_context_args::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->db_name);
+          this->__isset.db_name = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->tbl_name);
+          this->__isset.tbl_name = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->new_parts.clear();
+            uint32_t _size1126;
+            ::apache::thrift::protocol::TType _etype1129;
+            xfer += iprot->readListBegin(_etype1129, _size1126);
+            this->new_parts.resize(_size1126);
+            uint32_t _i1130;
+            for (_i1130 = 0; _i1130 < _size1126; ++_i1130)
+            {
+              xfer += this->new_parts[_i1130].read(iprot);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.new_parts = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->environment_context.read(iprot);
+          this->__isset.environment_context = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t ThriftHiveMetastore_alter_partitions_with_environment_context_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("ThriftHiveMetastore_alter_partitions_with_environment_context_args");
+
+  xfer += oprot->writeFieldBegin("db_name", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->db_name);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("tbl_name", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->tbl_name);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("new_parts", ::apache::thrift::protocol::T_LIST, 3);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->new_parts.size()));
+    std::vector<Partition> ::const_iterator _iter1131;
+    for (_iter1131 = this->new_parts.begin(); _iter1131 != this->new_parts.end(); ++_iter1131)
+    {
+      xfer += (*_iter1131).write(oprot);
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("environment_context", ::apache::thrift::protocol::T_STRUCT, 4);
+  xfer += this->environment_context.write(oprot);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+
+ThriftHiveMetastore_alter_partitions_with_environment_context_pargs::~ThriftHiveMetastore_alter_partitions_with_environment_context_pargs() throw() {
+}
+
+
+uint32_t ThriftHiveMetastore_alter_partitions_with_environment_context_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("ThriftHiveMetastore_alter_partitions_with_environment_context_pargs");
+
+  xfer += oprot->writeFieldBegin("db_name", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString((*(this->db_name)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("tbl_name", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString((*(this->tbl_name)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("new_parts", ::apache::thrift::protocol::T_LIST, 3);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>((*(this->new_parts)).size()));
+    std::vector<Partition> ::const_iterator _iter1132;
+    for (_iter1132 = (*(this->new_parts)).begin(); _iter1132 != (*(this->new_parts)).end(); ++_iter1132)
+    {
+      xfer += (*_iter1132).write(oprot);
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("environment_context", ::apache::thrift::protocol::T_STRUCT, 4);
+  xfer += (*(this->environment_context)).write(oprot);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+
+ThriftHiveMetastore_alter_partitions_with_environment_context_result::~ThriftHiveMetastore_alter_partitions_with_environment_context_result() throw() {
+}
+
+
+uint32_t ThriftHiveMetastore_alter_partitions_with_environment_context_result::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->o1.read(iprot);
+          this->__isset.o1 = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->o2.read(iprot);
+          this->__isset.o2 = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t ThriftHiveMetastore_alter_partitions_with_environment_context_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
+
+  uint32_t xfer = 0;
+
+  xfer += oprot->writeStructBegin("ThriftHiveMetastore_alter_partitions_with_environment_context_result");
+
+  if (this->__isset.o1) {
+    xfer += oprot->writeFieldBegin("o1", ::apache::thrift::protocol::T_STRUCT, 1);
+    xfer += this->o1.write(oprot);
+    xfer += oprot->writeFieldEnd();
+  } else if (this->__isset.o2) {
+    xfer += oprot->writeFieldBegin("o2", ::apache::thrift::protocol::T_STRUCT, 2);
+    xfer += this->o2.write(oprot);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+
+ThriftHiveMetastore_alter_partitions_with_environment_context_presult::~ThriftHiveMetastore_alter_partitions_with_environment_context_presult() throw() {
+}
+
+
+uint32_t ThriftHiveMetastore_alter_partitions_with_environment_context_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->o1.read(iprot);
+          this->__isset.o1 = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->o2.read(iprot);
+          this->__isset.o2 = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+
 ThriftHiveMetastore_alter_partition_with_environment_context_args::~ThriftHiveMetastore_alter_partition_with_environment_context_args() throw() {
 }
 
@@ -17467,14 +17750,14 @@ uint32_t ThriftHiveMetastore_rename_partition_args::read(::apache::thrift::proto
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->part_vals.clear();
-            uint32_t _size1126;
-            ::apache::thrift::protocol::TType _etype1129;
-            xfer += iprot->readListBegin(_etype1129, _size1126);
-            this->part_vals.resize(_size1126);
-            uint32_t _i1130;
-            for (_i1130 = 0; _i1130 < _size1126; ++_i1130)
+            uint32_t _size1133;
+            ::apache::thrift::protocol::TType _etype1136;
+            xfer += iprot->readListBegin(_etype1136, _size1133);
+            this->part_vals.resize(_size1133);
+            uint32_t _i1137;
+            for (_i1137 = 0; _i1137 < _size1133; ++_i1137)
             {
-              xfer += iprot->readString(this->part_vals[_i1130]);
+              xfer += iprot->readString(this->part_vals[_i1137]);
             }
             xfer += iprot->readListEnd();
           }
@@ -17519,10 +17802,10 @@ uint32_t ThriftHiveMetastore_rename_partition_args::write(::apache::thrift::prot
   xfer += oprot->writeFieldBegin("part_vals", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->part_vals.size()));
-    std::vector<std::string> ::const_iterator _iter1131;
-    for (_iter1131 = this->part_vals.begin(); _iter1131 != this->part_vals.end(); ++_iter1131)
+    std::vector<std::string> ::const_iterator _iter1138;
+    for (_iter1138 = this->part_vals.begin(); _iter1138 != this->part_vals.end(); ++_iter1138)
     {
-      xfer += oprot->writeString((*_iter1131));
+      xfer += oprot->writeString((*_iter1138));
     }
     xfer += oprot->writeListEnd();
   }
@@ -17558,10 +17841,10 @@ uint32_t ThriftHiveMetastore_rename_partition_pargs::write(::apache::thrift::pro
   xfer += oprot->writeFieldBegin("part_vals", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>((*(this->part_vals)).size()));
-    std::vector<std::string> ::const_iterator _iter1132;
-    for (_iter1132 = (*(this->part_vals)).begin(); _iter1132 != (*(this->part_vals)).end(); ++_iter1132)
+    std::vector<std::string> ::const_iterator _iter1139;
+    for (_iter1139 = (*(this->part_vals)).begin(); _iter1139 != (*(this->part_vals)).end(); ++_iter1139)
     {
-      xfer += oprot->writeString((*_iter1132));
+      xfer += oprot->writeString((*_iter1139));
     }
     xfer += oprot->writeListEnd();
   }
@@ -17734,14 +18017,14 @@ uint32_t ThriftHiveMetastore_partition_name_has_valid_characters_args::read(::ap
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->part_vals.clear();
-            uint32_t _size1133;
-            ::apache::thrift::protocol::TType _etype1136;
-            xfer += iprot->readListBegin(_etype1136, _size1133);
-            this->part_vals.resize(_size1133);
-            uint32_t _i1137;
-            for (_i1137 = 0; _i1137 < _size1133; ++_i1137)
+            uint32_t _size1140;
+            ::apache::thrift::protocol::TType _etype1143;
+            xfer += iprot->readListBegin(_etype1143, _size1140);
+            this->part_vals.resize(_size1140);
+            uint32_t _i1144;
+            for (_i1144 = 0; _i1144 < _size1140; ++_i1144)
             {
-              xfer += iprot->readString(this->part_vals[_i1137]);
+              xfer += iprot->readString(this->part_vals[_i1144]);
             }
             xfer += iprot->readListEnd();
           }
@@ -17778,10 +18061,10 @@ uint32_t ThriftHiveMetastore_partition_name_has_valid_characters_args::write(::a
   xfer += oprot->writeFieldBegin("part_vals", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->part_vals.size()));
-    std::vector<std::string> ::const_iterator _iter1138;
-    for (_iter1138 = this->part_vals.begin(); _iter1138 != this->part_vals.end(); ++_iter1138)
+    std::vector<std::string> ::const_iterator _iter1145;
+    for (_iter1145 = this->part_vals.begin(); _iter1145 != this->part_vals.end(); ++_iter1145)
     {
-      xfer += oprot->writeString((*_iter1138));
+      xfer += oprot->writeString((*_iter1145));
     }
     xfer += oprot->writeListEnd();
   }
@@ -17809,10 +18092,10 @@ uint32_t ThriftHiveMetastore_partition_name_has_valid_characters_pargs::write(::
   xfer += oprot->writeFieldBegin("part_vals", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>((*(this->part_vals)).size()));
-    std::vector<std::string> ::const_iterator _iter1139;
-    for (_iter1139 = (*(this->part_vals)).begin(); _iter1139 != (*(this->part_vals)).end(); ++_iter1139)
+    std::vector<std::string> ::const_iterator _iter1146;
+    for (_iter1146 = (*(this->part_vals)).begin(); _iter1146 != (*(this->part_vals)).end(); ++_iter1146)
     {
-      xfer += oprot->writeString((*_iter1139));
+      xfer += oprot->writeString((*_iter1146));
     }
     xfer += oprot->writeListEnd();
   }
@@ -18287,14 +18570,14 @@ uint32_t ThriftHiveMetastore_partition_name_to_vals_result::read(::apache::thrif
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->success.clear();
-            uint32_t _size1140;
-            ::apache::thrift::protocol::TType _etype1143;
-            xfer += iprot->readListBegin(_etype1143, _size1140);
-            this->success.resize(_size1140);
-            uint32_t _i1144;
-            for (_i1144 = 0; _i1144 < _size1140; ++_i1144)
+            uint32_t _size1147;
+            ::apache::thrift::protocol::TType _etype1150;
+            xfer += iprot->readListBegin(_etype1150, _size1147);
+            this->success.resize(_size1147);
+            uint32_t _i1151;
+            for (_i1151 = 0; _i1151 < _size1147; ++_i1151)
             {
-              xfer += iprot->readString(this->success[_i1144]);
+              xfer += iprot->readString(this->success[_i1151]);
             }
             xfer += iprot->readListEnd();
           }
@@ -18333,10 +18616,10 @@ uint32_t ThriftHiveMetastore_partition_name_to_vals_result::write(::apache::thri
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->success.size()));
-      std::vector<std::string> ::const_iterator _iter1145;
-      for (_iter1145 = this->success.begin(); _iter1145 != this->success.end(); ++_iter1145)
+      std::vector<std::string> ::const_iterator _iter1152;
+      for (_iter1152 = this->success.begin(); _iter1152 != this->success.end(); ++_iter1152)
       {
-        xfer += oprot->writeString((*_iter1145));
+        xfer += oprot->writeString((*_iter1152));
       }
       xfer += oprot->writeListEnd();
     }
@@ -18381,14 +18664,14 @@ uint32_t ThriftHiveMetastore_partition_name_to_vals_presult::read(::apache::thri
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             (*(this->success)).clear();
-            uint32_t _size1146;
-            ::apache::thrift::protocol::TType _etype1149;
-            xfer += iprot->readListBegin(_etype1149, _size1146);
-            (*(this->success)).resize(_size1146);
-            uint32_t _i1150;
-            for (_i1150 = 0; _i1150 < _size1146; ++_i1150)
+            uint32_t _size1153;
+            ::apache::thrift::protocol::TType _etype1156;
+            xfer += iprot->readListBegin(_etype1156, _size1153);
+            (*(this->success)).resize(_size1153);
+            uint32_t _i1157;
+            for (_i1157 = 0; _i1157 < _size1153; ++_i1157)
             {
-              xfer += iprot->readString((*(this->success))[_i1150]);
+              xfer += iprot->readString((*(this->success))[_i1157]);
             }
             xfer += iprot->readListEnd();
           }
@@ -18526,17 +18809,17 @@ uint32_t ThriftHiveMetastore_partition_name_to_spec_result::read(::apache::thrif
         if (ftype == ::apache::thrift::protocol::T_MAP) {
           {
             this->success.clear();
-            uint32_t _size1151;
-            ::apache::thrift::protocol::TType _ktype1152;
-            ::apache::thrift::protocol::TType _vtype1153;
-            xfer += iprot->readMapBegin(_ktype1152, _vtype1153, _size1151);
-            uint32_t _i1155;
-            for (_i1155 = 0; _i1155 < _size1151; ++_i1155)
+            uint32_t _size1158;
+            ::apache::thrift::protocol::TType _ktype1159;
+            ::apache::thrift::protocol::TType _vtype1160;
+            xfer += iprot->readMapBegin(_ktype1159, _vtype1160, _size1158);
+            uint32_t _i1162;
+            for (_i1162 = 0; _i1162 < _size1158; ++_i1162)
             {
-              std::string _key1156;
-              xfer += iprot->readString(_key1156);
-              std::string& _val1157 = this->success[_key1156];
-              xfer += iprot->readString(_val1157);
+              std::string _key1163;
+              xfer += iprot->readString(_key1163);
+              std::string& _val1164 = this->success[_key1163];
+              xfer += iprot->readString(_val1164);
             }
             xfer += iprot->readMapEnd();
           }
@@ -18575,11 +18858,11 @@ uint32_t ThriftHiveMetastore_partition_name_to_spec_result::write(::apache::thri
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_MAP, 0);
     {
       xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_STRING, ::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->success.size()));
-      std::map<std::string, std::string> ::const_iterator _iter1158;
-      for (_iter1158 = this->success.begin(); _iter1158 != this->success.end(); ++_iter1158)
+      std::map<std::string, std::string> ::const_iterator _iter1165;
+      for (_iter1165 = this->success.begin(); _iter1165 != this->success.end(); ++_iter1165)
       {
-        xfer += oprot->writeString(_iter1158->first);
-        xfer += oprot->writeString(_iter1158->second);
+        xfer += oprot->writeString(_iter1165->first);
+        xfer += oprot->writeString(_iter1165->second);
       }
       xfer += oprot->writeMapEnd();
     }
@@ -18624,17 +18907,17 @@ uint32_t ThriftHiveMetastore_partition_name_to_spec_presult::read(::apache::thri
         if (ftype == ::apache::thrift::protocol::T_MAP) {
           {
             (*(this->success)).clear();
-            uint32_t _size1159;
-            ::apache::thrift::protocol::TType _ktype1160;
-            ::apache::thrift::protocol::TType _vtype1161;
-            xfer += iprot->readMapBegin(_ktype1160, _vtype1161, _size1159);
-            uint32_t _i1163;
-            for (_i1163 = 0; _i1163 < _size1159; ++_i1163)
+            uint32_t _size1166;
+            ::apache::thrift::protocol::TType _ktype1167;
+            ::apache::thrift::protocol::TType _vtype1168;
+            xfer += iprot->readMapBegin(_ktype1167, _vtype1168, _size1166);
+            uint32_t _i1170;
+            for (_i1170 = 0; _i1170 < _size1166; ++_i1170)
             {
-              std::string _key1164;
-              xfer += iprot->readString(_key1164);
-              std::string& _val1165 = (*(this->success))[_key1164];
-              xfer += iprot->readString(_val1165);
+              std::string _key1171;
+              xfer += iprot->readString(_key1171);
+              std::string& _val1172 = (*(this->success))[_key1171];
+              xfer += iprot->readString(_val1172);
             }
             xfer += iprot->readMapEnd();
           }
@@ -18709,17 +18992,17 @@ uint32_t ThriftHiveMetastore_markPartitionForEvent_args::read(::apache::thrift::
         if (ftype == ::apache::thrift::protocol::T_MAP) {
           {
             this->part_vals.clear();
-            uint32_t _size1166;
-            ::apache::thrift::protocol::TType _ktype1167;
-            ::apache::thrift::protocol::TType _vtype1168;
-            xfer += iprot->readMapBegin(_ktype1167, _vtype1168, _size1166);
-            uint32_t _i1170;
-            for (_i1170 = 0; _i1170 < _size1166; ++_i1170)
+            uint32_t _size1173;
+            ::apache::thrift::protocol::TType _ktype1174;
+            ::apache::thrift::protocol::TType _vtype1175;
+            xfer += iprot->readMapBegin(_ktype1174, _vtype1175, _size1173);
+            uint32_t _i1177;
+            for (_i1177 = 0; _i1177 < _size1173; ++_i1177)
             {
-              std::string _key1171;
-              xfer += iprot->readString(_key1171);
-              std::string& _val1172 = this->part_vals[_key1171];
-              xfer += iprot->readString(_val1172);
+              std::string _key1178;
+              xfer += iprot->readString(_key1178);
+              std::string& _val1179 = this->part_vals[_key1178];
+              xfer += iprot->readString(_val1179);
             }
             xfer += iprot->readMapEnd();
           }
@@ -18730,9 +19013,9 @@ uint32_t ThriftHiveMetastore_markPartitionForEvent_args::read(::apache::thrift::
         break;
       case 4:
         if (ftype == ::apache::thrift::protocol::T_I32) {
-          int32_t ecast1173;
-          xfer += iprot->readI32(ecast1173);
-          this->eventType = (PartitionEventType::type)ecast1173;
+          int32_t ecast1180;
+          xfer += iprot->readI32(ecast1180);
+          this->eventType = (PartitionEventType::type)ecast1180;
           this->__isset.eventType = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -18766,11 +19049,11 @@ uint32_t ThriftHiveMetastore_markPartitionForEvent_args::write(::apache::thrift:
   xfer += oprot->writeFieldBegin("part_vals", ::apache::thrift::protocol::T_MAP, 3);
   {
     xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_STRING, ::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->part_vals.size()));
-    std::map<std::string, std::string> ::const_iterator _iter1174;
-    for (_iter1174 = this->part_vals.begin(); _iter1174 != this->part_vals.end(); ++_iter1174)
+    std::map<std::string, std::string> ::const_iterator _iter1181;
+    for (_iter1181 = this->part_vals.begin(); _iter1181 != this->part_vals.end(); ++_iter1181)
     {
-      xfer += oprot->writeString(_iter1174->first);
-      xfer += oprot->writeString(_iter1174->second);
+      xfer += oprot->writeString(_iter1181->first);
+      xfer += oprot->writeString(_iter1181->second);
     }
     xfer += oprot->writeMapEnd();
   }
@@ -18806,11 +19089,11 @@ uint32_t ThriftHiveMetastore_markPartitionForEvent_pargs::write(::apache::thrift
   xfer += oprot->writeFieldBegin("part_vals", ::apache::thrift::protocol::T_MAP, 3);
   {
     xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_STRING, ::apache::thrift::protocol::T_STRING, static_cast<uint32_t>((*(this->part_vals)).size()));
-    std::map<std::string, std::string> ::const_iterator _iter1175;
-    for (_iter1175 = (*(this->part_vals)).begin(); _iter1175 != (*(this->part_vals)).end(); ++_iter1175)
+    std::map<std::string, std::string> ::const_iterator _iter1182;
+    for (_iter1182 = (*(this->part_vals)).begin(); _iter1182 != (*(this->part_vals)).end(); ++_iter1182)
     {
-      xfer += oprot->writeString(_iter1175->first);
-      xfer += oprot->writeString(_iter1175->second);
+      xfer += oprot->writeString(_iter1182->first);
+      xfer += oprot->writeString(_iter1182->second);
     }
     xfer += oprot->writeMapEnd();
   }
@@ -19079,17 +19362,17 @@ uint32_t ThriftHiveMetastore_isPartitionMarkedForEvent_args::read(::apache::thri
         if (ftype == ::apache::thrift::protocol::T_MAP) {
           {
             this->part_vals.clear();
-            uint32_t _size1176;
-            ::apache::thrift::protocol::TType _ktype1177;
-            ::apache::thrift::protocol::TType _vtype1178;
-            xfer += iprot->readMapBegin(_ktype1177, _vtype1178, _size1176);
-            uint32_t _i1180;
-            for (_i1180 = 0; _i1180 < _size1176; ++_i1180)
+            uint32_t _size1183;
+            ::apache::thrift::protocol::TType _ktype1184;
+            ::apache::thrift::protocol::TType _vtype1185;
+            xfer += iprot->readMapBegin(_ktype1184, _vtype1185, _size1183);
+            uint32_t _i1187;
+            for (_i1187 = 0; _i1187 < _size1183; ++_i1187)
             {
-              std::string _key1181;
-              xfer += iprot->readString(_key1181);
-              std::string& _val1182 = this->part_vals[_key1181];
-              xfer += iprot->readString(_val1182);
+              std::string _key1188;
+              xfer += iprot->readString(_key1188);
+              std::string& _val1189 = this->part_vals[_key1188];
+              xfer += iprot->readString(_val1189);
             }
             xfer += iprot->readMapEnd();
           }
@@ -19100,9 +19383,9 @@ uint32_t ThriftHiveMetastore_isPartitionMarkedForEvent_args::read(::apache::thri
         break;
       case 4:
         if (ftype == ::apache::thrift::protocol::T_I32) {
-          int32_t ecast1183;
-          xfer += iprot->readI32(ecast1183);
-          this->eventType = (PartitionEventType::type)ecast1183;
+          int32_t ecast1190;
+          xfer += iprot->readI32(ecast1190);
+          this->eventType = (PartitionEventType::type)ecast1190;
           this->__isset.eventType = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -19136,11 +19419,11 @@ uint32_t ThriftHiveMetastore_isPartitionMarkedForEvent_args::write(::apache::thr
   xfer += oprot->writeFieldBegin("part_vals", ::apache::thrift::protocol::T_MAP, 3);
   {
     xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_STRING, ::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->part_vals.size()));
-    std::map<std::string, std::string> ::const_iterator _iter1184;
-    for (_iter1184 = this->part_vals.begin(); _iter1184 != this->part_vals.end(); ++_iter1184)
+    std::map<std::string, std::string> ::const_iterator _iter1191;
+    for (_iter1191 = this->part_vals.begin(); _iter1191 != this->part_vals.end(); ++_iter1191)
     {
-      xfer += oprot->writeString(_iter1184->first);
-      xfer += oprot->writeString(_iter1184->second);
+      xfer += oprot->writeString(_iter1191->first);
+      xfer += oprot->writeString(_iter1191->second);
     }
     xfer += oprot->writeMapEnd();
   }
@@ -19176,11 +19459,11 @@ uint32_t ThriftHiveMetastore_isPartitionMarkedForEvent_pargs::write(::apache::th
   xfer += oprot->writeFieldBegin("part_vals", ::apache::thrift::protocol::T_MAP, 3);
   {
     xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_STRING, ::apache::thrift::protocol::T_STRING, static_cast<uint32_t>((*(this->part_vals)).size()));
-    std::map<std::string, std::string> ::const_iterator _iter1185;
-    for (_iter1185 = (*(this->part_vals)).begin(); _iter1185 != (*(this->part_vals)).end(); ++_iter1185)
+    std::map<std::string, std::string> ::const_iterator _iter1192;
+    for (_iter1192 = (*(this->part_vals)).begin(); _iter1192 != (*(this->part_vals)).end(); ++_iter1192)
     {
-      xfer += oprot->writeString(_iter1185->first);
-      xfer += oprot->writeString(_iter1185->second);
+      xfer += oprot->writeString(_iter1192->first);
+      xfer += oprot->writeString(_iter1192->second);
     }
     xfer += oprot->writeMapEnd();
   }
@@ -20616,14 +20899,14 @@ uint32_t ThriftHiveMetastore_get_indexes_result::read(::apache::thrift::protocol
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->success.clear();
-            uint32_t _size1186;
-            ::apache::thrift::protocol::TType _etype1189;
-            xfer += iprot->readListBegin(_etype1189, _size1186);
-            this->success.resize(_size1186);
-            uint32_t _i1190;
-            for (_i1190 = 0; _i1190 < _size1186; ++_i1190)
+            uint32_t _size1193;
+            ::apache::thrift::protocol::TType _etype1196;
+            xfer += iprot->readListBegin(_etype1196, _size1193);
+            this->success.resize(_size1193);
+            uint32_t _i1197;
+            for (_i1197 = 0; _i1197 < _size1193; ++_i1197)
             {
-              xfer += this->success[_i1190].read(iprot);
+              xfer += this->success[_i1197].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -20670,10 +20953,10 @@ uint32_t ThriftHiveMetastore_get_indexes_result::write(::apache::thrift::protoco
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->success.size()));
-      std::vector<Index> ::const_iterator _iter1191;
-      for (_iter1191 = this->success.begin(); _iter1191 != this->success.end(); ++_iter1191)
+      std::vector<Index> ::const_iterator _iter1198;
+      for (_iter1198 = this->success.begin(); _iter1198 != this->success.end(); ++_iter1198)
       {
-        xfer += (*_iter1191).write(oprot);
+        xfer += (*_iter1198).write(oprot);
       }
       xfer += oprot->writeListEnd();
     }
@@ -20722,14 +21005,14 @@ uint32_t ThriftHiveMetastore_get_indexes_presult::read(::apache::thrift::protoco
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             (*(this->success)).clear();
-            uint32_t _size1192;
-            ::apache::thrift::protocol::TType _etype1195;
-            xfer += iprot->readListBegin(_etype1195, _size1192);
-            (*(this->success)).resize(_size1192);
-            uint32_t _i1196;
-            for (_i1196 = 0; _i1196 < _size1192; ++_i1196)
+            uint32_t _size1199;
+            ::apache::thrift::protocol::TType _etype1202;
+            xfer += iprot->readListBegin(_etype1202, _size1199);
+            (*(this->success)).resize(_size1199);
+            uint32_t _i1203;
+            for (_i1203 = 0; _i1203 < _size1199; ++_i1203)
             {
-              xfer += (*(this->success))[_i1196].read(iprot);
+              xfer += (*(this->success))[_i1203].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -20907,14 +21190,14 @@ uint32_t ThriftHiveMetastore_get_index_names_result::read(::apache::thrift::prot
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->success.clear();
-            uint32_t _size1197;
-            ::apache::thrift::protocol::TType _etype1200;
-            xfer += iprot->readListBegin(_etype1200, _size1197);
-            this->success.resize(_size1197);
-            uint32_t _i1201;
-            for (_i1201 = 0; _i1201 < _size1197; ++_i1201)
+            uint32_t _size1204;
+            ::apache::thrift::protocol::TType _etype1207;
+            xfer += iprot->readListBegin(_etype1207, _size1204);
+            this->success.resize(_size1204);
+            uint32_t _i1208;
+            for (_i1208 = 0; _i1208 < _size1204; ++_i1208)
             {
-              xfer += iprot->readString(this->success[_i1201]);
+              xfer += iprot->readString(this->success[_i1208]);
             }
             xfer += iprot->readListEnd();
           }
@@ -20953,10 +21236,10 @@ uint32_t ThriftHiveMetastore_get_index_names_result::write(::apache::thrift::pro
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->success.size()));
-      std::vector<std::string> ::const_iterator _iter1202;
-      for (_iter1202 = this->success.begin(); _iter1202 != this->success.end(); ++_iter1202)
+      std::vector<std::string> ::const_iterator _iter1209;
+      for (_iter1209 = this->success.begin(); _iter1209 != this->success.end(); ++_iter1209)
       {
-        xfer += oprot->writeString((*_iter1202));
+        xfer += oprot->writeString((*_iter1209));
       }
       xfer += oprot->writeListEnd();
     }
@@ -21001,14 +21284,14 @@ uint32_t ThriftHiveMetastore_get_index_names_presult::read(::apache::thrift::pro
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             (*(this->success)).clear();
-            uint32_t _size1203;
-            ::apache::thrift::protocol::TType _etype1206;
-            xfer += iprot->readListBegin(_etype1206, _size1203);
-            (*(this->success)).resize(_size1203);
-            uint32_t _i1207;
-            for (_i1207 = 0; _i1207 < _size1203; ++_i1207)
+            uint32_t _size1210;
+            ::apache::thrift::protocol::TType _etype1213;
+            xfer += iprot->readListBegin(_etype1213, _size1210);
+            (*(this->success)).resize(_size1210);
+            uint32_t _i1214;
+            for (_i1214 = 0; _i1214 < _size1210; ++_i1214)
             {
-              xfer += iprot->readString((*(this->success))[_i1207]);
+              xfer += iprot->readString((*(this->success))[_i1214]);
             }
             xfer += iprot->readListEnd();
           }
@@ -24581,14 +24864,14 @@ uint32_t ThriftHiveMetastore_get_functions_result::read(::apache::thrift::protoc
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->success.clear();
-            uint32_t _size1208;
-            ::apache::thrift::protocol::TType _etype1211;
-            xfer += iprot->readListBegin(_etype1211, _size1208);
-            this->success.resize(_size1208);
-            uint32_t _i1212;
-            for (_i1212 = 0; _i1212 < _size1208; ++_i1212)
+            uint32_t _size1215;
+            ::apache::thrift::protocol::TType _etype1218;
+            xfer += iprot->readListBegin(_etype1218, _size1215);
+            this->success.resize(_size1215);
+            uint32_t _i1219;
+            for (_i1219 = 0; _i1219 < _size1215; ++_i1219)
             {
-              xfer += iprot->readString(this->success[_i1212]);
+              xfer += iprot->readString(this->success[_i1219]);
             }
             xfer += iprot->readListEnd();
           }
@@ -24627,10 +24910,10 @@ uint32_t ThriftHiveMetastore_get_functions_result::write(::apache::thrift::proto
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->success.size()));
-      std::vector<std::string> ::const_iterator _iter1213;
-      for (_iter1213 = this->success.begin(); _iter1213 != this->success.end(); ++_iter1213)
+      std::vector<std::string> ::const_iterator _iter1220;
+      for (_iter1220 = this->success.begin(); _iter1220 != this->success.end(); ++_iter1220)
       {
-        xfer += oprot->writeString((*_iter1213));
+        xfer += oprot->writeString((*_iter1220));
       }
       xfer += oprot->writeListEnd();
     }
@@ -24675,14 +24958,14 @@ uint32_t ThriftHiveMetastore_get_functions_presult::read(::apache::thrift::proto
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             (*(this->success)).clear();
-            uint32_t _size1214;
-            ::apache::thrift::protocol::TType _etype1217;
-            xfer += iprot->readListBegin(_etype1217, _size1214);
-            (*(this->success)).resize(_size1214);
-            uint32_t _i1218;
-            for (_i1218 = 0; _i1218 < _size1214; ++_i1218)
+            uint32_t _size1221;
+            ::apache::thrift::protocol::TType _etype1224;
+            xfer += iprot->readListBegin(_etype1224, _size1221);
+            (*(this->success)).resize(_size1221);
+            uint32_t _i1225;
+            for (_i1225 = 0; _i1225 < _size1221; ++_i1225)
             {
-              xfer += iprot->readString((*(this->success))[_i1218]);
+              xfer += iprot->readString((*(this->success))[_i1225]);
             }
             xfer += iprot->readListEnd();
           }
@@ -25642,14 +25925,14 @@ uint32_t ThriftHiveMetastore_get_role_names_result::read(::apache::thrift::proto
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->success.clear();
-            uint32_t _size1219;
-            ::apache::thrift::protocol::TType _etype1222;
-            xfer += iprot->readListBegin(_etype1222, _size1219);
-            this->success.resize(_size1219);
-            uint32_t _i1223;
-            for (_i1223 = 0; _i1223 < _size1219; ++_i1223)
+            uint32_t _size1226;
+            ::apache::thrift::protocol::TType _etype1229;
+            xfer += iprot->readListBegin(_etype1229, _size1226);
+            this->success.resize(_size1226);
+            uint32_t _i1230;
+            for (_i1230 = 0; _i1230 < _size1226; ++_i1230)
             {
-              xfer += iprot->readString(this->success[_i1223]);
+              xfer += iprot->readString(this->success[_i1230]);
             }
             xfer += iprot->readListEnd();
           }
@@ -25688,10 +25971,10 @@ uint32_t ThriftHiveMetastore_get_role_names_result::write(::apache::thrift::prot
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->success.size()));
-      std::vector<std::string> ::const_iterator _iter1224;
-      for (_iter1224 = this->success.begin(); _iter1224 != this->success.end(); ++_iter1224)
+      std::vector<std::string> ::const_iterator _iter1231;
+      for (_iter1231 = this->success.begin(); _iter1231 != this->success.end(); ++_iter1231)
       {
-        xfer += oprot->writeString((*_iter1224));
+        xfer += oprot->writeString((*_iter1231));
       }
       xfer += oprot->writeListEnd();
     }
@@ -25736,14 +26019,14 @@ uint32_t ThriftHiveMetastore_get_role_names_presult::read(::apache::thrift::prot
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             (*(this->success)).clear();
-            uint32_t _size1225;
-            ::apache::thrift::protocol::TType _etype1228;
-            xfer += iprot->readListBegin(_etype1228, _size1225);
-            (*(this->success)).resize(_size1225);
-            uint32_t _i1229;
-            for (_i1229 = 0; _i1229 < _size1225; ++_i1229)
+            uint32_t _size1232;
+            ::apache::thrift::protocol::TType _etype1235;
+            xfer += iprot->readListBegin(_etype1235, _size1232);
+            (*(this->success)).resize(_size1232);
+            uint32_t _i1236;
+            for (_i1236 = 0; _i1236 < _size1232; ++_i1236)
             {
-              xfer += iprot->readString((*(this->success))[_i1229]);
+              xfer += iprot->readString((*(this->success))[_i1236]);
             }
             xfer += iprot->readListEnd();
           }
@@ -25816,9 +26099,9 @@ uint32_t ThriftHiveMetastore_grant_role_args::read(::apache::thrift::protocol::T
         break;
       case 3:
         if (ftype == ::apache::thrift::protocol::T_I32) {
-          int32_t ecast1230;
-          xfer += iprot->readI32(ecast1230);
-          this->principal_type = (PrincipalType::type)ecast1230;
+          int32_t ecast1237;
+          xfer += iprot->readI32(ecast1237);
+          this->principal_type = (PrincipalType::type)ecast1237;
           this->__isset.principal_type = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -25834,9 +26117,9 @@ uint32_t ThriftHiveMetastore_grant_role_args::read(::apache::thrift::protocol::T
         break;
       case 5:
         if (ftype == ::apache::thrift::protocol::T_I32) {
-          int32_t ecast1231;
-          xfer += iprot->readI32(ecast1231);
-          this->grantorType = (PrincipalType::type)ecast1231;
+          int32_t ecast1238;
+          xfer += iprot->readI32(ecast1238);
+          this->grantorType = (PrincipalType::type)ecast1238;
           this->__isset.grantorType = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -26107,9 +26390,9 @@ uint32_t ThriftHiveMetastore_revoke_role_args::read(::apache::thrift::protocol::
         break;
       case 3:
         if (ftype == ::apache::thrift::protocol::T_I32) {
-          int32_t ecast1232;
-          xfer += iprot->readI32(ecast1232);
-          this->principal_type = (PrincipalType::type)ecast1232;
+          int32_t ecast1239;
+          xfer += iprot->readI32(ecast1239);
+          this->principal_type = (PrincipalType::type)ecast1239;
           this->__isset.principal_type = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -26340,9 +26623,9 @@ uint32_t ThriftHiveMetastore_list_roles_args::read(::apache::thrift::protocol::T
         break;
       case 2:
         if (ftype == ::apache::thrift::protocol::T_I32) {
-          int32_t ecast1233;
-          xfer += iprot->readI32(ecast1233);
-          this->principal_type = (PrincipalType::type)ecast1233;
+          int32_t ecast1240;
+          xfer += iprot->readI32(ecast1240);
+          this->principal_type = (PrincipalType::type)ecast1240;
           this->__isset.principal_type = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -26431,14 +26714,14 @@ uint32_t ThriftHiveMetastore_list_roles_result::read(::apache::thrift::protocol:
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->success.clear();
-            uint32_t _size1234;
-            ::apache::thrift::protocol::TType _etype1237;
-            xfer += iprot->readListBegin(_etype1237, _size1234);
-            this->success.resize(_size1234);
-            uint32_t _i1238;
-            for (_i1238 = 0; _i1238 < _size1234; ++_i1238)
+            uint32_t _size1241;
+            ::apache::thrift::protocol::TType _etype1244;
+            xfer += iprot->readListBegin(_etype1244, _size1241);
+            this->success.resize(_size1241);
+            uint32_t _i1245;
+            for (_i1245 = 0; _i1245 < _size1241; ++_i1245)
             {
-              xfer += this->success[_i1238].read(iprot);
+              xfer += this->success[_i1245].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -26477,10 +26760,10 @@ uint32_t ThriftHiveMetastore_list_roles_result::write(::apache::thrift::protocol
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->success.size()));
-      std::vector<Role> ::const_iterator _iter1239;
-      for (_iter1239 = this->success.begin(); _iter1239 != this->success.end(); ++_iter1239)
+      std::vector<Role> ::const_iterator _iter1246;
+      for (_iter1246 = this->success.begin(); _iter1246 != this->success.end(); ++_iter1246)
       {
-        xfer += (*_iter1239).write(oprot);
+        xfer += (*_iter1246).write(oprot);
       }
       xfer += oprot->writeListEnd();
     }
@@ -26525,14 +26808,14 @@ uint32_t ThriftHiveMetastore_list_roles_presult::read(::apache::thrift::protocol
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             (*(this->success)).clear();
-            uint32_t _size1240;
-            ::apache::thrift::protocol::TType _etype1243;
-            xfer += iprot->readListBegin(_etype1243, _size1240);
-            (*(this->success)).resize(_size1240);
-            uint32_t _i1244;
-            for (_i1244 = 0; _i1244 < _size1240; ++_i1244)
+            uint32_t _size1247;
+            ::apache::thrift::protocol::TType _etype1250;
+            xfer += iprot->readListBegin(_etype1250, _size1247);
+            (*(this->success)).resize(_size1247);
+            uint32_t _i1251;
+            for (_i1251 = 0; _i1251 < _size1247; ++_i1251)
             {
-              xfer += (*(this->success))[_i1244].read(iprot);
+              xfer += (*(this->success))[_i1251].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -27228,14 +27511,14 @@ uint32_t ThriftHiveMetastore_get_privilege_set_args::read(::apache::thrift::prot
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->group_names.clear();
-            uint32_t _size1245;
-            ::apache::thrift::protocol::TType _etype1248;
-            xfer += iprot->readListBegin(_etype1248, _size1245);
-            this->group_names.resize(_size1245);
-            uint32_t _i1249;
-            for (_i1249 = 0; _i1249 < _size1245; ++_i1249)
+            uint32_t _size1252;
+            ::apache::thrift::protocol::TType _etype1255;
+            xfer += iprot->readListBegin(_etype1255, _size1252);
+            this->group_names.resize(_size1252);
+            uint32_t _i1256;
+            for (_i1256 = 0; _i1256 < _size1252; ++_i1256)
             {
-              xfer += iprot->readString(this->group_names[_i1249]);
+              xfer += iprot->readString(this->group_names[_i1256]);
             }
             xfer += iprot->readListEnd();
           }
@@ -27272,10 +27555,10 @@ uint32_t ThriftHiveMetastore_get_privilege_set_args::write(::apache::thrift::pro
   xfer += oprot->writeFieldBegin("group_names", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->group_names.size()));
-    std::vector<std::string> ::const_iterator _iter1250;
-    for (_iter1250 = this->group_names.begin(); _iter1250 != this->group_names.end(); ++_iter1250)
+    std::vector<std::string> ::const_iterator _iter1257;
+    for (_iter1257 = this->group_names.begin(); _iter1257 != this->group_names.end(); ++_iter1257)
     {
-      xfer += oprot->writeString((*_iter1250));
+      xfer += oprot->writeString((*_iter1257));
     }
     xfer += oprot->writeListEnd();
   }
@@ -27307,10 +27590,10 @@ uint32_t ThriftHiveMetastore_get_privilege_set_pargs::write(::apache::thrift::pr
   xfer += oprot->writeFieldBegin("group_names", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>((*(this->group_names)).size()));
-    std::vector<std::string> ::const_iterator _iter1251;
-    for (_iter1251 = (*(this->group_names)).begin(); _iter1251 != (*(this->group_names)).end(); ++_iter1251)
+    std::vector<std::string> ::const_iterator _iter1258;
+    for (_iter1258 = (*(this->group_names)).begin(); _iter1258 != (*(this->group_names)).end(); ++_iter1258)
     {
-      xfer += oprot->writeString((*_iter1251));
+      xfer += oprot->writeString((*_iter1258));
     }
     xfer += oprot->writeListEnd();
   }
@@ -27485,9 +27768,9 @@ uint32_t ThriftHiveMetastore_list_privileges_args::read(::apache::thrift::protoc
         break;
       case 2:
         if (ftype == ::apache::thrift::protocol::T_I32) {
-          int32_t ecast1252;
-          xfer += iprot->readI32(ecast1252);
-          this->principal_type = (PrincipalType::type)ecast1252;
+          int32_t ecast1259;
+          xfer += iprot->readI32(ecast1259);
+          this->principal_type = (PrincipalType::type)ecast1259;
           this->__isset.principal_type = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -27592,14 +27875,14 @@ uint32_t ThriftHiveMetastore_list_privileges_result::read(::apache::thrift::prot
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->success.clear();
-            uint32_t _size1253;
-            ::apache::thrift::protocol::TType _etype1256;
-            xfer += iprot->readListBegin(_etype1256, _size1253);
-            this->success.resize(_size1253);
-            uint32_t _i1257;
-            for (_i1257 = 0; _i1257 < _size1253; ++_i1257)
+            uint32_t _size1260;
+            ::apache::thrift::protocol::TType _etype1263;
+            xfer += iprot->readListBegin(_etype1263, _size1260);
+            this->success.resize(_size1260);
+            uint32_t _i1264;
+            for (_i1264 = 0; _i1264 < _size1260; ++_i1264)
             {
-              xfer += this->success[_i1257].read(iprot);
+              xfer += this->success[_i1264].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -27638,10 +27921,10 @@ uint32_t ThriftHiveMetastore_list_privileges_result::write(::apache::thrift::pro
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->success.size()));
-      std::vector<HiveObjectPrivilege> ::const_iterator _iter1258;
-      for (_iter1258 = this->success.begin(); _iter1258 != this->success.end(); ++_iter1258)
+      std::vector<HiveObjectPrivilege> ::const_iterator _iter1265;
+      for (_iter1265 = this->success.begin(); _iter1265 != this->success.end(); ++_iter1265)
       {
-        xfer += (*_iter1258).write(oprot);
+        xfer += (*_iter1265).write(oprot);
       }
       xfer += oprot->writeListEnd();
     }
@@ -27686,14 +27969,14 @@ uint32_t ThriftHiveMetastore_list_privileges_presult::read(::apache::thrift::pro
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             (*(this->success)).clear();
-            uint32_t _size1259;
-            ::apache::thrift::protocol::TType _etype1262;
-            xfer += iprot->readListBegin(_etype1262, _size1259);
-            (*(this->success)).resize(_size1259);
-            uint32_t _i1263;
-            for (_i1263 = 0; _i1263 < _size1259; ++_i1263)
+            uint32_t _size1266;
+            ::apache::thrift::protocol::TType _etype1269;
+            xfer += iprot->readListBegin(_etype1269, _size1266);
+            (*(this->success)).resize(_size1266);
+            uint32_t _i1270;
+            for (_i1270 = 0; _i1270 < _size1266; ++_i1270)
             {
-              xfer += (*(this->success))[_i1263].read(iprot);
+              xfer += (*(this->success))[_i1270].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -28381,14 +28664,14 @@ uint32_t ThriftHiveMetastore_set_ugi_args::read(::apache::thrift::protocol::TPro
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->group_names.clear();
-            uint32_t _size1264;
-            ::apache::thrift::protocol::TType _etype1267;
-            xfer += iprot->readListBegin(_etype1267, _size1264);
-            this->group_names.resize(_size1264);
-            uint32_t _i1268;
-            for (_i1268 = 0; _i1268 < _size1264; ++_i1268)
+            uint32_t _size1271;
+            ::apache::thrift::protocol::TType _etype1274;
+            xfer += iprot->readListBegin(_etype1274, _size1271);
+            this->group_names.resize(_size1271);
+            uint32_t _i1275;
+            for (_i1275 = 0; _i1275 < _size1271; ++_i1275)
             {
-              xfer += iprot->readString(this->group_names[_i1268]);
+              xfer += iprot->readString(this->group_names[_i1275]);
             }
             xfer += iprot->readListEnd();
           }
@@ -28421,10 +28704,10 @@ uint32_t ThriftHiveMetastore_set_ugi_args::write(::apache::thrift::protocol::TPr
   xfer += oprot->writeFieldBegin("group_names", ::apache::thrift::protocol::T_LIST, 2);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->group_names.size()));
-    std::vector<std::string> ::const_iterator _iter1269;
-    for (_iter1269 = this->group_names.begin(); _iter1269 != this->group_names.end(); ++_iter1269)
+    std::vector<std::string> ::const_iterator _iter1276;
+    for (_iter1276 = this->group_names.begin(); _iter1276 != this->group_names.end(); ++_iter1276)
     {
-      xfer += oprot->writeString((*_iter1269));
+      xfer += oprot->writeString((*_iter1276));
     }
     xfer += oprot->writeListEnd();
   }
@@ -28452,10 +28735,10 @@ uint32_t ThriftHiveMetastore_set_ugi_pargs::write(::apache::thrift::protocol::TP
   xfer += oprot->writeFieldBegin("group_names", ::apache::thrift::protocol::T_LIST, 2);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>((*(this->group_names)).size()));
-    std::vector<std::string> ::const_iterator _iter1270;
-    for (_iter1270 = (*(this->group_names)).begin(); _iter1270 != (*(this->group_names)).end(); ++_iter1270)
+    std::vector<std::string> ::const_iterator _iter1277;
+    for (_iter1277 = (*(this->group_names)).begin(); _iter1277 != (*(this->group_names)).end(); ++_iter1277)
     {
-      xfer += oprot->writeString((*_iter1270));
+      xfer += oprot->writeString((*_iter1277));
     }
     xfer += oprot->writeListEnd();
   }
@@ -28496,14 +28779,14 @@ uint32_t ThriftHiveMetastore_set_ugi_result::read(::apache::thrift::protocol::TP
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->success.clear();
-            uint32_t _size1271;
-            ::apache::thrift::protocol::TType _etype1274;
-            xfer += iprot->readListBegin(_etype1274, _size1271);
-            this->success.resize(_size1271);
-            uint32_t _i1275;
-            for (_i1275 = 0; _i1275 < _size1271; ++_i1275)
+            uint32_t _size1278;
+            ::apache::thrift::protocol::TType _etype1281;
+            xfer += iprot->readListBegin(_etype1281, _size1278);
+            this->success.resize(_size1278);
+            uint32_t _i1282;
+            for (_i1282 = 0; _i1282 < _size1278; ++_i1282)
             {
-              xfer += iprot->readString(this->success[_i1275]);
+              xfer += iprot->readString(this->success[_i1282]);
             }
             xfer += iprot->readListEnd();
           }
@@ -28542,10 +28825,10 @@ uint32_t ThriftHiveMetastore_set_ugi_result::write(::apache::thrift::protocol::T
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->success.size()));
-      std::vector<std::string> ::const_iterator _iter1276;
-      for (_iter1276 = this->success.begin(); _iter1276 != this->success.end(); ++_iter1276)
+      std::vector<std::string> ::const_iterator _iter1283;
+      for (_iter1283 = this->success.begin(); _iter1283 != this->success.end(); ++_iter1283)
       {
-        xfer += oprot->writeString((*_iter1276));
+        xfer += oprot->writeString((*_iter1283));
       }
       xfer += oprot->writeListEnd();
     }
@@ -28590,14 +28873,14 @@ uint32_t ThriftHiveMetastore_set_ugi_presult::read(::apache::thrift::protocol::T
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             (*(this->success)).clear();
-            uint32_t _size1277;
-            ::apache::thrift::protocol::TType _etype1280;
-            xfer += iprot->readListBegin(_etype1280, _size1277);
-            (*(this->success)).resize(_size1277);
-            uint32_t _i1281;
-            for (_i1281 = 0; _i1281 < _size1277; ++_i1281)
+            uint32_t _size1284;
+            ::apache::thrift::protocol::TType _etype1287;
+            xfer += iprot->readListBegin(_etype1287, _size1284);
+            (*(this->success)).resize(_size1284);
+            uint32_t _i1288;
+            for (_i1288 = 0; _i1288 < _size1284; ++_i1288)
             {
-              xfer += iprot->readString((*(this->success))[_i1281]);
+              xfer += iprot->readString((*(this->success))[_i1288]);
             }
             xfer += iprot->readListEnd();
           }
@@ -37845,6 +38128,68 @@ void ThriftHiveMetastoreClient::recv_alter_partitions()
   return;
 }
 
+void ThriftHiveMetastoreClient::alter_partitions_with_environment_context(const std::string& db_name, const std::string& tbl_name, const std::vector<Partition> & new_parts, const EnvironmentContext& environment_context)
+{
+  send_alter_partitions_with_environment_context(db_name, tbl_name, new_parts, environment_context);
+  recv_alter_partitions_with_environment_context();
+}
+
+void ThriftHiveMetastoreClient::send_alter_partitions_with_environment_context(const std::string& db_name, const std::string& tbl_name, const std::vector<Partition> & new_parts, const EnvironmentContext& environment_context)
+{
+  int32_t cseqid = 0;
+  oprot_->writeMessageBegin("alter_partitions_with_environment_context", ::apache::thrift::protocol::T_CALL, cseqid);
+
+  ThriftHiveMetastore_alter_partitions_with_environment_context_pargs args;
+  args.db_name = &db_name;
+  args.tbl_name = &tbl_name;
+  args.new_parts = &new_parts;
+  args.environment_context = &environment_context;
+  args.write(oprot_);
+
+  oprot_->writeMessageEnd();
+  oprot_->getTransport()->writeEnd();
+  oprot_->getTransport()->flush();
+}
+
+void ThriftHiveMetastoreClient::recv_alter_partitions_with_environment_context()
+{
+
+  int32_t rseqid = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TMessageType mtype;
+
+  iprot_->readMessageBegin(fname, mtype, rseqid);
+  if (mtype == ::apache::thrift::protocol::T_EXCEPTION) {
+    ::apache::thrift::TApplicationException x;
+    x.read(iprot_);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+    throw x;
+  }
+  if (mtype != ::apache::thrift::protocol::T_REPLY) {
+    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+  }
+  if (fname.compare("alter_partitions_with_environment_context") != 0) {
+    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+  }
+  ThriftHiveMetastore_alter_partitions_with_environment_context_presult result;
+  result.read(iprot_);
+  iprot_->readMessageEnd();
+  iprot_->getTransport()->readEnd();
+
+  if (result.__isset.o1) {
+    throw result.o1;
+  }
+  if (result.__isset.o2) {
+    throw result.o2;
+  }
+  return;
+}
+
 void ThriftHiveMetastoreClient::alter_partition_with_environment_context(const std::string& db_name, const std::string& tbl_name, const Partition& new_part, const EnvironmentContext& environment_context)
 {
   send_alter_partition_with_environment_context(db_name, tbl_name, new_part, environment_context);
@@ -46094,6 +46439,65 @@ void ThriftHiveMetastoreProcessor::process_alter_partitions(int32_t seqid, ::apa
 
   if (this->eventHandler_.get() != NULL) {
     this->eventHandler_->postWrite(ctx, "ThriftHiveMetastore.alter_partitions", bytes);
+  }
+}
+
+void ThriftHiveMetastoreProcessor::process_alter_partitions_with_environment_context(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
+{
+  void* ctx = NULL;
+  if (this->eventHandler_.get() != NULL) {
+    ctx = this->eventHandler_->getContext("ThriftHiveMetastore.alter_partitions_with_environment_context", callContext);
+  }
+  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "ThriftHiveMetastore.alter_partitions_with_environment_context");
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->preRead(ctx, "ThriftHiveMetastore.alter_partitions_with_environment_context");
+  }
+
+  ThriftHiveMetastore_alter_partitions_with_environment_context_args args;
+  args.read(iprot);
+  iprot->readMessageEnd();
+  uint32_t bytes = iprot->getTransport()->readEnd();
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->postRead(ctx, "ThriftHiveMetastore.alter_partitions_with_environment_context", bytes);
+  }
+
+  ThriftHiveMetastore_alter_partitions_with_environment_context_result result;
+  try {
+    iface_->alter_partitions_with_environment_context(args.db_name, args.tbl_name, args.new_parts, args.environment_context);
+  } catch (InvalidOperationException &o1) {
+    result.o1 = o1;
+    result.__isset.o1 = true;
+  } catch (MetaException &o2) {
+    result.o2 = o2;
+    result.__isset.o2 = true;
+  } catch (const std::exception& e) {
+    if (this->eventHandler_.get() != NULL) {
+      this->eventHandler_->handlerError(ctx, "ThriftHiveMetastore.alter_partitions_with_environment_context");
+    }
+
+    ::apache::thrift::TApplicationException x(e.what());
+    oprot->writeMessageBegin("alter_partitions_with_environment_context", ::apache::thrift::protocol::T_EXCEPTION, seqid);
+    x.write(oprot);
+    oprot->writeMessageEnd();
+    oprot->getTransport()->writeEnd();
+    oprot->getTransport()->flush();
+    return;
+  }
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->preWrite(ctx, "ThriftHiveMetastore.alter_partitions_with_environment_context");
+  }
+
+  oprot->writeMessageBegin("alter_partitions_with_environment_context", ::apache::thrift::protocol::T_REPLY, seqid);
+  result.write(oprot);
+  oprot->writeMessageEnd();
+  bytes = oprot->getTransport()->writeEnd();
+  oprot->getTransport()->flush();
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->postWrite(ctx, "ThriftHiveMetastore.alter_partitions_with_environment_context", bytes);
   }
 }
 
@@ -56087,6 +56491,95 @@ void ThriftHiveMetastoreConcurrentClient::recv_alter_partitions(const int32_t se
         throw TProtocolException(TProtocolException::INVALID_DATA);
       }
       ThriftHiveMetastore_alter_partitions_presult result;
+      result.read(iprot_);
+      iprot_->readMessageEnd();
+      iprot_->getTransport()->readEnd();
+
+      if (result.__isset.o1) {
+        sentry.commit();
+        throw result.o1;
+      }
+      if (result.__isset.o2) {
+        sentry.commit();
+        throw result.o2;
+      }
+      sentry.commit();
+      return;
+    }
+    // seqid != rseqid
+    this->sync_.updatePending(fname, mtype, rseqid);
+
+    // this will temporarily unlock the readMutex, and let other clients get work done
+    this->sync_.waitForWork(seqid);
+  } // end while(true)
+}
+
+void ThriftHiveMetastoreConcurrentClient::alter_partitions_with_environment_context(const std::string& db_name, const std::string& tbl_name, const std::vector<Partition> & new_parts, const EnvironmentContext& environment_context)
+{
+  int32_t seqid = send_alter_partitions_with_environment_context(db_name, tbl_name, new_parts, environment_context);
+  recv_alter_partitions_with_environment_context(seqid);
+}
+
+int32_t ThriftHiveMetastoreConcurrentClient::send_alter_partitions_with_environment_context(const std::string& db_name, const std::string& tbl_name, const std::vector<Partition> & new_parts, const EnvironmentContext& environment_context)
+{
+  int32_t cseqid = this->sync_.generateSeqId();
+  ::apache::thrift::async::TConcurrentSendSentry sentry(&this->sync_);
+  oprot_->writeMessageBegin("alter_partitions_with_environment_context", ::apache::thrift::protocol::T_CALL, cseqid);
+
+  ThriftHiveMetastore_alter_partitions_with_environment_context_pargs args;
+  args.db_name = &db_name;
+  args.tbl_name = &tbl_name;
+  args.new_parts = &new_parts;
+  args.environment_context = &environment_context;
+  args.write(oprot_);
+
+  oprot_->writeMessageEnd();
+  oprot_->getTransport()->writeEnd();
+  oprot_->getTransport()->flush();
+
+  sentry.commit();
+  return cseqid;
+}
+
+void ThriftHiveMetastoreConcurrentClient::recv_alter_partitions_with_environment_context(const int32_t seqid)
+{
+
+  int32_t rseqid = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TMessageType mtype;
+
+  // the read mutex gets dropped and reacquired as part of waitForWork()
+  // The destructor of this sentry wakes up other clients
+  ::apache::thrift::async::TConcurrentRecvSentry sentry(&this->sync_, seqid);
+
+  while(true) {
+    if(!this->sync_.getPending(fname, mtype, rseqid)) {
+      iprot_->readMessageBegin(fname, mtype, rseqid);
+    }
+    if(seqid == rseqid) {
+      if (mtype == ::apache::thrift::protocol::T_EXCEPTION) {
+        ::apache::thrift::TApplicationException x;
+        x.read(iprot_);
+        iprot_->readMessageEnd();
+        iprot_->getTransport()->readEnd();
+        sentry.commit();
+        throw x;
+      }
+      if (mtype != ::apache::thrift::protocol::T_REPLY) {
+        iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+        iprot_->readMessageEnd();
+        iprot_->getTransport()->readEnd();
+      }
+      if (fname.compare("alter_partitions_with_environment_context") != 0) {
+        iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+        iprot_->readMessageEnd();
+        iprot_->getTransport()->readEnd();
+
+        // in a bad state, don't commit
+        using ::apache::thrift::protocol::TProtocolException;
+        throw TProtocolException(TProtocolException::INVALID_DATA);
+      }
+      ThriftHiveMetastore_alter_partitions_with_environment_context_presult result;
       result.read(iprot_);
       iprot_->readMessageEnd();
       iprot_->getTransport()->readEnd();

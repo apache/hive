@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
+import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -31,29 +32,6 @@ import org.apache.hadoop.hive.metastore.api.Table;
  * Interface for Alter Table and Alter Partition code
  */
 public interface AlterHandler extends Configurable {
-
-  /**
-   * handles alter table
-   *
-   * @param msdb
-   *          object to get metadata
-   * @param wh
-   *          TODO
-   * @param dbname
-   *          database of the table being altered
-   * @param name
-   *          original name of the table being altered. same as
-   *          <i>newTable.tableName</i> if alter op is not a rename.
-   * @param newTable
-   *          new table object
-   * @throws InvalidOperationException
-   *           thrown if the newTable object is invalid
-   * @throws MetaException
-   *           thrown if there is any other error
-   */
-  public abstract void alterTable(RawStore msdb, Warehouse wh, String dbname,
-      String name, Table newTable) throws InvalidOperationException,
-      MetaException;
 
   /**
    * handles alter table, the changes could be cascaded to partitions if applicable
@@ -77,7 +55,7 @@ public interface AlterHandler extends Configurable {
    *           thrown if there is any other error
    */
   public abstract void alterTable(RawStore msdb, Warehouse wh, String dbname,
-      String name, Table newTable, boolean cascade) throws InvalidOperationException,
+      String name, Table newTable, EnvironmentContext envContext) throws InvalidOperationException,
       MetaException;
 
   /**
@@ -101,7 +79,7 @@ public interface AlterHandler extends Configurable {
    * @throws MetaException
    */
   public abstract Partition alterPartition(final RawStore msdb, Warehouse wh, final String dbname,
-      final String name, final List<String> part_vals, final Partition new_part)
+      final String name, final List<String> part_vals, final Partition new_part, EnvironmentContext environmentContext)
       throws InvalidOperationException, InvalidObjectException, AlreadyExistsException,
       MetaException;
 
@@ -124,7 +102,7 @@ public interface AlterHandler extends Configurable {
    * @throws MetaException
    */
   public abstract List<Partition> alterPartitions(final RawStore msdb, Warehouse wh,
-      final String dbname, final String name, final List<Partition> new_part)
+      final String dbname, final String name, final List<Partition> new_part, EnvironmentContext environmentContext)
       throws InvalidOperationException, InvalidObjectException, AlreadyExistsException,
       MetaException;
 }

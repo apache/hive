@@ -252,7 +252,7 @@ public class TestDbNotificationListener {
 
     Partition newPart = new Partition(Arrays.asList("today"), "default", "alterparttable",
         startTime, startTime + 1, sd, emptyParameters);
-    msClient.alter_partition("default", "alterparttable", newPart);
+    msClient.alter_partition("default", "alterparttable", newPart, null);
 
     NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
     assertEquals(3, rsp.getEventsSize());

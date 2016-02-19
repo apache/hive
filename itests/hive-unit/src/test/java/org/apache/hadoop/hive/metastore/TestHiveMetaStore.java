@@ -495,7 +495,7 @@ public abstract class TestHiveMetaStore extends TestCase {
     part4.setSd(tbl.getSd().deepCopy());
     part4.getSd().setSerdeInfo(tbl.getSd().getSerdeInfo().deepCopy());
     part4.getSd().setLocation(tbl.getSd().getLocation() + ptnLocationSuffix);
-    MetaStoreUtils.updatePartitionStatsFast(part4, warehouse);
+    MetaStoreUtils.updatePartitionStatsFast(part4, warehouse, null);
     return part4;
   }
 
@@ -702,7 +702,7 @@ public abstract class TestHiveMetaStore extends TestCase {
 
     part2.getParameters().put("a", "b");
 
-    client.alter_partition(dbName, viewName, part2);
+    client.alter_partition(dbName, viewName, part2, null);
 
     Partition part3 = client.getPartition(dbName, viewName, part.getValues());
     assertEquals("couldn't view alter partition", part3.getParameters().get(
@@ -789,7 +789,7 @@ public abstract class TestHiveMetaStore extends TestCase {
       part2.getParameters().put("retention", "10");
       part2.getSd().setNumBuckets(12);
       part2.getSd().getSerdeInfo().getParameters().put("abc", "1");
-      client.alter_partition(dbName, tblName, part2);
+      client.alter_partition(dbName, tblName, part2, null);
 
       Partition part3 = client.getPartition(dbName, tblName, part.getValues());
       assertEquals("couldn't alter partition", part3.getParameters().get(

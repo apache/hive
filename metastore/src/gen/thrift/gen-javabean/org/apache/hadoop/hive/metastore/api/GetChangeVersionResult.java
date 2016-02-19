@@ -112,7 +112,7 @@ public class GetChangeVersionResult implements org.apache.thrift.TBase<GetChange
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.VERSION, new org.apache.thrift.meta_data.FieldMetaData("version", org.apache.thrift.TFieldRequirementType.REQUIRED,
+    tmpMap.put(_Fields.VERSION, new org.apache.thrift.meta_data.FieldMetaData("version", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(GetChangeVersionResult.class, metaDataMap);
@@ -327,7 +327,7 @@ public class GetChangeVersionResult implements org.apache.thrift.TBase<GetChange
       while (true)
       {
         schemeField = iprot.readFieldBegin();
-        if (schemeField.type == org.apache.thrift.protocol.TType.STOP) {
+        if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (schemeField.id) {
@@ -335,7 +335,7 @@ public class GetChangeVersionResult implements org.apache.thrift.TBase<GetChange
             if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
               struct.version = iprot.readI64();
               struct.setVersionIsSet(true);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
@@ -384,3 +384,4 @@ public class GetChangeVersionResult implements org.apache.thrift.TBase<GetChange
   }
 
 }
+

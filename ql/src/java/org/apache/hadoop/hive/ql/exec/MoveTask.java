@@ -605,7 +605,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     }
 
     if (updateBucketCols || updateSortCols) {
-      db.alterPartition(table.getDbName(), table.getTableName(), partn);
+      db.alterPartition(table.getDbName(), table.getTableName(), partn, null);
     }
   }
 

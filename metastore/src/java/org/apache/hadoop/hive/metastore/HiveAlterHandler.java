@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import com.google.common.collect.Lists;
+
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,11 +27,13 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.ObjectPair;
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
@@ -71,13 +74,11 @@ public class HiveAlterHandler implements AlterHandler {
 
   @Override
   public void alterTable(RawStore msdb, Warehouse wh, String dbname,
-      String name, Table newt) throws InvalidOperationException, MetaException {
-    alterTable(msdb, wh, dbname, name, newt, false);
-  }
-
-  @Override
-  public void alterTable(RawStore msdb, Warehouse wh, String dbname,
-      String name, Table newt, boolean cascade) throws InvalidOperationException, MetaException {
+      String name, Table newt, EnvironmentContext environmentContext) throws InvalidOperationException, MetaException {
+    final boolean cascade = environmentContext != null
+        && environmentContext.isSetProperties()
+        && StatsSetupConst.TRUE.equals(environmentContext.getProperties().get(
+            StatsSetupConst.CASCADE));
     if (newt == null) {
       throw new InvalidOperationException("New table is invalid: " + newt);
     }
@@ -229,12 +230,12 @@ public class HiveAlterHandler implements AlterHandler {
             msdb.alterPartition(dbname, name, part.getValues(), part);
           }
         }
-      } else if (MetaStoreUtils.requireCalStats(hiveConf, null, null, newt) &&
+      } else if (MetaStoreUtils.requireCalStats(hiveConf, null, null, newt, environmentContext) &&
         (newt.getPartitionKeysSize() == 0)) {
           Database db = msdb.getDatabase(newt.getDbName());
           // Update table stats. For partitioned table, we update stats in
           // alterPartition()
-          MetaStoreUtils.updateTableStatsFast(db, newt, wh, false, true);
+          MetaStoreUtils.updateTableStatsFast(db, newt, wh, false, true, environmentContext);
       }
       updateTableColumnStatsForAlterTable(msdb, oldt, newt);
       // now finally call alter table
@@ -318,7 +319,7 @@ public class HiveAlterHandler implements AlterHandler {
   }
   @Override
   public Partition alterPartition(final RawStore msdb, Warehouse wh, final String dbname,
-      final String name, final List<String> part_vals, final Partition new_part)
+      final String name, final List<String> part_vals, final Partition new_part, EnvironmentContext environmentContext)
       throws InvalidOperationException, InvalidObjectException, AlreadyExistsException,
       MetaException {
     boolean success = false;
@@ -344,8 +345,8 @@ public class HiveAlterHandler implements AlterHandler {
     if (part_vals == null || part_vals.size() == 0) {
       try {
         oldPart = msdb.getPartition(dbname, name, new_part.getValues());
-        if (MetaStoreUtils.requireCalStats(hiveConf, oldPart, new_part, tbl)) {
-          MetaStoreUtils.updatePartitionStatsFast(new_part, wh, false, true);
+        if (MetaStoreUtils.requireCalStats(hiveConf, oldPart, new_part, tbl, environmentContext)) {
+          MetaStoreUtils.updatePartitionStatsFast(new_part, wh, false, true, environmentContext);
         }
         updatePartColumnStats(msdb, dbname, name, new_part.getValues(), new_part);
         msdb.alterPartition(dbname, name, new_part.getValues(), new_part);
@@ -436,8 +437,8 @@ public class HiveAlterHandler implements AlterHandler {
               + tbl.getTableName() + " " + new_part.getValues());
           }
           new_part.getSd().setLocation(newPartLoc);
-          if (MetaStoreUtils.requireCalStats(hiveConf, oldPart, new_part, tbl)) {
-            MetaStoreUtils.updatePartitionStatsFast(new_part, wh, false, true);
+          if (MetaStoreUtils.requireCalStats(hiveConf, oldPart, new_part, tbl, environmentContext)) {
+            MetaStoreUtils.updatePartitionStatsFast(new_part, wh, false, true, environmentContext);
           }
           String oldPartName = Warehouse.makePartName(tbl.getPartitionKeys(), oldPart.getValues());
           try {
@@ -492,7 +493,7 @@ public class HiveAlterHandler implements AlterHandler {
 
   @Override
   public List<Partition> alterPartitions(final RawStore msdb, Warehouse wh, final String dbname,
-      final String name, final List<Partition> new_parts)
+      final String name, final List<Partition> new_parts, EnvironmentContext environmentContext)
       throws InvalidOperationException, InvalidObjectException, AlreadyExistsException,
       MetaException {
     List<Partition> oldParts = new ArrayList<Partition>();
@@ -512,8 +513,8 @@ public class HiveAlterHandler implements AlterHandler {
         oldParts.add(oldTmpPart);
         partValsList.add(tmpPart.getValues());
 
-        if (MetaStoreUtils.requireCalStats(hiveConf, oldTmpPart, tmpPart, tbl)) {
-          MetaStoreUtils.updatePartitionStatsFast(tmpPart, wh, false, true);
+        if (MetaStoreUtils.requireCalStats(hiveConf, oldTmpPart, tmpPart, tbl, environmentContext)) {
+          MetaStoreUtils.updatePartitionStatsFast(tmpPart, wh, false, true, environmentContext);
         }
         updatePartColumnStats(msdb, dbname, name, oldTmpPart.getValues(), tmpPart);
       }

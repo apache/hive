@@ -1122,6 +1122,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   // prehooks are fired together followed by all post hooks
   void alter_partitions(1:string db_name, 2:string tbl_name, 3:list<Partition> new_parts)
                        throws (1:InvalidOperationException o1, 2:MetaException o2)
+  void alter_partitions_with_environment_context(1:string db_name, 2:string tbl_name, 3:list<Partition> new_parts, 4:EnvironmentContext environment_context) throws (1:InvalidOperationException o1, 2:MetaException o2)
 
   void alter_partition_with_environment_context(1:string db_name,
       2:string tbl_name, 3:Partition new_part,

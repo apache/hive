@@ -28,12 +28,14 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -98,6 +100,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
+import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.LockDatabaseDesc;
@@ -286,9 +289,11 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       } else if (ast.getType() == HiveParser.TOK_ALTERTABLE_PARTCOLTYPE) {
         analyzeAlterTablePartColType(qualified, ast);
       } else if (ast.getType() == HiveParser.TOK_ALTERTABLE_PROPERTIES) {
-        analyzeAlterTableProps(qualified, ast, false, false);
+        analyzeAlterTableProps(qualified, null, ast, false, false);
       } else if (ast.getType() == HiveParser.TOK_ALTERTABLE_DROPPROPERTIES) {
-        analyzeAlterTableProps(qualified, ast, false, true);
+        analyzeAlterTableProps(qualified, null, ast, false, true);
+      } else if (ast.getType() == HiveParser.TOK_ALTERTABLE_UPDATESTATS) {
+        analyzeAlterTableProps(qualified, partSpec, ast, false, false);
       } else if (ast.getType() == HiveParser.TOK_ALTERTABLE_SKEWED) {
         analyzeAltertableSkewedby(qualified, ast);
       } else if (ast.getType() == HiveParser.TOK_ALTERTABLE_EXCHANGEPARTITION) {
@@ -397,9 +402,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       String[] qualified = getQualifiedTableName((ASTNode) ast.getChild(0));
       ast = (ASTNode) ast.getChild(1);
       if (ast.getType() == HiveParser.TOK_ALTERVIEW_PROPERTIES) {
-        analyzeAlterTableProps(qualified, ast, true, false);
+        analyzeAlterTableProps(qualified, null, ast, true, false);
       } else if (ast.getType() == HiveParser.TOK_ALTERVIEW_DROPPROPERTIES) {
-        analyzeAlterTableProps(qualified, ast, true, true);
+        analyzeAlterTableProps(qualified, null, ast, true, true);
       } else if (ast.getType() == HiveParser.TOK_ALTERVIEW_ADDPARTS) {
         analyzeAlterTableAddParts(qualified, ast, true);
       } else if (ast.getType() == HiveParser.TOK_ALTERVIEW_DROPPARTS) {
@@ -1338,25 +1343,56 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private void analyzeAlterTableProps(String[] qualified, ASTNode ast, boolean expectView, boolean isUnset)
-      throws SemanticException {
+  private void analyzeAlterTableProps(String[] qualified, HashMap<String, String> partSpec,
+      ASTNode ast, boolean expectView, boolean isUnset) throws SemanticException {
 
     String tableName = getDotName(qualified);
     HashMap<String, String> mapProp = getProps((ASTNode) (ast.getChild(0))
         .getChild(0));
+    EnvironmentContext environmentContext = null;
+    if (SessionState.get().getCommandType()
+        .equals(HiveOperation.ALTERTABLE_UPDATETABLESTATS.getOperationName())
+        || SessionState.get().getCommandType()
+            .equals(HiveOperation.ALTERTABLE_UPDATEPARTSTATS.getOperationName())) {
+      // we need to check if the properties are valid, especially for stats.
+      boolean changeStatsSucceeded = false;
+      for (Entry<String, String> entry : mapProp.entrySet()) {
+        // we make sure that we do not change anything if there is anything
+        // wrong.
+        if (entry.getKey().equals(StatsSetupConst.ROW_COUNT)
+            || entry.getKey().equals(StatsSetupConst.RAW_DATA_SIZE)) {
+          try {
+            Long.parseLong(entry.getValue());
+            changeStatsSucceeded = true;
+          } catch (Exception e) {
+            throw new SemanticException("AlterTable " + entry.getKey() + " failed with value "
+                + entry.getValue());
+          }
+        } else {
+          throw new SemanticException("AlterTable UpdateStats " + entry.getKey()
+              + " failed because the only valid keys are" + StatsSetupConst.ROW_COUNT + " and "
+              + StatsSetupConst.RAW_DATA_SIZE);
+        }
+      }
+      if (changeStatsSucceeded) {
+        environmentContext = new EnvironmentContext();
+        environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED, StatsSetupConst.USER);
+      }
+    }
     AlterTableDesc alterTblDesc = null;
     if (isUnset == true) {
-      alterTblDesc = new AlterTableDesc(AlterTableTypes.DROPPROPS, expectView);
+      alterTblDesc = new AlterTableDesc(AlterTableTypes.DROPPROPS, partSpec, expectView);
       if (ast.getChild(1) != null) {
         alterTblDesc.setDropIfExists(true);
       }
     } else {
-      alterTblDesc = new AlterTableDesc(AlterTableTypes.ADDPROPS, expectView);
+      alterTblDesc = new AlterTableDesc(AlterTableTypes.ADDPROPS, partSpec, expectView);
     }
     alterTblDesc.setProps(mapProp);
+    alterTblDesc.setEnvironmentContext(environmentContext);
     alterTblDesc.setOldName(tableName);
 
-    addInputsOutputsAlterTable(tableName, null, alterTblDesc);
+    addInputsOutputsAlterTable(tableName, partSpec, alterTblDesc);
 
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         alterTblDesc), conf));

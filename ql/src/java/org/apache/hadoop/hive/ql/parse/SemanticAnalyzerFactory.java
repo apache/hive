@@ -153,6 +153,9 @@ public final class SemanticAnalyzerFactory {
     tablePartitionCommandType.put(HiveParser.TOK_ALTERTABLE_UPDATECOLSTATS,
         new HiveOperation[] {HiveOperation.ALTERTABLE_UPDATETABLESTATS,
             HiveOperation.ALTERTABLE_UPDATEPARTSTATS});
+    tablePartitionCommandType.put(HiveParser.TOK_ALTERTABLE_UPDATESTATS,
+        new HiveOperation[] {HiveOperation.ALTERTABLE_UPDATETABLESTATS,
+        HiveOperation.ALTERTABLE_UPDATEPARTSTATS});
   }
 
   public static BaseSemanticAnalyzer get(HiveConf conf, ASTNode tree)
