@@ -250,10 +250,7 @@ public class TezSessionState {
     }
 
     if (llapMode) {
-      // add configs for llap-daemon-site.xml + localize llap jars
-      // they cannot be referred to directly as it would be a circular depedency
-      conf.addResource("llap-daemon-site.xml");
-
+      // localize llap client jars
       addJarLRByClass(LlapTaskSchedulerService.class, commonLocalResources);
       addJarLRByClass(LlapProtocolClientImpl.class, commonLocalResources);
       addJarLRByClass(LlapProtocolClientProxy.class, commonLocalResources);
