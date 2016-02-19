@@ -50,6 +50,7 @@ import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
+import org.eclipse.jetty.server.ssl.SslSocketConnector;
 import org.json.JSONObject;
 
 import com.google.common.base.Preconditions;
@@ -263,6 +264,8 @@ public class LlapServiceDriver {
     lfs.copyFromLocalFile(new Path(Utilities.jarFinderGetJar(LlapInputFormat.class)), libDir);
     // hive-exec
     lfs.copyFromLocalFile(new Path(Utilities.jarFinderGetJar(HiveInputFormat.class)), libDir);
+    // hive-common (https deps)
+    lfs.copyFromLocalFile(new Path(Utilities.jarFinderGetJar(SslSocketConnector.class)), libDir);
 
     // copy default aux classes (json/hbase)
 
