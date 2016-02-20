@@ -455,7 +455,7 @@ public class RexNodeConverter {
         // An alternative would be to throw CboSemanticException and fall back
         // to no CBO.
         RelDataType relType = cluster.getTypeFactory().createSqlType(SqlTypeName.DECIMAL,
-            bd.scale(), unscaled.toString().length());
+            unscaled.toString().length(), bd.scale());
         calciteLiteral = rexBuilder.makeExactLiteral(bd, relType);
       }
       break;
