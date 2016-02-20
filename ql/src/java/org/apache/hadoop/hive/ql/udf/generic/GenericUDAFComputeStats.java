@@ -431,8 +431,11 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
       @Override
       public int estimate() {
         JavaDataModel model = JavaDataModel.get();
-        return model.lengthFor(columnType) + model.primitive1() + model.primitive2() +
-            numDV.lengthFor(model);
+        return model.lengthFor(columnType)
+            + model.primitive1()
+            + model.primitive2()
+            + ((numDV == null) ? NumDistinctValueEstimator.lengthFor(model, null) :
+                                 numDV.lengthFor(model));
       }
 
       protected void initNDVEstimator(int numBitVectors) {
@@ -836,7 +839,10 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
       public int estimate() {
         JavaDataModel model = JavaDataModel.get();
         return model.primitive1() * 2 + model.primitive2() * 4 +
-            model.lengthFor(columnType) + numDV.lengthFor(model);
+            model.lengthFor(columnType) +
+            ((numDV == null) ? NumDistinctValueEstimator.lengthFor(model, null) :
+                               numDV.lengthFor(model));
+
       }
     };
 

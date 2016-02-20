@@ -22,6 +22,7 @@ import javolution.util.FastBitSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.io.Text;
@@ -356,13 +357,17 @@ public class NumDistinctValueEstimator {
     return ((long)(numDistinctValues));
   }
 
-  public int lengthFor(JavaDataModel model) {
+  @InterfaceAudience.LimitedPrivate(value = { "Hive" })
+  static int lengthFor(JavaDataModel model, Integer numVector) {
     int length = model.object();
     length += model.primitive1() * 2;       // two int
     length += model.primitive2();           // one double
     length += model.lengthForRandom() * 2;  // two Random
 
-    int numVector = getnumBitVectors();
+    if (numVector == null) {
+      numVector = 16; // HiveConf hive.stats.ndv.error default produces 16 vectors
+    }
+
     if (numVector > 0) {
       length += model.array() * 3;                    // three array
       length += model.primitive1() * numVector * 2;   // two int array
@@ -372,4 +377,7 @@ public class NumDistinctValueEstimator {
     return length;
   }
 
+  public int lengthFor(JavaDataModel model) {
+    return lengthFor(model, getnumBitVectors());
+  }
 }
