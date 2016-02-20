@@ -19,6 +19,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryPoolMXBean;
 import java.lang.management.MemoryType;
 import java.net.InetSocketAddress;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
@@ -53,6 +54,7 @@ import org.apache.hadoop.util.ExitUtil;
 import org.apache.hadoop.util.JvmPauseMonitor;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.ShutdownHookManager;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,6 +66,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
 
   private static final Logger LOG = LoggerFactory.getLogger(LlapDaemon.class);
 
+  public static final String LOG4j2_PROPERTIES_FILE = "llap-daemon-log4j2.properties";
   private final Configuration shuffleHandlerConf;
   private final LlapProtocolServerImpl server;
   private final ContainerRunnerImpl containerRunner;
@@ -92,6 +95,8 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
       boolean ioEnabled, boolean isDirectCache, long ioMemoryBytes, String[] localDirs, int srvPort,
       int mngPort, int shufflePort) {
     super("LlapDaemon");
+
+    initializeLogging();
 
     printAsciiArt();
 
@@ -192,6 +197,19 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     // AMReporter after the server so that it gets the correct address. It knows how to deal with
     // requests before it is started.
     addIfService(amReporter);
+  }
+
+  private void initializeLogging() {
+    long start = System.currentTimeMillis();
+    URL llap_l4j2 = LlapDaemon.class.getClassLoader().getResource(LOG4j2_PROPERTIES_FILE);
+    if (llap_l4j2 != null) {
+      Configurator.initialize("LlapDaemonLog4j2", llap_l4j2.toString());
+      long end = System.currentTimeMillis();
+      LOG.info("LLAP daemon logging initialized from {} in {} ms", llap_l4j2, (end - start));
+    } else {
+      throw new RuntimeException("Log initialization failed." +
+          " Unable to locate " + LOG4j2_PROPERTIES_FILE + " file in classpath");
+    }
   }
 
   public static long getTotalHeapSize() {
