@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.Properties;
 
 import org.apache.hadoop.hive.llap.configuration.LlapDaemonConfiguration;
+import org.apache.hadoop.hive.llap.daemon.impl.LlapDaemon;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.tezplugins.LlapTezUtils;
 import org.apache.tez.dag.api.TezConfiguration;
@@ -224,7 +225,7 @@ public class LlapServiceDriver {
 
 
 
-    URL logger = conf.getResource("llap-daemon-log4j2.properties");
+    URL logger = conf.getResource(LlapDaemon.LOG4j2_PROPERTIES_FILE);
 
     if (null == logger) {
       throw new Exception("Unable to find required config file: llap-daemon-log4j2.properties");
