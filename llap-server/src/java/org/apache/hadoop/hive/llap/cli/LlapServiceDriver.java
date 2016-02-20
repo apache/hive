@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Collection;
 
+import org.apache.hadoop.hive.llap.daemon.impl.LlapDaemon;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.tezplugins.LlapTezUtils;
 import org.eclipse.jetty.server.ssl.SslSocketConnector;
@@ -193,7 +194,8 @@ public class LlapServiceDriver {
       conf.set((String) props.getKey(), (String) props.getValue());
     }
 
-    URL logger = conf.getResource("llap-daemon-log4j2.properties");
+
+    URL logger = conf.getResource(LlapDaemon.LOG4j2_PROPERTIES_FILE);
 
     if (null == logger) {
       throw new Exception("Unable to find required config file: llap-daemon-log4j2.properties");
