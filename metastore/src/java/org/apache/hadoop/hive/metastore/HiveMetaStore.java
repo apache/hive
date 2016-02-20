@@ -790,7 +790,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     @Override
     public void shutdown() {
-      logInfo("Shutting down the object store...");
+      logInfo("Metastore shutdown started...");
       RawStore ms = threadLocalMS.get();
       if (ms != null) {
         try {
