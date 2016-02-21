@@ -2127,14 +2127,14 @@ Stage-0
           <-Reducer 2 [SIMPLE_EDGE]
             SHUFFLE [RS_18]
               PartitionCols:_col1
-              Merge Join Operator [MERGEJOIN_31] (rows=12 width=8)
+              Merge Join Operator [MERGEJOIN_31] (rows=13 width=8)
                 Conds:RS_15._col0, _col3=RS_16._col0, _col1(Left Semi),Output:["_col1","_col2"]
               <-Map 1 [SIMPLE_EDGE]
                 SHUFFLE [RS_15]
                   PartitionCols:_col0, _col3
-                  Select Operator [SEL_2] (rows=16 width=16)
+                  Select Operator [SEL_2] (rows=17 width=16)
                     Output:["_col0","_col1","_col2","_col3"]
-                    Filter Operator [FIL_28] (rows=16 width=16)
+                    Filter Operator [FIL_28] (rows=17 width=16)
                       predicate:(((l_linenumber = 1) and l_partkey is not null) and l_orderkey is not null)
                       TableScan [TS_0] (rows=100 width=16)
                         default@lineitem,lineitem,Tbl:COMPLETE,Col:COMPLETE,Output:["l_orderkey","l_partkey","l_suppkey","l_linenumber"]
