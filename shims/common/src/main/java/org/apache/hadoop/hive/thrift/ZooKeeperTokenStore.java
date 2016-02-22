@@ -396,6 +396,10 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
   @Override
   public DelegationTokenInformation getToken(DelegationTokenIdentifier tokenIdentifier) {
     byte[] tokenBytes = zkGetData(getTokenPath(tokenIdentifier));
+    if(tokenBytes == null) {
+      // The token is already removed.
+      return null;
+    }
     try {
       return HiveDelegationTokenSupport.decodeDelegationTokenInformation(tokenBytes);
     } catch (Exception ex) {
