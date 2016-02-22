@@ -1317,7 +1317,8 @@ public final class ConstantPropagateProcFactory {
      */
     private boolean skipFolding(JoinDesc joinDesc) {
       for (JoinCondDesc cond : joinDesc.getConds()) {
-        if (cond.getType() == JoinDesc.INNER_JOIN || cond.getType() == JoinDesc.UNIQUE_JOIN) {
+        if (cond.getType() == JoinDesc.INNER_JOIN || cond.getType() == JoinDesc.UNIQUE_JOIN
+            || cond.getType() == JoinDesc.LEFT_SEMI_JOIN) {
           continue;
         }
         return true;

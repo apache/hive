@@ -110,9 +110,9 @@ STAGE PLANS:
               value expressions: _col16 (type: smallint), _col21 (type: double), _col98 (type: int)
           TableScan
             Reduce Output Operator
-              key expressions: _col0 (type: int), _col1 (type: timestamp)
+              key expressions: -92 (type: int), _col1 (type: timestamp)
               sort order: ++
-              Map-reduce partition columns: _col0 (type: int), _col1 (type: timestamp)
+              Map-reduce partition columns: -92 (type: int), _col1 (type: timestamp)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
       Reduce Operator Tree:
         Join Operator

@@ -215,8 +215,8 @@ STAGE PLANS:
                         Statistics: Num rows: 25 Data size: 2999 Basic stats: COMPLETE Column stats: NONE
                         Spark HashTable Sink Operator
                           keys:
-                            0 _col0 (type: int), _col3 (type: int)
-                            1 _col0 (type: int), _col1 (type: int)
+                            0 _col0 (type: int), 1 (type: int)
+                            1 _col0 (type: int), 1 (type: int)
             Local Work:
               Map Reduce Local Work
         Map 3 
@@ -265,15 +265,15 @@ STAGE PLANS:
                     predicate: (((l_linenumber = 1) and l_partkey is not null) and l_orderkey is not null) (type: boolean)
                     Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: l_orderkey (type: int), l_partkey (type: int), l_suppkey (type: int), 1 (type: int)
-                      outputColumnNames: _col0, _col1, _col2, _col3
+                      expressions: l_orderkey (type: int), l_partkey (type: int), l_suppkey (type: int)
+                      outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
                              Left Semi Join 0 to 1
                         keys:
-                          0 _col0 (type: int), _col3 (type: int)
-                          1 _col0 (type: int), _col1 (type: int)
+                          0 _col0 (type: int), 1 (type: int)
+                          1 _col0 (type: int), 1 (type: int)
                         outputColumnNames: _col1, _col2
                         input vertices:
                           1 Map 2
