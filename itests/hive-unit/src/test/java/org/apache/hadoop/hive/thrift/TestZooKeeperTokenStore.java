@@ -122,6 +122,7 @@ public class TestZooKeeperTokenStore extends TestCase {
 
     assertTrue(ts.removeToken(tokenId));
     assertEquals(0, ts.getAllDelegationTokenIdentifiers().size());
+    assertNull(ts.getToken(tokenId));
   }
 
   public void testAclNoAuth() throws Exception {
