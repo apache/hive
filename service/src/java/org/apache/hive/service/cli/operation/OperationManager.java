@@ -181,22 +181,6 @@ public class OperationManager extends AbstractService {
     return handleToOperation.get(operationHandle);
   }
 
-  private Operation removeTimedOutOperation(OperationHandle operationHandle) {
-    Operation operation = handleToOperation.get(operationHandle);
-    if (operation != null && operation.isTimedOut(System.currentTimeMillis())) {
-      handleToOperation.remove(operationHandle, operation);
-      synchronized (webuiLock) {
-        String opKey = operationHandle.getHandleIdentifier().toString();
-        SQLOperationDisplay display = liveSqlOperations.remove(opKey);
-        if (historicSqlOperations != null) {
-          historicSqlOperations.put(opKey, display);
-        }
-      }
-      return operation;
-    }
-    return null;
-  }
-
   private void addOperation(Operation operation) {
     handleToOperation.put(operation.getHandle(), operation);
     if (operation instanceof SQLOperation) {
@@ -208,15 +192,38 @@ public class OperationManager extends AbstractService {
   }
 
   private Operation removeOperation(OperationHandle opHandle) {
-    Operation result = handleToOperation.remove(opHandle);
+    Operation operation = handleToOperation.remove(opHandle);
+    if (operation instanceof SQLOperation) {
+      removeSaveSqlOperationDisplay(opHandle);
+    }
+    return operation;
+  }
+
+  private Operation removeTimedOutOperation(OperationHandle operationHandle) {
+    Operation operation = handleToOperation.get(operationHandle);
+    if (operation != null && operation.isTimedOut(System.currentTimeMillis())) {
+      handleToOperation.remove(operationHandle, operation);
+      if (operation instanceof SQLOperation) {
+        removeSaveSqlOperationDisplay(operationHandle);
+      }
+      return operation;
+    }
+    return null;
+  }
+
+  private void removeSaveSqlOperationDisplay(OperationHandle operationHandle) {
     synchronized (webuiLock) {
-      String opKey = opHandle.getHandleIdentifier().toString();
+      String opKey = operationHandle.getHandleIdentifier().toString();
+      // remove from list of live operations
       SQLOperationDisplay display = liveSqlOperations.remove(opKey);
-      if (historicSqlOperations != null) {
+      if (display == null) {
+        LOG.debug("Unexpected display object value of null for operation {}",
+            opKey);
+      } else if (historicSqlOperations != null) {
+        // add to list of saved historic operations
         historicSqlOperations.put(opKey, display);
       }
     }
-    return result;
   }
 
   public OperationStatus getOperationStatus(OperationHandle opHandle)
