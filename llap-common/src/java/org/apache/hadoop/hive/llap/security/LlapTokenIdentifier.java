@@ -59,12 +59,14 @@ public class LlapTokenIdentifier extends AbstractDelegationTokenIdentifier {
 
   @Override
   public int hashCode() {
-    return -1;
+    // Nothing else right now.
+    return super.hashCode();
   }
 
   @Override
   public boolean equals(Object other) {
-    return (other != null) && other.getClass().isAssignableFrom(this.getClass());
+    // Nothing else right now.
+    return super.equals(other);
   }
 
   @Override
