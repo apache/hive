@@ -91,7 +91,7 @@ public class HiveRexUtil {
     assert newOperands.size() % 2 == 1;
     switch (newOperands.size()) {
     case 1:
-      return newOperands.get(0);
+      return rexBuilder.makeCast(call.getType(), newOperands.get(0));
     }
   trueFalse:
     if (call.getType().getSqlTypeName() == SqlTypeName.BOOLEAN) {

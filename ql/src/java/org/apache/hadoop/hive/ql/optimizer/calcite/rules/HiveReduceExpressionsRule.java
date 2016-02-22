@@ -582,7 +582,7 @@ public abstract class HiveReduceExpressionsRule extends RelOptRule {
       }
       node = super.visitCall(call);
       if (node != call) {
-        node = RexUtil.simplify(rexBuilder, node);
+        node = HiveRexUtil.simplify(rexBuilder, node);
       }
       return node;
     }
