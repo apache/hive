@@ -38,6 +38,7 @@ import java.util.Stack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -84,10 +85,7 @@ import org.apache.hadoop.hive.ql.plan.TezWork;
  */
 public class LlapDecider implements PhysicalPlanResolver {
 
-  protected static transient final Logger LOG
-    = LoggerFactory.getLogger(LlapDecider.class);
-
-  private PhysicalContext physicalContext;
+  protected static transient final Logger LOG = LoggerFactory.getLogger(LlapDecider.class);
 
   private HiveConf conf;
 
@@ -101,13 +99,12 @@ public class LlapDecider implements PhysicalPlanResolver {
   private LlapMode mode;
 
   class LlapDecisionDispatcher implements Dispatcher {
-
-    private final PhysicalContext pctx;
     private final HiveConf conf;
+    private final boolean doSkipUdfCheck;
 
     public LlapDecisionDispatcher(PhysicalContext pctx) {
-      this.pctx = pctx;
-      this.conf = pctx.getConf();
+      conf = pctx.getConf();
+      doSkipUdfCheck = HiveConf.getBoolVar(conf, ConfVars.LLAP_SKIP_COMPILE_UDF_CHECK);
     }
 
     @Override
@@ -237,21 +234,13 @@ public class LlapDecider implements PhysicalPlanResolver {
         ExprNodeDesc cur = exprs.removeFirst();
         if (cur == null) continue;
         if (cur.getChildren() != null) {
-	  exprs.addAll(cur.getChildren());
-	}
+          exprs.addAll(cur.getChildren());
+        }
 
-        if (cur instanceof ExprNodeGenericFuncDesc) {
-	  // getRequiredJars is currently broken (requires init in some cases before you can call it)
-          // String[] jars = ((ExprNodeGenericFuncDesc)cur).getGenericUDF().getRequiredJars();
-          // if (jars != null && !(jars.length == 0)) {
-          //   LOG.info(String.format("%s requires %s", cur.getExprString(), Joiner.on(", ").join(jars)));
-          //   return false;
-          // }
-
-          if (!FunctionRegistry.isBuiltInFuncExpr((ExprNodeGenericFuncDesc)cur)) {
-            LOG.info("Not a built-in function: " + cur.getExprString());
-            return false;
-          }
+        if (!doSkipUdfCheck && cur instanceof ExprNodeGenericFuncDesc
+            && !FunctionRegistry.isBuiltInFuncExpr((ExprNodeGenericFuncDesc)cur)) {
+          LOG.info("Not a built-in function: " + cur.getExprString());
+          return false;
         }
       }
       return true;
@@ -420,8 +409,6 @@ public class LlapDecider implements PhysicalPlanResolver {
 
   @Override
   public PhysicalContext resolve(PhysicalContext pctx) throws SemanticException {
-
-    this.physicalContext = pctx;
     this.conf = pctx.getConf();
 
     this.mode = LlapMode.valueOf(HiveConf.getVar(conf, HiveConf.ConfVars.LLAP_EXECUTION_MODE));
