@@ -49,7 +49,11 @@ process_jira() {
   fi
   # ensure attachment has not already been tested
   ATTACHMENT_ID=$(basename $(dirname $PATCH_URL))
-  if grep -q "ATTACHMENT ID: $ATTACHMENT_ID" $JIRA_TEXT
+  if test -n "$BUILD_TAG"
+  then
+    build_postfix=" - ${BUILD_TAG%-*}"
+  fi
+  if grep -q "ATTACHMENT ID: $ATTACHMENT_ID $build_postfix" $JIRA_TEXT
   then
     fail "Attachment $ATTACHMENT_ID is already tested for $JIRA_NAME"
   fi
