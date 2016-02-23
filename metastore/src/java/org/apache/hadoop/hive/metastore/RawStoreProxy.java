@@ -44,12 +44,15 @@ public class RawStoreProxy implements InvocationHandler {
   private final int id;
   private final HiveConf hiveConf;
   private final Configuration conf; // thread local conf from HMS
+  private final long socketTimeout;
 
   protected RawStoreProxy(HiveConf hiveConf, Configuration conf,
       Class<? extends RawStore> rawStoreClass, int id) throws MetaException {
     this.conf = conf;
     this.hiveConf = hiveConf;
     this.id = id;
+    this.socketTimeout = HiveConf.getTimeVar(hiveConf,
+        HiveConf.ConfVars.METASTORE_CLIENT_SOCKET_TIMEOUT, TimeUnit.MILLISECONDS);
 
     // This has to be called before initializing the instance of RawStore
     init();
@@ -93,35 +96,21 @@ public class RawStoreProxy implements InvocationHandler {
 
   @Override
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-    Object ret = null;
-    boolean isTimerStarted = false;
-
     try {
+      Deadline.registerIfNot(socketTimeout);
+      boolean isTimerStarted = Deadline.startTimer(method.getName());
       try {
-        if (!Deadline.isStarted()) {
-          Deadline.startTimer(method.getName());
-          isTimerStarted = true;
+        return method.invoke(base, args);
+      } finally {
+        if (isTimerStarted) {
+          Deadline.stopTimer();
         }
-      } catch (MetaException e) {
-        // Deadline was not registered yet.
-        long timeout = HiveConf.getTimeVar(hiveConf,
-            HiveConf.ConfVars.METASTORE_CLIENT_SOCKET_TIMEOUT, TimeUnit.MILLISECONDS);
-        Deadline.registerIfNot(timeout);
-        Deadline.startTimer(method.getName());
-        isTimerStarted = true;
-      }
-
-      ret = method.invoke(base, args);
-
-      if (isTimerStarted) {
-        Deadline.stopTimer();
       }
     } catch (UndeclaredThrowableException e) {
       throw e.getCause();
     } catch (InvocationTargetException e) {
       throw e.getCause();
     }
-    return ret;
   }
 
   public Configuration getConf() {
