@@ -36,9 +36,10 @@ public class SessionPropertiesListener extends MetaStoreEventListener {
 
   @Override
   public void onConfigChange(ConfigChangeEvent changeEvent) throws MetaException {
-      if (changeEvent.getKey().equals(HiveConf.ConfVars.METASTORE_CLIENT_SOCKET_TIMEOUT.varname)) {
-        Deadline.resetTimeout(HiveConf.toTime(changeEvent.getNewValue(), TimeUnit.SECONDS,
-            TimeUnit.MILLISECONDS));
-      }
+    if (changeEvent.getKey().equals(HiveConf.ConfVars.METASTORE_CLIENT_SOCKET_TIMEOUT.varname)) {
+      // TODO: this only applies to current thread, so it's not useful at all.
+      Deadline.resetTimeout(HiveConf.toTime(changeEvent.getNewValue(), TimeUnit.SECONDS,
+          TimeUnit.MILLISECONDS));
+    }
   }
 }
