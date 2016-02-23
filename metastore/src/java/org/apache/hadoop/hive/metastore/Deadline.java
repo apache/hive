@@ -32,34 +32,33 @@ public class Deadline {
   /**
    * its value is init from conf, and could be reset from client.
    */
-  private long timeout;
+  private long timeoutNanos;
 
   /**
    * it is reset before executing a method
    */
-  private long startTime = -1;
+  private long startTime = NO_DEADLINE;
 
   /**
    * The name of public methods in HMSHandler
    */
   private String method;
 
-  private Deadline(long timeout) {
-    this.timeout = timeout;
+  private Deadline(long timeoutMs) {
+    this.timeoutNanos = timeoutMs * 1000000L;
   }
 
   /**
    * Deadline object per thread.
    */
-  private static final ThreadLocal<Deadline> DEADLINE_THREAD_LOCAL = new
-      ThreadLocal<Deadline>() {
+  private static final ThreadLocal<Deadline> DEADLINE_THREAD_LOCAL = new ThreadLocal<Deadline>() {
         @Override
         protected synchronized Deadline initialValue() {
           return null;
         }
       };
 
-  static void setCurrentDeadline(Deadline deadline) {
+  private static void setCurrentDeadline(Deadline deadline) {
     DEADLINE_THREAD_LOCAL.set(deadline);
   }
 
@@ -67,7 +66,7 @@ public class Deadline {
     return DEADLINE_THREAD_LOCAL.get();
   }
 
-  static void removeCurrentDeadline() {
+  private static void removeCurrentDeadline() {
     DEADLINE_THREAD_LOCAL.remove();
   }
 
@@ -85,29 +84,14 @@ public class Deadline {
    * reset the timeout value of this timer.
    * @param timeout
    */
-  public static void resetTimeout(long timeout) throws MetaException {
-    if (timeout <= 0) {
+  public static void resetTimeout(long timeoutMs) throws MetaException {
+    if (timeoutMs <= 0) {
       throw newMetaException(new DeadlineException("The reset timeout value should be " +
-          "larger than 0: " + timeout));
+          "larger than 0: " + timeoutMs));
     }
     Deadline deadline = getCurrentDeadline();
     if (deadline != null) {
-      deadline.timeout = timeout;
-    } else {
-      throw newMetaException(new DeadlineException("The threadlocal Deadline is null," +
-          " please register it firstly."));
-    }
-  }
-
-  /**
-   * Check whether the timer is started.
-   * @return
-   * @throws MetaException
-   */
-  public static boolean isStarted() throws MetaException {
-    Deadline deadline = getCurrentDeadline();
-    if (deadline != null) {
-      return deadline.startTime >= 0;
+      deadline.timeoutNanos = timeoutMs * 1000000L;
     } else {
       throw newMetaException(new DeadlineException("The threadlocal Deadline is null," +
           " please register it firstly."));
@@ -118,15 +102,18 @@ public class Deadline {
    * start the timer before a method is invoked.
    * @param method
    */
-  public static void startTimer(String method) throws MetaException {
+  public static boolean startTimer(String method) throws MetaException {
     Deadline deadline = getCurrentDeadline();
-    if (deadline != null) {
-      deadline.startTime = System.currentTimeMillis();
-      deadline.method = method;
-    } else {
+    if (deadline == null) {
       throw newMetaException(new DeadlineException("The threadlocal Deadline is null," +
           " please register it firstly."));
     }
+    if (deadline.startTime != NO_DEADLINE) return false;
+    deadline.method = method;
+    do {
+      deadline.startTime = System.nanoTime();
+    } while (deadline.startTime == NO_DEADLINE);
+    return true;
   }
 
   /**
@@ -135,7 +122,7 @@ public class Deadline {
   public static void stopTimer() throws MetaException {
     Deadline deadline = getCurrentDeadline();
     if (deadline != null) {
-      deadline.startTime = -1;
+      deadline.startTime = NO_DEADLINE;
       deadline.method = null;
     } else {
       throw newMetaException(new DeadlineException("The threadlocal Deadline is null," +
@@ -164,14 +151,18 @@ public class Deadline {
     }
   }
 
+  private static final long NO_DEADLINE = Long.MIN_VALUE;
+
   private void check() throws MetaException{
     try {
-      if (startTime < 0) {
+      if (startTime == NO_DEADLINE) {
         throw new DeadlineException("Should execute startTimer() method before " +
             "checkTimeout. Error happens in method: " + method);
       }
-      if (startTime + timeout < System.currentTimeMillis()) {
-        throw new DeadlineException("Timeout when executing method: " + method);
+      long elapsedTime = System.nanoTime() - startTime;
+      if (elapsedTime > timeoutNanos) {
+        throw new DeadlineException("Timeout when executing method: " + method + "; "
+            + (elapsedTime / 1000000L) + "ms exceeds " + (timeoutNanos / 1000000L)  + "ms");
       }
     } catch (DeadlineException e) {
       throw newMetaException(e);
