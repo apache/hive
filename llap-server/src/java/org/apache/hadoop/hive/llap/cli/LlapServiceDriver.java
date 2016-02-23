@@ -243,6 +243,7 @@ public class LlapServiceDriver {
 
 
     Path libDir = new Path(tmpDir, "lib");
+    Path tezDir = new Path(libDir, "tez");
 
     String tezLibs = conf.get(TezConfiguration.TEZ_LIB_URIS);
     if (tezLibs == null) {
@@ -251,21 +252,32 @@ public class LlapServiceDriver {
     if (LOG.isDebugEnabled()) {
       LOG.debug("Copying tez libs from " + tezLibs);
     }
-    lfs.mkdirs(libDir);
+    lfs.mkdirs(tezDir);
     fs.copyToLocalFile(new Path(tezLibs), new Path(libDir, "tez.tar.gz"));
-    CompressionUtils.unTar(new Path(libDir, "tez.tar.gz").toString(), libDir.toString(), true);
+    CompressionUtils.unTar(new Path(libDir, "tez.tar.gz").toString(), tezDir.toString(), true);
     lfs.delete(new Path(libDir, "tez.tar.gz"), false);
 
-    // llap-common
-    lfs.copyFromLocalFile(new Path(Utilities.jarFinderGetJar(LlapDaemonProtocolProtos.class)), libDir);
-    // llap-tez
-    lfs.copyFromLocalFile(new Path(Utilities.jarFinderGetJar(LlapTezUtils.class)), libDir);
-    // llap-server
-    lfs.copyFromLocalFile(new Path(Utilities.jarFinderGetJar(LlapInputFormat.class)), libDir);
-    // hive-exec
-    lfs.copyFromLocalFile(new Path(Utilities.jarFinderGetJar(HiveInputFormat.class)), libDir);
-    // hive-common (https deps)
-    lfs.copyFromLocalFile(new Path(Utilities.jarFinderGetJar(SslSocketConnector.class)), libDir);
+    Class<?>[] dependencies = new Class<?>[] {
+        LlapDaemonProtocolProtos.class, // llap-common
+        LlapTezUtils.class, // llap-tez
+        LlapInputFormat.class, // llap-server
+        HiveInputFormat.class, // hive-exec
+        SslSocketConnector.class, // hive-common (https deps)
+        // log4j2
+        com.lmax.disruptor.RingBuffer.class, // disruptor
+        org.apache.logging.log4j.Logger.class, // log4j-api
+        org.apache.logging.log4j.core.Appender.class, // log4j-core
+        org.apache.logging.slf4j.Log4jLogger.class, // log4j-slf4j
+    };
+
+    for (Class<?> c : dependencies) {
+      Path jarPath = new Path(Utilities.jarFinderGetJar(c));
+      lfs.copyFromLocalFile(jarPath, libDir);
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Copying " + jarPath + " to " + libDir);
+      }
+    }
+
 
     // copy default aux classes (json/hbase)
 
