@@ -623,7 +623,7 @@ public class HiveCalciteUtil {
     return call.getKind().belongsTo(SqlKind.COMPARISON);
   }
 
-  private static final Function<RexNode, String> REX_STR_FN = new Function<RexNode, String>() {
+  public static final Function<RexNode, String> REX_STR_FN = new Function<RexNode, String>() {
                                                               public String apply(RexNode r) {
                                                                 return r.toString();
                                                               }

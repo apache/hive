@@ -19,7 +19,9 @@ package org.apache.hadoop.hive.ql.optimizer.calcite;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.calcite.linq4j.Ord;
 import org.apache.calcite.plan.RelOptUtil;
@@ -35,6 +37,7 @@ import org.apache.calcite.util.Pair;
 import org.apache.calcite.util.Util;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 
 
 public class HiveRexUtil {
@@ -145,11 +148,15 @@ public class HiveRexUtil {
   public static RexNode simplifyAnd(RexBuilder rexBuilder, RexCall e) {
     final List<RexNode> terms = RelOptUtil.conjunctions(e);
     final List<RexNode> notTerms = new ArrayList<>();
+    final List<RexNode> negatedTerms = new ArrayList<>();
     final List<RexNode> nullOperands = new ArrayList<>();
     final List<RexNode> notNullOperands = new ArrayList<>();
-    final List<RexNode> comparedOperands = new ArrayList<>();
+    final Set<RexNode> comparedOperands = new HashSet<>();
     for (int i = 0; i < terms.size(); i++) {
       final RexNode term = terms.get(i);
+      if (!HiveCalciteUtil.isDeterministic(term)) {
+        continue;
+      }
       switch (term.getKind()) {
       case NOT:
         notTerms.add(
@@ -185,6 +192,14 @@ public class HiveRexUtil {
         if (right.getKind() == SqlKind.CAST) {
           RexCall rightCast = (RexCall) right;
           comparedOperands.add(rightCast.getOperands().get(0));
+        }
+        RexCall negatedTerm = negate(rexBuilder, call);
+        if (negatedTerm != null) {
+          negatedTerms.add(negatedTerm);
+          RexCall invertNegatedTerm = invert(rexBuilder, negatedTerm);
+          if (invertNegatedTerm != null) {
+            negatedTerms.add(invertNegatedTerm);
+          }
         }
         break;
       case IN:
@@ -230,9 +245,12 @@ public class HiveRexUtil {
     // Example #1. x AND y AND z AND NOT (x AND y)  - not satisfiable
     // Example #2. x AND y AND NOT (x AND y)        - not satisfiable
     // Example #3. x AND y AND NOT (x AND y AND z)  - may be satisfiable
+    final Set<String> termsSet = new HashSet<String>(
+            Lists.transform(terms, HiveCalciteUtil.REX_STR_FN));
     for (RexNode notDisjunction : notTerms) {
-      final List<RexNode> terms2 = RelOptUtil.conjunctions(notDisjunction);
-      if (terms.containsAll(terms2)) {
+      final Set<String> notSet = new HashSet<String>(
+              Lists.transform(RelOptUtil.conjunctions(notDisjunction), HiveCalciteUtil.REX_STR_FN));
+      if (termsSet.containsAll(notSet)) {
         return rexBuilder.makeLiteral(false);
       }
     }
@@ -241,6 +259,14 @@ public class HiveRexUtil {
       terms.add(
           rexBuilder.makeCall(
               SqlStdOperatorTable.NOT, notDisjunction));
+    }
+    // The negated terms
+    for (RexNode notDisjunction : negatedTerms) {
+      final Set<String> notSet = new HashSet<String>(
+              Lists.transform(RelOptUtil.conjunctions(notDisjunction), HiveCalciteUtil.REX_STR_FN));
+      if (termsSet.containsAll(notSet)) {
+        return rexBuilder.makeLiteral(false);
+      }
     }
     return RexUtil.composeConjunction(rexBuilder, terms, false);
   }
@@ -263,7 +289,40 @@ public class HiveRexUtil {
     }
     return RexUtil.composeDisjunction(rexBuilder, terms, false);
   }
-  
-  
-  
+
+  private static RexCall negate(RexBuilder rexBuilder, RexCall call) {
+    switch (call.getKind()) {
+      case EQUALS:
+        return (RexCall) rexBuilder.makeCall(SqlStdOperatorTable.NOT_EQUALS, call.getOperands());
+      case NOT_EQUALS:
+        return (RexCall) rexBuilder.makeCall(SqlStdOperatorTable.EQUALS, call.getOperands());
+      case LESS_THAN:
+        return (RexCall) rexBuilder.makeCall(SqlStdOperatorTable.GREATER_THAN_OR_EQUAL, call.getOperands());
+      case GREATER_THAN:
+        return (RexCall) rexBuilder.makeCall(SqlStdOperatorTable.LESS_THAN_OR_EQUAL, call.getOperands());
+      case LESS_THAN_OR_EQUAL:
+        return (RexCall) rexBuilder.makeCall(SqlStdOperatorTable.GREATER_THAN, call.getOperands());
+      case GREATER_THAN_OR_EQUAL:
+        return (RexCall) rexBuilder.makeCall(SqlStdOperatorTable.LESS_THAN, call.getOperands());
+    }
+    return null;
+  }
+
+  private static RexCall invert(RexBuilder rexBuilder, RexCall call) {
+    switch (call.getKind()) {
+      case LESS_THAN:
+        return (RexCall) rexBuilder.makeCall(SqlStdOperatorTable.GREATER_THAN,
+                Lists.reverse(call.getOperands()));
+      case GREATER_THAN:
+        return (RexCall) rexBuilder.makeCall(SqlStdOperatorTable.LESS_THAN,
+                Lists.reverse(call.getOperands()));
+      case LESS_THAN_OR_EQUAL:
+        return (RexCall) rexBuilder.makeCall(SqlStdOperatorTable.GREATER_THAN_OR_EQUAL,
+                Lists.reverse(call.getOperands()));
+      case GREATER_THAN_OR_EQUAL:
+        return (RexCall) rexBuilder.makeCall(SqlStdOperatorTable.LESS_THAN_OR_EQUAL,
+                Lists.reverse(call.getOperands()));
+    }
+    return null;
+  }
 }
