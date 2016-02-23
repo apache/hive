@@ -54,6 +54,7 @@ public class LlapSecurityHelper implements LlapTokenProvider {
   private ServiceInstanceSet activeInstances;
   private final Configuration conf;
   private LlapManagementProtocolClientImpl client;
+  private ServiceInstance clientInstance;
 
   private final SocketFactory socketFactory;
   private final RetryPolicy retryPolicy;
@@ -87,23 +88,24 @@ public class LlapSecurityHelper implements LlapTokenProvider {
       // We could have also added keytab support; right now client must do smth like kinit.
     }
     Iterator<ServiceInstance> llaps = null;
-    ServiceInstance someLlap = null;
-    if (client == null) {
+    if (clientInstance == null) {
+      assert client == null;
       llaps = getLlapServices(false);
-      someLlap = llaps.next();
+      clientInstance = llaps.next();
     }
 
     ByteString tokenBytes = null;
     boolean hasRefreshed = false;
     while (true) {
       try {
-        tokenBytes = getTokenBytes(someLlap);
+        tokenBytes = getTokenBytes();
         break;
       } catch (InterruptedException ie) {
         throw new RuntimeException(ie);
       } catch (IOException ex) {
         LOG.error("Cannot get a token, trying a different instance", ex);
         client = null;
+        clientInstance = null;
       }
       if (llaps == null || !llaps.hasNext()) {
         if (hasRefreshed) { // Only refresh once.
@@ -112,7 +114,7 @@ public class LlapSecurityHelper implements LlapTokenProvider {
         llaps = getLlapServices(true);
         hasRefreshed = true;
       }
-      someLlap = llaps.next();
+      clientInstance = llaps.next();
     }
 
     // Stupid protobuf byte-buffer reinvention.
@@ -120,17 +122,20 @@ public class LlapSecurityHelper implements LlapTokenProvider {
     DataInputByteBuffer in = new DataInputByteBuffer();
     in.reset(tokenBytes.asReadOnlyByteBuffer());
     token.readFields(in);
+    if (LOG.isInfoEnabled()) {
+      LOG.info("Obtained a LLAP delegation token from " + clientInstance + ": " + token);
+    }
     return token;
   }
 
-  private ByteString getTokenBytes(
-      final ServiceInstance si) throws InterruptedException, IOException {
+  private ByteString getTokenBytes() throws InterruptedException, IOException {
     return llapUgi.doAs(new PrivilegedExceptionAction<ByteString>() {
       @Override
       public ByteString run() throws Exception {
+        assert clientInstance != null;
         if (client == null) {
-          client = new LlapManagementProtocolClientImpl(
-            conf, si.getHost(), si.getManagementPort(), retryPolicy, socketFactory);
+          client = new LlapManagementProtocolClientImpl(conf, clientInstance.getHost(),
+              clientInstance.getManagementPort(), retryPolicy, socketFactory);
         }
         // Client only connects on the first call, so this has to be done in doAs.
         GetTokenRequestProto req = GetTokenRequestProto.newBuilder().build();

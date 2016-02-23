@@ -238,6 +238,9 @@ public class LlapProtocolServerImpl extends AbstractService
     LlapTokenIdentifier llapId = new LlapTokenIdentifier(owner, renewer, realUser);
     // TODO: note that the token is not renewable right now and will last for 2 weeks by default.
     Token<LlapTokenIdentifier> token = new Token<LlapTokenIdentifier>(llapId, zkSecretManager);
+    if (LOG.isInfoEnabled()) {
+      LOG.info("Created LLAP token " + token);
+    }
     ByteArrayDataOutput out = ByteStreams.newDataOutput();
     try {
       token.write(out);

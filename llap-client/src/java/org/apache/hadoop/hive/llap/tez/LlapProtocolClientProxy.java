@@ -472,6 +472,9 @@ public class LlapProtocolClientProxy extends AbstractService {
     LlapProtocolBlockingPB proxy = hostProxies.get(hostId);
     if (proxy == null) {
       if (llapToken == null) {
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Creating a client without a token for " + nodeId);
+        }
         proxy = new LlapProtocolClientImpl(getConfig(), nodeId.getHostname(),
             nodeId.getPort(), retryPolicy, socketFactory);
       } else {
@@ -485,6 +488,9 @@ public class LlapProtocolClientProxy extends AbstractService {
         SecurityUtil.setTokenService(nodeToken, NetUtils.createSocketAddrForHost(
             nodeId.getHostname(), nodeId.getPort()));
         ugi.addToken(nodeToken);
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Creating a client for " + nodeId + "; the token is " + nodeToken);
+        }
         proxy = ugi.doAs(new PrivilegedAction<LlapProtocolBlockingPB>() {
           @Override
           public LlapProtocolBlockingPB run() {
