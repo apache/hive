@@ -89,6 +89,41 @@
         </plugins>
       </build>
     </profile>
+    <profile>
+      <id>deb</id>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>jdeb</artifactId>
+            <groupId>org.vafer</groupId>
+            <version>1.0.1</version>
+            <executions>
+              <execution>
+                <phase>package</phase>
+                <goals>
+                  <goal>jdeb</goal>
+                </goals>
+                <configuration>
+                  <installDir>/usr/local/hive</installDir>
+                  <deb>${project.build.directory}/hive_${project.version}.deb</deb>
+                  <dataSet>
+                    <data>
+                      <src>target/apache-hive-${project.version}-bin/apache-hive-${project.version}-bin</src>
+                      <type>directory</type>
+                      <mapper>
+                        <type>perm</type>
+                        <prefix>/usr/local/hive/bin</prefix>
+                        <filemode>755</filemode>
+                      </mapper>
+                    </data>
+                  </dataSet>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
   </profiles>
 
 
