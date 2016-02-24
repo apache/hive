@@ -130,8 +130,9 @@ public class LlapInputFormat<V extends WritableComparable> implements InputForma
 
   @Override
   public RecordReader<NullWritable, V> getRecordReader(InputSplit split, JobConf job, Reporter reporter) throws IOException {
-    LlapInputSplit llapSplit = (LlapInputSplit)split;
-    return llapSplit.getInputFormat().getRecordReader(llapSplit.getSplit(), job, reporter);
+    try {
+      return ((InputFormat)Class.forName("org.apache.hadoop.hive.llap.LlapInputFormat").newInstance()).getRecordReader(split, job, reporter);
+    } catch (Exception e) { throw new IOException(e); }
   }
 
   @Override
@@ -160,7 +161,7 @@ public class LlapInputFormat<V extends WritableComparable> implements InputForma
       ResultSet res = stmt.executeQuery(sql);
       while (res.next()) {
         // deserialize split
-        DataInput in = new DataInputStream(new ByteArrayInputStream(res.getBytes(3)));
+        DataInput in = new DataInputStream(res.getBinaryStream(3));
         InputSplit is = (InputSplitWithLocationInfo)Class.forName(res.getString(2)).newInstance(); // todo setAccessible on ctor
         is.readFields(in);
         ins.add(is);

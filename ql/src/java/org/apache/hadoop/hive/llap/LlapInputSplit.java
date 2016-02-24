@@ -23,44 +23,26 @@ import java.io.IOException;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.mapred.InputSplitWithLocationInfo;
 import org.apache.hadoop.mapred.SplitLocationInfo;
-import org.apache.thrift.protocol.TBinaryProtocol;
-import org.apache.thrift.protocol.TProtocol;
-import org.apache.thrift.transport.AutoExpandingBuffer;
-import org.apache.thrift.transport.AutoExpandingBufferWriteTransport;
+import org.apache.thrift.TDeserializer;
+import org.apache.thrift.TSerializer;
 
 public class LlapInputSplit implements InputSplitWithLocationInfo {
 
+  int splitNum;
   byte[] planBytes;
   byte[] fragmentBytes;
   SplitLocationInfo[] locations;
   Schema schema;
 
-
-  // // Static
-  // ContainerIdString
-  // DagName
-  // VertexName
-  // FragmentNumber
-  // AttemptNumber - always 0
-  // FragmentIdentifierString - taskAttemptId
-
-  // ProcessorDescsriptor
-  // InputSpec
-  // OutputSpec
-
-  // Tokens
-
-  // // Dynamic
-  //
-
   public LlapInputSplit() {
   }
 
-  public LlapInputSplit(byte[] planBytes, byte[] fragmentBytes, SplitLocationInfo[] locations, Schema schema) {
+  public LlapInputSplit(int splitNum, byte[] planBytes, byte[] fragmentBytes, SplitLocationInfo[] locations, Schema schema) {
     this.planBytes = planBytes;
     this.fragmentBytes = fragmentBytes;
     this.locations = locations;
     this.schema = schema;
+    this.splitNum = splitNum;
   }
 
   public Schema getSchema() {
@@ -81,8 +63,23 @@ public class LlapInputSplit implements InputSplitWithLocationInfo {
     return locs;
   }
 
+  public int getSplitNum() {
+    return splitNum;
+  }
+
+  public byte[] getPlanBytes() {
+    return planBytes;
+  }
+
+  public byte[] getFragmentBytes() {
+    return fragmentBytes;
+  }
+
+
+
   @Override
   public void write(DataOutput out) throws IOException {
+    out.writeInt(splitNum);
     out.writeInt(planBytes.length);
     out.write(planBytes);
 
@@ -97,20 +94,24 @@ public class LlapInputSplit implements InputSplitWithLocationInfo {
     byte[] binarySchema;
 
     try {
-      AutoExpandingBufferWriteTransport transport = new AutoExpandingBufferWriteTransport(1024, 2d);
-      TProtocol protocol = new TBinaryProtocol(transport);
-      schema.write(protocol);
-      binarySchema = transport.getBuf().array();
+      TSerializer serializer = new TSerializer();
+      byte[] serialzied = serializer.serialize(schema);
+      out.writeInt(serialzied.length);
+      out.write(serialzied);
+//      AutoExpandingBufferWriteTransport transport = new AutoExpandingBufferWriteTransport(1024, 2d);
+//      TProtocol protocol = new TBinaryProtocol(transport);
+//      schema.write(protocol);
+//      binarySchema = transport.getBuf().array();
     } catch (Exception e) {
       throw new IOException(e);
     }
 
-    out.writeInt(binarySchema.length);
-    out.write(binarySchema);
+
   }
 
   @Override
   public void readFields(DataInput in) throws IOException {
+    splitNum = in.readInt();
     int length = in.readInt();
     planBytes = new byte[length];
     in.readFully(planBytes);
@@ -129,14 +130,18 @@ public class LlapInputSplit implements InputSplitWithLocationInfo {
     length = in.readInt();
 
     try {
-      AutoExpandingBufferWriteTransport transport =
-          new AutoExpandingBufferWriteTransport(length, 2d);
-      AutoExpandingBuffer buf = transport.getBuf();
-      in.readFully(buf.array(), 0, length);
-
-      TProtocol protocol = new TBinaryProtocol(transport);
+      byte[] schemaBytes = new byte[length];
+      in.readFully(schemaBytes);
+      TDeserializer tDeserializer = new TDeserializer();
       schema = new Schema();
-      schema.read(protocol);
+      tDeserializer.deserialize(schema, schemaBytes);
+//      AutoExpandingBufferReadTransport transport = new AutoExpandingBufferReadTransport(length, 2d);
+//      AutoExpandingBuffer buf = transport.getBuf();
+//      in.readFully(buf.array(), 0, length);
+//
+//      TProtocol protocol = new TBinaryProtocol(transport);
+//      schema = new Schema();
+//      schema.read(protocol);
     } catch (Exception e) {
       throw new IOException(e);
     }

@@ -18,131 +18,79 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import org.apache.hadoop.hive.llap.LlapInputSplit;
-import org.apache.hadoop.hive.llap.SubmitWorkInfo;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
-
-import com.google.common.base.Preconditions;
-
-import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
-
 import javax.security.auth.login.LoginException;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.UUID;
-import java.io.Serializable;
-import java.io.IOException;
 import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.DataOutput;
-
-import com.esotericsoftware.kryo.Kryo;
-import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
-import java.io.InputStream;
-
-import org.apache.hadoop.hive.ql.exec.tez.TezProcessor;
-import org.apache.hadoop.yarn.api.records.ApplicationId;
-import org.apache.tez.dag.api.ProcessorDescriptor;
-import org.apache.tez.dag.api.TaskSpecBuilder;
-import org.apache.tez.runtime.api.impl.TaskSpec;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import org.apache.hadoop.hive.ql.udf.UDFType;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.ql.Driver;
-import org.apache.hadoop.hive.ql.QueryPlan;
-import org.apache.hadoop.hive.ql.exec.Task;
-import org.apache.hadoop.hive.ql.exec.tez.TezTask;
-import org.apache.hadoop.hive.ql.plan.TezWork;
-import org.apache.hadoop.hive.ql.plan.MapWork;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
-import org.apache.hadoop.hive.ql.exec.Description;
-import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
-import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
-import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
-import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.exec.MapredContext;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.llap.LlapInputFormat;
-import org.apache.hadoop.hive.llap.LlapOutputFormat;
-import org.apache.hadoop.mapred.InputFormat;
-import org.apache.hadoop.mapred.JobConfigurable;
-import org.apache.hadoop.mapred.FileInputFormat;
-import org.apache.hadoop.mapred.InputSplit;
-import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.mapred.FileSplit;
-import org.apache.hadoop.util.ReflectionUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.hive.metastore.api.Schema;
-
+import java.io.DataOutputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
-import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
 import java.util.UUID;
 
+import com.esotericsoftware.kryo.Kryo;
+import com.google.common.base.Preconditions;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.WritableComparable;
-import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.mapred.SplitLocationInfo;
-import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.InputFormat;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.llap.LlapInputSplit;
+import org.apache.hadoop.hive.llap.LlapOutputFormat;
+import org.apache.hadoop.hive.llap.SubmitWorkInfo;
+import org.apache.hadoop.hive.metastore.api.Schema;
+import org.apache.hadoop.hive.ql.CommandNeedRetryException;
+import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.QueryPlan;
+import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.MapredContext;
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
+import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
+import org.apache.hadoop.hive.ql.exec.tez.DagUtils;
+import org.apache.hadoop.hive.ql.exec.tez.HiveSplitGenerator;
+import org.apache.hadoop.hive.ql.exec.tez.TezTask;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.MapWork;
+import org.apache.hadoop.hive.ql.plan.TezWork;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.udf.UDFType;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
+import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.mapred.InputSplit;
-import org.apache.hadoop.mapred.FileSplit;
-import org.apache.hadoop.mapred.RecordReader;
-import org.apache.hadoop.mapred.Reporter;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.SplitLocationInfo;
+import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.hadoop.yarn.api.records.LocalResourceType;
 import org.apache.tez.dag.api.DAG;
+import org.apache.tez.dag.api.TaskLocationHint;
+import org.apache.tez.dag.api.TaskSpecBuilder;
 import org.apache.tez.dag.api.Vertex;
 import org.apache.tez.runtime.api.Event;
-import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.exec.tez.DagUtils;
-import org.apache.hadoop.hive.ql.exec.tez.HiveSplitGenerator;
-import org.apache.hadoop.hive.ql.plan.MapWork;
-import org.apache.hadoop.hive.ql.plan.TezWork;
-import org.apache.hadoop.hive.metastore.api.Schema;
-import org.apache.hadoop.hive.llap.configuration.LlapConfiguration;
-import org.apache.tez.dag.api.TaskLocationHint;
-import org.apache.tez.dag.api.VertexLocationHint;
-import org.apache.tez.dag.api.event.VertexStateUpdate;
-import org.apache.tez.mapreduce.hadoop.InputSplitInfoMem;
-import org.apache.tez.mapreduce.hadoop.MRInputHelpers;
-import org.apache.tez.mapreduce.protos.MRRuntimeProtos.MRInputUserPayloadProto;
-import org.apache.tez.mapreduce.protos.MRRuntimeProtos.MRSplitProto;
-import org.apache.tez.mapreduce.protos.MRRuntimeProtos.MRSplitsProto;
-import org.apache.tez.runtime.api.Event;
-import org.apache.tez.runtime.api.InputInitializer;
-import org.apache.tez.runtime.api.InputInitializerContext;
-import org.apache.tez.runtime.api.InputSpecUpdate;
 import org.apache.tez.runtime.api.events.InputConfigureVertexTasksEvent;
-import org.apache.tez.runtime.api.events.InputDataInformationEvent;
-import org.apache.tez.runtime.api.events.InputInitializerEvent;
+import org.apache.tez.runtime.api.impl.EventMetaData;
+import org.apache.tez.runtime.api.impl.TaskSpec;
+import org.apache.tez.runtime.api.impl.TezEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * GenericUDFGetSplits.
@@ -154,6 +102,8 @@ import org.apache.tez.runtime.api.events.InputInitializerEvent;
 public class GenericUDFGetSplits extends GenericUDF {
 
   private static final Logger LOG = LoggerFactory.getLogger(GenericUDFGetSplits.class);
+
+  private static final String LLAP_INTERNAL_INPUT_FORMAT_NAME = "org.apache.hadoop.hive.llap.LlapInputFormat";
 
   private transient StringObjectInspector stringOI;
   private transient IntObjectInspector intOI;
@@ -190,13 +140,13 @@ public class GenericUDFGetSplits extends GenericUDF {
     } else if (!(arguments[0] instanceof StringObjectInspector)) {
       LOG.error("Got "+arguments[0].getTypeName()+" instead of string.");
       throw new UDFArgumentTypeException(0, "\""
-	  + "string\" is expected at function GET_SPLITS, " + "but \""
-	  + arguments[0].getTypeName() + "\" is found");
+          + "string\" is expected at function GET_SPLITS, " + "but \""
+          + arguments[0].getTypeName() + "\" is found");
     } else if (!(arguments[1] instanceof IntObjectInspector)) {
       LOG.error("Got "+arguments[1].getTypeName()+" instead of int.");
       throw new UDFArgumentTypeException(1, "\""
-	  + "int\" is expected at function GET_SPLITS, " + "but \""
-	  + arguments[1].getTypeName() + "\" is found");
+          + "int\" is expected at function GET_SPLITS, " + "but \""
+          + arguments[1].getTypeName() + "\" is found");
     }
 
     stringOI = (StringObjectInspector) arguments[0];
@@ -204,9 +154,9 @@ public class GenericUDFGetSplits extends GenericUDF {
 
     List<String> names = Arrays.asList("if_class","split_class","split");
     List<ObjectInspector> fieldOIs = Arrays.<ObjectInspector>asList(
-								    PrimitiveObjectInspectorFactory.javaStringObjectInspector,
-								    PrimitiveObjectInspectorFactory.javaStringObjectInspector,
-								    PrimitiveObjectInspectorFactory.javaByteArrayObjectInspector);
+                                                                    PrimitiveObjectInspectorFactory.javaStringObjectInspector,
+                                                                    PrimitiveObjectInspectorFactory.javaStringObjectInspector,
+                                                                    PrimitiveObjectInspectorFactory.javaByteArrayObjectInspector);
     ObjectInspector outputOI = ObjectInspectorFactory.getStandardStructObjectInspector(names, fieldOIs);
     ObjectInspector listOI = ObjectInspectorFactory.getStandardListObjectInspector(outputOI);
     bos = new ByteArrayOutputStream(1024);
@@ -233,80 +183,85 @@ public class GenericUDFGetSplits extends GenericUDF {
       throw new HiveException("Need configuration");
     }
 
-    LOG.info("setting fetch.task.conversion to none and query file format to \""+LlapOutputFormat.class.toString()+"\"");
-    HiveConf.setVar(conf, ConfVars.HIVEFETCHTASKCONVERSION, "none");
-    HiveConf.setVar(conf, HiveConf.ConfVars.HIVEQUERYRESULTFILEFORMAT, LlapOutputFormat.class.toString());
+    String fetchTaskConversion = HiveConf.getVar(conf, ConfVars.HIVEFETCHTASKCONVERSION);
+    String queryResultFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYRESULTFILEFORMAT);
 
-    cpr = driver.compileAndRespond(query);
-    if(cpr.getResponseCode() != 0) {
-      throw new HiveException("Failed to compile query: "+cpr.getException());
-    }
+    try {
+      LOG.info("setting fetch.task.conversion to none and query file format to \""+LlapOutputFormat.class.getName()+"\"");
+      HiveConf.setVar(conf, ConfVars.HIVEFETCHTASKCONVERSION, "none");
+      HiveConf.setVar(conf, HiveConf.ConfVars.HIVEQUERYRESULTFILEFORMAT, LlapOutputFormat.class.getName());
 
-    QueryPlan plan = driver.getPlan();
-    List<Task<?>> roots = plan.getRootTasks();
-    Schema schema = plan.getResultSchema();
-
-    if (roots == null || roots.size() != 1 || !(roots.get(0) instanceof TezTask)) {
-      throw new HiveException("Was expecting a single TezTask.");
-    }
-
-    Path data = null;
-    String ifc = null;
-
-    TezWork tezWork = ((TezTask)roots.get(0)).getWork();
-
-    if (tezWork.getAllWork().size() != 1) {
-
-      String tableName = "table_"+UUID.randomUUID().toString().replaceAll("[^A-Za-z0-9 ]", "");
-
-      String ctas = "create temporary table "+tableName+" as "+query;
-      LOG.info("CTAS: "+ctas);
-
-      try {
-        cpr = driver.run(ctas, false);
-      } catch(CommandNeedRetryException e) {
-        throw new HiveException(e);
-      }
-
-      if(cpr.getResponseCode() != 0) {
-        throw new HiveException("Failed to create temp table: " + cpr.getException());
-      }
-
-      query = "select * from " + tableName;
       cpr = driver.compileAndRespond(query);
       if(cpr.getResponseCode() != 0) {
-        throw new HiveException("Failed to create temp table: "+cpr.getException());
+        throw new HiveException("Failed to compile query: "+cpr.getException());
       }
 
-      plan = driver.getPlan();
-      roots = plan.getRootTasks();
-      schema = plan.getResultSchema();
+      QueryPlan plan = driver.getPlan();
+      List<Task<?>> roots = plan.getRootTasks();
+      Schema schema = plan.getResultSchema();
 
       if (roots == null || roots.size() != 1 || !(roots.get(0) instanceof TezTask)) {
         throw new HiveException("Was expecting a single TezTask.");
       }
 
-      tezWork = ((TezTask)roots.get(0)).getWork();
-    }
+      Path data = null;
 
-    MapWork w = (MapWork)tezWork.getAllWork().get(0);
-    ifc = LlapInputFormat.class.toString();
+      TezWork tezWork = ((TezTask)roots.get(0)).getWork();
 
-    try {
-      for (InputSplit s: getSplits(jc, num, tezWork, schema)) {
-        Object[] os = new Object[3];
-        os[0] = ifc;
-        os[1] = s.getClass().toString();
-        bos.reset();
-        s.write(dos);
-        byte[] frozen = bos.toByteArray();
-        os[2] = frozen;
-        retArray.add(os);
+      if (tezWork.getAllWork().size() != 1) {
+
+        String tableName = "table_"+UUID.randomUUID().toString().replaceAll("[^A-Za-z0-9 ]", "");
+
+        String ctas = "create temporary table "+tableName+" as "+query;
+        LOG.info("CTAS: "+ctas);
+
+        try {
+          cpr = driver.run(ctas, false);
+        } catch(CommandNeedRetryException e) {
+          throw new HiveException(e);
+        }
+
+        if(cpr.getResponseCode() != 0) {
+          throw new HiveException("Failed to create temp table: " + cpr.getException());
+        }
+
+        query = "select * from " + tableName;
+        cpr = driver.compileAndRespond(query);
+        if(cpr.getResponseCode() != 0) {
+          throw new HiveException("Failed to create temp table: "+cpr.getException());
+        }
+
+        plan = driver.getPlan();
+        roots = plan.getRootTasks();
+        schema = plan.getResultSchema();
+
+        if (roots == null || roots.size() != 1 || !(roots.get(0) instanceof TezTask)) {
+          throw new HiveException("Was expecting a single TezTask.");
+        }
+
+        tezWork = ((TezTask)roots.get(0)).getWork();
       }
-    } catch(Exception e) {
-      throw new HiveException(e);
-    }
 
+      MapWork w = (MapWork)tezWork.getAllWork().get(0);
+
+      try {
+        for (InputSplit s: getSplits(jc, num, tezWork, schema)) {
+          Object[] os = new Object[3];
+          os[0] = LLAP_INTERNAL_INPUT_FORMAT_NAME;
+          os[1] = s.getClass().getName();
+          bos.reset();
+          s.write(dos);
+          byte[] frozen = bos.toByteArray();
+          os[2] = frozen;
+          retArray.add(os);
+        }
+      } catch(Exception e) {
+        throw new HiveException(e);
+      }
+    } finally {
+      HiveConf.setVar(conf, ConfVars.HIVEFETCHTASKCONVERSION, fetchTaskConversion);
+      HiveConf.setVar(conf, HiveConf.ConfVars.HIVEQUERYRESULTFILEFORMAT, queryResultFormat);
+    }
     return retArray;
   }
 
@@ -332,6 +287,7 @@ public class GenericUDFGetSplits extends GenericUDF {
       dag.addVertex(wx);
       utils.addCredentials(mapWork, dag);
 
+
       // we have the dag now proceed to get the splits:
       HiveSplitGenerator splitGenerator = new HiveSplitGenerator(null);
       Preconditions.checkState(HiveConf.getBoolVar(wxConf,
@@ -342,8 +298,8 @@ public class GenericUDFGetSplits extends GenericUDF {
       List<Event> eventList = splitGenerator.initialize();
 
       // hack - just serializing with kryo for now. This needs to be done properly
-      InputSplit[] result = new InputSplit[eventList.size()];
-      ByteArrayOutputStream bos = new ByteArrayOutputStream(10240);
+      InputSplit[] result = new InputSplit[eventList.size() - 1];
+      DataOutputBuffer dob = new DataOutputBuffer();
 
       InputConfigureVertexTasksEvent configureEvent = (InputConfigureVertexTasksEvent) eventList.get(0);
 
@@ -351,11 +307,25 @@ public class GenericUDFGetSplits extends GenericUDF {
 
       Preconditions.checkState(hints.size() == eventList.size() -1);
 
+      LOG.error("DBG: NumEvents=" + eventList.size());
+      LOG.error("DBG: NumSplits=" + result.length);
+
+      ApplicationId fakeApplicationId = ApplicationId.newInstance(Math.abs(new Random().nextInt()), 0);
+      TaskSpec taskSpec =
+          new TaskSpecBuilder().constructTaskSpec(dag, vertexName, eventList.size() - 1, fakeApplicationId);
+
+      SubmitWorkInfo submitWorkInfo =
+          new SubmitWorkInfo(taskSpec, fakeApplicationId, System.currentTimeMillis());
+      EventMetaData sourceMetaData =
+          new EventMetaData(EventMetaData.EventProducerConsumerType.INPUT, vertexName,
+              "NULL_VERTEX", null);
+      EventMetaData destinationMetaInfo = new TaskSpecBuilder().getDestingationMetaData(wx);
+
       LOG.info("DBG: Number of splits: " + (eventList.size() - 1));
-      for (int i = 1 ; i < eventList.size() ; i++) {
+      for (int i = 0; i < eventList.size() - 1; i++) {
         // Creating the TezEvent here itself, since it's easy to serialize.
-        Event event = eventList.get(i);
-        TaskLocationHint hint = hints.get(i-1);
+        Event event = eventList.get(i + 1);
+        TaskLocationHint hint = hints.get(i);
         Set<String> hosts = hint.getHosts();
         LOG.info("DBG: Using locations: " + hosts.toString());
         if (hosts.size() != 1) {
@@ -367,18 +337,17 @@ public class GenericUDFGetSplits extends GenericUDF {
         for (String host : hosts) {
           locations[j++] = new SplitLocationInfo(host, false);
         }
+        TezEvent tezEvent = new TezEvent(event, sourceMetaData, System.currentTimeMillis());
+        tezEvent.setDestinationInfo(destinationMetaInfo);
 
         bos.reset();
-        Kryo kryo = SerializationUtilities.borrowKryo();
-        SerializationUtilities.serializeObjectByKryo(kryo, event, bos);
-        SerializationUtilities.releaseKryo(kryo);
+        dob.reset();
+        tezEvent.write(dob);
 
-        TaskSpec taskSpec = new TaskSpecBuilder().constructTaskSpec(dag, vertexName, eventList.size() - 1);
-        ApplicationId fakeApplicationId = ApplicationId.newInstance(new Random().nextInt(), 0);
-        SubmitWorkInfo submitWorkInfo = new SubmitWorkInfo(taskSpec, fakeApplicationId);
         byte[] submitWorkBytes = SubmitWorkInfo.toBytes(submitWorkInfo);
 
-        result[i-1] = new LlapInputSplit(submitWorkBytes, bos.toByteArray(), locations, schema);
+        result[i] =
+            new LlapInputSplit(i, submitWorkBytes, dob.getData(), locations, schema);
       }
       return result;
     } catch (Exception e) {

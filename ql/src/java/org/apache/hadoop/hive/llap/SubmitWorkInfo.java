@@ -6,18 +6,29 @@ import java.io.IOException;
 
 import org.apache.hadoop.io.DataInputBuffer;
 import org.apache.hadoop.io.DataOutputBuffer;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
+import org.apache.tez.common.security.JobTokenIdentifier;
+import org.apache.tez.common.security.JobTokenSecretManager;
 import org.apache.tez.runtime.api.impl.TaskSpec;
 
 public class SubmitWorkInfo implements Writable {
 
   private TaskSpec taskSpec;
   private ApplicationId fakeAppId;
+  private long creationTime;
 
-  public SubmitWorkInfo(TaskSpec taskSpec, ApplicationId fakeAppId) {
+  // This is used to communicate over the LlapUmbilicalProtocol. Not related to tokens used to
+  // talk to LLAP daemons itself via the securit work.
+  private Token<JobTokenIdentifier> token;
+
+  public SubmitWorkInfo(TaskSpec taskSpec, ApplicationId fakeAppId, long creationTime) {
     this.taskSpec = taskSpec;
     this.fakeAppId = fakeAppId;
+    this.token = createJobToken();
+    this.creationTime = creationTime;
   }
 
   // Empty constructor for writable etc.
@@ -32,11 +43,25 @@ public class SubmitWorkInfo implements Writable {
     return fakeAppId;
   }
 
+  public String getTokenIdentifier() {
+    return fakeAppId.toString();
+  }
+
+  public Token<JobTokenIdentifier> getToken() {
+    return token;
+  }
+
+  public long getCreationTime() {
+    return creationTime;
+  }
+
   @Override
   public void write(DataOutput out) throws IOException {
     taskSpec.write(out);
     out.writeLong(fakeAppId.getClusterTimestamp());
     out.writeInt(fakeAppId.getId());
+    token.write(out);
+    out.writeLong(creationTime);
   }
 
   @Override
@@ -46,6 +71,9 @@ public class SubmitWorkInfo implements Writable {
     long appIdTs = in.readLong();
     int appIdId = in.readInt();
     fakeAppId = ApplicationId.newInstance(appIdTs, appIdId);
+    token = new Token<>();
+    token.readFields(in);
+    creationTime = in.readLong();
   }
 
   public static byte[] toBytes(SubmitWorkInfo submitWorkInfo) throws IOException {
@@ -54,7 +82,7 @@ public class SubmitWorkInfo implements Writable {
     return dob.getData();
   }
 
-  public SubmitWorkInfo fromBytes(byte[] submitWorkInfoBytes) throws IOException {
+  public static SubmitWorkInfo fromBytes(byte[] submitWorkInfoBytes) throws IOException {
     DataInputBuffer dib = new DataInputBuffer();
     dib.reset(submitWorkInfoBytes, 0, submitWorkInfoBytes.length);
     SubmitWorkInfo submitWorkInfo = new SubmitWorkInfo();
@@ -62,4 +90,14 @@ public class SubmitWorkInfo implements Writable {
     return submitWorkInfo;
   }
 
+
+  private Token<JobTokenIdentifier> createJobToken() {
+    String tokenIdentifier = fakeAppId.toString();
+    JobTokenIdentifier identifier = new JobTokenIdentifier(new Text(
+        tokenIdentifier));
+    Token<JobTokenIdentifier> sessionToken = new Token<JobTokenIdentifier>(identifier,
+        new JobTokenSecretManager());
+    sessionToken.setService(identifier.getJobId());
+    return sessionToken;
+  }
 }

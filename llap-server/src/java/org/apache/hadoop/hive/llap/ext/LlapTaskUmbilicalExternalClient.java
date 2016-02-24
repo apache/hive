@@ -1,6 +1,8 @@
 package org.apache.hadoop.hive.llap.ext;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -55,6 +57,7 @@ public class LlapTaskUmbilicalExternalClient extends AbstractService {
     this.sessionToken = sessionToken;
     // TODO. No support for the LLAP token yet. Add support for configurable threads, however 1 should always be enough.
     this.communicator = new LlapProtocolClientProxy(1, conf, null);
+    this.communicator.init(conf);
   }
 
   @Override
@@ -62,6 +65,7 @@ public class LlapTaskUmbilicalExternalClient extends AbstractService {
     int numHandlers = HiveConf.getIntVar(conf,
         HiveConf.ConfVars.LLAP_TMP_EXT_CLIENT_NUM_SERVER_HANDLERS);
     llapTaskUmbilicalServer = new LlapTaskUmbilicalServer(conf, umbilical, numHandlers, tokenIdentifier, sessionToken);
+    communicator.start();
   }
 
   @Override
@@ -72,24 +76,31 @@ public class LlapTaskUmbilicalExternalClient extends AbstractService {
     }
   }
 
+  public InetSocketAddress getAddress() {
+    return llapTaskUmbilicalServer.getAddress();
+  }
+
 
   /**
    * Submit the work for actual execution. This should always have the usingTezAm flag disabled
    * @param submitWorkRequestProto
    */
-  public void submitWork(final SubmitWorkRequestProto submitWorkRequestProto, String llapHost, int llapPort) {
+  public void submitWork(final SubmitWorkRequestProto submitWorkRequestProto, String llapHost, int llapPort, List<TezEvent> tezEvents) {
     Preconditions.checkArgument(submitWorkRequestProto.getUsingTezAm() == false);
 
-    // Store the actual event first. To be returned on the first heartbeat.
-    Event mrInputEvent = null;
-    // Construct a TezEvent out of this, to send it out on the next heaertbeat
 
+    LOG.warn("ZZZ: DBG: " + " Submitting fragment: " + submitWorkRequestProto.getFragmentSpec().getFragmentIdentifierString() + " on host: " + llapHost + ", port=" + llapPort);
+//    LOG.info("ZZZ: DBG: " + " Complete SubmitWorkRequest: " + submitWorkRequestProto);
 //    submitWorkRequestProto.getFragmentSpec().getFragmentIdentifierString()
 
+    LOG.info("ZZZ: DBG: Received {} events for {}", tezEvents.size(), submitWorkRequestProto.getFragmentSpec().getFragmentIdentifierString());
+    // Register the pending events to be sent for this spec.
+    pendingEvents.putIfAbsent(submitWorkRequestProto.getFragmentSpec().getFragmentIdentifierString(), tezEvents);
 
     // Send out the actual SubmitWorkRequest
     communicator.sendSubmitWork(submitWorkRequestProto, llapHost, llapPort,
         new LlapProtocolClientProxy.ExecuteRequestCallback<LlapDaemonProtocolProtos.SubmitWorkResponseProto>() {
+
           @Override
           public void setResponse(LlapDaemonProtocolProtos.SubmitWorkResponseProto response) {
             if (response.hasSubmissionState()) {
@@ -106,6 +117,7 @@ public class LlapTaskUmbilicalExternalClient extends AbstractService {
             LOG.error("Failed to submit: " + submitWorkRequestProto.getFragmentSpec().getFragmentIdentifierString(), t);
           }
         });
+
 
 
 
@@ -157,6 +169,9 @@ public class LlapTaskUmbilicalExternalClient extends AbstractService {
       LOG.info("ZZZ: DBG: Received heartbeat from taskAttemptId: " + taskAttemptId.toString());
 
       List<TezEvent> tezEvents = pendingEvents.remove(taskAttemptId.toString());
+      if (tezEvents == null) {
+        tezEvents = Collections.emptyList();
+      }
 
       response.setLastRequestId(request.getRequestId());
       // Irrelevant from eventIds. This can be tracked in the AM itself, instead of polluting the task.
