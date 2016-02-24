@@ -45,7 +45,7 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
-import org.apache.hadoop.hive.ql.io.HiveInputFormat;
+import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcSerde;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -183,7 +183,7 @@ public class StreamingTestUtils {
       table.setParameters(tableParams);
 
       sd = new StorageDescriptor();
-      sd.setInputFormat(HiveInputFormat.class.getName());
+      sd.setInputFormat(OrcInputFormat.class.getName());
       sd.setOutputFormat(OrcOutputFormat.class.getName());
       sd.setNumBuckets(1);
       table.setSd(sd);
@@ -204,6 +204,11 @@ public class StreamingTestUtils {
 
     public TableBuilder buckets(int buckets) {
       sd.setNumBuckets(buckets);
+      return this;
+    }
+
+    public TableBuilder bucketCols(List<String> columnNames) {
+      sd.setBucketCols(columnNames);
       return this;
     }
 

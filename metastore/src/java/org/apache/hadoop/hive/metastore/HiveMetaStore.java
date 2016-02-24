@@ -431,6 +431,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       preListeners = MetaStoreUtils.getMetaStoreListeners(MetaStorePreEventListener.class,
           hiveConf,
           hiveConf.getVar(HiveConf.ConfVars.METASTORE_PRE_EVENT_LISTENERS));
+      preListeners.add(0, new TransactionalValidationListener(hiveConf));
       listeners = MetaStoreUtils.getMetaStoreListeners(MetaStoreEventListener.class, hiveConf,
           hiveConf.getVar(HiveConf.ConfVars.METASTORE_EVENT_LISTENERS));
       listeners.add(new SessionPropertiesListener(hiveConf));

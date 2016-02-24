@@ -23,6 +23,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -69,6 +70,7 @@ import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
@@ -77,6 +79,7 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TException;
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
@@ -2182,7 +2185,7 @@ public abstract class TestHiveMetaStore extends TestCase {
     }
     assertNotNull(me);
     assertTrue("NoSuchObject exception", me.getMessage().contains(
-          "database/table does not exist"));
+          "invDBName.invTableName table not found"));
 
     client.dropTable(dbName, tblName);
     client.dropDatabase(dbName);
@@ -2803,6 +2806,120 @@ public abstract class TestHiveMetaStore extends TestCase {
     createTable(dbName, tableName, null, null, null, sd, 0);
   }
 
+  @Test
+  public void testTransactionalValidation() throws Throwable {
+    String tblName = "acidTable";
+    String owner = "acid";
+    Map<String, String> fields = new HashMap<String, String>();
+    fields.put("name", serdeConstants.STRING_TYPE_NAME);
+    fields.put("income", serdeConstants.INT_TYPE_NAME);
+
+    Type type = createType("Person", fields);
+
+    Map<String, String> params = new HashMap<String, String>();
+    params.put("transactional", "");
+
+    Map<String, String> serdParams = new HashMap<String, String>();
+    serdParams.put(serdeConstants.SERIALIZATION_FORMAT, "1");
+    StorageDescriptor sd =  createStorageDescriptor(tblName, type.getFields(), params, serdParams);
+    sd.setNumBuckets(0);
+    sd.unsetBucketCols();
+
+    /// CREATE TABLE scenarios
+
+    // Fail - No "transactional" property is specified
+    try {
+      Table t = createTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tblName, owner, params, null, sd, 0);
+      Assert.assertTrue("Expected exception", false);
+    } catch (MetaException e) {
+      Assert.assertEquals("'transactional' property of TBLPROPERTIES may only have value 'true'", e.getMessage());
+    }
+
+    // Fail - "transactional" property is set to an invalid value
+    try {
+      params.clear();
+      params.put("transactional", "foobar");
+      Table t = createTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tblName, owner, params, null, sd, 0);
+      Assert.assertTrue("Expected exception", false);
+    } catch (MetaException e) {
+      Assert.assertEquals("'transactional' property of TBLPROPERTIES may only have value 'true'", e.getMessage());
+    }
+
+    // Fail - "transactional" is set to true, but the table is not bucketed
+    try {
+      params.clear();
+      params.put("transactional", "true");
+      Table t = createTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tblName, owner, params, null, sd, 0);
+      Assert.assertTrue("Expected exception", false);
+    } catch (MetaException e) {
+      Assert.assertEquals("The table must be bucketed and stored using an ACID compliant format (such as ORC)", e.getMessage());
+    }
+
+    // Fail - "transactional" is set to true, and the table is bucketed, but doesn't use ORC
+    try {
+      params.clear();
+      params.put("transactional", "true");
+      List<String> bucketCols = new ArrayList<String>();
+      bucketCols.add("income");
+      sd.setBucketCols(bucketCols);
+      Table t = createTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tblName, owner, params, null, sd, 0);
+      Assert.assertTrue("Expected exception", false);
+    } catch (MetaException e) {
+      Assert.assertEquals("The table must be bucketed and stored using an ACID compliant format (such as ORC)", e.getMessage());
+    }
+
+    // Succeed - "transactional" is set to true, and the table is bucketed, and uses ORC
+    params.clear();
+    params.put("transactional", "true");
+    List<String> bucketCols = new ArrayList<String>();
+    bucketCols.add("income");
+    sd.setBucketCols(bucketCols);
+    sd.setInputFormat("org.apache.hadoop.hive.ql.io.orc.OrcInputFormat");
+    sd.setOutputFormat("org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat");
+    Table t = createTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tblName, owner, params, null, sd, 0);
+    Assert.assertTrue("CREATE TABLE should succeed", "true".equals(t.getParameters().get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL)));
+
+    /// ALTER TABLE scenarios
+
+    // Fail - trying to set "transactional" to "false" is not allowed
+    try {
+      params.clear();
+      params.put("transactional", "false");
+      t = new Table();
+      t.setParameters(params);
+      client.alter_table(MetaStoreUtils.DEFAULT_DATABASE_NAME, tblName, t);
+      Assert.assertTrue("Expected exception", false);
+    } catch (MetaException e) {
+      Assert.assertEquals("TBLPROPERTIES with 'transactional'='true' cannot be unset", e.getMessage());
+    }
+
+    // Fail - trying to set "transactional" to "true" but doesn't satisfy bucketing and Input/OutputFormat requirement
+    try {
+      tblName += "1";
+      params.clear();
+      sd.unsetBucketCols();
+      t = createTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tblName, owner, params, null, sd, 0);
+      params.put("transactional", "true");
+      t.setParameters(params);
+      client.alter_table(MetaStoreUtils.DEFAULT_DATABASE_NAME, tblName, t);
+      Assert.assertTrue("Expected exception", false);
+    } catch (MetaException e) {
+      Assert.assertEquals("The table must be bucketed and stored using an ACID compliant format (such as ORC)", e.getMessage());
+    }
+
+    // Succeed - trying to set "transactional" to "true", and satisfies bucketing and Input/OutputFormat requirement
+    tblName += "2";
+    params.clear();
+    sd.setNumBuckets(1);
+    sd.setBucketCols(bucketCols);
+    t = createTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tblName, owner, params, null, sd, 0);
+    params.put("transactional", "true");
+    t.setParameters(params);
+    t.setPartitionKeys(Collections.EMPTY_LIST);
+    client.alter_table(MetaStoreUtils.DEFAULT_DATABASE_NAME, tblName, t);
+    Assert.assertTrue("ALTER TABLE should succeed", "true".equals(t.getParameters().get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL)));
+  }
+
   private Table createTable(String dbName, String tblName, String owner,
       Map<String,String> tableParams, Map<String, String> partitionKeys,
       StorageDescriptor sd, int lastAccessTime) throws Exception {
@@ -2829,6 +2946,15 @@ public abstract class TestHiveMetaStore extends TestCase {
     tbl.setLastAccessTime(lastAccessTime);
 
     client.createTable(tbl);
+
+    if (isThriftClient) {
+      // the createTable() above does not update the location in the 'tbl'
+      // object when the client is a thrift client and ALTER TABLE relies
+      // on the location being present in the 'tbl' object - so get the table
+      // from the metastore
+      tbl = client.getTable(dbName, tblName);
+    }
+
     return tbl;
   }
 

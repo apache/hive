@@ -1,5 +1,5 @@
 SET hive.exec.schema.evolution=false;
-create table src_orc (key smallint, val string) stored as orc TBLPROPERTIES ('transactional'='true');
+create table src_orc (key smallint, val string) clustered by (val) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true');
 desc src_orc;
 alter table src_orc change key key smallint;
 desc src_orc;
