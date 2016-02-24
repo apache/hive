@@ -147,6 +147,8 @@ public class CLIService extends CompositeService implements ICLIService {
   @Override
   public synchronized void stop() {
     super.stop();
+    // Release the HMS connection for this service thread
+    Hive.closeCurrent();
   }
 
   /**
