@@ -548,6 +548,8 @@ public class TezSessionState {
   private LocalResource createJarLocalResource(String localJarPath)
       throws IOException, LoginException, IllegalArgumentException,
       FileNotFoundException {
+    // TODO Reduce the number of lookups that happen here. This shouldn't go to HDFS for each call.
+    // The hiveJarDir can be determined once per client.
     FileStatus destDirStatus = utils.getHiveJarDirectory(conf);
     assert destDirStatus != null;
     Path destDirPath = destDirStatus.getPath();

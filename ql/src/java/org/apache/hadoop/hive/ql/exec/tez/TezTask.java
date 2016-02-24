@@ -173,9 +173,6 @@ public class TezTask extends Task<TezWork> {
 
       // next we translate the TezWork to a Tez DAG
       DAG dag = build(jobConf, work, scratchDir, appJarLr, additionalLr, ctx);
-      if (driverContext.getCtx() == null) {
-        boolean a = false;
-      }
       CallerContext callerContext = CallerContext.create(
           "HIVE", queryPlan.getQueryId(),
           "HIVE_QUERY_ID", queryPlan.getQueryStr());
@@ -460,10 +457,10 @@ public class TezTask extends Task<TezWork> {
     } catch (Exception e) {
       // In case of any other exception, retry. If this also fails, report original error and exit.
       try {
-        TezSessionPoolManager.getInstance().closeAndOpen(sessionState, this.conf, inputOutputJars,
-            true);
         console.printInfo("Dag submit failed due to " + e.getMessage() + " stack trace: "
             + Arrays.toString(e.getStackTrace()) + " retrying...");
+        TezSessionPoolManager.getInstance().closeAndOpen(sessionState, this.conf, inputOutputJars,
+            true);
         dagClient = sessionState.getSession().submitDAG(dag);
       } catch (Exception retryException) {
         // we failed to submit after retrying. Destroy session and bail.

@@ -754,7 +754,7 @@ public class DagUtils {
     URL resourceURL = ConverterUtils.getYarnUrlFromPath(file);
     long resourceSize = fstat.getLen();
     long resourceModificationTime = fstat.getModificationTime();
-    LOG.info("Resource modification time: " + resourceModificationTime);
+    LOG.info("Resource modification time: " + resourceModificationTime + " for " + file);
 
     LocalResource lr = Records.newRecord(LocalResource.class);
     lr.setResource(resourceURL);
@@ -912,7 +912,7 @@ public class DagUtils {
 
     if (fstatus == null) {
       Path destDir = getDefaultDestDir(conf);
-      LOG.info("Jar dir is null/directory doesn't exist. Choosing HIVE_INSTALL_DIR - " + destDir);
+      LOG.info("Jar dir is null / directory doesn't exist. Choosing HIVE_INSTALL_DIR - " + destDir);
       fstatus = validateTargetDir(destDir, conf);
     }
 
@@ -1275,5 +1275,4 @@ public class DagUtils {
   private DagUtils() {
     // don't instantiate
   }
-
 }
