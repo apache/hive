@@ -1354,6 +1354,8 @@ public class HiveConf extends Configuration {
         "Whether to update stale indexes automatically"),
     HIVEOPTPPD("hive.optimize.ppd", true,
         "Whether to enable predicate pushdown"),
+    HIVEOPTPPD_WINDOWING("hive.optimize.ppd.windowing", true,
+        "Whether to enable predicate pushdown through windowing"),
     HIVEPPDRECOGNIZETRANSITIVITY("hive.ppd.recognizetransivity", true,
         "Whether to transitively replicate predicate filters over equijoin conditions."),
     HIVEPPDREMOVEDUPLICATEFILTERS("hive.ppd.remove.duplicatefilters", true,

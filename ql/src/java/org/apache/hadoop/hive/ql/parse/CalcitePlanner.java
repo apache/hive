@@ -1123,7 +1123,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // constant propagation, constant folding
       perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
       basePlan = hepPlan(basePlan, true, mdProvider, executorProvider, HepMatchOrder.BOTTOM_UP,
-          HiveFilterProjectTransposeRule.INSTANCE_DETERMINISTIC,
+          conf.getBoolVar(HiveConf.ConfVars.HIVEOPTPPD_WINDOWING) ? HiveFilterProjectTransposeRule.INSTANCE_DETERMINISTIC_WINDOWING
+              : HiveFilterProjectTransposeRule.INSTANCE_DETERMINISTIC,
           HiveFilterSetOpTransposeRule.INSTANCE,
           HiveFilterSortTransposeRule.INSTANCE,
           HiveFilterJoinRule.JOIN,

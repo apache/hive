@@ -720,46 +720,57 @@ public class HiveCalciteUtil {
     return deterministic;
   }
 
+  private static class DeterMinisticFuncVisitorImpl extends RexVisitorImpl<Void> {
+    protected DeterMinisticFuncVisitorImpl() {
+      super(true);
+    }
+
+    @Override
+    public Void visitCall(org.apache.calcite.rex.RexCall call) {
+      if (!call.getOperator().isDeterministic()) {
+        throw new Util.FoundOne(call);
+      }
+      return super.visitCall(call);
+    }
+
+    @Override
+    public Void visitCorrelVariable(RexCorrelVariable correlVariable) {
+      throw new Util.FoundOne(correlVariable);
+    }
+
+    @Override
+    public Void visitLocalRef(RexLocalRef localRef) {
+      throw new Util.FoundOne(localRef);
+    }
+
+    @Override
+    public Void visitOver(RexOver over) {
+      throw new Util.FoundOne(over);
+    }
+
+    @Override
+    public Void visitDynamicParam(RexDynamicParam dynamicParam) {
+      throw new Util.FoundOne(dynamicParam);
+    }
+
+    @Override
+    public Void visitRangeRef(RexRangeRef rangeRef) {
+      throw new Util.FoundOne(rangeRef);
+    }
+
+    @Override
+    public Void visitFieldAccess(RexFieldAccess fieldAccess) {
+      throw new Util.FoundOne(fieldAccess);
+    }
+  }
+
   public static boolean isDeterministicFuncOnLiterals(RexNode expr) {
     boolean deterministicFuncOnLiterals = true;
 
-    RexVisitor<Void> visitor = new RexVisitorImpl<Void>(true) {
-      @Override
-      public Void visitCall(org.apache.calcite.rex.RexCall call) {
-        if (!call.getOperator().isDeterministic()) {
-          throw new Util.FoundOne(call);
-        }
-        return super.visitCall(call);
-      }
-
+    RexVisitor<Void> visitor = new DeterMinisticFuncVisitorImpl() {
       @Override
       public Void visitInputRef(RexInputRef inputRef) {
         throw new Util.FoundOne(inputRef);
-      }
-
-      @Override
-      public Void visitLocalRef(RexLocalRef localRef) {
-        throw new Util.FoundOne(localRef);
-      }
-
-      @Override
-      public Void visitOver(RexOver over) {
-        throw new Util.FoundOne(over);
-      }
-
-      @Override
-      public Void visitDynamicParam(RexDynamicParam dynamicParam) {
-        throw new Util.FoundOne(dynamicParam);
-      }
-
-      @Override
-      public Void visitRangeRef(RexRangeRef rangeRef) {
-        throw new Util.FoundOne(rangeRef);
-      }
-
-      @Override
-      public Void visitFieldAccess(RexFieldAccess fieldAccess) {
-        throw new Util.FoundOne(fieldAccess);
       }
     };
 
@@ -770,6 +781,47 @@ public class HiveCalciteUtil {
     }
 
     return deterministicFuncOnLiterals;
+  }
+
+  public List<RexNode> getDeterministicFuncWithSingleInputRef(List<RexNode> exprs,
+      final Set<Integer> validInputRefs) {
+    List<RexNode> determExprsWithSingleRef = new ArrayList<RexNode>();
+    for (RexNode e : exprs) {
+      if (isDeterministicFuncWithSingleInputRef(e, validInputRefs)) {
+        determExprsWithSingleRef.add(e);
+      }
+    }
+    return determExprsWithSingleRef;
+  }
+
+  public static boolean isDeterministicFuncWithSingleInputRef(RexNode expr,
+      final Set<Integer> validInputRefs) {
+    boolean deterministicFuncWithSingleInputRef = true;
+
+    RexVisitor<Void> visitor = new DeterMinisticFuncVisitorImpl() {
+      Set<Integer> inputRefs = new HashSet<Integer>();
+
+      @Override
+      public Void visitInputRef(RexInputRef inputRef) {
+        if (validInputRefs.contains(inputRef.getIndex())) {
+          inputRefs.add(inputRef.getIndex());
+          if (inputRefs.size() > 1) {
+            throw new Util.FoundOne(inputRef);
+          }
+        } else {
+          throw new Util.FoundOne(inputRef);
+        }
+        return null;
+      }
+    };
+
+    try {
+      expr.accept(visitor);
+    } catch (Util.FoundOne e) {
+      deterministicFuncWithSingleInputRef = false;
+    }
+
+    return deterministicFuncWithSingleInputRef;
   }
 
   public static <T> ImmutableMap<Integer, T> getColInfoMap(List<T> hiveCols,
