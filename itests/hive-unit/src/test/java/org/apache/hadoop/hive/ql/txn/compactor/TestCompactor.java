@@ -348,8 +348,7 @@ public class TestCompactor {
     executeStatementOnDriver("CREATE EXTERNAL TABLE " + tblNameStg + "(a INT, b STRING)" +
       " ROW FORMAT DELIMITED FIELDS TERMINATED BY '\\t' LINES TERMINATED BY '\\n'" +
       " STORED AS TEXTFILE" +
-      " LOCATION '" + stagingFolder.newFolder().toURI().getPath() + "'" +
-      " TBLPROPERTIES ('transactional'='true')", driver);
+      " LOCATION '" + stagingFolder.newFolder().toURI().getPath() + "'", driver);
 
     executeStatementOnDriver("load data local inpath '" + BASIC_FILE_NAME +
       "' overwrite into table " + tblNameStg, driver);
