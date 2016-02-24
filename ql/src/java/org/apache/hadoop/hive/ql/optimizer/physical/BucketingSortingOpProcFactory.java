@@ -166,6 +166,7 @@ public class BucketingSortingOpProcFactory {
         }
 
         String sortOrder = rsDesc.getOrder();
+        String nullSortOrder = rsDesc.getNullOrder();
         List<ExprNodeDesc> keyCols = rsDesc.getKeyCols();
         List<ExprNodeDesc> valCols = ExprNodeDescUtils.backtrack(joinValues, jop, parent);
 
@@ -186,7 +187,8 @@ public class BucketingSortingOpProcFactory {
               newSortCols[keyIndex].addAlias(vname, vindex);
             } else {
               newBucketCols[keyIndex] = new BucketCol(vname, vindex);
-              newSortCols[keyIndex] = new SortCol(vname, vindex, sortOrder.charAt(keyIndex));
+              newSortCols[keyIndex] = new SortCol(vname, vindex, sortOrder.charAt(keyIndex),
+                      nullSortOrder.charAt(keyIndex));
             }
           }
         }
@@ -311,7 +313,8 @@ public class BucketingSortingOpProcFactory {
         int sortIndex = indexOfColName(sortCols, columnExpr.getColumn());
         if (sortIndex != -1) {
           if (newSortCols[sortIndex] == null) {
-            newSortCols[sortIndex] = new SortCol(sortCols.get(sortIndex).getSortOrder());
+            newSortCols[sortIndex] = new SortCol(sortCols.get(sortIndex).getSortOrder(),
+                    sortCols.get(sortIndex).getNullSortOrder());
           }
           newSortCols[sortIndex].addAlias(
               colInfos.get(colInfosIndex).getInternalName(), colInfosIndex);
@@ -436,7 +439,7 @@ public class BucketingSortingOpProcFactory {
   private static List<SortCol> getNewSortCols(List<SortCol> sortCols, List<ColumnInfo> colInfos) {
     List<SortCol> newSortCols = new ArrayList<SortCol>(sortCols.size());
     for (int i = 0; i < sortCols.size(); i++) {
-      SortCol sortCol = new SortCol(sortCols.get(i).getSortOrder());
+      SortCol sortCol = new SortCol(sortCols.get(i).getSortOrder(), sortCols.get(i).getNullSortOrder());
       for (Integer index : sortCols.get(i).getIndexes()) {
         // The only time this condition should be false is in the case of dynamic partitioning
         if (index < colInfos.size()) {
@@ -537,6 +540,7 @@ public class BucketingSortingOpProcFactory {
 
   static List<SortCol> extractSortCols(ReduceSinkOperator rop, List<ExprNodeDesc> outputValues) {
     String sortOrder = rop.getConf().getOrder();
+    String nullSortOrder = rop.getConf().getNullOrder();
     List<SortCol> sortCols = new ArrayList<SortCol>();
     ArrayList<ExprNodeDesc> keyCols = rop.getConf().getKeyCols();
     for (int i = 0; i < keyCols.size(); i++) {
@@ -548,7 +552,8 @@ public class BucketingSortingOpProcFactory {
       if (index < 0) {
         break;
       }
-      sortCols.add(new SortCol(((ExprNodeColumnDesc) keyCol).getColumn(), index, sortOrder.charAt(i)));
+      sortCols.add(new SortCol(((ExprNodeColumnDesc) keyCol).getColumn(), index,
+              sortOrder.charAt(i), nullSortOrder.charAt(i)));
     }
     // If the sorted columns can't all be found in the values then the data is only sorted on
     // the columns seen up until now
@@ -649,6 +654,7 @@ public class BucketingSortingOpProcFactory {
 
       GroupByDesc groupByDesc = gop.getConf();
       String sortOrder = rop.getConf().getOrder();
+      String nullSortOrder = rop.getConf().getNullOrder();
       List<BucketCol> bucketCols = new ArrayList<BucketCol>();
       List<SortCol> sortCols = new ArrayList<SortCol>();
       assert rop.getConf().getKeyCols().size() <= rop.getSchema().getSignature().size();
@@ -659,7 +665,7 @@ public class BucketingSortingOpProcFactory {
         }
         String colName = rop.getSchema().getSignature().get(i).getInternalName();
         bucketCols.add(new BucketCol(colName, i));
-        sortCols.add(new SortCol(colName, i, sortOrder.charAt(i)));
+        sortCols.add(new SortCol(colName, i, sortOrder.charAt(i), nullSortOrder.charAt(i)));
       }
       bctx.setBucketedCols(rop, bucketCols);
       bctx.setSortedCols(rop, sortCols);

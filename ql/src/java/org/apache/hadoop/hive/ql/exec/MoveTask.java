@@ -593,7 +593,9 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           newSortCols.add(new Order(
             partn.getCols().get(sortCol.getIndexes().get(0)).getName(),
             sortCol.getSortOrder() == '+' ? BaseSemanticAnalyzer.HIVE_COLUMN_ORDER_ASC :
-              BaseSemanticAnalyzer.HIVE_COLUMN_ORDER_DESC));
+              BaseSemanticAnalyzer.HIVE_COLUMN_ORDER_DESC,
+            sortCol.getNullSortOrder() == 'a' ? BaseSemanticAnalyzer.HIVE_COLUMN_NULLS_FIRST :
+              BaseSemanticAnalyzer.HIVE_COLUMN_NULLS_LAST));
         } else {
           // If the table is sorted on a partition column, not valid for sorting
           updateSortCols = false;

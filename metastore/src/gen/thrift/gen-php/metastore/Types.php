@@ -3076,6 +3076,10 @@ class Order {
    * @var int
    */
   public $order = null;
+  /**
+   * @var int
+   */
+  public $nullOrder = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -3088,6 +3092,10 @@ class Order {
           'var' => 'order',
           'type' => TType::I32,
           ),
+        3 => array(
+          'var' => 'nullOrder',
+          'type' => TType::I32,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -3096,6 +3104,9 @@ class Order {
       }
       if (isset($vals['order'])) {
         $this->order = $vals['order'];
+      }
+      if (isset($vals['nullOrder'])) {
+        $this->nullOrder = $vals['nullOrder'];
       }
     }
   }
@@ -3133,6 +3144,13 @@ class Order {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 3:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->nullOrder);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -3154,6 +3172,11 @@ class Order {
     if ($this->order !== null) {
       $xfer += $output->writeFieldBegin('order', TType::I32, 2);
       $xfer += $output->writeI32($this->order);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->nullOrder !== null) {
+      $xfer += $output->writeFieldBegin('nullOrder', TType::I32, 3);
+      $xfer += $output->writeI32($this->nullOrder);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

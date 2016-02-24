@@ -2140,6 +2140,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
             else if (sortCol.getOrder() == BaseSemanticAnalyzer.HIVE_COLUMN_ORDER_DESC) {
               sortKeyDesc = sortKeyDesc + "DESC";
             }
+            if (sortCol.getNullOrder() == BaseSemanticAnalyzer.HIVE_COLUMN_NULLS_FIRST) {
+              sortKeyDesc = sortKeyDesc + " NULLS FIRST";
+            } else if (sortCol.getNullOrder() == BaseSemanticAnalyzer.HIVE_COLUMN_NULLS_LAST) {
+              sortKeyDesc = sortKeyDesc + " NULLS LAST";
+            }
             sortKeys.add(sortKeyDesc);
           }
           tbl_sort_bucket += StringUtils.join(sortKeys, ", \n");

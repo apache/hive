@@ -342,6 +342,7 @@ CREATE TABLE "SORT_COLS" (
     "SD_ID" bigint NOT NULL,
     "COLUMN_NAME" character varying(1000) DEFAULT NULL::character varying,
     "ORDER" bigint NOT NULL,
+    "NULL_ORDER" bigint NOT NULL,
     "INTEGER_IDX" bigint NOT NULL
 );
 

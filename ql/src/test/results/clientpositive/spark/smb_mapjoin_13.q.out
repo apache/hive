@@ -112,10 +112,11 @@ TOK_QUERY
             TOK_ALLCOLREF
       TOK_ORDERBY
          TOK_TABSORTCOLNAMEASC
-            .
-               TOK_TABLE_OR_COL
-                  a
-               key
+            TOK_NULLS_FIRST
+               .
+                  TOK_TABLE_OR_COL
+                     a
+                  key
       TOK_LIMIT
          10
 
@@ -157,6 +158,7 @@ STAGE PLANS:
                         Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: int)
+                          null sort order: a
                           sort order: +
                           Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                           tag: -1
@@ -322,10 +324,11 @@ TOK_QUERY
             TOK_ALLCOLREF
       TOK_ORDERBY
          TOK_TABSORTCOLNAMEASC
-            .
-               TOK_TABLE_OR_COL
-                  a
-               key
+            TOK_NULLS_FIRST
+               .
+                  TOK_TABLE_OR_COL
+                     a
+                  key
       TOK_LIMIT
          10
 
@@ -444,6 +447,7 @@ STAGE PLANS:
                         Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: int)
+                          null sort order: a
                           sort order: +
                           Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                           tag: -1

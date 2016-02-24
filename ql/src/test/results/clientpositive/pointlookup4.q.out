@@ -108,17 +108,21 @@ TOK_QUERY
                   2
       TOK_ORDERBY
          TOK_TABSORTCOLNAMEASC
-            TOK_TABLE_OR_COL
-               key
+            TOK_NULLS_FIRST
+               TOK_TABLE_OR_COL
+                  key
          TOK_TABSORTCOLNAMEASC
-            TOK_TABLE_OR_COL
-               value
+            TOK_NULLS_FIRST
+               TOK_TABLE_OR_COL
+                  value
          TOK_TABSORTCOLNAMEASC
-            TOK_TABLE_OR_COL
-               ds1
+            TOK_NULLS_FIRST
+               TOK_TABLE_OR_COL
+                  ds1
          TOK_TABSORTCOLNAMEASC
-            TOK_TABLE_OR_COL
-               ds2
+            TOK_NULLS_FIRST
+               TOK_TABLE_OR_COL
+                  ds2
 
 
 STAGE DEPENDENCIES:
@@ -143,6 +147,7 @@ STAGE PLANS:
                 Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string)
+                  null sort order: aaaa
                   sort order: ++++
                   Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
                   tag: -1
@@ -348,17 +353,21 @@ TOK_QUERY
                   2
       TOK_ORDERBY
          TOK_TABSORTCOLNAMEASC
-            TOK_TABLE_OR_COL
-               key
+            TOK_NULLS_FIRST
+               TOK_TABLE_OR_COL
+                  key
          TOK_TABSORTCOLNAMEASC
-            TOK_TABLE_OR_COL
-               value
+            TOK_NULLS_FIRST
+               TOK_TABLE_OR_COL
+                  value
          TOK_TABSORTCOLNAMEASC
-            TOK_TABLE_OR_COL
-               ds1
+            TOK_NULLS_FIRST
+               TOK_TABLE_OR_COL
+                  ds1
          TOK_TABSORTCOLNAMEASC
-            TOK_TABLE_OR_COL
-               ds2
+            TOK_NULLS_FIRST
+               TOK_TABLE_OR_COL
+                  ds2
 
 
 STAGE DEPENDENCIES:
@@ -383,6 +392,7 @@ STAGE PLANS:
                 Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string)
+                  null sort order: aaaa
                   sort order: ++++
                   Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
                   tag: -1

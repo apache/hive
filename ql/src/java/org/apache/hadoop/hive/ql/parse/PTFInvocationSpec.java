@@ -508,18 +508,27 @@ public class PTFInvocationSpec {
     DESC;
   }
 
+  public static enum NullOrder
+  {
+    NULLS_FIRST,
+    NULLS_LAST;
+  }
+
   public static class OrderExpression extends PartitionExpression
   {
     Order order;
+    NullOrder nullOrder;
 
     public OrderExpression() {
       order = Order.ASC;
+      nullOrder = NullOrder.NULLS_FIRST;
     }
 
     public OrderExpression(PartitionExpression peSpec)
     {
       super(peSpec);
       order = Order.ASC;
+      nullOrder = NullOrder.NULLS_FIRST;
     }
 
     public Order getOrder()
@@ -532,12 +541,23 @@ public class PTFInvocationSpec {
       this.order = order;
     }
 
+    public NullOrder getNullOrder()
+    {
+      return nullOrder;
+    }
+
+    public void setNullOrder(NullOrder nullOrder)
+    {
+      this.nullOrder = nullOrder;
+    }
+
     @Override
     public int hashCode()
     {
       final int prime = 31;
       int result = super.hashCode();
       result = prime * result + ((order == null) ? 0 : order.hashCode());
+      result = prime * result + ((nullOrder == null) ? 0 : nullOrder.hashCode());
       return result;
     }
 
@@ -557,13 +577,16 @@ public class PTFInvocationSpec {
       if (order != other.order) {
         return false;
       }
+      if (nullOrder != other.nullOrder) {
+        return false;
+      }
       return true;
     }
 
     @Override
     public String toString()
     {
-      return String.format("%s %s", super.toString(), order);
+      return String.format("%s %s %s", super.toString(), order, nullOrder);
     }
   }
 

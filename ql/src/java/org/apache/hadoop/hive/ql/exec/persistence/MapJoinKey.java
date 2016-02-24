@@ -117,7 +117,8 @@ public abstract class MapJoinKey {
    */
   public static Output serializeVector(Output byteStream, VectorHashKeyWrapper kw,
       VectorExpressionWriter[] keyOutputWriters, VectorHashKeyWrapperBatch keyWrapperBatch,
-      boolean[] nulls, boolean[] sortableSortOrders) throws HiveException, SerDeException {
+      boolean[] nulls, boolean[] sortableSortOrders, byte[] nullMarkers, byte[] notNullMarkers)
+              throws HiveException, SerDeException {
     Object[] fieldData = new Object[keyOutputWriters.length];
     List<ObjectInspector> fieldOis = new ArrayList<ObjectInspector>();
     for (int i = 0; i < keyOutputWriters.length; ++i) {
@@ -130,7 +131,8 @@ public abstract class MapJoinKey {
         nulls[i] = (fieldData[i] == null);
       }
     }
-    return serializeRow(byteStream, fieldData, fieldOis, sortableSortOrders);
+    return serializeRow(byteStream, fieldData, fieldOis, sortableSortOrders,
+            nullMarkers, notNullMarkers);
   }
 
   public static MapJoinKey readFromRow(Output output, MapJoinKey key, Object[] keyObject,
@@ -145,7 +147,8 @@ public abstract class MapJoinKey {
    * @param byteStream Output to reuse. Can be null, in that case a new one would be created.
    */
   public static Output serializeRow(Output byteStream, Object[] fieldData,
-      List<ObjectInspector> fieldOis, boolean[] sortableSortOrders) throws HiveException {
+      List<ObjectInspector> fieldOis, boolean[] sortableSortOrders,
+      byte[] nullMarkers, byte[] notNullMarkers) throws HiveException {
     if (byteStream == null) {
       byteStream = new Output();
     } else {
@@ -157,7 +160,8 @@ public abstract class MapJoinKey {
       } else if (sortableSortOrders == null) {
         LazyBinarySerDe.serializeStruct(byteStream, fieldData, fieldOis);
       } else {
-        BinarySortableSerDe.serializeStruct(byteStream, fieldData, fieldOis, sortableSortOrders);
+        BinarySortableSerDe.serializeStruct(byteStream, fieldData, fieldOis, sortableSortOrders,
+                nullMarkers, notNullMarkers);
       }
     } catch (SerDeException e) {
       throw new HiveException("Serialization error", e);

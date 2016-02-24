@@ -499,6 +499,7 @@ public class PTFTranslator {
       throws SemanticException {
     OrderExpressionDef oexpDef = new OrderExpressionDef();
     oexpDef.setOrder(oExpr.getOrder());
+    oexpDef.setNullOrder(oExpr.getNullOrder());
     try {
       PTFExpressionDef expDef = buildExpressionDef(inpShape, oExpr.getExpression());
       oexpDef.setExpressionTreeString(expDef.getExpressionTreeString());

@@ -946,7 +946,7 @@ public class Hive {
         FieldSchema col = cols.get(i);
         if (indexedCols.contains(col.getName())) {
           indexTblCols.add(col);
-          sortCols.add(new Order(col.getName(), 1));
+          sortCols.add(new Order(col.getName(), 1, 0));
           k++;
         }
       }

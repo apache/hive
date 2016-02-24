@@ -1367,7 +1367,8 @@ public class ObjectStore implements RawStore, Configurable {
     if (keys != null) {
       mkeys = new ArrayList<MOrder>(keys.size());
       for (Order part : keys) {
-        mkeys.add(new MOrder(HiveStringUtils.normalizeIdentifier(part.getCol()), part.getOrder()));
+        mkeys.add(new MOrder(HiveStringUtils.normalizeIdentifier(part.getCol()), part.getOrder(),
+                part.getNullOrder()));
       }
     }
     return mkeys;
@@ -1378,7 +1379,7 @@ public class ObjectStore implements RawStore, Configurable {
     if (mkeys != null) {
       keys = new ArrayList<Order>(mkeys.size());
       for (MOrder part : mkeys) {
-        keys.add(new Order(part.getCol(), part.getOrder()));
+        keys.add(new Order(part.getCol(), part.getOrder(), part.getNullOrder()));
       }
     }
     return keys;

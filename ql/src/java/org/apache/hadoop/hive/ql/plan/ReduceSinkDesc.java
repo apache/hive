@@ -22,10 +22,10 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 
@@ -378,6 +378,25 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
       return true;
     }
     return false;
+  }
+
+  /**
+   * Returns the null order in the key columns.
+   *
+   * @return null, which means default for all key columns, or a String
+   *         of the same length as key columns, that consists of only "a"
+   *         (null first) and "z" (null last).
+   */
+  @Explain(displayName = "null sort order", explainLevels = { Level.EXTENDED })
+  public String getNullOrder() {
+    return keySerializeInfo.getProperties().getProperty(
+        org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_NULL_SORT_ORDER);
+  }
+
+  public void setNullOrder(String nullOrderStr) {
+    keySerializeInfo.getProperties().setProperty(
+        org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_NULL_SORT_ORDER,
+        nullOrderStr);
   }
 
   public List<List<Integer>> getDistinctColumnIndices() {

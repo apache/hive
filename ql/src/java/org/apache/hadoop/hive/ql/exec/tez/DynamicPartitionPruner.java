@@ -180,7 +180,7 @@ public class DynamicPartitionPruner {
         numExpectedEventsPerSource.get(s).decrement();
         ++sourceInfoCount;
         String columnName = cit.next();
-	String columnType = typit.next();
+        String columnType = typit.next();
         ExprNodeDesc partKeyExpr = pit.next();
         SourceInfo si = createSourceInfo(t, partKeyExpr, columnName, columnType, jobConf);
         if (!sourceInfoMap.containsKey(s)) {

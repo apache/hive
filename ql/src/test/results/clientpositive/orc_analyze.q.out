@@ -917,7 +917,7 @@ OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
 Compressed:         	No                  	 
 Num Buckets:        	4                   	 
 Bucket Columns:     	[first_name]        	 
-Sort Columns:       	[Order(col:last_name, order:1)]	 
+Sort Columns:       	[Order(col:last_name, order:1, nullOrder:0)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: desc formatted orc_create_people partition(state="Or")
@@ -960,7 +960,7 @@ OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
 Compressed:         	No                  	 
 Num Buckets:        	4                   	 
 Bucket Columns:     	[first_name]        	 
-Sort Columns:       	[Order(col:last_name, order:1)]	 
+Sort Columns:       	[Order(col:last_name, order:1, nullOrder:0)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: analyze table orc_create_people partition(state) compute statistics partialscan
@@ -1015,7 +1015,7 @@ OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
 Compressed:         	No                  	 
 Num Buckets:        	4                   	 
 Bucket Columns:     	[first_name]        	 
-Sort Columns:       	[Order(col:last_name, order:1)]	 
+Sort Columns:       	[Order(col:last_name, order:1, nullOrder:0)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: desc formatted orc_create_people partition(state="Or")
@@ -1058,7 +1058,7 @@ OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
 Compressed:         	No                  	 
 Num Buckets:        	4                   	 
 Bucket Columns:     	[first_name]        	 
-Sort Columns:       	[Order(col:last_name, order:1)]	 
+Sort Columns:       	[Order(col:last_name, order:1, nullOrder:0)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: analyze table orc_create_people partition(state) compute statistics noscan
@@ -1113,7 +1113,7 @@ OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
 Compressed:         	No                  	 
 Num Buckets:        	4                   	 
 Bucket Columns:     	[first_name]        	 
-Sort Columns:       	[Order(col:last_name, order:1)]	 
+Sort Columns:       	[Order(col:last_name, order:1, nullOrder:0)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: desc formatted orc_create_people partition(state="Or")
@@ -1156,7 +1156,7 @@ OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
 Compressed:         	No                  	 
 Num Buckets:        	4                   	 
 Bucket Columns:     	[first_name]        	 
-Sort Columns:       	[Order(col:last_name, order:1)]	 
+Sort Columns:       	[Order(col:last_name, order:1, nullOrder:0)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: drop table orc_create_people
@@ -1262,7 +1262,7 @@ OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
 Compressed:         	No                  	 
 Num Buckets:        	4                   	 
 Bucket Columns:     	[first_name]        	 
-Sort Columns:       	[Order(col:last_name, order:1)]	 
+Sort Columns:       	[Order(col:last_name, order:1, nullOrder:0)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: desc formatted orc_create_people partition(state="Or")
@@ -1305,7 +1305,7 @@ OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
 Compressed:         	No                  	 
 Num Buckets:        	4                   	 
 Bucket Columns:     	[first_name]        	 
-Sort Columns:       	[Order(col:last_name, order:1)]	 
+Sort Columns:       	[Order(col:last_name, order:1, nullOrder:0)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: drop table orc_create_people

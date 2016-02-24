@@ -91,6 +91,8 @@ public class HybridHashTableContainer
   /** The OI used to deserialize values. We never deserialize keys. */
   private LazyBinaryStructObjectInspector internalValueOi;
   private boolean[] sortableSortOrders;
+  private byte[] nullMarkers;
+  private byte[] notNullMarkers;
   private MapJoinBytesTableContainer.KeyValueHelper writeHelper;
   private final MapJoinBytesTableContainer.DirectKeyValueWriter directWriteHelper;
   /*
@@ -417,6 +419,14 @@ public class HybridHashTableContainer
     return sortableSortOrders;
   }
 
+  public byte[] getNullMarkers() {
+    return nullMarkers;
+  }
+
+  public byte[] getNotNullMarkers() {
+    return notNullMarkers;
+  }
+
   /* For a given row, put it into proper partition based on its hash value.
    * When memory threshold is reached, the biggest hash table in memory will be spilled to disk.
    * If the hash table of a specific partition is already on disk, all later rows will be put into
@@ -708,7 +718,8 @@ public class HybridHashTableContainer
         nulls[i] = currentKey[i] == null;
       }
       return currentValue.setFromOutput(
-          MapJoinKey.serializeRow(output, currentKey, vectorKeyOIs, sortableSortOrders));
+          MapJoinKey.serializeRow(output, currentKey, vectorKeyOIs,
+                  sortableSortOrders, nullMarkers, notNullMarkers));
     }
 
     @Override
@@ -723,7 +734,8 @@ public class HybridHashTableContainer
         nulls[keyIndex] = currentKey[keyIndex] == null;
       }
       return currentValue.setFromOutput(
-          MapJoinKey.serializeRow(output, currentKey, ois, sortableSortOrders));
+          MapJoinKey.serializeRow(output, currentKey, ois,
+                  sortableSortOrders, nullMarkers, notNullMarkers));
     }
 
     @Override
@@ -1063,6 +1075,12 @@ public class HybridHashTableContainer
       }
       if (sortableSortOrders == null) {
         sortableSortOrders = ((BinarySortableSerDe) keySerde).getSortOrders();
+      }
+      if (nullMarkers == null) {
+        nullMarkers = ((BinarySortableSerDe) keySerde).getNullMarkers();
+      }
+      if (notNullMarkers == null) {
+        notNullMarkers = ((BinarySortableSerDe) keySerde).getNotNullMarkers();
       }
     }
   }

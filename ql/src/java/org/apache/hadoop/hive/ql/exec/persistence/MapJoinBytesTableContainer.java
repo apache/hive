@@ -25,11 +25,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.debug.Utils;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
 import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapper;
@@ -53,9 +50,9 @@ import org.apache.hadoop.hive.serde2.lazybinary.objectinspector.LazyBinaryStruct
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
@@ -63,6 +60,8 @@ import org.apache.hadoop.io.BinaryComparable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hive.common.util.HashCodeUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Table container that serializes keys and values using LazyBinarySerDe into
@@ -83,6 +82,8 @@ public class MapJoinBytesTableContainer
    * ordering. Hence, remember the ordering here; it is null if we do use LazyBinarySerDe.
    */
   private boolean[] sortableSortOrders;
+  private byte[] nullMarkers;
+  private byte[] notNullMarkers;
   private KeyValueHelper writeHelper;
   private DirectKeyValueWriter directWriteHelper;
 
@@ -136,6 +137,14 @@ public class MapJoinBytesTableContainer
 
   public void setSortableSortOrders(boolean[] sortableSortOrders) {
     this.sortableSortOrders = sortableSortOrders;
+  }
+
+  public void setNullMarkers(byte[] nullMarkers) {
+    this.nullMarkers = nullMarkers;
+  }
+
+  public void setNotNullMarkers(byte[] notNullMarkers) {
+    this.notNullMarkers = notNullMarkers;
   }
 
   public static interface KeyValueHelper extends BytesBytesMultiHashMap.KvSource {
@@ -269,7 +278,14 @@ public class MapJoinBytesTableContainer
         fois.add(fields.get(i).getFieldObjectInspector());
       }
       Output output = new Output();
-      BinarySortableSerDe.serializeStruct(output, data, fois, new boolean[fields.size()]);
+      boolean[] sortableSortOrders = new boolean[fields.size()];
+      Arrays.fill(sortableSortOrders, false);
+      byte[] columnNullMarker = new byte[fields.size()];
+      Arrays.fill(columnNullMarker, BinarySortableSerDe.ZERO);
+      byte[] columnNotNullMarker = new byte[fields.size()];
+      Arrays.fill(columnNotNullMarker, BinarySortableSerDe.ONE);
+      BinarySortableSerDe.serializeStruct(output, data, fois, sortableSortOrders,
+              columnNullMarker, columnNotNullMarker);
       hasTag = (output.getLength() != b.getLength());
       if (hasTag) {
         LOG.error("Tag found in keys and will be removed. This should not happen.");
@@ -360,10 +376,14 @@ public class MapJoinBytesTableContainer
         writeHelper = new LazyBinaryKvWriter(keySerde, valSoi, valueContext.hasFilterTag());
         internalValueOi = valSoi;
         sortableSortOrders = ((BinarySortableSerDe) keySerde).getSortOrders();
+        nullMarkers = ((BinarySortableSerDe) keySerde).getNullMarkers();
+        notNullMarkers = ((BinarySortableSerDe) keySerde).getNotNullMarkers();
       } else {
         writeHelper = new KeyValueWriter(keySerde, valSerde, valueContext.hasFilterTag());
         internalValueOi = createInternalOi(valueContext);
         sortableSortOrders = null;
+        nullMarkers = null;
+        notNullMarkers = null;
       }
     }
   }
@@ -476,7 +496,8 @@ public class MapJoinBytesTableContainer
         nulls[i] = currentKey[i] == null;
       }
       return currentValue.setFromOutput(
-          MapJoinKey.serializeRow(output, currentKey, vectorKeyOIs, sortableSortOrders));
+          MapJoinKey.serializeRow(output, currentKey, vectorKeyOIs,
+                  sortableSortOrders, nullMarkers, notNullMarkers));
     }
 
     @Override
@@ -491,7 +512,8 @@ public class MapJoinBytesTableContainer
         nulls[keyIndex] = currentKey[keyIndex] == null;
       }
       return currentValue.setFromOutput(
-          MapJoinKey.serializeRow(output, currentKey, ois, sortableSortOrders));
+          MapJoinKey.serializeRow(output, currentKey, ois,
+                  sortableSortOrders, nullMarkers, notNullMarkers));
     }
 
     @Override

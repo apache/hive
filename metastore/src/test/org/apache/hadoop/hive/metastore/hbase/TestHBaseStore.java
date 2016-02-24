@@ -18,8 +18,16 @@
  */
 package org.apache.hadoop.hive.metastore.hbase;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.io.IOException;
+import java.security.MessageDigest;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
+
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.client.HTableInterface;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -58,16 +66,8 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-
-import java.io.IOException;
-import java.security.MessageDigest;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -402,7 +402,7 @@ public class TestHBaseStore {
     Map<String, String> params = new HashMap<String, String>();
     params.put("key", "value");
     StorageDescriptor sd = new StorageDescriptor(cols, "file:/tmp", "input", "output", false, 17,
-        serde, Arrays.asList("bucketcol"), Arrays.asList(new Order("sortcol", 1)), params);
+        serde, Arrays.asList("bucketcol"), Arrays.asList(new Order("sortcol", 1, 0)), params);
     Table table = new Table(tableName, "default", "me", startTime, startTime, 0, sd, null,
         emptyParameters, null, null, null);
     store.createTable(table);
@@ -424,6 +424,7 @@ public class TestHBaseStore {
     Assert.assertEquals(1, t.getSd().getSortColsSize());
     Assert.assertEquals("sortcol", t.getSd().getSortCols().get(0).getCol());
     Assert.assertEquals(1, t.getSd().getSortCols().get(0).getOrder());
+    Assert.assertEquals(0, t.getSd().getSortCols().get(0).getNullOrder());
     Assert.assertEquals(1, t.getSd().getParametersSize());
     Assert.assertEquals("value", t.getSd().getParameters().get("key"));
     Assert.assertEquals("me", t.getOwner());
@@ -1273,7 +1274,7 @@ public class TestHBaseStore {
     Map<String, String> params = new HashMap<String, String>();
     params.put("key", "value");
     StorageDescriptor sd = new StorageDescriptor(cols, "file:/tmp", "input", "output", false, 17,
-        serde, Arrays.asList("bucketcol"), Arrays.asList(new Order("sortcol", 1)), params);
+        serde, Arrays.asList("bucketcol"), Arrays.asList(new Order("sortcol", 1, 0)), params);
     int currentTime = (int)(System.currentTimeMillis() / 1000);
     Table table = new Table(TBL, DB, "me", currentTime, currentTime, 0, sd, cols,
         emptyParameters, null, null, null);
@@ -1291,7 +1292,7 @@ public class TestHBaseStore {
     Map<String, String> params = new HashMap<String, String>();
     params.put("key", "value");
     StorageDescriptor sd = new StorageDescriptor(cols, "file:/tmp", "input", "output", false, 17,
-        serde, Arrays.asList("bucketcol"), Arrays.asList(new Order("sortcol", 1)), params);
+        serde, Arrays.asList("bucketcol"), Arrays.asList(new Order("sortcol", 1, 0)), params);
     int currentTime = (int)(System.currentTimeMillis() / 1000);
     Table table = new Table(TBL, DB, "me", currentTime, currentTime, 0, sd, cols,
         emptyParameters, null, null, null);

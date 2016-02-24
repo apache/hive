@@ -52,8 +52,6 @@ import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.ImmutableBitSet;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
@@ -64,6 +62,8 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.translator.SqlFunctionConvert
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Iterables;
 
@@ -226,6 +226,24 @@ public class ASTConverter {
           ASTNode directionAST = c.getDirection() == RelFieldCollation.Direction.ASCENDING ? ASTBuilder
               .createAST(HiveParser.TOK_TABSORTCOLNAMEASC, "TOK_TABSORTCOLNAMEASC") : ASTBuilder
               .createAST(HiveParser.TOK_TABSORTCOLNAMEDESC, "TOK_TABSORTCOLNAMEDESC");
+          ASTNode nullDirectionAST;
+          // Null direction
+          if (c.nullDirection == RelFieldCollation.NullDirection.FIRST) {
+            nullDirectionAST = ASTBuilder.createAST(HiveParser.TOK_NULLS_FIRST, "TOK_NULLS_FIRST");
+            directionAST.addChild(nullDirectionAST);
+          } else if (c.nullDirection == RelFieldCollation.NullDirection.LAST) {
+            nullDirectionAST = ASTBuilder.createAST(HiveParser.TOK_NULLS_LAST, "TOK_NULLS_LAST");
+            directionAST.addChild(nullDirectionAST);
+          } else {
+            // Default
+            if (c.getDirection() == RelFieldCollation.Direction.ASCENDING) {
+              nullDirectionAST = ASTBuilder.createAST(HiveParser.TOK_NULLS_FIRST, "TOK_NULLS_FIRST");
+              directionAST.addChild(nullDirectionAST);
+            } else {
+              nullDirectionAST = ASTBuilder.createAST(HiveParser.TOK_NULLS_LAST, "TOK_NULLS_LAST");
+              directionAST.addChild(nullDirectionAST);
+            }
+          }
 
           // 3 Convert OB expr (OB Expr is usually an input ref except for top
           // level OB; top level OB will have RexCall kept in a map.)
@@ -245,7 +263,7 @@ public class ASTConverter {
           }
 
           // 4 buildup the ob expr AST
-          directionAST.addChild(astCol);
+          nullDirectionAST.addChild(astCol);
           orderAst.addChild(directionAST);
         }
         hiveAST.order = orderAst;
@@ -430,12 +448,31 @@ public class ASTConverter {
       if (window.orderKeys != null && !window.orderKeys.isEmpty()) {
         oByAst = ASTBuilder.createAST(HiveParser.TOK_ORDERBY, "TOK_ORDERBY");
         for (RexFieldCollation ok : window.orderKeys) {
-          ASTNode astNode = ok.getDirection() == RelFieldCollation.Direction.ASCENDING ? ASTBuilder
+          ASTNode directionAST = ok.getDirection() == RelFieldCollation.Direction.ASCENDING ? ASTBuilder
               .createAST(HiveParser.TOK_TABSORTCOLNAMEASC, "TOK_TABSORTCOLNAMEASC") : ASTBuilder
               .createAST(HiveParser.TOK_TABSORTCOLNAMEDESC, "TOK_TABSORTCOLNAMEDESC");
+          ASTNode nullDirectionAST;
+          // Null direction
+          if (ok.right.contains(SqlKind.NULLS_FIRST)) {
+            nullDirectionAST = ASTBuilder.createAST(HiveParser.TOK_NULLS_FIRST, "TOK_NULLS_FIRST");
+            directionAST.addChild(nullDirectionAST);
+          } else if (ok.right.contains(SqlKind.NULLS_LAST)) {
+            nullDirectionAST = ASTBuilder.createAST(HiveParser.TOK_NULLS_LAST, "TOK_NULLS_LAST");
+            directionAST.addChild(nullDirectionAST);
+          } else {
+            // Default
+            if (ok.getDirection() == RelFieldCollation.Direction.ASCENDING) {
+              nullDirectionAST = ASTBuilder.createAST(HiveParser.TOK_NULLS_FIRST, "TOK_NULLS_FIRST");
+              directionAST.addChild(nullDirectionAST);
+            } else {
+              nullDirectionAST = ASTBuilder.createAST(HiveParser.TOK_NULLS_LAST, "TOK_NULLS_LAST");
+              directionAST.addChild(nullDirectionAST);
+            }
+          }
           ASTNode astCol = ok.left.accept(this);
-          astNode.addChild(astCol);
-          oByAst.addChild(astNode);
+          
+          nullDirectionAST.addChild(astCol);
+          oByAst.addChild(directionAST);
         }
       }
 

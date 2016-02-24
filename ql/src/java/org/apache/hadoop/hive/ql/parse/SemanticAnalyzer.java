@@ -6340,6 +6340,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ArrayList<ExprNodeDesc> partnCols = new ArrayList<ExprNodeDesc>();
     ArrayList<ExprNodeDesc> sortCols = new ArrayList<ExprNodeDesc>();
     ArrayList<Integer> sortOrders = new ArrayList<Integer>();
+    ArrayList<Integer> nullSortOrders = new ArrayList<Integer>();
     boolean multiFileSpray = false;
     int numFiles = 1;
     int totalFiles = 1;
@@ -6357,6 +6358,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         (dest_tab.getSortCols().size() > 0)) {
       sortCols = getSortCols(dest, qb, dest_tab, table_desc, input, true);
       sortOrders = getSortOrders(dest, qb, dest_tab, input);
+      nullSortOrders = getNullSortOrders(dest, qb, dest_tab, input);
       if (!enforceBucketing && !dest_tab.isIndexTable()) {
         throw new SemanticException(ErrorMsg.TBL_SORTED_NOT_BUCKETED.getErrorCodedMsg(dest_tab.getCompleteName()));
       } else {
@@ -6394,8 +6396,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       for (int sortOrder : sortOrders) {
         order.append(sortOrder == BaseSemanticAnalyzer.HIVE_COLUMN_ORDER_ASC ? '+' : '-');
       }
-      input = genReduceSinkPlan(input, partnCols, sortCols, order.toString(),  maxReducers,
-        (AcidUtils.isAcidTable(dest_tab) ? getAcidType() : AcidUtils.Operation.NOT_ACID));
+      StringBuilder nullOrder = new StringBuilder();
+      for (int pos : nullSortOrders) {
+        nullOrder.append(pos == BaseSemanticAnalyzer.HIVE_COLUMN_NULLS_FIRST ? 'a' : 'z');
+      }
+      input = genReduceSinkPlan(input, partnCols, sortCols, order.toString(), nullOrder.toString(),
+              maxReducers, (AcidUtils.isAcidTable(dest_tab) ? getAcidType() : AcidUtils.Operation.NOT_ACID));
       reduceSinkOperatorsAddedByEnforceBucketingSorting.add((ReduceSinkOperator)input.getParentOperators().get(0));
       ctx.setMultiFileSpray(multiFileSpray);
       ctx.setNumFiles(numFiles);
@@ -7356,6 +7362,23 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return orders;
   }
 
+  private ArrayList<Integer> getNullSortOrders(String dest, QB qb, Table tab, Operator input)
+      throws SemanticException {
+    List<Order> tabSortCols = tab.getSortCols();
+    List<FieldSchema> tabCols = tab.getCols();
+
+    ArrayList<Integer> orders = new ArrayList<Integer>();
+    for (Order sortCol : tabSortCols) {
+      for (FieldSchema tabCol : tabCols) {
+        if (sortCol.getCol().equals(tabCol.getName())) {
+          orders.add(sortCol.getNullOrder());
+          break;
+        }
+      }
+    }
+    return orders;
+  }
+
   private Operator genReduceSinkPlan(String dest, QB qb, Operator<?> input,
       int numReducers, boolean hasOrderBy) throws SemanticException {
 
@@ -7396,6 +7419,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     ArrayList<ExprNodeDesc> sortCols = new ArrayList<ExprNodeDesc>();
     StringBuilder order = new StringBuilder();
+    StringBuilder nullOrder = new StringBuilder();
     if (sortExprs != null) {
       int ccount = sortExprs.getChildCount();
       for (int i = 0; i < ccount; ++i) {
@@ -7405,20 +7429,40 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           // SortBy ASC
           order.append("+");
           cl = (ASTNode) cl.getChild(0);
+          if (cl.getType() == HiveParser.TOK_NULLS_FIRST) {
+            nullOrder.append("a");
+          } else if (cl.getType() == HiveParser.TOK_NULLS_LAST) {
+            nullOrder.append("z");
+          } else {
+            throw new SemanticException(
+                    "Unexpected null ordering option: " + cl.getType());
+          }
+          cl = (ASTNode) cl.getChild(0);
         } else if (cl.getType() == HiveParser.TOK_TABSORTCOLNAMEDESC) {
           // SortBy DESC
           order.append("-");
           cl = (ASTNode) cl.getChild(0);
+          if (cl.getType() == HiveParser.TOK_NULLS_FIRST) {
+            nullOrder.append("a");
+          } else if (cl.getType() == HiveParser.TOK_NULLS_LAST) {
+            nullOrder.append("z");
+          } else {
+            throw new SemanticException(
+                    "Unexpected null ordering option: " + cl.getType());
+          }
+          cl = (ASTNode) cl.getChild(0);
         } else {
           // ClusterBy
           order.append("+");
+          nullOrder.append("a");
         }
         ExprNodeDesc exprNode = genExprNodeDesc(cl, inputRR);
         sortCols.add(exprNode);
       }
     }
     Operator result = genReduceSinkPlan(
-        input, partCols, sortCols, order.toString(), numReducers, Operation.NOT_ACID);
+        input, partCols, sortCols, order.toString(), nullOrder.toString(),
+        numReducers, Operation.NOT_ACID);
     if (result.getParentOperators().size() == 1 &&
         result.getParentOperators().get(0) instanceof ReduceSinkOperator) {
       ((ReduceSinkOperator) result.getParentOperators().get(0))
@@ -7430,7 +7474,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   @SuppressWarnings("nls")
   private Operator genReduceSinkPlan(Operator<?> input,
       ArrayList<ExprNodeDesc> partitionCols, ArrayList<ExprNodeDesc> sortCols,
-      String sortOrder, int numReducers, AcidUtils.Operation acidOp) throws SemanticException {
+      String sortOrder, String nullOrder, int numReducers, AcidUtils.Operation acidOp)
+              throws SemanticException {
 
     RowResolver inputRR = opParseCtx.get(input).getRowResolver();
 
@@ -7497,7 +7542,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     dummy.setParentOperators(null);
 
     ReduceSinkDesc rsdesc = PlanUtils.getReduceSinkDesc(sortCols, valueCols, outputColumns,
-        false, -1, partitionCols, sortOrder, numReducers, acidOp);
+        false, -1, partitionCols, sortOrder, nullOrder, numReducers, acidOp);
     Operator interim = putOpInsertMap(OperatorFactory.getAndMakeChild(rsdesc,
         new RowSchema(rsRR.getColumnInfos()), input), rsRR);
 
@@ -11552,7 +11597,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             }
           }
           for (int child_pos = 0; child_pos < orderbyNode.getChildCount(); ++child_pos) {
-            ASTNode colNode = (ASTNode) orderbyNode.getChild(child_pos);
+            ASTNode colNode = (ASTNode) orderbyNode.getChild(child_pos).getChild(0);
             ASTNode node = (ASTNode) colNode.getChild(0);
             if (node.getToken().getType() == HiveParser.Number) {
               if( isByPos ) {
@@ -11884,12 +11929,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     int exprCnt = sortNode.getChildCount();
     for(int i=0; i < exprCnt; i++) {
       OrderExpression exprSpec = new OrderExpression();
-      exprSpec.setExpression((ASTNode) sortNode.getChild(i).getChild(0));
-      if ( sortNode.getChild(i).getType() == HiveParser.TOK_TABSORTCOLNAMEASC ) {
+      ASTNode orderSpec = (ASTNode) sortNode.getChild(i);
+      ASTNode nullOrderSpec = (ASTNode) orderSpec.getChild(0);
+      exprSpec.setExpression((ASTNode) nullOrderSpec.getChild(0));
+      if ( orderSpec.getType() == HiveParser.TOK_TABSORTCOLNAMEASC ) {
         exprSpec.setOrder(org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.Order.ASC);
       }
       else {
         exprSpec.setOrder(org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.Order.DESC);
+      }
+      if ( nullOrderSpec.getType() == HiveParser.TOK_NULLS_FIRST ) {
+        exprSpec.setNullOrder(org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.NullOrder.NULLS_FIRST);
+      } else {
+        exprSpec.setNullOrder(org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.NullOrder.NULLS_LAST);
       }
       oSpec.addExpression(exprSpec);
     }
@@ -12228,7 +12280,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       RowResolver inputRR,
       ArrayList<ExprNodeDesc> partCols,
       ArrayList<ExprNodeDesc> orderCols,
-      StringBuilder orderString) throws SemanticException {
+      StringBuilder orderString,
+      StringBuilder nullOrderString) throws SemanticException {
 
     List<PTFExpressionDef> partColList = tabDef.getPartition().getExpressions();
 
@@ -12238,6 +12291,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         partCols.add(exprNode);
         orderCols.add(exprNode);
         orderString.append('+');
+        nullOrderString.append('a');
       }
     }
 
@@ -12252,13 +12306,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     for (int i = 0; i < orderColList.size(); i++) {
       OrderExpressionDef colDef = orderColList.get(i);
       char orderChar = colDef.getOrder() == PTFInvocationSpec.Order.ASC ? '+' : '-';
+      char nullOrderChar = colDef.getNullOrder() == PTFInvocationSpec.NullOrder.NULLS_FIRST ? 'a' : 'z';
       int index = ExprNodeDescUtils.indexOf(colDef.getExprNode(), orderCols);
       if (index >= 0) {
         orderString.setCharAt(index, orderChar);
+        nullOrderString.setCharAt(index, nullOrderChar);
         continue;
       }
       orderCols.add(colDef.getExprNode());
       orderString.append(orderChar);
+      nullOrderString.append(nullOrderChar);
     }
   }
 
@@ -12301,6 +12358,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ArrayList<ExprNodeDesc> partCols = new ArrayList<ExprNodeDesc>();
       ArrayList<ExprNodeDesc> orderCols = new ArrayList<ExprNodeDesc>();
       StringBuilder orderString = new StringBuilder();
+      StringBuilder nullOrderString = new StringBuilder();
 
       /*
        * Use the input RR of TableScanOperator in case there is no map-side
@@ -12308,8 +12366,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
        * If the parent of ReduceSinkOperator is PTFOperator, use it's
        * output RR.
        */
-      buildPTFReduceSinkDetails(tabDef, rr, partCols, orderCols, orderString);
-      input = genReduceSinkPlan(input, partCols, orderCols, orderString.toString(), -1, Operation.NOT_ACID);
+      buildPTFReduceSinkDetails(tabDef, rr, partCols, orderCols, orderString, nullOrderString);
+      input = genReduceSinkPlan(input, partCols, orderCols, orderString.toString(),
+              nullOrderString.toString(), -1, Operation.NOT_ACID);
     }
 
     /*
@@ -12367,6 +12426,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ArrayList<ExprNodeDesc> partCols = new ArrayList<ExprNodeDesc>();
     ArrayList<ExprNodeDesc> orderCols = new ArrayList<ExprNodeDesc>();
     StringBuilder order = new StringBuilder();
+    StringBuilder nullOrder = new StringBuilder();
 
     for (PartitionExpression partCol : spec.getQueryPartitionSpec().getExpressions()) {
       ExprNodeDesc partExpr = genExprNodeDesc(partCol.getExpression(), inputRR);
@@ -12374,6 +12434,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         partCols.add(partExpr);
         orderCols.add(partExpr);
         order.append('+');
+        nullOrder.append('a');
       }
     }
 
@@ -12381,17 +12442,21 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       for (OrderExpression orderCol : spec.getQueryOrderSpec().getExpressions()) {
         ExprNodeDesc orderExpr = genExprNodeDesc(orderCol.getExpression(), inputRR);
         char orderChar = orderCol.getOrder() == PTFInvocationSpec.Order.ASC ? '+' : '-';
+        char nullOrderChar = orderCol.getNullOrder() == PTFInvocationSpec.NullOrder.NULLS_FIRST ? 'a' : 'z';
         int index = ExprNodeDescUtils.indexOf(orderExpr, orderCols);
         if (index >= 0) {
           order.setCharAt(index, orderChar);
+          nullOrder.setCharAt(index, nullOrderChar);
           continue;
         }
         orderCols.add(genExprNodeDesc(orderCol.getExpression(), inputRR));
         order.append(orderChar);
+        nullOrder.append(nullOrderChar);
       }
     }
 
-    return genReduceSinkPlan(input, partCols, orderCols, order.toString(), -1, Operation.NOT_ACID);
+    return genReduceSinkPlan(input, partCols, orderCols, order.toString(), nullOrder.toString(),
+            -1, Operation.NOT_ACID);
   }
 
   public static ArrayList<WindowExpressionSpec> parseSelect(String selectExprStr)

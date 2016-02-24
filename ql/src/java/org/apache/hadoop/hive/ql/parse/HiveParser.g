@@ -81,6 +81,8 @@ TOK_GROUPING_SETS;
 TOK_GROUPING_SETS_EXPRESSION;
 TOK_HAVING;
 TOK_ORDERBY;
+TOK_NULLS_FIRST;
+TOK_NULLS_LAST;
 TOK_CLUSTERBY;
 TOK_DISTRIBUTEBY;
 TOK_SORTBY;
@@ -402,6 +404,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
 
     xlateMap.put("KW_ASC", "ASC");
     xlateMap.put("KW_DESC", "DESC");
+    xlateMap.put("KW_NULLS", "NULLS");
+    xlateMap.put("KW_LAST", "LAST");
     xlateMap.put("KW_ORDER", "ORDER");
     xlateMap.put("KW_BY", "BY");
     xlateMap.put("KW_GROUP", "GROUP");
@@ -2014,13 +2018,34 @@ skewedValueLocationElement
       skewedColumnValue
      | skewedColumnValuePair
     ;
-    
+
+orderSpecification
+@init { pushMsg("order specification", state); }
+@after { popMsg(state); }
+    : KW_ASC | KW_DESC ;
+
+nullOrdering
+@init { pushMsg("nulls ordering", state); }
+@after { popMsg(state); }
+    : KW_NULLS KW_FIRST -> ^(TOK_NULLS_FIRST)
+    | KW_NULLS KW_LAST -> ^(TOK_NULLS_LAST)
+    ;
+
 columnNameOrder
 @init { pushMsg("column name order", state); }
 @after { popMsg(state); }
-    : identifier (asc=KW_ASC | desc=KW_DESC)?
-    -> {$desc == null}? ^(TOK_TABSORTCOLNAMEASC identifier)
-    ->                  ^(TOK_TABSORTCOLNAMEDESC identifier)
+    : identifier orderSpec=orderSpecification? nullSpec=nullOrdering?
+    -> {$orderSpec.tree == null && $nullSpec.tree == null}?
+            ^(TOK_TABSORTCOLNAMEASC ^(TOK_NULLS_FIRST identifier))
+    -> {$orderSpec.tree == null}?
+            ^(TOK_TABSORTCOLNAMEASC ^($nullSpec identifier))
+    -> {$nullSpec.tree == null && $orderSpec.tree.getType()==HiveParser.KW_ASC}?
+            ^(TOK_TABSORTCOLNAMEASC ^(TOK_NULLS_FIRST identifier))
+    -> {$nullSpec.tree == null && $orderSpec.tree.getType()==HiveParser.KW_DESC}?
+            ^(TOK_TABSORTCOLNAMEDESC ^(TOK_NULLS_LAST identifier))
+    -> {$orderSpec.tree.getType()==HiveParser.KW_ASC}?
+            ^(TOK_TABSORTCOLNAMEASC ^($nullSpec identifier))
+    -> ^(TOK_TABSORTCOLNAMEDESC ^($nullSpec identifier))
     ;
 
 columnNameCommentList
@@ -2039,9 +2064,18 @@ columnNameComment
 columnRefOrder
 @init { pushMsg("column order", state); }
 @after { popMsg(state); }
-    : expression (asc=KW_ASC | desc=KW_DESC)?
-    -> {$desc == null}? ^(TOK_TABSORTCOLNAMEASC expression)
-    ->                  ^(TOK_TABSORTCOLNAMEDESC expression)
+    : expression orderSpec=orderSpecification? nullSpec=nullOrdering?
+    -> {$orderSpec.tree == null && $nullSpec.tree == null}?
+            ^(TOK_TABSORTCOLNAMEASC ^(TOK_NULLS_FIRST expression))
+    -> {$orderSpec.tree == null}?
+            ^(TOK_TABSORTCOLNAMEASC ^($nullSpec expression))
+    -> {$nullSpec.tree == null && $orderSpec.tree.getType()==HiveParser.KW_ASC}?
+            ^(TOK_TABSORTCOLNAMEASC ^(TOK_NULLS_FIRST expression))
+    -> {$nullSpec.tree == null && $orderSpec.tree.getType()==HiveParser.KW_DESC}?
+            ^(TOK_TABSORTCOLNAMEDESC ^(TOK_NULLS_LAST expression))
+    -> {$orderSpec.tree.getType()==HiveParser.KW_ASC}?
+            ^(TOK_TABSORTCOLNAMEASC ^($nullSpec expression))
+    -> ^(TOK_TABSORTCOLNAMEDESC ^($nullSpec expression))
     ;
 
 columnNameType

@@ -2413,6 +2413,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
         List<Node> obASTExprLst = obAST.getChildren();
         ASTNode obASTExpr;
+        ASTNode nullObASTExpr;
         List<Pair<ASTNode, TypeInfo>> vcASTTypePairs = new ArrayList<Pair<ASTNode, TypeInfo>>();
         RowResolver inputRR = relToHiveRR.get(srcRel);
         RowResolver outputRR = new RowResolver();
@@ -2425,9 +2426,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
         for (int i = 0; i < obASTExprLst.size(); i++) {
           // 2.1 Convert AST Expr to ExprNode
           obASTExpr = (ASTNode) obASTExprLst.get(i);
+          nullObASTExpr = (ASTNode) obASTExpr.getChild(0);
+          ASTNode ref = (ASTNode) nullObASTExpr.getChild(0);
           Map<ASTNode, ExprNodeDesc> astToExprNDescMap = TypeCheckProcFactory.genExprNode(
               obASTExpr, new TypeCheckCtx(inputRR));
-          ExprNodeDesc obExprNDesc = astToExprNDescMap.get(obASTExpr.getChild(0));
+          ExprNodeDesc obExprNDesc = astToExprNDescMap.get(ref);
           if (obExprNDesc == null)
             throw new SemanticException("Invalid order by expression: " + obASTExpr.toString());
 
@@ -2442,18 +2445,26 @@ public class CalcitePlanner extends SemanticAnalyzer {
           } else {
             fieldIndex = srcRelRecordSz + newVCLst.size();
             newVCLst.add(rnd);
-            vcASTTypePairs.add(new Pair<ASTNode, TypeInfo>((ASTNode) obASTExpr.getChild(0),
-                obExprNDesc.getTypeInfo()));
+            vcASTTypePairs.add(new Pair<ASTNode, TypeInfo>(ref, obExprNDesc.getTypeInfo()));
           }
 
           // 2.4 Determine the Direction of order by
-          org.apache.calcite.rel.RelFieldCollation.Direction order = RelFieldCollation.Direction.DESCENDING;
+          RelFieldCollation.Direction order = RelFieldCollation.Direction.DESCENDING;
           if (obASTExpr.getType() == HiveParser.TOK_TABSORTCOLNAMEASC) {
             order = RelFieldCollation.Direction.ASCENDING;
           }
+          RelFieldCollation.NullDirection nullOrder;
+          if (nullObASTExpr.getType() == HiveParser.TOK_NULLS_FIRST) {
+            nullOrder = RelFieldCollation.NullDirection.FIRST;
+          } else if (nullObASTExpr.getType() == HiveParser.TOK_NULLS_LAST) {
+            nullOrder = RelFieldCollation.NullDirection.LAST;
+          } else {
+            throw new SemanticException(
+                    "Unexpected null ordering option: " + nullObASTExpr.getType());
+          }
 
           // 2.5 Add to field collations
-          fieldCollations.add(new RelFieldCollation(fieldIndex, order));
+          fieldCollations.add(new RelFieldCollation(fieldIndex, order, nullOrder));
         }
 
         // 3. Add Child Project Rel if needed, Generate Output RR, input Sel Rel
@@ -2583,8 +2594,17 @@ public class CalcitePlanner extends SemanticAnalyzer {
           ExprNodeDesc exp = genExprNodeDesc(oExpr.getExpression(), inputRR, tcCtx);
           RexNode ordExp = converter.convert(exp);
           Set<SqlKind> flags = new HashSet<SqlKind>();
-          if (oExpr.getOrder() == org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.Order.DESC)
+          if (oExpr.getOrder() == org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.Order.DESC) {
             flags.add(SqlKind.DESCENDING);
+          }
+          if (oExpr.getNullOrder() == org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.NullOrder.NULLS_FIRST) {
+            flags.add(SqlKind.NULLS_FIRST);
+          } else if (oExpr.getNullOrder() == org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.NullOrder.NULLS_LAST) {
+            flags.add(SqlKind.NULLS_LAST);
+          } else {
+            throw new SemanticException(
+                    "Unexpected null ordering option: " + oExpr.getNullOrder());
+          }
           oKeys.add(new RexFieldCollation(ordExp, flags));
         }
       }

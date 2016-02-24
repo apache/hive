@@ -26,7 +26,7 @@ Stage-0
         Select Operator [SEL_17] (rows=6758 width=215)
           Output:["_col0"]
           PTF Operator [PTF_16] (rows=6758 width=215)
-            Function definitions:[{},{"name:":"windowingtablefunction","order by:":"(UDFToDouble(_col1) / UDFToDouble(_col2))","partition by:":"0"}]
+            Function definitions:[{},{"name:":"windowingtablefunction","order by:":"(UDFToDouble(_col1) / UDFToDouble(_col2)) ASC NULLS FIRST","partition by:":"0"}]
             Select Operator [SEL_15] (rows=6758 width=215)
               Output:["_col1","_col2"]
             <-Reducer 3 [SIMPLE_EDGE]

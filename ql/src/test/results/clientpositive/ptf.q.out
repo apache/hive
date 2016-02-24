@@ -56,7 +56,7 @@ STAGE PLANS:
                 Partition table definition
                   input alias: ptf_1
                   name: noop
-                  order by: _col1
+                  order by: _col1 ASC NULLS FIRST
                   output shape: _col1: string, _col2: string, _col5: int, _col7: double
                   partition by: _col2
                   raw input shape:
@@ -92,7 +92,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col1
+                  order by: _col1 ASC NULLS FIRST
                   partition by: _col2
                   raw input shape:
                   window functions:
@@ -272,7 +272,7 @@ STAGE PLANS:
                 Partition table definition
                   input alias: ptf_1
                   name: noop
-                  order by: _col1
+                  order by: _col1 ASC NULLS FIRST
                   output shape: _col1: string, _col2: string, _col5: int
                   partition by: _col2
                   raw input shape:
@@ -308,7 +308,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col1
+                  order by: _col1 ASC NULLS FIRST
                   partition by: _col2
                   raw input shape:
                   window functions:
@@ -427,7 +427,7 @@ STAGE PLANS:
                 Partition table definition
                   input alias: ptf_1
                   name: noop
-                  order by: _col1
+                  order by: _col1 ASC NULLS FIRST
                   output shape: _col1: string, _col2: string, _col5: int
                   partition by: _col2
                   raw input shape:
@@ -544,7 +544,7 @@ STAGE PLANS:
                 Partition table definition
                   input alias: abc
                   name: noop
-                  order by: _col1
+                  order by: _col1 ASC NULLS FIRST
                   output shape: _col1: string, _col2: string, _col5: int, _col7: double
                   partition by: _col2
                   raw input shape:
@@ -580,7 +580,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col1
+                  order by: _col1 ASC NULLS FIRST
                   partition by: _col2
                   raw input shape:
                   window functions:
@@ -725,7 +725,7 @@ STAGE PLANS:
                 Partition table definition
                   input alias: ptf_1
                   name: noop
-                  order by: _col1
+                  order by: _col1 ASC NULLS FIRST
                   output shape: _col1: string, _col2: string, _col5: int
                   partition by: _col2
                   raw input shape:
@@ -761,7 +761,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col1
+                  order by: _col1 ASC NULLS FIRST
                   partition by: _col2
                   raw input shape:
                   window functions:
@@ -909,7 +909,7 @@ STAGE PLANS:
                 Partition table definition
                   input alias: ptf_1
                   name: noop
-                  order by: _col1
+                  order by: _col1 ASC NULLS FIRST
                   output shape: _col1: string, _col2: string, _col5: int
                   partition by: _col2
                   raw input shape:
@@ -954,7 +954,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col1
+                  order by: _col1 ASC NULLS FIRST
                   partition by: _col0
                   raw input shape:
                   window functions:
@@ -1095,7 +1095,7 @@ STAGE PLANS:
                 Partition table definition
                   input alias: abc
                   name: noop
-                  order by: _col1
+                  order by: _col1 ASC NULLS FIRST
                   output shape: _col0: int, _col1: string, _col2: string, _col3: string, _col4: string, _col5: int, _col6: string, _col7: double, _col8: string
                   partition by: _col2
                   raw input shape:
@@ -1246,7 +1246,7 @@ STAGE PLANS:
                 Partition table definition
                   input alias: abc
                   name: noop
-                  order by: _col1
+                  order by: _col1 ASC NULLS FIRST
                   output shape: _col0: int, _col1: string, _col2: string, _col3: string, _col4: string, _col5: int, _col6: string, _col7: double, _col8: string
                   partition by: _col2
                   raw input shape:
@@ -1390,7 +1390,7 @@ STAGE PLANS:
                   Partition table definition
                     input alias: ptf_1
                     name: noopwithmap
-                    order by: p_name, p_size(DESC)
+                    order by: p_name ASC NULLS FIRST, p_size DESC NULLS LAST
                     output shape: p_name: string, p_mfgr: string, p_size: int
                     partition by: p_mfgr
                     raw input shape:
@@ -1416,7 +1416,7 @@ STAGE PLANS:
                 Partition table definition
                   input alias: ptf_1
                   name: noopwithmap
-                  order by: _col1, _col5(DESC)
+                  order by: _col1 ASC NULLS FIRST, _col5 DESC NULLS LAST
                   output shape: _col1: string, _col2: string, _col5: int
                   partition by: _col2
                   raw input shape:
@@ -1452,7 +1452,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col1, _col5(DESC)
+                  order by: _col1 ASC NULLS FIRST, _col5 DESC NULLS LAST
                   partition by: _col2
                   raw input shape:
                   window functions:
@@ -1565,7 +1565,7 @@ STAGE PLANS:
                   Partition table definition
                     input alias: ptf_1
                     name: noopwithmap
-                    order by: p_name
+                    order by: p_name ASC NULLS FIRST
                     output shape: p_name: string, p_mfgr: string, p_size: int, p_retailprice: double
                     partition by: p_mfgr
                     raw input shape:
@@ -1592,7 +1592,7 @@ STAGE PLANS:
                 Partition table definition
                   input alias: ptf_1
                   name: noopwithmap
-                  order by: _col1
+                  order by: _col1 ASC NULLS FIRST
                   output shape: _col1: string, _col2: string, _col5: int, _col7: double
                   partition by: _col2
                   raw input shape:
@@ -1629,7 +1629,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col1
+                  order by: _col1 ASC NULLS FIRST
                   partition by: _col2
                   raw input shape:
                   window functions:
@@ -1770,7 +1770,7 @@ STAGE PLANS:
                 Partition table definition
                   input alias: ptf_1
                   name: noop
-                  order by: _col1
+                  order by: _col1 ASC NULLS FIRST
                   output shape: _col1: string, _col2: string, _col5: int, _col7: double
                   partition by: _col2
                   raw input shape:
@@ -1806,7 +1806,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col1
+                  order by: _col1 ASC NULLS FIRST
                   partition by: _col2
                   raw input shape:
                   window functions:
@@ -1950,7 +1950,7 @@ STAGE PLANS:
                 Partition table definition
                   input alias: ptf_1
                   name: noop
-                  order by: _col2(DESC), _col1
+                  order by: _col2 DESC NULLS LAST, _col1 ASC NULLS FIRST
                   output shape: _col1: string, _col2: string, _col5: int, _col7: double
                   partition by: _col2
                   raw input shape:
@@ -1964,7 +1964,7 @@ STAGE PLANS:
                   Partition table definition
                     input alias: ptf_1
                     name: noopwithmap
-                    order by: _col2(DESC), _col1
+                    order by: _col2 DESC NULLS LAST, _col1 ASC NULLS FIRST
                     output shape: _col1: string, _col2: string, _col5: int, _col7: double
                     partition by: _col2
                     raw input shape:
@@ -1972,7 +1972,7 @@ STAGE PLANS:
                   Partition table definition
                     input alias: ptf_2
                     name: noop
-                    order by: _col2(DESC), _col1
+                    order by: _col2 DESC NULLS LAST, _col1 ASC NULLS FIRST
                     output shape: _col1: string, _col2: string, _col5: int, _col7: double
                     partition by: _col2
                     raw input shape:
@@ -2009,7 +2009,7 @@ STAGE PLANS:
                 Partition table definition
                   input alias: ptf_1
                   name: noopwithmap
-                  order by: _col2(DESC), _col1
+                  order by: _col2 DESC NULLS LAST, _col1 ASC NULLS FIRST
                   output shape: _col1: string, _col2: string, _col5: int, _col7: double
                   partition by: _col2
                   raw input shape:
@@ -2017,7 +2017,7 @@ STAGE PLANS:
                 Partition table definition
                   input alias: ptf_2
                   name: noop
-                  order by: _col2(DESC), _col1
+                  order by: _col2 DESC NULLS LAST, _col1 ASC NULLS FIRST
                   output shape: _col1: string, _col2: string, _col5: int, _col7: double
                   partition by: _col2
                   raw input shape:
@@ -2053,7 +2053,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col1
+                  order by: _col1 ASC NULLS FIRST
                   partition by: _col2
                   raw input shape:
                   window functions:
@@ -2204,7 +2204,7 @@ STAGE PLANS:
                 Partition table definition
                   input alias: ptf_1
                   name: noop
-                  order by: _col1
+                  order by: _col1 ASC NULLS FIRST
                   output shape: _col1: string, _col2: string, _col5: int, _col7: double
                   partition by: _col2
                   raw input shape:
@@ -2240,7 +2240,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col1
+                  order by: _col1 ASC NULLS FIRST
                   partition by: _col2
                   raw input shape:
                   window functions:
@@ -2388,7 +2388,7 @@ STAGE PLANS:
                 Partition table definition
                   input alias: abc
                   name: noop
-                  order by: _col1
+                  order by: _col1 ASC NULLS FIRST
                   output shape: _col0: int, _col1: string, _col2: string, _col5: int, _col7: double
                   partition by: _col2
                   raw input shape:
@@ -2464,7 +2464,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col1
+                  order by: _col1 ASC NULLS FIRST
                   partition by: _col2
                   raw input shape:
                   window functions:
@@ -2620,7 +2620,7 @@ STAGE PLANS:
                 Partition table definition
                   input alias: ptf_1
                   name: noop
-                  order by: _col1
+                  order by: _col1 ASC NULLS FIRST
                   output shape: _col1: string, _col2: string, _col5: int
                   partition by: _col2
                   raw input shape:
@@ -2789,7 +2789,7 @@ STAGE PLANS:
                 Partition table definition
                   input alias: ptf_1
                   name: noop
-                  order by: _col0
+                  order by: _col0 ASC NULLS FIRST
                   output shape: _col0: string, _col1: string, _col2: double
                   partition by: _col0
                   raw input shape:
@@ -2825,7 +2825,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col1
+                  order by: _col1 ASC NULLS FIRST
                   partition by: _col0
                   raw input shape:
                   window functions:
@@ -3005,7 +3005,7 @@ STAGE PLANS:
                 Partition table definition
                   input alias: ptf_1
                   name: noop
-                  order by: _col1
+                  order by: _col1 ASC NULLS FIRST
                   output shape: _col1: string, _col2: string, _col5: int, _col7: double
                   partition by: _col2
                   raw input shape:
@@ -3047,7 +3047,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col1
+                  order by: _col1 ASC NULLS FIRST
                   partition by: _col2
                   raw input shape:
                   window functions:
@@ -3122,7 +3122,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col5
+                  order by: _col5 ASC NULLS FIRST
                   partition by: _col2
                   raw input shape:
                   window functions:
@@ -3168,7 +3168,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col3, _col2
+                  order by: _col3 ASC NULLS FIRST, _col2 ASC NULLS FIRST
                   partition by: _col3
                   raw input shape:
                   window functions:
@@ -3413,14 +3413,14 @@ STAGE PLANS:
                 Partition table definition
                   input alias: ptf_1
                   name: noop
-                  order by: _col2
+                  order by: _col2 ASC NULLS FIRST
                   output shape: _col1: string, _col2: string, _col5: int
                   partition by: _col2
                   raw input shape:
                 Partition table definition
                   input alias: ptf_2
                   name: noop
-                  order by: _col2
+                  order by: _col2 ASC NULLS FIRST
                   output shape: _col1: string, _col2: string, _col5: int
                   partition by: _col2
                   raw input shape:
@@ -3434,7 +3434,7 @@ STAGE PLANS:
                   Partition table definition
                     input alias: ptf_1
                     name: noopwithmap
-                    order by: _col2, _col1
+                    order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                     output shape: _col1: string, _col2: string, _col5: int
                     partition by: _col2, _col1
                     raw input shape:
@@ -3442,7 +3442,7 @@ STAGE PLANS:
                   Partition table definition
                     input alias: ptf_2
                     name: noop
-                    order by: _col2, _col1
+                    order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                     output shape: _col1: string, _col2: string, _col5: int
                     partition by: _col2, _col1
                     raw input shape:
@@ -3479,7 +3479,7 @@ STAGE PLANS:
                 Partition table definition
                   input alias: ptf_1
                   name: noopwithmap
-                  order by: _col2, _col1
+                  order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                   output shape: _col1: string, _col2: string, _col5: int
                   partition by: _col2, _col1
                   raw input shape:
@@ -3487,7 +3487,7 @@ STAGE PLANS:
                 Partition table definition
                   input alias: ptf_2
                   name: noop
-                  order by: _col2, _col1
+                  order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                   output shape: _col1: string, _col2: string, _col5: int
                   partition by: _col2, _col1
                   raw input shape:
@@ -3523,7 +3523,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col2, _col1
+                  order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                   partition by: _col2, _col1
                   raw input shape:
                   window functions:
@@ -3698,14 +3698,14 @@ STAGE PLANS:
                 Partition table definition
                   input alias: ptf_1
                   name: noop
-                  order by: _col2
+                  order by: _col2 ASC NULLS FIRST
                   output shape: _col1: string, _col2: string, _col5: int
                   partition by: _col2
                   raw input shape:
                 Partition table definition
                   input alias: ptf_2
                   name: noop
-                  order by: _col2
+                  order by: _col2 ASC NULLS FIRST
                   output shape: _col1: string, _col2: string, _col5: int
                   partition by: _col2
                   raw input shape:
@@ -3741,7 +3741,7 @@ STAGE PLANS:
                 Partition table definition
                   input alias: ptf_1
                   name: noop
-                  order by: _col2, _col1
+                  order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                   output shape: _col1: string, _col2: string, _col5: int
                   partition by: _col2, _col1
                   raw input shape:
@@ -3777,7 +3777,7 @@ STAGE PLANS:
                 Partition table definition
                   input alias: ptf_1
                   name: noop
-                  order by: _col2
+                  order by: _col2 ASC NULLS FIRST
                   output shape: _col1: string, _col2: string, _col5: int
                   partition by: _col2
                   raw input shape:
@@ -3813,7 +3813,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col1
+                  order by: _col1 ASC NULLS FIRST
                   partition by: _col2
                   raw input shape:
                   window functions:
@@ -3983,14 +3983,14 @@ STAGE PLANS:
                 Partition table definition
                   input alias: ptf_1
                   name: noop
-                  order by: _col2, _col1
+                  order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                   output shape: _col1: string, _col2: string, _col5: int
                   partition by: _col2, _col1
                   raw input shape:
                 Partition table definition
                   input alias: ptf_2
                   name: noop
-                  order by: _col2, _col1
+                  order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                   output shape: _col1: string, _col2: string, _col5: int
                   partition by: _col2, _col1
                   raw input shape:
@@ -4026,14 +4026,14 @@ STAGE PLANS:
                 Partition table definition
                   input alias: ptf_1
                   name: noop
-                  order by: _col2
+                  order by: _col2 ASC NULLS FIRST
                   output shape: _col1: string, _col2: string, _col5: int
                   partition by: _col2
                   raw input shape:
                 Partition table definition
                   input alias: ptf_2
                   name: noop
-                  order by: _col2
+                  order by: _col2 ASC NULLS FIRST
                   output shape: _col1: string, _col2: string, _col5: int
                   partition by: _col2
                   raw input shape:
@@ -4069,7 +4069,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col1
+                  order by: _col1 ASC NULLS FIRST
                   partition by: _col2
                   raw input shape:
                   window functions:
@@ -4240,14 +4240,14 @@ STAGE PLANS:
                 Partition table definition
                   input alias: ptf_1
                   name: noop
-                  order by: _col2, _col1
+                  order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                   output shape: _col1: string, _col2: string, _col5: int
                   partition by: _col2, _col1
                   raw input shape:
                 Partition table definition
                   input alias: ptf_2
                   name: noop
-                  order by: _col2, _col1
+                  order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                   output shape: _col1: string, _col2: string, _col5: int
                   partition by: _col2, _col1
                   raw input shape:
@@ -4283,7 +4283,7 @@ STAGE PLANS:
                 Partition table definition
                   input alias: ptf_1
                   name: noop
-                  order by: _col2
+                  order by: _col2 ASC NULLS FIRST
                   output shape: _col1: string, _col2: string, _col5: int
                   partition by: _col2
                   raw input shape:
@@ -4297,7 +4297,7 @@ STAGE PLANS:
                   Partition table definition
                     input alias: ptf_1
                     name: noopwithmap
-                    order by: _col2, _col1
+                    order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                     output shape: _col1: string, _col2: string, _col5: int
                     partition by: _col2, _col1
                     raw input shape:
@@ -4335,7 +4335,7 @@ STAGE PLANS:
                 Partition table definition
                   input alias: ptf_1
                   name: noopwithmap
-                  order by: _col2, _col1
+                  order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                   output shape: _col1: string, _col2: string, _col5: int
                   partition by: _col2, _col1
                   raw input shape:
@@ -4372,7 +4372,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col2, _col1
+                  order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                   partition by: _col2, _col1
                   raw input shape:
                   window functions:
@@ -4544,7 +4544,7 @@ STAGE PLANS:
                 Partition table definition
                   input alias: ptf_1
                   name: noop
-                  order by: _col2, _col1
+                  order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                   output shape: _col1: string, _col2: string, _col5: int
                   partition by: _col2, _col1
                   raw input shape:
@@ -4558,7 +4558,7 @@ STAGE PLANS:
                   Partition table definition
                     input alias: ptf_1
                     name: noopwithmap
-                    order by: _col2
+                    order by: _col2 ASC NULLS FIRST
                     output shape: _col1: string, _col2: string, _col5: int
                     partition by: _col2
                     raw input shape:
@@ -4566,7 +4566,7 @@ STAGE PLANS:
                   Partition table definition
                     input alias: ptf_2
                     name: noop
-                    order by: _col2
+                    order by: _col2 ASC NULLS FIRST
                     output shape: _col1: string, _col2: string, _col5: int
                     partition by: _col2
                     raw input shape:
@@ -4603,7 +4603,7 @@ STAGE PLANS:
                 Partition table definition
                   input alias: ptf_1
                   name: noopwithmap
-                  order by: _col2
+                  order by: _col2 ASC NULLS FIRST
                   output shape: _col1: string, _col2: string, _col5: int
                   partition by: _col2
                   raw input shape:
@@ -4611,7 +4611,7 @@ STAGE PLANS:
                 Partition table definition
                   input alias: ptf_2
                   name: noop
-                  order by: _col2
+                  order by: _col2 ASC NULLS FIRST
                   output shape: _col1: string, _col2: string, _col5: int
                   partition by: _col2
                   raw input shape:
@@ -4647,7 +4647,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col2, _col1
+                  order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                   partition by: _col2, _col1
                   raw input shape:
                   window functions:
@@ -4813,14 +4813,14 @@ STAGE PLANS:
                 Partition table definition
                   input alias: ptf_1
                   name: noop
-                  order by: _col2, _col1
+                  order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                   output shape: _col1: string, _col2: string, _col5: int
                   partition by: _col2, _col1
                   raw input shape:
                 Partition table definition
                   input alias: ptf_2
                   name: noop
-                  order by: _col2, _col1
+                  order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                   output shape: _col1: string, _col2: string, _col5: int
                   partition by: _col2, _col1
                   raw input shape:
@@ -4834,7 +4834,7 @@ STAGE PLANS:
                   Partition table definition
                     input alias: ptf_1
                     name: noopwithmap
-                    order by: _col2, _col1
+                    order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                     output shape: _col1: string, _col2: string, _col5: int
                     partition by: _col2, _col1
                     raw input shape:
@@ -4872,7 +4872,7 @@ STAGE PLANS:
                 Partition table definition
                   input alias: ptf_1
                   name: noopwithmap
-                  order by: _col2, _col1
+                  order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                   output shape: _col1: string, _col2: string, _col5: int
                   partition by: _col2, _col1
                   raw input shape:
@@ -4909,7 +4909,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col1
+                  order by: _col1 ASC NULLS FIRST
                   partition by: _col2
                   raw input shape:
                   window functions:

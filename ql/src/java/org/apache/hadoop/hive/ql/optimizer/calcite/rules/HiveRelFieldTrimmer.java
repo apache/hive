@@ -287,8 +287,8 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
    final List<RexNode> originalExtraNodes = ImmutableList.copyOf(extraNodes);
    for (RexNode node : nodes) {
      fieldCollations.add(
-         collation(node, RelFieldCollation.Direction.ASCENDING, null,
-             extraNodes));
+         collation(node, RelFieldCollation.Direction.ASCENDING,
+                 RelFieldCollation.NullDirection.FIRST, extraNodes));
    }
    final RexNode offsetNode = offset <= 0 ? null : relBuilder.literal(offset);
    final RexNode fetchNode = fetch < 0 ? null : relBuilder.literal(fetch);

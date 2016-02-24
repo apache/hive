@@ -40,6 +40,7 @@ public class Order implements org.apache.thrift.TBase<Order, Order._Fields>, jav
 
   private static final org.apache.thrift.protocol.TField COL_FIELD_DESC = new org.apache.thrift.protocol.TField("col", org.apache.thrift.protocol.TType.STRING, (short)1);
   private static final org.apache.thrift.protocol.TField ORDER_FIELD_DESC = new org.apache.thrift.protocol.TField("order", org.apache.thrift.protocol.TType.I32, (short)2);
+  private static final org.apache.thrift.protocol.TField NULL_ORDER_FIELD_DESC = new org.apache.thrift.protocol.TField("nullOrder", org.apache.thrift.protocol.TType.I32, (short)3);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -49,11 +50,13 @@ public class Order implements org.apache.thrift.TBase<Order, Order._Fields>, jav
 
   private String col; // required
   private int order; // required
+  private int nullOrder; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     COL((short)1, "col"),
-    ORDER((short)2, "order");
+    ORDER((short)2, "order"),
+    NULL_ORDER((short)3, "nullOrder");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -72,6 +75,8 @@ public class Order implements org.apache.thrift.TBase<Order, Order._Fields>, jav
           return COL;
         case 2: // ORDER
           return ORDER;
+        case 3: // NULL_ORDER
+          return NULL_ORDER;
         default:
           return null;
       }
@@ -113,6 +118,7 @@ public class Order implements org.apache.thrift.TBase<Order, Order._Fields>, jav
 
   // isset id assignments
   private static final int __ORDER_ISSET_ID = 0;
+  private static final int __NULLORDER_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
@@ -120,6 +126,8 @@ public class Order implements org.apache.thrift.TBase<Order, Order._Fields>, jav
     tmpMap.put(_Fields.COL, new org.apache.thrift.meta_data.FieldMetaData("col", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.ORDER, new org.apache.thrift.meta_data.FieldMetaData("order", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+    tmpMap.put(_Fields.NULL_ORDER, new org.apache.thrift.meta_data.FieldMetaData("nullOrder", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Order.class, metaDataMap);
@@ -130,12 +138,15 @@ public class Order implements org.apache.thrift.TBase<Order, Order._Fields>, jav
 
   public Order(
     String col,
-    int order)
+    int order,
+    int nullOrder)
   {
     this();
     this.col = col;
     this.order = order;
     setOrderIsSet(true);
+    this.nullOrder = nullOrder;
+    setNullOrderIsSet(true);
   }
 
   /**
@@ -147,6 +158,7 @@ public class Order implements org.apache.thrift.TBase<Order, Order._Fields>, jav
       this.col = other.col;
     }
     this.order = other.order;
+    this.nullOrder = other.nullOrder;
   }
 
   public Order deepCopy() {
@@ -158,6 +170,8 @@ public class Order implements org.apache.thrift.TBase<Order, Order._Fields>, jav
     this.col = null;
     setOrderIsSet(false);
     this.order = 0;
+    setNullOrderIsSet(false);
+    this.nullOrder = 0;
   }
 
   public String getCol() {
@@ -205,6 +219,28 @@ public class Order implements org.apache.thrift.TBase<Order, Order._Fields>, jav
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __ORDER_ISSET_ID, value);
   }
 
+  public int getNullOrder() {
+    return this.nullOrder;
+  }
+
+  public void setNullOrder(int nullOrder) {
+    this.nullOrder = nullOrder;
+    setNullOrderIsSet(true);
+  }
+
+  public void unsetNullOrder() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __NULLORDER_ISSET_ID);
+  }
+
+  /** Returns true if field nullOrder is set (has been assigned a value) and false otherwise */
+  public boolean isSetNullOrder() {
+    return EncodingUtils.testBit(__isset_bitfield, __NULLORDER_ISSET_ID);
+  }
+
+  public void setNullOrderIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __NULLORDER_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case COL:
@@ -223,6 +259,14 @@ public class Order implements org.apache.thrift.TBase<Order, Order._Fields>, jav
       }
       break;
 
+    case NULL_ORDER:
+      if (value == null) {
+        unsetNullOrder();
+      } else {
+        setNullOrder((Integer)value);
+      }
+      break;
+
     }
   }
 
@@ -233,6 +277,9 @@ public class Order implements org.apache.thrift.TBase<Order, Order._Fields>, jav
 
     case ORDER:
       return getOrder();
+
+    case NULL_ORDER:
+      return getNullOrder();
 
     }
     throw new IllegalStateException();
@@ -249,6 +296,8 @@ public class Order implements org.apache.thrift.TBase<Order, Order._Fields>, jav
       return isSetCol();
     case ORDER:
       return isSetOrder();
+    case NULL_ORDER:
+      return isSetNullOrder();
     }
     throw new IllegalStateException();
   }
@@ -284,6 +333,15 @@ public class Order implements org.apache.thrift.TBase<Order, Order._Fields>, jav
         return false;
     }
 
+    boolean this_present_nullOrder = true;
+    boolean that_present_nullOrder = true;
+    if (this_present_nullOrder || that_present_nullOrder) {
+      if (!(this_present_nullOrder && that_present_nullOrder))
+        return false;
+      if (this.nullOrder != that.nullOrder)
+        return false;
+    }
+
     return true;
   }
 
@@ -300,6 +358,11 @@ public class Order implements org.apache.thrift.TBase<Order, Order._Fields>, jav
     list.add(present_order);
     if (present_order)
       list.add(order);
+
+    boolean present_nullOrder = true;
+    list.add(present_nullOrder);
+    if (present_nullOrder)
+      list.add(nullOrder);
 
     return list.hashCode();
   }
@@ -328,6 +391,16 @@ public class Order implements org.apache.thrift.TBase<Order, Order._Fields>, jav
     }
     if (isSetOrder()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.order, other.order);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetNullOrder()).compareTo(other.isSetNullOrder());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetNullOrder()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.nullOrder, other.nullOrder);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -362,6 +435,10 @@ public class Order implements org.apache.thrift.TBase<Order, Order._Fields>, jav
     if (!first) sb.append(", ");
     sb.append("order:");
     sb.append(this.order);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("nullOrder:");
+    sb.append(this.nullOrder);
     first = false;
     sb.append(")");
     return sb.toString();
@@ -424,6 +501,14 @@ public class Order implements org.apache.thrift.TBase<Order, Order._Fields>, jav
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 3: // NULL_ORDER
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.nullOrder = iprot.readI32();
+              struct.setNullOrderIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -444,6 +529,9 @@ public class Order implements org.apache.thrift.TBase<Order, Order._Fields>, jav
       }
       oprot.writeFieldBegin(ORDER_FIELD_DESC);
       oprot.writeI32(struct.order);
+      oprot.writeFieldEnd();
+      oprot.writeFieldBegin(NULL_ORDER_FIELD_DESC);
+      oprot.writeI32(struct.nullOrder);
       oprot.writeFieldEnd();
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -469,19 +557,25 @@ public class Order implements org.apache.thrift.TBase<Order, Order._Fields>, jav
       if (struct.isSetOrder()) {
         optionals.set(1);
       }
-      oprot.writeBitSet(optionals, 2);
+      if (struct.isSetNullOrder()) {
+        optionals.set(2);
+      }
+      oprot.writeBitSet(optionals, 3);
       if (struct.isSetCol()) {
         oprot.writeString(struct.col);
       }
       if (struct.isSetOrder()) {
         oprot.writeI32(struct.order);
       }
+      if (struct.isSetNullOrder()) {
+        oprot.writeI32(struct.nullOrder);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, Order struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(2);
+      BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
         struct.col = iprot.readString();
         struct.setColIsSet(true);
@@ -489,6 +583,10 @@ public class Order implements org.apache.thrift.TBase<Order, Order._Fields>, jav
       if (incoming.get(1)) {
         struct.order = iprot.readI32();
         struct.setOrderIsSet(true);
+      }
+      if (incoming.get(2)) {
+        struct.nullOrder = iprot.readI32();
+        struct.setNullOrderIsSet(true);
       }
     }
   }

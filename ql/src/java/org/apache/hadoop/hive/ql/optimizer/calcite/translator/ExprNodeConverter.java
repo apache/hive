@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.RexVisitor;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.Schema;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.NullOrder;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.Order;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.OrderExpression;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.OrderSpec;
@@ -315,7 +316,18 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
         OrderExpression exprSpec = new OrderExpression();
         Order order = ok.getDirection() == RelFieldCollation.Direction.ASCENDING ?
                 Order.ASC : Order.DESC;
+        NullOrder nullOrder;
+        if ( ok.right.contains(SqlKind.NULLS_FIRST) ) {
+          nullOrder = NullOrder.NULLS_FIRST;
+        } else if ( ok.right.contains(SqlKind.NULLS_LAST) ) {
+          nullOrder = NullOrder.NULLS_LAST;
+        } else {
+          // Default
+          nullOrder = ok.getDirection() == RelFieldCollation.Direction.ASCENDING ?
+                  NullOrder.NULLS_FIRST : NullOrder.NULLS_LAST;
+        }
         exprSpec.setOrder(order);
+        exprSpec.setNullOrder(nullOrder);
         ASTNode astNode = ok.left.accept(new RexVisitor(schema));
         exprSpec.setExpression(astNode);
         oSpec.addExpression(exprSpec);

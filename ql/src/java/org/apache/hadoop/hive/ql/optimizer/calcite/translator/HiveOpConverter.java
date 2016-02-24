@@ -41,8 +41,6 @@ import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.StrictChecks;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -65,8 +63,8 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveMultiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortExchange;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
 import org.apache.hadoop.hive.ql.parse.JoinCond;
@@ -99,6 +97,8 @@ import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.UnionDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -435,6 +435,7 @@ public class HiveOpConverter {
       Map<Integer, RexNode> obRefToCallMap = sortRel.getInputRefToCallMap();
       List<ExprNodeDesc> sortCols = new ArrayList<ExprNodeDesc>();
       StringBuilder order = new StringBuilder();
+      StringBuilder nullOrder = new StringBuilder();
       for (RelFieldCollation sortInfo : sortRel.getCollation().getFieldCollations()) {
         int sortColumnPos = sortInfo.getFieldIndex();
         ColumnInfo columnInfo = new ColumnInfo(inputOp.getSchema().getSignature()
@@ -446,6 +447,14 @@ public class HiveOpConverter {
           order.append("-");
         } else {
           order.append("+");
+        }
+        if (sortInfo.nullDirection == RelFieldCollation.NullDirection.FIRST) {
+          nullOrder.append("a");
+        } else if (sortInfo.nullDirection == RelFieldCollation.NullDirection.LAST) {
+          nullOrder.append("z");
+        } else {
+          // Default
+          nullOrder.append(sortInfo.getDirection() == RelFieldCollation.Direction.DESCENDING ? "z" : "a");
         }
 
         if (obRefToCallMap != null) {
@@ -474,7 +483,7 @@ public class HiveOpConverter {
       // 1.b. Generate reduce sink and project operator
       resultOp = genReduceSinkAndBacktrackSelect(resultOp,
           sortCols.toArray(new ExprNodeDesc[sortCols.size()]), 0, new ArrayList<ExprNodeDesc>(),
-          order.toString(), numReducers, Operation.NOT_ACID, hiveConf, keepColumns);
+          order.toString(), nullOrder.toString(), numReducers, Operation.NOT_ACID, hiveConf, keepColumns);
     }
 
     // 2. If we need to generate limit
@@ -626,6 +635,7 @@ public class HiveOpConverter {
       ArrayList<ExprNodeDesc> keyCols = new ArrayList<ExprNodeDesc>();
       ArrayList<ExprNodeDesc> partCols = new ArrayList<ExprNodeDesc>();
       StringBuilder order = new StringBuilder();
+      StringBuilder nullOrder = new StringBuilder();
 
       for (PartitionExpression partCol : wSpec.getQueryPartitionSpec().getExpressions()) {
         ExprNodeDesc partExpr = semanticAnalyzer.genExprNodeDesc(partCol.getExpression(), rr);
@@ -633,6 +643,7 @@ public class HiveOpConverter {
           keyCols.add(partExpr);
           partCols.add(partExpr);
           order.append('+');
+          nullOrder.append('a');
         }
       }
 
@@ -640,19 +651,22 @@ public class HiveOpConverter {
         for (OrderExpression orderCol : wSpec.getQueryOrderSpec().getExpressions()) {
           ExprNodeDesc orderExpr = semanticAnalyzer.genExprNodeDesc(orderCol.getExpression(), rr);
           char orderChar = orderCol.getOrder() == PTFInvocationSpec.Order.ASC ? '+' : '-';
+          char nullOrderChar = orderCol.getNullOrder() == PTFInvocationSpec.NullOrder.NULLS_FIRST ? 'a' : 'z';
           int index = ExprNodeDescUtils.indexOf(orderExpr, keyCols);
           if (index >= 0) {
             order.setCharAt(index, orderChar);
+            nullOrder.setCharAt(index, nullOrderChar);
             continue;
           }
           keyCols.add(orderExpr);
           order.append(orderChar);
+          nullOrder.append(nullOrderChar);
         }
       }
 
       SelectOperator selectOp = genReduceSinkAndBacktrackSelect(input,
           keyCols.toArray(new ExprNodeDesc[keyCols.size()]), 0, partCols,
-          order.toString(), -1, Operation.NOT_ACID, hiveConf);
+          order.toString(), nullOrder.toString(), -1, Operation.NOT_ACID, hiveConf);
 
       // 2. Finally create PTF
       PTFTranslator translator = new PTFTranslator();
@@ -677,14 +691,14 @@ public class HiveOpConverter {
 
   private static SelectOperator genReduceSinkAndBacktrackSelect(Operator<?> input,
           ExprNodeDesc[] keys, int tag, ArrayList<ExprNodeDesc> partitionCols, String order,
-          int numReducers, Operation acidOperation, HiveConf hiveConf)
+          String nullOrder, int numReducers, Operation acidOperation, HiveConf hiveConf)
               throws SemanticException {
-    return genReduceSinkAndBacktrackSelect(input, keys, tag, partitionCols, order,
+    return genReduceSinkAndBacktrackSelect(input, keys, tag, partitionCols, order, nullOrder,
         numReducers, acidOperation, hiveConf, input.getSchema().getColumnNames());
   }
 
   private static SelectOperator genReduceSinkAndBacktrackSelect(Operator<?> input,
-      ExprNodeDesc[] keys, int tag, ArrayList<ExprNodeDesc> partitionCols, String order,
+      ExprNodeDesc[] keys, int tag, ArrayList<ExprNodeDesc> partitionCols, String order, String nullOrder,
       int numReducers, Operation acidOperation, HiveConf hiveConf,
       List<String> keepColNames) throws SemanticException {
     // 1. Generate RS operator
@@ -715,7 +729,8 @@ public class HiveOpConverter {
           "In CBO return path, genReduceSinkAndBacktrackSelect is expecting only one tableAlias but there is none");
     }
     // 1.2 Now generate RS operator
-    ReduceSinkOperator rsOp = genReduceSink(input, tableAlias, keys, tag, partitionCols, order, numReducers, acidOperation, hiveConf);
+    ReduceSinkOperator rsOp = genReduceSink(input, tableAlias, keys, tag, partitionCols, order,
+            nullOrder, numReducers, acidOperation, hiveConf);
 
     // 2. Generate backtrack Select operator
     Map<String, ExprNodeDesc> descriptors = buildBacktrackFromReduceSink(keepColNames,
@@ -737,13 +752,13 @@ public class HiveOpConverter {
 
   private static ReduceSinkOperator genReduceSink(Operator<?> input, String tableAlias, ExprNodeDesc[] keys, int tag,
       int numReducers, Operation acidOperation, HiveConf hiveConf) throws SemanticException {
-    return genReduceSink(input, tableAlias, keys, tag, new ArrayList<ExprNodeDesc>(), "", numReducers,
+    return genReduceSink(input, tableAlias, keys, tag, new ArrayList<ExprNodeDesc>(), "", "", numReducers,
         acidOperation, hiveConf);
   }
 
   @SuppressWarnings({ "rawtypes", "unchecked" })
   private static ReduceSinkOperator genReduceSink(Operator<?> input, String tableAlias, ExprNodeDesc[] keys, int tag,
-      ArrayList<ExprNodeDesc> partitionCols, String order, int numReducers,
+      ArrayList<ExprNodeDesc> partitionCols, String order, String nullOrder, int numReducers,
       Operation acidOperation, HiveConf hiveConf) throws SemanticException {
     Operator dummy = Operator.createDummy(); // dummy for backtracking
     dummy.setParentOperators(Arrays.asList(input));
@@ -818,7 +833,7 @@ public class HiveOpConverter {
           reduceKeys.size(), numReducers, acidOperation);
     } else {
       rsDesc = PlanUtils.getReduceSinkDesc(reduceKeys, reduceValues, outputColumnNames, false, tag,
-          partitionCols, order, numReducers, acidOperation);
+          partitionCols, order, nullOrder, numReducers, acidOperation);
     }
 
     ReduceSinkOperator rsOp = (ReduceSinkOperator) OperatorFactory.getAndMakeChild(

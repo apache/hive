@@ -109,6 +109,8 @@ public abstract class BaseSemanticAnalyzer {
 
   public static int HIVE_COLUMN_ORDER_ASC = 1;
   public static int HIVE_COLUMN_ORDER_DESC = 0;
+  public static int HIVE_COLUMN_NULLS_FIRST = 0;
+  public static int HIVE_COLUMN_NULLS_LAST = 1;
 
   /**
    * ReadEntities that are passed to the hooks.
@@ -657,11 +659,23 @@ public abstract class BaseSemanticAnalyzer {
     for (int i = 0; i < numCh; i++) {
       ASTNode child = (ASTNode) ast.getChild(i);
       if (child.getToken().getType() == HiveParser.TOK_TABSORTCOLNAMEASC) {
-        colList.add(new Order(unescapeIdentifier(child.getChild(0).getText()).toLowerCase(),
-            HIVE_COLUMN_ORDER_ASC));
+        child = (ASTNode) child.getChild(0);
+        if (child.getToken().getType() == HiveParser.TOK_NULLS_FIRST) {
+          colList.add(new Order(unescapeIdentifier(child.getChild(0).getText()).toLowerCase(),
+              HIVE_COLUMN_ORDER_ASC, HIVE_COLUMN_NULLS_FIRST));
+        } else {
+          colList.add(new Order(unescapeIdentifier(child.getChild(0).getText()).toLowerCase(),
+              HIVE_COLUMN_ORDER_ASC, HIVE_COLUMN_NULLS_LAST));
+        }
       } else {
-        colList.add(new Order(unescapeIdentifier(child.getChild(0).getText()).toLowerCase(),
-            HIVE_COLUMN_ORDER_DESC));
+        child = (ASTNode) child.getChild(0);
+        if (child.getToken().getType() == HiveParser.TOK_NULLS_LAST) {
+          colList.add(new Order(unescapeIdentifier(child.getChild(0).getText()).toLowerCase(),
+              HIVE_COLUMN_ORDER_DESC, HIVE_COLUMN_NULLS_LAST));
+        } else {
+          colList.add(new Order(unescapeIdentifier(child.getChild(0).getText()).toLowerCase(),
+              HIVE_COLUMN_ORDER_DESC, HIVE_COLUMN_NULLS_FIRST));
+        }
       }
     }
     return colList;

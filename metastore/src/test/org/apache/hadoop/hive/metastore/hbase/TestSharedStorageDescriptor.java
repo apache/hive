@@ -18,8 +18,9 @@
  */
 package org.apache.hadoop.hive.metastore.hbase;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.Iterator;
+import java.util.List;
+
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
@@ -27,10 +28,8 @@ import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -80,19 +79,22 @@ public class TestSharedStorageDescriptor {
   @Test
   public void changeOrder() {
     StorageDescriptor sd = new StorageDescriptor();
-    sd.addToSortCols(new Order("fred", 1));
+    sd.addToSortCols(new Order("fred", 1, 0));
     SharedStorageDescriptor ssd = new SharedStorageDescriptor();
     ssd.setShared(sd);
     ssd.getSortCols().get(0).setOrder(2);
+    ssd.getSortCols().get(0).setNullOrder(3);
     Assert.assertFalse(sd.getSortCols() == ssd.getSortCols());
     Assert.assertEquals(2, ssd.getSortCols().get(0).getOrder());
     Assert.assertEquals(1, sd.getSortCols().get(0).getOrder());
+    Assert.assertEquals(3, ssd.getSortCols().get(0).getNullOrder());
+    Assert.assertEquals(0, sd.getSortCols().get(0).getNullOrder());
   }
 
   @Test
   public void unsetOrder() {
     StorageDescriptor sd = new StorageDescriptor();
-    sd.addToSortCols(new Order("fred", 1));
+    sd.addToSortCols(new Order("fred", 1, 0));
     SharedStorageDescriptor ssd = new SharedStorageDescriptor();
     ssd.setShared(sd);
     ssd.unsetSortCols();

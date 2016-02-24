@@ -27,6 +27,8 @@ serdeConstants::serdeConstants() {
 
   SERIALIZATION_SORT_ORDER = "serialization.sort.order";
 
+  SERIALIZATION_NULL_POSITION = "serialization.null.position";
+
   SERIALIZATION_USE_JSON_OBJECTS = "serialization.use.json.object";
 
   SERIALIZATION_ENCODING = "serialization.encoding";

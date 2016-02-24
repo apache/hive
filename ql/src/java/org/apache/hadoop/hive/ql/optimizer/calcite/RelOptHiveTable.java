@@ -33,6 +33,7 @@ import org.apache.calcite.rel.RelCollationTraitDef;
 import org.apache.calcite.rel.RelDistribution;
 import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelFieldCollation.Direction;
+import org.apache.calcite.rel.RelFieldCollation.NullDirection;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.logical.LogicalTableScan;
 import org.apache.calcite.rel.type.RelDataType;
@@ -165,7 +166,14 @@ public class RelOptHiveTable extends RelOptAbstractTable {
           else {
             direction = Direction.DESCENDING;
           }
-          collationList.add(new RelFieldCollation(i,direction));
+          NullDirection nullDirection;
+          if (sortColumn.getNullOrder() == BaseSemanticAnalyzer.HIVE_COLUMN_NULLS_FIRST) {
+            nullDirection = NullDirection.FIRST;
+          }
+          else {
+            nullDirection = NullDirection.LAST;
+          }
+          collationList.add(new RelFieldCollation(i,direction,nullDirection));
           break;
         }
       }

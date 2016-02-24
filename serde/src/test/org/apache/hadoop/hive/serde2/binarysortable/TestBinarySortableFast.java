@@ -23,8 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import junit.framework.TestCase;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.SerDe;
@@ -33,20 +31,23 @@ import org.apache.hadoop.hive.serde2.binarysortable.MyTestPrimitiveClass.ExtraTy
 import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableDeserializeRead;
 import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableSerializeWrite;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.ObjectInspectorOptions;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.io.BytesWritable;
 
+import junit.framework.TestCase;
+
 public class TestBinarySortableFast extends TestCase {
 
   private void testBinarySortableFast(MyTestPrimitiveClass[] myTestPrimitiveClasses,
-          boolean[] columnSortOrderIsDesc, SerDe serde, StructObjectInspector rowOI, boolean ascending,
+          boolean[] columnSortOrderIsDesc, byte[] columnNullMarker, byte[] columnNotNullMarker,
+          SerDe serde, StructObjectInspector rowOI, boolean ascending,
           Map<Object, PrimitiveTypeInfo[]> primitiveTypeInfoMap) throws Throwable {
 
-    BinarySortableSerializeWrite binarySortableSerializeWrite = new BinarySortableSerializeWrite(columnSortOrderIsDesc);
+    BinarySortableSerializeWrite binarySortableSerializeWrite =
+            new BinarySortableSerializeWrite(columnSortOrderIsDesc, columnNullMarker, columnNotNullMarker);
 
     // Try to serialize
 
@@ -227,15 +228,24 @@ public class TestBinarySortableFast extends TestCase {
       String fieldTypes = ObjectInspectorUtils.getFieldTypes(rowOI);
       String order;
       order = StringUtils.leftPad("", MyTestPrimitiveClass.primitiveCount, '+');
-      SerDe serde_ascending = TestBinarySortableSerDe.getSerDe(fieldNames, fieldTypes, order);
+      String nullOrder;
+      nullOrder = StringUtils.leftPad("", MyTestPrimitiveClass.primitiveCount, 'a');
+      SerDe serde_ascending = TestBinarySortableSerDe.getSerDe(fieldNames, fieldTypes, order, nullOrder);
       order = StringUtils.leftPad("", MyTestPrimitiveClass.primitiveCount, '-');
-      SerDe serde_descending = TestBinarySortableSerDe.getSerDe(fieldNames, fieldTypes, order);
+      nullOrder = StringUtils.leftPad("", MyTestPrimitiveClass.primitiveCount, 'z');
+      SerDe serde_descending = TestBinarySortableSerDe.getSerDe(fieldNames, fieldTypes, order, nullOrder);
 
       boolean[] columnSortOrderIsDesc = new boolean[MyTestPrimitiveClass.primitiveCount];
       Arrays.fill(columnSortOrderIsDesc, false);
-      testBinarySortableFast(myTestPrimitiveClasses, columnSortOrderIsDesc, serde_ascending, rowOI, true, primitiveTypeInfoMap);
+      byte[] columnNullMarker = new byte[MyTestPrimitiveClass.primitiveCount];
+      Arrays.fill(columnNullMarker, BinarySortableSerDe.ZERO);
+      byte[] columnNotNullMarker = new byte[MyTestPrimitiveClass.primitiveCount];
+      Arrays.fill(columnNotNullMarker, BinarySortableSerDe.ONE);
+      testBinarySortableFast(myTestPrimitiveClasses, columnSortOrderIsDesc, columnNullMarker,
+              columnNotNullMarker, serde_ascending, rowOI, true, primitiveTypeInfoMap);
       Arrays.fill(columnSortOrderIsDesc, true);
-      testBinarySortableFast(myTestPrimitiveClasses, columnSortOrderIsDesc, serde_descending, rowOI, false, primitiveTypeInfoMap);
+      testBinarySortableFast(myTestPrimitiveClasses, columnSortOrderIsDesc, columnNullMarker,
+              columnNotNullMarker, serde_descending, rowOI, false, primitiveTypeInfoMap);
     } catch (Throwable e) {
       e.printStackTrace();
       throw e;

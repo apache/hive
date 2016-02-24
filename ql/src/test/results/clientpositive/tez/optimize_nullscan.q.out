@@ -122,6 +122,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
@@ -270,6 +271,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
@@ -337,6 +339,7 @@ STAGE PLANS:
                       Number of rows: 0
                       Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                         tag: -1
@@ -579,6 +582,7 @@ STAGE PLANS:
                   Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: string)
+                    null sort order: a
                     sort order: +
                     Map-reduce partition columns: _col0 (type: string)
                     Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
@@ -692,6 +696,7 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                         tag: -1
@@ -761,6 +766,7 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                         tag: -1
@@ -1130,6 +1136,7 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                         tag: 0
@@ -1197,6 +1204,7 @@ STAGE PLANS:
                       Number of rows: 0
                       Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                         tag: -1
@@ -1438,6 +1446,7 @@ STAGE PLANS:
                   Number of rows: 0
                   Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                     tag: 1
@@ -1644,6 +1653,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
@@ -1709,6 +1719,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
@@ -1831,6 +1842,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: value (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: value (type: string)
                       Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
@@ -1897,6 +1909,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: value (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: value (type: string)
                       Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
@@ -2060,6 +2073,7 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         tag: -1

@@ -27,19 +27,18 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.ArrayUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.PTFOperator;
 import org.apache.hadoop.hive.ql.exec.PTFPartition;
-import org.apache.hadoop.hive.ql.exec.WindowFunctionInfo;
 import org.apache.hadoop.hive.ql.exec.PTFPartition.PTFPartitionIterator;
 import org.apache.hadoop.hive.ql.exec.PTFRollingPartition;
+import org.apache.hadoop.hive.ql.exec.WindowFunctionInfo;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.NullOrder;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.Order;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.BoundarySpec;
@@ -62,6 +61,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("deprecation")
 public class WindowingTableFunction extends TableFunctionEvaluator {
@@ -110,6 +111,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
 
     WindowTableFunctionDef wTFnDef = (WindowTableFunctionDef) getTableDef();
     Order order = wTFnDef.getOrder().getExpressions().get(0).getOrder();
+    NullOrder nullOrder = wTFnDef.getOrder().getExpressions().get(0).getNullOrder();
 
     for(WindowFunctionDef wFn : wTFnDef.getWindowFunctions()) {
       boolean processWindow = processWindow(wFn);
@@ -121,7 +123,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
         }
         oColumns.add((List<?>)out);
       } else {
-        oColumns.add(executeFnwithWindow(getQueryDef(), wFn, iPart, order));
+        oColumns.add(executeFnwithWindow(getQueryDef(), wFn, iPart, order, nullOrder));
       }
     }
 
@@ -421,7 +423,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
         int rowToProcess = streamingState.rollingPart.rowToProcess(wFn.getWindowFrame());
         if (rowToProcess >= 0) {
           Range rng = getRange(wFn, rowToProcess, streamingState.rollingPart,
-              streamingState.order);
+              streamingState.order, streamingState.nullOrder);
           PTFPartitionIterator<Object> rItr = rng.iterator();
           PTFOperator.connectLeadLagFunctionsToPartition(ptfDesc, rItr);
           Object out = evaluateWindowFunction(wFn, rItr);
@@ -499,7 +501,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
           int rowToProcess = streamingState.rollingPart.size() - numRowsRemaining;
           if (rowToProcess >= 0) {
             Range rng = getRange(wFn, rowToProcess, streamingState.rollingPart,
-                streamingState.order);
+                streamingState.order, streamingState.nullOrder);
             PTFPartitionIterator<Object> rItr = rng.iterator();
             PTFOperator.connectLeadLagFunctionsToPartition(ptfDesc, rItr);
             Object out = evaluateWindowFunction(wFn, rItr);
@@ -659,11 +661,12 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
   ArrayList<Object> executeFnwithWindow(PTFDesc ptfDesc,
       WindowFunctionDef wFnDef,
       PTFPartition iPart,
-      Order order)
+      Order order,
+      NullOrder nullOrder)
     throws HiveException {
     ArrayList<Object> vals = new ArrayList<Object>();
     for(int i=0; i < iPart.size(); i++) {
-      Range rng = getRange(wFnDef, i, iPart, order);
+      Range rng = getRange(wFnDef, i, iPart, order, nullOrder);
       PTFPartitionIterator<Object> rItr = rng.iterator();
       PTFOperator.connectLeadLagFunctionsToPartition(ptfDesc, rItr);
       Object out = evaluateWindowFunction(wFnDef, rItr);
@@ -672,7 +675,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
     return vals;
   }
 
-  private Range getRange(WindowFunctionDef wFnDef, int currRow, PTFPartition p, Order order) throws HiveException
+  private Range getRange(WindowFunctionDef wFnDef, int currRow, PTFPartition p, Order order, NullOrder nullOrder) throws HiveException
   {
     BoundaryDef startB = wFnDef.getWindowFrame().getStart();
     BoundaryDef endB = wFnDef.getWindowFrame().getEnd();
@@ -691,10 +694,10 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
     else {
       ValueBoundaryScanner vbs;
       if ( startB instanceof ValueBoundaryDef ) {
-        vbs = ValueBoundaryScanner.getScanner((ValueBoundaryDef)startB, order);
+        vbs = ValueBoundaryScanner.getScanner((ValueBoundaryDef)startB, order, nullOrder);
       }
       else {
-        vbs = ValueBoundaryScanner.getScanner((ValueBoundaryDef)endB, order);
+        vbs = ValueBoundaryScanner.getScanner((ValueBoundaryDef)endB, order, nullOrder);
       }
       vbs.reset(startB);
       start =  vbs.computeStart(currRow, p);
@@ -775,12 +778,14 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
   {
     BoundaryDef bndDef;
     Order order;
+    NullOrder nullOrder;
     PTFExpressionDef expressionDef;
 
-    public ValueBoundaryScanner(BoundaryDef bndDef, Order order, PTFExpressionDef expressionDef)
+    public ValueBoundaryScanner(BoundaryDef bndDef, Order order, NullOrder nullOrder, PTFExpressionDef expressionDef)
     {
       this.bndDef = bndDef;
       this.order = order;
+      this.nullOrder = nullOrder;
       this.expressionDef = expressionDef;
     }
 
@@ -1135,7 +1140,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
 
 
     @SuppressWarnings("incomplete-switch")
-    public static ValueBoundaryScanner getScanner(ValueBoundaryDef vbDef, Order order)
+    public static ValueBoundaryScanner getScanner(ValueBoundaryDef vbDef, Order order, NullOrder nullOrder)
         throws HiveException {
       PrimitiveObjectInspector pOI = (PrimitiveObjectInspector) vbDef.getOI();
       switch(pOI.getPrimitiveCategory()) {
@@ -1144,16 +1149,16 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
       case LONG:
       case SHORT:
       case TIMESTAMP:
-        return new LongValueBoundaryScanner(vbDef, order, vbDef.getExpressionDef());
+        return new LongValueBoundaryScanner(vbDef, order, nullOrder, vbDef.getExpressionDef());
       case DOUBLE:
       case FLOAT:
-        return new DoubleValueBoundaryScanner(vbDef, order, vbDef.getExpressionDef());
+        return new DoubleValueBoundaryScanner(vbDef, order, nullOrder, vbDef.getExpressionDef());
       case DECIMAL:
-        return new HiveDecimalValueBoundaryScanner(vbDef, order, vbDef.getExpressionDef());
+        return new HiveDecimalValueBoundaryScanner(vbDef, order, nullOrder, vbDef.getExpressionDef());
       case DATE:
-        return new DateValueBoundaryScanner(vbDef, order, vbDef.getExpressionDef());
+        return new DateValueBoundaryScanner(vbDef, order, nullOrder, vbDef.getExpressionDef());
       case STRING:
-        return new StringValueBoundaryScanner(vbDef, order, vbDef.getExpressionDef());
+        return new StringValueBoundaryScanner(vbDef, order, nullOrder, vbDef.getExpressionDef());
       }
       throw new HiveException(
           String.format("Internal Error: attempt to setup a Window for datatype %s",
@@ -1162,9 +1167,9 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
   }
 
   public static class LongValueBoundaryScanner extends ValueBoundaryScanner {
-    public LongValueBoundaryScanner(BoundaryDef bndDef, Order order,
+    public LongValueBoundaryScanner(BoundaryDef bndDef, Order order, NullOrder nullOrder,
         PTFExpressionDef expressionDef) {
-      super(bndDef,order,expressionDef);
+      super(bndDef,order,nullOrder,expressionDef);
     }
 
     @Override
@@ -1196,8 +1201,8 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
 
   public static class DoubleValueBoundaryScanner extends ValueBoundaryScanner {
     public DoubleValueBoundaryScanner(BoundaryDef bndDef, Order order,
-        PTFExpressionDef expressionDef) {
-      super(bndDef,order,expressionDef);
+        NullOrder nullOrder, PTFExpressionDef expressionDef) {
+      super(bndDef,order,nullOrder,expressionDef);
     }
 
     @Override
@@ -1229,8 +1234,8 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
 
   public static class HiveDecimalValueBoundaryScanner extends ValueBoundaryScanner {
     public HiveDecimalValueBoundaryScanner(BoundaryDef bndDef, Order order,
-        PTFExpressionDef expressionDef) {
-      super(bndDef,order,expressionDef);
+        NullOrder nullOrder, PTFExpressionDef expressionDef) {
+      super(bndDef,order,nullOrder,expressionDef);
     }
 
     @Override
@@ -1262,8 +1267,8 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
 
   public static class DateValueBoundaryScanner extends ValueBoundaryScanner {
     public DateValueBoundaryScanner(BoundaryDef bndDef, Order order,
-        PTFExpressionDef expressionDef) {
-      super(bndDef,order,expressionDef);
+        NullOrder nullOrder, PTFExpressionDef expressionDef) {
+      super(bndDef,order,nullOrder,expressionDef);
     }
 
     @Override
@@ -1290,8 +1295,8 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
 
   public static class StringValueBoundaryScanner extends ValueBoundaryScanner {
     public StringValueBoundaryScanner(BoundaryDef bndDef, Order order,
-        PTFExpressionDef expressionDef) {
-      super(bndDef,order,expressionDef);
+        NullOrder nullOrder, PTFExpressionDef expressionDef) {
+      super(bndDef,order,nullOrder,expressionDef);
     }
 
     @Override
@@ -1347,6 +1352,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
     int[] wFnsToProcess;
     WindowTableFunctionDef wTFnDef;
     Order order;
+    NullOrder nullOrder;
     PTFDesc ptfDesc;
     StructObjectInspector inputOI;
     AggregationBuffer[] aggBuffers;
@@ -1362,6 +1368,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
       this.currIdx = 0;
       wTFnDef = (WindowTableFunctionDef) getTableDef();
       order = wTFnDef.getOrder().getExpressions().get(0).getOrder();
+      nullOrder = wTFnDef.getOrder().getExpressions().get(0).getNullOrder();
       ptfDesc = getQueryDef();
       inputOI = iPart.getOutputOI();
 
@@ -1416,7 +1423,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
             out = ObjectInspectorUtils.copyToStandardObject(out, wFn.getOI());
             output.set(j, out);
           } else {
-            Range rng = getRange(wFn, currIdx, iPart, order);
+            Range rng = getRange(wFn, currIdx, iPart, order, nullOrder);
             PTFPartitionIterator<Object> rItr = rng.iterator();
             PTFOperator.connectLeadLagFunctionsToPartition(ptfDesc, rItr);
             output.set(j, evaluateWindowFunction(wFn, rItr));
@@ -1453,6 +1460,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
     AggregationBuffer[] aggBuffers;
     Object[][] funcArgs;
     Order order;
+    NullOrder nullOrder;
     RankLimit rnkLimit;
 
     @SuppressWarnings("unchecked")
@@ -1467,6 +1475,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
           precedingSpan, followingSpan);
 
       order = tabDef.getOrder().getExpressions().get(0).getOrder();
+      nullOrder = tabDef.getOrder().getExpressions().get(0).getNullOrder();
 
       int numFns = tabDef.getWindowFunctions().size();
       fnOutputs = new ArrayList[numFns];

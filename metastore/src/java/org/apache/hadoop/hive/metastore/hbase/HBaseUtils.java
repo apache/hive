@@ -707,7 +707,7 @@ class HBaseUtils {
     sd.setBucketCols(new ArrayList<>(proto.getBucketColsList()));
     List<Order> sortCols = new ArrayList<>();
     for (HbaseMetastoreProto.StorageDescriptor.Order protoOrder : proto.getSortColsList()) {
-      sortCols.add(new Order(protoOrder.getColumnName(), protoOrder.getOrder()));
+      sortCols.add(new Order(protoOrder.getColumnName(), protoOrder.getOrder(), protoOrder.getNullOrder()));
     }
     sd.setSortCols(sortCols);
     if (proto.hasSkewedInfo()) {

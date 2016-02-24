@@ -22582,6 +22582,16 @@ public final class HbaseMetastoreProto {
        * <code>optional sint32 order = 2 [default = 1];</code>
        */
       int getOrder();
+
+      // optional sint32 nullOrder = 3 [default = 0];
+      /**
+       * <code>optional sint32 nullOrder = 3 [default = 0];</code>
+       */
+      boolean hasNullOrder();
+      /**
+       * <code>optional sint32 nullOrder = 3 [default = 0];</code>
+       */
+      int getNullOrder();
     }
     /**
      * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.StorageDescriptor.Order}
@@ -22642,6 +22652,11 @@ public final class HbaseMetastoreProto {
               case 16: {
                 bitField0_ |= 0x00000002;
                 order_ = input.readSInt32();
+                break;
+              }
+              case 24: {
+                bitField0_ |= 0x00000004;
+                nullOrder_ = input.readSInt32();
                 break;
               }
             }
@@ -22743,9 +22758,26 @@ public final class HbaseMetastoreProto {
         return order_;
       }
 
+      // optional sint32 nullOrder = 3 [default = 0];
+      public static final int NULLORDER_FIELD_NUMBER = 3;
+      private int nullOrder_;
+      /**
+       * <code>optional sint32 nullOrder = 3 [default = 0];</code>
+       */
+      public boolean hasNullOrder() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>optional sint32 nullOrder = 3 [default = 0];</code>
+       */
+      public int getNullOrder() {
+        return nullOrder_;
+      }
+
       private void initFields() {
         columnName_ = "";
         order_ = 1;
+        nullOrder_ = 0;
       }
       private byte memoizedIsInitialized = -1;
       public final boolean isInitialized() {
@@ -22769,6 +22801,9 @@ public final class HbaseMetastoreProto {
         if (((bitField0_ & 0x00000002) == 0x00000002)) {
           output.writeSInt32(2, order_);
         }
+        if (((bitField0_ & 0x00000004) == 0x00000004)) {
+          output.writeSInt32(3, nullOrder_);
+        }
         getUnknownFields().writeTo(output);
       }
 
@@ -22785,6 +22820,10 @@ public final class HbaseMetastoreProto {
         if (((bitField0_ & 0x00000002) == 0x00000002)) {
           size += com.google.protobuf.CodedOutputStream
             .computeSInt32Size(2, order_);
+        }
+        if (((bitField0_ & 0x00000004) == 0x00000004)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeSInt32Size(3, nullOrder_);
         }
         size += getUnknownFields().getSerializedSize();
         memoizedSerializedSize = size;
@@ -22906,6 +22945,8 @@ public final class HbaseMetastoreProto {
           bitField0_ = (bitField0_ & ~0x00000001);
           order_ = 1;
           bitField0_ = (bitField0_ & ~0x00000002);
+          nullOrder_ = 0;
+          bitField0_ = (bitField0_ & ~0x00000004);
           return this;
         }
 
@@ -22942,6 +22983,10 @@ public final class HbaseMetastoreProto {
             to_bitField0_ |= 0x00000002;
           }
           result.order_ = order_;
+          if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+            to_bitField0_ |= 0x00000004;
+          }
+          result.nullOrder_ = nullOrder_;
           result.bitField0_ = to_bitField0_;
           onBuilt();
           return result;
@@ -22965,6 +23010,9 @@ public final class HbaseMetastoreProto {
           }
           if (other.hasOrder()) {
             setOrder(other.getOrder());
+          }
+          if (other.hasNullOrder()) {
+            setNullOrder(other.getNullOrder());
           }
           this.mergeUnknownFields(other.getUnknownFields());
           return this;
@@ -23100,6 +23148,39 @@ public final class HbaseMetastoreProto {
         public Builder clearOrder() {
           bitField0_ = (bitField0_ & ~0x00000002);
           order_ = 1;
+          onChanged();
+          return this;
+        }
+
+        // optional sint32 nullOrder = 3 [default = 0];
+        private int nullOrder_ ;
+        /**
+         * <code>optional sint32 nullOrder = 3 [default = 0];</code>
+         */
+        public boolean hasNullOrder() {
+          return ((bitField0_ & 0x00000004) == 0x00000004);
+        }
+        /**
+         * <code>optional sint32 nullOrder = 3 [default = 0];</code>
+         */
+        public int getNullOrder() {
+          return nullOrder_;
+        }
+        /**
+         * <code>optional sint32 nullOrder = 3 [default = 0];</code>
+         */
+        public Builder setNullOrder(int value) {
+          bitField0_ |= 0x00000004;
+          nullOrder_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional sint32 nullOrder = 3 [default = 0];</code>
+         */
+        public Builder clearNullOrder() {
+          bitField0_ = (bitField0_ & ~0x00000004);
+          nullOrder_ = 0;
           onChanged();
           return this;
         }
@@ -34747,7 +34828,7 @@ public final class HbaseMetastoreProto {
       "ant_info\030\001 \003(\01325.org.apache.hadoop.hive." +
       "metastore.hbase.RoleGrantInfo\"\030\n\010RoleLis",
       "t\022\014\n\004role\030\001 \003(\t\"/\n\004Role\022\023\n\013create_time\030\001" +
-      " \001(\003\022\022\n\nowner_name\030\002 \001(\t\"\254\010\n\021StorageDesc" +
+      " \001(\003\022\022\n\nowner_name\030\002 \001(\t\"\302\010\n\021StorageDesc" +
       "riptor\022A\n\004cols\030\001 \003(\01323.org.apache.hadoop" +
       ".hive.metastore.hbase.FieldSchema\022\024\n\014inp" +
       "ut_format\030\002 \001(\t\022\025\n\routput_format\030\003 \001(\t\022\025" +
@@ -34760,51 +34841,51 @@ public final class HbaseMetastoreProto {
       "skewed_info\030\t \001(\0132D.org.apache.hadoop.hi" +
       "ve.metastore.hbase.StorageDescriptor.Ske" +
       "wedInfo\022!\n\031stored_as_sub_directories\030\n \001" +
-      "(\010\032.\n\005Order\022\023\n\013column_name\030\001 \002(\t\022\020\n\005orde" +
-      "r\030\002 \001(\021:\0011\032|\n\tSerDeInfo\022\014\n\004name\030\001 \001(\t\022\031\n" +
-      "\021serialization_lib\030\002 \001(\t\022F\n\nparameters\030\003" +
-      " \001(\01322.org.apache.hadoop.hive.metastore." +
-      "hbase.Parameters\032\214\003\n\nSkewedInfo\022\030\n\020skewe" +
-      "d_col_names\030\001 \003(\t\022r\n\021skewed_col_values\030\002",
-      " \003(\0132W.org.apache.hadoop.hive.metastore." +
-      "hbase.StorageDescriptor.SkewedInfo.Skewe" +
-      "dColValueList\022\206\001\n\036skewed_col_value_locat" +
-      "ion_maps\030\003 \003(\0132^.org.apache.hadoop.hive." +
-      "metastore.hbase.StorageDescriptor.Skewed" +
-      "Info.SkewedColValueLocationMap\032.\n\022Skewed" +
-      "ColValueList\022\030\n\020skewed_col_value\030\001 \003(\t\0327" +
-      "\n\031SkewedColValueLocationMap\022\013\n\003key\030\001 \003(\t" +
-      "\022\r\n\005value\030\002 \002(\t\"\220\004\n\005Table\022\r\n\005owner\030\001 \001(\t" +
-      "\022\023\n\013create_time\030\002 \001(\003\022\030\n\020last_access_tim",
-      "e\030\003 \001(\003\022\021\n\tretention\030\004 \001(\003\022\020\n\010location\030\005" +
-      " \001(\t\022I\n\rsd_parameters\030\006 \001(\01322.org.apache" +
-      ".hadoop.hive.metastore.hbase.Parameters\022" +
-      "\017\n\007sd_hash\030\007 \002(\014\022K\n\016partition_keys\030\010 \003(\013" +
-      "23.org.apache.hadoop.hive.metastore.hbas" +
-      "e.FieldSchema\022F\n\nparameters\030\t \001(\01322.org." +
-      "apache.hadoop.hive.metastore.hbase.Param" +
-      "eters\022\032\n\022view_original_text\030\n \001(\t\022\032\n\022vie" +
-      "w_expanded_text\030\013 \001(\t\022\022\n\ntable_type\030\014 \001(" +
-      "\t\022Q\n\nprivileges\030\r \001(\0132=.org.apache.hadoo",
-      "p.hive.metastore.hbase.PrincipalPrivileg" +
-      "eSet\022\024\n\014is_temporary\030\016 \001(\010\"\353\004\n\026Partition" +
-      "KeyComparator\022\r\n\005names\030\001 \002(\t\022\r\n\005types\030\002 " +
-      "\002(\t\022S\n\002op\030\003 \003(\0132G.org.apache.hadoop.hive" +
-      ".metastore.hbase.PartitionKeyComparator." +
-      "Operator\022S\n\005range\030\004 \003(\0132D.org.apache.had" +
-      "oop.hive.metastore.hbase.PartitionKeyCom" +
-      "parator.Range\032(\n\004Mark\022\r\n\005value\030\001 \002(\t\022\021\n\t" +
-      "inclusive\030\002 \002(\010\032\272\001\n\005Range\022\013\n\003key\030\001 \002(\t\022R" +
-      "\n\005start\030\002 \001(\0132C.org.apache.hadoop.hive.m",
-      "etastore.hbase.PartitionKeyComparator.Ma" +
-      "rk\022P\n\003end\030\003 \001(\0132C.org.apache.hadoop.hive" +
-      ".metastore.hbase.PartitionKeyComparator." +
-      "Mark\032\241\001\n\010Operator\022Z\n\004type\030\001 \002(\0162L.org.ap" +
-      "ache.hadoop.hive.metastore.hbase.Partiti" +
-      "onKeyComparator.Operator.Type\022\013\n\003key\030\002 \002" +
-      "(\t\022\013\n\003val\030\003 \002(\t\"\037\n\004Type\022\010\n\004LIKE\020\000\022\r\n\tNOT" +
-      "EQUALS\020\001*#\n\rPrincipalType\022\010\n\004USER\020\000\022\010\n\004R" +
-      "OLE\020\001"
+      "(\010\032D\n\005Order\022\023\n\013column_name\030\001 \002(\t\022\020\n\005orde" +
+      "r\030\002 \001(\021:\0011\022\024\n\tnullOrder\030\003 \001(\021:\0010\032|\n\tSerD" +
+      "eInfo\022\014\n\004name\030\001 \001(\t\022\031\n\021serialization_lib" +
+      "\030\002 \001(\t\022F\n\nparameters\030\003 \001(\01322.org.apache." +
+      "hadoop.hive.metastore.hbase.Parameters\032\214" +
+      "\003\n\nSkewedInfo\022\030\n\020skewed_col_names\030\001 \003(\t\022",
+      "r\n\021skewed_col_values\030\002 \003(\0132W.org.apache." +
+      "hadoop.hive.metastore.hbase.StorageDescr" +
+      "iptor.SkewedInfo.SkewedColValueList\022\206\001\n\036" +
+      "skewed_col_value_location_maps\030\003 \003(\0132^.o" +
+      "rg.apache.hadoop.hive.metastore.hbase.St" +
+      "orageDescriptor.SkewedInfo.SkewedColValu" +
+      "eLocationMap\032.\n\022SkewedColValueList\022\030\n\020sk" +
+      "ewed_col_value\030\001 \003(\t\0327\n\031SkewedColValueLo" +
+      "cationMap\022\013\n\003key\030\001 \003(\t\022\r\n\005value\030\002 \002(\t\"\220\004" +
+      "\n\005Table\022\r\n\005owner\030\001 \001(\t\022\023\n\013create_time\030\002 ",
+      "\001(\003\022\030\n\020last_access_time\030\003 \001(\003\022\021\n\tretenti" +
+      "on\030\004 \001(\003\022\020\n\010location\030\005 \001(\t\022I\n\rsd_paramet" +
+      "ers\030\006 \001(\01322.org.apache.hadoop.hive.metas" +
+      "tore.hbase.Parameters\022\017\n\007sd_hash\030\007 \002(\014\022K" +
+      "\n\016partition_keys\030\010 \003(\01323.org.apache.hado" +
+      "op.hive.metastore.hbase.FieldSchema\022F\n\np" +
+      "arameters\030\t \001(\01322.org.apache.hadoop.hive" +
+      ".metastore.hbase.Parameters\022\032\n\022view_orig" +
+      "inal_text\030\n \001(\t\022\032\n\022view_expanded_text\030\013 " +
+      "\001(\t\022\022\n\ntable_type\030\014 \001(\t\022Q\n\nprivileges\030\r ",
+      "\001(\0132=.org.apache.hadoop.hive.metastore.h" +
+      "base.PrincipalPrivilegeSet\022\024\n\014is_tempora" +
+      "ry\030\016 \001(\010\"\353\004\n\026PartitionKeyComparator\022\r\n\005n" +
+      "ames\030\001 \002(\t\022\r\n\005types\030\002 \002(\t\022S\n\002op\030\003 \003(\0132G." +
+      "org.apache.hadoop.hive.metastore.hbase.P" +
+      "artitionKeyComparator.Operator\022S\n\005range\030" +
+      "\004 \003(\0132D.org.apache.hadoop.hive.metastore" +
+      ".hbase.PartitionKeyComparator.Range\032(\n\004M" +
+      "ark\022\r\n\005value\030\001 \002(\t\022\021\n\tinclusive\030\002 \002(\010\032\272\001" +
+      "\n\005Range\022\013\n\003key\030\001 \002(\t\022R\n\005start\030\002 \001(\0132C.or",
+      "g.apache.hadoop.hive.metastore.hbase.Par" +
+      "titionKeyComparator.Mark\022P\n\003end\030\003 \001(\0132C." +
+      "org.apache.hadoop.hive.metastore.hbase.P" +
+      "artitionKeyComparator.Mark\032\241\001\n\010Operator\022" +
+      "Z\n\004type\030\001 \002(\0162L.org.apache.hadoop.hive.m" +
+      "etastore.hbase.PartitionKeyComparator.Op" +
+      "erator.Type\022\013\n\003key\030\002 \002(\t\022\013\n\003val\030\003 \002(\t\"\037\n" +
+      "\004Type\022\010\n\004LIKE\020\000\022\r\n\tNOTEQUALS\020\001*#\n\rPrinci" +
+      "palType\022\010\n\004USER\020\000\022\010\n\004ROLE\020\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -34990,7 +35071,7 @@ public final class HbaseMetastoreProto {
           internal_static_org_apache_hadoop_hive_metastore_hbase_StorageDescriptor_Order_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_StorageDescriptor_Order_descriptor,
-              new java.lang.String[] { "ColumnName", "Order", });
+              new java.lang.String[] { "ColumnName", "Order", "NullOrder", });
           internal_static_org_apache_hadoop_hive_metastore_hbase_StorageDescriptor_SerDeInfo_descriptor =
             internal_static_org_apache_hadoop_hive_metastore_hbase_StorageDescriptor_descriptor.getNestedTypes().get(1);
           internal_static_org_apache_hadoop_hive_metastore_hbase_StorageDescriptor_SerDeInfo_fieldAccessorTable = new

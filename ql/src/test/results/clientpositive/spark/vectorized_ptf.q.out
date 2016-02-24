@@ -157,8 +157,9 @@ TOK_QUERY
                   p_mfgr
             TOK_ORDERBY
                TOK_TABSORTCOLNAMEASC
-                  TOK_TABLE_OR_COL
-                     p_name
+                  TOK_NULLS_FIRST
+                     TOK_TABLE_OR_COL
+                        p_name
    TOK_INSERT
       TOK_DESTINATION
          TOK_DIR
@@ -183,8 +184,9 @@ TOK_QUERY
                            p_mfgr
                      TOK_ORDERBY
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_name
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_name
             r
          TOK_SELEXPR
             TOK_FUNCTION
@@ -196,8 +198,9 @@ TOK_QUERY
                            p_mfgr
                      TOK_ORDERBY
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_name
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_name
             dr
          TOK_SELEXPR
             TOK_FUNCTION
@@ -211,8 +214,9 @@ TOK_QUERY
                            p_mfgr
                      TOK_ORDERBY
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_name
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_name
                   TOK_WINDOWRANGE
                      preceding
                         unbounded
@@ -240,6 +244,7 @@ STAGE PLANS:
                   GatherStats: false
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
+                    null sort order: aa
                     sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -312,13 +317,14 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col1
+                        order by: _col1 ASC NULLS FIRST
                         output shape: _col1: string, _col2: string, _col5: int, _col7: double
                         partition by: _col2
                         raw input shape:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
+                    null sort order: aa
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -341,7 +347,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1
+                        order by: _col1 ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -510,10 +516,11 @@ TOK_QUERY
                   p_mfgr
             TOK_SORTBY
                TOK_TABSORTCOLNAMEASC
-                  .
-                     TOK_TABLE_OR_COL
-                        j
-                     p_name
+                  TOK_NULLS_FIRST
+                     .
+                        TOK_TABLE_OR_COL
+                           j
+                        p_name
    TOK_INSERT
       TOK_DESTINATION
          TOK_DIR
@@ -546,8 +553,9 @@ TOK_QUERY
                               p_mfgr
                         TOK_ORDERBY
                            TOK_TABSORTCOLNAMEASC
-                              TOK_TABLE_OR_COL
-                                 p_name
+                              TOK_NULLS_FIRST
+                                 TOK_TABLE_OR_COL
+                                    p_name
             deltaSz
 
 
@@ -576,6 +584,7 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: p_partkey (type: int)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: p_partkey (type: int)
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -644,6 +653,7 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: p_partkey (type: int)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: p_partkey (type: int)
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -712,6 +722,7 @@ STAGE PLANS:
                 Statistics: Num rows: 28 Data size: 17646 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col2 (type: string), _col1 (type: string)
+                  null sort order: aa
                   sort order: ++
                   Map-reduce partition columns: _col2 (type: string)
                   Statistics: Num rows: 28 Data size: 17646 Basic stats: COMPLETE Column stats: NONE
@@ -734,13 +745,14 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col1
+                        order by: _col1 ASC NULLS FIRST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
                   Statistics: Num rows: 28 Data size: 17646 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
+                    null sort order: aa
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string)
                     Statistics: Num rows: 28 Data size: 17646 Basic stats: COMPLETE Column stats: NONE
@@ -763,7 +775,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1
+                        order by: _col1 ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -883,8 +895,9 @@ TOK_QUERY
                   p_mfgr
             TOK_ORDERBY
                TOK_TABSORTCOLNAMEASC
-                  TOK_TABLE_OR_COL
-                     p_name
+                  TOK_NULLS_FIRST
+                     TOK_TABLE_OR_COL
+                        p_name
    TOK_INSERT
       TOK_DESTINATION
          TOK_DIR
@@ -920,6 +933,7 @@ STAGE PLANS:
                   GatherStats: false
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
+                    null sort order: aa
                     sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -992,7 +1006,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col1
+                        order by: _col1 ASC NULLS FIRST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
@@ -1110,8 +1124,9 @@ TOK_QUERY
                   p_mfgr
             TOK_ORDERBY
                TOK_TABSORTCOLNAMEASC
-                  TOK_TABLE_OR_COL
-                     p_name
+                  TOK_NULLS_FIRST
+                     TOK_TABLE_OR_COL
+                        p_name
    TOK_INSERT
       TOK_DESTINATION
          TOK_DIR
@@ -1136,8 +1151,9 @@ TOK_QUERY
                            p_mfgr
                      TOK_ORDERBY
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_name
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_name
             r
          TOK_SELEXPR
             TOK_FUNCTION
@@ -1149,8 +1165,9 @@ TOK_QUERY
                            p_mfgr
                      TOK_ORDERBY
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_name
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_name
             dr
          TOK_SELEXPR
             TOK_FUNCTION
@@ -1164,8 +1181,9 @@ TOK_QUERY
                            p_mfgr
                      TOK_ORDERBY
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_name
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_name
                   TOK_WINDOWRANGE
                      preceding
                         unbounded
@@ -1193,6 +1211,7 @@ STAGE PLANS:
                   GatherStats: false
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
+                    null sort order: aa
                     sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -1265,13 +1284,14 @@ STAGE PLANS:
                       Partition table definition
                         input alias: abc
                         name: noop
-                        order by: _col1
+                        order by: _col1 ASC NULLS FIRST
                         output shape: _col1: string, _col2: string, _col5: int, _col7: double
                         partition by: _col2
                         raw input shape:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
+                    null sort order: aa
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -1294,7 +1314,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1
+                        order by: _col1 ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -1439,8 +1459,9 @@ TOK_QUERY
                   p_mfgr
             TOK_ORDERBY
                TOK_TABSORTCOLNAMEASC
-                  TOK_TABLE_OR_COL
-                     p_name
+                  TOK_NULLS_FIRST
+                     TOK_TABLE_OR_COL
+                        p_name
    TOK_INSERT
       TOK_DESTINATION
          TOK_DIR
@@ -1465,8 +1486,9 @@ TOK_QUERY
                            p_mfgr
                      TOK_ORDERBY
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_name
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_name
             r
          TOK_SELEXPR
             TOK_FUNCTION
@@ -1478,8 +1500,9 @@ TOK_QUERY
                            p_mfgr
                      TOK_ORDERBY
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_name
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_name
             dr
          TOK_SELEXPR
             TOK_TABLE_OR_COL
@@ -1502,8 +1525,9 @@ TOK_QUERY
                               p_mfgr
                         TOK_ORDERBY
                            TOK_TABSORTCOLNAMEASC
-                              TOK_TABLE_OR_COL
-                                 p_name
+                              TOK_NULLS_FIRST
+                                 TOK_TABLE_OR_COL
+                                    p_name
             deltaSz
 
 
@@ -1527,6 +1551,7 @@ STAGE PLANS:
                   GatherStats: false
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
+                    null sort order: aa
                     sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -1599,13 +1624,14 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col1
+                        order by: _col1 ASC NULLS FIRST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
+                    null sort order: aa
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -1628,7 +1654,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1
+                        order by: _col1 ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -1776,8 +1802,9 @@ TOK_QUERY
                   p_mfgr
             TOK_ORDERBY
                TOK_TABSORTCOLNAMEASC
-                  TOK_TABLE_OR_COL
-                     p_name
+                  TOK_NULLS_FIRST
+                     TOK_TABLE_OR_COL
+                        p_name
    TOK_INSERT
       TOK_DESTINATION
          TOK_DIR
@@ -1802,8 +1829,9 @@ TOK_QUERY
                            p_mfgr
                      TOK_ORDERBY
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_name
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_name
             r
          TOK_SELEXPR
             TOK_FUNCTION
@@ -1815,8 +1843,9 @@ TOK_QUERY
                            p_mfgr
                      TOK_ORDERBY
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_name
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_name
             dr
          TOK_SELEXPR
             TOK_TABLE_OR_COL
@@ -1839,8 +1868,9 @@ TOK_QUERY
                               p_mfgr
                         TOK_ORDERBY
                            TOK_TABSORTCOLNAMEASC
-                              TOK_TABLE_OR_COL
-                                 p_name
+                              TOK_NULLS_FIRST
+                                 TOK_TABLE_OR_COL
+                                    p_name
             deltaSz
       TOK_GROUPBY
          TOK_TABLE_OR_COL
@@ -1871,6 +1901,7 @@ STAGE PLANS:
                   GatherStats: false
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
+                    null sort order: aa
                     sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -1943,7 +1974,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col1
+                        order by: _col1 ASC NULLS FIRST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
@@ -1959,6 +1990,7 @@ STAGE PLANS:
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int)
+                        null sort order: aaa
                         sort order: +++
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -1981,7 +2013,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1
+                        order by: _col1 ASC NULLS FIRST
                         partition by: _col0
                         raw input shape:
                         window functions:
@@ -2124,8 +2156,9 @@ TOK_QUERY
                      p_mfgr
                TOK_ORDERBY
                   TOK_TABSORTCOLNAMEASC
-                     TOK_TABLE_OR_COL
-                        p_name
+                     TOK_NULLS_FIRST
+                        TOK_TABLE_OR_COL
+                           p_name
          TOK_TABREF
             TOK_TABNAME
                part_orc
@@ -2170,6 +2203,7 @@ STAGE PLANS:
                   GatherStats: false
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
+                    null sort order: aa
                     sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -2238,6 +2272,7 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: p_partkey (type: int)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: p_partkey (type: int)
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -2309,7 +2344,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: abc
                         name: noop
-                        order by: _col1
+                        order by: _col1 ASC NULLS FIRST
                         output shape: _col0: int, _col1: string, _col2: string, _col3: string, _col4: string, _col5: int, _col6: string, _col7: double, _col8: string
                         partition by: _col2
                         raw input shape:
@@ -2320,6 +2355,7 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: _col0 (type: int)
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -2449,8 +2485,9 @@ TOK_QUERY
                      p_mfgr
                TOK_ORDERBY
                   TOK_TABSORTCOLNAMEASC
-                     TOK_TABLE_OR_COL
-                        p_name
+                     TOK_NULLS_FIRST
+                        TOK_TABLE_OR_COL
+                           p_name
          =
             .
                TOK_TABLE_OR_COL
@@ -2495,6 +2532,7 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: p_partkey (type: int)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: p_partkey (type: int)
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -2558,6 +2596,7 @@ STAGE PLANS:
                   GatherStats: false
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
+                    null sort order: aa
                     sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -2667,7 +2706,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: abc
                         name: noop
-                        order by: _col1
+                        order by: _col1 ASC NULLS FIRST
                         output shape: _col0: int, _col1: string, _col2: string, _col3: string, _col4: string, _col5: int, _col6: string, _col7: double, _col8: string
                         partition by: _col2
                         raw input shape:
@@ -2678,6 +2717,7 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: _col0 (type: int)
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -2768,11 +2808,13 @@ TOK_QUERY
                   p_mfgr
             TOK_ORDERBY
                TOK_TABSORTCOLNAMEASC
-                  TOK_TABLE_OR_COL
-                     p_name
+                  TOK_NULLS_FIRST
+                     TOK_TABLE_OR_COL
+                        p_name
                TOK_TABSORTCOLNAMEDESC
-                  TOK_TABLE_OR_COL
-                     p_size
+                  TOK_NULLS_LAST
+                     TOK_TABLE_OR_COL
+                        p_size
    TOK_INSERT
       TOK_DESTINATION
          TOK_DIR
@@ -2797,11 +2839,13 @@ TOK_QUERY
                            p_mfgr
                      TOK_ORDERBY
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_name
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_name
                         TOK_TABSORTCOLNAMEDESC
-                           TOK_TABLE_OR_COL
-                              p_size
+                           TOK_NULLS_LAST
+                              TOK_TABLE_OR_COL
+                                 p_size
             r
 
 
@@ -2832,7 +2876,7 @@ STAGE PLANS:
                         Partition table definition
                           input alias: ptf_1
                           name: noopwithmap
-                          order by: p_name, p_size(DESC)
+                          order by: p_name ASC NULLS FIRST, p_size DESC NULLS LAST
                           output shape: p_name: string, p_mfgr: string, p_size: int
                           partition by: p_mfgr
                           raw input shape:
@@ -2841,6 +2885,7 @@ STAGE PLANS:
                     Map-side function: true
                     Reduce Output Operator
                       key expressions: p_mfgr (type: string), p_name (type: string), p_size (type: int)
+                      null sort order: aaz
                       sort order: ++-
                       Map-reduce partition columns: p_mfgr (type: string)
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -2911,7 +2956,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noopwithmap
-                        order by: _col1, _col5(DESC)
+                        order by: _col1 ASC NULLS FIRST, _col5 DESC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
@@ -2919,6 +2964,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int)
+                    null sort order: aaz
                     sort order: ++-
                     Map-reduce partition columns: _col2 (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -2940,7 +2986,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1, _col5(DESC)
+                        order by: _col1 ASC NULLS FIRST, _col5 DESC NULLS LAST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -3064,8 +3110,9 @@ TOK_QUERY
                   p_mfgr
             TOK_ORDERBY
                TOK_TABSORTCOLNAMEASC
-                  TOK_TABLE_OR_COL
-                     p_name
+                  TOK_NULLS_FIRST
+                     TOK_TABLE_OR_COL
+                        p_name
    TOK_INSERT
       TOK_DESTINATION
          TOK_DIR
@@ -3090,8 +3137,9 @@ TOK_QUERY
                            p_mfgr
                      TOK_ORDERBY
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_name
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_name
             r
          TOK_SELEXPR
             TOK_FUNCTION
@@ -3103,8 +3151,9 @@ TOK_QUERY
                            p_mfgr
                      TOK_ORDERBY
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_name
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_name
             dr
          TOK_SELEXPR
             TOK_FUNCTION
@@ -3118,8 +3167,9 @@ TOK_QUERY
                            p_mfgr
                      TOK_ORDERBY
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_name
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_name
                   TOK_WINDOWRANGE
                      preceding
                         unbounded
@@ -3154,7 +3204,7 @@ STAGE PLANS:
                         Partition table definition
                           input alias: ptf_1
                           name: noopwithmap
-                          order by: p_name
+                          order by: p_name ASC NULLS FIRST
                           output shape: p_name: string, p_mfgr: string, p_size: int, p_retailprice: double
                           partition by: p_mfgr
                           raw input shape:
@@ -3163,6 +3213,7 @@ STAGE PLANS:
                     Map-side function: true
                     Reduce Output Operator
                       key expressions: p_mfgr (type: string), p_name (type: string)
+                      null sort order: aa
                       sort order: ++
                       Map-reduce partition columns: p_mfgr (type: string)
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -3234,7 +3285,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noopwithmap
-                        order by: _col1
+                        order by: _col1 ASC NULLS FIRST
                         output shape: _col1: string, _col2: string, _col5: int, _col7: double
                         partition by: _col2
                         raw input shape:
@@ -3242,6 +3293,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
+                    null sort order: aa
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -3264,7 +3316,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1
+                        order by: _col1 ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -3405,8 +3457,9 @@ TOK_QUERY
                   p_mfgr
             TOK_ORDERBY
                TOK_TABSORTCOLNAMEASC
-                  TOK_TABLE_OR_COL
-                     p_name
+                  TOK_NULLS_FIRST
+                     TOK_TABLE_OR_COL
+                        p_name
    TOK_INSERT
       TOK_DESTINATION
          TOK_DIR
@@ -3431,8 +3484,9 @@ TOK_QUERY
                            p_mfgr
                      TOK_ORDERBY
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_name
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_name
             r
          TOK_SELEXPR
             TOK_FUNCTION
@@ -3444,8 +3498,9 @@ TOK_QUERY
                            p_mfgr
                      TOK_ORDERBY
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_name
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_name
             dr
          TOK_SELEXPR
             TOK_FUNCTION
@@ -3459,8 +3514,9 @@ TOK_QUERY
                            p_mfgr
                      TOK_ORDERBY
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_name
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_name
                   TOK_WINDOWRANGE
                      preceding
                         unbounded
@@ -3488,6 +3544,7 @@ STAGE PLANS:
                   GatherStats: false
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
+                    null sort order: aa
                     sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -3560,13 +3617,14 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col1
+                        order by: _col1 ASC NULLS FIRST
                         output shape: _col1: string, _col2: string, _col5: int, _col7: double
                         partition by: _col2
                         raw input shape:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
+                    null sort order: aa
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -3589,7 +3647,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1
+                        order by: _col1 ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -3736,11 +3794,13 @@ TOK_QUERY
                         p_mfgr
                   TOK_ORDERBY
                      TOK_TABSORTCOLNAMEASC
-                        TOK_TABLE_OR_COL
-                           p_mfgr
+                        TOK_NULLS_FIRST
+                           TOK_TABLE_OR_COL
+                              p_mfgr
                      TOK_TABSORTCOLNAMEASC
-                        TOK_TABLE_OR_COL
-                           p_name
+                        TOK_NULLS_FIRST
+                           TOK_TABLE_OR_COL
+                              p_name
    TOK_INSERT
       TOK_DESTINATION
          TOK_DIR
@@ -3765,8 +3825,9 @@ TOK_QUERY
                            p_mfgr
                      TOK_ORDERBY
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_name
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_name
             r
          TOK_SELEXPR
             TOK_FUNCTION
@@ -3778,8 +3839,9 @@ TOK_QUERY
                            p_mfgr
                      TOK_ORDERBY
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_name
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_name
             dr
          TOK_SELEXPR
             TOK_FUNCTION
@@ -3793,8 +3855,9 @@ TOK_QUERY
                            p_mfgr
                      TOK_ORDERBY
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_name
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_name
                   TOK_WINDOWRANGE
                      preceding
                         unbounded
@@ -3823,6 +3886,7 @@ STAGE PLANS:
                   GatherStats: false
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
+                    null sort order: aa
                     sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -3895,7 +3959,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col2, _col1
+                        order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                         output shape: _col1: string, _col2: string, _col5: int, _col7: double
                         partition by: _col2
                         raw input shape:
@@ -3909,7 +3973,7 @@ STAGE PLANS:
                         Partition table definition
                           input alias: ptf_1
                           name: noopwithmap
-                          order by: _col2, _col1
+                          order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                           output shape: _col1: string, _col2: string, _col5: int, _col7: double
                           partition by: _col2
                           raw input shape:
@@ -3917,7 +3981,7 @@ STAGE PLANS:
                         Partition table definition
                           input alias: ptf_2
                           name: noop
-                          order by: _col2, _col1
+                          order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                           output shape: _col1: string, _col2: string, _col5: int, _col7: double
                           partition by: _col2
                           raw input shape:
@@ -3925,6 +3989,7 @@ STAGE PLANS:
                     Map-side function: true
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col1 (type: string)
+                      null sort order: aa
                       sort order: ++
                       Map-reduce partition columns: _col2 (type: string)
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -3947,7 +4012,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noopwithmap
-                        order by: _col2, _col1
+                        order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                         output shape: _col1: string, _col2: string, _col5: int, _col7: double
                         partition by: _col2
                         raw input shape:
@@ -3955,13 +4020,14 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_2
                         name: noop
-                        order by: _col2, _col1
+                        order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                         output shape: _col1: string, _col2: string, _col5: int, _col7: double
                         partition by: _col2
                         raw input shape:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
+                    null sort order: aa
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -3984,7 +4050,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1
+                        order by: _col1 ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -4138,8 +4204,9 @@ TOK_QUERY
                            p_mfgr
                      TOK_ORDERBY
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_name
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_name
             TOK_INSERT
                TOK_DESTINATION
                   TOK_DIR
@@ -4163,8 +4230,9 @@ TOK_QUERY
                                     p_mfgr
                               TOK_ORDERBY
                                  TOK_TABSORTCOLNAMEASC
-                                    TOK_TABLE_OR_COL
-                                       p_name
+                                    TOK_NULLS_FIRST
+                                       TOK_TABLE_OR_COL
+                                          p_name
                      cd
                   TOK_SELEXPR
                      TOK_TABLE_OR_COL
@@ -4187,8 +4255,9 @@ TOK_QUERY
                                  p_mfgr
                            TOK_ORDERBY
                               TOK_TABSORTCOLNAMEASC
-                                 TOK_TABLE_OR_COL
-                                    p_name
+                                 TOK_NULLS_FIRST
+                                    TOK_TABLE_OR_COL
+                                       p_name
                         TOK_WINDOWRANGE
                            preceding
                               2
@@ -4238,6 +4307,7 @@ STAGE PLANS:
                   GatherStats: false
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
+                    null sort order: aa
                     sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -4310,13 +4380,14 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col1
+                        order by: _col1 ASC NULLS FIRST
                         output shape: _col1: string, _col2: string, _col5: int, _col7: double
                         partition by: _col2
                         raw input shape:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
+                    null sort order: aa
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -4339,7 +4410,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1
+                        order by: _col1 ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -4488,8 +4559,9 @@ TOK_QUERY
                      p_mfgr
                TOK_ORDERBY
                   TOK_TABSORTCOLNAMEASC
-                     TOK_TABLE_OR_COL
-                        p_name
+                     TOK_NULLS_FIRST
+                        TOK_TABLE_OR_COL
+                           p_name
          TOK_TABREF
             TOK_TABNAME
                part_orc
@@ -4530,10 +4602,11 @@ TOK_QUERY
                            p_mfgr
                      TOK_SORTBY
                         TOK_TABSORTCOLNAMEASC
-                           .
-                              TOK_TABLE_OR_COL
-                                 abc
-                              p_name
+                           TOK_NULLS_FIRST
+                              .
+                                 TOK_TABLE_OR_COL
+                                    abc
+                                 p_name
             r
          TOK_SELEXPR
             TOK_FUNCTION
@@ -4547,10 +4620,11 @@ TOK_QUERY
                            p_mfgr
                      TOK_SORTBY
                         TOK_TABSORTCOLNAMEASC
-                           .
-                              TOK_TABLE_OR_COL
-                                 abc
-                              p_name
+                           TOK_NULLS_FIRST
+                              .
+                                 TOK_TABLE_OR_COL
+                                    abc
+                                 p_name
             dr
          TOK_SELEXPR
             TOK_FUNCTION
@@ -4568,10 +4642,11 @@ TOK_QUERY
                            p_mfgr
                      TOK_SORTBY
                         TOK_TABSORTCOLNAMEASC
-                           .
-                              TOK_TABLE_OR_COL
-                                 abc
-                              p_name
+                           TOK_NULLS_FIRST
+                              .
+                                 TOK_TABLE_OR_COL
+                                    abc
+                                 p_name
             cd
          TOK_SELEXPR
             .
@@ -4594,10 +4669,11 @@ TOK_QUERY
                            p_mfgr
                      TOK_SORTBY
                         TOK_TABSORTCOLNAMEASC
-                           .
-                              TOK_TABLE_OR_COL
-                                 abc
-                              p_name
+                           TOK_NULLS_FIRST
+                              .
+                                 TOK_TABLE_OR_COL
+                                    abc
+                                 p_name
                   TOK_WINDOWRANGE
                      preceding
                         unbounded
@@ -4634,10 +4710,11 @@ TOK_QUERY
                               p_mfgr
                         TOK_SORTBY
                            TOK_TABSORTCOLNAMEASC
-                              .
-                                 TOK_TABLE_OR_COL
-                                    abc
-                                 p_name
+                              TOK_NULLS_FIRST
+                                 .
+                                    TOK_TABLE_OR_COL
+                                       abc
+                                    p_name
             deltaSz
 
 
@@ -4662,6 +4739,7 @@ STAGE PLANS:
                   GatherStats: false
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
+                    null sort order: aa
                     sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -4730,6 +4808,7 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: p_partkey (type: int)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: p_partkey (type: int)
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -4801,7 +4880,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: abc
                         name: noop
-                        order by: _col1
+                        order by: _col1 ASC NULLS FIRST
                         output shape: _col0: int, _col1: string, _col2: string, _col5: int, _col7: double
                         partition by: _col2
                         raw input shape:
@@ -4812,6 +4891,7 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: _col0 (type: int)
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -4831,6 +4911,7 @@ STAGE PLANS:
                 Statistics: Num rows: 28 Data size: 17646 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col2 (type: string), _col1 (type: string)
+                  null sort order: aa
                   sort order: ++
                   Map-reduce partition columns: _col2 (type: string)
                   Statistics: Num rows: 28 Data size: 17646 Basic stats: COMPLETE Column stats: NONE
@@ -4853,7 +4934,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1
+                        order by: _col1 ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -5009,8 +5090,9 @@ TOK_QUERY
                   p_mfgr
             TOK_ORDERBY
                TOK_TABSORTCOLNAMEASC
-                  TOK_TABLE_OR_COL
-                     p_name
+                  TOK_NULLS_FIRST
+                     TOK_TABLE_OR_COL
+                        p_name
    TOK_INSERT
       TOK_DESTINATION
          TOK_DIR
@@ -5047,6 +5129,7 @@ STAGE PLANS:
                   GatherStats: false
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
+                    null sort order: aa
                     sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -5119,7 +5202,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col1
+                        order by: _col1 ASC NULLS FIRST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
@@ -5135,6 +5218,7 @@ STAGE PLANS:
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int)
+                        null sort order: aaa
                         sort order: +++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: int)
                         Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -5268,8 +5352,9 @@ TOK_QUERY
                   p_mfgr
             TOK_ORDERBY
                TOK_TABSORTCOLNAMEASC
-                  TOK_TABLE_OR_COL
-                     p_mfgr
+                  TOK_NULLS_FIRST
+                     TOK_TABLE_OR_COL
+                        p_mfgr
    TOK_INSERT
       TOK_DESTINATION
          TOK_DIR
@@ -5302,8 +5387,9 @@ TOK_QUERY
                         p_mfgr
                   TOK_ORDERBY
                      TOK_TABSORTCOLNAMEASC
-                        TOK_TABLE_OR_COL
-                           p_brand
+                        TOK_NULLS_FIRST
+                           TOK_TABLE_OR_COL
+                              p_brand
                TOK_WINDOWRANGE
                   preceding
                      2
@@ -5340,6 +5426,7 @@ STAGE PLANS:
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string)
+                        null sort order: aa
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -5414,13 +5501,14 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col0
+                        order by: _col0 ASC NULLS FIRST
                         output shape: _col0: string, _col1: string, _col2: double
                         partition by: _col0
                         raw input shape:
                   Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: string), _col1 (type: string)
+                    null sort order: aa
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: string)
                     Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
@@ -5443,7 +5531,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1
+                        order by: _col1 ASC NULLS FIRST
                         partition by: _col0
                         raw input shape:
                         window functions:
@@ -5616,8 +5704,9 @@ TOK_QUERY
                   p_mfgr
             TOK_ORDERBY
                TOK_TABSORTCOLNAMEASC
-                  TOK_TABLE_OR_COL
-                     p_name
+                  TOK_NULLS_FIRST
+                     TOK_TABLE_OR_COL
+                        p_name
    TOK_INSERT
       TOK_DESTINATION
          TOK_TAB
@@ -5643,8 +5732,9 @@ TOK_QUERY
                            p_mfgr
                      TOK_SORTBY
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_name
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_name
             r
          TOK_SELEXPR
             TOK_FUNCTION
@@ -5656,8 +5746,9 @@ TOK_QUERY
                            p_mfgr
                      TOK_SORTBY
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_name
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_name
             dr
          TOK_SELEXPR
             TOK_FUNCTION
@@ -5671,8 +5762,9 @@ TOK_QUERY
                            p_mfgr
                      TOK_SORTBY
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_name
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_name
                   TOK_WINDOWRANGE
                      preceding
                         unbounded
@@ -5707,8 +5799,9 @@ TOK_QUERY
                               p_mfgr
                         TOK_SORTBY
                            TOK_TABSORTCOLNAMEASC
-                              TOK_TABLE_OR_COL
-                                 p_size
+                              TOK_NULLS_FIRST
+                                 TOK_TABLE_OR_COL
+                                    p_size
                      TOK_WINDOWVALUES
                         preceding
                            5
@@ -5725,11 +5818,13 @@ TOK_QUERY
                            p_mfgr
                      TOK_SORTBY
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_mfgr
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_mfgr
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_name
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_name
             r
          TOK_SELEXPR
             TOK_FUNCTION
@@ -5741,11 +5836,13 @@ TOK_QUERY
                            p_mfgr
                      TOK_SORTBY
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_mfgr
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_mfgr
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_name
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_name
             dr
          TOK_SELEXPR
             TOK_FUNCTION
@@ -5757,11 +5854,13 @@ TOK_QUERY
                            p_mfgr
                      TOK_SORTBY
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_mfgr
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_mfgr
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_name
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_name
             cud
          TOK_SELEXPR
             TOK_FUNCTION
@@ -5782,11 +5881,13 @@ TOK_QUERY
                         p_mfgr
                   TOK_SORTBY
                      TOK_TABSORTCOLNAMEASC
-                        TOK_TABLE_OR_COL
-                           p_mfgr
+                        TOK_NULLS_FIRST
+                           TOK_TABLE_OR_COL
+                              p_mfgr
                      TOK_TABSORTCOLNAMEASC
-                        TOK_TABLE_OR_COL
-                           p_name
+                        TOK_NULLS_FIRST
+                           TOK_TABLE_OR_COL
+                              p_name
                TOK_WINDOWRANGE
                   preceding
                      2
@@ -5820,6 +5921,7 @@ STAGE PLANS:
                   GatherStats: false
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
+                    null sort order: aa
                     sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -5892,7 +5994,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1
+                        order by: _col1 ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -5963,7 +6065,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col5
+                        order by: _col5 ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -5980,6 +6082,7 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col1 (type: string)
+                      null sort order: aa
                       sort order: ++
                       Map-reduce partition columns: _col2 (type: string)
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -6002,7 +6105,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col3, _col2
+                        order by: _col3 ASC NULLS FIRST, _col2 ASC NULLS FIRST
                         partition by: _col3
                         raw input shape:
                         window functions:
@@ -6079,12 +6182,13 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col1
+                        order by: _col1 ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
+                    null sort order: aa
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -6106,12 +6210,13 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col1
+                        order by: _col1 ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col5 (type: int)
+                    null sort order: aa
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -6348,8 +6453,9 @@ TOK_QUERY
                            p_mfgr
                      TOK_ORDERBY
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_mfgr
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_mfgr
             TOK_PARTITIONINGSPEC
                TOK_DISTRIBUTEBY
                   TOK_TABLE_OR_COL
@@ -6358,11 +6464,13 @@ TOK_QUERY
                      p_name
                TOK_ORDERBY
                   TOK_TABSORTCOLNAMEASC
-                     TOK_TABLE_OR_COL
-                        p_mfgr
+                     TOK_NULLS_FIRST
+                        TOK_TABLE_OR_COL
+                           p_mfgr
                   TOK_TABSORTCOLNAMEASC
-                     TOK_TABLE_OR_COL
-                        p_name
+                     TOK_NULLS_FIRST
+                        TOK_TABLE_OR_COL
+                           p_name
          TOK_PARTITIONINGSPEC
             TOK_DISTRIBUTEBY
                TOK_TABLE_OR_COL
@@ -6371,11 +6479,13 @@ TOK_QUERY
                   p_name
             TOK_ORDERBY
                TOK_TABSORTCOLNAMEASC
-                  TOK_TABLE_OR_COL
-                     p_mfgr
+                  TOK_NULLS_FIRST
+                     TOK_TABLE_OR_COL
+                        p_mfgr
                TOK_TABSORTCOLNAMEASC
-                  TOK_TABLE_OR_COL
-                     p_name
+                  TOK_NULLS_FIRST
+                     TOK_TABLE_OR_COL
+                        p_name
    TOK_INSERT
       TOK_DESTINATION
          TOK_DIR
@@ -6452,6 +6562,7 @@ STAGE PLANS:
                   GatherStats: false
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string)
+                    null sort order: a
                     sort order: +
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -6524,14 +6635,14 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col2
+                        order by: _col2 ASC NULLS FIRST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
                       Partition table definition
                         input alias: ptf_2
                         name: noop
-                        order by: _col2
+                        order by: _col2 ASC NULLS FIRST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
@@ -6545,7 +6656,7 @@ STAGE PLANS:
                         Partition table definition
                           input alias: ptf_1
                           name: noopwithmap
-                          order by: _col2, _col1
+                          order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                           output shape: _col1: string, _col2: string, _col5: int
                           partition by: _col2, _col1
                           raw input shape:
@@ -6553,7 +6664,7 @@ STAGE PLANS:
                         Partition table definition
                           input alias: ptf_2
                           name: noop
-                          order by: _col2, _col1
+                          order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                           output shape: _col1: string, _col2: string, _col5: int
                           partition by: _col2, _col1
                           raw input shape:
@@ -6561,6 +6672,7 @@ STAGE PLANS:
                     Map-side function: true
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col1 (type: string)
+                      null sort order: aa
                       sort order: ++
                       Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -6583,7 +6695,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noopwithmap
-                        order by: _col2, _col1
+                        order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2, _col1
                         raw input shape:
@@ -6591,13 +6703,14 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_2
                         name: noop
-                        order by: _col2, _col1
+                        order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2, _col1
                         raw input shape:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
+                    null sort order: aa
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -6620,7 +6733,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col2, _col1
+                        order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                         partition by: _col2, _col1
                         raw input shape:
                         window functions:
@@ -6799,8 +6912,9 @@ TOK_QUERY
                            p_mfgr
                      TOK_ORDERBY
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_mfgr
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_mfgr
             TOK_PARTITIONINGSPEC
                TOK_DISTRIBUTEBY
                   TOK_TABLE_OR_COL
@@ -6809,19 +6923,22 @@ TOK_QUERY
                      p_name
                TOK_ORDERBY
                   TOK_TABSORTCOLNAMEASC
-                     TOK_TABLE_OR_COL
-                        p_mfgr
+                     TOK_NULLS_FIRST
+                        TOK_TABLE_OR_COL
+                           p_mfgr
                   TOK_TABSORTCOLNAMEASC
-                     TOK_TABLE_OR_COL
-                        p_name
+                     TOK_NULLS_FIRST
+                        TOK_TABLE_OR_COL
+                           p_name
          TOK_PARTITIONINGSPEC
             TOK_DISTRIBUTEBY
                TOK_TABLE_OR_COL
                   p_mfgr
             TOK_ORDERBY
                TOK_TABSORTCOLNAMEASC
-                  TOK_TABLE_OR_COL
-                     p_mfgr
+                  TOK_NULLS_FIRST
+                     TOK_TABLE_OR_COL
+                        p_mfgr
    TOK_INSERT
       TOK_DESTINATION
          TOK_DIR
@@ -6843,8 +6960,9 @@ TOK_QUERY
                            p_mfgr
                      TOK_ORDERBY
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_name
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_name
             r
          TOK_SELEXPR
             TOK_FUNCTION
@@ -6856,8 +6974,9 @@ TOK_QUERY
                            p_mfgr
                      TOK_ORDERBY
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_name
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_name
             dr
          TOK_SELEXPR
             TOK_TABLE_OR_COL
@@ -6874,8 +6993,9 @@ TOK_QUERY
                            p_mfgr
                      TOK_ORDERBY
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_name
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_name
                   TOK_WINDOWRANGE
                      preceding
                         unbounded
@@ -6905,6 +7025,7 @@ STAGE PLANS:
                   GatherStats: false
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string)
+                    null sort order: a
                     sort order: +
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -6977,20 +7098,21 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col2
+                        order by: _col2 ASC NULLS FIRST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
                       Partition table definition
                         input alias: ptf_2
                         name: noop
-                        order by: _col2
+                        order by: _col2 ASC NULLS FIRST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
+                    null sort order: aa
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -7013,13 +7135,14 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col2, _col1
+                        order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2, _col1
                         raw input shape:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col2 (type: string)
+                    null sort order: a
                     sort order: +
                     Map-reduce partition columns: _col2 (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -7042,13 +7165,14 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col2
+                        order by: _col2 ASC NULLS FIRST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
+                    null sort order: aa
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -7071,7 +7195,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1
+                        order by: _col1 ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -7248,19 +7372,22 @@ TOK_QUERY
                            p_name
                      TOK_ORDERBY
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_mfgr
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_mfgr
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_name
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_name
             TOK_PARTITIONINGSPEC
                TOK_DISTRIBUTEBY
                   TOK_TABLE_OR_COL
                      p_mfgr
                TOK_ORDERBY
                   TOK_TABSORTCOLNAMEASC
-                     TOK_TABLE_OR_COL
-                        p_mfgr
+                     TOK_NULLS_FIRST
+                        TOK_TABLE_OR_COL
+                           p_mfgr
    TOK_INSERT
       TOK_DESTINATION
          TOK_DIR
@@ -7282,8 +7409,9 @@ TOK_QUERY
                            p_mfgr
                      TOK_ORDERBY
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_name
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_name
             r
          TOK_SELEXPR
             TOK_FUNCTION
@@ -7295,8 +7423,9 @@ TOK_QUERY
                            p_mfgr
                      TOK_ORDERBY
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_name
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_name
             dr
          TOK_SELEXPR
             TOK_TABLE_OR_COL
@@ -7313,8 +7442,9 @@ TOK_QUERY
                            p_mfgr
                      TOK_ORDERBY
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_name
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_name
             s1
 
 
@@ -7339,6 +7469,7 @@ STAGE PLANS:
                   GatherStats: false
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
+                    null sort order: aa
                     sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string), p_name (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -7411,20 +7542,21 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col2, _col1
+                        order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2, _col1
                         raw input shape:
                       Partition table definition
                         input alias: ptf_2
                         name: noop
-                        order by: _col2, _col1
+                        order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2, _col1
                         raw input shape:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col2 (type: string)
+                    null sort order: a
                     sort order: +
                     Map-reduce partition columns: _col2 (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -7447,20 +7579,21 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col2
+                        order by: _col2 ASC NULLS FIRST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
                       Partition table definition
                         input alias: ptf_2
                         name: noop
-                        order by: _col2
+                        order by: _col2 ASC NULLS FIRST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
+                    null sort order: aa
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -7483,7 +7616,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1
+                        order by: _col1 ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -7660,19 +7793,22 @@ TOK_QUERY
                            p_name
                      TOK_ORDERBY
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_mfgr
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_mfgr
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_name
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_name
             TOK_PARTITIONINGSPEC
                TOK_DISTRIBUTEBY
                   TOK_TABLE_OR_COL
                      p_mfgr
                TOK_ORDERBY
                   TOK_TABSORTCOLNAMEASC
-                     TOK_TABLE_OR_COL
-                        p_mfgr
+                     TOK_NULLS_FIRST
+                        TOK_TABLE_OR_COL
+                           p_mfgr
          TOK_PARTITIONINGSPEC
             TOK_DISTRIBUTEBY
                TOK_TABLE_OR_COL
@@ -7681,11 +7817,13 @@ TOK_QUERY
                   p_name
             TOK_ORDERBY
                TOK_TABSORTCOLNAMEASC
-                  TOK_TABLE_OR_COL
-                     p_mfgr
+                  TOK_NULLS_FIRST
+                     TOK_TABLE_OR_COL
+                        p_mfgr
                TOK_TABSORTCOLNAMEASC
-                  TOK_TABLE_OR_COL
-                     p_name
+                  TOK_NULLS_FIRST
+                     TOK_TABLE_OR_COL
+                        p_name
    TOK_INSERT
       TOK_DESTINATION
          TOK_DIR
@@ -7763,6 +7901,7 @@ STAGE PLANS:
                   GatherStats: false
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
+                    null sort order: aa
                     sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string), p_name (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -7835,20 +7974,21 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col2, _col1
+                        order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2, _col1
                         raw input shape:
                       Partition table definition
                         input alias: ptf_2
                         name: noop
-                        order by: _col2, _col1
+                        order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2, _col1
                         raw input shape:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col2 (type: string)
+                    null sort order: a
                     sort order: +
                     Map-reduce partition columns: _col2 (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -7871,7 +8011,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col2
+                        order by: _col2 ASC NULLS FIRST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
@@ -7885,7 +8025,7 @@ STAGE PLANS:
                         Partition table definition
                           input alias: ptf_1
                           name: noopwithmap
-                          order by: _col2, _col1
+                          order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                           output shape: _col1: string, _col2: string, _col5: int
                           partition by: _col2, _col1
                           raw input shape:
@@ -7894,6 +8034,7 @@ STAGE PLANS:
                     Map-side function: true
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col1 (type: string)
+                      null sort order: aa
                       sort order: ++
                       Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -7916,7 +8057,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noopwithmap
-                        order by: _col2, _col1
+                        order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2, _col1
                         raw input shape:
@@ -7924,6 +8065,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
+                    null sort order: aa
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -7946,7 +8088,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col2, _col1
+                        order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                         partition by: _col2, _col1
                         raw input shape:
                         window functions:
@@ -8123,19 +8265,22 @@ TOK_QUERY
                         p_name
                   TOK_ORDERBY
                      TOK_TABSORTCOLNAMEASC
-                        TOK_TABLE_OR_COL
-                           p_mfgr
+                        TOK_NULLS_FIRST
+                           TOK_TABLE_OR_COL
+                              p_mfgr
                      TOK_TABSORTCOLNAMEASC
-                        TOK_TABLE_OR_COL
-                           p_name
+                        TOK_NULLS_FIRST
+                           TOK_TABLE_OR_COL
+                              p_name
             TOK_PARTITIONINGSPEC
                TOK_DISTRIBUTEBY
                   TOK_TABLE_OR_COL
                      p_mfgr
                TOK_ORDERBY
                   TOK_TABSORTCOLNAMEASC
-                     TOK_TABLE_OR_COL
-                        p_mfgr
+                     TOK_NULLS_FIRST
+                        TOK_TABLE_OR_COL
+                           p_mfgr
    TOK_INSERT
       TOK_DESTINATION
          TOK_DIR
@@ -8159,11 +8304,13 @@ TOK_QUERY
                            p_name
                      TOK_ORDERBY
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_mfgr
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_mfgr
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_name
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_name
             r
          TOK_SELEXPR
             TOK_FUNCTION
@@ -8177,11 +8324,13 @@ TOK_QUERY
                            p_name
                      TOK_ORDERBY
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_mfgr
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_mfgr
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_name
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_name
             dr
          TOK_SELEXPR
             TOK_TABLE_OR_COL
@@ -8200,11 +8349,13 @@ TOK_QUERY
                            p_name
                      TOK_ORDERBY
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_mfgr
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_mfgr
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_name
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_name
                   TOK_WINDOWRANGE
                      preceding
                         unbounded
@@ -8224,11 +8375,13 @@ TOK_QUERY
                            p_name
                      TOK_ORDERBY
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_mfgr
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_mfgr
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_name
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_name
                   TOK_WINDOWRANGE
                      preceding
                         unbounded
@@ -8257,6 +8410,7 @@ STAGE PLANS:
                   GatherStats: false
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
+                    null sort order: aa
                     sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string), p_name (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -8329,7 +8483,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col2, _col1
+                        order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2, _col1
                         raw input shape:
@@ -8343,7 +8497,7 @@ STAGE PLANS:
                         Partition table definition
                           input alias: ptf_1
                           name: noopwithmap
-                          order by: _col2
+                          order by: _col2 ASC NULLS FIRST
                           output shape: _col1: string, _col2: string, _col5: int
                           partition by: _col2
                           raw input shape:
@@ -8351,7 +8505,7 @@ STAGE PLANS:
                         Partition table definition
                           input alias: ptf_2
                           name: noop
-                          order by: _col2
+                          order by: _col2 ASC NULLS FIRST
                           output shape: _col1: string, _col2: string, _col5: int
                           partition by: _col2
                           raw input shape:
@@ -8359,6 +8513,7 @@ STAGE PLANS:
                     Map-side function: true
                     Reduce Output Operator
                       key expressions: _col2 (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: _col2 (type: string)
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -8381,7 +8536,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noopwithmap
-                        order by: _col2
+                        order by: _col2 ASC NULLS FIRST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
@@ -8389,13 +8544,14 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_2
                         name: noop
-                        order by: _col2
+                        order by: _col2 ASC NULLS FIRST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
+                    null sort order: aa
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -8418,7 +8574,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col2, _col1
+                        order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                         partition by: _col2, _col1
                         raw input shape:
                         window functions:
@@ -8589,11 +8745,13 @@ TOK_QUERY
                         p_name
                   TOK_ORDERBY
                      TOK_TABSORTCOLNAMEASC
-                        TOK_TABLE_OR_COL
-                           p_mfgr
+                        TOK_NULLS_FIRST
+                           TOK_TABLE_OR_COL
+                              p_mfgr
                      TOK_TABSORTCOLNAMEASC
-                        TOK_TABLE_OR_COL
-                           p_name
+                        TOK_NULLS_FIRST
+                           TOK_TABLE_OR_COL
+                              p_name
    TOK_INSERT
       TOK_DESTINATION
          TOK_DIR
@@ -8615,8 +8773,9 @@ TOK_QUERY
                            p_mfgr
                      TOK_ORDERBY
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_name
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_name
             r
          TOK_SELEXPR
             TOK_FUNCTION
@@ -8628,8 +8787,9 @@ TOK_QUERY
                            p_mfgr
                      TOK_ORDERBY
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_name
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_name
             dr
          TOK_SELEXPR
             TOK_TABLE_OR_COL
@@ -8646,8 +8806,9 @@ TOK_QUERY
                            p_mfgr
                      TOK_ORDERBY
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_name
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_name
                   TOK_WINDOWVALUES
                      preceding
                         unbounded
@@ -8665,8 +8826,9 @@ TOK_QUERY
                            p_mfgr
                      TOK_ORDERBY
                         TOK_TABSORTCOLNAMEASC
-                           TOK_TABLE_OR_COL
-                              p_name
+                           TOK_NULLS_FIRST
+                              TOK_TABLE_OR_COL
+                                 p_name
                   TOK_WINDOWVALUES
                      preceding
                         unbounded
@@ -8695,6 +8857,7 @@ STAGE PLANS:
                   GatherStats: false
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
+                    null sort order: aa
                     sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string), p_name (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -8767,14 +8930,14 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col2, _col1
+                        order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2, _col1
                         raw input shape:
                       Partition table definition
                         input alias: ptf_2
                         name: noop
-                        order by: _col2, _col1
+                        order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2, _col1
                         raw input shape:
@@ -8788,7 +8951,7 @@ STAGE PLANS:
                         Partition table definition
                           input alias: ptf_1
                           name: noopwithmap
-                          order by: _col2, _col1
+                          order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                           output shape: _col1: string, _col2: string, _col5: int
                           partition by: _col2, _col1
                           raw input shape:
@@ -8797,6 +8960,7 @@ STAGE PLANS:
                     Map-side function: true
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col1 (type: string)
+                      null sort order: aa
                       sort order: ++
                       Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -8819,7 +8983,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noopwithmap
-                        order by: _col2, _col1
+                        order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2, _col1
                         raw input shape:
@@ -8827,6 +8991,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
+                    null sort order: aa
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -8849,7 +9014,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1
+                        order by: _col1 ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                         window functions:

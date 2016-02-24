@@ -23,6 +23,8 @@ SERIALIZATION_LAST_COLUMN_TAKES_REST = %q"serialization.last.column.takes.rest"
 
 SERIALIZATION_SORT_ORDER = %q"serialization.sort.order"
 
+SERIALIZATION_NULL_POSITION = %q"serialization.null.position"
+
 SERIALIZATION_USE_JSON_OBJECTS = %q"serialization.use.json.object"
 
 SERIALIZATION_ENCODING = %q"serialization.encoding"

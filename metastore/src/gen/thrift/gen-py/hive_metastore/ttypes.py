@@ -2237,17 +2237,20 @@ class Order:
   Attributes:
    - col
    - order
+   - nullOrder
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.STRING, 'col', None, None, ), # 1
     (2, TType.I32, 'order', None, None, ), # 2
+    (3, TType.I32, 'nullOrder', None, None, ), # 3
   )
 
-  def __init__(self, col=None, order=None,):
+  def __init__(self, col=None, order=None, nullOrder=None,):
     self.col = col
     self.order = order
+    self.nullOrder = nullOrder
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -2268,6 +2271,11 @@ class Order:
           self.order = iprot.readI32()
         else:
           iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.I32:
+          self.nullOrder = iprot.readI32()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -2286,6 +2294,10 @@ class Order:
       oprot.writeFieldBegin('order', TType.I32, 2)
       oprot.writeI32(self.order)
       oprot.writeFieldEnd()
+    if self.nullOrder is not None:
+      oprot.writeFieldBegin('nullOrder', TType.I32, 3)
+      oprot.writeI32(self.nullOrder)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -2297,6 +2309,7 @@ class Order:
     value = 17
     value = (value * 31) ^ hash(self.col)
     value = (value * 31) ^ hash(self.order)
+    value = (value * 31) ^ hash(self.nullOrder)
     return value
 
   def __repr__(self):

@@ -148,23 +148,55 @@ public class BucketingSortingReduceSinkOptimizer extends Transform {
 
     // Get the sort positions and sort order for the table
     // The sort order contains whether the sorting is happening ascending or descending
-    private ObjectPair<List<Integer>, List<Integer>> getSortPositionsOrder(
+    private List<Integer> getSortPositions(
         List<Order> tabSortCols,
         List<FieldSchema> tabCols) {
       List<Integer> sortPositions = new ArrayList<Integer>();
-      List<Integer> sortOrders = new ArrayList<Integer>();
       for (Order sortCol : tabSortCols) {
         int pos = 0;
         for (FieldSchema tabCol : tabCols) {
           if (sortCol.getCol().equals(tabCol.getName())) {
             sortPositions.add(pos);
+            break;
+          }
+          pos++;
+        }
+      }
+      return sortPositions;
+    }
+
+    private List<Integer> getSortOrder(
+        List<Order> tabSortCols,
+        List<FieldSchema> tabCols) {
+      List<Integer> sortOrders = new ArrayList<Integer>();
+      for (Order sortCol : tabSortCols) {
+        int pos = 0;
+        for (FieldSchema tabCol : tabCols) {
+          if (sortCol.getCol().equals(tabCol.getName())) {
             sortOrders.add(sortCol.getOrder());
             break;
           }
           pos++;
         }
       }
-      return new ObjectPair<List<Integer>, List<Integer>>(sortPositions, sortOrders);
+      return sortOrders;
+    }
+
+    private List<Integer> getNullSortOrder(
+        List<Order> tabSortCols,
+        List<FieldSchema> tabCols) {
+      List<Integer> nullSortOrders = new ArrayList<Integer>();
+      for (Order sortCol : tabSortCols) {
+        int pos = 0;
+        for (FieldSchema tabCol : tabCols) {
+          if (sortCol.getCol().equals(tabCol.getName())) {
+            nullSortOrders.add(sortCol.getNullOrder());
+            break;
+          }
+          pos++;
+        }
+      }
+      return nullSortOrders;
     }
 
     // Return true if the partition is bucketed/sorted by the specified positions
@@ -174,6 +206,7 @@ public class BucketingSortingReduceSinkOptimizer extends Transform {
         List<Integer> bucketPositionsDest,
         List<Integer> sortPositionsDest,
         List<Integer> sortOrderDest,
+        List<Integer> sortNullOrderDest,
         int numBucketsDest) {
       // The bucketing and sorting positions should exactly match
       int numBuckets = partition.getBucketCount();
@@ -183,11 +216,16 @@ public class BucketingSortingReduceSinkOptimizer extends Transform {
 
       List<Integer> partnBucketPositions =
           getBucketPositions(partition.getBucketCols(), partition.getTable().getCols());
-      ObjectPair<List<Integer>, List<Integer>> partnSortPositionsOrder =
-          getSortPositionsOrder(partition.getSortCols(), partition.getTable().getCols());
+      List<Integer> sortPositions =
+          getSortPositions(partition.getSortCols(), partition.getTable().getCols());
+      List<Integer> sortOrder =
+          getSortOrder(partition.getSortCols(), partition.getTable().getCols());
+      List<Integer> sortNullOrder =
+          getNullSortOrder(partition.getSortCols(), partition.getTable().getCols());
       return bucketPositionsDest.equals(partnBucketPositions) &&
-          sortPositionsDest.equals(partnSortPositionsOrder.getFirst()) &&
-          sortOrderDest.equals(partnSortPositionsOrder.getSecond());
+          sortPositionsDest.equals(sortPositions) &&
+          sortOrderDest.equals(sortOrder) &&
+          sortNullOrderDest.equals(sortNullOrder);
     }
 
     // Return true if the table is bucketed/sorted by the specified positions
@@ -197,6 +235,7 @@ public class BucketingSortingReduceSinkOptimizer extends Transform {
         List<Integer> bucketPositionsDest,
         List<Integer> sortPositionsDest,
         List<Integer> sortOrderDest,
+        List<Integer> sortNullOrderDest,
         int numBucketsDest) {
       // The bucketing and sorting positions should exactly match
       int numBuckets = table.getNumBuckets();
@@ -206,11 +245,16 @@ public class BucketingSortingReduceSinkOptimizer extends Transform {
 
       List<Integer> tableBucketPositions =
           getBucketPositions(table.getBucketCols(), table.getCols());
-      ObjectPair<List<Integer>, List<Integer>> tableSortPositionsOrder =
-          getSortPositionsOrder(table.getSortCols(), table.getCols());
+      List<Integer> sortPositions =
+          getSortPositions(table.getSortCols(), table.getCols());
+      List<Integer> sortOrder =
+          getSortOrder(table.getSortCols(), table.getCols());
+      List<Integer> sortNullOrder =
+          getNullSortOrder(table.getSortCols(), table.getCols());
       return bucketPositionsDest.equals(tableBucketPositions) &&
-          sortPositionsDest.equals(tableSortPositionsOrder.getFirst()) &&
-          sortOrderDest.equals(tableSortPositionsOrder.getSecond());
+          sortPositionsDest.equals(sortPositions) &&
+          sortOrderDest.equals(sortOrder) &&
+          sortNullOrderDest.equals(sortNullOrder);
     }
 
     // Store the bucket path to bucket number mapping in the table scan operator.
@@ -288,7 +332,8 @@ public class BucketingSortingReduceSinkOptimizer extends Transform {
     private boolean validateSMBJoinKeys(SMBJoinDesc smbJoinDesc,
         List<ExprNodeColumnDesc> sourceTableBucketCols,
         List<ExprNodeColumnDesc> sourceTableSortCols,
-        List<Integer> sortOrder) {
+        List<Integer> sortOrder,
+        List<Integer> sortNullOrder) {
       // The sort-merge join creates the output sorted and bucketized by the same columns.
       // This can be relaxed in the future if there is a requirement.
       if (!sourceTableBucketCols.equals(sourceTableSortCols)) {
@@ -426,10 +471,12 @@ public class BucketingSortingReduceSinkOptimizer extends Transform {
       // also match for this to be converted to a map-only job.
       List<Integer> bucketPositions =
           getBucketPositions(destTable.getBucketCols(), destTable.getCols());
-      ObjectPair<List<Integer>, List<Integer>> sortOrderPositions =
-          getSortPositionsOrder(destTable.getSortCols(), destTable.getCols());
-      List<Integer> sortPositions = sortOrderPositions.getFirst();
-      List<Integer> sortOrder = sortOrderPositions.getSecond();
+      List<Integer> sortPositions =
+          getSortPositions(destTable.getSortCols(), destTable.getCols());
+      List<Integer> sortOrder =
+          getSortOrder(destTable.getSortCols(), destTable.getCols());
+      List<Integer> sortNullOrder =
+          getNullSortOrder(destTable.getSortCols(), destTable.getCols());
       boolean useBucketSortPositions = true;
 
       // Only selects and filters are allowed
@@ -464,7 +511,7 @@ public class BucketingSortingReduceSinkOptimizer extends Transform {
           }
 
           if (!validateSMBJoinKeys(smbJoinDesc, sourceTableBucketCols,
-              sourceTableSortCols, sortOrder)) {
+              sourceTableSortCols, sortOrder, sortNullOrder)) {
             return null;
           }
 
@@ -539,7 +586,7 @@ public class BucketingSortingReduceSinkOptimizer extends Transform {
               }
               for (Partition partition : partitions) {
                 if (!checkPartition(partition, newBucketPositions, newSortPositions, sortOrder,
-                    numBucketsDestination)) {
+                    sortNullOrder, numBucketsDestination)) {
                   return null;
                 }
               }
@@ -550,7 +597,7 @@ public class BucketingSortingReduceSinkOptimizer extends Transform {
             }
             else {
               if (!checkTable(srcTable, newBucketPositions, newSortPositions, sortOrder,
-                  numBucketsDestination)) {
+                  sortNullOrder, numBucketsDestination)) {
                 return null;
               }
 

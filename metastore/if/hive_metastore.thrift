@@ -226,8 +226,9 @@ struct SerDeInfo {
 
 // sort order of a column (column name along with asc(1)/desc(0))
 struct Order {
-  1: string col,  // sort column name
-  2: i32    order // asc(1) or desc(0)
+  1: string col,      // sort column name
+  2: i32    order,    // asc(1) or desc(0)
+  3: i32    nullOrder // nulls first(0) or nulls last(1)
 }
 
 // this object holds all the information about skewed table

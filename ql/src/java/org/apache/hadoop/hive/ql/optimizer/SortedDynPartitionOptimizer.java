@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
@@ -182,10 +183,9 @@ public class SortedDynPartitionOptimizer extends Transform {
       // Get the positions for partition, bucket and sort columns
       List<Integer> bucketPositions = getBucketPositions(destTable.getBucketCols(),
           destTable.getCols());
-      ObjectPair<List<Integer>, List<Integer>> sortOrderPositions = getSortPositionsOrder(
-          destTable.getSortCols(), destTable.getCols());
       List<Integer> sortPositions = null;
       List<Integer> sortOrder = null;
+      List<Integer> sortNullOrder = null;
       if (fsOp.getConf().getWriteType() == AcidUtils.Operation.UPDATE ||
           fsOp.getConf().getWriteType() == AcidUtils.Operation.DELETE) {
         // When doing updates and deletes we always want to sort on the rowid because the ACID
@@ -193,13 +193,16 @@ public class SortedDynPartitionOptimizer extends Transform {
         // ignore whatever comes from the table and enforce this sort order instead.
         sortPositions = Arrays.asList(0);
         sortOrder = Arrays.asList(1); // 1 means asc, could really use enum here in the thrift if
+        sortNullOrder = Arrays.asList(0);
       } else {
-        sortPositions = sortOrderPositions.getFirst();
-        sortOrder = sortOrderPositions.getSecond();
+        sortPositions = getSortPositions(destTable.getSortCols(), destTable.getCols());
+        sortOrder = getSortOrders(destTable.getSortCols(), destTable.getCols());
+        sortNullOrder = getSortNullOrders(destTable.getSortCols(), destTable.getCols());
       }
       LOG.debug("Got sort order");
       for (int i : sortPositions) LOG.debug("sort position " + i);
       for (int i : sortOrder) LOG.debug("sort order " + i);
+      for (int i : sortNullOrder) LOG.debug("sort null order " + i);
       List<Integer> partitionPositions = getPartitionPositions(dpCtx, fsParent.getSchema());
       List<ColumnInfo> colInfos = fsParent.getSchema().getSignature();
       ArrayList<ExprNodeDesc> bucketColumns = getPositionsToExprNodes(bucketPositions, colInfos);
@@ -214,8 +217,9 @@ public class SortedDynPartitionOptimizer extends Transform {
       for (ColumnInfo ci : parentCols) {
         allRSCols.add(new ExprNodeColumnDesc(ci));
       }
+
       // Create ReduceSink operator
-      ReduceSinkOperator rsOp = getReduceSinkOp(partitionPositions, sortPositions, sortOrder,
+      ReduceSinkOperator rsOp = getReduceSinkOp(partitionPositions, sortPositions, sortOrder, sortNullOrder,
           allRSCols, bucketColumns, numBuckets, fsParent, fsOp.getConf().getWriteType());
 
       List<ExprNodeDesc> descs = new ArrayList<ExprNodeDesc>(allRSCols.size());
@@ -408,17 +412,19 @@ public class SortedDynPartitionOptimizer extends Transform {
     }
 
     public ReduceSinkOperator getReduceSinkOp(List<Integer> partitionPositions,
-        List<Integer> sortPositions, List<Integer> sortOrder, ArrayList<ExprNodeDesc> allCols,
-        ArrayList<ExprNodeDesc> bucketColumns, int numBuckets,
+        List<Integer> sortPositions, List<Integer> sortOrder, List<Integer> sortNullOrder,
+        ArrayList<ExprNodeDesc> allCols, ArrayList<ExprNodeDesc> bucketColumns, int numBuckets,
         Operator<? extends OperatorDesc> parent, AcidUtils.Operation writeType) {
 
       // Order of KEY columns
       // 1) Partition columns
       // 2) Bucket number column
       // 3) Sort columns
+      // 4) Null sort columns
       Set<Integer> keyColsPosInVal = Sets.newLinkedHashSet();
       ArrayList<ExprNodeDesc> keyCols = Lists.newArrayList();
       List<Integer> newSortOrder = Lists.newArrayList();
+      List<Integer> newSortNullOrder = Lists.newArrayList();
       int numPartAndBuck = partitionPositions.size();
 
       keyColsPosInVal.addAll(partitionPositions);
@@ -449,8 +455,33 @@ public class SortedDynPartitionOptimizer extends Transform {
         }
       }
 
+      // if partition and bucket columns are sorted in ascending order, by default
+      // nulls come first; otherwise nulls come last
+      Integer nullOrder = order == 1 ? 0 : 1;
+      if (sortNullOrder != null && !sortNullOrder.isEmpty()) {
+        if (sortNullOrder.get(0).intValue() == 0) {
+          nullOrder = 0;
+        } else {
+          nullOrder = 1;
+        }
+      }
+      for (int i = 0; i < numPartAndBuck; i++) {
+        newSortNullOrder.add(nullOrder);
+      }
+      newSortNullOrder.addAll(sortNullOrder);
+
+      String nullOrderStr = "";
+      for (Integer i : newSortNullOrder) {
+        if(i.intValue() == 0) {
+          nullOrderStr += "a";
+        } else {
+          nullOrderStr += "z";
+        }
+      }
+
       Map<String, ExprNodeDesc> colExprMap = Maps.newHashMap();
       ArrayList<ExprNodeDesc> partCols = Lists.newArrayList();
+
       // we will clone here as RS will update bucket column key with its
       // corresponding with bucket number and hence their OIs
       for (Integer idx : keyColsPosInVal) {
@@ -480,9 +511,11 @@ public class SortedDynPartitionOptimizer extends Transform {
           ReduceSinkOperator.class);
       if (parentRSOp != null && parseCtx.getQueryProperties().hasOuterOrderBy()) {
         String parentRSOpOrder = parentRSOp.getConf().getOrder();
+        String parentRSOpNullOrder = parentRSOp.getConf().getNullOrder();
         if (parentRSOpOrder != null && !parentRSOpOrder.isEmpty() && sortPositions.isEmpty()) {
           keyCols.addAll(parentRSOp.getConf().getKeyCols());
           orderStr += parentRSOpOrder;
+          nullOrderStr += parentRSOpNullOrder;
         }
       }
 
@@ -504,7 +537,7 @@ public class SortedDynPartitionOptimizer extends Transform {
       // from Key and Value TableDesc
       List<FieldSchema> fields = PlanUtils.getFieldSchemasFromColumnList(keyCols,
           keyColNames, 0, "");
-      TableDesc keyTable = PlanUtils.getReduceKeyTableDesc(fields, orderStr);
+      TableDesc keyTable = PlanUtils.getReduceKeyTableDesc(fields, orderStr, nullOrderStr);
       List<FieldSchema> valFields = PlanUtils.getFieldSchemasFromColumnList(valCols,
           valColNames, 0, "");
       TableDesc valueTable = PlanUtils.getReduceValueTableDesc(valFields);
@@ -523,27 +556,65 @@ public class SortedDynPartitionOptimizer extends Transform {
     }
 
     /**
-     * Get the sort positions and sort order for the sort columns
+     * Get the sort positions for the sort columns
      * @param tabSortCols
      * @param tabCols
      * @return
      */
-    private ObjectPair<List<Integer>, List<Integer>> getSortPositionsOrder(List<Order> tabSortCols,
+    private List<Integer> getSortPositions(List<Order> tabSortCols,
         List<FieldSchema> tabCols) {
       List<Integer> sortPositions = Lists.newArrayList();
-      List<Integer> sortOrders = Lists.newArrayList();
       for (Order sortCol : tabSortCols) {
         int pos = 0;
         for (FieldSchema tabCol : tabCols) {
           if (sortCol.getCol().equals(tabCol.getName())) {
             sortPositions.add(pos);
-            sortOrders.add(sortCol.getOrder());
             break;
           }
           pos++;
         }
       }
-      return new ObjectPair<List<Integer>, List<Integer>>(sortPositions, sortOrders);
+      return sortPositions;
+    }
+
+    /**
+     * Get the sort order for the sort columns
+     * @param tabSortCols
+     * @param tabCols
+     * @return
+     */
+    private List<Integer> getSortOrders(List<Order> tabSortCols,
+        List<FieldSchema> tabCols) {
+      List<Integer> sortOrders = Lists.newArrayList();
+      for (Order sortCol : tabSortCols) {
+        for (FieldSchema tabCol : tabCols) {
+          if (sortCol.getCol().equals(tabCol.getName())) {
+            sortOrders.add(sortCol.getOrder());
+            break;
+          }
+        }
+      }
+      return sortOrders;
+    }
+
+    /**
+     * Get the null sort order for the sort columns
+     * @param tabSortCols
+     * @param tabCols
+     * @return
+     */
+    private List<Integer> getSortNullOrders(List<Order> tabSortCols,
+        List<FieldSchema> tabCols) {
+      List<Integer> sortNullOrders = Lists.newArrayList();
+      for (Order sortCol : tabSortCols) {
+        for (FieldSchema tabCol : tabCols) {
+          if (sortCol.getCol().equals(tabCol.getName())) {
+            sortNullOrders.add(sortCol.getNullOrder());
+            break;
+          }
+        }
+      }
+      return sortNullOrders;
     }
 
     private ArrayList<ExprNodeDesc> getPositionsToExprNodes(List<Integer> pos,

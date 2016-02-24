@@ -793,10 +793,11 @@ TOK_QUERY
                value
       TOK_ORDERBY
          TOK_TABSORTCOLNAMEASC
-            .
-               TOK_TABLE_OR_COL
-                  s1
-               key
+            TOK_NULLS_FIRST
+               .
+                  TOK_TABLE_OR_COL
+                     s1
+                  key
 
 
 LOGICAL PLAN:
