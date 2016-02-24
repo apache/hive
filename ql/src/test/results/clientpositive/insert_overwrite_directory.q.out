@@ -1190,8 +1190,8 @@ PREHOOK: query: insert overwrite directory '../../data/files/array_table_4'
 ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
 WITH SERDEPROPERTIES (
 'serialization.format'= 'org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol',
-'quote.delim'= '("|\\[|\\])',  'field.delim'=', ',
-'serialization.null.format'='-'  ) STORED AS TEXTFILE 
+'quote.delim'= '("|\\[|\\])',  'field.delim'=',',
+'serialization.null.format'='-NA-', 'colelction.delim'='#') STORED AS TEXTFILE
 select a, null, b from array_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@array_table
@@ -1200,14 +1200,14 @@ POSTHOOK: query: insert overwrite directory '../../data/files/array_table_4'
 ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
 WITH SERDEPROPERTIES (
 'serialization.format'= 'org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol',
-'quote.delim'= '("|\\[|\\])',  'field.delim'=', ',
-'serialization.null.format'='-'  ) STORED AS TEXTFILE 
+'quote.delim'= '("|\\[|\\])',  'field.delim'=',',
+'serialization.null.format'='-NA-', 'colelction.delim'='#') STORED AS TEXTFILE
 select a, null, b from array_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@array_table
 #### A masked pattern was here ####
-a1a2a3\Nb1b2b3b4
-a21a22a23\Nb21b22b23b24
+a1#a2#a3,-NA-,b1#b2#b3#b4
+a21#a22#a23,-NA-,b21#b22#b23#b24
 PREHOOK: query: insert overwrite directory '../../data/files/map_table_3'
 ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.DelimitedJSONSerDe'
 STORED AS TEXTFILE
@@ -1228,8 +1228,8 @@ PREHOOK: query: insert overwrite directory '../../data/files/map_table_4'
 ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
 WITH SERDEPROPERTIES (
 'serialization.format'= 'org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol',
-'quote.delim'= '("|\\[|\\])',  'field.delim'=', ',
-'serialization.null.format'='-'  ) STORED AS TEXTFILE 
+'quote.delim'= '("|\\[|\\])',  'field.delim'=':',
+'serialization.null.format'='-NA-', 'colelction.delim'='#', 'mapkey.delim'='%') STORED AS TEXTFILE
 select foo, null, bar from map_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@map_table
@@ -1238,14 +1238,14 @@ POSTHOOK: query: insert overwrite directory '../../data/files/map_table_4'
 ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
 WITH SERDEPROPERTIES (
 'serialization.format'= 'org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol',
-'quote.delim'= '("|\\[|\\])',  'field.delim'=', ',
-'serialization.null.format'='-'  ) STORED AS TEXTFILE 
+'quote.delim'= '("|\\[|\\])',  'field.delim'=':',
+'serialization.null.format'='-NA-', 'colelction.delim'='#', 'mapkey.delim'='%') STORED AS TEXTFILE
 select foo, null, bar from map_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@map_table
 #### A masked pattern was here ####
-foo1\Nk1v1k2v2k3v3
-foo2\Nk21v21k22v22k31v31
+foo1:-NA-:k1%v1#k2%v2#k3%v3
+foo2:-NA-:k21%v21#k22%v22#k31%v31
 PREHOOK: query: insert overwrite directory '../../data/files/rctable'
 STORED AS RCFILE
 select value,key from src
