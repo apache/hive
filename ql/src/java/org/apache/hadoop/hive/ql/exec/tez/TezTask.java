@@ -412,7 +412,7 @@ public class TezTask extends Task<TezWork> {
     return dag;
   }
 
-  private void setAccessControlsForCurrentUser(DAG dag) {
+  public static void setAccessControlsForCurrentUser(DAG dag) {
     // get current user
     String currentUser = SessionState.getUserFromAuthenticator();
     if(LOG.isDebugEnabled()) {

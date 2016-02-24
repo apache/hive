@@ -48,6 +48,10 @@ while [ $# -gt 0 ]; do
       SERVICE=orcfiledump
       shift
       ;;
+    --llapdump)
+      SERVICE=llapdump
+      shift
+      ;;
     --help)
       HELP=_help
       shift

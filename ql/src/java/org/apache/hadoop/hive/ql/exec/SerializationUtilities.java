@@ -570,7 +570,7 @@ public class SerializationUtilities {
    * @param plan Usually of type MapredWork, MapredLocalWork etc.
    * @param out stream in which serialized plan is written into
    */
-  private static void serializeObjectByKryo(Kryo kryo, Object plan, OutputStream out) {
+  public static void serializeObjectByKryo(Kryo kryo, Object plan, OutputStream out) {
     Output output = new Output(out);
     kryo.setClassLoader(Utilities.getSessionSpecifiedClassLoader());
     kryo.writeObject(output, plan);

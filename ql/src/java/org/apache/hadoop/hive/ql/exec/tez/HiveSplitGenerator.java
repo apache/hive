@@ -74,17 +74,26 @@ public class HiveSplitGenerator extends InputInitializer {
 
   private static final Logger LOG = LoggerFactory.getLogger(HiveSplitGenerator.class);
 
-  private final DynamicPartitionPruner pruner;
-  private final Configuration conf;
-  private final JobConf jobConf;
-  private final MRInputUserPayloadProto userPayloadProto;
-  private final MapWork work;
+  private DynamicPartitionPruner pruner = null;
+  private Configuration conf = null;
+  private JobConf jobConf = null;
+  private MRInputUserPayloadProto userPayloadProto = null;
+  private MapWork work = null;
   private final SplitGrouper splitGrouper = new SplitGrouper();
-  private final SplitLocationProvider splitLocationProvider;
+  private SplitLocationProvider splitLocationProvider = null;
+
+  public void initializeSplitGenerator(Configuration conf, MapWork work) {
+    this.conf = conf;
+    this.work = work;
+    this.jobConf = new JobConf(conf);
+  }
 
   public HiveSplitGenerator(InputInitializerContext initializerContext) throws IOException,
       SerDeException {
     super(initializerContext);
+    if (initializerContext == null) {
+      return;
+    }
     Preconditions.checkNotNull(initializerContext);
     userPayloadProto =
         MRInputHelpers.parseMRInputPayload(initializerContext.getInputUserPayload());

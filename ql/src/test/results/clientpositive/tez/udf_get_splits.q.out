@@ -1,0 +1,73 @@
+PREHOOK: query: DESCRIBE FUNCTION get_splits
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION get_splits
+POSTHOOK: type: DESCFUNCTION
+get_splits(string,int) - Returns an array of length int serialized splits for the referenced tables string.
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED get_splits
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED get_splits
+POSTHOOK: type: DESCFUNCTION
+get_splits(string,int) - Returns an array of length int serialized splits for the referenced tables string.
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED get_splits
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_74b4da448d74412d8fc0da37a405efb3
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED get_splits
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table_74b4da448d74412d8fc0da37a405efb3
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED get_splits
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_4c8d9e53ea514617a6a72158c9c843c5
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED get_splits
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table_4c8d9e53ea514617a6a72158c9c843c5
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED get_splits
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_42dcc08d004e411f8038701980b491e3
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED get_splits
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table_42dcc08d004e411f8038701980b491e3
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED get_splits
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_9ef6460ac4a24e4fab1ea09ad94b01e3
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED get_splits
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table_9ef6460ac4a24e4fab1ea09ad94b01e3
+PREHOOK: query: select r.if_class as ic, r.split_class as sc, hash(r.split) as h, length(r.split) as l from (select explode(get_splits("select key, count(*) from src where key % 2 = 0 group by key",5)) as r) t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_bf88922034334ab08a9abb6cf8aa546e
+POSTHOOK: query: select r.if_class as ic, r.split_class as sc, hash(r.split) as h, length(r.split) as l from (select explode(get_splits("select key, count(*) from src where key % 2 = 0 group by key",5)) as r) t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table_bf88922034334ab08a9abb6cf8aa546e
+PREHOOK: query: select r.if_class as ic, r.split_class as sc, hash(r.split) as h, length(r.split) as l from (select explode(get_splits("select key, count(*) from src where key % 2 = 0 group by key",5)) as r) t
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select r.if_class as ic, r.split_class as sc, hash(r.split) as h, length(r.split) as l from (select explode(get_splits("select key, count(*) from src where key % 2 = 0 group by key",5)) as r) t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+class org.apache.hadoop.mapred.TextInputFormat	class org.apache.hadoop.mapred.FileSplit	-1434872849	218
+class org.apache.hadoop.mapred.TextInputFormat	class org.apache.hadoop.mapred.FileSplit	2107621793	218
+class org.apache.hadoop.mapred.TextInputFormat	class org.apache.hadoop.mapred.FileSplit	-1988206222	218
+class org.apache.hadoop.mapred.TextInputFormat	class org.apache.hadoop.mapred.FileSplit	1357774915	218
+class org.apache.hadoop.mapred.TextInputFormat	class org.apache.hadoop.mapred.FileSplit	605302265	218
