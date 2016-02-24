@@ -91,6 +91,7 @@ message SubmitWorkRequestProto {
   optional int32 app_attempt_number = 8;
   optional FragmentSpecProto fragment_spec = 9;
   optional FragmentRuntimeInfo fragment_runtime_info = 10;
+  optional bool usingTezAm = 11 [default = true];
 }
 
 enum SubmissionStateProto {
@@ -136,11 +137,18 @@ message GetTokenResponseProto {
   optional bytes token = 1;
 }
 
+message SendEventsRequestProto {
+}
+
+message SendEventsResponseProto {
+}
+
 service LlapDaemonProtocol {
   rpc submitWork(SubmitWorkRequestProto) returns (SubmitWorkResponseProto);
   rpc sourceStateUpdated(SourceStateUpdatedRequestProto) returns (SourceStateUpdatedResponseProto);
   rpc queryComplete(QueryCompleteRequestProto) returns (QueryCompleteResponseProto);
   rpc terminateFragment(TerminateFragmentRequestProto) returns (TerminateFragmentResponseProto);
+  rpc sendEvents(SendEventsRequestProto) return (SendEventsResponseProto);
 }
 
 service LlapManagementProtocol {

@@ -59,6 +59,11 @@ public class LlapInputFormat<V extends WritableComparable> implements InputForma
   private String pwd;  // ""
   private String query;
 
+  public final String URL_KEY = "llap.if.hs2.connection";
+  public final String QUERY_KEY = "llap.if.query";
+  public final String USER_KEY = "llap.if.user";
+  public final String PWD_KEY = "llap.if.pwd";
+
   private Connection con;
   private Statement stmt;
 
@@ -132,6 +137,11 @@ public class LlapInputFormat<V extends WritableComparable> implements InputForma
   @Override
   public InputSplit[] getSplits(JobConf job, int numSplits) throws IOException {
     List<InputSplit> ins = new ArrayList<InputSplit>();
+
+    if (url == null) url = job.get(URL_KEY);
+    if (query == null) query = job.get(QUERY_KEY);
+    if (user == null) user = job.get(USER_KEY);
+    if (pwd == null) pwd = job.get(PWD_KEY);
 
     if (url == null || query == null) {
       throw new IllegalStateException();

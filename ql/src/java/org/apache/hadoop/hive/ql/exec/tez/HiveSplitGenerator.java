@@ -33,6 +33,9 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.llap.registry.ServiceInstance;
+import org.apache.hadoop.hive.llap.registry.ServiceInstanceSet;
+import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -44,6 +47,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.split.SplitLocationProvider;
 import org.apache.hadoop.mapreduce.split.TezMapReduceSplitsGrouper;
 import org.apache.hadoop.util.ReflectionUtils;
+import org.apache.hadoop.yarn.api.records.Resource;
 import org.apache.tez.common.TezUtils;
 import org.apache.tez.dag.api.TaskLocationHint;
 import org.apache.tez.dag.api.VertexLocationHint;
@@ -82,10 +86,30 @@ public class HiveSplitGenerator extends InputInitializer {
   private final SplitGrouper splitGrouper = new SplitGrouper();
   private SplitLocationProvider splitLocationProvider = null;
 
-  public void initializeSplitGenerator(Configuration conf, MapWork work) {
+  
+  // TODO RSHACK This entire method needs to be reworked. Put back final fields, separate into reusable components etc.
+  public void initializeSplitGenerator(Configuration conf, MapWork work) throws IOException {
+
     this.conf = conf;
     this.work = work;
-    this.jobConf = new JobConf(conf);
+
+    // TODO RSHACK - assuming grouping enabled always.
+    userPayloadProto = MRInputUserPayloadProto.newBuilder().setGroupingEnabled(true).build();
+
+    this.splitLocationProvider = Utils.getSplitLocationProvider(conf, LOG);
+    LOG.info("SplitLocationProvider: " + splitLocationProvider);
+
+    // Read all credentials into the credentials instance stored in JobConf.
+    ShimLoader.getHadoopShims().getMergedCredentials(jobConf);
+
+    this.work = Utilities.getMapWork(jobConf);
+
+    // Events can start coming in the moment the InputInitializer is created. The pruner
+    // must be setup and initialized here so that it sets up it's structures to start accepting events.
+    // Setting it up in initialize leads to a window where events may come in before the pruner is
+    // initialized, which may cause it to drop events.
+    // TODO RSHACK - No dynamic partition pruning
+    pruner = null;
   }
 
   public HiveSplitGenerator(InputInitializerContext initializerContext) throws IOException,
@@ -129,7 +153,9 @@ public class HiveSplitGenerator extends InputInitializer {
           conf.getBoolean("mapreduce.tez.input.initializer.serialize.event.payload", true);
 
       // perform dynamic partition pruning
-      pruner.prune();
+      if (pruner != null) {
+        pruner.prune();
+      }
 
       InputSplitInfoMem inputSplitInfo = null;
       boolean generateConsistentSplits = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_TEZ_GENERATE_CONSISTENT_SPLITS);
@@ -142,9 +168,20 @@ public class HiveSplitGenerator extends InputInitializer {
           (InputFormat<?, ?>) ReflectionUtils.newInstance(JavaUtils.loadClass(realInputFormatName),
               jobConf);
 
-        int totalResource = getContext().getTotalAvailableResource().getMemory();
-        int taskResource = getContext().getVertexTaskResource().getMemory();
-        int availableSlots = totalResource / taskResource;
+        int totalResource = 0;
+        int taskResource = 0;
+        int availableSlots = 0;
+        // FIXME. Do the right thing Luke.
+        if (getContext() == null) {
+          // for now, totalResource = taskResource for llap
+          availableSlots = 1;
+        }
+
+        if (getContext() != null) {
+          totalResource = getContext().getTotalAvailableResource().getMemory();
+          taskResource = getContext().getVertexTaskResource().getMemory();
+          availableSlots = totalResource / taskResource;
+        }
 
         if (HiveConf.getLongVar(conf, HiveConf.ConfVars.MAPREDMINSPLITSIZE, 1) <= 1) {
           // broken configuration from mapred-default.xml

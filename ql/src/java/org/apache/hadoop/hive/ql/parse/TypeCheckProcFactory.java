@@ -1315,12 +1315,15 @@ public class TypeCheckProcFactory {
       try {
         return getXpathOrFuncExprNodeDesc(expr, isFunction, children, ctx);
       } catch (UDFArgumentTypeException e) {
+        LOG.error("UDFArgumentTypeException: ", e);
         throw new SemanticException(ErrorMsg.INVALID_ARGUMENT_TYPE.getMsg(expr
             .getChild(childrenBegin + e.getArgumentId()), e.getMessage()));
       } catch (UDFArgumentLengthException e) {
+        LOG.error("UDFArgumentLengthException: ", e);
         throw new SemanticException(ErrorMsg.INVALID_ARGUMENT_LENGTH.getMsg(
             expr, e.getMessage()));
       } catch (UDFArgumentException e) {
+        LOG.error("UDFArgumentException: ", e);
         throw new SemanticException(ErrorMsg.INVALID_ARGUMENT.getMsg(expr, e
             .getMessage()));
       }

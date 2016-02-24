@@ -14,6 +14,7 @@
 
 package org.apache.hadoop.hive.llap.daemon.impl;
 
+import org.apache.hadoop.hive.llap.LlapOutputFormatService;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryPoolMXBean;
@@ -279,6 +280,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     LOG.info("Setting shuffle port to: " + ShuffleHandler.get().getPort());
     this.shufflePort.set(ShuffleHandler.get().getPort());
     super.serviceStart();
+    LlapOutputFormatService.get();
     LOG.info("LlapDaemon serviceStart complete");
   }
 
@@ -286,6 +288,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     super.serviceStop();
     ShuffleHandler.shutdown();
     shutdown();
+    LlapOutputFormatService.get().stop();
     LOG.info("LlapDaemon shutdown complete");
   }
 

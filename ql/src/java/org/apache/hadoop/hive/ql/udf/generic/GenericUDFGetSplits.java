@@ -18,6 +18,20 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import org.apache.hadoop.hive.llap.LlapInputSplit;
+import org.apache.hadoop.hive.llap.SubmitWorkInfo;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
+
+import com.google.common.base.Preconditions;
+
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
+
+import javax.security.auth.login.LoginException;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
@@ -27,6 +41,17 @@ import java.io.IOException;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.DataOutput;
+
+import com.esotericsoftware.kryo.Kryo;
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
+import java.io.InputStream;
+
+import org.apache.hadoop.hive.ql.exec.tez.TezProcessor;
+import org.apache.hadoop.yarn.api.records.ApplicationId;
+import org.apache.tez.dag.api.ProcessorDescriptor;
+import org.apache.tez.dag.api.TaskSpecBuilder;
+import org.apache.tez.runtime.api.impl.TaskSpec;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,6 +94,55 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.metastore.api.Schema;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.io.FileNotFoundException;
+import java.util.UUID;
+
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.WritableComparable;
+import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.mapred.SplitLocationInfo;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.InputFormat;
+import org.apache.hadoop.mapred.InputSplit;
+import org.apache.hadoop.mapred.FileSplit;
+import org.apache.hadoop.mapred.RecordReader;
+import org.apache.hadoop.mapred.Reporter;
+import org.apache.hadoop.yarn.api.records.LocalResource;
+import org.apache.hadoop.yarn.api.records.LocalResourceType;
+import org.apache.tez.dag.api.DAG;
+import org.apache.tez.dag.api.Vertex;
+import org.apache.tez.runtime.api.Event;
+import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.exec.tez.DagUtils;
+import org.apache.hadoop.hive.ql.exec.tez.HiveSplitGenerator;
+import org.apache.hadoop.hive.ql.plan.MapWork;
+import org.apache.hadoop.hive.ql.plan.TezWork;
+import org.apache.hadoop.hive.metastore.api.Schema;
+import org.apache.hadoop.hive.llap.configuration.LlapConfiguration;
+import org.apache.tez.dag.api.TaskLocationHint;
+import org.apache.tez.dag.api.VertexLocationHint;
+import org.apache.tez.dag.api.event.VertexStateUpdate;
+import org.apache.tez.mapreduce.hadoop.InputSplitInfoMem;
+import org.apache.tez.mapreduce.hadoop.MRInputHelpers;
+import org.apache.tez.mapreduce.protos.MRRuntimeProtos.MRInputUserPayloadProto;
+import org.apache.tez.mapreduce.protos.MRRuntimeProtos.MRSplitProto;
+import org.apache.tez.mapreduce.protos.MRRuntimeProtos.MRSplitsProto;
+import org.apache.tez.runtime.api.Event;
+import org.apache.tez.runtime.api.InputInitializer;
+import org.apache.tez.runtime.api.InputInitializerContext;
+import org.apache.tez.runtime.api.InputSpecUpdate;
+import org.apache.tez.runtime.api.events.InputConfigureVertexTasksEvent;
+import org.apache.tez.runtime.api.events.InputDataInformationEvent;
+import org.apache.tez.runtime.api.events.InputInitializerEvent;
 
 /**
  * GenericUDFGetSplits.
@@ -177,7 +251,6 @@ public class GenericUDFGetSplits extends GenericUDF {
     }
 
     Path data = null;
-    InputFormat inp = null;
     String ifc = null;
 
     TezWork tezWork = ((TezTask)roots.get(0)).getWork();
@@ -214,33 +287,13 @@ public class GenericUDFGetSplits extends GenericUDF {
       }
 
       tezWork = ((TezTask)roots.get(0)).getWork();
-
-      // Table table = db.getTable(tableName);
-      // if (table.isPartitioned()) {
-      //   throw new UDFArgumentException("Table " + tableName + " is partitioned.");
-      // }
-      // data = table.getDataLocation();
-      // LOG.info("looking at: "+data);
-
-      // ifc = table.getInputFormatClass().toString();
-
-      // inp = ReflectionUtils.newInstance(table.getInputFormatClass(), jc);
     }
 
     MapWork w = (MapWork)tezWork.getAllWork().get(0);
-    inp = new LlapInputFormat(tezWork, schema);
     ifc = LlapInputFormat.class.toString();
 
     try {
-      if (inp instanceof JobConfigurable) {
-        ((JobConfigurable) inp).configure(jc);
-      }
-
-      if (inp instanceof FileInputFormat) {
-        ((FileInputFormat) inp).addInputPath(jc, data);
-      }
-
-      for (InputSplit s: inp.getSplits(jc, num)) {
+      for (InputSplit s: getSplits(jc, num, tezWork, schema)) {
         Object[] os = new Object[3];
         os[0] = ifc;
         os[1] = s.getClass().toString();
@@ -255,6 +308,133 @@ public class GenericUDFGetSplits extends GenericUDF {
     }
 
     return retArray;
+  }
+
+  public InputSplit[] getSplits(JobConf job, int numSplits, TezWork work, Schema schema) throws IOException {
+    DAG dag = DAG.create(work.getName());
+    dag.setCredentials(job.getCredentials());
+    // TODO: set access control? TezTask.setAccessControlsForCurrentUser(dag);
+
+    DagUtils utils = DagUtils.getInstance();
+    Context ctx = new Context(job);
+    MapWork mapWork = (MapWork) work.getAllWork().get(0);
+    // bunch of things get setup in the context based on conf but we need only the MR tmp directory
+    // for the following method.
+    JobConf wxConf = utils.initializeVertexConf(job, ctx, mapWork);
+    Path scratchDir = utils.createTezDir(ctx.getMRScratchDir(), job);
+    FileSystem fs = scratchDir.getFileSystem(job);
+    try {
+      LocalResource appJarLr = createJarLocalResource(utils.getExecJarPathLocal(), utils, job);
+      Vertex wx = utils.createVertex(wxConf, mapWork, scratchDir, appJarLr,
+          new ArrayList<LocalResource>(), fs, ctx, false, work,
+          work.getVertexType(mapWork));
+      String vertexName = wx.getName();
+      dag.addVertex(wx);
+      utils.addCredentials(mapWork, dag);
+
+      // we have the dag now proceed to get the splits:
+      HiveSplitGenerator splitGenerator = new HiveSplitGenerator(null);
+      Preconditions.checkState(HiveConf.getBoolVar(wxConf,
+          HiveConf.ConfVars.HIVE_TEZ_GENERATE_CONSISTENT_SPLITS));
+      Preconditions.checkState(HiveConf.getBoolVar(wxConf,
+          HiveConf.ConfVars.LLAP_CLIENT_CONSISTENT_SPLITS));
+      splitGenerator.initializeSplitGenerator(wxConf, mapWork);
+      List<Event> eventList = splitGenerator.initialize();
+
+      // hack - just serializing with kryo for now. This needs to be done properly
+      InputSplit[] result = new InputSplit[eventList.size()];
+      ByteArrayOutputStream bos = new ByteArrayOutputStream(10240);
+
+      InputConfigureVertexTasksEvent configureEvent = (InputConfigureVertexTasksEvent) eventList.get(0);
+
+      List<TaskLocationHint> hints = configureEvent.getLocationHint().getTaskLocationHints();
+
+      Preconditions.checkState(hints.size() == eventList.size() -1);
+
+      LOG.info("DBG: Number of splits: " + (eventList.size() - 1));
+      for (int i = 1 ; i < eventList.size() ; i++) {
+        // Creating the TezEvent here itself, since it's easy to serialize.
+        Event event = eventList.get(i);
+        TaskLocationHint hint = hints.get(i-1);
+        Set<String> hosts = hint.getHosts();
+        LOG.info("DBG: Using locations: " + hosts.toString());
+        if (hosts.size() != 1) {
+          LOG.warn("DBG: Bad # of locations: " + hosts.size());
+        }
+        SplitLocationInfo[] locations = new SplitLocationInfo[hosts.size()];
+
+        int j = 0;
+        for (String host : hosts) {
+          locations[j++] = new SplitLocationInfo(host, false);
+        }
+
+        bos.reset();
+        Kryo kryo = SerializationUtilities.borrowKryo();
+        SerializationUtilities.serializeObjectByKryo(kryo, event, bos);
+        SerializationUtilities.releaseKryo(kryo);
+
+        TaskSpec taskSpec = new TaskSpecBuilder().constructTaskSpec(dag, vertexName, eventList.size() - 1);
+        ApplicationId fakeApplicationId = ApplicationId.newInstance(new Random().nextInt(), 0);
+        SubmitWorkInfo submitWorkInfo = new SubmitWorkInfo(taskSpec, fakeApplicationId);
+        byte[] submitWorkBytes = SubmitWorkInfo.toBytes(submitWorkInfo);
+
+        result[i-1] = new LlapInputSplit(submitWorkBytes, bos.toByteArray(), locations, schema);
+      }
+      return result;
+    } catch (Exception e) {
+      throw new IOException(e);
+    }
+  }
+
+    /**
+   * Returns a local resource representing a jar. This resource will be used to execute the plan on
+   * the cluster.
+   *
+   * @param localJarPath
+   *          Local path to the jar to be localized.
+   * @return LocalResource corresponding to the localized hive exec resource.
+   * @throws IOException
+   *           when any file system related call fails.
+   * @throws LoginException
+   *           when we are unable to determine the user.
+   * @throws URISyntaxException
+   *           when current jar location cannot be determined.
+   */
+  private LocalResource createJarLocalResource(String localJarPath, DagUtils utils,
+      Configuration conf)
+    throws IOException, LoginException, IllegalArgumentException, FileNotFoundException {
+    FileStatus destDirStatus = utils.getHiveJarDirectory(conf);
+    assert destDirStatus != null;
+    Path destDirPath = destDirStatus.getPath();
+
+    Path localFile = new Path(localJarPath);
+    String sha = getSha(localFile, conf);
+
+    String destFileName = localFile.getName();
+
+    // Now, try to find the file based on SHA and name. Currently we require exact name match.
+    // We could also allow cutting off versions and other stuff provided that SHA matches...
+    destFileName = FilenameUtils.removeExtension(destFileName) + "-" + sha
+      + FilenameUtils.EXTENSION_SEPARATOR + FilenameUtils.getExtension(destFileName);
+
+    // TODO: if this method is ever called on more than one jar, getting the dir and the
+    // list need to be refactored out to be done only once.
+    Path destFile = new Path(destDirPath.toString() + "/" + destFileName);
+    return utils.localizeResource(localFile, destFile, LocalResourceType.FILE, conf);
+  }
+
+  private String getSha(Path localFile, Configuration conf)
+    throws IOException, IllegalArgumentException {
+    InputStream is = null;
+    try {
+      FileSystem localFs = FileSystem.getLocal(conf);
+      is = localFs.open(localFile);
+      return DigestUtils.sha256Hex(is);
+    } finally {
+      if (is != null) {
+        is.close();
+      }
+    }
   }
 
   @Override

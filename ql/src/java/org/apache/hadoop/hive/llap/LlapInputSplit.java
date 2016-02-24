@@ -16,49 +16,49 @@
  */
 package org.apache.hadoop.hive.llap;
 
-import java.io.IOException;
 import java.io.DataInput;
 import java.io.DataOutput;
-import java.io.DataInputStream;
-import java.io.ByteArrayInputStream;
+import java.io.IOException;
 
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.OutputFormat;
-import org.apache.hadoop.mapred.RecordWriter;
-import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hadoop.security.token.Token;
-import org.apache.hadoop.security.token.TokenIdentifier;
-import org.apache.hadoop.util.Progressable;
-import org.apache.hadoop.hive.llap.io.api.LlapProxy;
-import org.apache.hadoop.mapred.InputFormat;
-import org.apache.hadoop.mapred.InputSplit;
-import org.apache.hadoop.mapred.SplitLocationInfo;
-import org.apache.hadoop.mapred.InputSplitWithLocationInfo;
-import org.apache.hadoop.mapred.RecordReader;
-import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.hive.metastore.api.Schema;
+import org.apache.hadoop.mapred.InputSplitWithLocationInfo;
+import org.apache.hadoop.mapred.SplitLocationInfo;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
-import org.apache.thrift.transport.AutoExpandingBufferWriteTransport;
 import org.apache.thrift.transport.AutoExpandingBuffer;
-
-import com.google.common.base.Preconditions;
+import org.apache.thrift.transport.AutoExpandingBufferWriteTransport;
 
 public class LlapInputSplit implements InputSplitWithLocationInfo {
 
-  byte[] queryFragment;
+  byte[] planBytes;
+  byte[] fragmentBytes;
   SplitLocationInfo[] locations;
   Schema schema;
 
-  public LlapInputSplit() {}
 
-  public LlapInputSplit(byte[] queryFragment, SplitLocationInfo[] locations, Schema schema) {
-    this.queryFragment = queryFragment;
+  // // Static
+  // ContainerIdString
+  // DagName
+  // VertexName
+  // FragmentNumber
+  // AttemptNumber - always 0
+  // FragmentIdentifierString - taskAttemptId
+
+  // ProcessorDescsriptor
+  // InputSpec
+  // OutputSpec
+
+  // Tokens
+
+  // // Dynamic
+  //
+
+  public LlapInputSplit() {
+  }
+
+  public LlapInputSplit(byte[] planBytes, byte[] fragmentBytes, SplitLocationInfo[] locations, Schema schema) {
+    this.planBytes = planBytes;
+    this.fragmentBytes = fragmentBytes;
     this.locations = locations;
     this.schema = schema;
   }
@@ -83,8 +83,11 @@ public class LlapInputSplit implements InputSplitWithLocationInfo {
 
   @Override
   public void write(DataOutput out) throws IOException {
-    out.writeInt(queryFragment.length);
-    out.write(queryFragment);
+    out.writeInt(planBytes.length);
+    out.write(planBytes);
+
+    out.writeInt(fragmentBytes.length);
+    out.write(fragmentBytes);
 
     out.writeInt(locations.length);
     for (int i = 0; i < locations.length; ++i) {
@@ -108,11 +111,13 @@ public class LlapInputSplit implements InputSplitWithLocationInfo {
 
   @Override
   public void readFields(DataInput in) throws IOException {
-    byte[] queryFragment;
-
     int length = in.readInt();
-    queryFragment = new byte[length];
-    in.readFully(queryFragment);
+    planBytes = new byte[length];
+    in.readFully(planBytes);
+
+    length = in.readInt();
+    fragmentBytes = new byte[length];
+    in.readFully(fragmentBytes);
 
     length = in.readInt();
     locations = new SplitLocationInfo[length];
@@ -124,7 +129,8 @@ public class LlapInputSplit implements InputSplitWithLocationInfo {
     length = in.readInt();
 
     try {
-      AutoExpandingBufferWriteTransport transport = new AutoExpandingBufferWriteTransport(length, 2d);
+      AutoExpandingBufferWriteTransport transport =
+          new AutoExpandingBufferWriteTransport(length, 2d);
       AutoExpandingBuffer buf = transport.getBuf();
       in.readFully(buf.array(), 0, length);
 

@@ -7334,6 +7334,16 @@ public final class LlapDaemonProtocolProtos {
      * <code>optional .FragmentRuntimeInfo fragment_runtime_info = 10;</code>
      */
     org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfoOrBuilder getFragmentRuntimeInfoOrBuilder();
+
+    // optional bool usingTezAm = 11 [default = true];
+    /**
+     * <code>optional bool usingTezAm = 11 [default = true];</code>
+     */
+    boolean hasUsingTezAm();
+    /**
+     * <code>optional bool usingTezAm = 11 [default = true];</code>
+     */
+    boolean getUsingTezAm();
   }
   /**
    * Protobuf type {@code SubmitWorkRequestProto}
@@ -7450,6 +7460,11 @@ public final class LlapDaemonProtocolProtos {
                 fragmentRuntimeInfo_ = subBuilder.buildPartial();
               }
               bitField0_ |= 0x00000200;
+              break;
+            }
+            case 88: {
+              bitField0_ |= 0x00000400;
+              usingTezAm_ = input.readBool();
               break;
             }
           }
@@ -7799,6 +7814,22 @@ public final class LlapDaemonProtocolProtos {
       return fragmentRuntimeInfo_;
     }
 
+    // optional bool usingTezAm = 11 [default = true];
+    public static final int USINGTEZAM_FIELD_NUMBER = 11;
+    private boolean usingTezAm_;
+    /**
+     * <code>optional bool usingTezAm = 11 [default = true];</code>
+     */
+    public boolean hasUsingTezAm() {
+      return ((bitField0_ & 0x00000400) == 0x00000400);
+    }
+    /**
+     * <code>optional bool usingTezAm = 11 [default = true];</code>
+     */
+    public boolean getUsingTezAm() {
+      return usingTezAm_;
+    }
+
     private void initFields() {
       containerIdString_ = "";
       amHost_ = "";
@@ -7810,6 +7841,7 @@ public final class LlapDaemonProtocolProtos {
       appAttemptNumber_ = 0;
       fragmentSpec_ = org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentSpecProto.getDefaultInstance();
       fragmentRuntimeInfo_ = org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo.getDefaultInstance();
+      usingTezAm_ = true;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -7852,6 +7884,9 @@ public final class LlapDaemonProtocolProtos {
       }
       if (((bitField0_ & 0x00000200) == 0x00000200)) {
         output.writeMessage(10, fragmentRuntimeInfo_);
+      }
+      if (((bitField0_ & 0x00000400) == 0x00000400)) {
+        output.writeBool(11, usingTezAm_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -7901,6 +7936,10 @@ public final class LlapDaemonProtocolProtos {
       if (((bitField0_ & 0x00000200) == 0x00000200)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(10, fragmentRuntimeInfo_);
+      }
+      if (((bitField0_ & 0x00000400) == 0x00000400)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(11, usingTezAm_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -7975,6 +8014,11 @@ public final class LlapDaemonProtocolProtos {
         result = result && getFragmentRuntimeInfo()
             .equals(other.getFragmentRuntimeInfo());
       }
+      result = result && (hasUsingTezAm() == other.hasUsingTezAm());
+      if (hasUsingTezAm()) {
+        result = result && (getUsingTezAm()
+            == other.getUsingTezAm());
+      }
       result = result &&
           getUnknownFields().equals(other.getUnknownFields());
       return result;
@@ -8027,6 +8071,10 @@ public final class LlapDaemonProtocolProtos {
       if (hasFragmentRuntimeInfo()) {
         hash = (37 * hash) + FRAGMENT_RUNTIME_INFO_FIELD_NUMBER;
         hash = (53 * hash) + getFragmentRuntimeInfo().hashCode();
+      }
+      if (hasUsingTezAm()) {
+        hash = (37 * hash) + USINGTEZAM_FIELD_NUMBER;
+        hash = (53 * hash) + hashBoolean(getUsingTezAm());
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -8167,6 +8215,8 @@ public final class LlapDaemonProtocolProtos {
           fragmentRuntimeInfoBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000200);
+        usingTezAm_ = true;
+        bitField0_ = (bitField0_ & ~0x00000400);
         return this;
       }
 
@@ -8243,6 +8293,10 @@ public final class LlapDaemonProtocolProtos {
         } else {
           result.fragmentRuntimeInfo_ = fragmentRuntimeInfoBuilder_.build();
         }
+        if (((from_bitField0_ & 0x00000400) == 0x00000400)) {
+          to_bitField0_ |= 0x00000400;
+        }
+        result.usingTezAm_ = usingTezAm_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -8298,6 +8352,9 @@ public final class LlapDaemonProtocolProtos {
         }
         if (other.hasFragmentRuntimeInfo()) {
           mergeFragmentRuntimeInfo(other.getFragmentRuntimeInfo());
+        }
+        if (other.hasUsingTezAm()) {
+          setUsingTezAm(other.getUsingTezAm());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -9030,6 +9087,39 @@ public final class LlapDaemonProtocolProtos {
           fragmentRuntimeInfo_ = null;
         }
         return fragmentRuntimeInfoBuilder_;
+      }
+
+      // optional bool usingTezAm = 11 [default = true];
+      private boolean usingTezAm_ = true;
+      /**
+       * <code>optional bool usingTezAm = 11 [default = true];</code>
+       */
+      public boolean hasUsingTezAm() {
+        return ((bitField0_ & 0x00000400) == 0x00000400);
+      }
+      /**
+       * <code>optional bool usingTezAm = 11 [default = true];</code>
+       */
+      public boolean getUsingTezAm() {
+        return usingTezAm_;
+      }
+      /**
+       * <code>optional bool usingTezAm = 11 [default = true];</code>
+       */
+      public Builder setUsingTezAm(boolean value) {
+        bitField0_ |= 0x00000400;
+        usingTezAm_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bool usingTezAm = 11 [default = true];</code>
+       */
+      public Builder clearUsingTezAm() {
+        bitField0_ = (bitField0_ & ~0x00000400);
+        usingTezAm_ = true;
+        onChanged();
+        return this;
       }
 
       // @@protoc_insertion_point(builder_scope:SubmitWorkRequestProto)
@@ -14392,7 +14482,7 @@ public final class LlapDaemonProtocolProtos {
       "\030\004 \001(\003\022 \n\030first_attempt_start_time\030\005 \001(\003" +
       "\022\"\n\032current_attempt_start_time\030\006 \001(\003\"F\n\024" +
       "QueryIdentifierProto\022\026\n\016app_identifier\030\001" +
-      " \001(\t\022\026\n\016dag_identifier\030\002 \001(\005\"\266\002\n\026SubmitW" +
+      " \001(\t\022\026\n\016dag_identifier\030\002 \001(\005\"\320\002\n\026SubmitW" +
       "orkRequestProto\022\033\n\023container_id_string\030\001" +
       " \001(\t\022\017\n\007am_host\030\002 \001(\t\022\017\n\007am_port\030\003 \001(\005\022\030",
       "\n\020token_identifier\030\004 \001(\t\022\032\n\022credentials_" +
@@ -14400,38 +14490,39 @@ public final class LlapDaemonProtocolProtos {
       "n_id_string\030\007 \001(\t\022\032\n\022app_attempt_number\030" +
       "\010 \001(\005\022)\n\rfragment_spec\030\t \001(\0132\022.FragmentS" +
       "pecProto\0223\n\025fragment_runtime_info\030\n \001(\0132" +
-      "\024.FragmentRuntimeInfo\"J\n\027SubmitWorkRespo" +
-      "nseProto\022/\n\020submission_state\030\001 \001(\0162\025.Sub" +
-      "missionStateProto\"\205\001\n\036SourceStateUpdated" +
-      "RequestProto\022/\n\020query_identifier\030\001 \001(\0132\025" +
-      ".QueryIdentifierProto\022\020\n\010src_name\030\002 \001(\t\022",
-      " \n\005state\030\003 \001(\0162\021.SourceStateProto\"!\n\037Sou" +
-      "rceStateUpdatedResponseProto\"w\n\031QueryCom" +
-      "pleteRequestProto\022\020\n\010query_id\030\001 \001(\t\022/\n\020q" +
-      "uery_identifier\030\002 \001(\0132\025.QueryIdentifierP" +
-      "roto\022\027\n\014delete_delay\030\004 \001(\003:\0010\"\034\n\032QueryCo" +
-      "mpleteResponseProto\"t\n\035TerminateFragment" +
-      "RequestProto\022/\n\020query_identifier\030\001 \001(\0132\025" +
-      ".QueryIdentifierProto\022\"\n\032fragment_identi" +
-      "fier_string\030\002 \001(\t\" \n\036TerminateFragmentRe" +
-      "sponseProto\"\026\n\024GetTokenRequestProto\"&\n\025G",
-      "etTokenResponseProto\022\r\n\005token\030\001 \001(\014*2\n\020S" +
-      "ourceStateProto\022\017\n\013S_SUCCEEDED\020\001\022\r\n\tS_RU" +
-      "NNING\020\002*E\n\024SubmissionStateProto\022\014\n\010ACCEP" +
-      "TED\020\001\022\014\n\010REJECTED\020\002\022\021\n\rEVICTED_OTHER\020\0032\316" +
-      "\002\n\022LlapDaemonProtocol\022?\n\nsubmitWork\022\027.Su" +
-      "bmitWorkRequestProto\032\030.SubmitWorkRespons" +
-      "eProto\022W\n\022sourceStateUpdated\022\037.SourceSta" +
-      "teUpdatedRequestProto\032 .SourceStateUpdat" +
-      "edResponseProto\022H\n\rqueryComplete\022\032.Query" +
-      "CompleteRequestProto\032\033.QueryCompleteResp",
-      "onseProto\022T\n\021terminateFragment\022\036.Termina" +
-      "teFragmentRequestProto\032\037.TerminateFragme" +
-      "ntResponseProto2]\n\026LlapManagementProtoco" +
-      "l\022C\n\022getDelegationToken\022\025.GetTokenReques" +
-      "tProto\032\026.GetTokenResponseProtoBH\n&org.ap" +
-      "ache.hadoop.hive.llap.daemon.rpcB\030LlapDa" +
-      "emonProtocolProtos\210\001\001\240\001\001"
+      "\024.FragmentRuntimeInfo\022\030\n\nusingTezAm\030\013 \001(" +
+      "\010:\004true\"J\n\027SubmitWorkResponseProto\022/\n\020su" +
+      "bmission_state\030\001 \001(\0162\025.SubmissionStatePr" +
+      "oto\"\205\001\n\036SourceStateUpdatedRequestProto\022/" +
+      "\n\020query_identifier\030\001 \001(\0132\025.QueryIdentifi",
+      "erProto\022\020\n\010src_name\030\002 \001(\t\022 \n\005state\030\003 \001(\016" +
+      "2\021.SourceStateProto\"!\n\037SourceStateUpdate" +
+      "dResponseProto\"w\n\031QueryCompleteRequestPr" +
+      "oto\022\020\n\010query_id\030\001 \001(\t\022/\n\020query_identifie" +
+      "r\030\002 \001(\0132\025.QueryIdentifierProto\022\027\n\014delete" +
+      "_delay\030\004 \001(\003:\0010\"\034\n\032QueryCompleteResponse" +
+      "Proto\"t\n\035TerminateFragmentRequestProto\022/" +
+      "\n\020query_identifier\030\001 \001(\0132\025.QueryIdentifi" +
+      "erProto\022\"\n\032fragment_identifier_string\030\002 " +
+      "\001(\t\" \n\036TerminateFragmentResponseProto\"\026\n",
+      "\024GetTokenRequestProto\"&\n\025GetTokenRespons" +
+      "eProto\022\r\n\005token\030\001 \001(\014*2\n\020SourceStateProt" +
+      "o\022\017\n\013S_SUCCEEDED\020\001\022\r\n\tS_RUNNING\020\002*E\n\024Sub" +
+      "missionStateProto\022\014\n\010ACCEPTED\020\001\022\014\n\010REJEC" +
+      "TED\020\002\022\021\n\rEVICTED_OTHER\020\0032\316\002\n\022LlapDaemonP" +
+      "rotocol\022?\n\nsubmitWork\022\027.SubmitWorkReques" +
+      "tProto\032\030.SubmitWorkResponseProto\022W\n\022sour" +
+      "ceStateUpdated\022\037.SourceStateUpdatedReque" +
+      "stProto\032 .SourceStateUpdatedResponseProt" +
+      "o\022H\n\rqueryComplete\022\032.QueryCompleteReques",
+      "tProto\032\033.QueryCompleteResponseProto\022T\n\021t" +
+      "erminateFragment\022\036.TerminateFragmentRequ" +
+      "estProto\032\037.TerminateFragmentResponseProt" +
+      "o2]\n\026LlapManagementProtocol\022C\n\022getDelega" +
+      "tionToken\022\025.GetTokenRequestProto\032\026.GetTo" +
+      "kenResponseProtoBH\n&org.apache.hadoop.hi" +
+      "ve.llap.daemon.rpcB\030LlapDaemonProtocolPr" +
+      "otos\210\001\001\240\001\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -14485,7 +14576,7 @@ public final class LlapDaemonProtocolProtos {
           internal_static_SubmitWorkRequestProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_SubmitWorkRequestProto_descriptor,
-              new java.lang.String[] { "ContainerIdString", "AmHost", "AmPort", "TokenIdentifier", "CredentialsBinary", "User", "ApplicationIdString", "AppAttemptNumber", "FragmentSpec", "FragmentRuntimeInfo", });
+              new java.lang.String[] { "ContainerIdString", "AmHost", "AmPort", "TokenIdentifier", "CredentialsBinary", "User", "ApplicationIdString", "AppAttemptNumber", "FragmentSpec", "FragmentRuntimeInfo", "UsingTezAm", });
           internal_static_SubmitWorkResponseProto_descriptor =
             getDescriptor().getMessageTypes().get(8);
           internal_static_SubmitWorkResponseProto_fieldAccessorTable = new
