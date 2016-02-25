@@ -456,7 +456,7 @@ public class ReaderImpl implements Reader {
     MetaInfoObjExtractor(String codecStr, int bufferSize, int metadataSize, 
         ByteBuffer footerBuffer) throws IOException {
 
-      this.compressionKind = CompressionKind.valueOf(codecStr);
+      this.compressionKind = CompressionKind.valueOf(codecStr.toUpperCase());
       this.bufferSize = bufferSize;
       this.codec = WriterImpl.createCodec(compressionKind);
       this.metadataSize = metadataSize;

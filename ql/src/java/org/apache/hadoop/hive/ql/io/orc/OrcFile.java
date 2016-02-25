@@ -307,7 +307,7 @@ public final class OrcFile {
       propValue = tableProperties == null ? null
           : tableProperties.getProperty(OrcTableProperties.COMPRESSION.propName);
       compressValue = propValue == null ? CompressionKind.valueOf(HiveConf.getVar(conf, HIVE_ORC_DEFAULT_COMPRESS))
-          : CompressionKind.valueOf(propValue);
+          : CompressionKind.valueOf(propValue.toUpperCase());
 
       propValue = tableProperties == null ? null
           : tableProperties.getProperty(OrcTableProperties.BLOOM_FILTER_COLUMNS.propName);

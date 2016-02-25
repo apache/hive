@@ -140,7 +140,7 @@ public class OrcOutputFormat extends FileOutputFormat<NullWritable, OrcSerdeRow>
 
     if ((propVal = getSettingFromPropsFallingBackToConf(
         OrcFile.OrcTableProperties.COMPRESSION.getPropName(),props,conf)) != null){
-      options.compress(CompressionKind.valueOf(propVal));
+      options.compress(CompressionKind.valueOf(propVal.toUpperCase()));
     }
 
     if ((propVal = getSettingFromPropsFallingBackToConf(
