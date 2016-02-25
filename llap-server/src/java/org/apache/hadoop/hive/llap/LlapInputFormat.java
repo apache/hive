@@ -72,7 +72,8 @@ public class LlapInputFormat<V extends WritableComparable> implements InputForma
     LlapInputSplit llapSplit = (LlapInputSplit) split;
     SubmitWorkInfo submitWorkInfo = SubmitWorkInfo.fromBytes(llapSplit.getPlanBytes());
 
-    int llapSubmitPort = HiveConf.getIntVar(job, HiveConf.ConfVars.LLAP_DAEMON_RPC_PORT);
+    // TODO HACK: Spark is built with Hive-1.2.1, does not have access to HiveConf.ConfVars.LLAP_DAEMON_RPC_PORT
+    int llapSubmitPort = job.getInt("hive.llap.daemon.rpc.port", 15001);
 
     LOG.info("ZZZ: DBG: Starting LlapTaskUmbilicalExternalClient");
 

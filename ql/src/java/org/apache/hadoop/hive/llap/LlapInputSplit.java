@@ -98,10 +98,6 @@ public class LlapInputSplit implements InputSplitWithLocationInfo {
       byte[] serialzied = serializer.serialize(schema);
       out.writeInt(serialzied.length);
       out.write(serialzied);
-//      AutoExpandingBufferWriteTransport transport = new AutoExpandingBufferWriteTransport(1024, 2d);
-//      TProtocol protocol = new TBinaryProtocol(transport);
-//      schema.write(protocol);
-//      binarySchema = transport.getBuf().array();
     } catch (Exception e) {
       throw new IOException(e);
     }
@@ -135,13 +131,6 @@ public class LlapInputSplit implements InputSplitWithLocationInfo {
       TDeserializer tDeserializer = new TDeserializer();
       schema = new Schema();
       tDeserializer.deserialize(schema, schemaBytes);
-//      AutoExpandingBufferReadTransport transport = new AutoExpandingBufferReadTransport(length, 2d);
-//      AutoExpandingBuffer buf = transport.getBuf();
-//      in.readFully(buf.array(), 0, length);
-//
-//      TProtocol protocol = new TBinaryProtocol(transport);
-//      schema = new Schema();
-//      schema.read(protocol);
     } catch (Exception e) {
       throw new IOException(e);
     }

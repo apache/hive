@@ -76,63 +76,11 @@ public class LlapInputFormat<V extends WritableComparable> implements InputForma
 
   public LlapInputFormat() {}
 
-  public class LlapInputSplit implements InputSplitWithLocationInfo {
-    InputSplitWithLocationInfo nativeSplit;
-    String inputFormatClassName;
-
-    @Override
-    public long getLength() throws IOException {
-      return nativeSplit.getLength();
-    }
-
-    @Override
-    public String[] getLocations() throws IOException {
-      return nativeSplit.getLocations();
-    }
-
-    @Override
-    public void write(DataOutput out) throws IOException {
-      out.writeUTF(inputFormatClassName);
-      out.writeUTF(nativeSplit.getClass().toString());
-      nativeSplit.write(out);
-    }
-
-    @Override
-    public void readFields(DataInput in) throws IOException {
-      inputFormatClassName = in.readUTF();
-      String splitClass = in.readUTF();
-      try {
-        nativeSplit = (InputSplitWithLocationInfo)Class.forName(splitClass).newInstance();
-      } catch (Exception e) {
-        throw new IOException(e);
-      }
-      nativeSplit.readFields(in);
-    }
-
-    @Override
-    public SplitLocationInfo[] getLocationInfo() throws IOException {
-      return nativeSplit.getLocationInfo();
-    }
-
-    public InputSplit getSplit() {
-      return nativeSplit;
-    }
-
-    public InputFormat<NullWritable, V> getInputFormat() {
-      try {
-        return (InputFormat<NullWritable, V>) Class.forName(inputFormatClassName)
-            .newInstance();
-      } catch(Exception e) {
-        return null;
-      }
-    }
-  }
 
   @Override
   public RecordReader<NullWritable, V> getRecordReader(InputSplit split, JobConf job, Reporter reporter) throws IOException {
-    try {
-      return ((InputFormat)Class.forName("org.apache.hadoop.hive.llap.LlapInputFormat").newInstance()).getRecordReader(split, job, reporter);
-    } catch (Exception e) { throw new IOException(e); }
+    LlapInputSplit llapSplit = (LlapInputSplit) split;
+    return llapSplit.getInputFormat().getRecordReader(llapSplit.getSplit(), job, reporter);
   }
 
   @Override
@@ -162,9 +110,9 @@ public class LlapInputFormat<V extends WritableComparable> implements InputForma
       while (res.next()) {
         // deserialize split
         DataInput in = new DataInputStream(res.getBinaryStream(3));
-        InputSplit is = (InputSplitWithLocationInfo)Class.forName(res.getString(2)).newInstance(); // todo setAccessible on ctor
+        InputSplitWithLocationInfo is = (InputSplitWithLocationInfo)Class.forName(res.getString(2)).newInstance();
         is.readFields(in);
-        ins.add(is);
+        ins.add(new LlapInputSplit(is, res.getString(1)));
       }
 
       res.close();
@@ -172,7 +120,7 @@ public class LlapInputFormat<V extends WritableComparable> implements InputForma
     } catch (Exception e) {
       throw new IOException(e);
     }
-    return ins.toArray(new InputSplit[ins.size()]); // todo wrap input split with format
+    return ins.toArray(new InputSplit[ins.size()]);
   }
 
   public void close() {

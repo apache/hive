@@ -122,13 +122,13 @@ public class GenericUDFGetSplits extends GenericUDF {
     try {
       if (SessionState.get() != null && SessionState.get().getConf() != null) {
         HiveConf conf = SessionState.get().getConf();
-        jc = new JobConf(conf);
+        jc = DagUtils.getInstance().createConfiguration(conf);
         db = Hive.get(conf);
       } else {
         jc = MapredContext.get().getJobConf();
         db = Hive.get();
       }
-    } catch(HiveException e) {
+    } catch(Exception e) {
       LOG.error("Failed to initialize: ",e);
       throw new UDFArgumentException(e);
     }
@@ -189,7 +189,7 @@ public class GenericUDFGetSplits extends GenericUDF {
     try {
       LOG.info("setting fetch.task.conversion to none and query file format to \""+LlapOutputFormat.class.getName()+"\"");
       HiveConf.setVar(conf, ConfVars.HIVEFETCHTASKCONVERSION, "none");
-      HiveConf.setVar(conf, HiveConf.ConfVars.HIVEQUERYRESULTFILEFORMAT, LlapOutputFormat.class.getName());
+      HiveConf.setVar(conf, HiveConf.ConfVars.HIVEQUERYRESULTFILEFORMAT, "Llap");
 
       cpr = driver.compileAndRespond(query);
       if(cpr.getResponseCode() != 0) {
@@ -203,8 +203,6 @@ public class GenericUDFGetSplits extends GenericUDF {
       if (roots == null || roots.size() != 1 || !(roots.get(0) instanceof TezTask)) {
         throw new HiveException("Was expecting a single TezTask.");
       }
-
-      Path data = null;
 
       TezWork tezWork = ((TezTask)roots.get(0)).getWork();
 

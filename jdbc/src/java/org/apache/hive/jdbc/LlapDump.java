@@ -94,19 +94,34 @@ public class LlapDump {
 
     LlapInputFormat format = new LlapInputFormat(url, user, pwd, query);
     JobConf job = new JobConf();
+
     InputSplit[] splits = format.getSplits(job, 1);
-    RecordReader<NullWritable, Text> reader = format.getRecordReader(splits[0], job, null);
 
-    if (reader instanceof LlapRecordReader) {
-      Schema schema = ((LlapRecordReader)reader).getSchema();
-      System.out.println(""+schema);
-    }
-    System.out.println("Results: ");
-    System.out.println("");
+    if (splits.length == 0) {
+      System.out.println("No splits returned - empty scan");
+      System.out.println("Results: ");
+    } else {
+      boolean first = true;
 
-    Text value = reader.createValue();
-    while (reader.next(NullWritable.get(), value)) {
-      System.out.println(value);
+      for (InputSplit s: splits) {
+        RecordReader<NullWritable, Text> reader = format.getRecordReader(s, job, null);
+
+        if (reader instanceof LlapRecordReader && first) {
+          Schema schema = ((LlapRecordReader)reader).getSchema();
+          System.out.println(""+schema);
+        }
+
+        if (first) {
+          System.out.println("Results: ");
+          System.out.println("");
+          first = false;
+        }
+
+        Text value = reader.createValue();
+        while (reader.next(NullWritable.get(), value)) {
+          System.out.println(value);
+        }
+      }
     }
   }
 
@@ -116,7 +131,7 @@ public class LlapDump {
     result.addOption(OptionBuilder
         .withLongOpt("location")
         .withDescription("HS2 url")
-	.hasArg()
+        .hasArg()
         .create('l'));
 
     result.addOption(OptionBuilder
