@@ -10,25 +10,25 @@ create table table3 (id int);
 insert into table3 values (100), (100), (101), (102), (103);
 
 explain select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id where table1.val = 't1val01';
-select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id where table1.val = 't1val01';
+select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id where table1.val = 't1val01' order by table1.id, table1.val, table1.val1;
 
 explain select table1.id, table1.val, table2.val2 from table1 inner join table2 on table1.val = 't1val01' and table1.id = table2.id left semi join table3 on table1.dimid = table3.id;
-select table1.id, table1.val, table2.val2 from table1 inner join table2 on table1.val = 't1val01' and table1.id = table2.id left semi join table3 on table1.dimid = table3.id;
+select table1.id, table1.val, table2.val2 from table1 inner join table2 on table1.val = 't1val01' and table1.id = table2.id left semi join table3 on table1.dimid = table3.id order by table1.id, table1.val, table2.val2;
 
 explain select table1.id, table1.val, table2.val2 from table1 left semi join table3 on table1.dimid = table3.id inner join table2 on table1.val = 't1val01' and table1.id = table2.id;
-select table1.id, table1.val, table2.val2 from table1 left semi join table3 on table1.dimid = table3.id inner join table2 on table1.val = 't1val01' and table1.id = table2.id;
+select table1.id, table1.val, table2.val2 from table1 left semi join table3 on table1.dimid = table3.id inner join table2 on table1.val = 't1val01' and table1.id = table2.id order by table1.id, table1.val, table2.val2;
 
 explain select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100 where table1.dimid <> 100;
-select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100 where table1.dimid <> 100;
+select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100 where table1.dimid <> 100 order by table1.id, table1.val, table1.val1;
 
 explain select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100 where table1.dimid  IN (100,200);
-select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100 where table1.dimid  IN (100,200);
+select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100 where table1.dimid  IN (100,200) order by table1.id, table1.val, table1.val1;
 
 explain select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100 where table1.dimid  = 200;
-select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100 where table1.dimid  = 200;
+select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100 where table1.dimid  = 200 order by table1.id, table1.val, table1.val1;
 
 explain select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100 where table1.dimid  = 100;
-select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100 where table1.dimid  = 100;
+select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100 where table1.dimid  = 100 order by table1.id, table1.val, table1.val1;
 
 explain select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100;
-select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100;
+select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100 order by table1.id, table1.val, table1.val1;

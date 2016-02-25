@@ -132,12 +132,12 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id where table1.val = 't1val01'
+PREHOOK: query: select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id where table1.val = 't1val01' order by table1.id, table1.val, table1.val1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
 PREHOOK: Input: default@table3
 #### A masked pattern was here ####
-POSTHOOK: query: select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id where table1.val = 't1val01'
+POSTHOOK: query: select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id where table1.val = 't1val01' order by table1.id, table1.val, table1.val1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1
 POSTHOOK: Input: default@table3
@@ -255,13 +255,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select table1.id, table1.val, table2.val2 from table1 inner join table2 on table1.val = 't1val01' and table1.id = table2.id left semi join table3 on table1.dimid = table3.id
+PREHOOK: query: select table1.id, table1.val, table2.val2 from table1 inner join table2 on table1.val = 't1val01' and table1.id = table2.id left semi join table3 on table1.dimid = table3.id order by table1.id, table1.val, table2.val2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
 PREHOOK: Input: default@table2
 PREHOOK: Input: default@table3
 #### A masked pattern was here ####
-POSTHOOK: query: select table1.id, table1.val, table2.val2 from table1 inner join table2 on table1.val = 't1val01' and table1.id = table2.id left semi join table3 on table1.dimid = table3.id
+POSTHOOK: query: select table1.id, table1.val, table2.val2 from table1 inner join table2 on table1.val = 't1val01' and table1.id = table2.id left semi join table3 on table1.dimid = table3.id order by table1.id, table1.val, table2.val2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1
 POSTHOOK: Input: default@table2
@@ -379,13 +379,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select table1.id, table1.val, table2.val2 from table1 left semi join table3 on table1.dimid = table3.id inner join table2 on table1.val = 't1val01' and table1.id = table2.id
+PREHOOK: query: select table1.id, table1.val, table2.val2 from table1 left semi join table3 on table1.dimid = table3.id inner join table2 on table1.val = 't1val01' and table1.id = table2.id order by table1.id, table1.val, table2.val2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
 PREHOOK: Input: default@table2
 PREHOOK: Input: default@table3
 #### A masked pattern was here ####
-POSTHOOK: query: select table1.id, table1.val, table2.val2 from table1 left semi join table3 on table1.dimid = table3.id inner join table2 on table1.val = 't1val01' and table1.id = table2.id
+POSTHOOK: query: select table1.id, table1.val, table2.val2 from table1 left semi join table3 on table1.dimid = table3.id inner join table2 on table1.val = 't1val01' and table1.id = table2.id order by table1.id, table1.val, table2.val2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1
 POSTHOOK: Input: default@table2
@@ -469,12 +469,12 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100 where table1.dimid <> 100
+PREHOOK: query: select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100 where table1.dimid <> 100 order by table1.id, table1.val, table1.val1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
 PREHOOK: Input: default@table3
 #### A masked pattern was here ####
-POSTHOOK: query: select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100 where table1.dimid <> 100
+POSTHOOK: query: select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100 where table1.dimid <> 100 order by table1.id, table1.val, table1.val1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1
 POSTHOOK: Input: default@table3
@@ -554,12 +554,12 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100 where table1.dimid  IN (100,200)
+PREHOOK: query: select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100 where table1.dimid  IN (100,200) order by table1.id, table1.val, table1.val1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
 PREHOOK: Input: default@table3
 #### A masked pattern was here ####
-POSTHOOK: query: select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100 where table1.dimid  IN (100,200)
+POSTHOOK: query: select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100 where table1.dimid  IN (100,200) order by table1.id, table1.val, table1.val1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1
 POSTHOOK: Input: default@table3
@@ -641,12 +641,12 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100 where table1.dimid  = 200
+PREHOOK: query: select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100 where table1.dimid  = 200 order by table1.id, table1.val, table1.val1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
 PREHOOK: Input: default@table3
 #### A masked pattern was here ####
-POSTHOOK: query: select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100 where table1.dimid  = 200
+POSTHOOK: query: select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100 where table1.dimid  = 200 order by table1.id, table1.val, table1.val1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1
 POSTHOOK: Input: default@table3
@@ -726,12 +726,12 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100 where table1.dimid  = 100
+PREHOOK: query: select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100 where table1.dimid  = 100 order by table1.id, table1.val, table1.val1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
 PREHOOK: Input: default@table3
 #### A masked pattern was here ####
-POSTHOOK: query: select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100 where table1.dimid  = 100
+POSTHOOK: query: select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100 where table1.dimid  = 100 order by table1.id, table1.val, table1.val1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1
 POSTHOOK: Input: default@table3
@@ -813,12 +813,12 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100
+PREHOOK: query: select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100 order by table1.id, table1.val, table1.val1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
 PREHOOK: Input: default@table3
 #### A masked pattern was here ####
-POSTHOOK: query: select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100
+POSTHOOK: query: select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100 order by table1.id, table1.val, table1.val1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1
 POSTHOOK: Input: default@table3
