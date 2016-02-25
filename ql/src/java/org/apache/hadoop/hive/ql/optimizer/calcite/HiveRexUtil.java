@@ -193,6 +193,11 @@ public class HiveRexUtil {
           RexCall rightCast = (RexCall) right;
           comparedOperands.add(rightCast.getOperands().get(0));
         }
+        // Assume we have the expression a > 5.
+        // Then we can derive the negated term: NOT(a <= 5).
+        // But as the comparison is string based and thus operands order dependent,
+        // we should also add the inverted negated term: NOT(5 >= a).
+        // Observe that for creating the inverted term we invert the list of operands.
         RexCall negatedTerm = negate(rexBuilder, call);
         if (negatedTerm != null) {
           negatedTerms.add(negatedTerm);
