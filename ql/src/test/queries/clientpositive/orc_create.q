@@ -6,6 +6,7 @@ DROP TABLE orc_create_complex;
 DROP TABLE orc_create_staging;
 DROP TABLE orc_create_people_staging;
 DROP TABLE orc_create_people;
+DROP TABLE if exists orc_create_cprl;
 
 CREATE TABLE orc_create_staging (
   str STRING,
@@ -119,8 +120,19 @@ SELECT COUNT(*) FROM orc_create_people where salary = 200.00 and state = 'Ca';
 SELECT id, first_name, last_name, address
   FROM orc_create_people WHERE id > 90;
 
+-- test create with lower case compression method.
+CREATE TABLE orc_create_cprl (id int)
+PARTITIONED BY (cdate date)
+STORED AS ORC
+TBLPROPERTIES (
+'orc.compress'='snappy');
+INSERT OVERWRITE table orc_create_cprl PARTITION (cdate = '2015-02-03')
+SELECT 1 from src limit 1;
+SELECT * from orc_create_cprl;
+
 DROP TABLE orc_create;
 DROP TABLE orc_create_complex;
 DROP TABLE orc_create_staging;
 DROP TABLE orc_create_people_staging;
 DROP TABLE orc_create_people;
+DROP TABLE orc_create_cprl;

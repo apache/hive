@@ -22,6 +22,10 @@ PREHOOK: query: DROP TABLE orc_create_people
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE orc_create_people
 POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE if exists orc_create_cprl
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE if exists orc_create_cprl
+POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE orc_create_staging (
   str STRING,
   mp  MAP<STRING,STRING>,
@@ -678,6 +682,46 @@ POSTHOOK: Input: default@orc_create_people@state=Or
 97	Dana	Carter	814-601 Purus. Av.
 98	Juliet	Battle	Ap #535-1965 Cursus St.
 99	Wynter	Vincent	626-8492 Mollis Avenue
+PREHOOK: query: -- test create with lower case compression method.
+CREATE TABLE orc_create_cprl (id int)
+PARTITIONED BY (cdate date)
+STORED AS ORC
+TBLPROPERTIES (
+'orc.compress'='snappy')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_create_cprl
+POSTHOOK: query: -- test create with lower case compression method.
+CREATE TABLE orc_create_cprl (id int)
+PARTITIONED BY (cdate date)
+STORED AS ORC
+TBLPROPERTIES (
+'orc.compress'='snappy')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_create_cprl
+PREHOOK: query: INSERT OVERWRITE table orc_create_cprl PARTITION (cdate = '2015-02-03')
+SELECT 1 from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@orc_create_cprl@cdate=2015-02-03
+POSTHOOK: query: INSERT OVERWRITE table orc_create_cprl PARTITION (cdate = '2015-02-03')
+SELECT 1 from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@orc_create_cprl@cdate=2015-02-03
+POSTHOOK: Lineage: orc_create_cprl PARTITION(cdate=2015-02-03).id SIMPLE []
+PREHOOK: query: SELECT * from orc_create_cprl
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_create_cprl
+PREHOOK: Input: default@orc_create_cprl@cdate=2015-02-03
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * from orc_create_cprl
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_create_cprl
+POSTHOOK: Input: default@orc_create_cprl@cdate=2015-02-03
+#### A masked pattern was here ####
+1	2015-02-03
 PREHOOK: query: DROP TABLE orc_create
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_create
@@ -718,3 +762,11 @@ POSTHOOK: query: DROP TABLE orc_create_people
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_create_people
 POSTHOOK: Output: default@orc_create_people
+PREHOOK: query: DROP TABLE orc_create_cprl
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@orc_create_cprl
+PREHOOK: Output: default@orc_create_cprl
+POSTHOOK: query: DROP TABLE orc_create_cprl
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@orc_create_cprl
+POSTHOOK: Output: default@orc_create_cprl

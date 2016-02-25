@@ -12569,4 +12569,5 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     SessionState.getConsole().printInfo(
         String.format("Warning: %s", msg));
   }
+
 }

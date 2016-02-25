@@ -255,7 +255,7 @@ public class OrcFile {
           OrcConf.BLOCK_PADDING.getBoolean(tableProperties, conf);
       compressValue =
           CompressionKind.valueOf(OrcConf.COMPRESS.getString(tableProperties,
-              conf));
+              conf).toUpperCase());
       String versionName = OrcConf.WRITE_FORMAT.getString(tableProperties,
           conf);
       versionValue = Version.byName(versionName);
