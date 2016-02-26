@@ -19,6 +19,7 @@ STAGE PLANS:
       Edges:
         Map 1 <- Map 3 (BROADCAST_EDGE), Union 2 (CONTAINS)
         Map 4 <- Union 2 (CONTAINS)
+#### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
