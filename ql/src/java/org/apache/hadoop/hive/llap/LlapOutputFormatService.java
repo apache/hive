@@ -81,45 +81,45 @@ public class LlapOutputFormatService {
 
   public void start() throws IOException {
     executor.submit(new Runnable() {
-      byte[] buffer = new byte[4096];
-      @Override
-      public void run() {
-	while (true) {
-	  Socket s = null;
-	  try {
-	    s = socket.accept();
-	    String id = readId(s);
-	    LOG.debug("Received: "+id);
-	    registerReader(s, id);
-	  } catch (IOException io) {
-	    if (s != null) {
-	      try{
-		s.close();
-	      } catch (IOException io2) {
-		// ignore
-	      }
-	    }
-	  }
-	}
-      }
+        byte[] buffer = new byte[4096];
+        @Override
+        public void run() {
+          while (true) {
+            Socket s = null;
+            try {
+              s = socket.accept();
+              String id = readId(s);
+              LOG.debug("Received: "+id);
+              registerReader(s, id);
+            } catch (IOException io) {
+              if (s != null) {
+                try{
+                  s.close();
+                } catch (IOException io2) {
+                  // ignore
+                }
+              }
+            }
+          }
+        }
 
-    private String readId(Socket s) throws IOException {
-      InputStream in = s.getInputStream();
-      int idx = 0;
-      while((buffer[idx++] = (byte)in.read()) != '\0') {}
-      return new String(buffer,0,idx-1);
-    }
+        private String readId(Socket s) throws IOException {
+          InputStream in = s.getInputStream();
+          int idx = 0;
+          while((buffer[idx++] = (byte)in.read()) != '\0') {}
+          return new String(buffer,0,idx-1);
+        }
 
-    private void registerReader(Socket s, String id) throws IOException {
-      synchronized(service) {
-	LOG.debug("registering socket for: "+id);
-	LlapRecordWriter writer = new LlapRecordWriter(s.getOutputStream());
-        writers.put(id, writer);
-        service.notifyAll();
+        private void registerReader(Socket s, String id) throws IOException {
+          synchronized(service) {
+            LOG.debug("registering socket for: "+id);
+            LlapRecordWriter writer = new LlapRecordWriter(s.getOutputStream());
+            writers.put(id, writer);
+            service.notifyAll();
+          }
+        }
       }
-    }
-    }
-    );
+      );
   }
 
   public void stop() throws IOException, InterruptedException {
@@ -132,10 +132,11 @@ public class LlapOutputFormatService {
     RecordWriter writer = null;
     synchronized(service) {
       while ((writer = writers.get(id)) == null) {
-	LOG.debug("Waiting for writer for: "+id);
-	service.wait();
+        LOG.info("Waiting for writer for: "+id);
+        service.wait();
       }
     }
+    LOG.info("Returning writer for: "+id);
     return writer;
   }
 }

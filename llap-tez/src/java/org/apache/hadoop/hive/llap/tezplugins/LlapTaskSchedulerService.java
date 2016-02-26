@@ -931,7 +931,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
           }
         } else {
           // No tasks qualify as preemptable
-          LOG.info("DBG: No tasks qualify as killable to schedule tasks at priority {}", forPriority);
+          LOG.info("No tasks qualify as killable to schedule tasks at priority {}", forPriority);
           break;
         }
       }
@@ -941,7 +941,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     // Send out the preempted request outside of the lock.
     if (preemptedTaskList != null) {
       for (TaskInfo taskInfo : preemptedTaskList) {
-        LOG.info("DBG: Preempting task {}", taskInfo);
+        LOG.info("Preempting task {}", taskInfo);
         getContext().preemptContainer(taskInfo.containerId);
         // Preemption will finally be registered as a deallocateTask as a result of preemptContainer
         // That resets preemption info and allows additional tasks to be pre-empted if required.

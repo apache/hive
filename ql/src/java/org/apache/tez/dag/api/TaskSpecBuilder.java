@@ -17,7 +17,7 @@ import org.apache.tez.runtime.api.impl.TaskSpec;
 // Proxy class within the tez.api package to access package private methods.
 public class TaskSpecBuilder {
 
-  public TaskSpec constructTaskSpec(DAG dag, String vertexName, int numSplits, ApplicationId appId) {
+  public TaskSpec constructTaskSpec(DAG dag, String vertexName, int numSplits, ApplicationId appId, int index) {
     Vertex vertex = dag.getVertex(vertexName);
     ProcessorDescriptor processorDescriptor = vertex.getProcessorDescriptor();
     List<RootInputLeafOutput<InputDescriptor, InputInitializerDescriptor>> inputs =
@@ -43,7 +43,7 @@ public class TaskSpecBuilder {
 
     TezDAGID dagId = TezDAGID.getInstance(appId, 0);
     TezVertexID vertexId = TezVertexID.getInstance(dagId, 0);
-    TezTaskID taskId = TezTaskID.getInstance(vertexId, 0);
+    TezTaskID taskId = TezTaskID.getInstance(vertexId, index);
     TezTaskAttemptID taskAttemptId = TezTaskAttemptID.getInstance(taskId, 0);
     return new TaskSpec(taskAttemptId, dag.getName(), vertexName, numSplits, processorDescriptor, inputSpecs, outputSpecs, null);
   }

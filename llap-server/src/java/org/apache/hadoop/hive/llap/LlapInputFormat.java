@@ -67,7 +67,7 @@ public class LlapInputFormat<V extends WritableComparable> implements InputForma
    */
   @Override
   public RecordReader<NullWritable, V> getRecordReader(InputSplit split, JobConf job,
-                                                       Reporter reporter) throws IOException {
+      Reporter reporter) throws IOException {
 
     LlapInputSplit llapSplit = (LlapInputSplit) split;
     SubmitWorkInfo submitWorkInfo = SubmitWorkInfo.fromBytes(llapSplit.getPlanBytes());
@@ -75,22 +75,15 @@ public class LlapInputFormat<V extends WritableComparable> implements InputForma
     // TODO HACK: Spark is built with Hive-1.2.1, does not have access to HiveConf.ConfVars.LLAP_DAEMON_RPC_PORT
     int llapSubmitPort = job.getInt("hive.llap.daemon.rpc.port", 15001);
 
-    LOG.info("ZZZ: DBG: Starting LlapTaskUmbilicalExternalClient");
-
     LlapTaskUmbilicalExternalClient llapClient =
-        new LlapTaskUmbilicalExternalClient(job, submitWorkInfo.getTokenIdentifier(),
-            submitWorkInfo.getToken());
+      new LlapTaskUmbilicalExternalClient(job, submitWorkInfo.getTokenIdentifier(),
+          submitWorkInfo.getToken());
     llapClient.init(job);
     llapClient.start();
 
-    LOG.info("ZZZ: DBG: Crated LlapClient");
-    // TODO KKK Shutdown the llap client.
-
     SubmitWorkRequestProto submitWorkRequestProto =
-        constructSubmitWorkRequestProto(submitWorkInfo, llapSplit.getSplitNum(),
-            llapClient.getAddress(), submitWorkInfo.getToken());
-
-    LOG.info("ZZZ: DBG: Created submitWorkRequest for: " + submitWorkRequestProto.getFragmentSpec().getFragmentIdentifierString());
+      constructSubmitWorkRequestProto(submitWorkInfo, llapSplit.getSplitNum(),
+          llapClient.getAddress(), submitWorkInfo.getToken());
 
     TezEvent tezEvent = new TezEvent();
     DataInputBuffer dib = new DataInputBuffer();
@@ -116,7 +109,7 @@ public class LlapInputFormat<V extends WritableComparable> implements InputForma
     socket.getOutputStream().write(0);
     socket.getOutputStream().flush();
 
-    LOG.debug("Registered id: " + id);
+    LOG.info("Registered id: " + id);
 
     return new LlapRecordReader(socket.getInputStream(), llapSplit.getSchema(), Text.class);
   }
@@ -127,16 +120,16 @@ public class LlapInputFormat<V extends WritableComparable> implements InputForma
   }
 
   private SubmitWorkRequestProto constructSubmitWorkRequestProto(SubmitWorkInfo submitWorkInfo,
-                                                                 int taskNum,
-                                                                 InetSocketAddress address,
-                                                                 Token<JobTokenIdentifier> token) throws
-      IOException {
+      int taskNum,
+      InetSocketAddress address,
+      Token<JobTokenIdentifier> token) throws
+        IOException {
     TaskSpec taskSpec = submitWorkInfo.getTaskSpec();
     ApplicationId appId = submitWorkInfo.getFakeAppId();
 
     SubmitWorkRequestProto.Builder builder = SubmitWorkRequestProto.newBuilder();
     // This works, assuming the executor is running within YARN.
-    LOG.info("DBG: Setting user in submitWorkRequest to: " +
+    LOG.info("Setting user in submitWorkRequest to: " +
         System.getenv(ApplicationConstants.Environment.USER.name()));
     builder.setUser(System.getenv(ApplicationConstants.Environment.USER.name()));
     builder.setApplicationIdString(appId.toString());
@@ -144,9 +137,8 @@ public class LlapInputFormat<V extends WritableComparable> implements InputForma
     builder.setTokenIdentifier(appId.toString());
 
     ContainerId containerId =
-        ContainerId.newInstance(ApplicationAttemptId.newInstance(appId, 0), taskNum);
+      ContainerId.newInstance(ApplicationAttemptId.newInstance(appId, 0), taskNum);
     builder.setContainerIdString(containerId.toString());
-
 
     builder.setAmHost(address.getHostName());
     builder.setAmPort(address.getPort());
@@ -155,18 +147,18 @@ public class LlapInputFormat<V extends WritableComparable> implements InputForma
     // TODO Figure out where credentials will come from. Normally Hive sets up
     // URLs on the tez dag, for which Tez acquires credentials.
 
-//    taskCredentials.addAll(getContext().getCredentials());
+    //    taskCredentials.addAll(getContext().getCredentials());
 
-//    Preconditions.checkState(currentQueryIdentifierProto.getDagIdentifier() ==
-//        taskSpec.getTaskAttemptID().getTaskID().getVertexID().getDAGId().getId());
-//    ByteBuffer credentialsBinary = credentialMap.get(currentQueryIdentifierProto);
-//    if (credentialsBinary == null) {
-//      credentialsBinary = serializeCredentials(getContext().getCredentials());
-//      credentialMap.putIfAbsent(currentQueryIdentifierProto, credentialsBinary.duplicate());
-//    } else {
-//      credentialsBinary = credentialsBinary.duplicate();
-//    }
-//    builder.setCredentialsBinary(ByteString.copyFrom(credentialsBinary));
+    //    Preconditions.checkState(currentQueryIdentifierProto.getDagIdentifier() ==
+    //        taskSpec.getTaskAttemptID().getTaskID().getVertexID().getDAGId().getId());
+    //    ByteBuffer credentialsBinary = credentialMap.get(currentQueryIdentifierProto);
+    //    if (credentialsBinary == null) {
+    //      credentialsBinary = serializeCredentials(getContext().getCredentials());
+    //      credentialMap.putIfAbsent(currentQueryIdentifierProto, credentialsBinary.duplicate());
+    //    } else {
+    //      credentialsBinary = credentialsBinary.duplicate();
+    //    }
+    //    builder.setCredentialsBinary(ByteString.copyFrom(credentialsBinary));
     Credentials credentials = new Credentials();
     TokenCache.setSessionToken(token, credentials);
     ByteBuffer credentialsBinary = serializeCredentials(credentials);

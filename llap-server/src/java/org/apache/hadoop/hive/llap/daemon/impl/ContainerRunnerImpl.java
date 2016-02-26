@@ -265,10 +265,10 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
     List<QueryFragmentInfo> knownFragments =
         queryTracker
             .queryComplete(queryIdentifier, request.getDeleteDelay());
-    LOG.info("DBG: Pending fragment count for completed query {} = {}", queryIdentifier,
+    LOG.info("Pending fragment count for completed query {} = {}", queryIdentifier,
         knownFragments.size());
     for (QueryFragmentInfo fragmentInfo : knownFragments) {
-      LOG.info("DBG: Issuing killFragment for completed query {} {}", queryIdentifier,
+      LOG.info("Issuing killFragment for completed query {} {}", queryIdentifier,
           fragmentInfo.getFragmentIdentifierString());
       executorService.killFragment(fragmentInfo.getFragmentIdentifierString());
     }
@@ -277,7 +277,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
 
   @Override
   public TerminateFragmentResponseProto terminateFragment(TerminateFragmentRequestProto request) {
-    LOG.info("DBG: Received terminateFragment request for {}", request.getFragmentIdentifierString());
+    LOG.info("Received terminateFragment request for {}", request.getFragmentIdentifierString());
     executorService.killFragment(request.getFragmentIdentifierString());
     return TerminateFragmentResponseProto.getDefaultInstance();
   }
@@ -356,10 +356,10 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
     LOG.info("Processing query failed notification for {}", queryIdentifier);
     List<QueryFragmentInfo> knownFragments =
         queryTracker.queryComplete(queryIdentifier, -1);
-    LOG.info("DBG: Pending fragment count for failed query {} = {}", queryIdentifier,
+    LOG.info("Pending fragment count for failed query {} = {}", queryIdentifier,
         knownFragments.size());
     for (QueryFragmentInfo fragmentInfo : knownFragments) {
-      LOG.info("DBG: Issuing killFragment for failed query {} {}", queryIdentifier,
+      LOG.info("Issuing killFragment for failed query {} {}", queryIdentifier,
           fragmentInfo.getFragmentIdentifierString());
       executorService.killFragment(fragmentInfo.getFragmentIdentifierString());
     }

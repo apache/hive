@@ -79,46 +79,52 @@ public class TestLlapOutputFormat {
   @Test
   public void testValues() throws Exception {
     JobConf job = new JobConf();
-    job.set(LlapOutputFormat.LLAP_OF_ID_KEY, "foobar");
-    LlapOutputFormat format = new LlapOutputFormat();
 
-    HiveConf conf = new HiveConf();
-    Socket socket = new Socket("localhost",
-        conf.getIntVar(HiveConf.ConfVars.LLAP_DAEMON_OUTPUT_SERVICE_PORT));
+    for (int k = 0; k < 5; ++k) {
+      String id = "foobar"+k;
+      job.set(LlapOutputFormat.LLAP_OF_ID_KEY, id);
+      LlapOutputFormat format = new LlapOutputFormat();
 
-    LOG.debug("Socket connected");
+      HiveConf conf = new HiveConf();
+      Socket socket = new Socket("localhost",
+          conf.getIntVar(HiveConf.ConfVars.LLAP_DAEMON_OUTPUT_SERVICE_PORT));
 
-    socket.getOutputStream().write("foobar".getBytes());
-    socket.getOutputStream().write(0);
-    socket.getOutputStream().flush();
+      LOG.debug("Socket connected");
 
-    Thread.sleep(3000);
+      socket.getOutputStream().write(id.getBytes());
+      socket.getOutputStream().write(0);
+      socket.getOutputStream().flush();
 
-    LOG.debug("Data written");
+      Thread.sleep(3000);
 
-    RecordWriter<NullWritable, Text> writer = format.getRecordWriter(null, job, null, null);
-    Text text = new Text();
+      LOG.debug("Data written");
 
-    LOG.debug("Have record writer");
+      RecordWriter<NullWritable, Text> writer = format.getRecordWriter(null, job, null, null);
+      Text text = new Text();
 
-    for (int i = 0; i < 10; ++i) {
-      text.set(""+i);
-      writer.write(NullWritable.get(),text);
+      LOG.debug("Have record writer");
+
+      for (int i = 0; i < 10; ++i) {
+        text.set(""+i);
+        writer.write(NullWritable.get(),text);
+      }
+
+      writer.close(null);
+
+      InputStream in = socket.getInputStream();
+      RecordReader reader = new LlapRecordReader(in, null, Text.class);
+
+      LOG.debug("Have record reader");
+
+      int count = 0;
+      while(reader.next(NullWritable.get(), text)) {
+        LOG.debug(text.toString());
+        count++;
+      }
+
+      reader.close();
+
+      Assert.assertEquals(count,10);
     }
-
-    writer.close(null);
-
-    InputStream in = socket.getInputStream();
-    RecordReader reader = new LlapRecordReader(in, null, Text.class);
-
-    LOG.debug("Have record reader");
-
-    int count = 0;
-    while(reader.next(NullWritable.get(), text)) {
-      LOG.debug(text.toString());
-      count++;
-    }
-
-    Assert.assertEquals(count,10);
   }
 }

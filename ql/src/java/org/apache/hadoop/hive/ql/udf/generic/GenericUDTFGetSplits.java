@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import javax.security.auth.login.LoginException;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
@@ -33,8 +32,8 @@ import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 
-import com.esotericsoftware.kryo.Kryo;
-import com.google.common.base.Preconditions;
+import javax.security.auth.login.LoginException;
+
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -52,8 +51,6 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.Description;
-import org.apache.hadoop.hive.ql.exec.MapredContext;
-import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
@@ -70,6 +67,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
@@ -92,45 +90,35 @@ import org.apache.tez.runtime.api.impl.TezEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Preconditions;
+
 /**
- * GenericUDFGetSplits.
+ * GenericUDTFGetSplits.
  *
  */
 @Description(name = "get_splits", value = "_FUNC_(string,int) - "
     + "Returns an array of length int serialized splits for the referenced tables string.")
 @UDFType(deterministic = false)
-public class GenericUDFGetSplits extends GenericUDF {
+public class GenericUDTFGetSplits extends GenericUDTF {
 
-  private static final Logger LOG = LoggerFactory.getLogger(GenericUDFGetSplits.class);
+  private static final Logger LOG = LoggerFactory.getLogger(GenericUDTFGetSplits.class);
 
   private static final String LLAP_INTERNAL_INPUT_FORMAT_NAME = "org.apache.hadoop.hive.llap.LlapInputFormat";
 
-  private transient StringObjectInspector stringOI;
-  private transient IntObjectInspector intOI;
-  private final ArrayList<Object> retArray = new ArrayList<Object>();
-  private transient JobConf jc;
-  private transient Hive db;
-  private ByteArrayOutputStream bos;
-  private DataOutput dos;
+  protected transient StringObjectInspector stringOI;
+  protected transient IntObjectInspector intOI;
+  protected transient JobConf jc;
+  private ByteArrayOutputStream bos = new ByteArrayOutputStream(1024);
+  private DataOutput dos = new DataOutputStream(bos);
 
   @Override
-  public ObjectInspector initialize(ObjectInspector[] arguments)
+  public StructObjectInspector initialize(ObjectInspector[] arguments)
     throws UDFArgumentException {
 
     LOG.debug("initializing GenericUDFGetSplits");
 
-    try {
-      if (SessionState.get() != null && SessionState.get().getConf() != null) {
-        HiveConf conf = SessionState.get().getConf();
-        jc = DagUtils.getInstance().createConfiguration(conf);
-        db = Hive.get(conf);
-      } else {
-        jc = MapredContext.get().getJobConf();
-        db = Hive.get();
-      }
-    } catch(Exception e) {
-      LOG.error("Failed to initialize: ",e);
-      throw new UDFArgumentException(e);
+    if (SessionState.get() == null || SessionState.get().getConf() == null) {
+      throw new IllegalStateException("Cannot run get splits outside HS2");
     }
 
     LOG.debug("Initialized conf, jc and metastore connection");
@@ -154,116 +142,133 @@ public class GenericUDFGetSplits extends GenericUDF {
 
     List<String> names = Arrays.asList("if_class","split_class","split");
     List<ObjectInspector> fieldOIs = Arrays.<ObjectInspector>asList(
-                                                                    PrimitiveObjectInspectorFactory.javaStringObjectInspector,
-                                                                    PrimitiveObjectInspectorFactory.javaStringObjectInspector,
-                                                                    PrimitiveObjectInspectorFactory.javaByteArrayObjectInspector);
-    ObjectInspector outputOI = ObjectInspectorFactory.getStandardStructObjectInspector(names, fieldOIs);
-    ObjectInspector listOI = ObjectInspectorFactory.getStandardListObjectInspector(outputOI);
-    bos = new ByteArrayOutputStream(1024);
-    dos = new DataOutputStream(bos);
+      PrimitiveObjectInspectorFactory.javaStringObjectInspector,
+      PrimitiveObjectInspectorFactory.javaStringObjectInspector,
+      PrimitiveObjectInspectorFactory.javaByteArrayObjectInspector);
+    StructObjectInspector outputOI = ObjectInspectorFactory.getStandardStructObjectInspector(names, fieldOIs);
 
     LOG.debug("done initializing GenericUDFGetSplits");
-    return listOI;
+    return outputOI;
+  }
+
+  public static class PlanFragment {
+    public JobConf jc;
+    public TezWork work;
+    public Schema schema;
+
+    public PlanFragment(TezWork work, Schema schema, JobConf jc) {
+      this.work = work;
+      this.schema = schema;
+      this.jc = jc;
+    }
   }
 
   @Override
-  public Object evaluate(DeferredObject[] arguments) throws HiveException {
-    retArray.clear();
+  public void process(Object[] arguments) throws HiveException {
 
-    String query = stringOI.getPrimitiveJavaObject(arguments[0].get());
+    String query = stringOI.getPrimitiveJavaObject(arguments[0]);
+    int num = intOI.get(arguments[1]);
 
-    int num = intOI.get(arguments[1].get());
-
-    Driver driver = new Driver();
-    CommandProcessorResponse cpr;
-
-    HiveConf conf = SessionState.get().getConf();
-
-    if (conf == null) {
-      throw new HiveException("Need configuration");
-    }
-
-    String fetchTaskConversion = HiveConf.getVar(conf, ConfVars.HIVEFETCHTASKCONVERSION);
-    String queryResultFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYRESULTFILEFORMAT);
+    PlanFragment fragment = createPlanFragment(query, num);
+    TezWork tezWork = fragment.work;
+    Schema schema = fragment.schema;
 
     try {
-      LOG.info("setting fetch.task.conversion to none and query file format to \""+LlapOutputFormat.class.getName()+"\"");
-      HiveConf.setVar(conf, ConfVars.HIVEFETCHTASKCONVERSION, "none");
-      HiveConf.setVar(conf, HiveConf.ConfVars.HIVEQUERYRESULTFILEFORMAT, "Llap");
+      for (InputSplit s: getSplits(jc, num, tezWork, schema)) {
+        Object[] os = new Object[3];
+        os[0] = LLAP_INTERNAL_INPUT_FORMAT_NAME;
+        os[1] = s.getClass().getName();
+        bos.reset();
+        s.write(dos);
+        byte[] frozen = bos.toByteArray();
+        os[2] = frozen;
+        forward(os);
+      }
+    } catch(Exception e) {
+      throw new HiveException(e);
+    }
+  }
 
-      cpr = driver.compileAndRespond(query);
-      if(cpr.getResponseCode() != 0) {
-        throw new HiveException("Failed to compile query: "+cpr.getException());
+  public PlanFragment createPlanFragment(String query, int num) throws HiveException {
+
+    HiveConf conf = new HiveConf(SessionState.get().getConf());
+    HiveConf.setVar(conf, ConfVars.HIVEFETCHTASKCONVERSION, "none");
+    HiveConf.setVar(conf, HiveConf.ConfVars.HIVEQUERYRESULTFILEFORMAT, "Llap");
+
+    String originalMode = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_MODE);
+    HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_MODE, "llap");
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_TEZ_GENERATE_CONSISTENT_SPLITS, true);
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.LLAP_CLIENT_CONSISTENT_SPLITS, true);
+
+    try {
+      jc = DagUtils.getInstance().createConfiguration(conf);
+    } catch (IOException e) {
+      throw new HiveException(e);
+    }
+
+    Driver driver = new Driver(conf);
+    CommandProcessorResponse cpr;
+
+    LOG.info("setting fetch.task.conversion to none and query file format to \""
+        + LlapOutputFormat.class.getName()+"\"");
+
+    cpr = driver.compileAndRespond(query);
+    if(cpr.getResponseCode() != 0) {
+      throw new HiveException("Failed to compile query: "+cpr.getException());
+    }
+
+    QueryPlan plan = driver.getPlan();
+    List<Task<?>> roots = plan.getRootTasks();
+    Schema schema = plan.getResultSchema();
+
+    if (roots == null || roots.size() != 1 || !(roots.get(0) instanceof TezTask)) {
+      throw new HiveException("Was expecting a single TezTask.");
+    }
+
+    TezWork tezWork = ((TezTask)roots.get(0)).getWork();
+
+    if (tezWork.getAllWork().size() != 1) {
+
+      String tableName = "table_"+UUID.randomUUID().toString().replaceAll("[^A-Za-z0-9 ]", "");
+
+      String ctas = "create temporary table "+tableName+" as "+query;
+      LOG.info("CTAS: "+ctas);
+
+      try {
+        HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_MODE, originalMode);
+        cpr = driver.run(ctas, false);
+      } catch(CommandNeedRetryException e) {
+        throw new HiveException(e);
       }
 
-      QueryPlan plan = driver.getPlan();
-      List<Task<?>> roots = plan.getRootTasks();
-      Schema schema = plan.getResultSchema();
+      if(cpr.getResponseCode() != 0) {
+        throw new HiveException("Failed to create temp table: " + cpr.getException());
+      }
+
+      HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_MODE, "llap");
+      query = "select * from " + tableName;
+      cpr = driver.compileAndRespond(query);
+      if(cpr.getResponseCode() != 0) {
+        throw new HiveException("Failed to create temp table: "+cpr.getException());
+      }
+
+      plan = driver.getPlan();
+      roots = plan.getRootTasks();
+      schema = plan.getResultSchema();
 
       if (roots == null || roots.size() != 1 || !(roots.get(0) instanceof TezTask)) {
         throw new HiveException("Was expecting a single TezTask.");
       }
 
-      TezWork tezWork = ((TezTask)roots.get(0)).getWork();
-
-      if (tezWork.getAllWork().size() != 1) {
-
-        String tableName = "table_"+UUID.randomUUID().toString().replaceAll("[^A-Za-z0-9 ]", "");
-
-        String ctas = "create temporary table "+tableName+" as "+query;
-        LOG.info("CTAS: "+ctas);
-
-        try {
-          cpr = driver.run(ctas, false);
-        } catch(CommandNeedRetryException e) {
-          throw new HiveException(e);
-        }
-
-        if(cpr.getResponseCode() != 0) {
-          throw new HiveException("Failed to create temp table: " + cpr.getException());
-        }
-
-        query = "select * from " + tableName;
-        cpr = driver.compileAndRespond(query);
-        if(cpr.getResponseCode() != 0) {
-          throw new HiveException("Failed to create temp table: "+cpr.getException());
-        }
-
-        plan = driver.getPlan();
-        roots = plan.getRootTasks();
-        schema = plan.getResultSchema();
-
-        if (roots == null || roots.size() != 1 || !(roots.get(0) instanceof TezTask)) {
-          throw new HiveException("Was expecting a single TezTask.");
-        }
-
-        tezWork = ((TezTask)roots.get(0)).getWork();
-      }
-
-      MapWork w = (MapWork)tezWork.getAllWork().get(0);
-
-      try {
-        for (InputSplit s: getSplits(jc, num, tezWork, schema)) {
-          Object[] os = new Object[3];
-          os[0] = LLAP_INTERNAL_INPUT_FORMAT_NAME;
-          os[1] = s.getClass().getName();
-          bos.reset();
-          s.write(dos);
-          byte[] frozen = bos.toByteArray();
-          os[2] = frozen;
-          retArray.add(os);
-        }
-      } catch(Exception e) {
-        throw new HiveException(e);
-      }
-    } finally {
-      HiveConf.setVar(conf, ConfVars.HIVEFETCHTASKCONVERSION, fetchTaskConversion);
-      HiveConf.setVar(conf, HiveConf.ConfVars.HIVEQUERYRESULTFILEFORMAT, queryResultFormat);
+      tezWork = ((TezTask)roots.get(0)).getWork();
     }
-    return retArray;
+
+    return new PlanFragment(tezWork, schema, jc);
   }
 
-  public InputSplit[] getSplits(JobConf job, int numSplits, TezWork work, Schema schema) throws IOException {
+  public InputSplit[] getSplits(JobConf job, int numSplits, TezWork work, Schema schema)
+    throws IOException {
+
     DAG dag = DAG.create(work.getName());
     dag.setCredentials(job.getCredentials());
     // TODO: set access control? TezTask.setAccessControlsForCurrentUser(dag);
@@ -289,9 +294,9 @@ public class GenericUDFGetSplits extends GenericUDF {
       // we have the dag now proceed to get the splits:
       HiveSplitGenerator splitGenerator = new HiveSplitGenerator(null);
       Preconditions.checkState(HiveConf.getBoolVar(wxConf,
-          HiveConf.ConfVars.HIVE_TEZ_GENERATE_CONSISTENT_SPLITS));
+              HiveConf.ConfVars.HIVE_TEZ_GENERATE_CONSISTENT_SPLITS));
       Preconditions.checkState(HiveConf.getBoolVar(wxConf,
-          HiveConf.ConfVars.LLAP_CLIENT_CONSISTENT_SPLITS));
+              HiveConf.ConfVars.LLAP_CLIENT_CONSISTENT_SPLITS));
       splitGenerator.initializeSplitGenerator(wxConf, mapWork);
       List<Event> eventList = splitGenerator.initialize();
 
@@ -299,35 +304,41 @@ public class GenericUDFGetSplits extends GenericUDF {
       InputSplit[] result = new InputSplit[eventList.size() - 1];
       DataOutputBuffer dob = new DataOutputBuffer();
 
-      InputConfigureVertexTasksEvent configureEvent = (InputConfigureVertexTasksEvent) eventList.get(0);
+      InputConfigureVertexTasksEvent configureEvent
+        = (InputConfigureVertexTasksEvent) eventList.get(0);
 
       List<TaskLocationHint> hints = configureEvent.getLocationHint().getTaskLocationHints();
 
-      Preconditions.checkState(hints.size() == eventList.size() -1);
+      Preconditions.checkState(hints.size() == eventList.size() - 1);
 
-      LOG.error("DBG: NumEvents=" + eventList.size());
-      LOG.error("DBG: NumSplits=" + result.length);
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("NumEvents=" + eventList.size());
+        LOG.debug("NumSplits=" + result.length);
+      }
 
-      ApplicationId fakeApplicationId = ApplicationId.newInstance(Math.abs(new Random().nextInt()), 0);
-      TaskSpec taskSpec =
-          new TaskSpecBuilder().constructTaskSpec(dag, vertexName, eventList.size() - 1, fakeApplicationId);
+      ApplicationId fakeApplicationId
+        = ApplicationId.newInstance(Math.abs(new Random().nextInt()), 0);
 
-      SubmitWorkInfo submitWorkInfo =
+      LOG.info("Number of splits: " + (eventList.size() - 1));
+      for (int i = 0; i < eventList.size() - 1; i++) {
+
+        TaskSpec taskSpec =
+          new TaskSpecBuilder().constructTaskSpec(dag, vertexName,
+              eventList.size() - 1, fakeApplicationId, i);
+
+        SubmitWorkInfo submitWorkInfo =
           new SubmitWorkInfo(taskSpec, fakeApplicationId, System.currentTimeMillis());
-      EventMetaData sourceMetaData =
+        EventMetaData sourceMetaData =
           new EventMetaData(EventMetaData.EventProducerConsumerType.INPUT, vertexName,
               "NULL_VERTEX", null);
-      EventMetaData destinationMetaInfo = new TaskSpecBuilder().getDestingationMetaData(wx);
+        EventMetaData destinationMetaInfo = new TaskSpecBuilder().getDestingationMetaData(wx);
 
-      LOG.info("DBG: Number of splits: " + (eventList.size() - 1));
-      for (int i = 0; i < eventList.size() - 1; i++) {
         // Creating the TezEvent here itself, since it's easy to serialize.
         Event event = eventList.get(i + 1);
         TaskLocationHint hint = hints.get(i);
         Set<String> hosts = hint.getHosts();
-        LOG.info("DBG: Using locations: " + hosts.toString());
         if (hosts.size() != 1) {
-          LOG.warn("DBG: Bad # of locations: " + hosts.size());
+          LOG.warn("Bad # of locations: " + hosts.size());
         }
         SplitLocationInfo[] locations = new SplitLocationInfo[hosts.size()];
 
@@ -344,8 +355,7 @@ public class GenericUDFGetSplits extends GenericUDF {
 
         byte[] submitWorkBytes = SubmitWorkInfo.toBytes(submitWorkInfo);
 
-        result[i] =
-            new LlapInputSplit(i, submitWorkBytes, dob.getData(), locations, schema);
+        result[i] = new LlapInputSplit(i, submitWorkBytes, dob.getData(), locations, schema);
       }
       return result;
     } catch (Exception e) {
@@ -353,7 +363,7 @@ public class GenericUDFGetSplits extends GenericUDF {
     }
   }
 
-    /**
+  /**
    * Returns a local resource representing a jar. This resource will be used to execute the plan on
    * the cluster.
    *
@@ -405,8 +415,6 @@ public class GenericUDFGetSplits extends GenericUDF {
   }
 
   @Override
-  public String getDisplayString(String[] children) {
-    assert children.length == 2;
-    return getStandardDisplayString("get_splits", children);
+  public void close() throws HiveException {
   }
 }

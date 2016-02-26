@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.FileInputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -61,6 +62,7 @@ public class LlapDump {
   private static String user = "hive";
   private static String pwd = "";
   private static String query = "select * from test";
+  private static String numSplits = "1";
 
   public static void main(String[] args) throws Exception {
     Options opts = createOptions();
@@ -84,6 +86,10 @@ public class LlapDump {
       pwd = cli.getOptionValue("p");
     }
 
+    if (cli.hasOption('n')) {
+      numSplits = cli.getOptionValue("n");
+    }
+
     if (cli.getArgs().length > 0) {
       query = cli.getArgs()[0];
     }
@@ -95,7 +101,7 @@ public class LlapDump {
     LlapInputFormat format = new LlapInputFormat(url, user, pwd, query);
     JobConf job = new JobConf();
 
-    InputSplit[] splits = format.getSplits(job, 1);
+    InputSplit[] splits = format.getSplits(job, Integer.parseInt(numSplits));
 
     if (splits.length == 0) {
       System.out.println("No splits returned - empty scan");
@@ -104,6 +110,7 @@ public class LlapDump {
       boolean first = true;
 
       for (InputSplit s: splits) {
+        LOG.info("Processing input split s from " + Arrays.toString(s.getLocations()));
         RecordReader<NullWritable, Text> reader = format.getRecordReader(s, job, null);
 
         if (reader instanceof LlapRecordReader && first) {
@@ -122,6 +129,7 @@ public class LlapDump {
           System.out.println(value);
         }
       }
+      System.exit(0);
     }
   }
 
@@ -145,6 +153,12 @@ public class LlapDump {
         .withDescription("password")
         .hasArg()
         .create('p'));
+
+    result.addOption(OptionBuilder
+        .withLongOpt("num")
+        .withDescription("number of splits")
+        .hasArg()
+        .create('n'));
 
     return result;
   }

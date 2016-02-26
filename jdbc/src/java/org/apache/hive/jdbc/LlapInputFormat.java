@@ -64,6 +64,8 @@ public class LlapInputFormat<V extends WritableComparable> implements InputForma
   public final String USER_KEY = "llap.if.user";
   public final String PWD_KEY = "llap.if.pwd";
 
+  public final String SPLIT_QUERY = "select get_splits(\"%s\",%d)";
+
   private Connection con;
   private Statement stmt;
 
@@ -105,7 +107,7 @@ public class LlapInputFormat<V extends WritableComparable> implements InputForma
     try {
       con = DriverManager.getConnection(url,user,pwd);
       stmt = con.createStatement();
-      String sql = "select r.if_class as ic, r.split_class as sc, r.split as s from (select explode(get_splits(\""+query+"\","+numSplits+")) as r) t";
+      String sql = String.format(SPLIT_QUERY, query, numSplits);
       ResultSet res = stmt.executeQuery(sql);
       while (res.next()) {
         // deserialize split

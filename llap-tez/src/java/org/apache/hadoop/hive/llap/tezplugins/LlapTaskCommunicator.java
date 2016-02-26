@@ -349,7 +349,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
   private void sendTaskTerminated(final TezTaskAttemptID taskAttemptId,
                                   boolean invokedByContainerEnd) {
     LOG.info(
-        "DBG: Attempting to send terminateRequest for fragment {} due to internal preemption invoked by {}",
+        "Attempting to send terminateRequest for fragment {} due to internal preemption invoked by {}",
         taskAttemptId.toString(), invokedByContainerEnd ? "containerEnd" : "taskEnd");
     LlapNodeId nodeId = entityTracker.getNodeIdForTaskAttempt(taskAttemptId);
     // NodeId can be null if the task gets unregistered due to failure / being killed by the daemon itself

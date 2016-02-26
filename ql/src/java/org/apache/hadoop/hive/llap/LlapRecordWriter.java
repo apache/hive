@@ -20,19 +20,18 @@ package org.apache.hadoop.hive.llap;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.DataOutputStream;;
+import java.io.DataOutputStream;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
-import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.mapred.RecordWriter;
 import org.apache.hadoop.mapred.Reporter;
-import org.apache.hadoop.mapred.JobConf;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class LlapRecordWriter<K extends Writable, V extends WritableComparable>
   implements RecordWriter<K,V> {
+  public static final Logger LOG = LoggerFactory.getLogger(LlapRecordWriter.class);
 
   DataOutputStream dos;
 
@@ -42,6 +41,7 @@ public class LlapRecordWriter<K extends Writable, V extends WritableComparable>
 
   @Override
   public void close(Reporter reporter) throws IOException {
+    LOG.info("CLOSING the record writer output stream");
     dos.close();
   }
 

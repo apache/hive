@@ -88,12 +88,6 @@ public class LlapTaskUmbilicalExternalClient extends AbstractService {
   public void submitWork(final SubmitWorkRequestProto submitWorkRequestProto, String llapHost, int llapPort, List<TezEvent> tezEvents) {
     Preconditions.checkArgument(submitWorkRequestProto.getUsingTezAm() == false);
 
-
-    LOG.warn("ZZZ: DBG: " + " Submitting fragment: " + submitWorkRequestProto.getFragmentSpec().getFragmentIdentifierString() + " on host: " + llapHost + ", port=" + llapPort);
-//    LOG.info("ZZZ: DBG: " + " Complete SubmitWorkRequest: " + submitWorkRequestProto);
-//    submitWorkRequestProto.getFragmentSpec().getFragmentIdentifierString()
-
-    LOG.info("ZZZ: DBG: Received {} events for {}", tezEvents.size(), submitWorkRequestProto.getFragmentSpec().getFragmentIdentifierString());
     // Register the pending events to be sent for this spec.
     pendingEvents.putIfAbsent(submitWorkRequestProto.getFragmentSpec().getFragmentIdentifierString(), tezEvents);
 
@@ -109,7 +103,6 @@ public class LlapTaskUmbilicalExternalClient extends AbstractService {
                 return;
               }
             }
-            LOG.info("DBG: Submitted " + submitWorkRequestProto.getFragmentSpec().getFragmentIdentifierString());
           }
 
           @Override
@@ -166,7 +159,6 @@ public class LlapTaskUmbilicalExternalClient extends AbstractService {
       TezHeartbeatResponse response = new TezHeartbeatResponse();
       // Assuming TaskAttemptId and FragmentIdentifierString are the same. Verify this.
       TezTaskAttemptID taskAttemptId = request.getCurrentTaskAttemptID();
-      LOG.info("ZZZ: DBG: Received heartbeat from taskAttemptId: " + taskAttemptId.toString());
 
       List<TezEvent> tezEvents = pendingEvents.remove(taskAttemptId.toString());
       if (tezEvents == null) {

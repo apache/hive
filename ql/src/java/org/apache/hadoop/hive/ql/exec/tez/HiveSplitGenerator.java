@@ -92,6 +92,7 @@ public class HiveSplitGenerator extends InputInitializer {
 
     this.conf = conf;
     this.work = work;
+    this.jobConf = new JobConf(conf);
 
     // TODO RSHACK - assuming grouping enabled always.
     userPayloadProto = MRInputUserPayloadProto.newBuilder().setGroupingEnabled(true).build();
