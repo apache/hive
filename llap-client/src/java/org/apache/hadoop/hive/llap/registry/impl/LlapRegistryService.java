@@ -22,6 +22,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.registry.ServiceInstanceSet;
+import org.apache.hadoop.hive.llap.registry.ServiceInstanceStateChangeListener;
 import org.apache.hadoop.hive.llap.registry.ServiceRegistry;
 import org.apache.hadoop.service.AbstractService;
 import org.slf4j.Logger;
@@ -77,7 +78,7 @@ public class LlapRegistryService extends AbstractService {
   public void serviceInit(Configuration conf) {
     String hosts = HiveConf.getTrimmedVar(conf, ConfVars.LLAP_DAEMON_SERVICE_HOSTS);
     if (hosts.startsWith("@")) {
-      registry = new LlapYarnRegistryImpl(hosts.substring(1), conf, isDaemon);
+      registry = new LlapZookeeperRegistryImpl(hosts.substring(1), conf);
     } else {
       registry = new LlapFixedRegistryImpl(hosts, conf);
     }
@@ -121,5 +122,10 @@ public class LlapRegistryService extends AbstractService {
 
   public ServiceInstanceSet getInstances() throws IOException {
     return this.registry.getInstances("LLAP");
+  }
+
+  public void registerStateChangeListener(ServiceInstanceStateChangeListener listener)
+      throws IOException {
+    this.registry.registerStateChangeListener(listener);
   }
 }

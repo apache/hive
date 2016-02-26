@@ -152,6 +152,11 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     mapJoinTableSerdes = new MapJoinTableContainerSerDe[tagLen];
     hashTblInitedOnce = false;
 
+    // Reset grace hashjoin context so that there is no state maintained when operator/work is
+    // retrieved from object cache
+    hybridMapJoinLeftover = false;
+    firstSmallTable = null;
+
     generateMapMetaData();
 
     final ExecMapperContext mapContext = getExecContext();
@@ -662,6 +667,8 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     // firstSmallTable has reference to the spilled big table rows.
     HashPartition partition = firstSmallTable.getHashPartitions()[partitionId];
     ObjectContainer bigTable = partition.getMatchfileObjContainer();
+    LOG.info("Hybrid Grace Hash Join: Going to process spilled big table rows in partition " +
+        partitionId + ". Number of rows: " + bigTable.size());
     while (bigTable.hasNext()) {
       Object row = bigTable.next();
       process(row, conf.getPosBigTable());

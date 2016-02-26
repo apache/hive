@@ -134,9 +134,15 @@ public class RetryingHMSHandler implements InvocationHandler {
         if (reloadConf || gotNewConnectUrl) {
           baseHandler.setConf(getActiveConf());
         }
-        Deadline.startTimer(method.getName());
-        Object object = method.invoke(baseHandler, args);
-        Deadline.stopTimer();
+        Object object = null;
+        boolean isStarted = Deadline.startTimer(method.getName());
+        try {
+          object = method.invoke(baseHandler, args);
+        } finally {
+          if (isStarted) {
+            Deadline.stopTimer();
+          }
+        }
         return new Result(object, retryCount);
 
       } catch (javax.jdo.JDOException e) {

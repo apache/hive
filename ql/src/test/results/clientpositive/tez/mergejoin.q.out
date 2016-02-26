@@ -18,6 +18,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
+#### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
@@ -2683,7 +2684,6 @@ full outer join
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tab
 PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
 #### A masked pattern was here ####
 POSTHOOK: query: select * from
 (select * from tab where tab.key = 0)a
@@ -2692,7 +2692,6 @@ full outer join
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab
 POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
 #### A masked pattern was here ####
 PREHOOK: query: select * from
 (select * from tab where tab.key = 0)a

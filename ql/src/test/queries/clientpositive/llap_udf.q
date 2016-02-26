@@ -1,0 +1,47 @@
+set hive.mapred.mode=nonstrict;
+set hive.explain.user=false;
+set hive.execution.mode=llap;
+set hive.llap.execution.mode=all;
+set hive.fetch.task.conversion=none;
+set hive.llap.daemon.allow.permanent.fns=true;
+
+drop table if exists src_orc;
+create table src_orc stored as orc as select * from src;
+
+-- Not using GenericUDFTestGetJavaBoolean; that is already registered when tests begin
+
+CREATE TEMPORARY FUNCTION test_udf0 AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFEvaluateNPE';
+
+EXPLAIN SELECT test_udf0(cast(key as string)) from src_orc;
+
+CREATE FUNCTION test_udf2 AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFTestGetJavaString';
+CREATE FUNCTION test_udf3 AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFTestGetJavaString';
+CREATE FUNCTION test_udf4 AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFEvaluateNPE';
+
+EXPLAIN
+SELECT test_udf2(cast(key as string)), test_udf3(cast(key as string)), test_udf4(cast(key as string)) from src_orc;
+
+-- Verification is based on classes, so 0 would work based on 4.
+EXPLAIN
+SELECT test_udf0(cast(key as string)) from src_orc;
+
+DROP FUNCTION test_udf2;
+
+-- ...verify that 3 still works
+EXPLAIN
+SELECT test_udf3(cast(key as string)), test_udf4(cast(key as string)) from src_orc;
+
+DROP FUNCTION test_udf4;
+
+-- ...now 0 should stop working
+EXPLAIN
+SELECT test_udf0(cast(key as string)) from src_orc;
+
+set hive.llap.daemon.allow.permanent.fns=false;
+
+EXPLAIN
+SELECT test_udf3(cast(key as string)) from src_orc;
+
+
+drop table if exists src_orc;
+set hive.execution.mode=container;

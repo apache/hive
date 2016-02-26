@@ -31,6 +31,9 @@ import org.apache.hadoop.hive.conf.HiveConf;
   }
   
   protected boolean allowQuotedId() {
+    if(hiveConf == null){
+      return false;
+    }
     String supportedQIds = HiveConf.getVar(hiveConf, HiveConf.ConfVars.HIVE_QUOTEDID_SUPPORT);
     return !"none".equals(supportedQIds);
   }

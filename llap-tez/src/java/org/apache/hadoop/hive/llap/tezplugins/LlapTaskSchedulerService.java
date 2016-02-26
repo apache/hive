@@ -56,6 +56,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.registry.ServiceInstance;
 import org.apache.hadoop.hive.llap.registry.ServiceInstanceSet;
+import org.apache.hadoop.hive.llap.registry.ServiceInstanceStateChangeListener;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.yarn.api.records.Container;
 import org.apache.hadoop.yarn.api.records.ContainerId;
@@ -91,7 +92,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
   // Tracks all instances, including ones which have been disabled in the past.
   // LinkedHashMap to provide the same iteration order when selecting a random host.
   @VisibleForTesting
-  final Map<ServiceInstance, NodeInfo> instanceToNodeMap = new LinkedHashMap<>();
+  final Map<String, NodeInfo> instanceToNodeMap = new LinkedHashMap<>();
   // TODO Ideally, remove elements from this once it's known that no tasks are linked to the instance (all deallocated)
 
   // Tracks tasks which could not be allocated immediately.
@@ -258,12 +259,38 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         }
       });
       registry.start();
+      registry.registerStateChangeListener(new NodeStateChangeListener());
       activeInstances = registry.getInstances();
       for (ServiceInstance inst : activeInstances.getAll().values()) {
         addNode(inst, new NodeInfo(inst, nodeBlacklistConf, clock, numSchedulableTasksPerNode));
       }
     } finally {
       writeLock.unlock();
+    }
+  }
+
+  private class NodeStateChangeListener implements ServiceInstanceStateChangeListener {
+    private final Logger LOG = LoggerFactory.getLogger(NodeStateChangeListener.class);
+
+    @Override
+    public void onCreate(final ServiceInstance serviceInstance) {
+      addNode(serviceInstance, new NodeInfo(serviceInstance, nodeBlacklistConf, clock,
+          numSchedulableTasksPerNode));
+      LOG.info("Added node with identity: {}", serviceInstance.getWorkerIdentity());
+    }
+
+    @Override
+    public void onUpdate(final ServiceInstance serviceInstance) {
+      instanceToNodeMap.put(serviceInstance.getWorkerIdentity(), new NodeInfo(serviceInstance,
+          nodeBlacklistConf, clock, numSchedulableTasksPerNode));
+      LOG.info("Updated node with identity: {}", serviceInstance.getWorkerIdentity());
+    }
+
+    @Override
+    public void onRemove(final ServiceInstance serviceInstance) {
+      // FIXME: disabling this for now
+      // instanceToNodeMap.remove(serviceInstance.getWorkerIdentity());
+      LOG.info("Removed node with identity: {}", serviceInstance.getWorkerIdentity());
     }
   }
 
@@ -328,9 +355,9 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     int vcores = 0;
     readLock.lock();
     try {
-      for (Entry<ServiceInstance, NodeInfo> entry : instanceToNodeMap.entrySet()) {
-        if (entry.getKey().isAlive() && !entry.getValue().isDisabled()) {
-          Resource r = entry.getKey().getResource();
+      for (Entry<String, NodeInfo> entry : instanceToNodeMap.entrySet()) {
+        if (entry.getValue().getServiceInstance().isAlive() && !entry.getValue().isDisabled()) {
+          Resource r = entry.getValue().getServiceInstance().getResource();
           memory += r.getMemory();
           vcores += r.getVirtualCores();
         }
@@ -440,7 +467,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       ServiceInstance assignedInstance = taskInfo.assignedInstance;
       assert assignedInstance != null;
 
-      NodeInfo nodeInfo = instanceToNodeMap.get(assignedInstance);
+      NodeInfo nodeInfo = instanceToNodeMap.get(assignedInstance.getWorkerIdentity());
       assert nodeInfo != null;
 
       // Re-enable the node if preempted
@@ -538,7 +565,6 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         if (LOG.isDebugEnabled()) {
           LOG.debug("Refreshing instances since total memory is 0");
         }
-        refreshInstances();
       }
 
       // If there's no memory available, fail
@@ -556,7 +582,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
           if (!instances.isEmpty()) {
             requestedHostExists = true;
             for (ServiceInstance inst : instances) {
-              NodeInfo nodeInfo = instanceToNodeMap.get(inst);
+              NodeInfo nodeInfo = instanceToNodeMap.get(inst.getWorkerIdentity());
               if (nodeInfo != null && nodeInfo.canAcceptTask()) {
                 LOG.info("Assigning " + inst + " when looking for " + host + "." +
                     " FirstRequestedHost=" + (prefHostCount == 0) +
@@ -584,20 +610,19 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         }
       }
       /* fall through - miss in locality (random scheduling) */
-      Entry<ServiceInstance, NodeInfo>[] all =
-          instanceToNodeMap.entrySet().toArray(new Entry[instanceToNodeMap.size()]);
+      Entry<String, NodeInfo>[] all = instanceToNodeMap.entrySet().toArray(new Entry[0]);
       // Check again
       if (all.length > 0) {
         int n = random.nextInt(all.length);
         // start at random offset and iterate whole list
         for (int i = 0; i < all.length; i++) {
-          Entry<ServiceInstance, NodeInfo> inst = all[(i + n) % all.length];
+          Entry<String, NodeInfo> inst = all[(i + n) % all.length];
           if (inst.getValue().canAcceptTask()) {
             LOG.info("Assigning " + inst + " when looking for any host, from #hosts=" + all.length +
                 ", requestedHosts=" +
                 ((requestedHosts == null || requestedHosts.length == 0) ? "null" :
                     Arrays.toString(requestedHosts)));
-            return new SelectHostResult(inst.getKey(), inst.getValue());
+            return new SelectHostResult(inst.getValue().getServiceInstance(), inst.getValue());
           }
         }
       }
@@ -607,24 +632,12 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     }
   }
 
-  // TODO Each refresh operation should addNodes if they don't already exist.
-  // Even better would be to get notifications from the service impl when a node gets added or removed.
-  // Instead of having to walk through the entire list. The computation of a node getting added or
-  // removed already exists in the DynamicRegistry implementation.
-  private void refreshInstances() {
-    try {
-      activeInstances.refresh(); // handles its own sync
-    } catch (IOException ioe) {
-      LOG.warn("Could not refresh list of active instances", ioe);
-    }
-  }
-
   private void scanForNodeChanges() {
     /* check again whether nodes are disabled or just missing */
     writeLock.lock();
     try {
       for (ServiceInstance inst : activeInstances.getAll().values()) {
-        if (inst.isAlive() && instanceToNodeMap.containsKey(inst) == false) {
+        if (inst.isAlive() && instanceToNodeMap.containsKey(inst.getWorkerIdentity()) == false) {
           /* that's a good node, not added to the allocations yet */
           LOG.info("Found a new node: " + inst + ".");
           addNode(inst, new NodeInfo(inst, nodeBlacklistConf, clock, numSchedulableTasksPerNode));
@@ -637,7 +650,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 
   private void addNode(ServiceInstance inst, NodeInfo node) {
     LOG.info("Adding node: " + inst);
-    instanceToNodeMap.put(inst, node);
+    instanceToNodeMap.put(inst.getWorkerIdentity(), node);
     // Trigger scheduling since a new node became available.
     trySchedulingPendingTasks();
   }
@@ -645,11 +658,6 @@ public class LlapTaskSchedulerService extends TaskScheduler {
   private void reenableDisabledNode(NodeInfo nodeInfo) {
     writeLock.lock();
     try {
-      if (nodeInfo.hadCommFailure()) {
-        // If the node being re-enabled was not marked busy previously, then it was disabled due to
-        // some other failure. Refresh the service list to see if it's been removed permanently.
-        refreshInstances();
-      }
       LOG.info("Attempting to re-enable node: " + nodeInfo.getServiceInstance());
       if (nodeInfo.getServiceInstance().isAlive()) {
         nodeInfo.enableNode();
@@ -666,7 +674,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
   private void disableInstance(ServiceInstance instance, boolean isCommFailure) {
     writeLock.lock();
     try {
-      NodeInfo nodeInfo = instanceToNodeMap.get(instance);
+      NodeInfo nodeInfo = instanceToNodeMap.get(instance.getWorkerIdentity());
       if (nodeInfo == null || nodeInfo.isDisabled()) {
         if (LOG.isDebugEnabled()) {
           LOG.debug("Node: " + instance + " already disabled, or invalid. Not doing anything.");
@@ -1012,7 +1020,6 @@ public class LlapTaskSchedulerService extends TaskScheduler {
               if (LOG.isDebugEnabled()) {
                 LOG.debug("Refreshing instances based on poll interval");
               }
-              refreshInstances();
               scanForNodeChanges();
             }
           }

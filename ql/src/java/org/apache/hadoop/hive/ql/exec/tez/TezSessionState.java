@@ -276,7 +276,9 @@ public class TezSessionState {
       if (UserGroupInformation.isSecurityEnabled()) {
         LlapTokenProvider tp = LlapProxy.getOrInitTokenProvider(conf);
         Token<LlapTokenIdentifier> token = tp.getDelegationToken();
-        LOG.info("Obtained a token: " + token);
+        if (LOG.isInfoEnabled()) {
+          LOG.info("Obtained a LLAP token: " + token);
+        }
         llapCredentials = new Credentials();
         llapCredentials.addToken(LlapTokenIdentifier.KIND_NAME, token);
       }
@@ -546,6 +548,8 @@ public class TezSessionState {
   private LocalResource createJarLocalResource(String localJarPath)
       throws IOException, LoginException, IllegalArgumentException,
       FileNotFoundException {
+    // TODO Reduce the number of lookups that happen here. This shouldn't go to HDFS for each call.
+    // The hiveJarDir can be determined once per client.
     FileStatus destDirStatus = utils.getHiveJarDirectory(conf);
     assert destDirStatus != null;
     Path destDirPath = destDirStatus.getPath();

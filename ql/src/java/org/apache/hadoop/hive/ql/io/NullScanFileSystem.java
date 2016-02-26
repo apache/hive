@@ -29,6 +29,8 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.security.Credentials;
+import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.util.Progressable;
 
 /**
@@ -44,6 +46,8 @@ public class NullScanFileSystem extends FileSystem {
   public static String getBaseScheme() {
     return "nullscan";
   }
+
+  private final Token<?>[] DEFAULT_EMPTY_TOKEN_ARRAY = new Token<?>[0];
 
   public NullScanFileSystem() {
   }
@@ -112,5 +116,16 @@ public class NullScanFileSystem extends FileSystem {
   @Override
   public FileStatus getFileStatus(Path f) throws IOException {
     return new FileStatus(0, false, 0, 0, 0, f);
+  }
+
+  @Override
+  public Token<?>[] addDelegationTokens(String renewer, Credentials credentials) throws
+      IOException {
+    return DEFAULT_EMPTY_TOKEN_ARRAY;
+  }
+
+  @Override
+  public Token<?> getDelegationToken(String renewer) throws IOException {
+    return null;
   }
 }

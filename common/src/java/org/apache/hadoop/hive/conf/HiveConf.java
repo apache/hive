@@ -1354,6 +1354,8 @@ public class HiveConf extends Configuration {
         "Whether to update stale indexes automatically"),
     HIVEOPTPPD("hive.optimize.ppd", true,
         "Whether to enable predicate pushdown"),
+    HIVEOPTPPD_WINDOWING("hive.optimize.ppd.windowing", true,
+        "Whether to enable predicate pushdown through windowing"),
     HIVEPPDRECOGNIZETRANSITIVITY("hive.ppd.recognizetransivity", true,
         "Whether to transitively replicate predicate filters over equijoin conditions."),
     HIVEPPDREMOVEDUPLICATEFILTERS("hive.ppd.remove.duplicatefilters", true,
@@ -1585,7 +1587,8 @@ public class HiveConf extends Configuration {
         "org.apache.hadoop.hive.ql.lockmgr.zookeeper.ZooKeeperHiveLockManager, \n" +
         "2. When HiveServer2 supports service discovery via Zookeeper.\n" +
         "3. For delegation token storage if zookeeper store is used, if\n" +
-        "hive.cluster.delegation.token.store.zookeeper.connectString is not set"),
+        "hive.cluster.delegation.token.store.zookeeper.connectString is not set\n" +
+        "4. LLAP daemon registry service"),
 
     HIVE_ZOOKEEPER_CLIENT_PORT("hive.zookeeper.client.port", "2181",
         "The port of ZooKeeper servers to talk to.\n" +
@@ -2529,6 +2532,10 @@ public class HiveConf extends Configuration {
         "Check input size, before considering vertex (-1 disables check)"),
     LLAP_AUTO_MAX_OUTPUT("hive.llap.auto.max.output.size", 1*1024*1024*1024L,
         "Check output size, before considering vertex (-1 disables check)"),
+    LLAP_SKIP_COMPILE_UDF_CHECK("hive.llap.skip.compile.udf.check", false,
+        "Whether to skip the compile-time check for non-built-in UDFs when deciding whether to\n" +
+        "execute tasks in LLAP. Skipping the check allows executing UDFs from pre-localized\n" +
+        "jars in LLAP; if the jars are not pre-localized, the UDFs will simply fail to load."),
     LLAP_EXECUTION_MODE("hive.llap.execution.mode", "none",
         new StringSet("auto", "none", "all", "map"),
         "Chooses whether query fragments will run in container or in llap"),
@@ -2621,7 +2628,7 @@ public class HiveConf extends Configuration {
     LLAP_DAEMON_COMMUNICATOR_NUM_THREADS("hive.llap.daemon.communicator.num.threads", 10,
       "Number of threads to use in LLAP task communicator in Tez AM.",
       "llap.daemon.communicator.num.threads"),
-    LLAP_DAEMON_ALLOW_PERMANENT_FNS("hive.llap.daemon.allow.permanent.fns", true,
+    LLAP_DAEMON_ALLOW_PERMANENT_FNS("hive.llap.daemon.allow.permanent.fns", false,
         "Whether LLAP daemon should localize the resources for permanent UDFs."),
     LLAP_TASK_SCHEDULER_NODE_REENABLE_MIN_TIMEOUT_MS(
       "hive.llap.task.scheduler.node.reenable.min.timeout.ms", "200ms",

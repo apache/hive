@@ -92,12 +92,14 @@ public class TestMutations {
         .name("partitioned")
         .addColumn("id", "int")
         .addColumn("msg", "string")
-        .partitionKeys("continent", "country");
+        .partitionKeys("continent", "country")
+        .bucketCols(Collections.singletonList("string"));
 
     unpartitionedTableBuilder = tableBuilder(database)
         .name("unpartitioned")
         .addColumn("id", "int")
-        .addColumn("msg", "string");
+        .addColumn("msg", "string")
+        .bucketCols(Collections.singletonList("string"));
   }
 
   @Test

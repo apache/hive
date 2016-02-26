@@ -123,6 +123,9 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     } else {
       this.token = null;
     }
+    if (LOG.isInfoEnabled()) {
+      LOG.info("Task communicator with a token " + token);
+    }
     Preconditions.checkState((token != null) == UserGroupInformation.isSecurityEnabled());
 
     umbilical = new LlapTaskUmbilicalProtocolImpl(getUmbilical());

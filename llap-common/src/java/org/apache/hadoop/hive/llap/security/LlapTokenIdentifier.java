@@ -71,7 +71,7 @@ public class LlapTokenIdentifier extends AbstractDelegationTokenIdentifier {
 
   @Override
   public String toString() {
-    return KIND;
+    return KIND + "; " + super.toString();
   }
 
   @InterfaceAudience.Private

@@ -17,6 +17,15 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.stats;
 
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedMap;
+
 import org.apache.calcite.linq4j.Linq4j;
 import org.apache.calcite.linq4j.Ord;
 import org.apache.calcite.linq4j.function.Predicate1;
@@ -39,6 +48,7 @@ import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.rex.RexPermutationShuttle;
 import org.apache.calcite.rex.RexPermuteInputsShuttle;
 import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.rex.RexUtil;
@@ -61,18 +71,10 @@ import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedMap;
-
 
 //TODO: Move this to calcite
 public class HiveRelMdPredicates extends RelMdPredicates {
+
   public static final RelMetadataProvider SOURCE = ReflectiveRelMetadataProvider.reflectiveSource(
                                                      BuiltInMethod.PREDICATES.method,
                                                      new HiveRelMdPredicates());
@@ -333,7 +335,14 @@ public class HiveRelMdPredicates extends RelMdPredicates {
 
       for (RexNode iP : inferredPredicates) {
         ImmutableBitSet iPBitSet = RelOptUtil.InputFinder.bits(iP);
-        if (leftFieldsBitSet.contains(iPBitSet)) {
+        if (iPBitSet.isEmpty() && joinType == JoinRelType.INNER) {
+          leftInferredPredicates.add(iP);
+          rightInferredPredicates.add(iP);
+        } else if (iPBitSet.isEmpty() && joinType == JoinRelType.LEFT) {
+          rightInferredPredicates.add(iP);
+        } else if (iPBitSet.isEmpty() && joinType == JoinRelType.RIGHT) {
+          leftInferredPredicates.add(iP);
+        } else if (leftFieldsBitSet.contains(iPBitSet)) {
           leftInferredPredicates.add(iP.accept(leftPermute));
         } else if (rightFieldsBitSet.contains(iPBitSet)) {
           rightInferredPredicates.add(iP.accept(rightPermute));
@@ -359,11 +368,11 @@ public class HiveRelMdPredicates extends RelMdPredicates {
       case LEFT:
         return RelOptPredicateList.of(
             RelOptUtil.conjunctions(leftChildPredicates),
-            leftInferredPredicates, rightInferredPredicates);
+            EMPTY_LIST, rightInferredPredicates);
       case RIGHT:
         return RelOptPredicateList.of(
             RelOptUtil.conjunctions(rightChildPredicates),
-            inferredPredicates, EMPTY_LIST);
+            leftInferredPredicates, EMPTY_LIST);
       default:
         assert inferredPredicates.size() == 0;
         return RelOptPredicateList.EMPTY;
@@ -382,6 +391,13 @@ public class HiveRelMdPredicates extends RelMdPredicates {
         List<RexNode> inferedPredicates, boolean includeEqualityInference,
         ImmutableBitSet inferringFields) {
       for (RexNode r : RelOptUtil.conjunctions(predicates)) {
+        if (r.isAlwaysFalse()) {
+          RexLiteral falseVal =
+                  joinRel.getCluster().getRexBuilder().makeLiteral(false);
+          inferedPredicates.add(falseVal);
+          allExprsDigests.add(falseVal.toString());
+          continue;
+        }
         if (!includeEqualityInference
             && equalityPredicates.contains(r.toString())) {
           continue;

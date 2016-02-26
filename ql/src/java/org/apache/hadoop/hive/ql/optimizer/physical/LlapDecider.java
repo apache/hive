@@ -38,6 +38,7 @@ import java.util.Stack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -84,10 +85,7 @@ import org.apache.hadoop.hive.ql.plan.TezWork;
  */
 public class LlapDecider implements PhysicalPlanResolver {
 
-  protected static transient final Logger LOG
-    = LoggerFactory.getLogger(LlapDecider.class);
-
-  private PhysicalContext physicalContext;
+  protected static transient final Logger LOG = LoggerFactory.getLogger(LlapDecider.class);
 
   private HiveConf conf;
 
@@ -101,18 +99,20 @@ public class LlapDecider implements PhysicalPlanResolver {
   private LlapMode mode;
 
   class LlapDecisionDispatcher implements Dispatcher {
-
-    private final PhysicalContext pctx;
     private final HiveConf conf;
+    private final boolean doSkipUdfCheck;
+    private final boolean arePermanentFnsAllowed;
 
     public LlapDecisionDispatcher(PhysicalContext pctx) {
-      this.pctx = pctx;
-      this.conf = pctx.getConf();
+      conf = pctx.getConf();
+      doSkipUdfCheck = HiveConf.getBoolVar(conf, ConfVars.LLAP_SKIP_COMPILE_UDF_CHECK);
+      arePermanentFnsAllowed = HiveConf.getBoolVar(conf, ConfVars.LLAP_DAEMON_ALLOW_PERMANENT_FNS);
     }
 
     @Override
     public Object dispatch(Node nd, Stack<Node> stack, Object... nodeOutputs)
       throws SemanticException {
+      @SuppressWarnings("unchecked")
       Task<? extends Serializable> currTask = (Task<? extends Serializable>) nd;
       if (currTask instanceof TezTask) {
         TezWork work = ((TezTask) currTask).getWork();
@@ -237,20 +237,22 @@ public class LlapDecider implements PhysicalPlanResolver {
         ExprNodeDesc cur = exprs.removeFirst();
         if (cur == null) continue;
         if (cur.getChildren() != null) {
-	  exprs.addAll(cur.getChildren());
-	}
+          exprs.addAll(cur.getChildren());
+        }
 
-        if (cur instanceof ExprNodeGenericFuncDesc) {
-	  // getRequiredJars is currently broken (requires init in some cases before you can call it)
-          // String[] jars = ((ExprNodeGenericFuncDesc)cur).getGenericUDF().getRequiredJars();
-          // if (jars != null && !(jars.length == 0)) {
-          //   LOG.info(String.format("%s requires %s", cur.getExprString(), Joiner.on(", ").join(jars)));
-          //   return false;
-          // }
-
-          if (!FunctionRegistry.isBuiltInFuncExpr((ExprNodeGenericFuncDesc)cur)) {
-            LOG.info("Not a built-in function: " + cur.getExprString());
-            return false;
+        if (!doSkipUdfCheck && cur instanceof ExprNodeGenericFuncDesc) {
+          ExprNodeGenericFuncDesc funcDesc = (ExprNodeGenericFuncDesc)cur;
+          boolean isBuiltIn = FunctionRegistry.isBuiltInFuncExpr(funcDesc);
+          if (!isBuiltIn) {
+            if (!arePermanentFnsAllowed) {
+              LOG.info("Not a built-in function: " + cur.getExprString()
+                + " (permanent functions are disabled)");
+              return false;
+            }
+            if (!FunctionRegistry.isPermanentFunction(funcDesc)) {
+              LOG.info("Not a built-in or permanent function: " + cur.getExprString());
+              return false;
+            }
           }
         }
       }
@@ -272,24 +274,22 @@ public class LlapDecider implements PhysicalPlanResolver {
     }
 
     private boolean checkExpressions(Collection<ExprNodeDesc> exprs) {
-      boolean result = true;
-      for (ExprNodeDesc expr: exprs) {
-        result = result && checkExpression(expr);
+      for (ExprNodeDesc expr : exprs) {
+        if (!checkExpression(expr)) return false;
       }
-      return result;
+      return true;
     }
 
     private boolean checkAggregators(Collection<AggregationDesc> aggs) {
-      boolean result = true;
       try {
-	for (AggregationDesc agg: aggs) {
-	  result = result && checkAggregator(agg);
-	}
+        for (AggregationDesc agg: aggs) {
+          if (!checkAggregator(agg)) return false;
+        }
       } catch (SemanticException e) {
-	LOG.warn("Exception testing aggregators.",e);
-	result = false;
+        LOG.warn("Exception testing aggregators.",e);
+        return false;
       }
-      return result;
+      return true;
     }
 
     private Map<Rule, NodeProcessor> getRules() {
@@ -302,8 +302,7 @@ public class LlapDecider implements PhysicalPlanResolver {
             return new Boolean(false);
           }
         });
-      opRules.put(new RuleRegExp("No user code in fil",
-              FilterOperator.getOperatorName() + "%"),
+      opRules.put(new RuleRegExp("No user code in fil", FilterOperator.getOperatorName() + "%"),
           new NodeProcessor() {
           @Override
           public Object process(Node n, Stack<Node> s, NodeProcessorCtx c,
@@ -312,8 +311,7 @@ public class LlapDecider implements PhysicalPlanResolver {
             return new Boolean(checkExpression(expr));
           }
         });
-      opRules.put(new RuleRegExp("No user code in gby",
-              GroupByOperator.getOperatorName() + "%"),
+      opRules.put(new RuleRegExp("No user code in gby", GroupByOperator.getOperatorName() + "%"),
           new NodeProcessor() {
           @Override
           public Object process(Node n, Stack<Node> s, NodeProcessorCtx c,
@@ -322,8 +320,7 @@ public class LlapDecider implements PhysicalPlanResolver {
             return new Boolean(checkAggregators(aggs));
           }
         });
-      opRules.put(new RuleRegExp("No user code in select",
-              SelectOperator.getOperatorName() + "%"),
+      opRules.put(new RuleRegExp("No user code in select", SelectOperator.getOperatorName() + "%"),
           new NodeProcessor() {
           @Override
           public Object process(Node n, Stack<Node> s, NodeProcessorCtx c,
@@ -420,8 +417,6 @@ public class LlapDecider implements PhysicalPlanResolver {
 
   @Override
   public PhysicalContext resolve(PhysicalContext pctx) throws SemanticException {
-
-    this.physicalContext = pctx;
     this.conf = pctx.getConf();
 
     this.mode = LlapMode.valueOf(HiveConf.getVar(conf, HiveConf.ConfVars.LLAP_EXECUTION_MODE));

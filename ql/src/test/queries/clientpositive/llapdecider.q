@@ -62,4 +62,8 @@ EXPLAIN SELECT sum(cast(key as int) + 1) from src_orc where cast(key as int) > 1
 EXPLAIN SELECT sum(cast(test_udf_get_java_string(cast(key as string)) as int) + 1) from src_orc where cast(key as int) > 1;
 EXPLAIN SELECT sum(cast(key as int) + 1) from src_orc where cast(test_udf_get_java_string(cast(key as string)) as int) > 1;
 
+set hive.llap.skip.compile.udf.check=true;
+
+EXPLAIN SELECT sum(cast(test_udf_get_java_string(cast(key as string)) as int) + 1) from src_orc where cast(key as int) > 1;
+
 set hive.execution.mode=container;

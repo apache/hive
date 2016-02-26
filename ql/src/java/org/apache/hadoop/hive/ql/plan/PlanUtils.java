@@ -142,6 +142,9 @@ public final class PlanUtils {
         properties.setProperty(
             serdeConstants.SERIALIZATION_LIB, directoryDesc.getSerName());
       }
+      if (directoryDesc.getSerdeProps() != null) {
+        properties.putAll(directoryDesc.getSerdeProps());
+      }
       if (directoryDesc.getOutputFormat() != null){
         ret.setOutputFileFormatClass(JavaUtils.loadClass(directoryDesc.getOutputFormat()));
       }

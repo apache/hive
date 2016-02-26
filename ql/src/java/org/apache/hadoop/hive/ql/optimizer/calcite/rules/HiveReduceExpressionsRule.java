@@ -142,17 +142,11 @@ public abstract class HiveReduceExpressionsRule extends RelOptRule {
       // predicate to see if it was already a constant,
       // in which case we don't need any runtime decision
       // about filtering.
+      // TODO: support LogicalValues
       if (newConditionExp.isAlwaysTrue()) {
         call.transformTo(
             filter.getInput());
-      }
-      // TODO: support LogicalValues
-      else if (newConditionExp instanceof RexLiteral
-          || RexUtil.isNullLiteral(newConditionExp, true)) {
-        // call.transformTo(call.builder().values(filter.getRowType()).build());
-        return;
-      }
-      else if (reduced
+      } else if (reduced
               || !newConditionExp.toString().equals(filter.getCondition().toString())) {
         call.transformTo(call.builder().
             push(filter.getInput()).filter(newConditionExp).build());
@@ -582,7 +576,7 @@ public abstract class HiveReduceExpressionsRule extends RelOptRule {
       }
       node = super.visitCall(call);
       if (node != call) {
-        node = RexUtil.simplify(rexBuilder, node);
+        node = HiveRexUtil.simplify(rexBuilder, node);
       }
       return node;
     }

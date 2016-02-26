@@ -136,8 +136,16 @@ public class FunctionTask extends Task<FunctionWork> {
     // For permanent functions, check for any resources from local filesystem.
     checkLocalFunctionResources(db, createFunctionDesc.getResources());
 
-    FunctionInfo registered = FunctionRegistry.registerPermanentFunction(
+    FunctionInfo registered = null;
+    try {
+      registered = FunctionRegistry.registerPermanentFunction(
         registeredName, className, true, toFunctionResource(resources));
+    } catch (RuntimeException ex) {
+      Throwable t = ex;
+      while (t.getCause() != null) {
+        t = t.getCause();
+      }
+    }
     if (registered == null) {
       console.printError("Failed to register " + registeredName
           + " using class " + createFunctionDesc.getClassName());

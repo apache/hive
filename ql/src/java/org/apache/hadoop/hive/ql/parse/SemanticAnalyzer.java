@@ -2094,7 +2094,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                   ASTNode serdeChild = (ASTNode) child.getChild(0);
                   storageFormat.setSerde(unescapeSQLString(serdeChild.getChild(0).getText()));
                   directoryDesc.setSerName(storageFormat.getSerde());
-                  directoryDescIsSet=true;
+                  if (serdeChild.getChildCount() > 1) {
+                    directoryDesc.setSerdeProps(new HashMap<String, String>());
+                    readProps((ASTNode) serdeChild.getChild(1).getChild(0), directoryDesc.getSerdeProps());
+                  }
+                  directoryDescIsSet = true;
                   break;
               }
             }

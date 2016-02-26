@@ -79,7 +79,7 @@ public class HiveJoinPushTransitivePredicatesRule extends RelOptRule {
   @Override
   public void onMatch(RelOptRuleCall call) {
     Join join = call.rel(0);
-    
+
     RelOptPredicateList preds = RelMetadataQuery.instance().getPulledUpPredicates(join);
 
     HiveRulesRegistry registry = call.getPlanner().getContext().unwrap(HiveRulesRegistry.class);

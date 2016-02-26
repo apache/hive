@@ -22,38 +22,47 @@ public interface ServiceRegistry {
 
   /**
    * Start the service registry
-   * 
-   * @throws InterruptedException
+   *
+   * @throws IOException
    */
-  public void start() throws InterruptedException;
+  public void start() throws IOException;
 
   /**
    * Stop the service registry
-   * 
-   * @throws InterruptedException
+   *
+   * @throws IOException
    */
-  public void stop() throws InterruptedException;
+  public void stop() throws IOException;
 
   /**
    * Register the current instance - the implementation takes care of the endpoints to register.
-   * 
+   *
    * @throws IOException
    */
   public void register() throws IOException;
 
   /**
    * Remove the current registration cleanly (implementation defined cleanup)
-   * 
+   *
    * @throws IOException
    */
   public void unregister() throws IOException;
 
   /**
    * Client API to get the list of instances registered via the current registry key.
-   * 
+   *
    * @param component
    * @return
    * @throws IOException
    */
   public ServiceInstanceSet getInstances(String component) throws IOException;
+
+  /**
+   * Adds state change listeners for service instances.
+   *
+   * @param listener - state change listener
+   * @throws IOException
+   */
+  public void registerStateChangeListener(ServiceInstanceStateChangeListener listener)
+      throws IOException;
 }

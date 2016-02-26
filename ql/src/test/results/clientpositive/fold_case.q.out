@@ -117,18 +117,20 @@ STAGE PLANS:
           TableScan
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
-            Filter Operator
-              predicate: false (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-              Group By Operator
-                aggregations: count(1)
-                mode: hash
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                Reduce Output Operator
-                  sort order: 
+            Select Operator
+              Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
+              Filter Operator
+                predicate: false (type: boolean)
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                Group By Operator
+                  aggregations: count(1)
+                  mode: hash
+                  outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                  value expressions: _col0 (type: bigint)
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col0 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -474,4 +476,29 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         ListSink
+
+PREHOOK: query: explain 
+select (CASE WHEN (-2) >= 0  THEN SUBSTRING(key, 1,CAST((-2) AS INT)) ELSE NULL END)
+from src
+PREHOOK: type: QUERY
+POSTHOOK: query: explain 
+select (CASE WHEN (-2) >= 0  THEN SUBSTRING(key, 1,CAST((-2) AS INT)) ELSE NULL END)
+from src
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: src
+          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
+          Select Operator
+            expressions: null (type: void)
+            outputColumnNames: _col0
+            Statistics: Num rows: 500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+            ListSink
 
