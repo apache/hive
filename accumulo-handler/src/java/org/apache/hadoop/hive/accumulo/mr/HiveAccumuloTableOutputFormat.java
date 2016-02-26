@@ -17,6 +17,7 @@
 package org.apache.hadoop.hive.accumulo.mr;
 
 import java.io.IOException;
+import java.util.Properties;
 
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
@@ -26,9 +27,13 @@ import org.apache.accumulo.core.client.security.tokens.AuthenticationToken;
 import org.apache.accumulo.core.client.security.tokens.PasswordToken;
 import org.apache.accumulo.core.data.Mutation;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.accumulo.AccumuloConnectionParameters;
 import org.apache.hadoop.hive.accumulo.HiveAccumuloHelper;
 import org.apache.hadoop.hive.accumulo.serde.AccumuloSerDeParameters;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
+import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
+import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordWriter;
@@ -39,10 +44,7 @@ import org.apache.hadoop.util.Progressable;
 
 import com.google.common.base.Preconditions;
 
-/**
- *
- */
-public class HiveAccumuloTableOutputFormat extends AccumuloOutputFormat {
+public class HiveAccumuloTableOutputFormat extends AccumuloOutputFormat implements HiveOutputFormat<Text,Mutation> {
 
   protected final HiveAccumuloHelper helper = new HiveAccumuloHelper();
 
@@ -58,6 +60,38 @@ public class HiveAccumuloTableOutputFormat extends AccumuloOutputFormat {
     configureAccumuloOutputFormat(job);
 
     return super.getRecordWriter(ignored, job, name, progress);
+  }
+
+  @Override
+  public FileSinkOperator.RecordWriter getHiveRecordWriter(
+      JobConf job, Path finalOutPath, Class<? extends Writable> valueClass, boolean isCompressed,
+      Properties tableProperties, Progressable progress) throws IOException {
+    configureAccumuloOutputFormat(job);
+
+    try {
+      return new MyRecordWriter(job);
+    } catch (AccumuloException | AccumuloSecurityException e) {
+      return null;
+    }
+  }
+
+  static private class MyRecordWriter extends AccumuloRecordWriter implements
+      RecordWriter<Text, Mutation>, FileSinkOperator.RecordWriter {
+
+    protected MyRecordWriter(JobConf job) throws AccumuloException,
+        AccumuloSecurityException, IOException {
+      super(job);
+    }
+
+    @Override
+    public void write(Writable w) throws IOException {
+      super.write(null, (Mutation) w);
+    }
+
+    @Override
+    public void close(boolean abort) throws IOException {
+      super.close(null);
+    }
   }
 
   protected void configureAccumuloOutputFormat(JobConf job) throws IOException {
