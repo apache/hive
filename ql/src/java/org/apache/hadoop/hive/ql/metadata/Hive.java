@@ -175,7 +175,7 @@ public class Hive {
   private final static int REG_FUNCS_NO = 0, REG_FUNCS_DONE = 2, REG_FUNCS_PENDING = 1;
 
   // register all permanent functions. need improvement
-  private void registerAllFunctionsOnce() {
+  private void registerAllFunctionsOnce() throws HiveException {
     boolean breakLoop = false;
     while (!breakLoop) {
       int val = didRegisterAllFuncs.get();
@@ -204,11 +204,12 @@ public class Hive {
     }
     try {
       reloadFunctions();
+      didRegisterAllFuncs.compareAndSet(REG_FUNCS_PENDING, REG_FUNCS_DONE);
     } catch (Exception e) {
       LOG.warn("Failed to register all functions.", e);
+      didRegisterAllFuncs.compareAndSet(REG_FUNCS_PENDING, REG_FUNCS_NO);
+      throw new HiveException(e);
     } finally {
-      boolean result = didRegisterAllFuncs.compareAndSet(REG_FUNCS_PENDING, REG_FUNCS_DONE);
-      assert result;
       synchronized (didRegisterAllFuncs) {
         didRegisterAllFuncs.notifyAll();
       }
