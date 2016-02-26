@@ -22,6 +22,7 @@ import java.io.IOException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.llap.configuration.LlapDaemonConfiguration;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.service.AbstractService;
 import org.apache.hive.http.HttpServer;
@@ -34,6 +35,8 @@ public class LlapWebServices extends AbstractService {
 
   private int port;
   private HttpServer http;
+  private boolean useSSL = false;
+  private boolean useSPNEGO = false;
 
   public LlapWebServices() {
     super("LlapWebServices");
@@ -42,13 +45,17 @@ public class LlapWebServices extends AbstractService {
   @Override
   public void serviceInit(Configuration conf) {
     this.port = HiveConf.getIntVar(conf, ConfVars.LLAP_DAEMON_WEB_PORT);
+    this.useSSL = HiveConf.getBoolVar(conf, ConfVars.LLAP_DAEMON_WEB_SSL);
+    this.useSPNEGO = HiveConf.getBoolVar(conf, ConfVars.LLAP_WEB_AUTO_AUTH);
     String bindAddress = "0.0.0.0";
     HttpServer.Builder builder =
         new HttpServer.Builder().setName("llap").setPort(this.port).setHost(bindAddress);
     builder.setConf(new HiveConf(conf, HiveConf.class));
     if (UserGroupInformation.isSecurityEnabled()) {
-      builder.setUseSSL(true);
-      if (HiveConf.getBoolVar(conf, ConfVars.LLAP_WEB_AUTO_AUTH)) {
+      LOG.info("LLAP UI useSSL=" + this.useSSL + ", auto-auth/SPNEGO="
+          + this.useSPNEGO + ", port=" + this.port);
+      builder.setUseSSL(this.useSSL);
+      if (this.useSPNEGO) {
         builder.setUseSPNEGO(true); // this setups auth filtering in build()
         builder.setSPNEGOPrincipal(HiveConf.getVar(conf, ConfVars.LLAP_KERBEROS_PRINCIPAL));
         builder.setSPNEGOKeytab(HiveConf.getVar(conf, ConfVars.LLAP_KERBEROS_KEYTAB_FILE));

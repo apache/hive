@@ -63,7 +63,7 @@ public class LlapServiceDriver {
   "org.apache.hive.hcatalog.data.JsonSerDe" };
   private static final String HBASE_SERDE_CLASS = "org.apache.hadoop.hive.hbase.HBaseSerDe";
   private static final String[] NEEDED_CONFIGS = LlapDaemonConfiguration.DAEMON_CONFIGS;
-  private static final String[] OPTIONAL_CONFIGS = { "ssl-server.xml" };
+  private static final String[] OPTIONAL_CONFIGS = LlapDaemonConfiguration.SSL_DAEMON_CONFIGS;
 
 
   /**
