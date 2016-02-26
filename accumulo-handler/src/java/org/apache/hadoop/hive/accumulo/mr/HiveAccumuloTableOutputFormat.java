@@ -71,7 +71,7 @@ public class HiveAccumuloTableOutputFormat extends AccumuloOutputFormat implemen
     try {
       return new MyRecordWriter(job);
     } catch (AccumuloException | AccumuloSecurityException e) {
-      return null;
+      throw new IOException("Failed to acquire Accumulo DelegationToken", e);
     }
   }
 
