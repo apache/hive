@@ -55,6 +55,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -71,6 +72,11 @@ public class Registry {
    */
   private final Map<String, FunctionInfo> mFunctions = new LinkedHashMap<String, FunctionInfo>();
   private final Set<Class<?>> builtIns = Collections.synchronizedSet(new HashSet<Class<?>>());
+  /**
+   * Persistent map contains refcounts that are only modified in synchronized methods for now,
+   * so there's no separate effort to make refcount operations thread-safe.
+   */
+  private final Map<Class<?>, Integer> persistent = new ConcurrentHashMap<>();
   private final Set<ClassLoader> mSessionUDFLoaders = new LinkedHashSet<ClassLoader>();
 
   private final boolean isNative;
@@ -285,6 +291,10 @@ public class Registry {
     return udfClass != null && builtIns.contains(udfClass);
   }
 
+  public boolean isPermanentFunc(Class<?> udfClass) {
+    return udfClass != null && persistent.containsKey(udfClass);
+  }
+
   public synchronized Set<String> getCurrentFunctionNames() {
     return getFunctionNames((Pattern)null);
   }
@@ -415,7 +425,25 @@ public class Registry {
     mFunctions.put(functionName, function);
     if (function.isBuiltIn()) {
       builtIns.add(function.getFunctionClass());
+    } else if (function.isPersistent()) {
+      Class<?> functionClass = getPermanentUdfClass(function);
+      Integer refCount = persistent.get(functionClass);
+      persistent.put(functionClass, Integer.valueOf(refCount == null ? 1 : refCount + 1));
     }
+  }
+
+  private Class<?> getPermanentUdfClass(FunctionInfo function) {
+    Class<?> functionClass = function.getFunctionClass();
+    if (functionClass == null) {
+      // Expected for permanent UDFs at this point.
+      ClassLoader loader = Utilities.getSessionSpecifiedClassLoader();
+      try {
+        functionClass = Class.forName(function.getClassName(), true, loader);
+      } catch (ClassNotFoundException ex) {
+        throw new RuntimeException(ex);
+      }
+    }
+    return functionClass;
   }
 
   public synchronized void unregisterFunction(String functionName) throws HiveException {
@@ -427,6 +455,21 @@ public class Registry {
       }
       mFunctions.remove(functionName);
       fi.discarded();
+      if (fi.isPersistent()) {
+        removePersistentFunction(fi);
+      }
+    }
+  }
+
+  /** Should only be called from synchronized methods. */
+  private void removePersistentFunction(FunctionInfo fi) {
+    Class<?> functionClass = getPermanentUdfClass(fi);
+    Integer refCount = persistent.get(functionClass);
+    assert refCount != null;
+    if (refCount == 1) {
+      persistent.remove(functionClass);
+    } else {
+      persistent.put(functionClass, Integer.valueOf(refCount - 1));
     }
   }
 
@@ -517,6 +560,7 @@ public class Registry {
     }
     mFunctions.clear();
     builtIns.clear();
+    persistent.clear();
   }
 
   public synchronized void closeCUDFLoaders() {

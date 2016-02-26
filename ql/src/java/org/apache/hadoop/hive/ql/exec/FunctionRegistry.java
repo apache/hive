@@ -1480,6 +1480,21 @@ public final class FunctionRegistry {
     return system.registerPermanentFunction(functionName, className, registerToSession, resources);
   }
 
+  public static boolean isPermanentFunction(ExprNodeGenericFuncDesc fnExpr) {
+    GenericUDF udf = fnExpr.getGenericUDF();
+    if (udf == null) return false;
+
+    Class<?> clazz = udf.getClass();
+    if (udf instanceof GenericUDFBridge) {
+      clazz = ((GenericUDFBridge)udf).getUdfClass();
+    }
+
+    if (clazz != null) {
+      return system.isPermanentFunc(clazz);
+    }
+    return false;
+  }
+
   public static void unregisterPermanentFunction(String functionName) throws HiveException {
     system.unregisterFunction(functionName);
     unregisterTemporaryUDF(functionName);

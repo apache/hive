@@ -101,15 +101,18 @@ public class LlapDecider implements PhysicalPlanResolver {
   class LlapDecisionDispatcher implements Dispatcher {
     private final HiveConf conf;
     private final boolean doSkipUdfCheck;
+    private final boolean arePermanentFnsAllowed;
 
     public LlapDecisionDispatcher(PhysicalContext pctx) {
       conf = pctx.getConf();
       doSkipUdfCheck = HiveConf.getBoolVar(conf, ConfVars.LLAP_SKIP_COMPILE_UDF_CHECK);
+      arePermanentFnsAllowed = HiveConf.getBoolVar(conf, ConfVars.LLAP_DAEMON_ALLOW_PERMANENT_FNS);
     }
 
     @Override
     public Object dispatch(Node nd, Stack<Node> stack, Object... nodeOutputs)
       throws SemanticException {
+      @SuppressWarnings("unchecked")
       Task<? extends Serializable> currTask = (Task<? extends Serializable>) nd;
       if (currTask instanceof TezTask) {
         TezWork work = ((TezTask) currTask).getWork();
@@ -237,10 +240,20 @@ public class LlapDecider implements PhysicalPlanResolver {
           exprs.addAll(cur.getChildren());
         }
 
-        if (!doSkipUdfCheck && cur instanceof ExprNodeGenericFuncDesc
-            && !FunctionRegistry.isBuiltInFuncExpr((ExprNodeGenericFuncDesc)cur)) {
-          LOG.info("Not a built-in function: " + cur.getExprString());
-          return false;
+        if (!doSkipUdfCheck && cur instanceof ExprNodeGenericFuncDesc) {
+          ExprNodeGenericFuncDesc funcDesc = (ExprNodeGenericFuncDesc)cur;
+          boolean isBuiltIn = FunctionRegistry.isBuiltInFuncExpr(funcDesc);
+          if (!isBuiltIn) {
+            if (!arePermanentFnsAllowed) {
+              LOG.info("Not a built-in function: " + cur.getExprString()
+                + " (permanent functions are disabled)");
+              return false;
+            }
+            if (!FunctionRegistry.isPermanentFunction(funcDesc)) {
+              LOG.info("Not a built-in or permanent function: " + cur.getExprString());
+              return false;
+            }
+          }
         }
       }
       return true;
@@ -261,24 +274,22 @@ public class LlapDecider implements PhysicalPlanResolver {
     }
 
     private boolean checkExpressions(Collection<ExprNodeDesc> exprs) {
-      boolean result = true;
-      for (ExprNodeDesc expr: exprs) {
-        result = result && checkExpression(expr);
+      for (ExprNodeDesc expr : exprs) {
+        if (!checkExpression(expr)) return false;
       }
-      return result;
+      return true;
     }
 
     private boolean checkAggregators(Collection<AggregationDesc> aggs) {
-      boolean result = true;
       try {
-	for (AggregationDesc agg: aggs) {
-	  result = result && checkAggregator(agg);
-	}
+        for (AggregationDesc agg: aggs) {
+          if (!checkAggregator(agg)) return false;
+        }
       } catch (SemanticException e) {
-	LOG.warn("Exception testing aggregators.",e);
-	result = false;
+        LOG.warn("Exception testing aggregators.",e);
+        return false;
       }
-      return result;
+      return true;
     }
 
     private Map<Rule, NodeProcessor> getRules() {
@@ -291,8 +302,7 @@ public class LlapDecider implements PhysicalPlanResolver {
             return new Boolean(false);
           }
         });
-      opRules.put(new RuleRegExp("No user code in fil",
-              FilterOperator.getOperatorName() + "%"),
+      opRules.put(new RuleRegExp("No user code in fil", FilterOperator.getOperatorName() + "%"),
           new NodeProcessor() {
           @Override
           public Object process(Node n, Stack<Node> s, NodeProcessorCtx c,
@@ -301,8 +311,7 @@ public class LlapDecider implements PhysicalPlanResolver {
             return new Boolean(checkExpression(expr));
           }
         });
-      opRules.put(new RuleRegExp("No user code in gby",
-              GroupByOperator.getOperatorName() + "%"),
+      opRules.put(new RuleRegExp("No user code in gby", GroupByOperator.getOperatorName() + "%"),
           new NodeProcessor() {
           @Override
           public Object process(Node n, Stack<Node> s, NodeProcessorCtx c,
@@ -311,8 +320,7 @@ public class LlapDecider implements PhysicalPlanResolver {
             return new Boolean(checkAggregators(aggs));
           }
         });
-      opRules.put(new RuleRegExp("No user code in select",
-              SelectOperator.getOperatorName() + "%"),
+      opRules.put(new RuleRegExp("No user code in select", SelectOperator.getOperatorName() + "%"),
           new NodeProcessor() {
           @Override
           public Object process(Node n, Stack<Node> s, NodeProcessorCtx c,
