@@ -55,11 +55,4 @@ public interface ServiceInstanceSet {
    */
   public Set<ServiceInstance> getByHost(String host);
 
-  /**
-   * Refresh the instance set from registry backing store.
-   * 
-   * @throws IOException
-   */
-  public void refresh() throws IOException;
-
 }

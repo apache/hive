@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.registry.ServiceInstance;
 import org.apache.hadoop.hive.llap.registry.ServiceInstanceSet;
+import org.apache.hadoop.hive.llap.registry.ServiceInstanceStateChangeListener;
 import org.apache.hadoop.hive.llap.registry.ServiceRegistry;
 import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.util.StringUtils;
@@ -78,12 +79,12 @@ public class LlapFixedRegistryImpl implements ServiceRegistry {
   }
 
   @Override
-  public void start() throws InterruptedException {
+  public void start() throws IOException {
     // nothing to start
   }
 
   @Override
-  public void stop() throws InterruptedException {
+  public void stop() throws IOException {
     // nothing to stop
   }
 
@@ -124,7 +125,6 @@ public class LlapFixedRegistryImpl implements ServiceRegistry {
       this.host = host;
     }
 
-    @Override
     public String getWorkerIdentity() {
       return LlapFixedRegistryImpl.getWorkerIdentity(host);
     }
@@ -221,17 +221,17 @@ public class LlapFixedRegistryImpl implements ServiceRegistry {
       }
       return byHost;
     }
-
-    @Override
-    public void refresh() throws IOException {
-      // I will do no such thing
-    }
-
   }
 
   @Override
   public ServiceInstanceSet getInstances(String component) throws IOException {
     return new FixedServiceInstanceSet();
+  }
+
+  @Override
+  public void registerStateChangeListener(final ServiceInstanceStateChangeListener listener) {
+    // nothing to set
+    LOG.warn("Callbacks for instance state changes are not supported in fixed registry.");
   }
 
   @Override

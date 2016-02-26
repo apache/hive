@@ -1587,7 +1587,8 @@ public class HiveConf extends Configuration {
         "org.apache.hadoop.hive.ql.lockmgr.zookeeper.ZooKeeperHiveLockManager, \n" +
         "2. When HiveServer2 supports service discovery via Zookeeper.\n" +
         "3. For delegation token storage if zookeeper store is used, if\n" +
-        "hive.cluster.delegation.token.store.zookeeper.connectString is not set"),
+        "hive.cluster.delegation.token.store.zookeeper.connectString is not set\n" +
+        "4. LLAP daemon registry service"),
 
     HIVE_ZOOKEEPER_CLIENT_PORT("hive.zookeeper.client.port", "2181",
         "The port of ZooKeeper servers to talk to.\n" +

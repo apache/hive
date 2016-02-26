@@ -151,7 +151,6 @@ public class LlapSecurityHelper implements LlapTokenProvider {
     }
     Map<String, ServiceInstance> daemons = activeInstances.getAll();
     if (doForceRefresh || daemons == null || daemons.isEmpty()) {
-      activeInstances.refresh();
       daemons = activeInstances.getAll();
       if (daemons == null || daemons.isEmpty()) throw new RuntimeException("No LLAPs found");
     }

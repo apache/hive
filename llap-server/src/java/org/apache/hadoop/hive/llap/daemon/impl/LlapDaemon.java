@@ -114,6 +114,14 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
         "Work dirs must be specified");
     Preconditions.checkArgument(shufflePort == 0 || (shufflePort > 1024 && shufflePort < 65536),
         "Shuffle Port must be betwee 1024 and 65535, or 0 for automatic selection");
+    String hosts = HiveConf.getTrimmedVar(daemonConf, ConfVars.LLAP_DAEMON_SERVICE_HOSTS);
+    if (hosts.startsWith("@")) {
+      String zkHosts = HiveConf.getTrimmedVar(daemonConf, ConfVars.HIVE_ZOOKEEPER_QUORUM);
+      LOG.info("Zookeeper Quorum: {}", zkHosts);
+      Preconditions.checkArgument(zkHosts != null && !zkHosts.trim().isEmpty(),
+          "LLAP service hosts startswith '@' but hive.zookeeper.quorum is not set." +
+              " hive.zookeeper.quorum must be set.");
+    }
 
     this.maxJvmMemory = getTotalHeapSize();
     this.llapIoEnabled = ioEnabled;
