@@ -39,6 +39,10 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.shims.HadoopShims.KerberosNameShim;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.authentication.server.AuthenticationToken;
+import org.apache.hadoop.security.token.delegation.web.DelegationTokenAuthenticationHandler;
+import org.apache.hadoop.security.token.delegation.web.DelegationTokenAuthenticator;
+import org.apache.hadoop.security.token.delegation.web.KerberosDelegationTokenAuthenticationHandler;
 import org.apache.hive.service.CookieSigner;
 import org.apache.hive.service.auth.AuthenticationProviderFactory;
 import org.apache.hive.service.auth.AuthenticationProviderFactory.AuthMethods;
@@ -132,7 +136,13 @@ public class ThriftHttpServlet extends TServlet {
       if (clientUserName == null) {
         // For a kerberos setup
         if (isKerberosAuthMode(authType)) {
-          clientUserName = doKerberosAuth(request);
+          String delegationToken = request.getHeader(DelegationTokenAuthenticator.DELEGATION_TOKEN_HEADER);
+          // Each http request must have an Authorization header
+          if ((delegationToken != null) && (!delegationToken.isEmpty())) {
+            clientUserName = doTokenAuth(request, response);
+          } else {
+            clientUserName = doKerberosAuth(request);
+          }
         }
         // For password based authentication
         else {
@@ -329,6 +339,19 @@ public class ThriftHttpServlet extends TServlet {
       }
     }
     return userName;
+  }
+
+  private String doTokenAuth(HttpServletRequest request, HttpServletResponse response)
+      throws HttpAuthenticationException {
+    DelegationTokenAuthenticationHandler tokenAuthHandler =
+        new KerberosDelegationTokenAuthenticationHandler();
+    try {
+      AuthenticationToken authenticatedToken = tokenAuthHandler.authenticate(request, response);
+      String userName = authenticatedToken.getUserName();
+      return userName;
+    } catch (Exception e) {
+      throw new HttpAuthenticationException(e);
+    }
   }
 
   /**

@@ -38,7 +38,6 @@ import org.apache.hadoop.hive.shims.HadoopShims.KerberosNameShim;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.service.AbstractService;
 import org.apache.hive.service.ServiceException;
-import org.apache.hive.service.ServiceUtils;
 import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.auth.TSetIpAddressProcessor;
 import org.apache.hive.service.cli.CLIService;
@@ -124,18 +123,14 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
   protected String hiveHost;
   protected TServer server;
   protected org.eclipse.jetty.server.Server httpServer;
-
-  private boolean isStarted = false;
   protected boolean isEmbedded = false;
-
   protected HiveConf hiveConf;
-
   protected int minWorkerThreads;
   protected int maxWorkerThreads;
   protected long workerKeepAliveTime;
-
   protected TServerEventHandler serverEventHandler;
   protected ThreadLocal<ServerContext> currentServerContext;
+  private boolean isStarted = false;
 
   static class ThriftCLIServerContext implements ServerContext {
     private SessionHandle sessionHandle = null;
@@ -483,7 +478,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       return cliService.getDelegationTokenFromMetaStore(userName);
     } catch (UnsupportedOperationException e) {
       // The delegation token is not applicable in the given deployment mode
-      // such as HMS is not kerberos secured 
+      // such as HMS is not kerberos secured
     }
     return null;
   }

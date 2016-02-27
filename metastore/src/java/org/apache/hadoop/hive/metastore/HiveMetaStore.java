@@ -88,6 +88,7 @@ import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge.Server.ServerMode;
 import org.apache.hadoop.hive.thrift.TUGIContainingTransport;
+import org.apache.hadoop.hive.token.delegation.HiveDelegationTokenManager;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
@@ -178,6 +179,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   public static final String PUBLIC = "public";
 
   private static HadoopThriftAuthBridge.Server saslServer;
+  private static HiveDelegationTokenManager delegationTokenManager = null;
   private static boolean useSasl;
 
   private static final class ChainedTTransportFactory extends TTransportFactory {
@@ -5979,7 +5981,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
    */
   public static void cancelDelegationToken(String tokenStrForm
       ) throws IOException {
-    saslServer.cancelDelegationToken(tokenStrForm);
+    delegationTokenManager.cancelDelegationToken(tokenStrForm);
   }
 
   /**
@@ -5990,7 +5992,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
    */
   public static String getDelegationToken(String owner, String renewer)
       throws IOException, InterruptedException {
-    return saslServer.getDelegationToken(owner, renewer);
+    return delegationTokenManager.getDelegationToken(owner, renewer);
   }
 
   /**
@@ -6008,7 +6010,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
    */
   public static long renewDelegationToken(String tokenStrForm
       ) throws IOException {
-    return saslServer.renewDelegationToken(tokenStrForm);
+    return delegationTokenManager.renewDelegationToken(tokenStrForm);
   }
 
   /**
@@ -6223,8 +6225,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         saslServer = bridge.createServer(
             conf.getVar(HiveConf.ConfVars.METASTORE_KERBEROS_KEYTAB_FILE),
             conf.getVar(HiveConf.ConfVars.METASTORE_KERBEROS_PRINCIPAL));
-        // start delegation token manager
-        saslServer.startDelegationTokenSecretManager(conf, baseHandler, ServerMode.METASTORE);
+        // Start delegation token manager
+        delegationTokenManager = new HiveDelegationTokenManager(saslServer.getRemoteAddress());
+        delegationTokenManager.startDelegationTokenSecretManager(conf, baseHandler,
+            ServerMode.METASTORE);
         transFactory = saslServer.createTransportFactory(
                 MetaStoreUtils.getMetaStoreSaslProperties(conf));
         processor = saslServer.wrapProcessor(

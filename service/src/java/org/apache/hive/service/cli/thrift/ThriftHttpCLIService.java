@@ -113,7 +113,7 @@ public class ThriftHttpCLIService extends ThriftCLIService {
       httpServer.addConnector(connector);
 
       // Thrift configs
-      hiveAuthFactory = new HiveAuthFactory(hiveConf);
+      hiveAuthFactory = new HiveAuthFactory(hiveConf, serverIPAddress);
       TProcessor processor = new TCLIService.Processor<Iface>(this);
       TProtocolFactory protocolFactory = new TBinaryProtocol.Factory();
       // Set during the init phase of HiveServer2 if auth mode is kerberos
