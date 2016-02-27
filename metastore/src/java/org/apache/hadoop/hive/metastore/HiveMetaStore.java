@@ -88,7 +88,7 @@ import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge.Server.ServerMode;
 import org.apache.hadoop.hive.thrift.TUGIContainingTransport;
-import org.apache.hadoop.hive.token.delegation.HiveDelegationTokenManager;
+import org.apache.hadoop.hive.thrift.HiveDelegationTokenManager;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
