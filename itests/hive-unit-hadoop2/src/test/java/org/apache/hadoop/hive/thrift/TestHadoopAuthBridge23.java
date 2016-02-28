@@ -374,15 +374,6 @@ public class TestHadoopAuthBridge23 extends TestCase {
     //try out some metastore operations
     createDBAndVerifyExistence(hiveClient);
 
-    //check that getDelegationToken fails since we are not authenticating
-    //over kerberos
-    boolean pass = false;
-    try {
-      hiveClient.getDelegationToken(clientUgi.getUserName());
-    } catch (MetaException ex) {
-      pass = true;
-    }
-    assertTrue("Expected the getDelegationToken call to fail", pass == true);
     hiveClient.close();
 
     //Now cancel the delegation token
