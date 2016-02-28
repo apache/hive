@@ -312,10 +312,9 @@ public class TestHadoopAuthBridge23 extends TestCase {
 
     HadoopThriftAuthBridge.Server.authenticationMethod
                              .set(AuthenticationMethod.KERBEROS);
-    HadoopThriftAuthBridge.Server.remoteAddress.set(InetAddress.getLocalHost());
     return
         HiveMetaStore.getDelegationToken(ownerUgi.getShortUserName(),
-            realUgi.getShortUserName());
+            realUgi.getShortUserName(), InetAddress.getLocalHost().getHostAddress());
   }
 
   /**

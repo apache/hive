@@ -69,11 +69,8 @@ public class HiveDelegationTokenManager {
       "/hivedelegation";
 
   protected DelegationTokenSecretManager secretManager;
-  private InetAddress remoteAddr;
 
-
-  public HiveDelegationTokenManager(InetAddress remoteAddr) {
-    this.remoteAddr = remoteAddr;
+  public HiveDelegationTokenManager() {
   }
 
   public void startDelegationTokenSecretManager(Configuration conf, Object hms, ServerMode smode)
@@ -95,7 +92,8 @@ public class HiveDelegationTokenManager {
     secretManager.startThreads();
   }
 
-  public String getDelegationToken(final String owner, final String renewer) throws IOException,
+  public String getDelegationToken(final String owner, final String renewer, String remoteAddr)
+      throws IOException,
       InterruptedException {
     /**
      * If the user asking the token is same as the 'owner' then don't do
@@ -111,7 +109,7 @@ public class HiveDelegationTokenManager {
       // real user (for e.g. oozie) due to the doAs that happened just before the
       // server started executing the method getDelegationToken in the MetaStore
       ownerUgi = UserGroupInformation.createProxyUser(owner, UserGroupInformation.getCurrentUser());
-      ProxyUsers.authorize(ownerUgi, remoteAddr.getHostAddress(), null);
+      ProxyUsers.authorize(ownerUgi, remoteAddr, null);
     }
     return ownerUgi.doAs(new PrivilegedExceptionAction<String>() {
 
@@ -122,9 +120,9 @@ public class HiveDelegationTokenManager {
     });
   }
 
-  public String getDelegationTokenWithService(String owner, String renewer, String service)
+  public String getDelegationTokenWithService(String owner, String renewer, String service, String remoteAddr)
       throws IOException, InterruptedException {
-    String token = getDelegationToken(owner, renewer);
+    String token = getDelegationToken(owner, renewer, remoteAddr);
     return Utils.addServiceToToken(token, service);
   }
 

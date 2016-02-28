@@ -5242,7 +5242,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ret =
             HiveMetaStore.getDelegationToken(token_owner,
-                renewer_kerberos_principal_name);
+                renewer_kerberos_principal_name, getIpAddress());
       } catch (IOException e) {
         ex = e;
         throw new MetaException(e.getMessage());
@@ -5990,9 +5990,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
    * @param renewer
    *          the designated renewer
    */
-  public static String getDelegationToken(String owner, String renewer)
+  public static String getDelegationToken(String owner, String renewer, String remoteAddr)
       throws IOException, InterruptedException {
-    return delegationTokenManager.getDelegationToken(owner, renewer);
+    return delegationTokenManager.getDelegationToken(owner, renewer, remoteAddr);
   }
 
   /**
@@ -6226,7 +6226,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             conf.getVar(HiveConf.ConfVars.METASTORE_KERBEROS_KEYTAB_FILE),
             conf.getVar(HiveConf.ConfVars.METASTORE_KERBEROS_PRINCIPAL));
         // Start delegation token manager
-        delegationTokenManager = new HiveDelegationTokenManager(saslServer.getRemoteAddress());
+        delegationTokenManager = new HiveDelegationTokenManager();
         delegationTokenManager.startDelegationTokenSecretManager(conf, baseHandler,
             ServerMode.METASTORE);
         transFactory = saslServer.createTransportFactory(

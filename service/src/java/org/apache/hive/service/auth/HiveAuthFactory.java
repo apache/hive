@@ -127,7 +127,7 @@ public class HiveAuthFactory {
   // Start delegation token manager
   if (hadoopAuth.equalsIgnoreCase("kerberos")
       && !authTypeStr.equalsIgnoreCase(AuthTypes.NOSASL.getAuthName())) {
-    delegationTokenManager = new HiveDelegationTokenManager(serverIPAddress);
+    delegationTokenManager = new HiveDelegationTokenManager();
     try {
       // RawStore is only necessary for DBTokenStore
       HMSHandler baseHandler = null;
@@ -310,14 +310,16 @@ public class HiveAuthFactory {
   }
 
   // retrieve delegation token for the given user
-  public String getDelegationToken(String owner, String renewer) throws HiveSQLException {
+  public String getDelegationToken(String owner, String renewer, String remoteAddr)
+      throws HiveSQLException {
     if (delegationTokenManager == null) {
       throw new HiveSQLException(
           "Delegation token only supported over kerberos authentication", "08S01");
     }
 
     try {
-      String tokenStr = delegationTokenManager.getDelegationTokenWithService(owner, renewer, HS2_CLIENT_TOKEN);
+      String tokenStr = delegationTokenManager.getDelegationTokenWithService(owner, renewer,
+          HS2_CLIENT_TOKEN, remoteAddr);
       if (tokenStr == null || tokenStr.isEmpty()) {
         throw new HiveSQLException(
             "Received empty retrieving delegation token for user " + owner, "08S01");

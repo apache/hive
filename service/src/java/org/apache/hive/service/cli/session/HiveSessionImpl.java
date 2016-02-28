@@ -827,7 +827,7 @@ public class HiveSessionImpl implements HiveSession {
   public String getDelegationToken(HiveAuthFactory authFactory, String owner, String renewer)
       throws HiveSQLException {
     HiveAuthFactory.verifyProxyAccess(getUserName(), owner, getIpAddress(), getHiveConf());
-    return authFactory.getDelegationToken(owner, renewer);
+    return authFactory.getDelegationToken(owner, renewer, getIpAddress());
   }
 
   @Override
