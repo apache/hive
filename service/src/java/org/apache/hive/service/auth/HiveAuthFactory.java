@@ -135,7 +135,7 @@ public class HiveAuthFactory {
           conf.getVar(HiveConf.ConfVars.METASTORE_CLUSTER_DELEGATION_TOKEN_STORE_CLS);
       if (tokenStoreClass.equals(DBTokenStore.class.getName())) {
         baseHandler = new HiveMetaStore.HMSHandler("New db based metastore server", conf, true);
-            }
+      }
       delegationTokenManager.startDelegationTokenSecretManager(conf, baseHandler,
           ServerMode.HIVESERVER2);
     } catch (MetaException | IOException e) {
