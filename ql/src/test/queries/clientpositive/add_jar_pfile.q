@@ -1,5 +1,5 @@
 
-dfs -copyFromLocal ${system:maven.local.repository}/org/apache/hive/hive-contrib/${system:hive.version}/hive-contrib-${system:hive.version}.jar pfile://${system:test.tmp.dir}/hive-contrib-${system:hive.version}.jar;
+dfs -copyFromLocal ${system:maven.local.repository}${system:file.separator}org${system:file.separator}apache${system:file.separator}hive${system:file.separator}hive-contrib${system:file.separator}${system:hive.version}${system:file.separator}hive-contrib-${system:hive.version}.jar pfile://${system:test.tmp.dir}/hive-contrib-${system:hive.version}.jar;
 
 add jar pfile://${system:test.tmp.dir}/hive-contrib-${system:hive.version}.jar;
 
