@@ -263,13 +263,12 @@ public class HiveConnection implements java.sql.Connection {
   }
 
   private CloseableHttpClient getHttpClient(Boolean useSsl) throws SQLException {
-    boolean isCookieEnabled =
-        sessConfMap.get(JdbcConnectionParams.COOKIE_AUTH) == null
-            || (!JdbcConnectionParams.COOKIE_AUTH_FALSE.equalsIgnoreCase(sessConfMap
-                .get(JdbcConnectionParams.COOKIE_AUTH)));
-    String cookieName =
-        sessConfMap.get(JdbcConnectionParams.COOKIE_NAME) == null ? JdbcConnectionParams.DEFAULT_COOKIE_NAMES_HS2 : sessConfMap
-            .get(JdbcConnectionParams.COOKIE_NAME);
+    boolean isCookieEnabled = sessConfMap.get(JdbcConnectionParams.COOKIE_AUTH) == null ||
+      (!JdbcConnectionParams.COOKIE_AUTH_FALSE.equalsIgnoreCase(
+      sessConfMap.get(JdbcConnectionParams.COOKIE_AUTH)));
+    String cookieName = sessConfMap.get(JdbcConnectionParams.COOKIE_NAME) == null ?
+      JdbcConnectionParams.DEFAULT_COOKIE_NAMES_HS2 :
+      sessConfMap.get(JdbcConnectionParams.COOKIE_NAME);
     CookieStore cookieStore = isCookieEnabled ? new BasicCookieStore() : null;
     HttpClientBuilder httpClientBuilder;
     // Request interceptor for any request pre-processing logic
@@ -282,15 +281,16 @@ public class HiveConnection implements java.sql.Connection {
 
       if (key.startsWith(JdbcConnectionParams.HTTP_HEADER_PREFIX)) {
         additionalHttpHeaders.put(key.substring(JdbcConnectionParams.HTTP_HEADER_PREFIX.length()),
-            entry.getValue());
+          entry.getValue());
       }
     }
     // Configure http client for kerberos/password based authentication
     if (isKerberosAuthMode()) {
       /**
-       * Add an interceptor which sets the appropriate header in the request. It does the kerberos
-       * authentication and get the final service ticket, for sending to the server before every
-       * request. In https mode, the entire information is encrypted
+       * Add an interceptor which sets the appropriate header in the request.
+       * It does the kerberos authentication and get the final service ticket,
+       * for sending to the server before every request.
+       * In https mode, the entire information is encrypted
        */
       requestInterceptor =
           new HttpKerberosRequestInterceptor(sessConfMap.get(JdbcConnectionParams.AUTH_PRINCIPAL),
@@ -304,43 +304,42 @@ public class HiveConnection implements java.sql.Connection {
             new HttpTokenAuthInterceptor(tokenStr, cookieStore, cookieName, useSsl,
                 additionalHttpHeaders);
       } else {
-        /**
-         * Add an interceptor to pass username/password in the header. In https mode, the entire
-         * information is encrypted
-         */
-        requestInterceptor =
-            new HttpBasicAuthInterceptor(getUserName(), getPassword(), cookieStore, cookieName,
-                useSsl, additionalHttpHeaders);
-      }
+      /**
+       * Add an interceptor to pass username/password in the header.
+       * In https mode, the entire information is encrypted
+       */
+      requestInterceptor = new HttpBasicAuthInterceptor(getUserName(), getPassword(),
+                                                        cookieStore, cookieName, useSsl,
+                                                        additionalHttpHeaders);
     }
     // Configure http client for cookie based authentication
     if (isCookieEnabled) {
       // Create a http client with a retry mechanism when the server returns a status code of 401.
       httpClientBuilder =
-          HttpClients.custom().setServiceUnavailableRetryStrategy(
-              new ServiceUnavailableRetryStrategy() {
+      HttpClients.custom().setServiceUnavailableRetryStrategy(
+        new  ServiceUnavailableRetryStrategy() {
 
-                @Override
-                public boolean retryRequest(final HttpResponse response, final int executionCount,
-                    final HttpContext context) {
-                  int statusCode = response.getStatusLine().getStatusCode();
-                  boolean ret = statusCode == 401 && executionCount <= 1;
+      @Override
+      public boolean retryRequest(
+        final HttpResponse response,
+        final int executionCount,
+        final HttpContext context) {
+        int statusCode = response.getStatusLine().getStatusCode();
+        boolean ret = statusCode == 401 && executionCount <= 1;
 
-                  // Set the context attribute to true which will be interpreted by the request
-                  // interceptor
-                  if (ret) {
-                    context.setAttribute(Utils.HIVE_SERVER2_RETRY_KEY,
-                        Utils.HIVE_SERVER2_RETRY_TRUE);
-                  }
-                  return ret;
-                }
+        // Set the context attribute to true which will be interpreted by the request interceptor
+        if (ret) {
+          context.setAttribute(Utils.HIVE_SERVER2_RETRY_KEY, Utils.HIVE_SERVER2_RETRY_TRUE);
+        }
+        return ret;
+      }
 
-                @Override
-                public long getRetryInterval() {
-                  // Immediate retry
-                  return 0;
-                }
-              });
+      @Override
+      public long getRetryInterval() {
+        // Immediate retry
+        return 0;
+      }
+    });
     } else {
       httpClientBuilder = HttpClientBuilder.create();
     }
@@ -350,12 +349,26 @@ public class HiveConnection implements java.sql.Connection {
     if (useSsl) {
       String useTwoWaySSL = sessConfMap.get(JdbcConnectionParams.USE_TWO_WAY_SSL);
       String sslTrustStorePath = sessConfMap.get(JdbcConnectionParams.SSL_TRUST_STORE);
-      String sslTrustStorePassword = sessConfMap.get(JdbcConnectionParams.SSL_TRUST_STORE_PASSWORD);
+      String sslTrustStorePassword = sessConfMap.get(
+        JdbcConnectionParams.SSL_TRUST_STORE_PASSWORD);
       KeyStore sslTrustStore;
       SSLSocketFactory socketFactory;
 
+      /**
+       * The code within the try block throws:
+       * 1. SSLInitializationException
+       * 2. KeyStoreException
+       * 3. IOException
+       * 4. NoSuchAlgorithmException
+       * 5. CertificateException
+       * 6. KeyManagementException
+       * 7. UnrecoverableKeyException
+       * We don't want the client to retry on any of these, hence we catch all
+       * and throw a SQLException.
+       */
       try {
-        if (useTwoWaySSL != null && useTwoWaySSL.equalsIgnoreCase(JdbcConnectionParams.TRUE)) {
+        if (useTwoWaySSL != null &&
+            useTwoWaySSL.equalsIgnoreCase(JdbcConnectionParams.TRUE)) {
           socketFactory = getTwoWaySSLSocketFactory();
         } else if (sslTrustStorePath == null || sslTrustStorePath.isEmpty()) {
           // Create a default socket factory based on standard JSSE trust material
@@ -371,13 +384,15 @@ public class HiveConnection implements java.sql.Connection {
         socketFactory.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
 
         final Registry<ConnectionSocketFactory> registry =
-            RegistryBuilder.<ConnectionSocketFactory> create().register("https", socketFactory)
-                .build();
+          RegistryBuilder.<ConnectionSocketFactory>create()
+          .register("https", socketFactory)
+          .build();
 
         httpClientBuilder.setConnectionManager(new BasicHttpClientConnectionManager(registry));
-      } catch (Exception e) {
-        String msg =
-            "Could not create an https connection to " + jdbcUriString + ". " + e.getMessage();
+      }
+      catch (Exception e) {
+        String msg =  "Could not create an https connection to " +
+          jdbcUriString + ". " + e.getMessage();
         throw new SQLException(msg, " 08S01", e);
       }
     }
