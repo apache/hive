@@ -311,6 +311,7 @@ public class HiveConnection implements java.sql.Connection {
       requestInterceptor = new HttpBasicAuthInterceptor(getUserName(), getPassword(),
                                                         cookieStore, cookieName, useSsl,
                                                         additionalHttpHeaders);
+      }
     }
     // Configure http client for cookie based authentication
     if (isCookieEnabled) {
