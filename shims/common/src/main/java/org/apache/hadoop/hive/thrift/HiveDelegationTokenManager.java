@@ -73,6 +73,10 @@ public class HiveDelegationTokenManager {
   public HiveDelegationTokenManager() {
   }
 
+  public DelegationTokenSecretManager getSecretManager() {
+    return secretManager;
+  }
+
   public void startDelegationTokenSecretManager(Configuration conf, Object hms, ServerMode smode)
       throws IOException {
     long secretKeyInterval =

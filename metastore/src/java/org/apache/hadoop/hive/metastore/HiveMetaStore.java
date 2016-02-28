@@ -179,7 +179,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   public static final String PUBLIC = "public";
 
   private static HadoopThriftAuthBridge.Server saslServer;
-  private static HiveDelegationTokenManager delegationTokenManager = null;
+  private static HiveDelegationTokenManager delegationTokenManager;
   private static boolean useSasl;
 
   private static final class ChainedTTransportFactory extends TTransportFactory {
@@ -6229,6 +6229,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         delegationTokenManager = new HiveDelegationTokenManager();
         delegationTokenManager.startDelegationTokenSecretManager(conf, baseHandler,
             ServerMode.METASTORE);
+        saslServer.setSecretManager(delegationTokenManager.getSecretManager());
         transFactory = saslServer.createTransportFactory(
                 MetaStoreUtils.getMetaStoreSaslProperties(conf));
         processor = saslServer.wrapProcessor(

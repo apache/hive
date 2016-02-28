@@ -285,38 +285,6 @@ public abstract class HadoopThriftAuthBridge {
     public enum ServerMode {
       HIVESERVER2, METASTORE
     };
-    public static final String  DELEGATION_TOKEN_GC_INTERVAL =
-        "hive.cluster.delegation.token.gc-interval";
-    private final static long DELEGATION_TOKEN_GC_INTERVAL_DEFAULT = 3600000; // 1 hour
-    //Delegation token related keys
-    public static final String  DELEGATION_KEY_UPDATE_INTERVAL_KEY =
-        "hive.cluster.delegation.key.update-interval";
-    public static final long    DELEGATION_KEY_UPDATE_INTERVAL_DEFAULT =
-        24*60*60*1000; // 1 day
-    public static final String  DELEGATION_TOKEN_RENEW_INTERVAL_KEY =
-        "hive.cluster.delegation.token.renew-interval";
-    public static final long    DELEGATION_TOKEN_RENEW_INTERVAL_DEFAULT =
-        24*60*60*1000;  // 1 day
-    public static final String  DELEGATION_TOKEN_MAX_LIFETIME_KEY =
-        "hive.cluster.delegation.token.max-lifetime";
-    public static final long    DELEGATION_TOKEN_MAX_LIFETIME_DEFAULT =
-        7*24*60*60*1000; // 7 days
-    public static final String DELEGATION_TOKEN_STORE_CLS =
-        "hive.cluster.delegation.token.store.class";
-    public static final String DELEGATION_TOKEN_STORE_ZK_CONNECT_STR =
-        "hive.cluster.delegation.token.store.zookeeper.connectString";
-    // alternate connect string specification configuration
-    public static final String DELEGATION_TOKEN_STORE_ZK_CONNECT_STR_ALTERNATE =
-        "hive.zookeeper.quorum";
-
-    public static final String DELEGATION_TOKEN_STORE_ZK_CONNECT_TIMEOUTMILLIS =
-        "hive.cluster.delegation.token.store.zookeeper.connectTimeoutMillis";
-    public static final String DELEGATION_TOKEN_STORE_ZK_ZNODE =
-        "hive.cluster.delegation.token.store.zookeeper.znode";
-    public static final String DELEGATION_TOKEN_STORE_ZK_ACL =
-        "hive.cluster.delegation.token.store.zookeeper.acl";
-    public static final String DELEGATION_TOKEN_STORE_ZK_ZNODE_DEFAULT =
-        "/hivedelegation";
 
     protected final UserGroupInformation realUgi;
     protected DelegationTokenSecretManager secretManager;
@@ -352,6 +320,10 @@ public abstract class HadoopThriftAuthBridge {
       } catch (IOException ioe) {
         throw new TTransportException(ioe);
       }
+    }
+
+    public void setSecretManager(DelegationTokenSecretManager secretManager) {
+      this.secretManager = secretManager;
     }
 
     /**
