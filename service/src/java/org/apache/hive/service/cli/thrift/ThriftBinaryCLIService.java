@@ -56,7 +56,7 @@ public class ThriftBinaryCLIService extends ThriftCLIService {
           oomHook);
 
       // Thrift configs
-      hiveAuthFactory = new HiveAuthFactory(hiveConf, serverIPAddress);
+      hiveAuthFactory = new HiveAuthFactory(hiveConf);
       TTransportFactory transportFactory = hiveAuthFactory.getAuthTransFactory();
       TProcessorFactory processorFactory = hiveAuthFactory.getAuthProcFactory(this);
       TServerSocket serverSocket = null;

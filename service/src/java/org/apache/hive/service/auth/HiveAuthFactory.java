@@ -100,7 +100,7 @@ public class HiveAuthFactory {
   public static final String HS2_PROXY_USER = "hive.server2.proxy.user";
   public static final String HS2_CLIENT_TOKEN = "hiveserver2ClientToken";
 
-  public HiveAuthFactory(HiveConf conf, InetAddress serverIPAddress) throws TTransportException {
+  public HiveAuthFactory(HiveConf conf) throws TTransportException {
     this.conf = conf;
     transportMode = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_TRANSPORT_MODE);
     authTypeStr = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_AUTHENTICATION);
@@ -124,22 +124,22 @@ public class HiveAuthFactory {
               conf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB),
               conf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL));
     }
-  // Start delegation token manager
-  if (hadoopAuth.equalsIgnoreCase("kerberos")
-      && !authTypeStr.equalsIgnoreCase(AuthTypes.NOSASL.getAuthName())) {
-    delegationTokenManager = new HiveDelegationTokenManager();
-    try {
-      // RawStore is only necessary for DBTokenStore
-      HMSHandler baseHandler = null;
-      String tokenStoreClass =
-          conf.getVar(HiveConf.ConfVars.METASTORE_CLUSTER_DELEGATION_TOKEN_STORE_CLS);
-      if (tokenStoreClass.equals(DBTokenStore.class.getName())) {
-        baseHandler = new HiveMetaStore.HMSHandler("New db based metastore server", conf, true);
-      }
-      delegationTokenManager.startDelegationTokenSecretManager(conf, baseHandler,
-          ServerMode.HIVESERVER2);
-    } catch (MetaException | IOException e) {
-      throw new ServiceException("Failed to start token manager", e);
+    // Start delegation token manager
+    if (hadoopAuth.equalsIgnoreCase("kerberos")
+        && !authTypeStr.equalsIgnoreCase(AuthTypes.NOSASL.getAuthName())) {
+      delegationTokenManager = new HiveDelegationTokenManager();
+      try {
+        // RawStore is only necessary for DBTokenStore
+        HMSHandler baseHandler = null;
+        String tokenStoreClass =
+            conf.getVar(HiveConf.ConfVars.METASTORE_CLUSTER_DELEGATION_TOKEN_STORE_CLS);
+        if (tokenStoreClass.equals(DBTokenStore.class.getName())) {
+          baseHandler = new HiveMetaStore.HMSHandler("New db based metastore server", conf, true);
+        }
+        delegationTokenManager.startDelegationTokenSecretManager(conf, baseHandler,
+            ServerMode.HIVESERVER2);
+      } catch (MetaException | IOException e) {
+        throw new ServiceException("Failed to start token manager", e);
       }
     }
   }
