@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.thrift;
 
 
 import junit.framework.TestCase;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -27,6 +28,8 @@ import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.thrift.DelegationTokenStore.TokenStoreException;
+import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge.Server.ServerMode;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.security.SaslRpcServer;
 import org.apache.hadoop.security.SaslRpcServer.AuthMethod;
@@ -65,6 +68,20 @@ public class TestHadoopAuthBridge23 extends TestCase {
    */
   static volatile boolean isMetastoreTokenManagerInited;
 
+  public static class MyTokenStore extends MemoryTokenStore {
+    static volatile DelegationTokenStore TOKEN_STORE = null;
+    public void init(Object hmsHandler, ServerMode smode) throws TokenStoreException {
+      super.init(hmsHandler, smode);
+      TOKEN_STORE = this;
+      try {
+        Thread.sleep(5000);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+      isMetastoreTokenManagerInited = true;
+    }
+  }
+
   private static class MyHadoopThriftAuthBridge23 extends HadoopThriftAuthBridge23 {
     @Override
     public Server createServer(String keytabFile, String principalConf)
@@ -89,19 +106,7 @@ public class TestHadoopAuthBridge23 extends TestCase {
 
         return new TUGIAssumingTransportFactory(transFactory, realUgi);
       }
-      static DelegationTokenStore TOKEN_STORE = new MemoryTokenStore();
 
-      @Override
-      protected DelegationTokenStore getTokenStore(Configuration conf) throws IOException {
-        return TOKEN_STORE;
-      }
-
-      @Override
-      public void startDelegationTokenSecretManager(Configuration conf, Object hms, ServerMode sm)
-      throws IOException{
-        super.startDelegationTokenSecretManager(conf, hms, sm);
-        isMetastoreTokenManagerInited = true;
-      }
 
     }
   }
@@ -142,6 +147,8 @@ public class TestHadoopAuthBridge23 extends TestCase {
         "thrift://localhost:" + port);
     System.setProperty(HiveConf.ConfVars.METASTOREWAREHOUSE.varname, new Path(
         System.getProperty("test.build.data", "/tmp")).toString());
+    System.setProperty(HiveConf.ConfVars.METASTORE_CLUSTER_DELEGATION_TOKEN_STORE_CLS.varname,
+        MyTokenStore.class.getName());
     conf = new HiveConf(TestHadoopAuthBridge23.class);
     MetaStoreUtils.startMetaStore(port, new MyHadoopThriftAuthBridge23());
   }
@@ -155,7 +162,7 @@ public class TestHadoopAuthBridge23 extends TestCase {
 
     TokenStoreDelegationTokenSecretManager tokenManager =
         new TokenStoreDelegationTokenSecretManager(0, 60*60*1000, 60*60*1000, 0,
-            MyHadoopThriftAuthBridge23.Server.TOKEN_STORE);
+            MyTokenStore.TOKEN_STORE);
     // initializes current key
     tokenManager.startThreads();
     tokenManager.stopThreads();
@@ -171,31 +178,31 @@ public class TestHadoopAuthBridge23 extends TestCase {
     assertTrue("Usernames don't match",
         clientUgi.getShortUserName().equals(d.getUser().getShortUserName()));
 
-    DelegationTokenInformation tokenInfo = MyHadoopThriftAuthBridge23.Server.TOKEN_STORE
+    DelegationTokenInformation tokenInfo = MyTokenStore.TOKEN_STORE
         .getToken(d);
     assertNotNull("token not in store", tokenInfo);
     assertFalse("duplicate token add",
-        MyHadoopThriftAuthBridge23.Server.TOKEN_STORE.addToken(d, tokenInfo));
+        MyTokenStore.TOKEN_STORE.addToken(d, tokenInfo));
 
     // check keys are copied from token store when token is loaded
     TokenStoreDelegationTokenSecretManager anotherManager =
         new TokenStoreDelegationTokenSecretManager(0, 0, 0, 0,
-            MyHadoopThriftAuthBridge23.Server.TOKEN_STORE);
+            MyTokenStore.TOKEN_STORE);
    assertEquals("master keys empty on init", 0,
         anotherManager.getAllKeys().length);
     assertNotNull("token loaded",
         anotherManager.retrievePassword(d));
     anotherManager.renewToken(t, clientUgi.getShortUserName());
     assertEquals("master keys not loaded from store",
-        MyHadoopThriftAuthBridge23.Server.TOKEN_STORE.getMasterKeys().length,
+        MyTokenStore.TOKEN_STORE.getMasterKeys().length,
         anotherManager.getAllKeys().length);
 
     // cancel the delegation token
     tokenManager.cancelDelegationToken(tokenStrForm);
     assertNull("token not removed from store after cancel",
-        MyHadoopThriftAuthBridge23.Server.TOKEN_STORE.getToken(d));
+        MyTokenStore.TOKEN_STORE.getToken(d));
     assertFalse("token removed (again)",
-        MyHadoopThriftAuthBridge23.Server.TOKEN_STORE.removeToken(d));
+        MyTokenStore.TOKEN_STORE.removeToken(d));
     try {
       anotherManager.retrievePassword(d);
       fail("InvalidToken expected after cancel");
@@ -204,12 +211,12 @@ public class TestHadoopAuthBridge23 extends TestCase {
     }
 
     // token expiration
-    MyHadoopThriftAuthBridge23.Server.TOKEN_STORE.addToken(d,
+    MyTokenStore.TOKEN_STORE.addToken(d,
         new DelegationTokenInformation(0, t.getPassword()));
-    assertNotNull(MyHadoopThriftAuthBridge23.Server.TOKEN_STORE.getToken(d));
+    assertNotNull(MyTokenStore.TOKEN_STORE.getToken(d));
     anotherManager.removeExpiredTokens();
     assertNull("Expired token not removed",
-        MyHadoopThriftAuthBridge23.Server.TOKEN_STORE.getToken(d));
+        MyTokenStore.TOKEN_STORE.getToken(d));
 
     // key expiration - create an already expired key
     anotherManager.startThreads(); // generates initial key
