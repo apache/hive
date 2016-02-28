@@ -123,10 +123,8 @@ public class HiveAuthFactory {
           ShimLoader.getHadoopThriftAuthBridge().createServer(
               conf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB),
               conf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL));
-    }
-    // Start delegation token manager
-    if (hadoopAuth.equalsIgnoreCase("kerberos")
-        && !authTypeStr.equalsIgnoreCase(AuthTypes.NOSASL.getAuthName())) {
+
+      // Start delegation token manager
       delegationTokenManager = new HiveDelegationTokenManager();
       try {
         // RawStore is only necessary for DBTokenStore
@@ -138,6 +136,7 @@ public class HiveAuthFactory {
         }
         delegationTokenManager.startDelegationTokenSecretManager(conf, baseHandler,
             ServerMode.HIVESERVER2);
+        saslServer.setSecretManager(delegationTokenManager.getSecretManager());
       } catch (MetaException | IOException e) {
         throw new ServiceException("Failed to start token manager", e);
       }
