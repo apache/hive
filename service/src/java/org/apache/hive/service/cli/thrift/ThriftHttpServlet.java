@@ -50,6 +50,7 @@ import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.auth.HttpAuthUtils;
 import org.apache.hive.service.auth.HttpAuthenticationException;
 import org.apache.hive.service.auth.PasswdAuthenticationProvider;
+import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.session.SessionManager;
 import org.apache.thrift.TProcessor;
 import org.apache.thrift.protocol.TProtocolFactory;
@@ -87,13 +88,16 @@ public class ThriftHttpServlet extends TServlet {
   private int cookieMaxAge;
   private boolean isCookieSecure;
   private boolean isHttpOnlyCookie;
+  private final HiveAuthFactory hiveAuthFactory;
 
   public ThriftHttpServlet(TProcessor processor, TProtocolFactory protocolFactory,
-      String authType, UserGroupInformation serviceUGI, UserGroupInformation httpUGI) {
+      String authType, UserGroupInformation serviceUGI, UserGroupInformation httpUGI,
+      HiveAuthFactory hiveAuthFactory) {
     super(processor, protocolFactory);
     this.authType = authType;
     this.serviceUGI = serviceUGI;
     this.httpUGI = httpUGI;
+    this.hiveAuthFactory = hiveAuthFactory;
     this.isCookieAuthEnabled = hiveConf.getBoolVar(
       ConfVars.HIVE_SERVER2_THRIFT_HTTP_COOKIE_AUTH_ENABLED);
     // Initialize the cookie based authentication related variables.
@@ -343,13 +347,12 @@ public class ThriftHttpServlet extends TServlet {
 
   private String doTokenAuth(HttpServletRequest request, HttpServletResponse response)
       throws HttpAuthenticationException {
-    DelegationTokenAuthenticationHandler tokenAuthHandler =
-        new KerberosDelegationTokenAuthenticationHandler();
+
+    String delegationTokenHeader = "X-Hadoop-Delegation-Token";
+    String tokenStr = request.getHeader(delegationTokenHeader);
     try {
-      AuthenticationToken authenticatedToken = tokenAuthHandler.authenticate(request, response);
-      String userName = authenticatedToken.getUserName();
-      return userName;
-    } catch (Exception e) {
+      return hiveAuthFactory.verifyDelegationToken(tokenStr);
+    } catch (HiveSQLException e) {
       throw new HttpAuthenticationException(e);
     }
   }

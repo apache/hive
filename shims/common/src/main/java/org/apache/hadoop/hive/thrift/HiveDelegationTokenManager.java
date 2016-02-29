@@ -143,6 +143,16 @@ public class HiveDelegationTokenManager {
     secretManager.cancelDelegationToken(tokenStrForm);
   }
 
+  /**
+   * Verify token string
+   * @param tokenStrForm
+   * @return user name
+   * @throws IOException
+   */
+  public String verifyDelegationToken(String tokenStrForm) throws IOException {
+    return secretManager.verifyDelegationToken(tokenStrForm);
+  }
+
   private DelegationTokenStore getTokenStore(Configuration conf) throws IOException {
     String tokenStoreClassName = conf.get(DELEGATION_TOKEN_STORE_CLS, "");
     if (StringUtils.isBlank(tokenStoreClassName)) {

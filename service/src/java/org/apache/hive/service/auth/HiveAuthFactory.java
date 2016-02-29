@@ -359,6 +359,20 @@ public class HiveAuthFactory {
     }
   }
 
+  public String verifyDelegationToken(String delegationToken) throws HiveSQLException {
+    if (delegationTokenManager == null) {
+      throw new HiveSQLException(
+          "Delegation token only supported over kerberos authentication", "08S01");
+    }
+    try {
+      return delegationTokenManager.verifyDelegationToken(delegationToken);
+    } catch (IOException e) {
+      String msg =  "Error verifying delegation token " + delegationToken;
+      LOG.error(msg, e);
+      throw new HiveSQLException(msg, "08S01", e);
+    }
+  }
+
   public String getUserFromToken(String delegationToken) throws HiveSQLException {
     if (delegationTokenManager == null) {
       throw new HiveSQLException(

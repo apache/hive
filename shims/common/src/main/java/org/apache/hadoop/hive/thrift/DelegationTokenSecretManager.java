@@ -58,6 +58,31 @@ public class DelegationTokenSecretManager
     return new DelegationTokenIdentifier();
   }
 
+  /**
+   * Verify token string
+   * @param tokenStrForm
+   * @return user name
+   * @throws IOException
+   */
+  public synchronized String verifyDelegationToken(String tokenStrForm) throws IOException {
+    Token<DelegationTokenIdentifier> t = new Token<DelegationTokenIdentifier>();
+    t.decodeFromUrlString(tokenStrForm);
+
+    DelegationTokenIdentifier id = getTokenIdentifier(t);
+    verifyToken(id, t.getPassword());
+    return id.getUser().getShortUserName();
+  }
+
+  protected DelegationTokenIdentifier getTokenIdentifier(Token<DelegationTokenIdentifier> token)
+      throws IOException {
+    // turn bytes back into identifier for cache lookup
+    ByteArrayInputStream buf = new ByteArrayInputStream(token.getIdentifier());
+    DataInputStream in = new DataInputStream(buf);
+    DelegationTokenIdentifier id = createIdentifier();
+    id.readFields(in);
+    return id;
+  }
+
   public synchronized void cancelDelegationToken(String tokenStrForm) throws IOException {
     Token<DelegationTokenIdentifier> t= new Token<DelegationTokenIdentifier>();
     t.decodeFromUrlString(tokenStrForm);
