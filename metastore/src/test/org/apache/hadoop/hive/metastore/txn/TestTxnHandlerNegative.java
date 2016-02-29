@@ -35,15 +35,14 @@ public class TestTxnHandlerNegative {
   public void testBadConnection() throws Exception {
     HiveConf conf = new HiveConf();
     conf.setVar(HiveConf.ConfVars.METASTORECONNECTURLKEY, "blah");
-    TxnHandler txnHandler1 = new TxnHandler(conf);
-    MetaException e = null;
+    RuntimeException e = null;
     try {
-      txnHandler1.getOpenTxns();
+      TxnHandler txnHandler1 = new TxnHandler(conf);
     }
-    catch(MetaException ex) {
+    catch(RuntimeException ex) {
       LOG.info("Expected error: " + ex.getMessage(), ex);
       e = ex;
     }
-    assert e != null : "did not get exception";
+    assert e != null && e.getMessage().contains("No suitable driver found for blah") : "did not get exception";
   }
 }

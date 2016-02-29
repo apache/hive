@@ -840,7 +840,7 @@ public class CompactionTxnHandler extends TxnHandler {
    * but what abount markCleaned() which is called when table is had been deleted...
    */
   public void markFailed(CompactionInfo ci) throws MetaException {//todo: this should not throw
-    //todo: this shoudl take "comment" as parameter to set in CC_META_INFO to provide some context for the failure
+    //todo: this should take "comment" as parameter to set in CC_META_INFO to provide some context for the failure
     try {
       Connection dbConn = null;
       Statement stmt = null;

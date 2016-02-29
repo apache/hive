@@ -406,7 +406,7 @@ public class DbTxnManager extends HiveTxnManagerImpl {
 
   private void stopHeartbeat() {
     if (heartbeatTask != null && !heartbeatTask.isCancelled() && !heartbeatTask.isDone()) {
-      heartbeatTask.cancel(true);
+      heartbeatTask.cancel(false);
       heartbeatTask = null;
     }
   }
