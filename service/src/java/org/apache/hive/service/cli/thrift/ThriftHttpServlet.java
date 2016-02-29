@@ -86,6 +86,7 @@ public class ThriftHttpServlet extends TServlet {
   private boolean isCookieSecure;
   private boolean isHttpOnlyCookie;
   private final HiveAuthFactory hiveAuthFactory;
+  private static final String HIVE_DELEGATION_TOKEN_HEADER =  "X-Hive-Delegation-Token";
 
   public ThriftHttpServlet(TProcessor processor, TProtocolFactory protocolFactory,
       String authType, UserGroupInformation serviceUGI, UserGroupInformation httpUGI,
@@ -137,7 +138,7 @@ public class ThriftHttpServlet extends TServlet {
       if (clientUserName == null) {
         // For a kerberos setup
         if (isKerberosAuthMode(authType)) {
-          String delegationToken = request.getHeader(DelegationTokenAuthenticator.DELEGATION_TOKEN_HEADER);
+          String delegationToken = request.getHeader(HIVE_DELEGATION_TOKEN_HEADER);
           // Each http request must have an Authorization header
           if ((delegationToken != null) && (!delegationToken.isEmpty())) {
             clientUserName = doTokenAuth(request, response);
@@ -344,9 +345,7 @@ public class ThriftHttpServlet extends TServlet {
 
   private String doTokenAuth(HttpServletRequest request, HttpServletResponse response)
       throws HttpAuthenticationException {
-
-    String delegationTokenHeader = "X-Hadoop-Delegation-Token";
-    String tokenStr = request.getHeader(delegationTokenHeader);
+    String tokenStr = request.getHeader(HIVE_DELEGATION_TOKEN_HEADER);
     try {
       return hiveAuthFactory.verifyDelegationToken(tokenStr);
     } catch (HiveSQLException e) {

@@ -31,7 +31,8 @@ import org.apache.http.protocol.HttpContext;
  */
 public class HttpTokenAuthInterceptor extends HttpRequestInterceptorBase {
   private String tokenStr;
-
+  private static final String HIVE_DELEGATION_TOKEN_HEADER =  "X-Hive-Delegation-Token";
+  
   public HttpTokenAuthInterceptor(String tokenStr, CookieStore cookieStore, String cn,
       boolean isSSL, Map<String, String> additionalHeaders) {
     super(cookieStore, cn, isSSL, additionalHeaders);
@@ -41,7 +42,6 @@ public class HttpTokenAuthInterceptor extends HttpRequestInterceptorBase {
   @Override
   protected void addHttpAuthHeader(HttpRequest httpRequest, HttpContext httpContext)
     throws Exception {
-    String delegationTokenHeader = "X-Hadoop-Delegation-Token";
-    httpRequest.addHeader(delegationTokenHeader, tokenStr);
+    httpRequest.addHeader(HIVE_DELEGATION_TOKEN_HEADER, tokenStr);
   }
 }
