@@ -695,7 +695,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
   ASTNode getOptimizedAST() throws SemanticException {
     ASTNode optiqOptimizedAST = null;
     RelNode optimizedOptiqPlan = null;
-    CalcitePlannerAction calcitePlannerAction = new CalcitePlannerAction(prunedPartitions);
+
+    CalcitePlannerAction calcitePlannerAction = null;
+    if (this.columnAccessInfo == null) {
+      this.columnAccessInfo = new ColumnAccessInfo();
+    }
+    calcitePlannerAction = new CalcitePlannerAction(prunedPartitions, this.columnAccessInfo);
 
     try {
       optimizedOptiqPlan = Frameworks.withPlanner(calcitePlannerAction, Frameworks
@@ -717,7 +722,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
    */
   Operator getOptimizedHiveOPDag() throws SemanticException {
     RelNode optimizedOptiqPlan = null;
-    CalcitePlannerAction calcitePlannerAction = new CalcitePlannerAction(prunedPartitions);
+    CalcitePlannerAction calcitePlannerAction = null;
+    if (this.columnAccessInfo == null) {
+      this.columnAccessInfo = new ColumnAccessInfo();
+    }
+    calcitePlannerAction = new CalcitePlannerAction(prunedPartitions, this.columnAccessInfo);
 
     try {
       optimizedOptiqPlan = Frameworks.withPlanner(calcitePlannerAction, Frameworks
@@ -879,14 +888,17 @@ public class CalcitePlanner extends SemanticAnalyzer {
     private RelOptCluster                                 cluster;
     private RelOptSchema                                  relOptSchema;
     private final Map<String, PrunedPartitionList>        partitionCache;
+    private final ColumnAccessInfo columnAccessInfo;
+    private Map<HiveProject, Table> viewProjectToTableSchema;
 
     // TODO: Do we need to keep track of RR, ColNameToPosMap for every op or
     // just last one.
     LinkedHashMap<RelNode, RowResolver>                   relToHiveRR                   = new LinkedHashMap<RelNode, RowResolver>();
     LinkedHashMap<RelNode, ImmutableMap<String, Integer>> relToHiveColNameCalcitePosMap = new LinkedHashMap<RelNode, ImmutableMap<String, Integer>>();
 
-    CalcitePlannerAction(Map<String, PrunedPartitionList> partitionCache) {
+    CalcitePlannerAction(Map<String, PrunedPartitionList> partitionCache, ColumnAccessInfo columnAccessInfo) {
       this.partitionCache = partitionCache;
+      this.columnAccessInfo = columnAccessInfo;
     }
 
     @Override
@@ -927,6 +939,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
         throw new RuntimeException(e);
       }
       perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Plan generation");
+
+      // We need to get the ColumnAccessInfo and viewToTableSchema for views.
+      HiveRelFieldTrimmer fieldTrimmer = new HiveRelFieldTrimmer(null,
+          HiveRelFactories.HIVE_BUILDER.create(cluster, null), this.columnAccessInfo,
+          this.viewProjectToTableSchema);
+      fieldTrimmer.trim(calciteGenPlan);
 
       // Create MD provider
       HiveDefaultRelMetadataProvider mdProvider = new HiveDefaultRelMetadataProvider(conf);
@@ -1048,7 +1066,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
                 HiveJoinToMultiJoinRule.INSTANCE, HiveProjectMergeRule.INSTANCE);
         // The previous rules can pull up projections through join operators,
         // thus we run the field trimmer again to push them back down
-        HiveRelFieldTrimmer fieldTrimmer = new HiveRelFieldTrimmer(null,
+        fieldTrimmer = new HiveRelFieldTrimmer(null,
             HiveRelFactories.HIVE_BUILDER.create(cluster, null));
         calciteOptimizedPlan = fieldTrimmer.trim(calciteOptimizedPlan);
         calciteOptimizedPlan = hepPlan(calciteOptimizedPlan, false, mdProvider.getMetadataProvider(), null,
@@ -3020,7 +3038,19 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // 1.1. Recurse over the subqueries to fill the subquery part of the plan
       for (String subqAlias : qb.getSubqAliases()) {
         QBExpr qbexpr = qb.getSubqForAlias(subqAlias);
-        aliasToRel.put(subqAlias, genLogicalPlan(qbexpr));
+        RelNode relNode = genLogicalPlan(qbexpr);
+        aliasToRel.put(subqAlias, relNode);
+        if (qb.getViewToTabSchema().containsKey(subqAlias)) {
+          if (relNode instanceof HiveProject) {
+            if (this.viewProjectToTableSchema == null) {
+              this.viewProjectToTableSchema = new LinkedHashMap<>();
+            }
+            viewProjectToTableSchema.put((HiveProject) relNode, qb.getViewToTabSchema().get(subqAlias));
+          } else {
+            throw new SemanticException("View " + subqAlias + " is corresponding to "
+                + relNode.toString() + ", rather than a HiveProject.");
+          }
+        }
       }
 
       // 1.2 Recurse over all the source tables

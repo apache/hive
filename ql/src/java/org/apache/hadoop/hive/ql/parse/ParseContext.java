@@ -36,10 +36,12 @@ import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
+import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.AnalyzeRewriteContext;
@@ -107,6 +109,9 @@ public class ParseContext {
   private CreateTableDesc createTableDesc;
   private boolean reduceSinkAddedBySortedDynPartition;
 
+  private Map<SelectOperator, Table> viewProjectToViewSchema;  
+  private ColumnAccessInfo columnAccessInfo;
+  private boolean needViewColumnAuthorization;
 
   public ParseContext() {
   }
@@ -165,7 +170,7 @@ public class ParseContext {
       Map<String, ReadEntity> viewAliasToInput,
       List<ReduceSinkOperator> reduceSinkOperatorsAddedByEnforceBucketingSorting,
       AnalyzeRewriteContext analyzeRewrite, CreateTableDesc createTableDesc,
-      QueryProperties queryProperties) {
+      QueryProperties queryProperties, Map<SelectOperator, Table> viewProjectToTableSchema) {
     this.conf = conf;
     this.opToPartPruner = opToPartPruner;
     this.opToPartList = opToPartList;
@@ -192,6 +197,14 @@ public class ParseContext {
     this.analyzeRewrite = analyzeRewrite;
     this.createTableDesc = createTableDesc;
     this.queryProperties = queryProperties;
+    this.viewProjectToViewSchema = viewProjectToTableSchema;
+    this.needViewColumnAuthorization = viewProjectToTableSchema != null
+        && !viewProjectToTableSchema.isEmpty();
+    if (this.needViewColumnAuthorization) {
+      // this will trigger the column pruner to collect view column
+      // authorization info.
+      this.columnAccessInfo = new ColumnAccessInfo();
+    }
   }
 
   /**
@@ -538,5 +551,25 @@ public class ParseContext {
 
   public boolean isReduceSinkAddedBySortedDynPartition() {
     return reduceSinkAddedBySortedDynPartition;
+  }
+
+  public Map<SelectOperator, Table> getViewProjectToTableSchema() {
+    return viewProjectToViewSchema;
+  }
+
+  public ColumnAccessInfo getColumnAccessInfo() {
+    return columnAccessInfo;
+  }
+
+  public void setColumnAccessInfo(ColumnAccessInfo columnAccessInfo) {
+    this.columnAccessInfo = columnAccessInfo;
+  }
+
+  public boolean isNeedViewColumnAuthorization() {
+    return needViewColumnAuthorization;
+  }
+
+  public void setNeedViewColumnAuthorization(boolean needViewColumnAuthorization) {
+    this.needViewColumnAuthorization = needViewColumnAuthorization;
   }
 }

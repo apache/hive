@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
+import org.apache.hadoop.hive.ql.parse.ColumnAccessInfo;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
@@ -133,6 +134,9 @@ public class ColumnPruner extends Transform {
     ArrayList<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(pGraphContext.getTopOps().values());
     ogw.startWalking(topNodes, null);
+    // set it back so that column pruner in the optimizer will not do the
+    // view column authorization again even if it is triggered again.
+    pGraphContext.setNeedViewColumnAuthorization(false);
     return pGraphContext;
   }
 

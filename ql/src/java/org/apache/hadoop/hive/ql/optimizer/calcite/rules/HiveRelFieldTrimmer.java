@@ -21,8 +21,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import org.apache.calcite.linq4j.Ord;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelCollation;
@@ -50,7 +52,6 @@ import org.apache.calcite.sql2rel.CorrelationReferenceFinder;
 import org.apache.calcite.sql2rel.RelFieldTrimmer;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.ImmutableBitSet;
-import org.apache.calcite.util.Stacks;
 import org.apache.calcite.util.Util;
 import org.apache.calcite.util.mapping.IntPair;
 import org.apache.calcite.util.mapping.Mapping;
@@ -58,8 +59,11 @@ import org.apache.calcite.util.mapping.MappingType;
 import org.apache.calcite.util.mapping.Mappings;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveMultiJoin;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
+import org.apache.hadoop.hive.ql.parse.ColumnAccessInfo;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -70,9 +74,21 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
 
   private RelBuilder relBuilder;
 
+  private ColumnAccessInfo columnAccessInfo;
+
+  private Map<HiveProject, Table> viewProjectToTableSchema;
+
   public HiveRelFieldTrimmer(SqlValidator validator, RelBuilder relBuilder) {
     super(validator, relBuilder);
     this.relBuilder = relBuilder;
+  }
+
+  public HiveRelFieldTrimmer(SqlValidator validator, RelBuilder relBuilder,
+      ColumnAccessInfo columnAccessInfo, Map<HiveProject, Table> viewToTableSchema) {
+    super(validator, relBuilder);
+    this.relBuilder = relBuilder;
+    this.columnAccessInfo = columnAccessInfo;
+    this.viewProjectToTableSchema = viewToTableSchema;
   }
 
   /**
@@ -358,4 +374,24 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
     }
     return new TrimResult(r, mapping);
   }
+
+  /**
+   * Variant of {@link #trimFields(RelNode, ImmutableBitSet, Set)} for
+   * {@link org.apache.calcite.rel.logical.LogicalProject}.
+   */
+  public TrimResult trimFields(Project project, ImmutableBitSet fieldsUsed,
+      Set<RelDataTypeField> extraFields) {
+    // set columnAccessInfo for ViewColumnAuthorization
+    for (Ord<RexNode> ord : Ord.zip(project.getProjects())) {
+      if (fieldsUsed.get(ord.i)) {
+        if (this.columnAccessInfo != null && this.viewProjectToTableSchema != null
+            && this.viewProjectToTableSchema.containsKey(project)) {
+          Table tab = this.viewProjectToTableSchema.get(project);
+          this.columnAccessInfo.add(tab.getTableName(), tab.getCols().get(ord.i).getName());
+        }
+      }
+    }
+    return super.trimFields(project, fieldsUsed, extraFields);
+  }
+
 }

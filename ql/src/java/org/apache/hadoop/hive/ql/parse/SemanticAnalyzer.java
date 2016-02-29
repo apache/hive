@@ -117,6 +117,7 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.SessionHiveMetaStoreClient;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
+import org.apache.hadoop.hive.ql.optimizer.ColumnPruner;
 import org.apache.hadoop.hive.ql.optimizer.Optimizer;
 import org.apache.hadoop.hive.ql.optimizer.Transform;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
@@ -262,6 +263,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   List<AbstractMapJoinOperator<? extends MapJoinDesc>> listMapJoinOpsNoReducer;
   private HashMap<TableScanOperator, SampleDesc> opToSamplePruner;
   private final Map<TableScanOperator, Map<String, ExprNodeDesc>> opToPartToSkewedPruner;
+  private Map<SelectOperator, Table> viewProjectToTableSchema;
   /**
    * a map for the split sampling, from alias to an instance of SplitSample
    * that describes percentage and number.
@@ -427,7 +429,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         listMapJoinOpsNoReducer, prunedPartitions,
         opToSamplePruner, globalLimitCtx, nameToSplitSample, inputs, rootTasks,
         opToPartToSkewedPruner, viewAliasToInput, reduceSinkOperatorsAddedByEnforceBucketingSorting,
-        analyzeRewrite, tableDesc, queryProperties);
+        analyzeRewrite, tableDesc, queryProperties, viewProjectToTableSchema);
   }
 
   public CompilationOpContext getOpContext() {
@@ -2303,7 +2305,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     QBExpr qbexpr = new QBExpr(alias);
     doPhase1QBExpr(viewTree, qbexpr, qb.getId(), alias);
-    qb.rewriteViewToSubq(alias, tab_name, qbexpr);
+    if (!this.skipAuthorization()
+        && HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED)) {
+      qb.rewriteViewToSubq(alias, tab_name, qbexpr, tab);
+    }
+    else{
+      qb.rewriteViewToSubq(alias, tab_name, qbexpr, null);
+    }
   }
 
   private boolean isPresent(String[] list, String elem) {
@@ -9855,7 +9863,21 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // Recurse over the subqueries to fill the subquery part of the plan
     for (String alias : qb.getSubqAliases()) {
       QBExpr qbexpr = qb.getSubqForAlias(alias);
-      aliasToOpInfo.put(alias, genPlan(qb, qbexpr));
+      Operator operator = genPlan(qb, qbexpr);
+      aliasToOpInfo.put(alias, operator);
+      if (qb.getViewToTabSchema().containsKey(alias)) {
+        // we set viewProjectToTableSchema so that we can leverage ColumnPruner.
+        if (operator instanceof SelectOperator) {
+          if (this.viewProjectToTableSchema == null) {
+            this.viewProjectToTableSchema = new LinkedHashMap<>();
+          }
+          viewProjectToTableSchema.put((SelectOperator) operator, qb.getViewToTabSchema()
+              .get(alias));
+        } else {
+          throw new SemanticException("View " + alias + " is corresponding to "
+              + operator.getType().name() + ", rather than a SelectOperator.");
+        }
+      }
     }
 
     // Recurse over all the source tables
@@ -10376,7 +10398,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         listMapJoinOpsNoReducer, prunedPartitions, opToSamplePruner,
         globalLimitCtx, nameToSplitSample, inputs, rootTasks, opToPartToSkewedPruner,
         viewAliasToInput, reduceSinkOperatorsAddedByEnforceBucketingSorting,
-        analyzeRewrite, tableDesc, queryProperties);
+        analyzeRewrite, tableDesc, queryProperties, viewProjectToTableSchema);
 
     // 5. Take care of view creation
     if (createVwDesc != null) {
@@ -10426,6 +10448,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     optm.setPctx(pCtx);
     optm.initialize(conf);
     pCtx = optm.optimize();
+    if (pCtx.getColumnAccessInfo() != null) {
+      // set ColumnAccessInfo for view column authorization
+      setColumnAccessInfo(pCtx.getColumnAccessInfo());
+    }
     FetchTask origFetchTask = pCtx.getFetchTask();
     if (LOG.isDebugEnabled()) {
       LOG.debug("After logical optimization\n" + Operator.toString(pCtx.getTopOps().values()));

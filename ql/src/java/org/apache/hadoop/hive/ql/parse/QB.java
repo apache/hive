@@ -47,6 +47,7 @@ public class QB {
   private int numSelDi = 0;
   private HashMap<String, String> aliasToTabs;
   private HashMap<String, QBExpr> aliasToSubq;
+  private HashMap<String, Table> viewAliasToViewSchema;
   private HashMap<String, Map<String, String>> aliasToProps;
   private List<String> aliases;
   private QBParseInfo qbp;
@@ -110,6 +111,7 @@ public class QB {
     // Must be deterministic order maps - see HIVE-8707
     aliasToTabs = new LinkedHashMap<String, String>();
     aliasToSubq = new LinkedHashMap<String, QBExpr>();
+    viewAliasToViewSchema = new LinkedHashMap<String, Table>();
     aliasToProps = new LinkedHashMap<String, Map<String, String>>();
     aliases = new ArrayList<String>();
     if (alias != null) {
@@ -231,15 +233,18 @@ public class QB {
     return aliasToProps.get(alias.toLowerCase());
   }
 
-  public void rewriteViewToSubq(String alias, String viewName, QBExpr qbexpr) {
+  public void rewriteViewToSubq(String alias, String viewName, QBExpr qbexpr, Table tab) {
     alias = alias.toLowerCase();
     String tableName = aliasToTabs.remove(alias);
     assert (viewName.equals(tableName));
     aliasToSubq.put(alias, qbexpr);
+    if (tab != null) {
+      viewAliasToViewSchema.put(alias, tab);
+    }
   }
 
   public void rewriteCTEToSubq(String alias, String cteName, QBExpr qbexpr) {
-    rewriteViewToSubq(alias, cteName, qbexpr);
+    rewriteViewToSubq(alias, cteName, qbexpr, null);
   }
 
   public QBJoinTree getQbJoinTree() {
@@ -406,4 +411,9 @@ public class QB {
     }
     return encryptedTargetTablePaths;
   }
+
+  public HashMap<String, Table> getViewToTabSchema() {
+    return viewAliasToViewSchema;
+  }
+
 }
