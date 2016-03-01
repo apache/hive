@@ -1539,7 +1539,10 @@ public class Vectorizer implements PhysicalPlanResolver {
         return false;
       }
     } catch (Exception e) {
-      LOG.info("Failed to vectorize", e);
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Failed to vectorize", e);
+      }
+
       return false;
     }
     return true;
@@ -1600,7 +1603,9 @@ public class Vectorizer implements PhysicalPlanResolver {
         vectorAggrExpr = vc.getAggregatorExpression(aggDesc, isReduce);
     } catch (Exception e) {
       // We should have already attempted to vectorize in validateAggregationDesc.
-      LOG.info("Vectorization of aggreation should have succeeded ", e);
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Vectorization of aggreation should have succeeded ", e);
+      }
       return false;
     }
 
