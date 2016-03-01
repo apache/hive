@@ -8695,14 +8695,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private ObjectPair<Integer, int[]> findMergePos(QBJoinTree node, QBJoinTree target) {
     int res = -1;
     String leftAlias = node.getLeftAlias();
-    if (leftAlias == null) {
-      return new ObjectPair(-1, null);
-    }
 
     ArrayList<ASTNode> nodeCondn = node.getExpressions().get(0);
     ArrayList<ASTNode> targetCondn = null;
 
-    if (leftAlias.equals(target.getLeftAlias())) {
+    if (leftAlias == null || leftAlias.equals(target.getLeftAlias())) {
       targetCondn = target.getExpressions().get(0);
       res = 0;
     } else {
@@ -9998,8 +9995,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           }
         }
 
-        if (!disableJoinMerge)
+        if (!disableJoinMerge) {
           mergeJoinTree(qb);
+        }
       }
 
       // if any filters are present in the join tree, push them on top of the

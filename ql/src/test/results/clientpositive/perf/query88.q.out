@@ -1,10 +1,4 @@
-Warning: Shuffle Join MERGEJOIN[366][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 6' is a cross product
-Warning: Shuffle Join MERGEJOIN[367][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 7' is a cross product
-Warning: Shuffle Join MERGEJOIN[368][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 8' is a cross product
-Warning: Shuffle Join MERGEJOIN[369][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4]] in Stage 'Reducer 9' is a cross product
-Warning: Shuffle Join MERGEJOIN[370][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4, $hdt$_5]] in Stage 'Reducer 10' is a cross product
-Warning: Shuffle Join MERGEJOIN[371][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4, $hdt$_5, $hdt$_6]] in Stage 'Reducer 11' is a cross product
-Warning: Shuffle Join MERGEJOIN[372][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4, $hdt$_5, $hdt$_6, $hdt$_7]] in Stage 'Reducer 12' is a cross product
+Warning: Shuffle Join MERGEJOIN[354][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4, $hdt$_5, $hdt$_6, $hdt$_7]] in Stage 'Reducer 6' is a cross product
 PREHOOK: query: explain
 select  *
 from
@@ -192,523 +186,493 @@ POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
 Vertex dependency in root stage
-Reducer 10 <- Reducer 52 (SIMPLE_EDGE), Reducer 9 (SIMPLE_EDGE)
-Reducer 11 <- Reducer 10 (SIMPLE_EDGE), Reducer 60 (SIMPLE_EDGE)
-Reducer 12 <- Reducer 11 (SIMPLE_EDGE), Reducer 68 (SIMPLE_EDGE)
-Reducer 17 <- Map 16 (SIMPLE_EDGE), Map 21 (SIMPLE_EDGE)
-Reducer 18 <- Map 22 (SIMPLE_EDGE), Reducer 17 (SIMPLE_EDGE)
-Reducer 19 <- Map 23 (SIMPLE_EDGE), Reducer 18 (SIMPLE_EDGE)
-Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 13 (SIMPLE_EDGE)
-Reducer 20 <- Reducer 19 (SIMPLE_EDGE)
-Reducer 25 <- Map 24 (SIMPLE_EDGE), Map 29 (SIMPLE_EDGE)
-Reducer 26 <- Map 30 (SIMPLE_EDGE), Reducer 25 (SIMPLE_EDGE)
-Reducer 27 <- Map 31 (SIMPLE_EDGE), Reducer 26 (SIMPLE_EDGE)
-Reducer 28 <- Reducer 27 (SIMPLE_EDGE)
-Reducer 3 <- Map 14 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
-Reducer 33 <- Map 32 (SIMPLE_EDGE), Map 37 (SIMPLE_EDGE)
-Reducer 34 <- Map 38 (SIMPLE_EDGE), Reducer 33 (SIMPLE_EDGE)
-Reducer 35 <- Map 39 (SIMPLE_EDGE), Reducer 34 (SIMPLE_EDGE)
-Reducer 36 <- Reducer 35 (SIMPLE_EDGE)
-Reducer 4 <- Map 15 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
-Reducer 41 <- Map 40 (SIMPLE_EDGE), Map 45 (SIMPLE_EDGE)
-Reducer 42 <- Map 46 (SIMPLE_EDGE), Reducer 41 (SIMPLE_EDGE)
-Reducer 43 <- Map 47 (SIMPLE_EDGE), Reducer 42 (SIMPLE_EDGE)
-Reducer 44 <- Reducer 43 (SIMPLE_EDGE)
-Reducer 49 <- Map 48 (SIMPLE_EDGE), Map 53 (SIMPLE_EDGE)
+Reducer 11 <- Map 10 (SIMPLE_EDGE), Map 15 (SIMPLE_EDGE)
+Reducer 12 <- Map 16 (SIMPLE_EDGE), Reducer 11 (SIMPLE_EDGE)
+Reducer 13 <- Map 17 (SIMPLE_EDGE), Reducer 12 (SIMPLE_EDGE)
+Reducer 14 <- Reducer 13 (SIMPLE_EDGE)
+Reducer 19 <- Map 18 (SIMPLE_EDGE), Map 23 (SIMPLE_EDGE)
+Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 7 (SIMPLE_EDGE)
+Reducer 20 <- Map 24 (SIMPLE_EDGE), Reducer 19 (SIMPLE_EDGE)
+Reducer 21 <- Map 25 (SIMPLE_EDGE), Reducer 20 (SIMPLE_EDGE)
+Reducer 22 <- Reducer 21 (SIMPLE_EDGE)
+Reducer 27 <- Map 26 (SIMPLE_EDGE), Map 31 (SIMPLE_EDGE)
+Reducer 28 <- Map 32 (SIMPLE_EDGE), Reducer 27 (SIMPLE_EDGE)
+Reducer 29 <- Map 33 (SIMPLE_EDGE), Reducer 28 (SIMPLE_EDGE)
+Reducer 3 <- Map 8 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
+Reducer 30 <- Reducer 29 (SIMPLE_EDGE)
+Reducer 35 <- Map 34 (SIMPLE_EDGE), Map 39 (SIMPLE_EDGE)
+Reducer 36 <- Map 40 (SIMPLE_EDGE), Reducer 35 (SIMPLE_EDGE)
+Reducer 37 <- Map 41 (SIMPLE_EDGE), Reducer 36 (SIMPLE_EDGE)
+Reducer 38 <- Reducer 37 (SIMPLE_EDGE)
+Reducer 4 <- Map 9 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
+Reducer 43 <- Map 42 (SIMPLE_EDGE), Map 47 (SIMPLE_EDGE)
+Reducer 44 <- Map 48 (SIMPLE_EDGE), Reducer 43 (SIMPLE_EDGE)
+Reducer 45 <- Map 49 (SIMPLE_EDGE), Reducer 44 (SIMPLE_EDGE)
+Reducer 46 <- Reducer 45 (SIMPLE_EDGE)
 Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
-Reducer 50 <- Map 54 (SIMPLE_EDGE), Reducer 49 (SIMPLE_EDGE)
-Reducer 51 <- Map 55 (SIMPLE_EDGE), Reducer 50 (SIMPLE_EDGE)
-Reducer 52 <- Reducer 51 (SIMPLE_EDGE)
-Reducer 57 <- Map 56 (SIMPLE_EDGE), Map 61 (SIMPLE_EDGE)
-Reducer 58 <- Map 62 (SIMPLE_EDGE), Reducer 57 (SIMPLE_EDGE)
-Reducer 59 <- Map 63 (SIMPLE_EDGE), Reducer 58 (SIMPLE_EDGE)
-Reducer 6 <- Reducer 20 (SIMPLE_EDGE), Reducer 5 (SIMPLE_EDGE)
-Reducer 60 <- Reducer 59 (SIMPLE_EDGE)
-Reducer 65 <- Map 64 (SIMPLE_EDGE), Map 69 (SIMPLE_EDGE)
-Reducer 66 <- Map 70 (SIMPLE_EDGE), Reducer 65 (SIMPLE_EDGE)
-Reducer 67 <- Map 71 (SIMPLE_EDGE), Reducer 66 (SIMPLE_EDGE)
-Reducer 68 <- Reducer 67 (SIMPLE_EDGE)
-Reducer 7 <- Reducer 28 (SIMPLE_EDGE), Reducer 6 (SIMPLE_EDGE)
-Reducer 8 <- Reducer 36 (SIMPLE_EDGE), Reducer 7 (SIMPLE_EDGE)
-Reducer 9 <- Reducer 44 (SIMPLE_EDGE), Reducer 8 (SIMPLE_EDGE)
+Reducer 51 <- Map 50 (SIMPLE_EDGE), Map 55 (SIMPLE_EDGE)
+Reducer 52 <- Map 56 (SIMPLE_EDGE), Reducer 51 (SIMPLE_EDGE)
+Reducer 53 <- Map 57 (SIMPLE_EDGE), Reducer 52 (SIMPLE_EDGE)
+Reducer 54 <- Reducer 53 (SIMPLE_EDGE)
+Reducer 59 <- Map 58 (SIMPLE_EDGE), Map 63 (SIMPLE_EDGE)
+Reducer 6 <- Reducer 14 (SIMPLE_EDGE), Reducer 22 (SIMPLE_EDGE), Reducer 30 (SIMPLE_EDGE), Reducer 38 (SIMPLE_EDGE), Reducer 46 (SIMPLE_EDGE), Reducer 5 (SIMPLE_EDGE), Reducer 54 (SIMPLE_EDGE), Reducer 62 (SIMPLE_EDGE)
+Reducer 60 <- Map 64 (SIMPLE_EDGE), Reducer 59 (SIMPLE_EDGE)
+Reducer 61 <- Map 65 (SIMPLE_EDGE), Reducer 60 (SIMPLE_EDGE)
+Reducer 62 <- Reducer 61 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
-      Reducer 12
-      File Output Operator [FS_237]
-        Merge Join Operator [MERGEJOIN_372] (rows=1 width=8)
-          Conds:(Inner),Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7"]
-        <-Reducer 11 [SIMPLE_EDGE]
-          SHUFFLE [RS_233]
-            Merge Join Operator [MERGEJOIN_371] (rows=1 width=8)
-              Conds:(Inner),Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"]
-            <-Reducer 10 [SIMPLE_EDGE]
-              SHUFFLE [RS_230]
-                Merge Join Operator [MERGEJOIN_370] (rows=1 width=8)
-                  Conds:(Inner),Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-                <-Reducer 52 [SIMPLE_EDGE]
-                  SHUFFLE [RS_228]
-                    Group By Operator [GBY_154] (rows=1 width=8)
-                      Output:["_col0"],aggregations:["count(VALUE._col0)"]
-                    <-Reducer 51 [SIMPLE_EDGE]
-                      SHUFFLE [RS_153]
-                        Group By Operator [GBY_152] (rows=1 width=8)
-                          Output:["_col0"],aggregations:["count()"]
-                          Merge Join Operator [MERGEJOIN_359] (rows=17424 width=471)
-                            Conds:RS_148._col2=RS_149._col0(Inner)
-                          <-Map 55 [SIMPLE_EDGE]
-                            SHUFFLE [RS_149]
-                              PartitionCols:_col0
-                              Select Operator [SEL_141] (rows=852 width=1910)
-                                Output:["_col0"]
-                                Filter Operator [FIL_333] (rows=852 width=1910)
-                                  predicate:((s_store_name = 'ese') and s_store_sk is not null)
-                                  TableScan [TS_139] (rows=1704 width=1910)
-                                    default@store,store,Tbl:COMPLETE,Col:NONE,Output:["s_store_sk","s_store_name"]
-                          <-Reducer 50 [SIMPLE_EDGE]
-                            SHUFFLE [RS_148]
-                              PartitionCols:_col2
-                              Merge Join Operator [MERGEJOIN_358] (rows=15840 width=471)
-                                Conds:RS_145._col0=RS_146._col0(Inner),Output:["_col2"]
-                              <-Map 54 [SIMPLE_EDGE]
-                                SHUFFLE [RS_146]
-                                  PartitionCols:_col0
-                                  Select Operator [SEL_138] (rows=14400 width=471)
-                                    Output:["_col0"]
-                                    Filter Operator [FIL_332] (rows=14400 width=471)
-                                      predicate:(((t_hour = 11) and (t_minute < 30)) and t_time_sk is not null)
-                                      TableScan [TS_136] (rows=86400 width=471)
-                                        default@time_dim,time_dim,Tbl:COMPLETE,Col:NONE,Output:["t_time_sk","t_hour","t_minute"]
-                              <-Reducer 49 [SIMPLE_EDGE]
-                                SHUFFLE [RS_145]
-                                  PartitionCols:_col0
-                                  Merge Join Operator [MERGEJOIN_357] (rows=3960 width=107)
-                                    Conds:RS_142._col1=RS_143._col0(Inner),Output:["_col0","_col2"]
-                                  <-Map 48 [SIMPLE_EDGE]
-                                    SHUFFLE [RS_142]
-                                      PartitionCols:_col1
-                                      Select Operator [SEL_132] (rows=1 width=0)
-                                        Output:["_col0","_col1","_col2"]
-                                        Filter Operator [FIL_330] (rows=1 width=0)
-                                          predicate:((ss_hdemo_sk is not null and ss_sold_time_sk is not null) and ss_store_sk is not null)
-                                          TableScan [TS_130] (rows=1 width=0)
-                                            default@store_sales,store_sales,Tbl:PARTIAL,Col:NONE,Output:["ss_sold_time_sk","ss_hdemo_sk","ss_store_sk"]
-                                  <-Map 53 [SIMPLE_EDGE]
-                                    SHUFFLE [RS_143]
-                                      PartitionCols:_col0
-                                      Select Operator [SEL_135] (rows=3600 width=107)
-                                        Output:["_col0"]
-                                        Filter Operator [FIL_331] (rows=3600 width=107)
-                                          predicate:((((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and hd_demo_sk is not null)
-                                          TableScan [TS_133] (rows=7200 width=107)
-                                            default@household_demographics,household_demographics,Tbl:COMPLETE,Col:NONE,Output:["hd_demo_sk","hd_dep_count","hd_vehicle_count"]
-                <-Reducer 9 [SIMPLE_EDGE]
-                  SHUFFLE [RS_227]
-                    Merge Join Operator [MERGEJOIN_369] (rows=1 width=8)
-                      Conds:(Inner),Output:["_col0","_col1","_col2","_col3","_col4"]
-                    <-Reducer 44 [SIMPLE_EDGE]
-                      SHUFFLE [RS_225]
-                        Group By Operator [GBY_128] (rows=1 width=8)
-                          Output:["_col0"],aggregations:["count(VALUE._col0)"]
-                        <-Reducer 43 [SIMPLE_EDGE]
-                          SHUFFLE [RS_127]
-                            Group By Operator [GBY_126] (rows=1 width=8)
-                              Output:["_col0"],aggregations:["count()"]
-                              Merge Join Operator [MERGEJOIN_356] (rows=17424 width=471)
-                                Conds:RS_122._col2=RS_123._col0(Inner)
-                              <-Map 47 [SIMPLE_EDGE]
-                                SHUFFLE [RS_123]
-                                  PartitionCols:_col0
-                                  Select Operator [SEL_115] (rows=852 width=1910)
-                                    Output:["_col0"]
-                                    Filter Operator [FIL_329] (rows=852 width=1910)
-                                      predicate:((s_store_name = 'ese') and s_store_sk is not null)
-                                      TableScan [TS_113] (rows=1704 width=1910)
-                                        default@store,store,Tbl:COMPLETE,Col:NONE,Output:["s_store_sk","s_store_name"]
-                              <-Reducer 42 [SIMPLE_EDGE]
-                                SHUFFLE [RS_122]
-                                  PartitionCols:_col2
-                                  Merge Join Operator [MERGEJOIN_355] (rows=15840 width=471)
-                                    Conds:RS_119._col0=RS_120._col0(Inner),Output:["_col2"]
-                                  <-Map 46 [SIMPLE_EDGE]
-                                    SHUFFLE [RS_120]
-                                      PartitionCols:_col0
-                                      Select Operator [SEL_112] (rows=14400 width=471)
-                                        Output:["_col0"]
-                                        Filter Operator [FIL_328] (rows=14400 width=471)
-                                          predicate:(((t_hour = 10) and (t_minute >= 30)) and t_time_sk is not null)
-                                          TableScan [TS_110] (rows=86400 width=471)
-                                            default@time_dim,time_dim,Tbl:COMPLETE,Col:NONE,Output:["t_time_sk","t_hour","t_minute"]
-                                  <-Reducer 41 [SIMPLE_EDGE]
-                                    SHUFFLE [RS_119]
-                                      PartitionCols:_col0
-                                      Merge Join Operator [MERGEJOIN_354] (rows=3960 width=107)
-                                        Conds:RS_116._col1=RS_117._col0(Inner),Output:["_col0","_col2"]
-                                      <-Map 40 [SIMPLE_EDGE]
-                                        SHUFFLE [RS_116]
-                                          PartitionCols:_col1
-                                          Select Operator [SEL_106] (rows=1 width=0)
-                                            Output:["_col0","_col1","_col2"]
-                                            Filter Operator [FIL_326] (rows=1 width=0)
-                                              predicate:((ss_hdemo_sk is not null and ss_sold_time_sk is not null) and ss_store_sk is not null)
-                                              TableScan [TS_104] (rows=1 width=0)
-                                                default@store_sales,store_sales,Tbl:PARTIAL,Col:NONE,Output:["ss_sold_time_sk","ss_hdemo_sk","ss_store_sk"]
-                                      <-Map 45 [SIMPLE_EDGE]
-                                        SHUFFLE [RS_117]
-                                          PartitionCols:_col0
-                                          Select Operator [SEL_109] (rows=3600 width=107)
-                                            Output:["_col0"]
-                                            Filter Operator [FIL_327] (rows=3600 width=107)
-                                              predicate:((((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and hd_demo_sk is not null)
-                                              TableScan [TS_107] (rows=7200 width=107)
-                                                default@household_demographics,household_demographics,Tbl:COMPLETE,Col:NONE,Output:["hd_demo_sk","hd_dep_count","hd_vehicle_count"]
-                    <-Reducer 8 [SIMPLE_EDGE]
-                      SHUFFLE [RS_224]
-                        Merge Join Operator [MERGEJOIN_368] (rows=1 width=8)
-                          Conds:(Inner),Output:["_col0","_col1","_col2","_col3"]
-                        <-Reducer 36 [SIMPLE_EDGE]
-                          SHUFFLE [RS_222]
-                            Group By Operator [GBY_102] (rows=1 width=8)
-                              Output:["_col0"],aggregations:["count(VALUE._col0)"]
-                            <-Reducer 35 [SIMPLE_EDGE]
-                              SHUFFLE [RS_101]
-                                Group By Operator [GBY_100] (rows=1 width=8)
-                                  Output:["_col0"],aggregations:["count()"]
-                                  Merge Join Operator [MERGEJOIN_353] (rows=17424 width=471)
-                                    Conds:RS_96._col2=RS_97._col0(Inner)
-                                  <-Map 39 [SIMPLE_EDGE]
-                                    SHUFFLE [RS_97]
-                                      PartitionCols:_col0
-                                      Select Operator [SEL_89] (rows=852 width=1910)
-                                        Output:["_col0"]
-                                        Filter Operator [FIL_325] (rows=852 width=1910)
-                                          predicate:((s_store_name = 'ese') and s_store_sk is not null)
-                                          TableScan [TS_87] (rows=1704 width=1910)
-                                            default@store,store,Tbl:COMPLETE,Col:NONE,Output:["s_store_sk","s_store_name"]
-                                  <-Reducer 34 [SIMPLE_EDGE]
-                                    SHUFFLE [RS_96]
-                                      PartitionCols:_col2
-                                      Merge Join Operator [MERGEJOIN_352] (rows=15840 width=471)
-                                        Conds:RS_93._col0=RS_94._col0(Inner),Output:["_col2"]
-                                      <-Map 38 [SIMPLE_EDGE]
-                                        SHUFFLE [RS_94]
-                                          PartitionCols:_col0
-                                          Select Operator [SEL_86] (rows=14400 width=471)
-                                            Output:["_col0"]
-                                            Filter Operator [FIL_324] (rows=14400 width=471)
-                                              predicate:(((t_hour = 10) and (t_minute < 30)) and t_time_sk is not null)
-                                              TableScan [TS_84] (rows=86400 width=471)
-                                                default@time_dim,time_dim,Tbl:COMPLETE,Col:NONE,Output:["t_time_sk","t_hour","t_minute"]
-                                      <-Reducer 33 [SIMPLE_EDGE]
-                                        SHUFFLE [RS_93]
-                                          PartitionCols:_col0
-                                          Merge Join Operator [MERGEJOIN_351] (rows=3960 width=107)
-                                            Conds:RS_90._col1=RS_91._col0(Inner),Output:["_col0","_col2"]
-                                          <-Map 32 [SIMPLE_EDGE]
-                                            SHUFFLE [RS_90]
-                                              PartitionCols:_col1
-                                              Select Operator [SEL_80] (rows=1 width=0)
-                                                Output:["_col0","_col1","_col2"]
-                                                Filter Operator [FIL_322] (rows=1 width=0)
-                                                  predicate:((ss_hdemo_sk is not null and ss_sold_time_sk is not null) and ss_store_sk is not null)
-                                                  TableScan [TS_78] (rows=1 width=0)
-                                                    default@store_sales,store_sales,Tbl:PARTIAL,Col:NONE,Output:["ss_sold_time_sk","ss_hdemo_sk","ss_store_sk"]
-                                          <-Map 37 [SIMPLE_EDGE]
-                                            SHUFFLE [RS_91]
-                                              PartitionCols:_col0
-                                              Select Operator [SEL_83] (rows=3600 width=107)
-                                                Output:["_col0"]
-                                                Filter Operator [FIL_323] (rows=3600 width=107)
-                                                  predicate:((((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and hd_demo_sk is not null)
-                                                  TableScan [TS_81] (rows=7200 width=107)
-                                                    default@household_demographics,household_demographics,Tbl:COMPLETE,Col:NONE,Output:["hd_demo_sk","hd_dep_count","hd_vehicle_count"]
-                        <-Reducer 7 [SIMPLE_EDGE]
-                          SHUFFLE [RS_221]
-                            Merge Join Operator [MERGEJOIN_367] (rows=1 width=8)
-                              Conds:(Inner),Output:["_col0","_col1","_col2"]
-                            <-Reducer 28 [SIMPLE_EDGE]
-                              SHUFFLE [RS_219]
-                                Group By Operator [GBY_76] (rows=1 width=8)
-                                  Output:["_col0"],aggregations:["count(VALUE._col0)"]
-                                <-Reducer 27 [SIMPLE_EDGE]
-                                  SHUFFLE [RS_75]
-                                    Group By Operator [GBY_74] (rows=1 width=8)
-                                      Output:["_col0"],aggregations:["count()"]
-                                      Merge Join Operator [MERGEJOIN_350] (rows=17424 width=471)
-                                        Conds:RS_70._col2=RS_71._col0(Inner)
-                                      <-Map 31 [SIMPLE_EDGE]
-                                        SHUFFLE [RS_71]
-                                          PartitionCols:_col0
-                                          Select Operator [SEL_63] (rows=852 width=1910)
-                                            Output:["_col0"]
-                                            Filter Operator [FIL_321] (rows=852 width=1910)
-                                              predicate:((s_store_name = 'ese') and s_store_sk is not null)
-                                              TableScan [TS_61] (rows=1704 width=1910)
-                                                default@store,store,Tbl:COMPLETE,Col:NONE,Output:["s_store_sk","s_store_name"]
-                                      <-Reducer 26 [SIMPLE_EDGE]
-                                        SHUFFLE [RS_70]
-                                          PartitionCols:_col2
-                                          Merge Join Operator [MERGEJOIN_349] (rows=15840 width=471)
-                                            Conds:RS_67._col0=RS_68._col0(Inner),Output:["_col2"]
-                                          <-Map 30 [SIMPLE_EDGE]
-                                            SHUFFLE [RS_68]
-                                              PartitionCols:_col0
-                                              Select Operator [SEL_60] (rows=14400 width=471)
-                                                Output:["_col0"]
-                                                Filter Operator [FIL_320] (rows=14400 width=471)
-                                                  predicate:(((t_hour = 9) and (t_minute >= 30)) and t_time_sk is not null)
-                                                  TableScan [TS_58] (rows=86400 width=471)
-                                                    default@time_dim,time_dim,Tbl:COMPLETE,Col:NONE,Output:["t_time_sk","t_hour","t_minute"]
-                                          <-Reducer 25 [SIMPLE_EDGE]
-                                            SHUFFLE [RS_67]
-                                              PartitionCols:_col0
-                                              Merge Join Operator [MERGEJOIN_348] (rows=3960 width=107)
-                                                Conds:RS_64._col1=RS_65._col0(Inner),Output:["_col0","_col2"]
-                                              <-Map 24 [SIMPLE_EDGE]
-                                                SHUFFLE [RS_64]
-                                                  PartitionCols:_col1
-                                                  Select Operator [SEL_54] (rows=1 width=0)
-                                                    Output:["_col0","_col1","_col2"]
-                                                    Filter Operator [FIL_318] (rows=1 width=0)
-                                                      predicate:((ss_hdemo_sk is not null and ss_sold_time_sk is not null) and ss_store_sk is not null)
-                                                      TableScan [TS_52] (rows=1 width=0)
-                                                        default@store_sales,store_sales,Tbl:PARTIAL,Col:NONE,Output:["ss_sold_time_sk","ss_hdemo_sk","ss_store_sk"]
-                                              <-Map 29 [SIMPLE_EDGE]
-                                                SHUFFLE [RS_65]
-                                                  PartitionCols:_col0
-                                                  Select Operator [SEL_57] (rows=3600 width=107)
-                                                    Output:["_col0"]
-                                                    Filter Operator [FIL_319] (rows=3600 width=107)
-                                                      predicate:((((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and hd_demo_sk is not null)
-                                                      TableScan [TS_55] (rows=7200 width=107)
-                                                        default@household_demographics,household_demographics,Tbl:COMPLETE,Col:NONE,Output:["hd_demo_sk","hd_dep_count","hd_vehicle_count"]
-                            <-Reducer 6 [SIMPLE_EDGE]
-                              SHUFFLE [RS_218]
-                                Merge Join Operator [MERGEJOIN_366] (rows=1 width=8)
-                                  Conds:(Inner),Output:["_col0","_col1"]
-                                <-Reducer 20 [SIMPLE_EDGE]
-                                  SHUFFLE [RS_216]
-                                    Group By Operator [GBY_50] (rows=1 width=8)
-                                      Output:["_col0"],aggregations:["count(VALUE._col0)"]
-                                    <-Reducer 19 [SIMPLE_EDGE]
-                                      SHUFFLE [RS_49]
-                                        Group By Operator [GBY_48] (rows=1 width=8)
-                                          Output:["_col0"],aggregations:["count()"]
-                                          Merge Join Operator [MERGEJOIN_347] (rows=17424 width=471)
-                                            Conds:RS_44._col2=RS_45._col0(Inner)
-                                          <-Map 23 [SIMPLE_EDGE]
-                                            SHUFFLE [RS_45]
-                                              PartitionCols:_col0
-                                              Select Operator [SEL_37] (rows=852 width=1910)
-                                                Output:["_col0"]
-                                                Filter Operator [FIL_317] (rows=852 width=1910)
-                                                  predicate:((s_store_name = 'ese') and s_store_sk is not null)
-                                                  TableScan [TS_35] (rows=1704 width=1910)
-                                                    default@store,store,Tbl:COMPLETE,Col:NONE,Output:["s_store_sk","s_store_name"]
-                                          <-Reducer 18 [SIMPLE_EDGE]
-                                            SHUFFLE [RS_44]
-                                              PartitionCols:_col2
-                                              Merge Join Operator [MERGEJOIN_346] (rows=15840 width=471)
-                                                Conds:RS_41._col0=RS_42._col0(Inner),Output:["_col2"]
-                                              <-Map 22 [SIMPLE_EDGE]
-                                                SHUFFLE [RS_42]
-                                                  PartitionCols:_col0
-                                                  Select Operator [SEL_34] (rows=14400 width=471)
-                                                    Output:["_col0"]
-                                                    Filter Operator [FIL_316] (rows=14400 width=471)
-                                                      predicate:(((t_hour = 9) and (t_minute < 30)) and t_time_sk is not null)
-                                                      TableScan [TS_32] (rows=86400 width=471)
-                                                        default@time_dim,time_dim,Tbl:COMPLETE,Col:NONE,Output:["t_time_sk","t_hour","t_minute"]
-                                              <-Reducer 17 [SIMPLE_EDGE]
-                                                SHUFFLE [RS_41]
-                                                  PartitionCols:_col0
-                                                  Merge Join Operator [MERGEJOIN_345] (rows=3960 width=107)
-                                                    Conds:RS_38._col1=RS_39._col0(Inner),Output:["_col0","_col2"]
-                                                  <-Map 16 [SIMPLE_EDGE]
-                                                    SHUFFLE [RS_38]
-                                                      PartitionCols:_col1
-                                                      Select Operator [SEL_28] (rows=1 width=0)
-                                                        Output:["_col0","_col1","_col2"]
-                                                        Filter Operator [FIL_314] (rows=1 width=0)
-                                                          predicate:((ss_hdemo_sk is not null and ss_sold_time_sk is not null) and ss_store_sk is not null)
-                                                          TableScan [TS_26] (rows=1 width=0)
-                                                            default@store_sales,store_sales,Tbl:PARTIAL,Col:NONE,Output:["ss_sold_time_sk","ss_hdemo_sk","ss_store_sk"]
-                                                  <-Map 21 [SIMPLE_EDGE]
-                                                    SHUFFLE [RS_39]
-                                                      PartitionCols:_col0
-                                                      Select Operator [SEL_31] (rows=3600 width=107)
-                                                        Output:["_col0"]
-                                                        Filter Operator [FIL_315] (rows=3600 width=107)
-                                                          predicate:((((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and hd_demo_sk is not null)
-                                                          TableScan [TS_29] (rows=7200 width=107)
-                                                            default@household_demographics,household_demographics,Tbl:COMPLETE,Col:NONE,Output:["hd_demo_sk","hd_dep_count","hd_vehicle_count"]
-                                <-Reducer 5 [SIMPLE_EDGE]
-                                  SHUFFLE [RS_215]
-                                    Group By Operator [GBY_24] (rows=1 width=8)
-                                      Output:["_col0"],aggregations:["count(VALUE._col0)"]
-                                    <-Reducer 4 [SIMPLE_EDGE]
-                                      SHUFFLE [RS_23]
-                                        Group By Operator [GBY_22] (rows=1 width=8)
-                                          Output:["_col0"],aggregations:["count()"]
-                                          Merge Join Operator [MERGEJOIN_344] (rows=17424 width=471)
-                                            Conds:RS_18._col2=RS_19._col0(Inner)
-                                          <-Map 15 [SIMPLE_EDGE]
-                                            SHUFFLE [RS_19]
-                                              PartitionCols:_col0
-                                              Select Operator [SEL_11] (rows=852 width=1910)
-                                                Output:["_col0"]
-                                                Filter Operator [FIL_313] (rows=852 width=1910)
-                                                  predicate:((s_store_name = 'ese') and s_store_sk is not null)
-                                                  TableScan [TS_9] (rows=1704 width=1910)
-                                                    default@store,store,Tbl:COMPLETE,Col:NONE,Output:["s_store_sk","s_store_name"]
-                                          <-Reducer 3 [SIMPLE_EDGE]
-                                            SHUFFLE [RS_18]
-                                              PartitionCols:_col2
-                                              Merge Join Operator [MERGEJOIN_343] (rows=15840 width=471)
-                                                Conds:RS_15._col0=RS_16._col0(Inner),Output:["_col2"]
-                                              <-Map 14 [SIMPLE_EDGE]
-                                                SHUFFLE [RS_16]
-                                                  PartitionCols:_col0
-                                                  Select Operator [SEL_8] (rows=14400 width=471)
-                                                    Output:["_col0"]
-                                                    Filter Operator [FIL_312] (rows=14400 width=471)
-                                                      predicate:(((t_hour = 8) and (t_minute >= 30)) and t_time_sk is not null)
-                                                      TableScan [TS_6] (rows=86400 width=471)
-                                                        default@time_dim,time_dim,Tbl:COMPLETE,Col:NONE,Output:["t_time_sk","t_hour","t_minute"]
-                                              <-Reducer 2 [SIMPLE_EDGE]
-                                                SHUFFLE [RS_15]
-                                                  PartitionCols:_col0
-                                                  Merge Join Operator [MERGEJOIN_342] (rows=3960 width=107)
-                                                    Conds:RS_12._col1=RS_13._col0(Inner),Output:["_col0","_col2"]
-                                                  <-Map 1 [SIMPLE_EDGE]
-                                                    SHUFFLE [RS_12]
-                                                      PartitionCols:_col1
-                                                      Select Operator [SEL_2] (rows=1 width=0)
-                                                        Output:["_col0","_col1","_col2"]
-                                                        Filter Operator [FIL_310] (rows=1 width=0)
-                                                          predicate:((ss_hdemo_sk is not null and ss_sold_time_sk is not null) and ss_store_sk is not null)
-                                                          TableScan [TS_0] (rows=1 width=0)
-                                                            default@store_sales,store_sales,Tbl:PARTIAL,Col:NONE,Output:["ss_sold_time_sk","ss_hdemo_sk","ss_store_sk"]
-                                                  <-Map 13 [SIMPLE_EDGE]
-                                                    SHUFFLE [RS_13]
-                                                      PartitionCols:_col0
-                                                      Select Operator [SEL_5] (rows=3600 width=107)
-                                                        Output:["_col0"]
-                                                        Filter Operator [FIL_311] (rows=3600 width=107)
-                                                          predicate:((((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and hd_demo_sk is not null)
-                                                          TableScan [TS_3] (rows=7200 width=107)
-                                                            default@household_demographics,household_demographics,Tbl:COMPLETE,Col:NONE,Output:["hd_demo_sk","hd_dep_count","hd_vehicle_count"]
-            <-Reducer 60 [SIMPLE_EDGE]
-              SHUFFLE [RS_231]
-                Group By Operator [GBY_180] (rows=1 width=8)
-                  Output:["_col0"],aggregations:["count(VALUE._col0)"]
-                <-Reducer 59 [SIMPLE_EDGE]
-                  SHUFFLE [RS_179]
-                    Group By Operator [GBY_178] (rows=1 width=8)
-                      Output:["_col0"],aggregations:["count()"]
-                      Merge Join Operator [MERGEJOIN_362] (rows=17424 width=471)
-                        Conds:RS_174._col2=RS_175._col0(Inner)
-                      <-Map 63 [SIMPLE_EDGE]
-                        SHUFFLE [RS_175]
+      Reducer 6
+      File Output Operator [FS_225]
+        Merge Join Operator [MERGEJOIN_354] (rows=7 width=8)
+          Conds:(Inner),(Inner),(Inner),(Inner),(Inner),(Inner),(Inner),Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7"]
+        <-Reducer 14 [SIMPLE_EDGE]
+          SHUFFLE [RS_216]
+            Group By Operator [GBY_50] (rows=1 width=8)
+              Output:["_col0"],aggregations:["count(VALUE._col0)"]
+            <-Reducer 13 [SIMPLE_EDGE]
+              SHUFFLE [RS_49]
+                Group By Operator [GBY_48] (rows=1 width=8)
+                  Output:["_col0"],aggregations:["count()"]
+                  Merge Join Operator [MERGEJOIN_335] (rows=17424 width=471)
+                    Conds:RS_44._col2=RS_45._col0(Inner)
+                  <-Map 17 [SIMPLE_EDGE]
+                    SHUFFLE [RS_45]
+                      PartitionCols:_col0
+                      Select Operator [SEL_37] (rows=852 width=1910)
+                        Output:["_col0"]
+                        Filter Operator [FIL_305] (rows=852 width=1910)
+                          predicate:((s_store_name = 'ese') and s_store_sk is not null)
+                          TableScan [TS_35] (rows=1704 width=1910)
+                            default@store,store,Tbl:COMPLETE,Col:NONE,Output:["s_store_sk","s_store_name"]
+                  <-Reducer 12 [SIMPLE_EDGE]
+                    SHUFFLE [RS_44]
+                      PartitionCols:_col2
+                      Merge Join Operator [MERGEJOIN_334] (rows=15840 width=471)
+                        Conds:RS_41._col0=RS_42._col0(Inner),Output:["_col2"]
+                      <-Map 16 [SIMPLE_EDGE]
+                        SHUFFLE [RS_42]
                           PartitionCols:_col0
-                          Select Operator [SEL_167] (rows=852 width=1910)
+                          Select Operator [SEL_34] (rows=14400 width=471)
                             Output:["_col0"]
-                            Filter Operator [FIL_337] (rows=852 width=1910)
-                              predicate:((s_store_name = 'ese') and s_store_sk is not null)
-                              TableScan [TS_165] (rows=1704 width=1910)
-                                default@store,store,Tbl:COMPLETE,Col:NONE,Output:["s_store_sk","s_store_name"]
-                      <-Reducer 58 [SIMPLE_EDGE]
-                        SHUFFLE [RS_174]
-                          PartitionCols:_col2
-                          Merge Join Operator [MERGEJOIN_361] (rows=15840 width=471)
-                            Conds:RS_171._col0=RS_172._col0(Inner),Output:["_col2"]
-                          <-Map 62 [SIMPLE_EDGE]
-                            SHUFFLE [RS_172]
+                            Filter Operator [FIL_304] (rows=14400 width=471)
+                              predicate:(((t_hour = 9) and (t_minute < 30)) and t_time_sk is not null)
+                              TableScan [TS_32] (rows=86400 width=471)
+                                default@time_dim,time_dim,Tbl:COMPLETE,Col:NONE,Output:["t_time_sk","t_hour","t_minute"]
+                      <-Reducer 11 [SIMPLE_EDGE]
+                        SHUFFLE [RS_41]
+                          PartitionCols:_col0
+                          Merge Join Operator [MERGEJOIN_333] (rows=3960 width=107)
+                            Conds:RS_38._col1=RS_39._col0(Inner),Output:["_col0","_col2"]
+                          <-Map 10 [SIMPLE_EDGE]
+                            SHUFFLE [RS_38]
+                              PartitionCols:_col1
+                              Select Operator [SEL_28] (rows=1 width=0)
+                                Output:["_col0","_col1","_col2"]
+                                Filter Operator [FIL_302] (rows=1 width=0)
+                                  predicate:((ss_hdemo_sk is not null and ss_sold_time_sk is not null) and ss_store_sk is not null)
+                                  TableScan [TS_26] (rows=1 width=0)
+                                    default@store_sales,store_sales,Tbl:PARTIAL,Col:NONE,Output:["ss_sold_time_sk","ss_hdemo_sk","ss_store_sk"]
+                          <-Map 15 [SIMPLE_EDGE]
+                            SHUFFLE [RS_39]
                               PartitionCols:_col0
-                              Select Operator [SEL_164] (rows=14400 width=471)
+                              Select Operator [SEL_31] (rows=3600 width=107)
                                 Output:["_col0"]
-                                Filter Operator [FIL_336] (rows=14400 width=471)
-                                  predicate:(((t_hour = 11) and (t_minute >= 30)) and t_time_sk is not null)
-                                  TableScan [TS_162] (rows=86400 width=471)
-                                    default@time_dim,time_dim,Tbl:COMPLETE,Col:NONE,Output:["t_time_sk","t_hour","t_minute"]
-                          <-Reducer 57 [SIMPLE_EDGE]
-                            SHUFFLE [RS_171]
+                                Filter Operator [FIL_303] (rows=3600 width=107)
+                                  predicate:((((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and hd_demo_sk is not null)
+                                  TableScan [TS_29] (rows=7200 width=107)
+                                    default@household_demographics,household_demographics,Tbl:COMPLETE,Col:NONE,Output:["hd_demo_sk","hd_dep_count","hd_vehicle_count"]
+        <-Reducer 22 [SIMPLE_EDGE]
+          SHUFFLE [RS_217]
+            Group By Operator [GBY_76] (rows=1 width=8)
+              Output:["_col0"],aggregations:["count(VALUE._col0)"]
+            <-Reducer 21 [SIMPLE_EDGE]
+              SHUFFLE [RS_75]
+                Group By Operator [GBY_74] (rows=1 width=8)
+                  Output:["_col0"],aggregations:["count()"]
+                  Merge Join Operator [MERGEJOIN_338] (rows=17424 width=471)
+                    Conds:RS_70._col2=RS_71._col0(Inner)
+                  <-Map 25 [SIMPLE_EDGE]
+                    SHUFFLE [RS_71]
+                      PartitionCols:_col0
+                      Select Operator [SEL_63] (rows=852 width=1910)
+                        Output:["_col0"]
+                        Filter Operator [FIL_309] (rows=852 width=1910)
+                          predicate:((s_store_name = 'ese') and s_store_sk is not null)
+                          TableScan [TS_61] (rows=1704 width=1910)
+                            default@store,store,Tbl:COMPLETE,Col:NONE,Output:["s_store_sk","s_store_name"]
+                  <-Reducer 20 [SIMPLE_EDGE]
+                    SHUFFLE [RS_70]
+                      PartitionCols:_col2
+                      Merge Join Operator [MERGEJOIN_337] (rows=15840 width=471)
+                        Conds:RS_67._col0=RS_68._col0(Inner),Output:["_col2"]
+                      <-Map 24 [SIMPLE_EDGE]
+                        SHUFFLE [RS_68]
+                          PartitionCols:_col0
+                          Select Operator [SEL_60] (rows=14400 width=471)
+                            Output:["_col0"]
+                            Filter Operator [FIL_308] (rows=14400 width=471)
+                              predicate:(((t_hour = 9) and (t_minute >= 30)) and t_time_sk is not null)
+                              TableScan [TS_58] (rows=86400 width=471)
+                                default@time_dim,time_dim,Tbl:COMPLETE,Col:NONE,Output:["t_time_sk","t_hour","t_minute"]
+                      <-Reducer 19 [SIMPLE_EDGE]
+                        SHUFFLE [RS_67]
+                          PartitionCols:_col0
+                          Merge Join Operator [MERGEJOIN_336] (rows=3960 width=107)
+                            Conds:RS_64._col1=RS_65._col0(Inner),Output:["_col0","_col2"]
+                          <-Map 18 [SIMPLE_EDGE]
+                            SHUFFLE [RS_64]
+                              PartitionCols:_col1
+                              Select Operator [SEL_54] (rows=1 width=0)
+                                Output:["_col0","_col1","_col2"]
+                                Filter Operator [FIL_306] (rows=1 width=0)
+                                  predicate:((ss_hdemo_sk is not null and ss_sold_time_sk is not null) and ss_store_sk is not null)
+                                  TableScan [TS_52] (rows=1 width=0)
+                                    default@store_sales,store_sales,Tbl:PARTIAL,Col:NONE,Output:["ss_sold_time_sk","ss_hdemo_sk","ss_store_sk"]
+                          <-Map 23 [SIMPLE_EDGE]
+                            SHUFFLE [RS_65]
                               PartitionCols:_col0
-                              Merge Join Operator [MERGEJOIN_360] (rows=3960 width=107)
-                                Conds:RS_168._col1=RS_169._col0(Inner),Output:["_col0","_col2"]
-                              <-Map 56 [SIMPLE_EDGE]
-                                SHUFFLE [RS_168]
-                                  PartitionCols:_col1
-                                  Select Operator [SEL_158] (rows=1 width=0)
-                                    Output:["_col0","_col1","_col2"]
-                                    Filter Operator [FIL_334] (rows=1 width=0)
-                                      predicate:((ss_hdemo_sk is not null and ss_sold_time_sk is not null) and ss_store_sk is not null)
-                                      TableScan [TS_156] (rows=1 width=0)
-                                        default@store_sales,store_sales,Tbl:PARTIAL,Col:NONE,Output:["ss_sold_time_sk","ss_hdemo_sk","ss_store_sk"]
-                              <-Map 61 [SIMPLE_EDGE]
-                                SHUFFLE [RS_169]
-                                  PartitionCols:_col0
-                                  Select Operator [SEL_161] (rows=3600 width=107)
-                                    Output:["_col0"]
-                                    Filter Operator [FIL_335] (rows=3600 width=107)
-                                      predicate:((((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and hd_demo_sk is not null)
-                                      TableScan [TS_159] (rows=7200 width=107)
-                                        default@household_demographics,household_demographics,Tbl:COMPLETE,Col:NONE,Output:["hd_demo_sk","hd_dep_count","hd_vehicle_count"]
-        <-Reducer 68 [SIMPLE_EDGE]
-          SHUFFLE [RS_234]
+                              Select Operator [SEL_57] (rows=3600 width=107)
+                                Output:["_col0"]
+                                Filter Operator [FIL_307] (rows=3600 width=107)
+                                  predicate:((((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and hd_demo_sk is not null)
+                                  TableScan [TS_55] (rows=7200 width=107)
+                                    default@household_demographics,household_demographics,Tbl:COMPLETE,Col:NONE,Output:["hd_demo_sk","hd_dep_count","hd_vehicle_count"]
+        <-Reducer 30 [SIMPLE_EDGE]
+          SHUFFLE [RS_218]
+            Group By Operator [GBY_102] (rows=1 width=8)
+              Output:["_col0"],aggregations:["count(VALUE._col0)"]
+            <-Reducer 29 [SIMPLE_EDGE]
+              SHUFFLE [RS_101]
+                Group By Operator [GBY_100] (rows=1 width=8)
+                  Output:["_col0"],aggregations:["count()"]
+                  Merge Join Operator [MERGEJOIN_341] (rows=17424 width=471)
+                    Conds:RS_96._col2=RS_97._col0(Inner)
+                  <-Map 33 [SIMPLE_EDGE]
+                    SHUFFLE [RS_97]
+                      PartitionCols:_col0
+                      Select Operator [SEL_89] (rows=852 width=1910)
+                        Output:["_col0"]
+                        Filter Operator [FIL_313] (rows=852 width=1910)
+                          predicate:((s_store_name = 'ese') and s_store_sk is not null)
+                          TableScan [TS_87] (rows=1704 width=1910)
+                            default@store,store,Tbl:COMPLETE,Col:NONE,Output:["s_store_sk","s_store_name"]
+                  <-Reducer 28 [SIMPLE_EDGE]
+                    SHUFFLE [RS_96]
+                      PartitionCols:_col2
+                      Merge Join Operator [MERGEJOIN_340] (rows=15840 width=471)
+                        Conds:RS_93._col0=RS_94._col0(Inner),Output:["_col2"]
+                      <-Map 32 [SIMPLE_EDGE]
+                        SHUFFLE [RS_94]
+                          PartitionCols:_col0
+                          Select Operator [SEL_86] (rows=14400 width=471)
+                            Output:["_col0"]
+                            Filter Operator [FIL_312] (rows=14400 width=471)
+                              predicate:(((t_hour = 10) and (t_minute < 30)) and t_time_sk is not null)
+                              TableScan [TS_84] (rows=86400 width=471)
+                                default@time_dim,time_dim,Tbl:COMPLETE,Col:NONE,Output:["t_time_sk","t_hour","t_minute"]
+                      <-Reducer 27 [SIMPLE_EDGE]
+                        SHUFFLE [RS_93]
+                          PartitionCols:_col0
+                          Merge Join Operator [MERGEJOIN_339] (rows=3960 width=107)
+                            Conds:RS_90._col1=RS_91._col0(Inner),Output:["_col0","_col2"]
+                          <-Map 26 [SIMPLE_EDGE]
+                            SHUFFLE [RS_90]
+                              PartitionCols:_col1
+                              Select Operator [SEL_80] (rows=1 width=0)
+                                Output:["_col0","_col1","_col2"]
+                                Filter Operator [FIL_310] (rows=1 width=0)
+                                  predicate:((ss_hdemo_sk is not null and ss_sold_time_sk is not null) and ss_store_sk is not null)
+                                  TableScan [TS_78] (rows=1 width=0)
+                                    default@store_sales,store_sales,Tbl:PARTIAL,Col:NONE,Output:["ss_sold_time_sk","ss_hdemo_sk","ss_store_sk"]
+                          <-Map 31 [SIMPLE_EDGE]
+                            SHUFFLE [RS_91]
+                              PartitionCols:_col0
+                              Select Operator [SEL_83] (rows=3600 width=107)
+                                Output:["_col0"]
+                                Filter Operator [FIL_311] (rows=3600 width=107)
+                                  predicate:((((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and hd_demo_sk is not null)
+                                  TableScan [TS_81] (rows=7200 width=107)
+                                    default@household_demographics,household_demographics,Tbl:COMPLETE,Col:NONE,Output:["hd_demo_sk","hd_dep_count","hd_vehicle_count"]
+        <-Reducer 38 [SIMPLE_EDGE]
+          SHUFFLE [RS_219]
+            Group By Operator [GBY_128] (rows=1 width=8)
+              Output:["_col0"],aggregations:["count(VALUE._col0)"]
+            <-Reducer 37 [SIMPLE_EDGE]
+              SHUFFLE [RS_127]
+                Group By Operator [GBY_126] (rows=1 width=8)
+                  Output:["_col0"],aggregations:["count()"]
+                  Merge Join Operator [MERGEJOIN_344] (rows=17424 width=471)
+                    Conds:RS_122._col2=RS_123._col0(Inner)
+                  <-Map 41 [SIMPLE_EDGE]
+                    SHUFFLE [RS_123]
+                      PartitionCols:_col0
+                      Select Operator [SEL_115] (rows=852 width=1910)
+                        Output:["_col0"]
+                        Filter Operator [FIL_317] (rows=852 width=1910)
+                          predicate:((s_store_name = 'ese') and s_store_sk is not null)
+                          TableScan [TS_113] (rows=1704 width=1910)
+                            default@store,store,Tbl:COMPLETE,Col:NONE,Output:["s_store_sk","s_store_name"]
+                  <-Reducer 36 [SIMPLE_EDGE]
+                    SHUFFLE [RS_122]
+                      PartitionCols:_col2
+                      Merge Join Operator [MERGEJOIN_343] (rows=15840 width=471)
+                        Conds:RS_119._col0=RS_120._col0(Inner),Output:["_col2"]
+                      <-Map 40 [SIMPLE_EDGE]
+                        SHUFFLE [RS_120]
+                          PartitionCols:_col0
+                          Select Operator [SEL_112] (rows=14400 width=471)
+                            Output:["_col0"]
+                            Filter Operator [FIL_316] (rows=14400 width=471)
+                              predicate:(((t_hour = 10) and (t_minute >= 30)) and t_time_sk is not null)
+                              TableScan [TS_110] (rows=86400 width=471)
+                                default@time_dim,time_dim,Tbl:COMPLETE,Col:NONE,Output:["t_time_sk","t_hour","t_minute"]
+                      <-Reducer 35 [SIMPLE_EDGE]
+                        SHUFFLE [RS_119]
+                          PartitionCols:_col0
+                          Merge Join Operator [MERGEJOIN_342] (rows=3960 width=107)
+                            Conds:RS_116._col1=RS_117._col0(Inner),Output:["_col0","_col2"]
+                          <-Map 34 [SIMPLE_EDGE]
+                            SHUFFLE [RS_116]
+                              PartitionCols:_col1
+                              Select Operator [SEL_106] (rows=1 width=0)
+                                Output:["_col0","_col1","_col2"]
+                                Filter Operator [FIL_314] (rows=1 width=0)
+                                  predicate:((ss_hdemo_sk is not null and ss_sold_time_sk is not null) and ss_store_sk is not null)
+                                  TableScan [TS_104] (rows=1 width=0)
+                                    default@store_sales,store_sales,Tbl:PARTIAL,Col:NONE,Output:["ss_sold_time_sk","ss_hdemo_sk","ss_store_sk"]
+                          <-Map 39 [SIMPLE_EDGE]
+                            SHUFFLE [RS_117]
+                              PartitionCols:_col0
+                              Select Operator [SEL_109] (rows=3600 width=107)
+                                Output:["_col0"]
+                                Filter Operator [FIL_315] (rows=3600 width=107)
+                                  predicate:((((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and hd_demo_sk is not null)
+                                  TableScan [TS_107] (rows=7200 width=107)
+                                    default@household_demographics,household_demographics,Tbl:COMPLETE,Col:NONE,Output:["hd_demo_sk","hd_dep_count","hd_vehicle_count"]
+        <-Reducer 46 [SIMPLE_EDGE]
+          SHUFFLE [RS_220]
+            Group By Operator [GBY_154] (rows=1 width=8)
+              Output:["_col0"],aggregations:["count(VALUE._col0)"]
+            <-Reducer 45 [SIMPLE_EDGE]
+              SHUFFLE [RS_153]
+                Group By Operator [GBY_152] (rows=1 width=8)
+                  Output:["_col0"],aggregations:["count()"]
+                  Merge Join Operator [MERGEJOIN_347] (rows=17424 width=471)
+                    Conds:RS_148._col2=RS_149._col0(Inner)
+                  <-Map 49 [SIMPLE_EDGE]
+                    SHUFFLE [RS_149]
+                      PartitionCols:_col0
+                      Select Operator [SEL_141] (rows=852 width=1910)
+                        Output:["_col0"]
+                        Filter Operator [FIL_321] (rows=852 width=1910)
+                          predicate:((s_store_name = 'ese') and s_store_sk is not null)
+                          TableScan [TS_139] (rows=1704 width=1910)
+                            default@store,store,Tbl:COMPLETE,Col:NONE,Output:["s_store_sk","s_store_name"]
+                  <-Reducer 44 [SIMPLE_EDGE]
+                    SHUFFLE [RS_148]
+                      PartitionCols:_col2
+                      Merge Join Operator [MERGEJOIN_346] (rows=15840 width=471)
+                        Conds:RS_145._col0=RS_146._col0(Inner),Output:["_col2"]
+                      <-Map 48 [SIMPLE_EDGE]
+                        SHUFFLE [RS_146]
+                          PartitionCols:_col0
+                          Select Operator [SEL_138] (rows=14400 width=471)
+                            Output:["_col0"]
+                            Filter Operator [FIL_320] (rows=14400 width=471)
+                              predicate:(((t_hour = 11) and (t_minute < 30)) and t_time_sk is not null)
+                              TableScan [TS_136] (rows=86400 width=471)
+                                default@time_dim,time_dim,Tbl:COMPLETE,Col:NONE,Output:["t_time_sk","t_hour","t_minute"]
+                      <-Reducer 43 [SIMPLE_EDGE]
+                        SHUFFLE [RS_145]
+                          PartitionCols:_col0
+                          Merge Join Operator [MERGEJOIN_345] (rows=3960 width=107)
+                            Conds:RS_142._col1=RS_143._col0(Inner),Output:["_col0","_col2"]
+                          <-Map 42 [SIMPLE_EDGE]
+                            SHUFFLE [RS_142]
+                              PartitionCols:_col1
+                              Select Operator [SEL_132] (rows=1 width=0)
+                                Output:["_col0","_col1","_col2"]
+                                Filter Operator [FIL_318] (rows=1 width=0)
+                                  predicate:((ss_hdemo_sk is not null and ss_sold_time_sk is not null) and ss_store_sk is not null)
+                                  TableScan [TS_130] (rows=1 width=0)
+                                    default@store_sales,store_sales,Tbl:PARTIAL,Col:NONE,Output:["ss_sold_time_sk","ss_hdemo_sk","ss_store_sk"]
+                          <-Map 47 [SIMPLE_EDGE]
+                            SHUFFLE [RS_143]
+                              PartitionCols:_col0
+                              Select Operator [SEL_135] (rows=3600 width=107)
+                                Output:["_col0"]
+                                Filter Operator [FIL_319] (rows=3600 width=107)
+                                  predicate:((((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and hd_demo_sk is not null)
+                                  TableScan [TS_133] (rows=7200 width=107)
+                                    default@household_demographics,household_demographics,Tbl:COMPLETE,Col:NONE,Output:["hd_demo_sk","hd_dep_count","hd_vehicle_count"]
+        <-Reducer 5 [SIMPLE_EDGE]
+          SHUFFLE [RS_215]
+            Group By Operator [GBY_24] (rows=1 width=8)
+              Output:["_col0"],aggregations:["count(VALUE._col0)"]
+            <-Reducer 4 [SIMPLE_EDGE]
+              SHUFFLE [RS_23]
+                Group By Operator [GBY_22] (rows=1 width=8)
+                  Output:["_col0"],aggregations:["count()"]
+                  Merge Join Operator [MERGEJOIN_332] (rows=17424 width=471)
+                    Conds:RS_18._col2=RS_19._col0(Inner)
+                  <-Map 9 [SIMPLE_EDGE]
+                    SHUFFLE [RS_19]
+                      PartitionCols:_col0
+                      Select Operator [SEL_11] (rows=852 width=1910)
+                        Output:["_col0"]
+                        Filter Operator [FIL_301] (rows=852 width=1910)
+                          predicate:((s_store_name = 'ese') and s_store_sk is not null)
+                          TableScan [TS_9] (rows=1704 width=1910)
+                            default@store,store,Tbl:COMPLETE,Col:NONE,Output:["s_store_sk","s_store_name"]
+                  <-Reducer 3 [SIMPLE_EDGE]
+                    SHUFFLE [RS_18]
+                      PartitionCols:_col2
+                      Merge Join Operator [MERGEJOIN_331] (rows=15840 width=471)
+                        Conds:RS_15._col0=RS_16._col0(Inner),Output:["_col2"]
+                      <-Map 8 [SIMPLE_EDGE]
+                        SHUFFLE [RS_16]
+                          PartitionCols:_col0
+                          Select Operator [SEL_8] (rows=14400 width=471)
+                            Output:["_col0"]
+                            Filter Operator [FIL_300] (rows=14400 width=471)
+                              predicate:(((t_hour = 8) and (t_minute >= 30)) and t_time_sk is not null)
+                              TableScan [TS_6] (rows=86400 width=471)
+                                default@time_dim,time_dim,Tbl:COMPLETE,Col:NONE,Output:["t_time_sk","t_hour","t_minute"]
+                      <-Reducer 2 [SIMPLE_EDGE]
+                        SHUFFLE [RS_15]
+                          PartitionCols:_col0
+                          Merge Join Operator [MERGEJOIN_330] (rows=3960 width=107)
+                            Conds:RS_12._col1=RS_13._col0(Inner),Output:["_col0","_col2"]
+                          <-Map 1 [SIMPLE_EDGE]
+                            SHUFFLE [RS_12]
+                              PartitionCols:_col1
+                              Select Operator [SEL_2] (rows=1 width=0)
+                                Output:["_col0","_col1","_col2"]
+                                Filter Operator [FIL_298] (rows=1 width=0)
+                                  predicate:((ss_hdemo_sk is not null and ss_sold_time_sk is not null) and ss_store_sk is not null)
+                                  TableScan [TS_0] (rows=1 width=0)
+                                    default@store_sales,store_sales,Tbl:PARTIAL,Col:NONE,Output:["ss_sold_time_sk","ss_hdemo_sk","ss_store_sk"]
+                          <-Map 7 [SIMPLE_EDGE]
+                            SHUFFLE [RS_13]
+                              PartitionCols:_col0
+                              Select Operator [SEL_5] (rows=3600 width=107)
+                                Output:["_col0"]
+                                Filter Operator [FIL_299] (rows=3600 width=107)
+                                  predicate:((((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and hd_demo_sk is not null)
+                                  TableScan [TS_3] (rows=7200 width=107)
+                                    default@household_demographics,household_demographics,Tbl:COMPLETE,Col:NONE,Output:["hd_demo_sk","hd_dep_count","hd_vehicle_count"]
+        <-Reducer 54 [SIMPLE_EDGE]
+          SHUFFLE [RS_221]
+            Group By Operator [GBY_180] (rows=1 width=8)
+              Output:["_col0"],aggregations:["count(VALUE._col0)"]
+            <-Reducer 53 [SIMPLE_EDGE]
+              SHUFFLE [RS_179]
+                Group By Operator [GBY_178] (rows=1 width=8)
+                  Output:["_col0"],aggregations:["count()"]
+                  Merge Join Operator [MERGEJOIN_350] (rows=17424 width=471)
+                    Conds:RS_174._col2=RS_175._col0(Inner)
+                  <-Map 57 [SIMPLE_EDGE]
+                    SHUFFLE [RS_175]
+                      PartitionCols:_col0
+                      Select Operator [SEL_167] (rows=852 width=1910)
+                        Output:["_col0"]
+                        Filter Operator [FIL_325] (rows=852 width=1910)
+                          predicate:((s_store_name = 'ese') and s_store_sk is not null)
+                          TableScan [TS_165] (rows=1704 width=1910)
+                            default@store,store,Tbl:COMPLETE,Col:NONE,Output:["s_store_sk","s_store_name"]
+                  <-Reducer 52 [SIMPLE_EDGE]
+                    SHUFFLE [RS_174]
+                      PartitionCols:_col2
+                      Merge Join Operator [MERGEJOIN_349] (rows=15840 width=471)
+                        Conds:RS_171._col0=RS_172._col0(Inner),Output:["_col2"]
+                      <-Map 56 [SIMPLE_EDGE]
+                        SHUFFLE [RS_172]
+                          PartitionCols:_col0
+                          Select Operator [SEL_164] (rows=14400 width=471)
+                            Output:["_col0"]
+                            Filter Operator [FIL_324] (rows=14400 width=471)
+                              predicate:(((t_hour = 11) and (t_minute >= 30)) and t_time_sk is not null)
+                              TableScan [TS_162] (rows=86400 width=471)
+                                default@time_dim,time_dim,Tbl:COMPLETE,Col:NONE,Output:["t_time_sk","t_hour","t_minute"]
+                      <-Reducer 51 [SIMPLE_EDGE]
+                        SHUFFLE [RS_171]
+                          PartitionCols:_col0
+                          Merge Join Operator [MERGEJOIN_348] (rows=3960 width=107)
+                            Conds:RS_168._col1=RS_169._col0(Inner),Output:["_col0","_col2"]
+                          <-Map 50 [SIMPLE_EDGE]
+                            SHUFFLE [RS_168]
+                              PartitionCols:_col1
+                              Select Operator [SEL_158] (rows=1 width=0)
+                                Output:["_col0","_col1","_col2"]
+                                Filter Operator [FIL_322] (rows=1 width=0)
+                                  predicate:((ss_hdemo_sk is not null and ss_sold_time_sk is not null) and ss_store_sk is not null)
+                                  TableScan [TS_156] (rows=1 width=0)
+                                    default@store_sales,store_sales,Tbl:PARTIAL,Col:NONE,Output:["ss_sold_time_sk","ss_hdemo_sk","ss_store_sk"]
+                          <-Map 55 [SIMPLE_EDGE]
+                            SHUFFLE [RS_169]
+                              PartitionCols:_col0
+                              Select Operator [SEL_161] (rows=3600 width=107)
+                                Output:["_col0"]
+                                Filter Operator [FIL_323] (rows=3600 width=107)
+                                  predicate:((((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and hd_demo_sk is not null)
+                                  TableScan [TS_159] (rows=7200 width=107)
+                                    default@household_demographics,household_demographics,Tbl:COMPLETE,Col:NONE,Output:["hd_demo_sk","hd_dep_count","hd_vehicle_count"]
+        <-Reducer 62 [SIMPLE_EDGE]
+          SHUFFLE [RS_222]
             Group By Operator [GBY_206] (rows=1 width=8)
               Output:["_col0"],aggregations:["count(VALUE._col0)"]
-            <-Reducer 67 [SIMPLE_EDGE]
+            <-Reducer 61 [SIMPLE_EDGE]
               SHUFFLE [RS_205]
                 Group By Operator [GBY_204] (rows=1 width=8)
                   Output:["_col0"],aggregations:["count()"]
-                  Merge Join Operator [MERGEJOIN_365] (rows=17424 width=471)
+                  Merge Join Operator [MERGEJOIN_353] (rows=17424 width=471)
                     Conds:RS_200._col2=RS_201._col0(Inner)
-                  <-Map 71 [SIMPLE_EDGE]
+                  <-Map 65 [SIMPLE_EDGE]
                     SHUFFLE [RS_201]
                       PartitionCols:_col0
                       Select Operator [SEL_193] (rows=852 width=1910)
                         Output:["_col0"]
-                        Filter Operator [FIL_341] (rows=852 width=1910)
+                        Filter Operator [FIL_329] (rows=852 width=1910)
                           predicate:((s_store_name = 'ese') and s_store_sk is not null)
                           TableScan [TS_191] (rows=1704 width=1910)
                             default@store,store,Tbl:COMPLETE,Col:NONE,Output:["s_store_sk","s_store_name"]
-                  <-Reducer 66 [SIMPLE_EDGE]
+                  <-Reducer 60 [SIMPLE_EDGE]
                     SHUFFLE [RS_200]
                       PartitionCols:_col2
-                      Merge Join Operator [MERGEJOIN_364] (rows=15840 width=471)
+                      Merge Join Operator [MERGEJOIN_352] (rows=15840 width=471)
                         Conds:RS_197._col0=RS_198._col0(Inner),Output:["_col2"]
-                      <-Map 70 [SIMPLE_EDGE]
+                      <-Map 64 [SIMPLE_EDGE]
                         SHUFFLE [RS_198]
                           PartitionCols:_col0
                           Select Operator [SEL_190] (rows=14400 width=471)
                             Output:["_col0"]
-                            Filter Operator [FIL_340] (rows=14400 width=471)
+                            Filter Operator [FIL_328] (rows=14400 width=471)
                               predicate:(((t_hour = 12) and (t_minute < 30)) and t_time_sk is not null)
                               TableScan [TS_188] (rows=86400 width=471)
                                 default@time_dim,time_dim,Tbl:COMPLETE,Col:NONE,Output:["t_time_sk","t_hour","t_minute"]
-                      <-Reducer 65 [SIMPLE_EDGE]
+                      <-Reducer 59 [SIMPLE_EDGE]
                         SHUFFLE [RS_197]
                           PartitionCols:_col0
-                          Merge Join Operator [MERGEJOIN_363] (rows=3960 width=107)
+                          Merge Join Operator [MERGEJOIN_351] (rows=3960 width=107)
                             Conds:RS_194._col1=RS_195._col0(Inner),Output:["_col0","_col2"]
-                          <-Map 64 [SIMPLE_EDGE]
+                          <-Map 58 [SIMPLE_EDGE]
                             SHUFFLE [RS_194]
                               PartitionCols:_col1
                               Select Operator [SEL_184] (rows=1 width=0)
                                 Output:["_col0","_col1","_col2"]
-                                Filter Operator [FIL_338] (rows=1 width=0)
+                                Filter Operator [FIL_326] (rows=1 width=0)
                                   predicate:((ss_hdemo_sk is not null and ss_sold_time_sk is not null) and ss_store_sk is not null)
                                   TableScan [TS_182] (rows=1 width=0)
                                     default@store_sales,store_sales,Tbl:PARTIAL,Col:NONE,Output:["ss_sold_time_sk","ss_hdemo_sk","ss_store_sk"]
-                          <-Map 69 [SIMPLE_EDGE]
+                          <-Map 63 [SIMPLE_EDGE]
                             SHUFFLE [RS_195]
                               PartitionCols:_col0
                               Select Operator [SEL_187] (rows=3600 width=107)
                                 Output:["_col0"]
-                                Filter Operator [FIL_339] (rows=3600 width=107)
+                                Filter Operator [FIL_327] (rows=3600 width=107)
                                   predicate:((((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and hd_demo_sk is not null)
                                   TableScan [TS_185] (rows=7200 width=107)
                                     default@household_demographics,household_demographics,Tbl:COMPLETE,Col:NONE,Output:["hd_demo_sk","hd_dep_count","hd_vehicle_count"]

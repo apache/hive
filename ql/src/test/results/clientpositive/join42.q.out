@@ -80,8 +80,7 @@ POSTHOOK: Output: default@acct
 POSTHOOK: Lineage: acct.acc_n EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
 POSTHOOK: Lineage: acct.aid EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: acct.brn EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-Warning: Shuffle Join JOIN[25][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Stage-2:MAPRED' is a cross product
-Warning: Shuffle Join JOIN[22][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[23][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: --[HIVE-10841] (WHERE col is not null) does not work sometimes for queries with many JOIN statements
 explain select
   acct.ACC_N,
@@ -114,8 +113,7 @@ STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
   Stage-3 depends on stages: Stage-2
-  Stage-4 depends on stages: Stage-3
-  Stage-0 depends on stages: Stage-4
+  Stage-0 depends on stages: Stage-3
 
 STAGE PLANS:
   Stage: Stage-1
@@ -146,30 +144,6 @@ STAGE PLANS:
                   sort order: 
                   Statistics: Num rows: 1 Data size: 14 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: int), _col2 (type: int)
-      Reduce Operator Tree:
-        Join Operator
-          condition map:
-               Inner Join 0 to 1
-          keys:
-            0 
-            1 
-          outputColumnNames: _col2, _col3
-          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-
-  Stage: Stage-2
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              sort order: 
-              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col2 (type: int), _col3 (type: int)
           TableScan
             alias: fr
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
@@ -185,11 +159,13 @@ STAGE PLANS:
         Join Operator
           condition map:
                Inner Join 0 to 1
+               Inner Join 0 to 2
           keys:
             0 
             1 
+            2 
           outputColumnNames: _col2, _col3
-          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             table:
@@ -197,7 +173,7 @@ STAGE PLANS:
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-  Stage: Stage-3
+  Stage: Stage-2
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -205,7 +181,7 @@ STAGE PLANS:
               key expressions: _col2 (type: int)
               sort order: +
               Map-reduce partition columns: _col2 (type: int)
-              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col3 (type: int)
           TableScan
             alias: a
@@ -256,7 +232,7 @@ STAGE PLANS:
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-  Stage: Stage-4
+  Stage: Stage-3
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -308,8 +284,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join JOIN[25][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Stage-2:MAPRED' is a cross product
-Warning: Shuffle Join JOIN[22][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[23][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: select
   acct.ACC_N,
   acct.brn
