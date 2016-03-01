@@ -57,4 +57,13 @@ public class MetricsTestUtils {
     JsonNode metricsNode = categoryNode.path(metricsName);
     return metricsNode.path(category.metricsHandle);
   }
+
+  public static byte[] getFileData(String path, int timeoutInterval, int tries) throws Exception {
+    File file = new File(path);
+    do {
+      Thread.sleep(timeoutInterval);
+      tries--;
+    } while (tries > 0 && !file.exists());
+    return Files.readAllBytes(Paths.get(path));
+  }
 }

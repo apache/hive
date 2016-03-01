@@ -22,7 +22,7 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
+import org.apache.hadoop.hive.common.metrics.MetricsTestUtils;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.common.metrics.common.MetricsVariable;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -124,11 +124,9 @@ public class TestCodahaleMetrics {
     int runs = 5;
     for (int i = 0; i < runs; i++) {
       MetricsFactory.getInstance().incrementCounter("count2");
-      Thread.sleep(100);
     }
 
-    Thread.sleep(2000);
-    byte[] jsonData = Files.readAllBytes(Paths.get(jsonReportFile.getAbsolutePath()));
+    byte[] jsonData = MetricsTestUtils.getFileData(jsonReportFile.getAbsolutePath(), 2000, 3);
     ObjectMapper objectMapper = new ObjectMapper();
 
     JsonNode rootNode = objectMapper.readTree(jsonData);
@@ -156,25 +154,12 @@ public class TestCodahaleMetrics {
     testVar.setValue(20);
 
     MetricsFactory.getInstance().addGauge("gauge1", testVar);
-    Thread.sleep(2000);
-    byte[] jsonData = Files.readAllBytes(Paths.get(jsonReportFile.getAbsolutePath()));
-    ObjectMapper objectMapper = new ObjectMapper();
+    String json = ((CodahaleMetrics) MetricsFactory.getInstance()).dumpJson();
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, "gauge1", testVar.getValue());
 
-    JsonNode rootNode = objectMapper.readTree(jsonData);
-    JsonNode gaugesNode = rootNode.path("gauges");
-    JsonNode methodGaugeNode = gaugesNode.path("gauge1");
-    JsonNode countNode = methodGaugeNode.path("value");
-    Assert.assertEquals(countNode.asInt(), testVar.getValue());
 
     testVar.setValue(40);
-    Thread.sleep(2000);
-
-    jsonData = Files.readAllBytes(Paths.get(jsonReportFile.getAbsolutePath()));
-
-    rootNode = objectMapper.readTree(jsonData);
-    gaugesNode = rootNode.path("gauges");
-    methodGaugeNode = gaugesNode.path("gauge1");
-    countNode = methodGaugeNode.path("value");
-    Assert.assertEquals(countNode.asInt(), testVar.getValue());
+    json = ((CodahaleMetrics) MetricsFactory.getInstance()).dumpJson();
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, "gauge1", testVar.getValue());
   }
 }
