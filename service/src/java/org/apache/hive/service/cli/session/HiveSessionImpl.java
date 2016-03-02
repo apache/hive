@@ -105,7 +105,7 @@ public class HiveSessionImpl implements HiveSession {
   private final Set<OperationHandle> opHandleSet = new HashSet<OperationHandle>();
   private boolean isOperationLogEnabled;
   private File sessionLogDir;
-
+  // TODO: the control flow for this needs to be defined. Hive is supposed to be thread-local.
   private Hive sessionHive;
 
   private volatile long lastAccessTime;

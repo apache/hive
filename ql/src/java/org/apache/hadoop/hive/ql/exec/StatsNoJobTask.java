@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.io.StatsProvidingRecordReader;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -96,6 +97,7 @@ public class StatsNoJobTask extends Task<StatsNoJobWork> implements Serializable
 
     String tableName = "";
     ExecutorService threadPool = null;
+    Hive db = getHive();
     try {
       tableName = work.getTableSpecs().tableName;
       table = db.getTable(tableName);
@@ -111,7 +113,7 @@ public class StatsNoJobTask extends Task<StatsNoJobWork> implements Serializable
       console.printError("Cannot get table " + tableName, e.toString());
     }
 
-    return aggregateStats(threadPool);
+    return aggregateStats(threadPool, db);
   }
 
   @Override
@@ -219,7 +221,7 @@ public class StatsNoJobTask extends Task<StatsNoJobWork> implements Serializable
 
   }
 
-  private int aggregateStats(ExecutorService threadPool) {
+  private int aggregateStats(ExecutorService threadPool, Hive db) {
     int ret = 0;
 
     try {
@@ -302,7 +304,7 @@ public class StatsNoJobTask extends Task<StatsNoJobWork> implements Serializable
         shutdownAndAwaitTermination(threadPool);
         LOG.debug("Stats collection threadpool shutdown successful.");
 
-        ret = updatePartitions();
+        ret = updatePartitions(db);
       }
 
     } catch (Exception e) {
@@ -317,7 +319,7 @@ public class StatsNoJobTask extends Task<StatsNoJobWork> implements Serializable
     return ret;
   }
 
-  private int updatePartitions() throws InvalidOperationException, HiveException {
+  private int updatePartitions(Hive db) throws InvalidOperationException, HiveException {
     if (!partUpdates.isEmpty()) {
       List<Partition> updatedParts = Lists.newArrayList(partUpdates.values());
       if (updatedParts.contains(null) && work.isStatsReliable()) {

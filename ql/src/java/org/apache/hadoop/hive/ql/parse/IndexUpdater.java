@@ -43,6 +43,7 @@ import java.util.Set;
 public class IndexUpdater {
   private List<LoadTableDesc> loadTableWork;
   private HiveConf conf;
+  // Assumes one instance of this + single-threaded compilation for each query.
   private Hive hive;
   private List<Task<? extends Serializable>> tasks;
   private Set<ReadEntity> inputs;

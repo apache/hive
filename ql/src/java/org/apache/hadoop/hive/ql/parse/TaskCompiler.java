@@ -71,6 +71,7 @@ public abstract class TaskCompiler {
 
   protected final Logger LOG = LoggerFactory.getLogger(TaskCompiler.class);
 
+  // Assumes one instance of this + single-threaded compilation for each query.
   protected Hive db;
   protected LogHelper console;
   protected HiveConf conf;

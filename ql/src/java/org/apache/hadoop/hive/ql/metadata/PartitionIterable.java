@@ -123,7 +123,7 @@ public class PartitionIterable implements Iterable<Partition> {
   private List<Partition> ptnsProvided = null;
 
   // used for LAZY_FETCH_PARTITIONS cases
-  private Hive db = null;
+  private Hive db = null; // Assumes one instance of this + single-threaded compilation for each query.
   private Table table = null;
   private Map<String, String> partialPartitionSpec = null;
   private List<String> partitionNames = null;

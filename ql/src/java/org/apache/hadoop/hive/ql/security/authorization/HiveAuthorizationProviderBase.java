@@ -23,6 +23,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
@@ -40,16 +41,19 @@ public abstract class HiveAuthorizationProviderBase implements
 
   protected class HiveProxy {
 
-    private final Hive hiveClient;
+    private final boolean hasHiveClient;
+    private final HiveConf conf;
     private HMSHandler handler;
 
     public HiveProxy(Hive hive) {
-      this.hiveClient = hive;
+      this.hasHiveClient = hive != null;
+      this.conf = hive.getConf();
       this.handler = null;
     }
 
     public HiveProxy() {
-      this.hiveClient = null;
+      this.hasHiveClient = false;
+      this.conf = null;
       this.handler = null;
     }
 
@@ -58,14 +62,14 @@ public abstract class HiveAuthorizationProviderBase implements
     }
 
     public boolean isRunFromMetaStore(){
-      return (this.hiveClient == null);
+      return !hasHiveClient;
     }
 
     public PrincipalPrivilegeSet get_privilege_set(HiveObjectType column, String dbName,
         String tableName, List<String> partValues, String col, String userName,
         List<String> groupNames) throws HiveException {
       if (!isRunFromMetaStore()) {
-        return hiveClient.get_privilege_set(
+        return Hive.getWithFastCheck(conf).get_privilege_set(
             column, dbName, tableName, partValues, col, userName, groupNames);
       } else {
         HiveObjectRef hiveObj = new HiveObjectRef(column, dbName,
@@ -82,7 +86,7 @@ public abstract class HiveAuthorizationProviderBase implements
 
     public Database getDatabase(String dbName) throws HiveException {
       if (!isRunFromMetaStore()) {
-        return hiveClient.getDatabase(dbName);
+        return Hive.getWithFastCheck(conf).getDatabase(dbName);
       } else {
         try {
           return handler.get_database_core(dbName);

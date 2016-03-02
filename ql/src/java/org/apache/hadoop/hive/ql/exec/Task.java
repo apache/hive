@@ -57,7 +57,6 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   protected transient boolean isdone;
   protected transient boolean queued;
   protected transient HiveConf conf;
-  protected transient Hive db;
   protected transient LogHelper console;
   protected transient QueryPlan queryPlan;
   protected transient DriverContext driverContext;
@@ -128,18 +127,17 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
     started = false;
     setInitialized();
     this.conf = conf;
+    this.driverContext = driverContext;
+    console = new LogHelper(LOG);
+  }
 
+  protected Hive getHive() {
     try {
-      db = Hive.get(conf);
+      return Hive.getWithFastCheck(conf);
     } catch (HiveException e) {
-      // Bail out ungracefully - we should never hit
-      // this here - but would have hit it in SemanticAnalyzer
       LOG.error(StringUtils.stringifyException(e));
       throw new RuntimeException(e);
     }
-    this.driverContext = driverContext;
-
-    console = new LogHelper(LOG);
   }
 
   /**

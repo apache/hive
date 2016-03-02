@@ -293,12 +293,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       LockDatabaseDesc lockDatabaseDesc = work.getLockDatabaseDesc();
       if (lockDatabaseDesc != null) {
-        return lockDatabase(lockDatabaseDesc);
+        return lockDatabase(db, lockDatabaseDesc);
       }
 
       UnlockDatabaseDesc unlockDatabaseDesc = work.getUnlockDatabaseDesc();
       if (unlockDatabaseDesc != null) {
-        return unlockDatabase(unlockDatabaseDesc);
+        return unlockDatabase(db, unlockDatabaseDesc);
       }
 
       SwitchDatabaseDesc switchDatabaseDesc = work.getSwitchDatabaseDesc();
@@ -308,12 +308,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       DescDatabaseDesc descDatabaseDesc = work.getDescDatabaseDesc();
       if (descDatabaseDesc != null) {
-        return descDatabase(descDatabaseDesc);
+        return descDatabase(db, descDatabaseDesc);
       }
 
       AlterDatabaseDesc alterDatabaseDesc = work.getAlterDatabaseDesc();
       if (alterDatabaseDesc != null) {
-        return alterDatabase(alterDatabaseDesc);
+        return alterDatabase(db, alterDatabaseDesc);
       }
 
       CreateTableDesc crtTbl = work.getCreateTblDesc();
@@ -392,7 +392,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       DescFunctionDesc descFunc = work.getDescFunctionDesc();
       if (descFunc != null) {
-        return describeFunction(descFunc);
+        return describeFunction(db, descFunc);
       }
 
       ShowDatabasesDesc showDatabases = work.getShowDatabasesDesc();
@@ -422,32 +422,32 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       ShowFunctionsDesc showFuncs = work.getShowFuncsDesc();
       if (showFuncs != null) {
-        return showFunctions(showFuncs);
+        return showFunctions(db, showFuncs);
       }
 
       ShowLocksDesc showLocks = work.getShowLocksDesc();
       if (showLocks != null) {
-        return showLocks(showLocks);
+        return showLocks(db, showLocks);
       }
 
       ShowCompactionsDesc compactionsDesc = work.getShowCompactionsDesc();
       if (compactionsDesc != null) {
-        return showCompactions(compactionsDesc);
+        return showCompactions(db, compactionsDesc);
       }
 
       ShowTxnsDesc txnsDesc = work.getShowTxnsDesc();
       if (txnsDesc != null) {
-        return showTxns(txnsDesc);
+        return showTxns(db, txnsDesc);
       }
 
        LockTableDesc lockTbl = work.getLockTblDesc();
       if (lockTbl != null) {
-        return lockTable(lockTbl);
+        return lockTable(db, lockTbl);
       }
 
       UnlockTableDesc unlockTbl = work.getUnlockTblDesc();
       if (unlockTbl != null) {
-        return unlockTable(unlockTbl);
+        return unlockTable(db, unlockTbl);
       }
 
       ShowPartitionsDesc showParts = work.getShowPartsDesc();
@@ -472,31 +472,31 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       RoleDDLDesc roleDDLDesc = work.getRoleDDLDesc();
       if (roleDDLDesc != null) {
-        return roleDDL(roleDDLDesc);
+        return roleDDL(db, roleDDLDesc);
       }
 
       GrantDesc grantDesc = work.getGrantDesc();
       if (grantDesc != null) {
-        return grantOrRevokePrivileges(grantDesc.getPrincipals(), grantDesc
+        return grantOrRevokePrivileges(db, grantDesc.getPrincipals(), grantDesc
             .getPrivileges(), grantDesc.getPrivilegeSubjectDesc(), grantDesc.getGrantor(),
             grantDesc.getGrantorType(), grantDesc.isGrantOption(), true);
       }
 
       RevokeDesc revokeDesc = work.getRevokeDesc();
       if (revokeDesc != null) {
-        return grantOrRevokePrivileges(revokeDesc.getPrincipals(), revokeDesc
+        return grantOrRevokePrivileges(db, revokeDesc.getPrincipals(), revokeDesc
             .getPrivileges(), revokeDesc.getPrivilegeSubjectDesc(), null, null,
             revokeDesc.isGrantOption(), false);
       }
 
       ShowGrantDesc showGrantDesc = work.getShowGrantDesc();
       if (showGrantDesc != null) {
-        return showGrants(showGrantDesc);
+        return showGrants(db, showGrantDesc);
       }
 
       GrantRevokeRoleDDL grantOrRevokeRoleDDL = work.getGrantRevokeRoleDDL();
       if (grantOrRevokeRoleDDL != null) {
-        return grantOrRevokeRole(grantOrRevokeRoleDDL);
+        return grantOrRevokeRole(db, grantOrRevokeRoleDDL);
       }
 
       ShowIndexesDesc showIndexes = work.getShowIndexesDesc();
@@ -667,7 +667,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return ret;
   }
 
-  private HiveAuthorizer getSessionAuthorizer() {
+  private HiveAuthorizer getSessionAuthorizer(Hive db) {
     HiveAuthorizer authorizer = SessionState.get().getAuthorizerV2();
     if (authorizer == null) {
       authorizer = new HiveV1Authorizer(conf, db);
@@ -675,9 +675,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return authorizer;
   }
 
-  private int grantOrRevokeRole(GrantRevokeRoleDDL grantOrRevokeRoleDDL)
+  private int grantOrRevokeRole(Hive db, GrantRevokeRoleDDL grantOrRevokeRoleDDL)
       throws HiveException {
-    HiveAuthorizer authorizer = getSessionAuthorizer();
+    HiveAuthorizer authorizer = getSessionAuthorizer(db);
     //convert to the types needed for plugin api
     HivePrincipal grantorPrinc = null;
     if(grantOrRevokeRoleDDL.getGrantor() != null){
@@ -706,9 +706,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
   }
 
-  private int showGrants(ShowGrantDesc showGrantDesc) throws HiveException {
+  private int showGrants(Hive db, ShowGrantDesc showGrantDesc) throws HiveException {
 
-    HiveAuthorizer authorizer = getSessionAuthorizer();
+    HiveAuthorizer authorizer = getSessionAuthorizer(db);
     try {
       List<HivePrivilegeInfo> privInfos = authorizer.showPrivileges(
           getAuthorizationTranslator(authorizer).getHivePrincipal(showGrantDesc.getPrincipalDesc()),
@@ -721,12 +721,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return 0;
   }
 
-  private int grantOrRevokePrivileges(List<PrincipalDesc> principals,
+  private int grantOrRevokePrivileges(Hive db, List<PrincipalDesc> principals,
       List<PrivilegeDesc> privileges, PrivilegeObjectDesc privSubjectDesc,
       String grantor, PrincipalType grantorType, boolean grantOption, boolean isGrant)
           throws HiveException {
 
-    HiveAuthorizer authorizer = getSessionAuthorizer();
+    HiveAuthorizer authorizer = getSessionAuthorizer(db);
 
     //Convert to object types used by the authorization plugin interface
     List<HivePrincipal> hivePrincipals = AuthorizationUtils.getHivePrincipals(
@@ -750,8 +750,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return 0;
   }
 
-  private int roleDDL(RoleDDLDesc roleDDLDesc) throws Exception {
-    HiveAuthorizer authorizer = getSessionAuthorizer();
+  private int roleDDL(Hive db, RoleDDLDesc roleDDLDesc) throws Exception {
+    HiveAuthorizer authorizer = getSessionAuthorizer(db);
     RoleDDLDesc.RoleOperation operation = roleDDLDesc.getOperation();
     //call the appropriate hive authorizer function
     switch(operation){
@@ -826,7 +826,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     writeToFile(sb.toString(), resFile);
   }
 
-  private int alterDatabase(AlterDatabaseDesc alterDbDesc) throws HiveException {
+  private int alterDatabase(Hive db, AlterDatabaseDesc alterDbDesc) throws HiveException {
 
     String dbName = alterDbDesc.getDatabaseName();
     Database database = db.getDatabase(dbName);
@@ -2380,6 +2380,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   /**
    * Write a list of the user defined functions to a file.
+   * @param db 
    *
    * @param showFuncs
    *          are the functions we're interested in.
@@ -2387,7 +2388,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * @throws HiveException
    *           Throws this exception if an unexpected error occurs.
    */
-  private int showFunctions(ShowFunctionsDesc showFuncs) throws HiveException {
+  private int showFunctions(Hive db, ShowFunctionsDesc showFuncs) throws HiveException {
     // get the tables for the desired patten - populate the output stream
     Set<String> funcs = null;
     if (showFuncs.getPattern() != null) {
@@ -2432,6 +2433,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   /**
    * Write a list of the current locks to a file.
+   * @param db 
    *
    * @param showLocks
    *          the locks we're interested in.
@@ -2439,7 +2441,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * @throws HiveException
    *           Throws this exception if an unexpected error occurs.
    */
-  private int showLocks(ShowLocksDesc showLocks) throws HiveException {
+  private int showLocks(Hive db, ShowLocksDesc showLocks) throws HiveException {
     Context ctx = driverContext.getCtx();
     HiveTxnManager txnManager = ctx.getHiveTxnManager();
     HiveLockManager lockMgr = txnManager.getLockManager();
@@ -2605,7 +2607,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return 0;
   }
 
-  private int showCompactions(ShowCompactionsDesc desc) throws HiveException {
+  private int showCompactions(Hive db, ShowCompactionsDesc desc) throws HiveException {
     // Call the metastore to get the currently queued and running compactions.
     ShowCompactResponse rsp = db.showCompactions();
 
@@ -2657,7 +2659,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return 0;
   }
 
-  private int showTxns(ShowTxnsDesc desc) throws HiveException {
+  private int showTxns(Hive db, ShowTxnsDesc desc) throws HiveException {
     // Call the metastore to get the currently queued and running compactions.
     GetOpenTxnsInfoResponse rsp = db.showTransactions();
 
@@ -2695,6 +2697,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
    /**
    * Lock the table/partition specified
+   * @param db 
    *
    * @param lockTbl
    *          the table/partition to be locked along with the mode
@@ -2702,7 +2705,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * @throws HiveException
    *           Throws this exception if an unexpected error occurs.
    */
-  private int lockTable(LockTableDesc lockTbl) throws HiveException {
+  private int lockTable(Hive db, LockTableDesc lockTbl) throws HiveException {
     Context ctx = driverContext.getCtx();
     HiveTxnManager txnManager = ctx.getHiveTxnManager();
     return txnManager.lockTable(db, lockTbl);
@@ -2717,7 +2720,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * @throws HiveException
    *           Throws this exception if an unexpected error occurs.
    */
-  private int lockDatabase(LockDatabaseDesc lockDb) throws HiveException {
+  private int lockDatabase(Hive db, LockDatabaseDesc lockDb) throws HiveException {
     Context ctx = driverContext.getCtx();
     HiveTxnManager txnManager = ctx.getHiveTxnManager();
     return txnManager.lockDatabase(db, lockDb);
@@ -2732,7 +2735,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * @throws HiveException
    *           Throws this exception if an unexpected error occurs.
    */
-  private int unlockDatabase(UnlockDatabaseDesc unlockDb) throws HiveException {
+  private int unlockDatabase(Hive db, UnlockDatabaseDesc unlockDb) throws HiveException {
     Context ctx = driverContext.getCtx();
     HiveTxnManager txnManager = ctx.getHiveTxnManager();
     return txnManager.unlockDatabase(db, unlockDb);
@@ -2740,6 +2743,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   /**
    * Unlock the table/partition specified
+   * @param db 
    *
    * @param unlockTbl
    *          the table/partition to be unlocked
@@ -2747,7 +2751,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * @throws HiveException
    *           Throws this exception if an unexpected error occurs.
    */
-  private int unlockTable(UnlockTableDesc unlockTbl) throws HiveException {
+  private int unlockTable(Hive db, UnlockTableDesc unlockTbl) throws HiveException {
     Context ctx = driverContext.getCtx();
     HiveTxnManager txnManager = ctx.getHiveTxnManager();
     return txnManager.unlockTable(db, unlockTbl);
@@ -2755,12 +2759,13 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   /**
    * Shows a description of a function.
+   * @param db 
    *
    * @param descFunc
    *          is the function we are describing
    * @throws HiveException
    */
-  private int describeFunction(DescFunctionDesc descFunc) throws HiveException, SQLException {
+  private int describeFunction(Hive db, DescFunctionDesc descFunc) throws HiveException, SQLException {
     String funcName = descFunc.getName();
 
     // write the results in the file
@@ -2812,7 +2817,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return 0;
   }
 
-  private int descDatabase(DescDatabaseDesc descDatabase) throws HiveException {
+  private int descDatabase(Hive db, DescDatabaseDesc descDatabase) throws HiveException {
     DataOutputStream outStream = getOutputStream(descDatabase.getResFile());
     try {
       Database database = db.getDatabase(descDatabase.getDatabaseName());

@@ -84,6 +84,7 @@ import com.google.common.annotations.VisibleForTesting;
  */
 public abstract class BaseSemanticAnalyzer {
   protected static final Logger STATIC_LOG = LoggerFactory.getLogger(BaseSemanticAnalyzer.class.getName());
+  // Assumes one instance of this + single-threaded compilation for each query.
   protected final Hive db;
   protected final HiveConf conf;
   protected List<Task<? extends Serializable>> rootTasks;

@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.exec;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -29,7 +28,6 @@ import java.util.Map.Entry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.BinaryColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -47,6 +45,7 @@ import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsDesc;
@@ -288,7 +287,7 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
     return statsDesc;
   }
 
-  private int persistTableStats() throws HiveException, MetaException,
+  private int persistTableStats(Hive db) throws HiveException, MetaException,
       IOException {
     // Construct a column statistics object from user input
     ColumnStatistics colStats = constructColumnStatsFromInput();
@@ -297,7 +296,7 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
     return 0;
   }
 
-  private int persistPartitionStats() throws HiveException, MetaException,
+  private int persistPartitionStats(Hive db) throws HiveException, MetaException,
       IOException {
     // Construct a column statistics object from user input
     ColumnStatistics colStats = constructColumnStatsFromInput();
@@ -309,10 +308,11 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
   @Override
   public int execute(DriverContext driverContext) {
     try {
+      Hive db = getHive();
       if (work.getColStats().isTblLevel()) {
-        return persistTableStats();
+        return persistTableStats(db);
       } else {
-        return persistPartitionStats();
+        return persistPartitionStats(db);
       }
     } catch (Exception e) {
       LOG.info("Failed to persist stats in metastore", e);

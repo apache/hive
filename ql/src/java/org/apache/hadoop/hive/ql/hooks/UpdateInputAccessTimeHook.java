@@ -18,10 +18,7 @@
 package org.apache.hadoop.hive.ql.hooks;
 
 import java.util.Set;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -38,20 +35,17 @@ public class UpdateInputAccessTimeHook {
   private static final String LAST_ACCESS_TIME = "lastAccessTime";
 
   public static class PreExec implements PreExecute {
-    Hive db;
-
     public void run(SessionState sess, Set<ReadEntity> inputs,
                     Set<WriteEntity> outputs, UserGroupInformation ugi)
       throws Exception {
 
-      if (db == null) {
-        try {
-          db = Hive.get(sess.getConf());
-        } catch (HiveException e) {
-          // ignore
-          db = null;
-          return;
-        }
+      Hive db;
+      try {
+        db = Hive.get(sess.getConf());
+      } catch (HiveException e) {
+        // ignore
+        db = null;
+        return;
       }
 
       int lastAccessTime = (int) (System.currentTimeMillis()/1000);
