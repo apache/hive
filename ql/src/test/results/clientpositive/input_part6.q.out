@@ -19,7 +19,7 @@ STAGE PLANS:
               predicate: (UDFToDouble(ds) = 1996.0) (type: boolean)
               Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: key (type: string), value (type: string), '1996' (type: string), hr (type: string)
+                expressions: key (type: string), value (type: string), ds (type: string), hr (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                 Limit

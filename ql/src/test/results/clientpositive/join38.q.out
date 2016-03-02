@@ -70,8 +70,8 @@ STAGE PLANS:
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
-                  0 '111' (type: string)
-                  1 '111' (type: string)
+                  0 key (type: string)
+                  1 col11 (type: string)
 
   Stage: Stage-1
     Map Reduce
@@ -86,8 +86,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 '111' (type: string)
-                  1 '111' (type: string)
+                  0 key (type: string)
+                  1 col11 (type: string)
                 outputColumnNames: _col1, _col10
                 Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator

@@ -19,18 +19,18 @@ STAGE PLANS:
               predicate: (key = 10) (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: value (type: string)
-                outputColumnNames: _col1
+                expressions: key (type: string), value (type: string)
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: '10' (type: string)
+                  key expressions: _col0 (type: string)
                   sort order: +
-                  Map-reduce partition columns: '10' (type: string)
+                  Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: string)
       Reduce Operator Tree:
         Select Operator
-          expressions: '10' (type: string), VALUE._col0 (type: string)
+          expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
@@ -75,24 +75,24 @@ STAGE PLANS:
             alias: x
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key = 20) (type: boolean)
+              predicate: (key is not null and (key = 20)) (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
-                key expressions: '20' (type: string)
+                key expressions: key (type: string)
                 sort order: +
-                Map-reduce partition columns: '20' (type: string)
+                Map-reduce partition columns: key (type: string)
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 value expressions: value (type: string)
           TableScan
             alias: y
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key = 20) (type: boolean)
+              predicate: (key is not null and (key = 20)) (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
-                key expressions: '20' (type: string)
+                key expressions: key (type: string)
                 sort order: +
-                Map-reduce partition columns: '20' (type: string)
+                Map-reduce partition columns: key (type: string)
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
@@ -101,14 +101,21 @@ STAGE PLANS:
           keys:
             0 key (type: string)
             1 key (type: string)
-          outputColumnNames: _col1
+          outputColumnNames: _col0, _col1, _col5
           Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+          Filter Operator
+            predicate: (_col0 = 20) (type: boolean)
+            Statistics: Num rows: 137 Data size: 1455 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string)
+              outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 137 Data size: 1455 Basic stats: COMPLETE Column stats: NONE
+              File Output Operator
+                compressed: false
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-2
     Map Reduce
@@ -118,15 +125,16 @@ STAGE PLANS:
               key expressions: _col1 (type: string)
               sort order: +
               Map-reduce partition columns: _col1 (type: string)
-              Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 137 Data size: 1455 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: string), _col2 (type: string)
       Reduce Operator Tree:
         Select Operator
-          expressions: '20' (type: string), KEY.reducesinkkey0 (type: string), '20' (type: string)
+          expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col1 (type: string)
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 137 Data size: 1455 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 137 Data size: 1455 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -168,18 +176,18 @@ STAGE PLANS:
               predicate: (key = 10) (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: value (type: string)
-                outputColumnNames: _col1
+                expressions: key (type: string), value (type: string)
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: '10' (type: string)
+                  key expressions: _col0 (type: string)
                   sort order: +
-                  Map-reduce partition columns: '10' (type: string)
+                  Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: string)
       Reduce Operator Tree:
         Select Operator
-          expressions: '10' (type: string), VALUE._col0 (type: string)
+          expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
@@ -227,9 +235,9 @@ STAGE PLANS:
               predicate: (key = 20) (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
-                key expressions: '20' (type: string)
+                key expressions: key (type: string)
                 sort order: +
-                Map-reduce partition columns: '20' (type: string)
+                Map-reduce partition columns: key (type: string)
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 value expressions: value (type: string)
           TableScan
@@ -239,9 +247,9 @@ STAGE PLANS:
               predicate: (key = 20) (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
-                key expressions: '20' (type: string)
+                key expressions: key (type: string)
                 sort order: +
-                Map-reduce partition columns: '20' (type: string)
+                Map-reduce partition columns: key (type: string)
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
@@ -250,14 +258,18 @@ STAGE PLANS:
           keys:
             0 key (type: string)
             1 key (type: string)
-          outputColumnNames: _col1
+          outputColumnNames: _col0, _col1, _col5
           Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+          Select Operator
+            expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string)
+            outputColumnNames: _col0, _col1, _col2
+            Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-2
     Map Reduce
@@ -268,9 +280,10 @@ STAGE PLANS:
               sort order: +
               Map-reduce partition columns: _col1 (type: string)
               Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: string), _col2 (type: string)
       Reduce Operator Tree:
         Select Operator
-          expressions: '20' (type: string), KEY.reducesinkkey0 (type: string), '20' (type: string)
+          expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col1 (type: string)
           outputColumnNames: _col0, _col1, _col2
           Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
           File Output Operator

@@ -1960,7 +1960,7 @@ STAGE PLANS:
                     predicate: (key = 0) (type: boolean)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: '0' (type: string), value (type: string)
+                      expressions: key (type: string), value (type: string)
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
@@ -1974,7 +1974,7 @@ STAGE PLANS:
                     predicate: (key = 2) (type: boolean)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: '2' (type: string), value (type: string)
+                      expressions: key (type: string), value (type: string)
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
@@ -1988,7 +1988,7 @@ STAGE PLANS:
                     predicate: (key = 4) (type: boolean)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: '4' (type: string), value (type: string)
+                      expressions: key (type: string), value (type: string)
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
@@ -2061,7 +2061,7 @@ STAGE PLANS:
                     predicate: (key = 0) (type: boolean)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: '0' (type: string), value (type: string)
+                      expressions: key (type: string), value (type: string)
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
@@ -2075,7 +2075,7 @@ STAGE PLANS:
                     predicate: (key = 2) (type: boolean)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: '2' (type: string), value (type: string)
+                      expressions: key (type: string), value (type: string)
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
@@ -2089,7 +2089,7 @@ STAGE PLANS:
                     predicate: (key = 4) (type: boolean)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: '4' (type: string), value (type: string)
+                      expressions: key (type: string), value (type: string)
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
@@ -2162,7 +2162,7 @@ STAGE PLANS:
                     predicate: (key = 0) (type: boolean)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: '0' (type: string), value (type: string)
+                      expressions: key (type: string), value (type: string)
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
@@ -2176,7 +2176,7 @@ STAGE PLANS:
                     predicate: (key = 2) (type: boolean)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: '2' (type: string), value (type: string)
+                      expressions: key (type: string), value (type: string)
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
@@ -2190,7 +2190,7 @@ STAGE PLANS:
                     predicate: (key = 4) (type: boolean)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: '4' (type: string), value (type: string)
+                      expressions: key (type: string), value (type: string)
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
@@ -2263,7 +2263,7 @@ STAGE PLANS:
                     predicate: (key = 0) (type: boolean)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: '0' (type: string), value (type: string)
+                      expressions: key (type: string), value (type: string)
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
@@ -2277,7 +2277,7 @@ STAGE PLANS:
                     predicate: (key = 2) (type: boolean)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: '2' (type: string), value (type: string)
+                      expressions: key (type: string), value (type: string)
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
@@ -2291,7 +2291,7 @@ STAGE PLANS:
                     predicate: (key = 4) (type: boolean)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: '4' (type: string), value (type: string)
+                      expressions: key (type: string), value (type: string)
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
