@@ -72,6 +72,10 @@ class Utils {
     // client side params are specified in sess_var_list
 
     // Client param names:
+
+    // Retry setting
+    static final String RETRIES = "retries";
+
     static final String AUTH_TYPE = "auth";
     // We're deprecating this variable's name.
     static final String AUTH_QOP_DEPRECATED = "sasl.qop";
