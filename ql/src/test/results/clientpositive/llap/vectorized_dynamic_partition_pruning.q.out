@@ -1358,12 +1358,12 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: UDFToDouble(UDFToInteger((_col0 / 2.0))) (type: double)
+                        key expressions: UDFToDouble(UDFToInteger((_col0 / UDFToDouble(2)))) (type: double)
                         sort order: +
-                        Map-reduce partition columns: UDFToDouble(UDFToInteger((_col0 / 2.0))) (type: double)
+                        Map-reduce partition columns: UDFToDouble(UDFToInteger((_col0 / UDFToDouble(2)))) (type: double)
                         Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
-                        expressions: UDFToDouble(UDFToInteger((_col0 / 2.0))) (type: double)
+                        expressions: UDFToDouble(UDFToInteger((_col0 / UDFToDouble(2)))) (type: double)
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
@@ -1386,7 +1386,7 @@ STAGE PLANS:
                      Inner Join 0 to 1
                 keys:
                   0 UDFToDouble(_col0) (type: double)
-                  1 UDFToDouble(UDFToInteger((_col0 / 2.0))) (type: double)
+                  1 UDFToDouble(UDFToInteger((_col0 / UDFToDouble(2)))) (type: double)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -1612,9 +1612,9 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: UDFToDouble(UDFToInteger((_col0 / 2.0))) (type: double)
+                        key expressions: UDFToDouble(UDFToInteger((_col0 / UDFToDouble(2)))) (type: double)
                         sort order: +
-                        Map-reduce partition columns: UDFToDouble(UDFToInteger((_col0 / 2.0))) (type: double)
+                        Map-reduce partition columns: UDFToDouble(UDFToInteger((_col0 / UDFToDouble(2)))) (type: double)
                         Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
         Reducer 2 
@@ -1625,7 +1625,7 @@ STAGE PLANS:
                      Inner Join 0 to 1
                 keys:
                   0 UDFToDouble(_col0) (type: double)
-                  1 UDFToDouble(UDFToInteger((_col0 / 2.0))) (type: double)
+                  1 UDFToDouble(UDFToInteger((_col0 / UDFToDouble(2)))) (type: double)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -2766,11 +2766,13 @@ STAGE PLANS:
                     predicate: ((UDFToDouble(hour) = 11.0) and (UDFToDouble(hr) = 11.0)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
+                      expressions: hr (type: string)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: '11' (type: string)
+                        key expressions: _col0 (type: string)
                         sort order: +
-                        Map-reduce partition columns: '11' (type: string)
+                        Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
         Reducer 2 
@@ -2797,7 +2799,7 @@ STAGE PLANS:
                      Inner Join 0 to 1
                 keys:
                   0 _col1 (type: string)
-                  1 '11' (type: string)
+                  1 _col0 (type: string)
                 Statistics: Num rows: 1210 Data size: 12854 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -2879,14 +2881,15 @@ STAGE PLANS:
                     predicate: ((UDFToDouble(hr) = 13.0) and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
-                      expressions: ds (type: string)
-                      outputColumnNames: _col0
+                      expressions: ds (type: string), hr (type: string)
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                        value expressions: _col1 (type: string)
             Execution mode: vectorized, llap
         Map 5 
             Map Operator Tree:
@@ -2917,11 +2920,13 @@ STAGE PLANS:
                     predicate: (UDFToDouble(hr) = 13.0) (type: boolean)
                     Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
+                      expressions: hr (type: string)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: '13' (type: string)
+                        key expressions: _col0 (type: string)
                         sort order: +
-                        Map-reduce partition columns: '13' (type: string)
+                        Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
         Reducer 2 
@@ -2933,11 +2938,12 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
+                outputColumnNames: _col1
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                 Reduce Output Operator
-                  key expressions: '13' (type: string)
+                  key expressions: _col1 (type: string)
                   sort order: +
-                  Map-reduce partition columns: '13' (type: string)
+                  Map-reduce partition columns: _col1 (type: string)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
         Reducer 3 
             Execution mode: llap
@@ -2946,8 +2952,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 '13' (type: string)
-                  1 '13' (type: string)
+                  0 _col1 (type: string)
+                  1 _col0 (type: string)
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -4295,7 +4301,7 @@ STAGE PLANS:
                            Inner Join 0 to 1
                       keys:
                         0 UDFToDouble(_col0) (type: double)
-                        1 UDFToDouble(UDFToInteger((_col0 / 2.0))) (type: double)
+                        1 UDFToDouble(UDFToInteger((_col0 / UDFToDouble(2)))) (type: double)
                       input vertices:
                         1 Map 3
                       Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
@@ -4324,12 +4330,12 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: UDFToDouble(UDFToInteger((_col0 / 2.0))) (type: double)
+                        key expressions: UDFToDouble(UDFToInteger((_col0 / UDFToDouble(2)))) (type: double)
                         sort order: +
-                        Map-reduce partition columns: UDFToDouble(UDFToInteger((_col0 / 2.0))) (type: double)
+                        Map-reduce partition columns: UDFToDouble(UDFToInteger((_col0 / UDFToDouble(2)))) (type: double)
                         Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
-                        expressions: UDFToDouble(UDFToInteger((_col0 / 2.0))) (type: double)
+                        expressions: UDFToDouble(UDFToInteger((_col0 / UDFToDouble(2)))) (type: double)
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
@@ -4980,7 +4986,7 @@ STAGE PLANS:
                              Inner Join 0 to 1
                         keys:
                           0 _col1 (type: string)
-                          1 '11' (type: string)
+                          1 _col0 (type: string)
                         input vertices:
                           1 Map 4
                         Statistics: Num rows: 1210 Data size: 12854 Basic stats: COMPLETE Column stats: NONE
@@ -5039,11 +5045,13 @@ STAGE PLANS:
                     predicate: ((UDFToDouble(hour) = 11.0) and (UDFToDouble(hr) = 11.0)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
+                      expressions: hr (type: string)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: '11' (type: string)
+                        key expressions: _col0 (type: string)
                         sort order: +
-                        Map-reduce partition columns: '11' (type: string)
+                        Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
         Reducer 2 
@@ -5116,14 +5124,15 @@ STAGE PLANS:
                     predicate: ((UDFToDouble(hr) = 13.0) and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
-                      expressions: ds (type: string)
-                      outputColumnNames: _col0
+                      expressions: ds (type: string), hr (type: string)
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                        value expressions: _col1 (type: string)
             Execution mode: vectorized, llap
         Map 2 
             Map Operator Tree:
@@ -5144,6 +5153,7 @@ STAGE PLANS:
                         keys:
                           0 _col0 (type: string)
                           1 _col0 (type: string)
+                        outputColumnNames: _col1
                         input vertices:
                           0 Map 1
                         Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
@@ -5152,8 +5162,8 @@ STAGE PLANS:
                           condition map:
                                Inner Join 0 to 1
                           keys:
-                            0 '13' (type: string)
-                            1 '13' (type: string)
+                            0 _col1 (type: string)
+                            1 _col0 (type: string)
                           input vertices:
                             1 Map 4
                           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
@@ -5178,11 +5188,13 @@ STAGE PLANS:
                     predicate: (UDFToDouble(hr) = 13.0) (type: boolean)
                     Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
+                      expressions: hr (type: string)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: '13' (type: string)
+                        key expressions: _col0 (type: string)
                         sort order: +
-                        Map-reduce partition columns: '13' (type: string)
+                        Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
         Reducer 3 
