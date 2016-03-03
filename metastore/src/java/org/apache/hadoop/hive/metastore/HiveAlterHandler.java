@@ -177,7 +177,7 @@ public class HiveAlterHandler implements AlterHandler {
         // get new location
         Database db = msdb.getDatabase(newt.getDbName());
         Path databasePath = constructRenamedPath(wh.getDatabasePath(db), srcPath);
-        destPath = new Path(databasePath, newt.getTableName());
+        destPath = new Path(databasePath, newt.getTableName().toLowerCase());
         destFs = wh.getFs(destPath);
 
         newt.getSd().setLocation(destPath.toString());

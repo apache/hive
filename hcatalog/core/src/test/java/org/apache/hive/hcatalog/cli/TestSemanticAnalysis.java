@@ -239,6 +239,21 @@ public class TestSemanticAnalysis extends HCatBaseTest {
   }
 
   @Test
+  public void testAlterTableRename() throws CommandNeedRetryException, TException {
+    hcatDriver.run("drop table oldname");
+    hcatDriver.run("drop table newname");
+    hcatDriver.run("create table oldname (a int)");
+    Table tbl = client.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, "oldname");
+    assertTrue(tbl.getSd().getLocation().contains("oldname"));
+
+    hcatDriver.run("alter table oldname rename to newNAME");
+    tbl = client.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, "newname");
+    assertTrue(tbl.getSd().getLocation().contains("newname"));
+
+    hcatDriver.run("drop table newname");
+  }
+
+  @Test
   public void testAlterTableSetFF() throws IOException, MetaException, TException, NoSuchObjectException, CommandNeedRetryException {
 
     hcatDriver.run("drop table junit_sem_analysis");
