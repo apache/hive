@@ -101,10 +101,10 @@ public class MemoryManager {
    * Light weight thread-safety check for multi-threaded access patterns
    */
   private void checkOwner() {
-    Preconditions.checkArgument(ownerLock.isHeldByCurrentThread(),
-        "Owner thread expected %s, got %s",
-        ownerLock.getOwner(),
-        Thread.currentThread());
+    if (!ownerLock.isHeldByCurrentThread()) {
+      LOG.warn("Owner thread expected {}, got {}",
+          ownerLock.getOwner(), Thread.currentThread());
+    }
   }
 
   /**
