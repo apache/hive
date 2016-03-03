@@ -37,6 +37,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -86,6 +88,7 @@ public class TestJdbcWithMiniLlap {
   private static Path kvDataFilePath;
   private static final String tmpDir = System.getProperty("test.tmp.dir");
 
+  private static HiveConf conf = null;
   private Connection hs2Conn = null;
 
   @BeforeClass
@@ -98,7 +101,7 @@ public class TestJdbcWithMiniLlap {
       System.out.println("Setting hive-site: "+HiveConf.getHiveSiteLocation());
     }
 
-    HiveConf conf = new HiveConf();
+    conf = new HiveConf();
     conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     // Necessary for GetSplits()/LlapInputFormat,
     // the config generated for the query fragment needs to include the MapWork
@@ -109,7 +112,7 @@ public class TestJdbcWithMiniLlap {
     conf.addResource(new URL("file://" + new File(confDir).toURI().getPath()
         + "/llap-daemon-site.xml"));
 
-    miniHS2 = new MiniHS2(conf, MiniClusterType.LLAP, true);
+    miniHS2 = new MiniHS2(conf, MiniClusterType.LLAP);
 
     dataFileDir = conf.get("test.data.files").replace('\\', '/').replace("c:", "");
     kvDataFilePath = new Path(dataFileDir, "kv1.txt");
@@ -160,21 +163,54 @@ public class TestJdbcWithMiniLlap {
     stmt.close();
   }
 
-  @Test
-  public void testLlapInputFormatEndToEnd() throws Exception {
-    createTestTable("testtab1");
+  private static boolean timedOut = false;
+
+  private static class TestTimerTask extends TimerTask {
+    private boolean timedOut = false;
+    private Thread threadToInterrupt;
+
+    public TestTimerTask(Thread threadToInterrupt) {
+      this.threadToInterrupt = threadToInterrupt;
+    }
+
+    @Override
+    public void run() {
+      System.out.println("Test timed out!");
+      timedOut = true;
+      threadToInterrupt.interrupt();
+    }
+
+    public boolean isTimedOut() {
+      return timedOut;
+    }
+
+    public void setTimedOut(boolean timedOut) {
+      this.timedOut = timedOut;
+    }
+
+  }
+
+  private int getLlapIFRowCount(String query, int numSplits) throws Exception {
+    // Add a timer task to stop this test if it has not finished in a reasonable amount of time.
+    Timer timer = new Timer();
+    long delay = 30000;
+    TestTimerTask timerTask = new TestTimerTask(Thread.currentThread());
+    timer.schedule(timerTask, delay);
+
+    // Setup LlapInputFormat
     String url = miniHS2.getJdbcURL();
     String user = System.getProperty("user.name");
     String pwd = user;
-    String query = "select * from testtab1 where under_col = 0";
 
     LlapInputFormat inputFormat = new LlapInputFormat(url, user, pwd, query);
-    JobConf job = new JobConf();
-    int numSplits = 1;
+
+    // Get splits
+    JobConf job = new JobConf(conf);
 
     InputSplit[] splits = inputFormat.getSplits(job, numSplits);
-    assert(splits.length > 0);
+    assertTrue(splits.length > 0);
 
+    // Fetch rows from splits
     boolean first = true;
     int rowCount = 0;
     for (InputSplit split : splits) {
@@ -198,6 +234,26 @@ public class TestJdbcWithMiniLlap {
         ++rowCount;
       }
     }
+
+    timer.cancel();
+    assertFalse("Test timed out", timerTask.isTimedOut());
+
+    return rowCount;
+  }
+
+  @Test
+  public void testLlapInputFormatEndToEnd() throws Exception {
+    createTestTable("testtab1");
+
+    int rowCount;
+
+    String query = "select * from testtab1 where under_col = 0";
+    rowCount = getLlapIFRowCount(query, 1);
     assertEquals(3, rowCount);
+
+    // Try empty rows query
+    query = "select * from testtab1 where true = false";
+    rowCount = getLlapIFRowCount(query, 1);
+    assertEquals(0, rowCount);
   }
 }

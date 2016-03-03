@@ -19,9 +19,6 @@ package org.apache.hadoop.hive.llap;
 import java.util.Map;
 import java.util.HashMap;
 import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.slf4j.Logger;
@@ -45,8 +42,22 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import com.google.common.base.Preconditions;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.DelimiterBasedFrameDecoder;
+import io.netty.handler.codec.Delimiters;
+import io.netty.handler.codec.string.StringDecoder;
+import io.netty.handler.codec.string.StringEncoder;
+import io.netty.util.concurrent.Future;
+
 
 /**
  *
@@ -57,18 +68,17 @@ public class LlapOutputFormatService {
 
   private static LlapOutputFormatService service;
   private final Map<String, RecordWriter> writers;
-  private final ServerSocket socket;
   private final HiveConf conf;
-  private final ExecutorService executor;
   private static final int WAIT_TIME = 5;
+  private static final int MAX_QUERY_ID_LENGTH = 256;
+
+  private EventLoopGroup eventLoopGroup;
+  private ServerBootstrap serverBootstrap;
+  private ChannelFuture listeningChannelFuture;
 
   private LlapOutputFormatService() throws IOException {
     writers = new HashMap<String, RecordWriter>();
     conf = new HiveConf();
-    executor = Executors.newSingleThreadExecutor(
-      new ThreadFactoryBuilder().setDaemon(true).setNameFormat("LLAP output %d").build());
-    socket = new ServerSocket(
-      conf.getIntVar(HiveConf.ConfVars.LLAP_DAEMON_OUTPUT_SERVICE_PORT));
   }
 
   public static LlapOutputFormatService get() throws IOException {
@@ -80,52 +90,34 @@ public class LlapOutputFormatService {
   }
 
   public void start() throws IOException {
-    executor.submit(new Runnable() {
-        byte[] buffer = new byte[4096];
-        @Override
-        public void run() {
-          while (true) {
-            Socket s = null;
-            try {
-              s = socket.accept();
-              String id = readId(s);
-              LOG.debug("Received: "+id);
-              registerReader(s, id);
-            } catch (IOException io) {
-              if (s != null) {
-                try{
-                  s.close();
-                } catch (IOException io2) {
-                  // ignore
-                }
-              }
-            }
-          }
-        }
+    LOG.info("Starting LlapOutputFormatService");
 
-        private String readId(Socket s) throws IOException {
-          InputStream in = s.getInputStream();
-          int idx = 0;
-          while((buffer[idx++] = (byte)in.read()) != '\0') {}
-          return new String(buffer,0,idx-1);
-        }
-
-        private void registerReader(Socket s, String id) throws IOException {
-          synchronized(service) {
-            LOG.debug("registering socket for: "+id);
-            LlapRecordWriter writer = new LlapRecordWriter(s.getOutputStream());
-            writers.put(id, writer);
-            service.notifyAll();
-          }
-        }
-      }
-      );
+    int port = conf.getIntVar(HiveConf.ConfVars.LLAP_DAEMON_OUTPUT_SERVICE_PORT);
+    eventLoopGroup = new NioEventLoopGroup(1);
+    serverBootstrap = new ServerBootstrap();
+    serverBootstrap.group(eventLoopGroup);
+    serverBootstrap.channel(NioServerSocketChannel.class);
+    serverBootstrap.childHandler(new LlapOutputFormatServiceChannelHandler());
+    try {
+      LOG.info("LlapOutputFormatService: Binding to port " + port);
+      listeningChannelFuture = serverBootstrap.bind(port).sync();
+    } catch (InterruptedException err) {
+      throw new IOException("LlapOutputFormatService: Error binding to port " + port, err);
+    }
   }
 
   public void stop() throws IOException, InterruptedException {
-    executor.shutdown();
-    executor.awaitTermination(WAIT_TIME, TimeUnit.SECONDS);
-    socket.close();
+    LOG.info("Stopping LlapOutputFormatService");
+
+    if (listeningChannelFuture != null) {
+      listeningChannelFuture.channel().close().sync();
+      listeningChannelFuture = null;
+    } else {
+      LOG.warn("LlapOutputFormatService does not appear to have a listening port to close.");
+    }
+
+    Future terminationFuture = eventLoopGroup.shutdownGracefully(1, WAIT_TIME, TimeUnit.SECONDS);
+    terminationFuture.sync();
   }
 
   public <K,V> RecordWriter<K, V> getWriter(String id) throws IOException, InterruptedException {
@@ -138,5 +130,60 @@ public class LlapOutputFormatService {
     }
     LOG.info("Returning writer for: "+id);
     return writer;
+  }
+
+  protected class LlapOutputFormatServiceHandler extends SimpleChannelInboundHandler<String> {
+    @Override
+    public void channelRead0(ChannelHandlerContext ctx, String msg) {
+      String id = msg;
+      registerReader(ctx, id);
+    }
+
+    private void registerReader(ChannelHandlerContext ctx, String id) {
+      synchronized(service) {
+        LOG.debug("registering socket for: "+id);
+        int bufSize = 128 * 1024; // configable?
+        OutputStream stream = new ChannelOutputStream(ctx, id, bufSize);
+        LlapRecordWriter writer = new LlapRecordWriter(stream);
+        writers.put(id, writer);
+
+        // Add listener to handle any cleanup for when the connection is closed
+        ctx.channel().closeFuture().addListener(new LlapOutputFormatChannelCloseListener(id));
+
+        service.notifyAll();
+      }
+    }
+  }
+
+  protected class LlapOutputFormatChannelCloseListener implements ChannelFutureListener {
+    private String id;
+
+    LlapOutputFormatChannelCloseListener(String id) {
+      this.id = id;
+    }
+
+    @Override
+    public void operationComplete(ChannelFuture future) throws Exception {
+      RecordWriter writer = null;
+
+      synchronized (service) {
+        writer = writers.remove(id);
+      }
+
+      if (writer == null) {
+        LOG.warn("Did not find a writer for ID " + id);
+      }
+    }
+  }
+
+  protected class LlapOutputFormatServiceChannelHandler extends ChannelInitializer<SocketChannel> {
+    @Override
+    public void initChannel(SocketChannel ch) throws Exception {
+        ch.pipeline().addLast(
+            new DelimiterBasedFrameDecoder(MAX_QUERY_ID_LENGTH, Delimiters.nulDelimiter()),
+            new StringDecoder(),
+            new StringEncoder(),
+            new LlapOutputFormatServiceHandler());
+    }
   }
 }

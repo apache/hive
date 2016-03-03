@@ -203,17 +203,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           }
         }
       }
-      try {
-        if ("org.apache.hadoop.hive.llap.LlapStorageHandler".equals(getConf().getTableInfo().getProperties().
-            get(hive_metastoreConstants.META_TABLE_STORAGE))) {
-          (new LlapOutputFormat())
-              .getRecordWriter(null,
-                  hconf instanceof JobConf ? (JobConf) hconf : new JobConf(hconf), null, null)
-              .close(null);
-        }
-      } catch (IOException e) {
-        // ignored
-      }
+
       try {
         for (int i = 0; i < updaters.length; i++) {
           if (updaters[i] != null) {
