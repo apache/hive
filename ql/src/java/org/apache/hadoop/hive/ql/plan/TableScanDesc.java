@@ -26,6 +26,7 @@ import java.util.Map;
 import org.apache.hadoop.hive.ql.exec.PTFUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
+import org.apache.hadoop.hive.serde.serdeConstants;
 
 /**
  * Table Scan Descriptor Currently, data is only read from a base source as part
@@ -267,5 +268,20 @@ public class TableScanDesc extends AbstractOperatorDesc {
 
   public Table getTableMetadata() {
     return tableMetadata;
+  }
+
+  public boolean isNeedSkipHeaderFooters() {
+    boolean rtn = false;
+    if (tableMetadata != null && tableMetadata.getTTable() != null) {
+      Map<String, String> params = tableMetadata.getTTable().getParameters();
+      if (params != null) {
+        String skipHVal = params.get(serdeConstants.HEADER_COUNT);
+        int hcount = skipHVal == null? 0 : Integer.parseInt(skipHVal);
+        String skipFVal = params.get(serdeConstants.FOOTER_COUNT);
+        int fcount = skipFVal == null? 0 : Integer.parseInt(skipFVal);
+        rtn = (hcount != 0 || fcount !=0 );
+      }
+    }
+    return rtn;
   }
 }

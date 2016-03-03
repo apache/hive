@@ -1,0 +1,267 @@
+PREHOOK: query: DROP TABLE IF EXISTS skipHTbl
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS skipHTbl
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE skipHTbl (a int) 
+PARTITIONED BY (b int) 
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' 
+TBLPROPERTIES('skip.header.line.count'='1')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@skipHTbl
+POSTHOOK: query: CREATE TABLE skipHTbl (a int) 
+PARTITIONED BY (b int) 
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' 
+TBLPROPERTIES('skip.header.line.count'='1')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@skipHTbl
+PREHOOK: query: INSERT OVERWRITE TABLE skipHTbl PARTITION (b = 1) VALUES (1), (2), (3), (4)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__1
+PREHOOK: Output: default@skiphtbl@b=1
+POSTHOOK: query: INSERT OVERWRITE TABLE skipHTbl PARTITION (b = 1) VALUES (1), (2), (3), (4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__1
+POSTHOOK: Output: default@skiphtbl@b=1
+POSTHOOK: Lineage: skiphtbl PARTITION(b=1).a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: INSERT OVERWRITE TABLE skipHTbl PARTITION (b = 2) VALUES (1), (2), (3), (4)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__2
+PREHOOK: Output: default@skiphtbl@b=2
+POSTHOOK: query: INSERT OVERWRITE TABLE skipHTbl PARTITION (b = 2) VALUES (1), (2), (3), (4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__2
+POSTHOOK: Output: default@skiphtbl@b=2
+POSTHOOK: Lineage: skiphtbl PARTITION(b=2).a EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: SELECT * FROM skipHTbl
+PREHOOK: type: QUERY
+PREHOOK: Input: default@skiphtbl
+PREHOOK: Input: default@skiphtbl@b=1
+PREHOOK: Input: default@skiphtbl@b=2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM skipHTbl
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@skiphtbl
+POSTHOOK: Input: default@skiphtbl@b=1
+POSTHOOK: Input: default@skiphtbl@b=2
+#### A masked pattern was here ####
+2	1
+3	1
+4	1
+2	2
+3	2
+4	2
+PREHOOK: query: SELECT DISTINCT b FROM skipHTbl
+PREHOOK: type: QUERY
+PREHOOK: Input: default@skiphtbl
+PREHOOK: Input: default@skiphtbl@b=1
+PREHOOK: Input: default@skiphtbl@b=2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT DISTINCT b FROM skipHTbl
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@skiphtbl
+POSTHOOK: Input: default@skiphtbl@b=1
+POSTHOOK: Input: default@skiphtbl@b=2
+#### A masked pattern was here ####
+1
+2
+PREHOOK: query: SELECT MAX(b) FROM skipHTbl
+PREHOOK: type: QUERY
+PREHOOK: Input: default@skiphtbl
+PREHOOK: Input: default@skiphtbl@b=1
+PREHOOK: Input: default@skiphtbl@b=2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT MAX(b) FROM skipHTbl
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@skiphtbl
+POSTHOOK: Input: default@skiphtbl@b=1
+POSTHOOK: Input: default@skiphtbl@b=2
+#### A masked pattern was here ####
+2
+PREHOOK: query: SELECT DISTINCT a FROM skipHTbl
+PREHOOK: type: QUERY
+PREHOOK: Input: default@skiphtbl
+PREHOOK: Input: default@skiphtbl@b=1
+PREHOOK: Input: default@skiphtbl@b=2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT DISTINCT a FROM skipHTbl
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@skiphtbl
+POSTHOOK: Input: default@skiphtbl@b=1
+POSTHOOK: Input: default@skiphtbl@b=2
+#### A masked pattern was here ####
+2
+3
+4
+PREHOOK: query: INSERT OVERWRITE TABLE skipHTbl PARTITION (b = 1) VALUES (1)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__3
+PREHOOK: Output: default@skiphtbl@b=1
+POSTHOOK: query: INSERT OVERWRITE TABLE skipHTbl PARTITION (b = 1) VALUES (1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__3
+POSTHOOK: Output: default@skiphtbl@b=1
+POSTHOOK: Lineage: skiphtbl PARTITION(b=1).a EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: INSERT OVERWRITE TABLE skipHTbl PARTITION (b = 2) VALUES (1), (2), (3), (4)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__4
+PREHOOK: Output: default@skiphtbl@b=2
+POSTHOOK: query: INSERT OVERWRITE TABLE skipHTbl PARTITION (b = 2) VALUES (1), (2), (3), (4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__4
+POSTHOOK: Output: default@skiphtbl@b=2
+POSTHOOK: Lineage: skiphtbl PARTITION(b=2).a EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: SELECT DISTINCT b FROM skipHTbl
+PREHOOK: type: QUERY
+PREHOOK: Input: default@skiphtbl
+PREHOOK: Input: default@skiphtbl@b=1
+PREHOOK: Input: default@skiphtbl@b=2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT DISTINCT b FROM skipHTbl
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@skiphtbl
+POSTHOOK: Input: default@skiphtbl@b=1
+POSTHOOK: Input: default@skiphtbl@b=2
+#### A masked pattern was here ####
+2
+PREHOOK: query: SELECT MIN(b) FROM skipHTbl
+PREHOOK: type: QUERY
+PREHOOK: Input: default@skiphtbl
+PREHOOK: Input: default@skiphtbl@b=1
+PREHOOK: Input: default@skiphtbl@b=2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT MIN(b) FROM skipHTbl
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@skiphtbl
+POSTHOOK: Input: default@skiphtbl@b=1
+POSTHOOK: Input: default@skiphtbl@b=2
+#### A masked pattern was here ####
+2
+PREHOOK: query: SELECT DISTINCT a FROM skipHTbl
+PREHOOK: type: QUERY
+PREHOOK: Input: default@skiphtbl
+PREHOOK: Input: default@skiphtbl@b=1
+PREHOOK: Input: default@skiphtbl@b=2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT DISTINCT a FROM skipHTbl
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@skiphtbl
+POSTHOOK: Input: default@skiphtbl@b=1
+POSTHOOK: Input: default@skiphtbl@b=2
+#### A masked pattern was here ####
+2
+3
+4
+PREHOOK: query: DROP TABLE IF EXISTS skipFTbl
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS skipFTbl
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE skipFTbl (a int) 
+PARTITIONED BY (b int) 
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' 
+TBLPROPERTIES('skip.footer.line.count'='1')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@skipFTbl
+POSTHOOK: query: CREATE TABLE skipFTbl (a int) 
+PARTITIONED BY (b int) 
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' 
+TBLPROPERTIES('skip.footer.line.count'='1')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@skipFTbl
+PREHOOK: query: INSERT OVERWRITE TABLE skipFTbl PARTITION (b = 1) VALUES (1), (2), (3), (4)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__5
+PREHOOK: Output: default@skipftbl@b=1
+POSTHOOK: query: INSERT OVERWRITE TABLE skipFTbl PARTITION (b = 1) VALUES (1), (2), (3), (4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__5
+POSTHOOK: Output: default@skipftbl@b=1
+POSTHOOK: Lineage: skipftbl PARTITION(b=1).a EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: INSERT OVERWRITE TABLE skipFTbl PARTITION (b = 2) VALUES (1), (2), (3), (4)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__6
+PREHOOK: Output: default@skipftbl@b=2
+POSTHOOK: query: INSERT OVERWRITE TABLE skipFTbl PARTITION (b = 2) VALUES (1), (2), (3), (4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__6
+POSTHOOK: Output: default@skipftbl@b=2
+POSTHOOK: Lineage: skipftbl PARTITION(b=2).a EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: SELECT * FROM skipFTbl
+PREHOOK: type: QUERY
+PREHOOK: Input: default@skipftbl
+PREHOOK: Input: default@skipftbl@b=1
+PREHOOK: Input: default@skipftbl@b=2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM skipFTbl
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@skipftbl
+POSTHOOK: Input: default@skipftbl@b=1
+POSTHOOK: Input: default@skipftbl@b=2
+#### A masked pattern was here ####
+1	1
+2	1
+3	1
+1	2
+2	2
+3	2
+PREHOOK: query: SELECT DISTINCT b FROM skipFTbl
+PREHOOK: type: QUERY
+PREHOOK: Input: default@skipftbl
+PREHOOK: Input: default@skipftbl@b=1
+PREHOOK: Input: default@skipftbl@b=2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT DISTINCT b FROM skipFTbl
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@skipftbl
+POSTHOOK: Input: default@skipftbl@b=1
+POSTHOOK: Input: default@skipftbl@b=2
+#### A masked pattern was here ####
+1
+2
+PREHOOK: query: SELECT MAX(b) FROM skipFTbl
+PREHOOK: type: QUERY
+PREHOOK: Input: default@skipftbl
+PREHOOK: Input: default@skipftbl@b=1
+PREHOOK: Input: default@skipftbl@b=2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT MAX(b) FROM skipFTbl
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@skipftbl
+POSTHOOK: Input: default@skipftbl@b=1
+POSTHOOK: Input: default@skipftbl@b=2
+#### A masked pattern was here ####
+2
+PREHOOK: query: SELECT DISTINCT a FROM skipFTbl
+PREHOOK: type: QUERY
+PREHOOK: Input: default@skipftbl
+PREHOOK: Input: default@skipftbl@b=1
+PREHOOK: Input: default@skipftbl@b=2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT DISTINCT a FROM skipFTbl
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@skipftbl
+POSTHOOK: Input: default@skipftbl@b=1
+POSTHOOK: Input: default@skipftbl@b=2
+#### A masked pattern was here ####
+1
+2
+3
+PREHOOK: query: DROP TABLE skipHTbl
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@skiphtbl
+PREHOOK: Output: default@skiphtbl
+POSTHOOK: query: DROP TABLE skipHTbl
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@skiphtbl
+POSTHOOK: Output: default@skiphtbl
+PREHOOK: query: DROP TABLE skipFTbl
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@skipftbl
+PREHOOK: Output: default@skipftbl
+POSTHOOK: query: DROP TABLE skipFTbl
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@skipftbl
+POSTHOOK: Output: default@skipftbl

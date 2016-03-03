@@ -119,7 +119,8 @@ public class MetadataOnlyOptimizer implements PhysicalPlanResolver {
       boolean noColNeeded = (colIDs == null) || (colIDs.isEmpty());
       boolean noVCneeded = (desc == null) || (desc.getVirtualCols() == null)
                              || (desc.getVirtualCols().isEmpty());
-      if (noColNeeded && noVCneeded) {
+      boolean isSkipHF = desc.isNeedSkipHeaderFooters();
+      if (noColNeeded && noVCneeded && !isSkipHF) {
         walkerCtx.setMayBeMetadataOnly(tsOp);
       }
       return nd;
