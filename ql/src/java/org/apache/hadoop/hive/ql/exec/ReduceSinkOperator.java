@@ -568,6 +568,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
     }
     super.closeOp(abort);
     out = null;
+    random = null;
     if (isLogInfoEnabled) {
       LOG.info(toString() + ": records written - " + numRows);
     }
