@@ -6092,6 +6092,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         HMSHandler.LOG.warn(e.getMessage());
       }
     }
+    HiveStringUtils.startupShutdownMessage(HiveMetaStore.class, args, LOG);
 
     try {
       String msg = "Starting hive metastore on port " + cli.port;
