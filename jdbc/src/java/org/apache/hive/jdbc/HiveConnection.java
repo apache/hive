@@ -296,8 +296,14 @@ public class HiveConnection implements java.sql.Connection {
           new HttpKerberosRequestInterceptor(sessConfMap.get(JdbcConnectionParams.AUTH_PRINCIPAL),
               host, getServerHttpUrl(useSsl), assumeSubject, cookieStore, cookieName, useSsl,
               additionalHttpHeaders);
-    }
-    else {
+    } else {
+      // Check for delegation token, if present add it in the header
+      String tokenStr = getClientDelegationToken(sessConfMap);
+      if (tokenStr != null) {
+        requestInterceptor =
+            new HttpTokenAuthInterceptor(tokenStr, cookieStore, cookieName, useSsl,
+                additionalHttpHeaders);
+      } else {
       /**
        * Add an interceptor to pass username/password in the header.
        * In https mode, the entire information is encrypted
@@ -305,6 +311,7 @@ public class HiveConnection implements java.sql.Connection {
       requestInterceptor = new HttpBasicAuthInterceptor(getUserName(), getPassword(),
                                                         cookieStore, cookieName, useSsl,
                                                         additionalHttpHeaders);
+      }
     }
     // Configure http client for cookie based authentication
     if (isCookieEnabled) {

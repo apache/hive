@@ -436,32 +436,32 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
   public void init(Object hmsHandler, ServerMode smode) {
     this.serverMode = smode;
     zkConnectString =
-        conf.get(HadoopThriftAuthBridge.Server.DELEGATION_TOKEN_STORE_ZK_CONNECT_STR, null);
+        conf.get(HiveDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_CONNECT_STR, null);
     if (zkConnectString == null || zkConnectString.trim().isEmpty()) {
       // try alternate config param
       zkConnectString =
           conf.get(
-              HadoopThriftAuthBridge.Server.DELEGATION_TOKEN_STORE_ZK_CONNECT_STR_ALTERNATE,
+              HiveDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_CONNECT_STR_ALTERNATE,
               null);
       if (zkConnectString == null || zkConnectString.trim().isEmpty()) {
         throw new IllegalArgumentException("Zookeeper connect string has to be specifed through "
-            + "either " + HadoopThriftAuthBridge.Server.DELEGATION_TOKEN_STORE_ZK_CONNECT_STR
+            + "either " + HiveDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_CONNECT_STR
             + " or "
-            + HadoopThriftAuthBridge.Server.DELEGATION_TOKEN_STORE_ZK_CONNECT_STR_ALTERNATE
+            + HiveDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_CONNECT_STR_ALTERNATE
             + WHEN_ZK_DSTORE_MSG);
       }
     }
     connectTimeoutMillis =
         conf.getInt(
-            HadoopThriftAuthBridge.Server.DELEGATION_TOKEN_STORE_ZK_CONNECT_TIMEOUTMILLIS,
+            HiveDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_CONNECT_TIMEOUTMILLIS,
             CuratorFrameworkFactory.builder().getConnectionTimeoutMs());
-    String aclStr = conf.get(HadoopThriftAuthBridge.Server.DELEGATION_TOKEN_STORE_ZK_ACL, null);
+    String aclStr = conf.get(HiveDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_ACL, null);
     if (StringUtils.isNotBlank(aclStr)) {
       this.newNodeAcl = parseACLs(aclStr);
     }
     rootNode =
-        conf.get(HadoopThriftAuthBridge.Server.DELEGATION_TOKEN_STORE_ZK_ZNODE,
-            HadoopThriftAuthBridge.Server.DELEGATION_TOKEN_STORE_ZK_ZNODE_DEFAULT) + serverMode;
+        conf.get(HiveDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_ZNODE,
+            HiveDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_ZNODE_DEFAULT) + serverMode;
 
     try {
       // Install the JAAS Configuration for the runtime

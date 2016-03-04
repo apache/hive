@@ -76,16 +76,6 @@ public class TokenStoreDelegationTokenSecretManager extends DelegationTokenSecre
     this.tokenStore = sharedStore;
   }
 
-  protected DelegationTokenIdentifier getTokenIdentifier(Token<DelegationTokenIdentifier> token)
-      throws IOException {
-    // turn bytes back into identifier for cache lookup
-    ByteArrayInputStream buf = new ByteArrayInputStream(token.getIdentifier());
-    DataInputStream in = new DataInputStream(buf);
-    DelegationTokenIdentifier id = createIdentifier();
-    id.readFields(in);
-    return id;
-  }
-
   protected Map<Integer, DelegationKey> reloadKeys() {
     // read keys from token store
     String[] allKeys = tokenStore.getMasterKeys();
