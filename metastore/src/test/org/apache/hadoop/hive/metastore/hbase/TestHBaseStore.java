@@ -402,7 +402,7 @@ public class TestHBaseStore {
     Map<String, String> params = new HashMap<String, String>();
     params.put("key", "value");
     StorageDescriptor sd = new StorageDescriptor(cols, "file:/tmp", "input", "output", false, 17,
-        serde, Arrays.asList("bucketcol"), Arrays.asList(new Order("sortcol", 1, 0)), params);
+        serde, Arrays.asList("bucketcol"), Arrays.asList(new Order("sortcol", 1)), params);
     Table table = new Table(tableName, "default", "me", startTime, startTime, 0, sd, null,
         emptyParameters, null, null, null);
     store.createTable(table);
@@ -424,7 +424,6 @@ public class TestHBaseStore {
     Assert.assertEquals(1, t.getSd().getSortColsSize());
     Assert.assertEquals("sortcol", t.getSd().getSortCols().get(0).getCol());
     Assert.assertEquals(1, t.getSd().getSortCols().get(0).getOrder());
-    Assert.assertEquals(0, t.getSd().getSortCols().get(0).getNullOrder());
     Assert.assertEquals(1, t.getSd().getParametersSize());
     Assert.assertEquals("value", t.getSd().getParameters().get("key"));
     Assert.assertEquals("me", t.getOwner());
@@ -1274,7 +1273,7 @@ public class TestHBaseStore {
     Map<String, String> params = new HashMap<String, String>();
     params.put("key", "value");
     StorageDescriptor sd = new StorageDescriptor(cols, "file:/tmp", "input", "output", false, 17,
-        serde, Arrays.asList("bucketcol"), Arrays.asList(new Order("sortcol", 1, 0)), params);
+        serde, Arrays.asList("bucketcol"), Arrays.asList(new Order("sortcol", 1)), params);
     int currentTime = (int)(System.currentTimeMillis() / 1000);
     Table table = new Table(TBL, DB, "me", currentTime, currentTime, 0, sd, cols,
         emptyParameters, null, null, null);
@@ -1292,7 +1291,7 @@ public class TestHBaseStore {
     Map<String, String> params = new HashMap<String, String>();
     params.put("key", "value");
     StorageDescriptor sd = new StorageDescriptor(cols, "file:/tmp", "input", "output", false, 17,
-        serde, Arrays.asList("bucketcol"), Arrays.asList(new Order("sortcol", 1, 0)), params);
+        serde, Arrays.asList("bucketcol"), Arrays.asList(new Order("sortcol", 1)), params);
     int currentTime = (int)(System.currentTimeMillis() / 1000);
     Table table = new Table(TBL, DB, "me", currentTime, currentTime, 0, sd, cols,
         emptyParameters, null, null, null);

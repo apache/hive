@@ -224,7 +224,7 @@ public class TestWorker extends CompactorTest {
   @Test
   public void sortedTable() throws Exception {
     List<Order> sortCols = new ArrayList<Order>(1);
-    sortCols.add(new Order("b", 1, 0));
+    sortCols.add(new Order("b", 1));
 
     Table t = newTable("default", "st", false, new HashMap<String, String>(), sortCols, false);
 
@@ -249,7 +249,7 @@ public class TestWorker extends CompactorTest {
   @Test
   public void sortedPartition() throws Exception {
     List<Order> sortCols = new ArrayList<Order>(1);
-    sortCols.add(new Order("b", 1, 0));
+    sortCols.add(new Order("b", 1));
 
     Table t = newTable("default", "sp", true, new HashMap<String, String>(), sortCols, false);
     Partition p = newPartition(t, "today", sortCols);

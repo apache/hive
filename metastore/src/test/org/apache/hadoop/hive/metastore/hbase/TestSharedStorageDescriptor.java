@@ -79,22 +79,19 @@ public class TestSharedStorageDescriptor {
   @Test
   public void changeOrder() {
     StorageDescriptor sd = new StorageDescriptor();
-    sd.addToSortCols(new Order("fred", 1, 0));
+    sd.addToSortCols(new Order("fred", 1));
     SharedStorageDescriptor ssd = new SharedStorageDescriptor();
     ssd.setShared(sd);
     ssd.getSortCols().get(0).setOrder(2);
-    ssd.getSortCols().get(0).setNullOrder(3);
     Assert.assertFalse(sd.getSortCols() == ssd.getSortCols());
     Assert.assertEquals(2, ssd.getSortCols().get(0).getOrder());
     Assert.assertEquals(1, sd.getSortCols().get(0).getOrder());
-    Assert.assertEquals(3, ssd.getSortCols().get(0).getNullOrder());
-    Assert.assertEquals(0, sd.getSortCols().get(0).getNullOrder());
   }
 
   @Test
   public void unsetOrder() {
     StorageDescriptor sd = new StorageDescriptor();
-    sd.addToSortCols(new Order("fred", 1, 0));
+    sd.addToSortCols(new Order("fred", 1));
     SharedStorageDescriptor ssd = new SharedStorageDescriptor();
     ssd.setShared(sd);
     ssd.unsetSortCols();

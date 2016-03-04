@@ -583,7 +583,7 @@ public class TestHBaseStoreBitVector {
     Map<String, String> params = new HashMap<String, String>();
     params.put("key", "value");
     StorageDescriptor sd = new StorageDescriptor(cols, "file:/tmp", "input", "output", false, 17,
-        serde, Arrays.asList("bucketcol"), Arrays.asList(new Order("sortcol", 1, 0)), params);
+        serde, Arrays.asList("bucketcol"), Arrays.asList(new Order("sortcol", 1)), params);
     int currentTime = (int)(System.currentTimeMillis() / 1000);
     Table table = new Table(TBL, DB, "me", currentTime, currentTime, 0, sd, cols,
         emptyParameters, null, null, null);

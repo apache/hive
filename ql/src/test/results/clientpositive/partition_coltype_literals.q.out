@@ -154,7 +154,7 @@ OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat
 Compressed:         	No                  	 
 Num Buckets:        	4                   	 
 Bucket Columns:     	[key]               	 
-Sort Columns:       	[Order(col:key, order:0, nullOrder:1)]	 
+Sort Columns:       	[Order(col:key, order:0)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: -- rename partition
@@ -205,7 +205,7 @@ OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat
 Compressed:         	No                  	 
 Num Buckets:        	4                   	 
 Bucket Columns:     	[key]               	 
-Sort Columns:       	[Order(col:key, order:0, nullOrder:1)]	 
+Sort Columns:       	[Order(col:key, order:0)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: -- insert partition

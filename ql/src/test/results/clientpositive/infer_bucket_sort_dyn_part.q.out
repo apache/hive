@@ -302,7 +302,7 @@ OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat
 Compressed:         	No                  	 
 Num Buckets:        	1                   	 
 Bucket Columns:     	[key]               	 
-Sort Columns:       	[Order(col:key, order:1, nullOrder:0)]	 
+Sort Columns:       	[Order(col:key, order:1)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: DESCRIBE FORMATTED test_table PARTITION (ds='2008-04-08', hr='12')
@@ -342,7 +342,7 @@ OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat
 Compressed:         	No                  	 
 Num Buckets:        	1                   	 
 Bucket Columns:     	[key]               	 
-Sort Columns:       	[Order(col:key, order:1, nullOrder:0)]	 
+Sort Columns:       	[Order(col:key, order:1)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: CREATE TABLE srcpart_merge_dp LIKE srcpart

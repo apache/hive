@@ -201,16 +201,14 @@ public class BucketingSortingCtx implements NodeProcessorCtx {
     private List<Integer> indexes = new ArrayList<Integer>();
     // Sort order (+|-)
     private char sortOrder;
-    private char nullSortOrder;
 
-    public SortCol(String name, int index, char sortOrder, char nullSortOrder) {
-      this(sortOrder, nullSortOrder);
+    public SortCol(String name, int index, char sortOrder) {
+      this(sortOrder);
       addAlias(name, index);
     }
 
-    public SortCol(char sortOrder, char nullSortOrder) {
+    public SortCol(char sortOrder) {
       this.sortOrder = sortOrder;
-      this.nullSortOrder = nullSortOrder;
     }
 
 
@@ -234,16 +232,11 @@ public class BucketingSortingCtx implements NodeProcessorCtx {
       return sortOrder;
     }
 
-    public char getNullSortOrder() {
-      return nullSortOrder;
-    }
-
     @Override
     // Chooses a representative alias, index, and order to use as the String, the first is used
     // because it is set in the constructor
     public String toString() {
-      return "name: " + names.get(0) + " index: " + indexes.get(0) + " order: " + sortOrder
-              + " nullOrder: " + nullSortOrder;
+      return "name: " + names.get(0) + " index: " + indexes.get(0) + " order: " + sortOrder;
     }
   }
 }

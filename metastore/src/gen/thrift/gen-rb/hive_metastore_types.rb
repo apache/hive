@@ -557,12 +557,10 @@ class Order
   include ::Thrift::Struct, ::Thrift::Struct_Union
   COL = 1
   ORDER = 2
-  NULLORDER = 3
 
   FIELDS = {
     COL => {:type => ::Thrift::Types::STRING, :name => 'col'},
-    ORDER => {:type => ::Thrift::Types::I32, :name => 'order'},
-    NULLORDER => {:type => ::Thrift::Types::I32, :name => 'nullOrder'}
+    ORDER => {:type => ::Thrift::Types::I32, :name => 'order'}
   }
 
   def struct_fields; FIELDS; end

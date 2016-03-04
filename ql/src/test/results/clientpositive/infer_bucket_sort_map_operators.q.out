@@ -361,7 +361,7 @@ OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 Compressed:         	No                  	 
 Num Buckets:        	1                   	 
 Bucket Columns:     	[value]             	 
-Sort Columns:       	[Order(col:value, order:1, nullOrder:0)]	 
+Sort Columns:       	[Order(col:value, order:1)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: -- Test SMB join doesn't affect inference, should not be bucketed or sorted
@@ -640,6 +640,6 @@ OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 Compressed:         	No                  	 
 Num Buckets:        	1                   	 
 Bucket Columns:     	[key]               	 
-Sort Columns:       	[Order(col:key, order:1, nullOrder:0)]	 
+Sort Columns:       	[Order(col:key, order:1)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   

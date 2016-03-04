@@ -110,7 +110,7 @@ OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 Compressed:         	No                  	 
 Num Buckets:        	4                   	 
 Bucket Columns:     	[b]                 	 
-Sort Columns:       	[Order(col:b, order:0, nullOrder:1)]	 
+Sort Columns:       	[Order(col:b, order:0)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: -- Turn off clustering for a partition
@@ -200,7 +200,7 @@ OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 Compressed:         	No                  	 
 Num Buckets:        	4                   	 
 Bucket Columns:     	[a, b]              	 
-Sort Columns:       	[Order(col:a, order:0, nullOrder:1), Order(col:b, order:1, nullOrder:0)]	 
+Sort Columns:       	[Order(col:a, order:0), Order(col:b, order:1)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: drop table alter_table_partition_clusterby_sortby

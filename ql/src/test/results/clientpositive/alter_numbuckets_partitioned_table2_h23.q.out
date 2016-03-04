@@ -232,7 +232,7 @@ OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 Compressed:         	No                  	 
 Num Buckets:        	8                   	 
 Bucket Columns:     	[key]               	 
-Sort Columns:       	[Order(col:key, order:0, nullOrder:1)]	 
+Sort Columns:       	[Order(col:key, order:0)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: INSERT OVERWRITE TABLE tst1 PARTITION (ds = '1') SELECT key, value FROM src
@@ -281,7 +281,7 @@ OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 Compressed:         	No                  	 
 Num Buckets:        	8                   	 
 Bucket Columns:     	[key]               	 
-Sort Columns:       	[Order(col:key, order:0, nullOrder:1)]	 
+Sort Columns:       	[Order(col:key, order:0)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: -- Test changing the bucket columns
@@ -326,7 +326,7 @@ OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 Compressed:         	No                  	 
 Num Buckets:        	8                   	 
 Bucket Columns:     	[value]             	 
-Sort Columns:       	[Order(col:key, order:0, nullOrder:1)]	 
+Sort Columns:       	[Order(col:key, order:0)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: INSERT OVERWRITE TABLE tst1 PARTITION (ds = '1') SELECT key, value FROM src
@@ -375,7 +375,7 @@ OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 Compressed:         	No                  	 
 Num Buckets:        	8                   	 
 Bucket Columns:     	[value]             	 
-Sort Columns:       	[Order(col:key, order:0, nullOrder:1)]	 
+Sort Columns:       	[Order(col:key, order:0)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: -- Test changing the number of buckets
@@ -420,7 +420,7 @@ OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 Compressed:         	No                  	 
 Num Buckets:        	4                   	 
 Bucket Columns:     	[value]             	 
-Sort Columns:       	[Order(col:key, order:0, nullOrder:1)]	 
+Sort Columns:       	[Order(col:key, order:0)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: INSERT OVERWRITE TABLE tst1 PARTITION (ds = '1') SELECT key, value FROM src
@@ -469,7 +469,7 @@ OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 Compressed:         	No                  	 
 Num Buckets:        	4                   	 
 Bucket Columns:     	[value]             	 
-Sort Columns:       	[Order(col:key, order:0, nullOrder:1)]	 
+Sort Columns:       	[Order(col:key, order:0)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: -- Test changing the sort columns
@@ -514,7 +514,7 @@ OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 Compressed:         	No                  	 
 Num Buckets:        	4                   	 
 Bucket Columns:     	[value]             	 
-Sort Columns:       	[Order(col:value, order:0, nullOrder:1)]	 
+Sort Columns:       	[Order(col:value, order:0)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: INSERT OVERWRITE TABLE tst1 PARTITION (ds = '1') SELECT key, value FROM src
@@ -563,7 +563,7 @@ OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 Compressed:         	No                  	 
 Num Buckets:        	4                   	 
 Bucket Columns:     	[value]             	 
-Sort Columns:       	[Order(col:value, order:0, nullOrder:1)]	 
+Sort Columns:       	[Order(col:value, order:0)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: -- Test changing the sort order
@@ -608,7 +608,7 @@ OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 Compressed:         	No                  	 
 Num Buckets:        	4                   	 
 Bucket Columns:     	[value]             	 
-Sort Columns:       	[Order(col:value, order:1, nullOrder:0)]	 
+Sort Columns:       	[Order(col:value, order:1)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: INSERT OVERWRITE TABLE tst1 PARTITION (ds = '1') SELECT key, value FROM src
@@ -657,7 +657,7 @@ OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 Compressed:         	No                  	 
 Num Buckets:        	4                   	 
 Bucket Columns:     	[value]             	 
-Sort Columns:       	[Order(col:value, order:1, nullOrder:0)]	 
+Sort Columns:       	[Order(col:value, order:1)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: -- Test a sorted partition gets converted to unsorted

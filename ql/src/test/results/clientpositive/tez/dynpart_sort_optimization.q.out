@@ -1128,7 +1128,7 @@ OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 Compressed:         	No                  	 
 Num Buckets:        	4                   	 
 Bucket Columns:     	[si]                	 
-Sort Columns:       	[Order(col:f, order:1, nullOrder:0)]	 
+Sort Columns:       	[Order(col:f, order:1)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: desc formatted over1k_part_buck_sort partition(t="__HIVE_DEFAULT_PARTITION__")
@@ -1169,7 +1169,7 @@ OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 Compressed:         	No                  	 
 Num Buckets:        	4                   	 
 Bucket Columns:     	[si]                	 
-Sort Columns:       	[Order(col:f, order:1, nullOrder:0)]	 
+Sort Columns:       	[Order(col:f, order:1)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: select count(*) from over1k_part
@@ -2152,7 +2152,7 @@ OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 Compressed:         	No                  	 
 Num Buckets:        	1                   	 
 Bucket Columns:     	[si]                	 
-Sort Columns:       	[Order(col:f, order:1, nullOrder:0)]	 
+Sort Columns:       	[Order(col:f, order:1)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: desc formatted over1k_part_buck_sort2 partition(t="__HIVE_DEFAULT_PARTITION__")
@@ -2193,7 +2193,7 @@ OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 Compressed:         	No                  	 
 Num Buckets:        	1                   	 
 Bucket Columns:     	[si]                	 
-Sort Columns:       	[Order(col:f, order:1, nullOrder:0)]	 
+Sort Columns:       	[Order(col:f, order:1)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: select * from over1k_part_buck_sort2
@@ -2295,7 +2295,7 @@ OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 Compressed:         	No                  	 
 Num Buckets:        	1                   	 
 Bucket Columns:     	[si]                	 
-Sort Columns:       	[Order(col:f, order:1, nullOrder:0)]	 
+Sort Columns:       	[Order(col:f, order:1)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: desc formatted over1k_part_buck_sort2 partition(t="__HIVE_DEFAULT_PARTITION__")
@@ -2336,7 +2336,7 @@ OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 Compressed:         	No                  	 
 Num Buckets:        	1                   	 
 Bucket Columns:     	[si]                	 
-Sort Columns:       	[Order(col:f, order:1, nullOrder:0)]	 
+Sort Columns:       	[Order(col:f, order:1)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: select * from over1k_part_buck_sort2

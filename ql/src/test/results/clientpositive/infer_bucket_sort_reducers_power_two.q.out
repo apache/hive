@@ -64,7 +64,7 @@ OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 Compressed:         	No                  	 
 Num Buckets:        	4                   	 
 Bucket Columns:     	[key]               	 
-Sort Columns:       	[Order(col:key, order:1, nullOrder:0)]	 
+Sort Columns:       	[Order(col:key, order:1)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: -- Test join, should be bucketed and sorted by join key
@@ -117,7 +117,7 @@ OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 Compressed:         	No                  	 
 Num Buckets:        	4                   	 
 Bucket Columns:     	[key]               	 
-Sort Columns:       	[Order(col:key, order:1, nullOrder:0)]	 
+Sort Columns:       	[Order(col:key, order:1)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: -- Test join with two keys, should be bucketed and sorted by join keys
@@ -170,7 +170,7 @@ OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 Compressed:         	No                  	 
 Num Buckets:        	4                   	 
 Bucket Columns:     	[key, value]        	 
-Sort Columns:       	[Order(col:key, order:1, nullOrder:0), Order(col:value, order:1, nullOrder:0)]	 
+Sort Columns:       	[Order(col:key, order:1), Order(col:value, order:1)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: -- Test join on three tables on same key, should be bucketed and sorted by join key
@@ -223,7 +223,7 @@ OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 Compressed:         	No                  	 
 Num Buckets:        	4                   	 
 Bucket Columns:     	[key]               	 
-Sort Columns:       	[Order(col:key, order:1, nullOrder:0)]	 
+Sort Columns:       	[Order(col:key, order:1)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: -- Test join on three tables on different keys, should be bucketed and sorted by latter key
@@ -276,7 +276,7 @@ OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 Compressed:         	No                  	 
 Num Buckets:        	16                  	 
 Bucket Columns:     	[key]               	 
-Sort Columns:       	[Order(col:key, order:1, nullOrder:0)]	 
+Sort Columns:       	[Order(col:key, order:1)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: -- Test group by in subquery with another group by outside, should be bucketed and sorted by the
@@ -331,6 +331,6 @@ OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 Compressed:         	No                  	 
 Num Buckets:        	1                   	 
 Bucket Columns:     	[value]             	 
-Sort Columns:       	[Order(col:value, order:1, nullOrder:0)]	 
+Sort Columns:       	[Order(col:value, order:1)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   

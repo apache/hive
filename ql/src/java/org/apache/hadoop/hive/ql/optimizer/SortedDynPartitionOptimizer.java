@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
-import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -50,7 +49,6 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
@@ -185,7 +183,6 @@ public class SortedDynPartitionOptimizer extends Transform {
           destTable.getCols());
       List<Integer> sortPositions = null;
       List<Integer> sortOrder = null;
-      List<Integer> sortNullOrder = null;
       if (fsOp.getConf().getWriteType() == AcidUtils.Operation.UPDATE ||
           fsOp.getConf().getWriteType() == AcidUtils.Operation.DELETE) {
         // When doing updates and deletes we always want to sort on the rowid because the ACID
@@ -193,11 +190,13 @@ public class SortedDynPartitionOptimizer extends Transform {
         // ignore whatever comes from the table and enforce this sort order instead.
         sortPositions = Arrays.asList(0);
         sortOrder = Arrays.asList(1); // 1 means asc, could really use enum here in the thrift if
-        sortNullOrder = Arrays.asList(0);
       } else {
         sortPositions = getSortPositions(destTable.getSortCols(), destTable.getCols());
         sortOrder = getSortOrders(destTable.getSortCols(), destTable.getCols());
-        sortNullOrder = getSortNullOrders(destTable.getSortCols(), destTable.getCols());
+      }
+      List<Integer> sortNullOrder = new ArrayList<Integer>();
+      for (int order : sortOrder) {
+        sortNullOrder.add(order == 1 ? 0 : 1); // for asc, nulls first; for desc, nulls last
       }
       LOG.debug("Got sort order");
       for (int i : sortPositions) LOG.debug("sort position " + i);
@@ -595,26 +594,6 @@ public class SortedDynPartitionOptimizer extends Transform {
         }
       }
       return sortOrders;
-    }
-
-    /**
-     * Get the null sort order for the sort columns
-     * @param tabSortCols
-     * @param tabCols
-     * @return
-     */
-    private List<Integer> getSortNullOrders(List<Order> tabSortCols,
-        List<FieldSchema> tabCols) {
-      List<Integer> sortNullOrders = Lists.newArrayList();
-      for (Order sortCol : tabSortCols) {
-        for (FieldSchema tabCol : tabCols) {
-          if (sortCol.getCol().equals(tabCol.getName())) {
-            sortNullOrders.add(sortCol.getNullOrder());
-            break;
-          }
-        }
-      }
-      return sortNullOrders;
     }
 
     private ArrayList<ExprNodeDesc> getPositionsToExprNodes(List<Integer> pos,

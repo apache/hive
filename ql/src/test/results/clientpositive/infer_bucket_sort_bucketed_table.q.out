@@ -64,7 +64,7 @@ OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 Compressed:         	No                  	 
 Num Buckets:        	3                   	 
 Bucket Columns:     	[value]             	 
-Sort Columns:       	[Order(col:value, order:1, nullOrder:0)]	 
+Sort Columns:       	[Order(col:value, order:1)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: -- If the count(*) from sampling the buckets matches the count(*) from each file, the table is

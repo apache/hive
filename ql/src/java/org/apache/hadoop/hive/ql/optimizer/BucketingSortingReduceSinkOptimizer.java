@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.Stack;
 
 import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
@@ -50,7 +49,6 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
-import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -170,33 +168,14 @@ public class BucketingSortingReduceSinkOptimizer extends Transform {
         List<FieldSchema> tabCols) {
       List<Integer> sortOrders = new ArrayList<Integer>();
       for (Order sortCol : tabSortCols) {
-        int pos = 0;
         for (FieldSchema tabCol : tabCols) {
           if (sortCol.getCol().equals(tabCol.getName())) {
             sortOrders.add(sortCol.getOrder());
             break;
           }
-          pos++;
         }
       }
       return sortOrders;
-    }
-
-    private List<Integer> getNullSortOrder(
-        List<Order> tabSortCols,
-        List<FieldSchema> tabCols) {
-      List<Integer> nullSortOrders = new ArrayList<Integer>();
-      for (Order sortCol : tabSortCols) {
-        int pos = 0;
-        for (FieldSchema tabCol : tabCols) {
-          if (sortCol.getCol().equals(tabCol.getName())) {
-            nullSortOrders.add(sortCol.getNullOrder());
-            break;
-          }
-          pos++;
-        }
-      }
-      return nullSortOrders;
     }
 
     // Return true if the partition is bucketed/sorted by the specified positions
@@ -206,7 +185,6 @@ public class BucketingSortingReduceSinkOptimizer extends Transform {
         List<Integer> bucketPositionsDest,
         List<Integer> sortPositionsDest,
         List<Integer> sortOrderDest,
-        List<Integer> sortNullOrderDest,
         int numBucketsDest) {
       // The bucketing and sorting positions should exactly match
       int numBuckets = partition.getBucketCount();
@@ -220,12 +198,9 @@ public class BucketingSortingReduceSinkOptimizer extends Transform {
           getSortPositions(partition.getSortCols(), partition.getTable().getCols());
       List<Integer> sortOrder =
           getSortOrder(partition.getSortCols(), partition.getTable().getCols());
-      List<Integer> sortNullOrder =
-          getNullSortOrder(partition.getSortCols(), partition.getTable().getCols());
       return bucketPositionsDest.equals(partnBucketPositions) &&
           sortPositionsDest.equals(sortPositions) &&
-          sortOrderDest.equals(sortOrder) &&
-          sortNullOrderDest.equals(sortNullOrder);
+          sortOrderDest.equals(sortOrder);
     }
 
     // Return true if the table is bucketed/sorted by the specified positions
@@ -235,7 +210,6 @@ public class BucketingSortingReduceSinkOptimizer extends Transform {
         List<Integer> bucketPositionsDest,
         List<Integer> sortPositionsDest,
         List<Integer> sortOrderDest,
-        List<Integer> sortNullOrderDest,
         int numBucketsDest) {
       // The bucketing and sorting positions should exactly match
       int numBuckets = table.getNumBuckets();
@@ -249,12 +223,9 @@ public class BucketingSortingReduceSinkOptimizer extends Transform {
           getSortPositions(table.getSortCols(), table.getCols());
       List<Integer> sortOrder =
           getSortOrder(table.getSortCols(), table.getCols());
-      List<Integer> sortNullOrder =
-          getNullSortOrder(table.getSortCols(), table.getCols());
       return bucketPositionsDest.equals(tableBucketPositions) &&
           sortPositionsDest.equals(sortPositions) &&
-          sortOrderDest.equals(sortOrder) &&
-          sortNullOrderDest.equals(sortNullOrder);
+          sortOrderDest.equals(sortOrder);
     }
 
     // Store the bucket path to bucket number mapping in the table scan operator.
@@ -332,8 +303,7 @@ public class BucketingSortingReduceSinkOptimizer extends Transform {
     private boolean validateSMBJoinKeys(SMBJoinDesc smbJoinDesc,
         List<ExprNodeColumnDesc> sourceTableBucketCols,
         List<ExprNodeColumnDesc> sourceTableSortCols,
-        List<Integer> sortOrder,
-        List<Integer> sortNullOrder) {
+        List<Integer> sortOrder) {
       // The sort-merge join creates the output sorted and bucketized by the same columns.
       // This can be relaxed in the future if there is a requirement.
       if (!sourceTableBucketCols.equals(sourceTableSortCols)) {
@@ -475,8 +445,6 @@ public class BucketingSortingReduceSinkOptimizer extends Transform {
           getSortPositions(destTable.getSortCols(), destTable.getCols());
       List<Integer> sortOrder =
           getSortOrder(destTable.getSortCols(), destTable.getCols());
-      List<Integer> sortNullOrder =
-          getNullSortOrder(destTable.getSortCols(), destTable.getCols());
       boolean useBucketSortPositions = true;
 
       // Only selects and filters are allowed
@@ -511,7 +479,7 @@ public class BucketingSortingReduceSinkOptimizer extends Transform {
           }
 
           if (!validateSMBJoinKeys(smbJoinDesc, sourceTableBucketCols,
-              sourceTableSortCols, sortOrder, sortNullOrder)) {
+              sourceTableSortCols, sortOrder)) {
             return null;
           }
 
@@ -586,7 +554,7 @@ public class BucketingSortingReduceSinkOptimizer extends Transform {
               }
               for (Partition partition : partitions) {
                 if (!checkPartition(partition, newBucketPositions, newSortPositions, sortOrder,
-                    sortNullOrder, numBucketsDestination)) {
+                    numBucketsDestination)) {
                   return null;
                 }
               }
@@ -597,7 +565,7 @@ public class BucketingSortingReduceSinkOptimizer extends Transform {
             }
             else {
               if (!checkTable(srcTable, newBucketPositions, newSortPositions, sortOrder,
-                  sortNullOrder, numBucketsDestination)) {
+                  numBucketsDestination)) {
                 return null;
               }
 

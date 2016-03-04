@@ -117,7 +117,6 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.SessionHiveMetaStoreClient;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
-import org.apache.hadoop.hive.ql.optimizer.ColumnPruner;
 import org.apache.hadoop.hive.ql.optimizer.Optimizer;
 import org.apache.hadoop.hive.ql.optimizer.Transform;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
@@ -6358,7 +6357,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         (dest_tab.getSortCols().size() > 0)) {
       sortCols = getSortCols(dest, qb, dest_tab, table_desc, input, true);
       sortOrders = getSortOrders(dest, qb, dest_tab, input);
-      nullSortOrders = getNullSortOrders(dest, qb, dest_tab, input);
       if (!enforceBucketing && !dest_tab.isIndexTable()) {
         throw new SemanticException(ErrorMsg.TBL_SORTED_NOT_BUCKETED.getErrorCodedMsg(dest_tab.getCompleteName()));
       } else {
@@ -6393,12 +6391,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       StringBuilder order = new StringBuilder();
+      StringBuilder nullOrder = new StringBuilder();
       for (int sortOrder : sortOrders) {
         order.append(sortOrder == BaseSemanticAnalyzer.HIVE_COLUMN_ORDER_ASC ? '+' : '-');
-      }
-      StringBuilder nullOrder = new StringBuilder();
-      for (int pos : nullSortOrders) {
-        nullOrder.append(pos == BaseSemanticAnalyzer.HIVE_COLUMN_NULLS_FIRST ? 'a' : 'z');
+        nullOrder.append(sortOrder == BaseSemanticAnalyzer.HIVE_COLUMN_ORDER_ASC ? 'a' : 'z');
       }
       input = genReduceSinkPlan(input, partnCols, sortCols, order.toString(), nullOrder.toString(),
               maxReducers, (AcidUtils.isAcidTable(dest_tab) ? getAcidType() : AcidUtils.Operation.NOT_ACID));
@@ -7355,23 +7351,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       for (FieldSchema tabCol : tabCols) {
         if (sortCol.getCol().equals(tabCol.getName())) {
           orders.add(sortCol.getOrder());
-          break;
-        }
-      }
-    }
-    return orders;
-  }
-
-  private ArrayList<Integer> getNullSortOrders(String dest, QB qb, Table tab, Operator input)
-      throws SemanticException {
-    List<Order> tabSortCols = tab.getSortCols();
-    List<FieldSchema> tabCols = tab.getCols();
-
-    ArrayList<Integer> orders = new ArrayList<Integer>();
-    for (Order sortCol : tabSortCols) {
-      for (FieldSchema tabCol : tabCols) {
-        if (sortCol.getCol().equals(tabCol.getName())) {
-          orders.add(sortCol.getNullOrder());
           break;
         }
       }

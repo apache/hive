@@ -34,7 +34,7 @@ OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 Compressed:         	No                  	 
 Num Buckets:        	4                   	 
 Bucket Columns:     	[a]                 	 
-Sort Columns:       	[Order(col:a, order:1, nullOrder:0)]	 
+Sort Columns:       	[Order(col:a, order:1)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: alter table alter_table_not_sorted not sorted

@@ -205,7 +205,6 @@ message StorageDescriptor {
   message Order {
     required string column_name = 1;
     optional sint32 order = 2 [default = 1];
-    optional sint32 nullOrder = 3 [default = 0];
   }
 
   message SerDeInfo {

@@ -24,7 +24,7 @@ CREATE EXTERNAL TABLE `tmp_showcrt1`(
 CLUSTERED BY ( 
   key) 
 SORTED BY ( 
-  value DESC NULLS LAST) 
+  value DESC) 
 INTO 5 BUCKETS
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
@@ -59,7 +59,7 @@ COMMENT 'temporary table'
 CLUSTERED BY ( 
   key) 
 SORTED BY ( 
-  value DESC NULLS LAST) 
+  value DESC) 
 INTO 5 BUCKETS
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
@@ -98,7 +98,7 @@ COMMENT 'changed comment'
 CLUSTERED BY ( 
   key) 
 SORTED BY ( 
-  value DESC NULLS LAST) 
+  value DESC) 
 INTO 5 BUCKETS
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
@@ -136,7 +136,7 @@ COMMENT 'changed comment'
 CLUSTERED BY ( 
   key) 
 SORTED BY ( 
-  value DESC NULLS LAST) 
+  value DESC) 
 INTO 5 BUCKETS
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
@@ -174,7 +174,7 @@ COMMENT 'changed comment'
 CLUSTERED BY ( 
   key) 
 SORTED BY ( 
-  value DESC NULLS LAST) 
+  value DESC) 
 INTO 5 BUCKETS
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 

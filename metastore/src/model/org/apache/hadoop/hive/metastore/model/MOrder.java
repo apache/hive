@@ -21,16 +21,14 @@ package org.apache.hadoop.hive.metastore.model;
 public class MOrder {
   private String col;
   private int order;
-  private int nullOrder;
 
   /**
    * @param col
    * @param order
    */
-  public MOrder(String col, int order, int nullOrder) {
+  public MOrder(String col, int order) {
     this.col = col;
     this.order = order;
-    this.nullOrder = nullOrder;
   }
 
   /**
@@ -59,20 +57,6 @@ public class MOrder {
    */
   public void setOrder(int order) {
     this.order = order;
-  }
-
-  /**
-   * @return the null order
-   */
-  public int getNullOrder() {
-    return nullOrder;
-  }
-
-  /**
-   * @param nullOrder the null order to set
-   */
-  public void setNullOrder(int nullOrder) {
-    this.nullOrder = nullOrder;
   }
 
 }

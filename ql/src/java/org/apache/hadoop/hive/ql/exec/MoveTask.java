@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -593,9 +592,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           newSortCols.add(new Order(
             partn.getCols().get(sortCol.getIndexes().get(0)).getName(),
             sortCol.getSortOrder() == '+' ? BaseSemanticAnalyzer.HIVE_COLUMN_ORDER_ASC :
-              BaseSemanticAnalyzer.HIVE_COLUMN_ORDER_DESC,
-            sortCol.getNullSortOrder() == 'a' ? BaseSemanticAnalyzer.HIVE_COLUMN_NULLS_FIRST :
-              BaseSemanticAnalyzer.HIVE_COLUMN_NULLS_LAST));
+              BaseSemanticAnalyzer.HIVE_COLUMN_ORDER_DESC));
         } else {
           // If the table is sorted on a partition column, not valid for sorting
           updateSortCols = false;

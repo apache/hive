@@ -1575,10 +1575,9 @@ inline std::ostream& operator<<(std::ostream& out, const SerDeInfo& obj)
 }
 
 typedef struct _Order__isset {
-  _Order__isset() : col(false), order(false), nullOrder(false) {}
+  _Order__isset() : col(false), order(false) {}
   bool col :1;
   bool order :1;
-  bool nullOrder :1;
 } _Order__isset;
 
 class Order {
@@ -1586,13 +1585,12 @@ class Order {
 
   Order(const Order&);
   Order& operator=(const Order&);
-  Order() : col(), order(0), nullOrder(0) {
+  Order() : col(), order(0) {
   }
 
   virtual ~Order() throw();
   std::string col;
   int32_t order;
-  int32_t nullOrder;
 
   _Order__isset __isset;
 
@@ -1600,15 +1598,11 @@ class Order {
 
   void __set_order(const int32_t val);
 
-  void __set_nullOrder(const int32_t val);
-
   bool operator == (const Order & rhs) const
   {
     if (!(col == rhs.col))
       return false;
     if (!(order == rhs.order))
-      return false;
-    if (!(nullOrder == rhs.nullOrder))
       return false;
     return true;
   }

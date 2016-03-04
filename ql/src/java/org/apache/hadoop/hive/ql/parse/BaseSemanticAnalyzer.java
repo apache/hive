@@ -653,7 +653,7 @@ public abstract class BaseSemanticAnalyzer {
     return colList;
   }
 
-  protected List<Order> getColumnNamesOrder(ASTNode ast) {
+  protected List<Order> getColumnNamesOrder(ASTNode ast) throws SemanticException {
     List<Order> colList = new ArrayList<Order>();
     int numCh = ast.getChildCount();
     for (int i = 0; i < numCh; i++) {
@@ -662,19 +662,19 @@ public abstract class BaseSemanticAnalyzer {
         child = (ASTNode) child.getChild(0);
         if (child.getToken().getType() == HiveParser.TOK_NULLS_FIRST) {
           colList.add(new Order(unescapeIdentifier(child.getChild(0).getText()).toLowerCase(),
-              HIVE_COLUMN_ORDER_ASC, HIVE_COLUMN_NULLS_FIRST));
+              HIVE_COLUMN_ORDER_ASC));
         } else {
-          colList.add(new Order(unescapeIdentifier(child.getChild(0).getText()).toLowerCase(),
-              HIVE_COLUMN_ORDER_ASC, HIVE_COLUMN_NULLS_LAST));
+          throw new SemanticException("create/alter table: "
+                  + "not supported NULLS LAST for ORDER BY in ASC order");
         }
       } else {
         child = (ASTNode) child.getChild(0);
         if (child.getToken().getType() == HiveParser.TOK_NULLS_LAST) {
           colList.add(new Order(unescapeIdentifier(child.getChild(0).getText()).toLowerCase(),
-              HIVE_COLUMN_ORDER_DESC, HIVE_COLUMN_NULLS_LAST));
+              HIVE_COLUMN_ORDER_DESC));
         } else {
-          colList.add(new Order(unescapeIdentifier(child.getChild(0).getText()).toLowerCase(),
-              HIVE_COLUMN_ORDER_DESC, HIVE_COLUMN_NULLS_FIRST));
+          throw new SemanticException("create/alter table: "
+                  + "not supported NULLS FIRST for ORDER BY in DESC order");
         }
       }
     }

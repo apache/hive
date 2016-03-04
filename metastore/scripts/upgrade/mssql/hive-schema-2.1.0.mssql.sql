@@ -411,7 +411,6 @@ CREATE TABLE SORT_COLS
     SD_ID bigint NOT NULL,
     "COLUMN_NAME" nvarchar(1000) NULL,
     "ORDER" int NOT NULL,
-    "NULL_ORDER" int NOT NULL,
     INTEGER_IDX int NOT NULL
 );
 

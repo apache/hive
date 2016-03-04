@@ -3101,10 +3101,6 @@ void Order::__set_order(const int32_t val) {
   this->order = val;
 }
 
-void Order::__set_nullOrder(const int32_t val) {
-  this->nullOrder = val;
-}
-
 uint32_t Order::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
@@ -3142,14 +3138,6 @@ uint32_t Order::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
-      case 3:
-        if (ftype == ::apache::thrift::protocol::T_I32) {
-          xfer += iprot->readI32(this->nullOrder);
-          this->__isset.nullOrder = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -3175,10 +3163,6 @@ uint32_t Order::write(::apache::thrift::protocol::TProtocol* oprot) const {
   xfer += oprot->writeI32(this->order);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("nullOrder", ::apache::thrift::protocol::T_I32, 3);
-  xfer += oprot->writeI32(this->nullOrder);
-  xfer += oprot->writeFieldEnd();
-
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -3188,20 +3172,17 @@ void swap(Order &a, Order &b) {
   using ::std::swap;
   swap(a.col, b.col);
   swap(a.order, b.order);
-  swap(a.nullOrder, b.nullOrder);
   swap(a.__isset, b.__isset);
 }
 
 Order::Order(const Order& other139) {
   col = other139.col;
   order = other139.order;
-  nullOrder = other139.nullOrder;
   __isset = other139.__isset;
 }
 Order& Order::operator=(const Order& other140) {
   col = other140.col;
   order = other140.order;
-  nullOrder = other140.nullOrder;
   __isset = other140.__isset;
   return *this;
 }
@@ -3210,7 +3191,6 @@ void Order::printTo(std::ostream& out) const {
   out << "Order(";
   out << "col=" << to_string(col);
   out << ", " << "order=" << to_string(order);
-  out << ", " << "nullOrder=" << to_string(nullOrder);
   out << ")";
 }
 
