@@ -104,16 +104,16 @@ public class PartExprEvalUtils {
   }
 
   static synchronized public ObjectPair<PrimitiveObjectInspector, ExprNodeEvaluator> prepareExpr(
-      ExprNodeGenericFuncDesc expr, List<String> partNames,
+      ExprNodeGenericFuncDesc expr, List<String> partColumnNames,
       List<PrimitiveTypeInfo> partColumnTypeInfos) throws HiveException {
     // Create the row object
     List<ObjectInspector> partObjectInspectors = new ArrayList<ObjectInspector>();
-    for (int i = 0; i < partNames.size(); i++) {
+    for (int i = 0; i < partColumnNames.size(); i++) {
       partObjectInspectors.add(PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(
-          partColumnTypeInfos.get(i)));
+        partColumnTypeInfos.get(i)));
     }
     StructObjectInspector objectInspector = ObjectInspectorFactory
-        .getStandardStructObjectInspector(partNames, partObjectInspectors);
+        .getStandardStructObjectInspector(partColumnNames, partObjectInspectors);
 
     ExprNodeEvaluator evaluator = ExprNodeEvaluatorFactory.get(expr);
     ObjectInspector evaluateResultOI = evaluator.initialize(objectInspector);

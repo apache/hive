@@ -101,6 +101,7 @@ import org.apache.hadoop.hive.ql.plan.DropIndexDesc;
 import org.apache.hadoop.hive.ql.plan.DropTableDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDefaultDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
@@ -3093,6 +3094,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
    */
   private Map<Integer, List<ExprNodeGenericFuncDesc>> getFullPartitionSpecs(
       CommonTree ast, Table tab, boolean canGroupExprs) throws SemanticException {
+    String defaultPartitionName = HiveConf.getVar(conf, HiveConf.ConfVars.DEFAULTPARTITIONNAME);
     Map<String, String> colTypes = new HashMap<String, String>();
     for (FieldSchema fs : tab.getPartitionKeys()) {
       colTypes.put(fs.getName().toLowerCase(), fs.getType());
@@ -3114,23 +3116,28 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         TypeCheckCtx typeCheckCtx = new TypeCheckCtx(null);
         ExprNodeConstantDesc valExpr = (ExprNodeConstantDesc)TypeCheckProcFactory
             .genExprNode(partValNode, typeCheckCtx).get(partValNode);
+        Object val = valExpr.getValue();
+
+        boolean isDefaultPartitionName =  val.equals(defaultPartitionName);
 
         String type = colTypes.get(key);
+        PrimitiveTypeInfo pti = TypeInfoFactory.getPrimitiveTypeInfo(type);
         if (type == null) {
           throw new SemanticException("Column " + key + " not found");
         }
         // Create the corresponding hive expression to filter on partition columns.
-        PrimitiveTypeInfo pti = TypeInfoFactory.getPrimitiveTypeInfo(type);
-        Object val = valExpr.getValue();
-        if (!valExpr.getTypeString().equals(type)) {
-          Converter converter = ObjectInspectorConverters.getConverter(
-            TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(valExpr.getTypeInfo()),
-            TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(pti));
-          val = converter.convert(valExpr.getValue());
+        if (!isDefaultPartitionName) {
+          if (!valExpr.getTypeString().equals(type)) {
+            Converter converter = ObjectInspectorConverters.getConverter(
+              TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(valExpr.getTypeInfo()),
+              TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(pti));
+            val = converter.convert(valExpr.getValue());
+          }
         }
+
         ExprNodeColumnDesc column = new ExprNodeColumnDesc(pti, key, null, true);
         ExprNodeGenericFuncDesc op = makeBinaryPredicate(operator, column,
-            new ExprNodeConstantDesc(pti, val));
+            isDefaultPartitionName ? new ExprNodeConstantDefaultDesc(pti, defaultPartitionName) : new ExprNodeConstantDesc(pti, val));
         // If it's multi-expr filter (e.g. a='5', b='2012-01-02'), AND with previous exprs.
         expr = (expr == null) ? op : makeBinaryPredicate("and", expr, op);
         names.add(key);

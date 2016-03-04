@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDefaultDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
@@ -62,6 +63,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -542,11 +544,18 @@ public class PartitionPruner extends Transform {
 
       ArrayList<Object> convertedValues = new ArrayList<Object>(values.size());
       for(int i=0; i<values.size(); i++) {
-        Object o = ObjectInspectorConverters.getConverter(
-            PrimitiveObjectInspectorFactory.javaStringObjectInspector,
-            PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(partColumnTypeInfos.get(i)))
-            .convert(values.get(i));
-        convertedValues.add(o);
+        String partitionValue = values.get(i);
+        PrimitiveTypeInfo typeInfo = partColumnTypeInfos.get(i);
+
+        if (partitionValue.equals(defaultPartitionName)) {
+          convertedValues.add(new ExprNodeConstantDefaultDesc(typeInfo, defaultPartitionName));
+        } else {
+          Object o = ObjectInspectorConverters.getConverter(
+              PrimitiveObjectInspectorFactory.javaStringObjectInspector,
+              PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(typeInfo))
+              .convert(partitionValue);
+          convertedValues.add(o);
+        }
       }
 
       // Evaluate the expression tree.
