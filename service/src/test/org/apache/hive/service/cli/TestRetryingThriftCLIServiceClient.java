@@ -51,14 +51,14 @@ public class TestRetryingThriftCLIServiceClient {
       super(conf);
     }
 
-    public static CLIServiceClient newRetryingCLIServiceClient(HiveConf conf) throws HiveSQLException {
+    public static CLIServiceClientWrapper newRetryingCLIServiceClient(HiveConf conf) throws HiveSQLException {
       handlerInst = new RetryingThriftCLIServiceClientTest(conf);
-      handlerInst.connectWithRetry(conf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_CLIENT_RETRY_LIMIT));
-
+      TTransport tTransport
+        = handlerInst.connectWithRetry(conf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_CLIENT_RETRY_LIMIT));
       ICLIService cliService =
         (ICLIService) Proxy.newProxyInstance(RetryingThriftCLIServiceClientTest.class.getClassLoader(),
           CLIServiceClient.class.getInterfaces(), handlerInst);
-      return new CLIServiceClientWrapper(cliService);
+      return new CLIServiceClientWrapper(cliService, tTransport);
     }
 
     @Override
@@ -108,8 +108,8 @@ public class TestRetryingThriftCLIServiceClient {
     // Reset port setting
     hiveConf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_PORT, 15000);
     // Create client
-    CLIServiceClient cliServiceClient =
-      RetryingThriftCLIServiceClientTest.newRetryingCLIServiceClient(hiveConf);
+    RetryingThriftCLIServiceClient.CLIServiceClientWrapper cliServiceClient
+      = RetryingThriftCLIServiceClientTest.newRetryingCLIServiceClient(hiveConf);
     System.out.println("## Created client");
 
     // kill server
@@ -127,7 +127,8 @@ public class TestRetryingThriftCLIServiceClient {
       assertTrue(exc.getCause() instanceof TException);
       assertEquals(1, RetryingThriftCLIServiceClientTest.handlerInst.callCount);
       assertEquals(3, RetryingThriftCLIServiceClientTest.handlerInst.connectCount);
+    } finally {
+      cliServiceClient.closeTransport();
     }
-
   }
 }

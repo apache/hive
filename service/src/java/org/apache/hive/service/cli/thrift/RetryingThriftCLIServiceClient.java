@@ -71,9 +71,11 @@ public class RetryingThriftCLIServiceClient implements InvocationHandler {
 
   public static class CLIServiceClientWrapper extends CLIServiceClient {
     private final ICLIService cliService;
+    private TTransport tTransport;
 
-    public CLIServiceClientWrapper(ICLIService icliService) {
+    public CLIServiceClientWrapper(ICLIService icliService, TTransport tTransport) {
       cliService = icliService;
+      this.tTransport = tTransport;
     }
 
     @Override
@@ -201,6 +203,10 @@ public class RetryingThriftCLIServiceClient implements InvocationHandler {
                                FetchType fetchType) throws HiveSQLException {
       return cliService.fetchResults(opHandle, orientation, maxRows, fetchType);
     }
+
+    public void closeTransport() {
+      tTransport.close();
+    }
   }
 
   protected RetryingThriftCLIServiceClient(HiveConf conf) {
@@ -210,24 +216,23 @@ public class RetryingThriftCLIServiceClient implements InvocationHandler {
       TimeUnit.SECONDS);
   }
 
-  public static CLIServiceClient newRetryingCLIServiceClient(HiveConf conf) throws HiveSQLException {
+  public static CLIServiceClientWrapper newRetryingCLIServiceClient(HiveConf conf) throws HiveSQLException {
     RetryingThriftCLIServiceClient retryClient = new RetryingThriftCLIServiceClient(conf);
-    retryClient.connectWithRetry(conf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_CLIENT_CONNECTION_RETRY_LIMIT));
+    TTransport tTransport = retryClient
+      .connectWithRetry(conf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_CLIENT_CONNECTION_RETRY_LIMIT));
     ICLIService cliService =
       (ICLIService) Proxy.newProxyInstance(RetryingThriftCLIServiceClient.class.getClassLoader(),
         CLIServiceClient.class.getInterfaces(), retryClient);
-    return new CLIServiceClientWrapper(cliService);
+    return new CLIServiceClientWrapper(cliService, tTransport);
   }
 
-  protected void connectWithRetry(int retries) throws HiveSQLException {
+  protected TTransport connectWithRetry(int retries) throws HiveSQLException {
+    TTransportException exception = null;
     for (int i = 0 ; i < retries; i++) {
       try {
-        connect(conf);
-        break;
+        return connect(conf);
       } catch (TTransportException e) {
-        if (i + 1 == retries) {
-          throw new HiveSQLException("Unable to connect after " + retries + " retries", e);
-        }
+        exception = e;
         LOG.warn("Connection attempt " + i, e);
       }
       try {
@@ -236,6 +241,7 @@ public class RetryingThriftCLIServiceClient implements InvocationHandler {
         LOG.warn("Interrupted", e);
       }
     }
+    throw new HiveSQLException("Unable to connect after " + retries + " retries", exception);
   }
 
   protected synchronized TTransport connect(HiveConf conf) throws HiveSQLException, TTransportException {
