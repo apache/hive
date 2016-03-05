@@ -27,7 +27,7 @@ public class TestLdapAuthenticationProviderImpl extends TestCase {
   }
 
   public void testLdapEmptyPassword() {
-    LdapAuthenticationProviderImpl ldapImpl = new LdapAuthenticationProviderImpl();
+    LdapAuthenticationProviderImpl ldapImpl = new LdapAuthenticationProviderImpl(hiveConf);
     try {
       ldapImpl.Authenticate("user", "");
       assertFalse(true);

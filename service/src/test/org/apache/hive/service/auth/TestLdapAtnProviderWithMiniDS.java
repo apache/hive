@@ -224,7 +224,7 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
   public static void init() throws Exception {
     hiveConf = new HiveConf();
 
-    ldapProvider = new LdapAuthenticationProviderImpl();
+    ldapProvider = new LdapAuthenticationProviderImpl(hiveConf);
     ldapProvider.init(hiveConf);
   }
 

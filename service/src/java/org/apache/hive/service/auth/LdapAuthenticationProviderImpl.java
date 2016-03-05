@@ -54,8 +54,7 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
   private static String groupMembership_attr;
   private static String groupClass_attr;
 
-  LdapAuthenticationProviderImpl() {
-    HiveConf conf = new HiveConf();
+  LdapAuthenticationProviderImpl(HiveConf conf) {
     init(conf);
   }
 
