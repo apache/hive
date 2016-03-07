@@ -41,6 +41,7 @@ case
 cbrt
 ceil
 ceiling
+chr
 coalesce
 collect_list
 collect_set
@@ -167,6 +168,7 @@ regexp
 regexp_extract
 regexp_replace
 repeat
+replace
 reverse
 rlike
 round
@@ -238,6 +240,7 @@ case
 cbrt
 ceil
 ceiling
+chr
 coalesce
 collect_list
 collect_set
@@ -288,6 +291,7 @@ percentile
 posexplode
 positive
 regexp_replace
+replace
 reverse
 rlike
 size
