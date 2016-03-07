@@ -17766,6 +17766,8 @@ public final class OrcProto {
      *   0 (or missing) = original
      *   1 = HIVE-8732 fixed
      *   2 = HIVE-4243 fixed
+     *   3 = HIVE-12055 fixed
+     *   4 = HIVE-13083 fixed
      * </pre>
      */
     boolean hasWriterVersion();
@@ -17777,6 +17779,8 @@ public final class OrcProto {
      *   0 (or missing) = original
      *   1 = HIVE-8732 fixed
      *   2 = HIVE-4243 fixed
+     *   3 = HIVE-12055 fixed
+     *   4 = HIVE-13083 fixed
      * </pre>
      */
     int getWriterVersion();
@@ -18080,6 +18084,8 @@ public final class OrcProto {
      *   0 (or missing) = original
      *   1 = HIVE-8732 fixed
      *   2 = HIVE-4243 fixed
+     *   3 = HIVE-12055 fixed
+     *   4 = HIVE-13083 fixed
      * </pre>
      */
     public boolean hasWriterVersion() {
@@ -18093,6 +18099,8 @@ public final class OrcProto {
      *   0 (or missing) = original
      *   1 = HIVE-8732 fixed
      *   2 = HIVE-4243 fixed
+     *   3 = HIVE-12055 fixed
+     *   4 = HIVE-13083 fixed
      * </pre>
      */
     public int getWriterVersion() {
@@ -18764,6 +18772,8 @@ public final class OrcProto {
        *   0 (or missing) = original
        *   1 = HIVE-8732 fixed
        *   2 = HIVE-4243 fixed
+       *   3 = HIVE-12055 fixed
+       *   4 = HIVE-13083 fixed
        * </pre>
        */
       public boolean hasWriterVersion() {
@@ -18777,6 +18787,8 @@ public final class OrcProto {
        *   0 (or missing) = original
        *   1 = HIVE-8732 fixed
        *   2 = HIVE-4243 fixed
+       *   3 = HIVE-12055 fixed
+       *   4 = HIVE-13083 fixed
        * </pre>
        */
       public int getWriterVersion() {
@@ -18790,6 +18802,8 @@ public final class OrcProto {
        *   0 (or missing) = original
        *   1 = HIVE-8732 fixed
        *   2 = HIVE-4243 fixed
+       *   3 = HIVE-12055 fixed
+       *   4 = HIVE-13083 fixed
        * </pre>
        */
       public Builder setWriterVersion(int value) {
@@ -18806,6 +18820,8 @@ public final class OrcProto {
        *   0 (or missing) = original
        *   1 = HIVE-8732 fixed
        *   2 = HIVE-4243 fixed
+       *   3 = HIVE-12055 fixed
+       *   4 = HIVE-13083 fixed
        * </pre>
        */
       public Builder clearWriterVersion() {

@@ -108,12 +108,17 @@ public class DecimalColumnVector extends ColumnVector {
   }
 
   public void set(int elementNum, HiveDecimalWritable writeable) {
-    HiveDecimal hiveDec = writeable.getHiveDecimal(precision, scale);
-    if (hiveDec == null) {
+    if (writeable == null) {
       noNulls = false;
       isNull[elementNum] = true;
     } else {
-      vector[elementNum].set(hiveDec);
+      HiveDecimal hiveDec = writeable.getHiveDecimal(precision, scale);
+      if (hiveDec == null) {
+        noNulls = false;
+        isNull[elementNum] = true;
+      } else {
+        vector[elementNum].set(hiveDec);
+      }
     }
   }
 

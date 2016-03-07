@@ -72,7 +72,7 @@ PREHOOK: Input: default@orcfile_merge1
 #### A masked pattern was here ####
 -- BEGIN ORC FILE DUMP --
 #### A masked pattern was here ####
-File Version: 0.12 with HIVE_12055
+File Version: 0.12 with HIVE_13083
 Rows: 50000
 Compression: ZLIB
 Compression size: 4096
@@ -133,7 +133,7 @@ ________________________________________________________________________________
 -- END ORC FILE DUMP --
 -- BEGIN ORC FILE DUMP --
 #### A masked pattern was here ####
-File Version: 0.12 with HIVE_12055
+File Version: 0.12 with HIVE_13083
 Rows: 50000
 Compression: ZLIB
 Compression size: 4096
@@ -217,7 +217,7 @@ PREHOOK: Input: default@orcfile_merge1
 #### A masked pattern was here ####
 -- BEGIN ORC FILE DUMP --
 #### A masked pattern was here ####
-File Version: 0.12 with HIVE_12055
+File Version: 0.12 with HIVE_13083
 Rows: 100000
 Compression: ZLIB
 Compression size: 4096
