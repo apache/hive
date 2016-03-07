@@ -1,7 +1,7 @@
 {
   "fileName": "TestFileDump.testDump.orc",
   "fileVersion": "0.12",
-  "writerVersion": "HIVE_12055",
+  "writerVersion": "HIVE_13083",
   "numberOfRows": 21000,
   "compression": "ZLIB",
   "compressionBufferSize": 4096,
