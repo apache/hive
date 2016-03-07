@@ -224,6 +224,12 @@ public class LlapServiceDriver {
       propsDirectOptions.setProperty(ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB.varname, String.valueOf(xmx));
     }
 
+    if (options.getLlapQueueName() != null && !options.getLlapQueueName().isEmpty()) {
+      conf.set(ConfVars.LLAP_DAEMON_QUEUE_NAME.varname, options.getLlapQueueName());
+      propsDirectOptions
+          .setProperty(ConfVars.LLAP_DAEMON_QUEUE_NAME.varname, options.getLlapQueueName());
+    }
+
 
 
     URL logger = conf.getResource(LlapDaemon.LOG4j2_PROPERTIES_FILE);
@@ -380,6 +386,12 @@ public class LlapServiceDriver {
 
     configs.put(ConfVars.LLAP_DAEMON_NUM_EXECUTORS.varname, HiveConf.getIntVar(conf,
         ConfVars.LLAP_DAEMON_NUM_EXECUTORS));
+
+    // Let YARN pick the queue name, if it isn't provided in hive-site, or via the command-line
+    if (HiveConf.getVar(conf, ConfVars.LLAP_DAEMON_QUEUE_NAME) != null) {
+      configs.put(ConfVars.LLAP_DAEMON_QUEUE_NAME.varname,
+          HiveConf.getVar(conf, ConfVars.LLAP_DAEMON_QUEUE_NAME));
+    }
 
     configs.put(YarnConfiguration.RM_SCHEDULER_MINIMUM_ALLOCATION_MB,
         conf.getInt(YarnConfiguration.RM_SCHEDULER_MINIMUM_ALLOCATION_MB, -1));
