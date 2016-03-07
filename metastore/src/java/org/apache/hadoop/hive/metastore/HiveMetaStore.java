@@ -284,20 +284,25 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       final Formatter fmt = auditFormatter.get();
       ((StringBuilder) fmt.out()).setLength(0);
 
-      String address = null;
-      if (useSasl) {
-        if (saslServer != null && saslServer.getRemoteAddress() != null) {
-          address = String.valueOf(saslServer.getRemoteAddress());
-        }
-      } else {
-        address = getIpAddress();
-      }
+      String address = getIPAddress();
       if (address == null) {
         address = "unknown-ip-addr";
       }
 
       auditLog.info(fmt.format(AUDIT_FORMAT, ugi.getUserName(),
           address, cmd).toString());
+    }
+
+    String getIPAddress() {
+      if (useSasl) {
+        if (saslServer != null && saslServer.getRemoteAddress() != null) {
+          return saslServer.getRemoteAddress().getHostAddress();
+        }
+      } else {
+        // if kerberos is not enabled
+        return getThreadLocalIpAddress();
+      }
+      return null;
     }
 
     private static int nextSerialNum = 0;
@@ -310,7 +315,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     // This will only be set if the metastore is being accessed from a metastore Thrift server,
     // not if it is from the CLI. Also, only if the TTransport being used to connect is an
-    // instance of TSocket.
+    // instance of TSocket. This is also not set when kerberos is used.
     private static ThreadLocal<String> threadLocalIpAddress = new ThreadLocal<String>() {
       @Override
       protected String initialValue() {
@@ -318,13 +323,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     };
 
-    public static void setIpAddress(String ipAddress) {
+    public static void setThreadLocalIpAddress(String ipAddress) {
       threadLocalIpAddress.set(ipAddress);
     }
 
     // This will return null if the metastore is not being accessed from a metastore Thrift server,
-    // or if the TTransport being used to connect is not an instance of TSocket.
-    public static String getIpAddress() {
+    // or if the TTransport being used to connect is not an instance of TSocket, or if kereberos
+    // is used
+    public static String getThreadLocalIpAddress() {
       return threadLocalIpAddress.get();
     }
 
@@ -727,7 +733,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     private String startFunction(String function, String extraLogInfo) {
       incrementCounter(function);
-      logInfo((getIpAddress() == null ? "" : "source:" + getIpAddress() + " ") +
+      logInfo((getThreadLocalIpAddress() == null ? "" : "source:" + getThreadLocalIpAddress() + " ") +
           function + extraLogInfo);
       if (MetricsFactory.getInstance() != null) {
         try {
@@ -5242,7 +5248,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ret =
             HiveMetaStore.getDelegationToken(token_owner,
-                renewer_kerberos_principal_name, getIpAddress());
+                renewer_kerberos_principal_name, getIPAddress());
       } catch (IOException e) {
         ex = e;
         throw new MetaException(e.getMessage());
