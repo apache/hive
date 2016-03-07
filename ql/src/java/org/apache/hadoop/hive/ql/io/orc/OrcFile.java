@@ -112,7 +112,10 @@ public final class OrcFile {
    */
   public static enum WriterVersion {
     ORIGINAL(0),
-      HIVE_8732(1); // corrupted stripe/file maximum column statistics
+    HIVE_8732(1), // corrupted stripe/file maximum column statistics
+    HIVE_4243(2), // use real column names from Hive tables (Hive 2.x only)
+    HIVE_12055(3), // vectorized writer (Hive 2.x only)
+    HIVE_13083(4); // decimal writer updating present stream wrongly
 
     private final int id;
 

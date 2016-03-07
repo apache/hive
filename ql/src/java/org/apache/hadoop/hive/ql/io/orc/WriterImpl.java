@@ -1689,13 +1689,15 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
 
     @Override
     void write(Object obj) throws IOException {
+      HiveDecimal decimal = null;
+      if (obj != null) {
+        decimal = ((HiveDecimalObjectInspector) inspector).getPrimitiveJavaObject(obj);
+        if (decimal == null) {
+          obj = null;
+        }
+      }
       super.write(obj);
       if (obj != null) {
-        HiveDecimal decimal = ((HiveDecimalObjectInspector) inspector).
-            getPrimitiveJavaObject(obj);
-        if (decimal == null) {
-          return;
-        }
         SerializationUtils.writeBigInteger(valueStream,
             decimal.unscaledValue());
         scaleStream.write(decimal.scale());
@@ -2386,7 +2388,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
         .setMagic(OrcFile.MAGIC)
         .addVersion(version.getMajor())
         .addVersion(version.getMinor())
-        .setWriterVersion(OrcFile.WriterVersion.HIVE_8732.getId());
+        .setWriterVersion(OrcFile.WriterVersion.HIVE_13083.getId());
     if (compress != CompressionKind.NONE) {
       builder.setCompressionBlockSize(bufferSize);
     }
