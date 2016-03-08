@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.parse;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVESTATSDBCLASS;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.security.AccessControlException;
@@ -11135,31 +11134,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       } catch (HiveException e) {
         throw new SemanticException(e);
-      }
-
-      if(location != null && location.length() != 0) {
-        Path locPath = new Path(location);
-        FileSystem curFs = null;
-        FileStatus locStats = null;
-        try {
-          curFs = locPath.getFileSystem(conf);
-          if(curFs != null) {
-            locStats = curFs.getFileStatus(locPath);
-          }
-          if(locStats != null && locStats.isDir()) {
-            FileStatus[] lStats = curFs.listStatus(locPath);
-            if(lStats != null && lStats.length != 0) {
-              throw new SemanticException(ErrorMsg.CTAS_LOCATION_NONEMPTY.getMsg(location));
-            }
-          }
-        } catch (FileNotFoundException nfe) {
-          //we will create the folder if it does not exist.
-        } catch (IOException ioE) {
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("Exception when validate folder ",ioE);
-          }
-
-        }
       }
 
       tblProps = addDefaultProperties(tblProps);

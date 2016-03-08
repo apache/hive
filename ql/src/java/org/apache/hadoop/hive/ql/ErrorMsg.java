@@ -429,7 +429,6 @@ public enum ErrorMsg {
       "Alter table partition type {0} does not support cascade", true),
 
   DROP_NATIVE_FUNCTION(10301, "Cannot drop native function"),
-  CTAS_LOCATION_NONEMPTY(10304, "CREATE-TABLE-AS-SELECT cannot create table with location to a non-empty directory."),
   COMPILE_LOCK_TIMED_OUT(10308, "Attempt to acquire compile lock timed out.", true),
   //========================== 20000 range starts here ========================//
   SCRIPT_INIT_ERROR(20000, "Unable to initialize custom script."),
