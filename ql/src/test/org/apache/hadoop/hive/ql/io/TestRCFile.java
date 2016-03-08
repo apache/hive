@@ -71,6 +71,7 @@ import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
+import org.apache.hive.common.util.HiveTestUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -392,7 +393,7 @@ public class TestRCFile {
     String[] row = new String[]{"Tester", "Bart", "333 X St.", "Reno", "NV",
                                 "USA"};
     RCFile.Reader reader =
-      new RCFile.Reader(fs, new Path("src/test/data/rc-file-v0.rc"), conf);
+      new RCFile.Reader(fs, new Path(HiveTestUtils.getFileFromClasspath("rc-file-v0.rc")), conf);
     LongWritable rowID = new LongWritable();
     BytesRefArrayWritable cols = new BytesRefArrayWritable();
     assertTrue("old file reader first row", reader.next(rowID));
