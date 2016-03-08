@@ -5271,6 +5271,165 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
+    public boolean add_token(String token_identifier, String delegation_token) throws TException {
+      startFunction("add_token", ": " + token_identifier);
+      boolean ret = false;
+      Exception ex = null;
+      try {
+        ret = getMS().addToken(token_identifier, delegation_token);
+      } catch (Exception e) {
+        ex = e;
+        if (e instanceof MetaException) {
+          throw (MetaException) e;
+        } else {
+          throw newMetaException(e);
+        }
+      } finally {
+        endFunction("add_token", ret == true, ex);
+      }
+      return ret;
+    }
+
+    @Override
+    public boolean remove_token(String token_identifier) throws TException {
+      startFunction("remove_token", ": " + token_identifier);
+      boolean ret = false;
+      Exception ex = null;
+      try {
+        ret = getMS().removeToken(token_identifier);
+      } catch (Exception e) {
+        ex = e;
+        if (e instanceof MetaException) {
+          throw (MetaException) e;
+        } else {
+          throw newMetaException(e);
+        }
+      } finally {
+        endFunction("remove_token", ret == true, ex);
+      }
+      return ret;
+    }
+
+    @Override
+    public String get_token(String token_identifier) throws TException {
+      startFunction("get_token for", ": " + token_identifier);
+      String ret = null;
+      Exception ex = null;
+      try {
+        ret = getMS().getToken(token_identifier);
+      } catch (Exception e) {
+        ex = e;
+        if (e instanceof MetaException) {
+          throw (MetaException) e;
+        } else {
+          throw newMetaException(e);
+        }
+      } finally {
+        endFunction("get_token", ret != null, ex);
+      }
+      return ret;
+    }
+
+    @Override
+    public List<String> get_all_token_identifiers() throws TException {
+      startFunction("get_all_token_identifiers.");
+      List<String> ret = null;
+      Exception ex = null;
+      try {
+        ret = getMS().getAllTokenIdentifiers();
+      } catch (Exception e) {
+        ex = e;
+        if (e instanceof MetaException) {
+          throw (MetaException) e;
+        } else {
+          throw newMetaException(e);
+        }
+      } finally {
+        endFunction("get_all_token_identifiers.", ex == null, ex);
+      }
+      return ret;
+    }
+
+    @Override
+    public int add_master_key(String key) throws MetaException, TException {
+      startFunction("add_master_key.");
+      int ret = -1;
+      Exception ex = null;
+      try {
+        ret = getMS().addMasterKey(key);
+      } catch (Exception e) {
+        ex = e;
+        if (e instanceof MetaException) {
+          throw (MetaException) e;
+        } else {
+          throw newMetaException(e);
+        }
+      } finally {
+        endFunction("add_master_key.", ex == null, ex);
+      }
+      return ret;
+    }
+
+    @Override
+    public void update_master_key(int seq_number, String key) throws NoSuchObjectException,
+      MetaException, TException {
+      startFunction("update_master_key.");
+      Exception ex = null;
+      try {
+        getMS().updateMasterKey(seq_number, key);
+      } catch (Exception e) {
+        ex = e;
+        if (e instanceof MetaException) {
+          throw (MetaException) e;
+        } else {
+          throw newMetaException(e);
+        }
+      } finally {
+        endFunction("update_master_key.", ex == null, ex);
+      }
+    }
+
+    @Override
+    public boolean remove_master_key(int key_seq) throws TException {
+      startFunction("remove_master_key.");
+      Exception ex = null;
+      boolean ret;
+      try {
+        ret = getMS().removeMasterKey(key_seq);
+      } catch (Exception e) {
+        ex = e;
+        if (e instanceof MetaException) {
+          throw (MetaException) e;
+        } else {
+          throw newMetaException(e);
+        }
+      } finally {
+        endFunction("remove_master_key.", ex == null, ex);
+      }
+      return ret;
+    }
+
+    @Override
+    public List<String> get_master_keys() throws TException {
+      startFunction("get_master_keys.");
+      Exception ex = null;
+      String [] ret = null;
+      try {
+        ret = getMS().getMasterKeys();
+      } catch (Exception e) {
+        ex = e;
+        if (e instanceof MetaException) {
+          throw (MetaException) e;
+        } else {
+          throw newMetaException(e);
+        }
+      } finally {
+        endFunction("get_master_keys.", ret != null, ex);
+      }
+      return Arrays.asList(ret);
+    }
+
+    @Override
     public void markPartitionForEvent(final String db_name, final String tbl_name,
         final Map<String, String> partName, final PartitionEventType evtType) throws
         MetaException, TException, NoSuchObjectException, UnknownDBException,

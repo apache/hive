@@ -1294,6 +1294,30 @@ service ThriftHiveMetastore extends fb303.FacebookService
   // method to cancel delegation token obtained from metastore server
   void cancel_delegation_token(1:string token_str_form) throws (1:MetaException o1)
 
+  // add a delegation token
+  bool add_token(1:string token_identifier, 2:string delegation_token)
+
+  // remove a delegation token
+  bool remove_token(1:string token_identifier)
+
+  // get a delegation token by identifier
+  string get_token(1:string token_identifier)
+
+  // get all delegation token identifiers
+  list<string> get_all_token_identifiers()
+
+  // add master key
+  i32 add_master_key(1:string key) throws (1:MetaException o1)
+
+  // update master key
+  void update_master_key(1:i32 seq_number, 2:string key) throws (1:NoSuchObjectException o1, 2:MetaException o2)
+
+  // remove master key
+  bool remove_master_key(1:i32 key_seq)
+
+  // get master keys
+  list<string> get_master_keys()
+
   // Transaction and lock management calls
   // Get just list of open transactions
   GetOpenTxnsResponse get_open_txns()

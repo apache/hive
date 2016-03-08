@@ -1165,7 +1165,24 @@ public interface IMetaStoreClient {
    */
   void cancelDelegationToken(String tokenStrForm) throws MetaException, TException;
 
-  public String getTokenStrForm() throws IOException;
+  String getTokenStrForm() throws IOException;
+
+  boolean addToken(String tokenIdentifier, String delegationToken) throws TException;
+
+  boolean removeToken(String tokenIdentifier) throws TException;
+
+  String getToken(String tokenIdentifier) throws TException;
+
+  List<String> getAllTokenIdentifiers() throws TException;
+
+  int addMasterKey(String key) throws MetaException, TException;
+
+  void updateMasterKey(Integer seqNo, String key)
+      throws NoSuchObjectException, MetaException, TException;
+
+  boolean removeMasterKey(Integer keySeq) throws TException;
+
+  String[] getMasterKeys() throws TException;
 
   void createFunction(Function func)
       throws InvalidObjectException, MetaException, TException;
