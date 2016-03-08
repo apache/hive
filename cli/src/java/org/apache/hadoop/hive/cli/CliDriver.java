@@ -118,8 +118,8 @@ public class CliDriver {
     CliSessionState ss = (CliSessionState) SessionState.get();
     ss.setLastCommand(cmd);
 
-    String callerInfo = ss.getConf().getLogIdVar(ss.getSessionId());
-    Thread.currentThread().setName(callerInfo + " " + originalThreadName);
+    ss.updateThreadName();
+
     // Flush the print stream, so it doesn't include output from the last command
     ss.err.flush();
     String cmd_trimmed = cmd.trim();
@@ -711,7 +711,8 @@ public class CliDriver {
       SessionState.start(ss);
     }
 
-    Thread.currentThread().setName(conf.getLogIdVar(ss.getSessionId()) + " " + originalThreadName);
+    ss.updateThreadName();
+
     // execute cli driver work
     try {
       return executeDriver(ss, conf, oproc);
