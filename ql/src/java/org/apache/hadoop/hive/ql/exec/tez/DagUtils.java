@@ -904,7 +904,7 @@ public class DagUtils {
 
   public FileStatus getHiveJarDirectory(Configuration conf) throws IOException, LoginException {
     FileStatus fstatus = null;
-    String hdfsDirPathStr = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_JAR_DIRECTORY, null);
+    String hdfsDirPathStr = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_JAR_DIRECTORY, (String)null);
     if (hdfsDirPathStr != null) {
       LOG.info("Hive jar directory is " + hdfsDirPathStr);
       fstatus = validateTargetDir(new Path(hdfsDirPathStr), conf);

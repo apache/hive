@@ -40,12 +40,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.security.auth.login.LoginException;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintStream;
+
+import java.io.*;
 import java.net.URL;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -94,6 +93,35 @@ public class HiveConf extends Configuration {
 
   public void setSparkConfigUpdated(boolean isSparkConfigUpdated) {
     this.isSparkConfigUpdated = isSparkConfigUpdated;
+  }
+
+  public interface EncoderDecoder<K, V> {
+    V encode(K key);
+    K decode(V value);
+  }
+
+  public static class URLEncoderDecoder implements EncoderDecoder<String, String> {
+    private static final String UTF_8 = "UTF-8";
+    @Override
+    public String encode(String key) {
+      try {
+        return URLEncoder.encode(key, UTF_8);
+      } catch (UnsupportedEncodingException e) {
+        return key;
+      }
+    }
+
+    @Override
+    public String decode(String value) {
+      try {
+        return URLDecoder.decode(value, UTF_8);
+      } catch (UnsupportedEncodingException e) {
+        return value;
+      }
+    }
+  }
+  public static class EncoderDecoderFactory {
+    public static final URLEncoderDecoder URL_ENCODER_DECODER = new URLEncoderDecoder();
   }
 
   static {
@@ -3283,10 +3311,8 @@ public class HiveConf extends Configuration {
 
   public static String getVar(Configuration conf, ConfVars var) {
     assert (var.valClass == String.class) : var.varname;
-    if (var.altName != null) {
-      return conf.get(var.varname, conf.get(var.altName, var.defaultStrVal));
-    }
-    return conf.get(var.varname, var.defaultStrVal);
+    return var.altName != null ? conf.get(var.varname, conf.get(var.altName, var.defaultStrVal))
+      : conf.get(var.varname, var.defaultStrVal);
   }
 
   public static String getTrimmedVar(Configuration conf, ConfVars var) {
@@ -3309,10 +3335,13 @@ public class HiveConf extends Configuration {
   }
 
   public static String getVar(Configuration conf, ConfVars var, String defaultVal) {
-    if (var.altName != null) {
-      return conf.get(var.varname, conf.get(var.altName, defaultVal));
-    }
-    return conf.get(var.varname, defaultVal);
+    String ret = var.altName != null ? conf.get(var.varname, conf.get(var.altName, defaultVal))
+      : conf.get(var.varname, defaultVal);
+    return ret;
+  }
+
+  public static String getVar(Configuration conf, ConfVars var, EncoderDecoder<String, String> encoderDecoder) {
+    return encoderDecoder.decode(getVar(conf, var));
   }
 
   public String getLogIdVar(String defaultValue) {
@@ -3333,6 +3362,10 @@ public class HiveConf extends Configuration {
     assert (var.valClass == String.class) : var.varname;
     conf.set(var.varname, val);
   }
+  public static void setVar(Configuration conf, ConfVars var, String val,
+    EncoderDecoder<String, String> encoderDecoder) {
+    setVar(conf, var, encoderDecoder.encode(val));
+  }
 
   public static ConfVars getConfVars(String name) {
     return vars.get(name);
@@ -3350,6 +3383,21 @@ public class HiveConf extends Configuration {
     setVar(this, var, val);
   }
 
+  public String getQueryString() {
+    return getQueryString(this);
+  }
+
+  public static String getQueryString(Configuration conf) {
+    return getVar(conf, ConfVars.HIVEQUERYSTRING, EncoderDecoderFactory.URL_ENCODER_DECODER);
+  }
+
+  public void setQueryString(String query) {
+    setQueryString(this, query);
+  }
+
+  public static void setQueryString(Configuration conf, String query) {
+    setVar(conf, ConfVars.HIVEQUERYSTRING, query, EncoderDecoderFactory.URL_ENCODER_DECODER);
+  }
   public void logVars(PrintStream ps) {
     for (ConfVars one : ConfVars.values()) {
       ps.println(one.varname + "=" + ((get(one.varname) != null) ? get(one.varname) : ""));
@@ -3904,7 +3952,7 @@ public class HiveConf extends Configuration {
     }
 
     private static boolean isAllowed(Configuration conf, ConfVars setting) {
-      String mode = HiveConf.getVar(conf, ConfVars.HIVEMAPREDMODE, null);
+      String mode = HiveConf.getVar(conf, ConfVars.HIVEMAPREDMODE, (String)null);
       return (mode != null) ? !"strict".equals(mode) : !HiveConf.getBoolVar(conf, setting);
     }
   }

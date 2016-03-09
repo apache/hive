@@ -568,7 +568,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     // Intentionally overwrites anything the user may have put here
     conf.setBoolean("hive.input.format.sorted", mWork.isInputFormatSorted());
 
-    if (HiveConf.getVar(conf, ConfVars.HIVE_CURRENT_DATABASE, null) == null) {
+    if (HiveConf.getVar(conf, ConfVars.HIVE_CURRENT_DATABASE, (String)null) == null) {
       HiveConf.setVar(conf, ConfVars.HIVE_CURRENT_DATABASE, getCurrentDB());
     }
   }

@@ -25,6 +25,8 @@ import org.apache.hive.common.util.HiveTestUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.concurrent.TimeUnit;
 
 
@@ -155,5 +157,13 @@ public class TestHiveConf {
 
     conf.setSparkConfigUpdated(false);
     Assert.assertFalse(conf.getSparkConfigUpdated());
+  }
+  @Test
+  public void testEncodingDecoding() throws UnsupportedEncodingException {
+    HiveConf conf = new HiveConf();
+    String query = "select blah, '\u0001' from random_table";
+    conf.setQueryString(query);
+    Assert.assertEquals(URLEncoder.encode(query, "UTF-8"), conf.get(ConfVars.HIVEQUERYSTRING.varname));
+    Assert.assertEquals(query, conf.getQueryString());
   }
 }

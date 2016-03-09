@@ -373,11 +373,11 @@ public class SessionState {
   }
 
   public void setCmd(String cmdString) {
-    conf.setVar(HiveConf.ConfVars.HIVEQUERYSTRING, cmdString);
+    conf.setQueryString(cmdString);
   }
 
   public String getCmd() {
-    return (conf.getVar(HiveConf.ConfVars.HIVEQUERYSTRING));
+    return (conf.getQueryString());
   }
 
   public String getQueryId() {
@@ -1642,7 +1642,7 @@ public class SessionState {
     // Provide a facility to set current timestamp during tests
     if (conf.getBoolVar(ConfVars.HIVE_IN_TEST)) {
       String overrideTimestampString =
-          HiveConf.getVar(conf, HiveConf.ConfVars.HIVETESTCURRENTTIMESTAMP, null);
+          HiveConf.getVar(conf, HiveConf.ConfVars.HIVETESTCURRENTTIMESTAMP, (String)null);
       if (overrideTimestampString != null && overrideTimestampString.length() > 0) {
         queryCurrentTimestamp = Timestamp.valueOf(overrideTimestampString);
       }
