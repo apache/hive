@@ -63,7 +63,7 @@ public class ArrayWritableObjectInspector extends SettableStructObjectInspector 
 
       final StructFieldImpl field = new StructFieldImpl(name, getObjectInspector(fieldInfo), i);
       fields.add(field);
-      fieldsByName.put(name, field);
+      fieldsByName.put(name.toLowerCase(), field);
     }
   }
 
@@ -158,7 +158,7 @@ public class ArrayWritableObjectInspector extends SettableStructObjectInspector 
 
   @Override
   public StructField getStructFieldRef(final String name) {
-    return fieldsByName.get(name);
+    return fieldsByName.get(name.toLowerCase());
   }
 
   @Override
