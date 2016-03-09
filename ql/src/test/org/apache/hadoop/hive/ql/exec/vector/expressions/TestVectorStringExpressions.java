@@ -18,8 +18,13 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Random;
+import java.util.StringTokenizer;
 
 import junit.framework.Assert;
 
@@ -55,14 +60,22 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.StringGroupColEqual
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.StringGroupColLessStringGroupColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.StringScalarEqualStringGroupColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.VarCharScalarEqualStringGroupColumn;
+import org.apache.hadoop.hive.ql.exec.vector.util.VectorizedRowGroupGenUtil;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.udf.UDFLike;
+import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.Text;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Test vectorized expression and filter evaluation for strings.
  */
 public class TestVectorStringExpressions {
+
+  private static final Logger LOG = LoggerFactory
+      .getLogger(TestVectorStringExpressions.class);
 
   private static byte[] red;
   private static byte[] redred;
@@ -99,7 +112,7 @@ public class TestVectorStringExpressions {
       mixedUpLower = "mixedup".getBytes("UTF-8");
       mixedUpUpper = "MIXEDUP".getBytes("UTF-8");
       mixPercentPattern = "mix%".getBytes("UTF-8"); // for use as wildcard pattern to test LIKE
-      multiByte = new byte[100];
+      multiByte = new byte[10];
       addMultiByteChars(multiByte);
       blanksLeft = "  foo".getBytes("UTF-8");
       blanksRight = "foo  ".getBytes("UTF-8");
@@ -4237,50 +4250,179 @@ public class TestVectorStringExpressions {
     Assert.assertEquals(initialBatchSize, batch.size);
   }
 
+  @Test
   public void testStringLikePatternType() throws UnsupportedEncodingException, HiveException {
     FilterStringColLikeStringScalar expr;
+    VectorizedRowBatch vrb = VectorizedRowGroupGenUtil.getVectorizedRowBatch(1, 1, 1);
+    vrb.cols[0] = new BytesColumnVector(1);
+    BytesColumnVector bcv = (BytesColumnVector) vrb.cols[0];
+    vrb.size = 0;
 
     // BEGIN pattern
     expr = new FilterStringColLikeStringScalar(0, "abc%".getBytes());
+    expr.evaluate(vrb);
     Assert.assertEquals(FilterStringColLikeStringScalar.BeginChecker.class,
         expr.checker.getClass());
 
     // END pattern
     expr = new FilterStringColLikeStringScalar(0, "%abc".getBytes("UTF-8"));
+    expr.evaluate(vrb);
     Assert.assertEquals(FilterStringColLikeStringScalar.EndChecker.class,
         expr.checker.getClass());
 
     // MIDDLE pattern
     expr = new FilterStringColLikeStringScalar(0, "%abc%".getBytes());
+    expr.evaluate(vrb);
     Assert.assertEquals(FilterStringColLikeStringScalar.MiddleChecker.class,
         expr.checker.getClass());
 
-    // COMPLEX pattern
+    // CHAIN pattern
     expr = new FilterStringColLikeStringScalar(0, "%abc%de".getBytes());
+    expr.evaluate(vrb);
+    Assert.assertEquals(FilterStringColLikeStringScalar.ChainedChecker.class,
+        expr.checker.getClass());
+
+    // COMPLEX pattern
+    expr = new FilterStringColLikeStringScalar(0, "%abc_%de".getBytes());
+    expr.evaluate(vrb);
     Assert.assertEquals(FilterStringColLikeStringScalar.ComplexChecker.class,
         expr.checker.getClass());
 
     // NONE pattern
     expr = new FilterStringColLikeStringScalar(0, "abc".getBytes());
+    expr.evaluate(vrb);
     Assert.assertEquals(FilterStringColLikeStringScalar.NoneChecker.class,
         expr.checker.getClass());
   }
 
-  public void testStringLikeMultiByte() throws HiveException {
+  @Test
+  public void testStringLikeMultiByte() throws HiveException, UnsupportedEncodingException {
     FilterStringColLikeStringScalar expr;
     VectorizedRowBatch batch;
 
     // verify that a multi byte LIKE expression matches a matching string
     batch = makeStringBatchMixedCharSize();
-    expr = new FilterStringColLikeStringScalar(0, ("%" + multiByte + "%").getBytes());
+    expr = new FilterStringColLikeStringScalar(0, ('%' + new String(multiByte) + '%').getBytes(StandardCharsets.UTF_8));
     expr.evaluate(batch);
-    Assert.assertEquals(batch.size, 1);
+    Assert.assertEquals(1, batch.size);
 
     // verify that a multi byte LIKE expression doesn't match a non-matching string
     batch = makeStringBatchMixedCharSize();
-    expr = new FilterStringColLikeStringScalar(0, ("%" + multiByte + "x").getBytes());
+    expr = new FilterStringColLikeStringScalar(0, ('%' + new String(multiByte) + 'x').getBytes(StandardCharsets.UTF_8));
     expr.evaluate(batch);
-    Assert.assertEquals(batch.size, 0);
+    Assert.assertEquals(0, batch.size);
+  }
+
+  private String randomizePattern(Random control, String value) {
+    switch (control.nextInt(10)) {
+    default:
+    case 0: {
+      return value;
+    }
+    case 1: {
+      return control.nextInt(1000) + value;
+    }
+    case 2: {
+      return value + control.nextInt(1000);
+    }
+    case 3: {
+      return control.nextInt(1000) + value.substring(1);
+    }
+    case 4: {
+      return value.substring(1) + control.nextInt(1000);
+    }
+    case 5: {
+      return control.nextInt(1000) + value.substring(0, value.length() - 1);
+    }
+    case 6: {
+      return "";
+    }
+    case 7: {
+      return value.toLowerCase();
+    }
+    case 8: {
+      StringBuffer sb = new StringBuffer(8);
+      for (int i = 0; i < control.nextInt(12); i++) {
+        sb.append((char) ('a' + control.nextInt(26)));
+      }
+      return sb.toString();
+    }
+    case 9: {
+      StringBuffer sb = new StringBuffer(8);
+      for (int i = 0; i < control.nextInt(12); i++) {
+        sb.append((char) ('A' + control.nextInt(26)));
+      }
+      return sb.toString();
+    }
+    }
+  }
+
+  private String generateCandidate(Random control, String pattern) {
+    StringBuffer sb = new StringBuffer();
+    final StringTokenizer tokens = new StringTokenizer(pattern, "%");
+    final boolean leftAnchor = pattern.startsWith("%");
+    final boolean rightAnchor = pattern.endsWith("%");
+    for (int i = 0; tokens.hasMoreTokens(); i++) {
+      String chunk = tokens.nextToken();
+      if (leftAnchor && i == 0) {
+        // first item
+        sb.append(randomizePattern(control, chunk));
+      } else if (rightAnchor && tokens.hasMoreTokens() == false) {
+        // last item
+        sb.append(randomizePattern(control, chunk));
+      } else {
+        // middle item
+        sb.append(randomizePattern(control, chunk));
+      }
+    }
+    return sb.toString();
+  }
+
+  @Test
+  public void testStringLikeRandomized() throws HiveException, UnsupportedEncodingException {
+    final String [] patterns = new String[] {
+        "ABC%",
+        "%ABC",
+        "%ABC%",
+        "ABC%DEF",
+        "ABC%DEF%",
+        "%ABC%DEF",
+        "%ABC%DEF%",
+        "ABC%DEF%EFG",
+        "%ABC%DEF%EFG",
+        "%ABC%DEF%EFG%H",
+    };
+    long positive = 0;
+    long negative = 0;
+    Random control = new Random(1234);
+    UDFLike udf = new UDFLike();
+    for (String pattern : patterns) {
+      VectorExpression expr = new FilterStringColLikeStringScalar(0, pattern.getBytes("utf-8"));
+      VectorizedRowBatch batch = VectorizedRowGroupGenUtil.getVectorizedRowBatch(1, 1, 1);
+      batch.cols[0] = new BytesColumnVector(1);
+      BytesColumnVector bcv = (BytesColumnVector) batch.cols[0];
+
+      Text pText = new Text(pattern);
+      for (int i=0; i < 1024; i++) {
+        String input = generateCandidate(control,pattern);
+        BooleanWritable like = udf.evaluate(new Text(input), pText);
+        batch.reset();
+        bcv.initBuffer();
+        byte[] utf8 = input.getBytes("utf-8");
+        bcv.setVal(0, utf8, 0, utf8.length);
+        bcv.noNulls = true;
+        batch.size = 1;
+        expr.evaluate(batch);
+        if (like.get()) {
+          positive++;
+        } else {
+          negative++;
+        }
+        assertEquals(String.format("Checking '%s' against '%s'", input, pattern), like.get(), (batch.size != 0));
+      }
+    }
+    LOG.info(String.format("Randomized testing: ran %d positive tests and %d negative tests",
+        positive, negative));
   }
 
   @Test

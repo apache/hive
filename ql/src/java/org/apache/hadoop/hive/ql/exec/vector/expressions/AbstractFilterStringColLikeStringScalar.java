@@ -24,10 +24,13 @@ import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CodingErrorAction;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -218,8 +221,8 @@ public abstract class AbstractFilterStringColLikeStringScalar extends VectorExpr
   /**
    * Matches the whole string to its pattern.
    */
-  protected static class NoneChecker implements Checker {
-    byte [] byteSub;
+  protected static final class NoneChecker implements Checker {
+    final byte [] byteSub;
 
     NoneChecker(String pattern) {
       try {
@@ -246,8 +249,8 @@ public abstract class AbstractFilterStringColLikeStringScalar extends VectorExpr
   /**
    * Matches the beginning of each string to a pattern.
    */
-  protected static class BeginChecker implements Checker {
-    byte[] byteSub;
+  protected static final class BeginChecker implements Checker {
+    final byte[] byteSub;
 
     BeginChecker(String pattern) {
       try {
@@ -258,23 +261,20 @@ public abstract class AbstractFilterStringColLikeStringScalar extends VectorExpr
     }
 
     public boolean check(byte[] byteS, int start, int len) {
+      int lenSub = byteSub.length;
       if (len < byteSub.length) {
         return false;
       }
-      for (int i = start, j = 0; j < byteSub.length; i++, j++) {
-        if (byteS[i] != byteSub[j]) {
-          return false;
-        }
-      }
-      return true;
+      return StringExpr.equal(byteSub, 0, lenSub, byteS, start, lenSub);
     }
   }
 
   /**
    * Matches the ending of each string to its pattern.
    */
-  protected static class EndChecker implements Checker {
-    byte[] byteSub;
+  protected static final class EndChecker implements Checker {
+    final byte[] byteSub;
+
     EndChecker(String pattern) {
       try {
         byteSub = pattern.getBytes("UTF-8");
@@ -288,21 +288,16 @@ public abstract class AbstractFilterStringColLikeStringScalar extends VectorExpr
       if (len < lenSub) {
         return false;
       }
-      for (int i = start + len - lenSub, j = 0; j < lenSub; i++, j++) {
-        if (byteS[i] != byteSub[j]) {
-          return false;
-        }
-      }
-      return true;
+      return StringExpr.equal(byteSub, 0, lenSub, byteS, start + len - lenSub, lenSub);
     }
   }
 
   /**
    * Matches the middle of each string to its pattern.
    */
-  protected static class MiddleChecker implements Checker {
-    byte[] byteSub;
-    int lenSub;
+  protected static final class MiddleChecker implements Checker {
+    final byte[] byteSub;
+    final int lenSub;
 
     MiddleChecker(String pattern) {
       try {
@@ -314,25 +309,134 @@ public abstract class AbstractFilterStringColLikeStringScalar extends VectorExpr
     }
 
     public boolean check(byte[] byteS, int start, int len) {
+      return index(byteS, start, len) != -1;
+    }
+
+    /*
+     * Returns absolute offset of the match
+     */
+    public int index(byte[] byteS, int start, int len) {
       if (len < lenSub) {
-        return false;
+        return -1;
       }
       int end = start + len - lenSub + 1;
-      boolean match = false;
       for (int i = start; i < end; i++) {
-        match = true;
-        for (int j = 0; j < lenSub; j++) {
-          if (byteS[i + j] != byteSub[j]) {
-            match = false;
-            break;
-          }
-        }
-        if (match) {
-          return true;
+        if (StringExpr.equal(byteSub, 0, lenSub, byteS, i, lenSub)) {
+          return i;
         }
       }
-      return match;
+      return -1;
     }
+  }
+
+  /**
+   * Matches a chained sequence of checkers.
+   *
+   * This has 4 chain scenarios cases in it (has no escaping or single char wildcards)
+   *
+   * 1) anchored left "abc%def%"
+   * 2) anchored right "%abc%def"
+   * 3) unanchored "%abc%def%"
+   * 4) anchored on both sides "abc%def"
+   */
+  protected static final class ChainedChecker implements Checker {
+
+    final int minLen;
+    final BeginChecker begin;
+    final EndChecker end;
+    final MiddleChecker[] middle;
+    final int[] midLens;
+    final int beginLen;
+    final int endLen;
+
+    ChainedChecker(String pattern) {
+      final StringTokenizer tokens = new StringTokenizer(pattern, "%");
+      final boolean leftAnchor = pattern.startsWith("%") == false;
+      final boolean rightAnchor = pattern.endsWith("%") == false;
+      int len = 0;
+      // at least 2 checkers always
+      BeginChecker left = null;
+      EndChecker right = null;
+      int leftLen = 0; // not -1
+      int rightLen = 0; // not -1
+      final List<MiddleChecker> checkers = new ArrayList<MiddleChecker>(2);
+      final List<Integer> lengths = new ArrayList<Integer>(2);
+
+      for (int i = 0; tokens.hasMoreTokens(); i++) {
+        String chunk = tokens.nextToken();
+        if (chunk.length() == 0) {
+          // %% is folded in the .*?.*? regex usually into .*?
+          continue;
+        }
+        len += utf8Length(chunk);
+        if (leftAnchor && i == 0) {
+          // first item
+          left = new BeginChecker(chunk);
+          leftLen = utf8Length(chunk);
+        } else if (rightAnchor && tokens.hasMoreTokens() == false) {
+          // last item
+          right = new EndChecker(chunk);
+          rightLen = utf8Length(chunk);
+        } else {
+          // middle items in order
+          checkers.add(new MiddleChecker(chunk));
+          lengths.add(utf8Length(chunk));
+        }
+      }
+      midLens = ArrayUtils.toPrimitive(lengths.toArray(ArrayUtils.EMPTY_INTEGER_OBJECT_ARRAY));
+      middle = checkers.toArray(new MiddleChecker[0]);
+      minLen = len;
+      begin = left;
+      end = right;
+      beginLen = leftLen;
+      endLen = rightLen;
+    }
+
+    public boolean check(byte[] byteS, final int start, final int len) {
+      int pos = start;
+      int mark = len;
+      if (len < minLen) {
+        return false;
+      }
+      // prefix, extend start
+      if (begin != null && false == begin.check(byteS, pos, mark)) {
+        // no match
+        return false;
+      } else {
+        pos += beginLen;
+        mark -= beginLen;
+      }
+      // suffix, reduce len
+      if (end != null && false == end.check(byteS, pos, mark)) {
+        // no match
+        return false;
+      } else {
+        // no pos change - no need since we've shrunk the string with same pos
+        mark -= endLen;
+      }
+      // loop for middles
+      for (int i = 0; i < middle.length; i++) {
+        int index = middle[i].index(byteS, pos, mark);
+        if (index == -1) {
+          // no match
+          return false;
+        } else {
+          mark -= ((index-pos) + midLens[i]);
+          pos = index + midLens[i];
+        }
+      }
+      // if all is good
+      return true;
+    }
+
+    private int utf8Length(String chunk) {
+      try {
+        return chunk.getBytes("UTF-8").length;
+      } catch (UnsupportedEncodingException ue) {
+        throw new RuntimeException(ue);
+      }
+    }
+
   }
 
   /**
