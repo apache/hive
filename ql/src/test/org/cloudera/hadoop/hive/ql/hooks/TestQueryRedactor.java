@@ -23,6 +23,7 @@ import static org.junit.Assert.assertNotNull;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hive.common.util.HiveTestUtils;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
@@ -56,7 +57,7 @@ public class TestQueryRedactor {
       QueryRedactor.class.getName());
     String hiveRoot = System.getProperty("hive.root");
     assertNotNull("Hive root cannot be null", hiveRoot);
-    conf.set("hive.query.redaction.rules", hiveRoot + "/ql/src/test/resources/test-query-redactor.json");
+    conf.set("hive.query.redaction.rules", HiveTestUtils.getFileFromClasspath("test-query-redactor.json"));
     Driver driver;
     int ret;
     driver = createDriver(conf);
