@@ -3040,6 +3040,18 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesnull
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alltypesnullorc
+POSTHOOK: Lineage: alltypesnullorc.cbigint SIMPLE [(alltypesnull)alltypesnull.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: alltypesnullorc.cboolean1 SIMPLE [(alltypesnull)alltypesnull.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: alltypesnullorc.cboolean2 SIMPLE [(alltypesnull)alltypesnull.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
+POSTHOOK: Lineage: alltypesnullorc.cdouble SIMPLE [(alltypesnull)alltypesnull.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: alltypesnullorc.cfloat SIMPLE [(alltypesnull)alltypesnull.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: alltypesnullorc.cint SIMPLE [(alltypesnull)alltypesnull.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: alltypesnullorc.csmallint SIMPLE [(alltypesnull)alltypesnull.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: alltypesnullorc.cstring1 SIMPLE [(alltypesnull)alltypesnull.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: alltypesnullorc.cstring2 SIMPLE [(alltypesnull)alltypesnull.FieldSchema(name:cstring2, type:string, comment:null), ]
+POSTHOOK: Lineage: alltypesnullorc.ctimestamp1 SIMPLE [(alltypesnull)alltypesnull.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypesnullorc.ctimestamp2 SIMPLE [(alltypesnull)alltypesnull.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypesnullorc.ctinyint SIMPLE [(alltypesnull)alltypesnull.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
 PREHOOK: query: explain
 select count(*) from alltypesnullorc
 PREHOOK: type: QUERY

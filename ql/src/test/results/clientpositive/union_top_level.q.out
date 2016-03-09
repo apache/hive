@@ -721,6 +721,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@union_top
+POSTHOOK: Lineage: union_top.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: union_top.value EXPRESSION []
 PREHOOK: query: select * from union_top
 PREHOOK: type: QUERY
 PREHOOK: Input: default@union_top

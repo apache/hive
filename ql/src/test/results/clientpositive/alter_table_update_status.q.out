@@ -8,6 +8,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_stat
+POSTHOOK: Lineage: src_stat.key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_stat.value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: create table src_stat_int (
   key         double,
   value       string

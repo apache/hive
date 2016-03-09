@@ -12,6 +12,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_orc
+POSTHOOK: Lineage: src_orc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_orc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: -- Not using GenericUDFTestGetJavaBoolean; that is already registered when tests begin
 
 CREATE TEMPORARY FUNCTION test_udf0 AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFEvaluateNPE'

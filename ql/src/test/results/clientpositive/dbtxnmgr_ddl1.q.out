@@ -66,6 +66,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@T3
+POSTHOOK: Lineage: t3.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t3.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
 PREHOOK: query: create table T4 (key char(10), val decimal(5,2), b int)
     partitioned by (ds string)
     clustered by (b) into 10 buckets

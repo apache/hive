@@ -124,6 +124,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:db1
 POSTHOOK: Output: db1@table_db1
+POSTHOOK: Lineage: table_db1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: table_db1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE FORMATTED table_db1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: db1@table_db1

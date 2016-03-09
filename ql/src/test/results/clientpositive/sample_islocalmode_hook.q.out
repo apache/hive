@@ -58,6 +58,8 @@ POSTHOOK: Input: default@sih_i_part@p=2
 POSTHOOK: Input: default@sih_i_part@p=3
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@sih_src
+POSTHOOK: Lineage: sih_src.key SIMPLE [(sih_i_part)sih_i_part.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: sih_src.value SIMPLE [(sih_i_part)sih_i_part.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: create table sih_src2 as select key, value from sih_src order by key, value
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@sih_src
@@ -68,6 +70,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@sih_src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@sih_src2
+POSTHOOK: Lineage: sih_src2.key SIMPLE [(sih_src)sih_src.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: sih_src2.value SIMPLE [(sih_src)sih_src.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: -- Relaxing hive.exec.mode.local.auto.input.files.max=1.
 -- Hadoop20 will not generate more splits than there are files (one).
 -- Hadoop23 generate splits correctly (four), hence the max needs to be adjusted to ensure running in local mode.

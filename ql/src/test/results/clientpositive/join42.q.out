@@ -8,6 +8,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@L
+POSTHOOK: Lineage: l.id SIMPLE []
 PREHOOK: query: create table LA as select 4436 loan_id, 4748 aid, 4415 pi_id
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -18,6 +19,9 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@LA
+POSTHOOK: Lineage: la.aid SIMPLE []
+POSTHOOK: Lineage: la.loan_id SIMPLE []
+POSTHOOK: Lineage: la.pi_id SIMPLE []
 PREHOOK: query: create table FR as select 4436 loan_id
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -28,6 +32,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@FR
+POSTHOOK: Lineage: fr.loan_id SIMPLE []
 PREHOOK: query: create table A as select 4748 id
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -38,6 +43,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@A
+POSTHOOK: Lineage: a.id SIMPLE []
 PREHOOK: query: create table PI as select 4415 id
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -48,6 +54,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@PI
+POSTHOOK: Lineage: pi.id SIMPLE []
 PREHOOK: query: create table acct as select 4748 aid, 10 acc_n, 122 brn
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -58,6 +65,9 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@acct
+POSTHOOK: Lineage: acct.acc_n SIMPLE []
+POSTHOOK: Lineage: acct.aid SIMPLE []
+POSTHOOK: Lineage: acct.brn SIMPLE []
 PREHOOK: query: insert into table acct values(4748, null, null)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@values__tmp__table__1

@@ -10,6 +10,18 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@small_alltypesorc1b
+POSTHOOK: Lineage: small_alltypesorc1b.cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc1b.cboolean1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc1b.cboolean2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc1b.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc1b.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc1b.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc1b.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc1b.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc1b.cstring2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc1b.ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc1b.ctimestamp2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc1b.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
 PREHOOK: query: create table small_alltypesorc2b as select * from alltypesorc where cint is null and ctinyint is not null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
@@ -20,6 +32,18 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@small_alltypesorc2b
+POSTHOOK: Lineage: small_alltypesorc2b.cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc2b.cboolean1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc2b.cboolean2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc2b.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc2b.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc2b.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc2b.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc2b.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc2b.cstring2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc2b.ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc2b.ctimestamp2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc2b.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
 PREHOOK: query: create table small_alltypesorc3b as select * from alltypesorc where cint is not null and ctinyint is null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
@@ -30,6 +54,18 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@small_alltypesorc3b
+POSTHOOK: Lineage: small_alltypesorc3b.cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc3b.cboolean1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc3b.cboolean2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc3b.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc3b.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc3b.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc3b.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc3b.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc3b.cstring2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc3b.ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc3b.ctimestamp2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc3b.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
 PREHOOK: query: create table small_alltypesorc4b as select * from alltypesorc where cint is null and ctinyint is null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
@@ -40,6 +76,18 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@small_alltypesorc4b
+POSTHOOK: Lineage: small_alltypesorc4b.cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc4b.cboolean1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc4b.cboolean2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc4b.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc4b.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc4b.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc4b.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc4b.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc4b.cstring2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc4b.ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc4b.ctimestamp2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc4b.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
 PREHOOK: query: select * from small_alltypesorc1b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@small_alltypesorc1b
@@ -132,6 +180,18 @@ POSTHOOK: Input: default@small_alltypesorc3b
 POSTHOOK: Input: default@small_alltypesorc4b
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@small_alltypesorc_b
+POSTHOOK: Lineage: small_alltypesorc_b.cbigint EXPRESSION [(small_alltypesorc1b)small_alltypesorc1b.FieldSchema(name:cbigint, type:bigint, comment:null), (small_alltypesorc2b)small_alltypesorc2b.FieldSchema(name:cbigint, type:bigint, comment:null), (small_alltypesorc3b)small_alltypesorc3b.FieldSchema(name:cbigint, type:bigint, comment:null), (small_alltypesorc4b)small_alltypesorc4b.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_b.cboolean1 EXPRESSION [(small_alltypesorc1b)small_alltypesorc1b.FieldSchema(name:cboolean1, type:boolean, comment:null), (small_alltypesorc2b)small_alltypesorc2b.FieldSchema(name:cboolean1, type:boolean, comment:null), (small_alltypesorc3b)small_alltypesorc3b.FieldSchema(name:cboolean1, type:boolean, comment:null), (small_alltypesorc4b)small_alltypesorc4b.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_b.cboolean2 EXPRESSION [(small_alltypesorc1b)small_alltypesorc1b.FieldSchema(name:cboolean2, type:boolean, comment:null), (small_alltypesorc2b)small_alltypesorc2b.FieldSchema(name:cboolean2, type:boolean, comment:null), (small_alltypesorc3b)small_alltypesorc3b.FieldSchema(name:cboolean2, type:boolean, comment:null), (small_alltypesorc4b)small_alltypesorc4b.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_b.cdouble EXPRESSION [(small_alltypesorc1b)small_alltypesorc1b.FieldSchema(name:cdouble, type:double, comment:null), (small_alltypesorc2b)small_alltypesorc2b.FieldSchema(name:cdouble, type:double, comment:null), (small_alltypesorc3b)small_alltypesorc3b.FieldSchema(name:cdouble, type:double, comment:null), (small_alltypesorc4b)small_alltypesorc4b.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_b.cfloat EXPRESSION [(small_alltypesorc1b)small_alltypesorc1b.FieldSchema(name:cfloat, type:float, comment:null), (small_alltypesorc2b)small_alltypesorc2b.FieldSchema(name:cfloat, type:float, comment:null), (small_alltypesorc3b)small_alltypesorc3b.FieldSchema(name:cfloat, type:float, comment:null), (small_alltypesorc4b)small_alltypesorc4b.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_b.cint EXPRESSION [(small_alltypesorc1b)small_alltypesorc1b.FieldSchema(name:cint, type:int, comment:null), (small_alltypesorc2b)small_alltypesorc2b.FieldSchema(name:cint, type:int, comment:null), (small_alltypesorc3b)small_alltypesorc3b.FieldSchema(name:cint, type:int, comment:null), (small_alltypesorc4b)small_alltypesorc4b.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_b.csmallint EXPRESSION [(small_alltypesorc1b)small_alltypesorc1b.FieldSchema(name:csmallint, type:smallint, comment:null), (small_alltypesorc2b)small_alltypesorc2b.FieldSchema(name:csmallint, type:smallint, comment:null), (small_alltypesorc3b)small_alltypesorc3b.FieldSchema(name:csmallint, type:smallint, comment:null), (small_alltypesorc4b)small_alltypesorc4b.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_b.cstring1 EXPRESSION [(small_alltypesorc1b)small_alltypesorc1b.FieldSchema(name:cstring1, type:string, comment:null), (small_alltypesorc2b)small_alltypesorc2b.FieldSchema(name:cstring1, type:string, comment:null), (small_alltypesorc3b)small_alltypesorc3b.FieldSchema(name:cstring1, type:string, comment:null), (small_alltypesorc4b)small_alltypesorc4b.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_b.cstring2 EXPRESSION [(small_alltypesorc1b)small_alltypesorc1b.FieldSchema(name:cstring2, type:string, comment:null), (small_alltypesorc2b)small_alltypesorc2b.FieldSchema(name:cstring2, type:string, comment:null), (small_alltypesorc3b)small_alltypesorc3b.FieldSchema(name:cstring2, type:string, comment:null), (small_alltypesorc4b)small_alltypesorc4b.FieldSchema(name:cstring2, type:string, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_b.ctimestamp1 EXPRESSION [(small_alltypesorc1b)small_alltypesorc1b.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), (small_alltypesorc2b)small_alltypesorc2b.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), (small_alltypesorc3b)small_alltypesorc3b.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), (small_alltypesorc4b)small_alltypesorc4b.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_b.ctimestamp2 EXPRESSION [(small_alltypesorc1b)small_alltypesorc1b.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), (small_alltypesorc2b)small_alltypesorc2b.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), (small_alltypesorc3b)small_alltypesorc3b.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), (small_alltypesorc4b)small_alltypesorc4b.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_b.ctinyint EXPRESSION [(small_alltypesorc1b)small_alltypesorc1b.FieldSchema(name:ctinyint, type:tinyint, comment:null), (small_alltypesorc2b)small_alltypesorc2b.FieldSchema(name:ctinyint, type:tinyint, comment:null), (small_alltypesorc3b)small_alltypesorc3b.FieldSchema(name:ctinyint, type:tinyint, comment:null), (small_alltypesorc4b)small_alltypesorc4b.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
 PREHOOK: query: ANALYZE TABLE small_alltypesorc_b COMPUTE STATISTICS
 PREHOOK: type: QUERY
 PREHOOK: Input: default@small_alltypesorc_b

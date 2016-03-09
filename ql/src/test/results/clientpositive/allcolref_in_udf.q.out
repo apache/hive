@@ -172,6 +172,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@allcolref
+POSTHOOK: Lineage: allcolref.c0 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain select explode(*) as x from allcolref limit 10
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select explode(*) as x from allcolref limit 10

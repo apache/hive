@@ -8,6 +8,10 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@decimal_date_test
+POSTHOOK: Lineage: decimal_date_test.cdate EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: decimal_date_test.cdecimal1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: decimal_date_test.cdecimal2 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: decimal_date_test.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
 PREHOOK: query: EXPLAIN SELECT cdate FROM decimal_date_test WHERE cdate IN (CAST("1969-10-26" AS DATE), CAST("1969-07-14" AS DATE)) ORDER BY cdate
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT cdate FROM decimal_date_test WHERE cdate IN (CAST("1969-10-26" AS DATE), CAST("1969-07-14" AS DATE)) ORDER BY cdate

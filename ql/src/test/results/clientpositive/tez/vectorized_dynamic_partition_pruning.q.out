@@ -132,6 +132,8 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcpart_date
+POSTHOOK: Lineage: srcpart_date.date SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: srcpart_date.ds SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
 PREHOOK: query: create table srcpart_hour stored as orc as select hr as hr, hr as hour from srcpart group by hr
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@srcpart
@@ -150,6 +152,8 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcpart_hour
+POSTHOOK: Lineage: srcpart_hour.hour SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Lineage: srcpart_hour.hr SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
 PREHOOK: query: create table srcpart_date_hour stored as orc as select ds as ds, ds as `date`, hr as hr, hr as hour from srcpart group by ds, hr
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@srcpart
@@ -168,6 +172,10 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcpart_date_hour
+POSTHOOK: Lineage: srcpart_date_hour.date SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: srcpart_date_hour.ds SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: srcpart_date_hour.hour SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Lineage: srcpart_date_hour.hr SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
 PREHOOK: query: create table srcpart_double_hour stored as orc as select (hr*2) as hr, hr as hour from srcpart group by hr
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@srcpart
@@ -186,6 +194,8 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcpart_double_hour
+POSTHOOK: Lineage: srcpart_double_hour.hour SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Lineage: srcpart_double_hour.hr EXPRESSION [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
 PREHOOK: query: -- single column, single key
 EXPLAIN select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
 PREHOOK: type: QUERY

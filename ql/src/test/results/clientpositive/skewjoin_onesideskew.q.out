@@ -210,6 +210,8 @@ POSTHOOK: Input: default@nonskewtable
 POSTHOOK: Input: default@skewtable
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@result
+POSTHOOK: Lineage: result.key SIMPLE [(skewtable)a.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: result.value SIMPLE [(skewtable)a.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: SELECT * FROM result
 PREHOOK: type: QUERY
 PREHOOK: Input: default@result

@@ -93,6 +93,7 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.ArchiveUtils.PartSpecInfo;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
+import org.apache.hadoop.hive.ql.hooks.LineageInfo.DataContainer;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -3919,6 +3920,13 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
     } else {
       db.createTable(tbl, crtTbl.getIfNotExists());
+      if ( crtTbl.isCTAS()) {
+        Table createdTable = db.getTable(tbl.getDbName(), tbl.getTableName());
+        DataContainer dc = new DataContainer(createdTable.getTTable());
+        SessionState.get().getLineageState().setLineage(
+                createdTable.getPath(), dc, createdTable.getCols()
+        );
+      }
     }
     work.getOutputs().add(new WriteEntity(tbl, WriteEntity.WriteType.DDL_NO_LOCK));
     return 0;

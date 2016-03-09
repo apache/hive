@@ -81,6 +81,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_orc
+POSTHOOK: Lineage: src_orc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_orc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: EXPLAIN SELECT key, count(value) as cnt FROM src_orc GROUP BY key ORDER BY cnt
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT key, count(value) as cnt FROM src_orc GROUP BY key ORDER BY cnt

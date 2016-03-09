@@ -14,6 +14,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@a
+POSTHOOK: Lineage: a.key SIMPLE []
+POSTHOOK: Lineage: a.value SCRIPT []
 PREHOOK: query: -- overlap on a
 explain extended select * from a left outer join a b on (a.key=b.key AND a.value=50 AND b.value=50) left outer join a c on (a.key=c.key AND a.value=60 AND c.value=60)
 PREHOOK: type: QUERY

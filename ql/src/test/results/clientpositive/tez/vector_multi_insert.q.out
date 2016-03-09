@@ -32,6 +32,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc1
+POSTHOOK: Lineage: orc1.rn EXPRESSION []
 PREHOOK: query: create table orc_rn1 (rn int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

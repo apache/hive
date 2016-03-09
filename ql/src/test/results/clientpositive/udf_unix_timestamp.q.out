@@ -88,6 +88,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@oneline
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@foo
+POSTHOOK: Lineage: foo.a SIMPLE []
+POSTHOOK: Lineage: foo.b EXPRESSION []
 PREHOOK: query: drop table foo
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@foo

@@ -54,6 +54,19 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@vectortab_a_1k
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@vectortab_a_1korc
+POSTHOOK: Lineage: vectortab_a_1korc.b SIMPLE [(vectortab_a_1k)vectortab_a_1k.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: vectortab_a_1korc.bo SIMPLE [(vectortab_a_1k)vectortab_a_1k.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: vectortab_a_1korc.d SIMPLE [(vectortab_a_1k)vectortab_a_1k.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: vectortab_a_1korc.dc SIMPLE [(vectortab_a_1k)vectortab_a_1k.FieldSchema(name:dc, type:decimal(38,18), comment:null), ]
+POSTHOOK: Lineage: vectortab_a_1korc.dt SIMPLE [(vectortab_a_1k)vectortab_a_1k.FieldSchema(name:dt, type:date, comment:null), ]
+POSTHOOK: Lineage: vectortab_a_1korc.f SIMPLE [(vectortab_a_1k)vectortab_a_1k.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: vectortab_a_1korc.i SIMPLE [(vectortab_a_1k)vectortab_a_1k.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: vectortab_a_1korc.s SIMPLE [(vectortab_a_1k)vectortab_a_1k.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: vectortab_a_1korc.s2 SIMPLE [(vectortab_a_1k)vectortab_a_1k.FieldSchema(name:s2, type:string, comment:null), ]
+POSTHOOK: Lineage: vectortab_a_1korc.si SIMPLE [(vectortab_a_1k)vectortab_a_1k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: vectortab_a_1korc.t SIMPLE [(vectortab_a_1k)vectortab_a_1k.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: vectortab_a_1korc.ts SIMPLE [(vectortab_a_1k)vectortab_a_1k.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: vectortab_a_1korc.ts2 SIMPLE [(vectortab_a_1k)vectortab_a_1k.FieldSchema(name:ts2, type:timestamp, comment:null), ]
 PREHOOK: query: create table vectortab_b_1k(
             t tinyint,
             si smallint,
@@ -110,6 +123,19 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@vectortab_b_1k
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@vectortab_b_1korc
+POSTHOOK: Lineage: vectortab_b_1korc.b SIMPLE [(vectortab_b_1k)vectortab_b_1k.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: vectortab_b_1korc.bo SIMPLE [(vectortab_b_1k)vectortab_b_1k.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: vectortab_b_1korc.d SIMPLE [(vectortab_b_1k)vectortab_b_1k.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: vectortab_b_1korc.dc SIMPLE [(vectortab_b_1k)vectortab_b_1k.FieldSchema(name:dc, type:decimal(38,18), comment:null), ]
+POSTHOOK: Lineage: vectortab_b_1korc.dt SIMPLE [(vectortab_b_1k)vectortab_b_1k.FieldSchema(name:dt, type:date, comment:null), ]
+POSTHOOK: Lineage: vectortab_b_1korc.f SIMPLE [(vectortab_b_1k)vectortab_b_1k.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: vectortab_b_1korc.i SIMPLE [(vectortab_b_1k)vectortab_b_1k.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: vectortab_b_1korc.s SIMPLE [(vectortab_b_1k)vectortab_b_1k.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: vectortab_b_1korc.s2 SIMPLE [(vectortab_b_1k)vectortab_b_1k.FieldSchema(name:s2, type:string, comment:null), ]
+POSTHOOK: Lineage: vectortab_b_1korc.si SIMPLE [(vectortab_b_1k)vectortab_b_1k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: vectortab_b_1korc.t SIMPLE [(vectortab_b_1k)vectortab_b_1k.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: vectortab_b_1korc.ts SIMPLE [(vectortab_b_1k)vectortab_b_1k.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: vectortab_b_1korc.ts2 SIMPLE [(vectortab_b_1k)vectortab_b_1k.FieldSchema(name:ts2, type:timestamp, comment:null), ]
 PREHOOK: query: explain
 select
    v1.s,

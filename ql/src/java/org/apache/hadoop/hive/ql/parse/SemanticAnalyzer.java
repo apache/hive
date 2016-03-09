@@ -6910,6 +6910,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (ltd != null && SessionState.get() != null) {
       SessionState.get().getLineageState()
           .mapDirToFop(ltd.getSourcePath(), (FileSinkOperator) output);
+    } else if ( SessionState.get().getCommandType().equals(HiveOperation.CREATETABLE_AS_SELECT.getOperationName())) {
+
+      Path tlocation = null;
+      String tName = Utilities.getDbTableName(tableDesc.getTableName())[1];
+      try {
+        Warehouse wh = new Warehouse(conf);
+        tlocation = wh.getTablePath(db.getDatabase(tableDesc.getDatabaseName()), tName);
+      } catch (MetaException|HiveException e) {
+        throw new SemanticException(e);
+      }
+
+      SessionState.get().getLineageState()
+              .mapDirToFop(tlocation, (FileSinkOperator) output);
     }
 
     if (LOG.isDebugEnabled()) {
@@ -11341,7 +11354,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           rowFormatParams.lineDelim, comment, storageFormat.getInputFormat(),
           storageFormat.getOutputFormat(), location, storageFormat.getSerde(),
           storageFormat.getStorageHandler(), storageFormat.getSerdeProps(), tblProps, ifNotExists,
-          skewedColNames, skewedValues);
+          skewedColNames, skewedValues, true);
       tableDesc.setMaterialization(isMaterialization);
       tableDesc.setStoredAsSubDirectories(storedAsDirs);
       tableDesc.setNullFormat(rowFormatParams.nullFormat);

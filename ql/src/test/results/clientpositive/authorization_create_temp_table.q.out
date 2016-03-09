@@ -8,6 +8,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@authorization_create_temp_table_1
+POSTHOOK: Lineage: authorization_create_temp_table_1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: authorization_create_temp_table_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: grant select on authorization_create_temp_table_1 to user user1
 PREHOOK: type: GRANT_PRIVILEGE
 PREHOOK: Output: default@authorization_create_temp_table_1

@@ -94,6 +94,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@s2
+POSTHOOK: Lineage: s2.key SIMPLE []
 PREHOOK: query: select * from s2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@s2

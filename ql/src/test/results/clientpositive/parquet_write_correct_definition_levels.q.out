@@ -39,6 +39,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@text_tbl
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parq_tbl
+POSTHOOK: Lineage: parq_tbl.a SIMPLE [(text_tbl)text_tbl.FieldSchema(name:a, type:struct<b:struct<c:int>>, comment:null), ]
 PREHOOK: query: SELECT * FROM text_tbl
 PREHOOK: type: QUERY
 PREHOOK: Input: default@text_tbl

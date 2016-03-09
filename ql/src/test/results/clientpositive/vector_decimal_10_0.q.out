@@ -32,6 +32,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@decimal_txt
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@DECIMAL
+POSTHOOK: Lineage: decimal.dec SIMPLE [(decimal_txt)decimal_txt.FieldSchema(name:dec, type:decimal(10,0), comment:null), ]
 PREHOOK: query: EXPLAIN
 SELECT dec FROM `DECIMAL` order by dec
 PREHOOK: type: QUERY

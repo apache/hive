@@ -10,6 +10,10 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@decimal_test
+POSTHOOK: Lineage: decimal_test.cdecimal1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: decimal_test.cdecimal2 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: decimal_test.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: decimal_test.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
 PREHOOK: query: EXPLAIN
 SELECT cint, cdouble, cdecimal1, cdecimal2, min(cdecimal1) as min_decimal1 FROM decimal_test
 WHERE cdecimal1 is not null and cdecimal2 is not null

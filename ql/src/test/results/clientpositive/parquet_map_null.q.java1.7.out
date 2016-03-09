@@ -38,6 +38,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@avro_table
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_table
+POSTHOOK: Lineage: parquet_table.avreau_col_1 SIMPLE [(avro_table)avro_table.FieldSchema(name:avreau_col_1, type:map<string,string>, comment:), ]
 PREHOOK: query: SELECT * FROM parquet_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_table

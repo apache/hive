@@ -34,6 +34,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@parquet_map_of_maps
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_map_of_maps_copy
+POSTHOOK: Lineage: parquet_map_of_maps_copy.map_of_maps SIMPLE [(parquet_map_of_maps)parquet_map_of_maps.FieldSchema(name:map_of_maps, type:map<string,map<string,int>>, comment:null), ]
 PREHOOK: query: SELECT * FROM parquet_map_of_maps_copy
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_map_of_maps_copy

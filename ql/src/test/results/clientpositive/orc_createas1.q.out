@@ -144,6 +144,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_createas1b
+POSTHOOK: Lineage: orc_createas1b.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: orc_createas1b.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: EXPLAIN SELECT * FROM orc_createas1b ORDER BY key LIMIT 5
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT * FROM orc_createas1b ORDER BY key LIMIT 5
@@ -314,6 +316,9 @@ POSTHOOK: Input: default@orc_createas1a@ds=1
 POSTHOOK: Input: default@orc_createas1a@ds=2
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_createas1c
+POSTHOOK: Lineage: orc_createas1c.key SIMPLE [(orc_createas1a)orc_createas1a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_createas1c.part EXPRESSION [(orc_createas1a)orc_createas1a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_createas1c.value SIMPLE [(orc_createas1a)orc_createas1a.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(key, value) USING 'tr \t _' AS (c)
     FROM orc_createas1a

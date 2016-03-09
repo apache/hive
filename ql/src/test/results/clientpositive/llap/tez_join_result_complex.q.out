@@ -669,6 +669,22 @@ POSTHOOK: Input: default@ct_events_clean
 POSTHOOK: Input: default@service_request_clean
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ct_events1_test
+POSTHOOK: Lineage: ct_events1_test.ce_create_dt SIMPLE [(ct_events_clean)a.FieldSchema(name:ce_create_dt, type:string, comment:null), ]
+POSTHOOK: Lineage: ct_events1_test.ce_end_dt SIMPLE [(ct_events_clean)a.FieldSchema(name:ce_end_dt, type:string, comment:null), ]
+POSTHOOK: Lineage: ct_events1_test.ce_notes SIMPLE [(ct_events_clean)a.FieldSchema(name:ce_notes, type:array<string>, comment:null), ]
+POSTHOOK: Lineage: ct_events1_test.cmpltyp_cd SIMPLE [(service_request_clean)b.FieldSchema(name:cmpltyp_cd, type:string, comment:null), ]
+POSTHOOK: Lineage: ct_events1_test.cnctevs_cd SIMPLE [(ct_events_clean)a.FieldSchema(name:cnctevs_cd, type:string, comment:null), ]
+POSTHOOK: Lineage: ct_events1_test.cnctmd_cd SIMPLE [(service_request_clean)b.FieldSchema(name:cnctmd_cd, type:string, comment:null), ]
+POSTHOOK: Lineage: ct_events1_test.cntvnst_stts_cd SIMPLE [(ct_events_clean)a.FieldSchema(name:cntvnst_stts_cd, type:string, comment:null), ]
+POSTHOOK: Lineage: ct_events1_test.contact_event_id SIMPLE [(ct_events_clean)a.FieldSchema(name:contact_event_id, type:string, comment:null), ]
+POSTHOOK: Lineage: ct_events1_test.contact_mode SIMPLE [(ct_events_clean)a.FieldSchema(name:contact_mode, type:string, comment:null), ]
+POSTHOOK: Lineage: ct_events1_test.contact_type SIMPLE [(ct_events_clean)a.FieldSchema(name:contact_type, type:string, comment:null), ]
+POSTHOOK: Lineage: ct_events1_test.notes SIMPLE [(service_request_clean)b.FieldSchema(name:notes, type:array<string>, comment:null), ]
+POSTHOOK: Lineage: ct_events1_test.src SIMPLE [(service_request_clean)b.FieldSchema(name:sum_reason_cd, type:string, comment:null), ]
+POSTHOOK: Lineage: ct_events1_test.svcrqct_cds SIMPLE [(service_request_clean)b.FieldSchema(name:svcrqct_cds, type:array<string>, comment:null), ]
+POSTHOOK: Lineage: ct_events1_test.svcrqst_id SIMPLE [(service_request_clean)b.FieldSchema(name:svcrqst_id, type:string, comment:null), ]
+POSTHOOK: Lineage: ct_events1_test.svcrtyp_cd SIMPLE [(service_request_clean)b.FieldSchema(name:svcrtyp_cd, type:string, comment:null), ]
+POSTHOOK: Lineage: ct_events1_test.total_transfers SIMPLE [(ct_events_clean)a.FieldSchema(name:total_transfers, type:int, comment:null), ]
 PREHOOK: query: select * from ct_events1_test
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ct_events1_test
@@ -1893,6 +1909,22 @@ POSTHOOK: Input: default@ct_events_clean
 POSTHOOK: Input: default@service_request_clean
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ct_events1_test
+POSTHOOK: Lineage: ct_events1_test.ce_create_dt SIMPLE [(ct_events_clean)a.FieldSchema(name:ce_create_dt, type:string, comment:null), ]
+POSTHOOK: Lineage: ct_events1_test.ce_end_dt SIMPLE [(ct_events_clean)a.FieldSchema(name:ce_end_dt, type:string, comment:null), ]
+POSTHOOK: Lineage: ct_events1_test.ce_notes SIMPLE [(ct_events_clean)a.FieldSchema(name:ce_notes, type:array<string>, comment:null), ]
+POSTHOOK: Lineage: ct_events1_test.cmpltyp_cd SIMPLE [(service_request_clean)b.FieldSchema(name:cmpltyp_cd, type:string, comment:null), ]
+POSTHOOK: Lineage: ct_events1_test.cnctevs_cd SIMPLE [(ct_events_clean)a.FieldSchema(name:cnctevs_cd, type:string, comment:null), ]
+POSTHOOK: Lineage: ct_events1_test.cnctmd_cd SIMPLE [(service_request_clean)b.FieldSchema(name:cnctmd_cd, type:string, comment:null), ]
+POSTHOOK: Lineage: ct_events1_test.cntvnst_stts_cd SIMPLE [(ct_events_clean)a.FieldSchema(name:cntvnst_stts_cd, type:string, comment:null), ]
+POSTHOOK: Lineage: ct_events1_test.contact_event_id SIMPLE [(ct_events_clean)a.FieldSchema(name:contact_event_id, type:string, comment:null), ]
+POSTHOOK: Lineage: ct_events1_test.contact_mode SIMPLE [(ct_events_clean)a.FieldSchema(name:contact_mode, type:string, comment:null), ]
+POSTHOOK: Lineage: ct_events1_test.contact_type SIMPLE [(ct_events_clean)a.FieldSchema(name:contact_type, type:string, comment:null), ]
+POSTHOOK: Lineage: ct_events1_test.notes SIMPLE [(service_request_clean)b.FieldSchema(name:notes, type:array<string>, comment:null), ]
+POSTHOOK: Lineage: ct_events1_test.src SIMPLE [(service_request_clean)b.FieldSchema(name:sum_reason_cd, type:string, comment:null), ]
+POSTHOOK: Lineage: ct_events1_test.svcrqct_cds SIMPLE [(service_request_clean)b.FieldSchema(name:svcrqct_cds, type:array<string>, comment:null), ]
+POSTHOOK: Lineage: ct_events1_test.svcrqst_id SIMPLE [(service_request_clean)b.FieldSchema(name:svcrqst_id, type:string, comment:null), ]
+POSTHOOK: Lineage: ct_events1_test.svcrtyp_cd SIMPLE [(service_request_clean)b.FieldSchema(name:svcrtyp_cd, type:string, comment:null), ]
+POSTHOOK: Lineage: ct_events1_test.total_transfers SIMPLE [(ct_events_clean)a.FieldSchema(name:total_transfers, type:int, comment:null), ]
 PREHOOK: query: select * from ct_events1_test
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ct_events1_test

@@ -102,6 +102,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@newstructfield
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@NewStructFieldTable
+POSTHOOK: Lineage: newstructfieldtable.a SIMPLE [(newstructfield)newstructfield.FieldSchema(name:a, type:struct<a1:map<string,string>,a2:struct<e1:int,e2:string>,a3:int>, comment:null), ]
+POSTHOOK: Lineage: newstructfieldtable.b SIMPLE [(newstructfield)newstructfield.FieldSchema(name:b, type:int, comment:null), ]
 PREHOOK: query: DESCRIBE NewStructFieldTable
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@newstructfieldtable

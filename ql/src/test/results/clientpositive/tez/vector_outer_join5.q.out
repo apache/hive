@@ -18,6 +18,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@sorted_mod_4
+POSTHOOK: Lineage: sorted_mod_4.cmodint EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: sorted_mod_4.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
 PREHOOK: query: ANALYZE TABLE sorted_mod_4 COMPUTE STATISTICS
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sorted_mod_4
@@ -46,6 +48,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@small_table
+POSTHOOK: Lineage: small_table.cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: small_table.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
 PREHOOK: query: ANALYZE TABLE small_table COMPUTE STATISTICS
 PREHOOK: type: QUERY
 PREHOOK: Input: default@small_table
@@ -684,6 +688,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mod_8_mod_4
+POSTHOOK: Lineage: mod_8_mod_4.cmodint EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: mod_8_mod_4.cmodtinyint EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
 PREHOOK: query: ANALYZE TABLE mod_8_mod_4 COMPUTE STATISTICS
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mod_8_mod_4
@@ -712,6 +718,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@small_table2
+POSTHOOK: Lineage: small_table2.cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: small_table2.cmodtinyint EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
 PREHOOK: query: ANALYZE TABLE small_table2 COMPUTE STATISTICS
 PREHOOK: type: QUERY
 PREHOOK: Input: default@small_table2

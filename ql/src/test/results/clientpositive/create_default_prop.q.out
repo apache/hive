@@ -42,6 +42,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@table_p1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_p3
+POSTHOOK: Lineage: table_p3.a SIMPLE [(table_p1)table_p1.FieldSchema(name:a, type:string, comment:null), ]
 PREHOOK: query: DESC EXTENDED table_p3
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@table_p3

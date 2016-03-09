@@ -642,6 +642,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@wtest
+POSTHOOK: Lineage: wtest.a SCRIPT []
+POSTHOOK: Lineage: wtest.b SCRIPT []
 PREHOOK: query: select a, b,
 first_value(b) over (partition by a order by b rows between 1 preceding and 1 following ) ,
 first_value(b, true) over (partition by a order by b rows between 1 preceding and 1 following ) ,

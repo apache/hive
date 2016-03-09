@@ -52,6 +52,12 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@flights_tiny
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@flights_tiny_orc
+POSTHOOK: Lineage: flights_tiny_orc.arr_delay SIMPLE [(flights_tiny)flights_tiny.FieldSchema(name:arr_delay, type:float, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc.dest_city_name SIMPLE [(flights_tiny)flights_tiny.FieldSchema(name:dest_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc.fl_date SIMPLE [(flights_tiny)flights_tiny.FieldSchema(name:fl_date, type:date, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc.fl_num SIMPLE [(flights_tiny)flights_tiny.FieldSchema(name:fl_num, type:int, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc.fl_time EXPRESSION [(flights_tiny)flights_tiny.FieldSchema(name:fl_date, type:date, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc.origin_city_name SIMPLE [(flights_tiny)flights_tiny.FieldSchema(name:origin_city_name, type:string, comment:null), ]
 PREHOOK: query: SELECT * FROM flights_tiny_orc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@flights_tiny_orc

@@ -46,6 +46,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@myinput1_txt
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@myinput1
+POSTHOOK: Lineage: myinput1.key SIMPLE [(myinput1_txt)myinput1_txt.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: myinput1.value SIMPLE [(myinput1_txt)myinput1_txt.FieldSchema(name:value, type:int, comment:null), ]
 PREHOOK: query: -- merging
 explain select * from myinput1 a join myinput1 b on a.key<=>b.value
 PREHOOK: type: QUERY

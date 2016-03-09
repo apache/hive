@@ -124,6 +124,7 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@q1
 POSTHOOK: Output: default@s2
 #### A masked pattern was here ####
+POSTHOOK: Lineage: s2.key SIMPLE [(q1)q1.FieldSchema(name:key, type:string, comment:null), ]
 PREHOOK: query: select * from s2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@s2

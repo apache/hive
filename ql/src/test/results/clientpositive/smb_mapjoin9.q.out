@@ -492,6 +492,10 @@ POSTHOOK: Input: default@hive_test_smb_bucket2
 POSTHOOK: Input: default@hive_test_smb_bucket2@ds=2010-10-15
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@smb_mapjoin9_results
+POSTHOOK: Lineage: smb_mapjoin9_results.ds SIMPLE [(hive_test_smb_bucket2)b.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_mapjoin9_results.k1 SIMPLE [(hive_test_smb_bucket2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_mapjoin9_results.k2 SIMPLE [(hive_test_smb_bucket1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_mapjoin9_results.value SIMPLE [(hive_test_smb_bucket2)b.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: drop table smb_mapjoin9_results
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@smb_mapjoin9_results
