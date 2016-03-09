@@ -200,7 +200,7 @@ public abstract class BaseSemanticAnalyzer {
   }
 
   public BaseSemanticAnalyzer(HiveConf conf) throws SemanticException {
-   this(conf, createHiveDB(conf));
+    this(conf, createHiveDB(conf));
   }
 
   public BaseSemanticAnalyzer(HiveConf conf, Hive db) throws SemanticException {

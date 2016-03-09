@@ -248,7 +248,7 @@ public class Hive {
    *
    */
   public static Hive get(HiveConf c) throws HiveException {
-    return getInternal(c, false);
+    return getInternal(c, false, false, true);
   }
 
   /**
@@ -256,22 +256,65 @@ public class Hive {
    * MS client, assuming the relevant settings would be unchanged within the same conf object.
    */
   public static Hive getWithFastCheck(HiveConf c) throws HiveException {
-    return getInternal(c, true);
+    return getWithFastCheck(c, true);
   }
 
-  private static Hive getInternal(HiveConf c, boolean isFastCheck) throws HiveException {
+  /**
+   * Same as {@link #get(HiveConf)}, except that it checks only the object identity of existing
+   * MS client, assuming the relevant settings would be unchanged within the same conf object.
+   */
+  public static Hive getWithFastCheck(HiveConf c, boolean doRegisterAllFns) throws HiveException {
+    return getInternal(c, false, true, doRegisterAllFns);
+  }
+
+  private static Hive getInternal(HiveConf c, boolean needsRefresh, boolean isFastCheck,
+      boolean doRegisterAllFns) throws HiveException {
     Hive db = hiveDB.get();
-    if (db == null || !db.isCurrentUserOwner() ||
-        (db.metaStoreClient != null && !isCompatible(db, c, isFastCheck))) {
-      return get(c, true);
+    if (db == null || !db.isCurrentUserOwner() || needsRefresh
+        || (c != null && db.metaStoreClient != null && !isCompatible(db, c, isFastCheck))) {
+      return create(c, false, db, doRegisterAllFns);
     }
-    db.conf = c;
+    if (c != null) {
+      db.conf = c;
+    }
     return db;
+  }
+
+  private static Hive create(HiveConf c, boolean needsRefresh, Hive db, boolean doRegisterAllFns)
+      throws HiveException {
+    if (db != null) {
+      LOG.debug("Creating new db. db = " + db + ", needsRefresh = " + needsRefresh +
+        ", db.isCurrentUserOwner = " + db.isCurrentUserOwner());
+      db.close();
+    }
+    closeCurrent();
+    if (c == null) {
+      c = createHiveConf();
+    }
+    c.set("fs.scheme.class", "dfs");
+    Hive newdb = new Hive(c, doRegisterAllFns);
+    hiveDB.set(newdb);
+    return newdb;
+  }
+
+
+  private static HiveConf createHiveConf() {
+    SessionState session = SessionState.get();
+    return (session == null) ? new HiveConf(Hive.class) : session.getConf();
   }
 
   private static boolean isCompatible(Hive db, HiveConf c, boolean isFastCheck) {
     return isFastCheck
         ? db.metaStoreClient.isSameConfObj(c) : db.metaStoreClient.isCompatibleWith(c);
+  }
+
+
+  public static Hive get() throws HiveException {
+    return get(true);
+  }
+
+  public static Hive get(boolean doRegisterAllFns) throws HiveException {
+    return getInternal(null, false, false, doRegisterAllFns);
   }
 
   /**
@@ -285,40 +328,7 @@ public class Hive {
    * @throws HiveException
    */
   public static Hive get(HiveConf c, boolean needsRefresh) throws HiveException {
-    Hive db = hiveDB.get();
-    if (db == null || needsRefresh || !db.isCurrentUserOwner()) {
-      if (db != null) {
-        LOG.debug("Creating new db. db = " + db + ", needsRefresh = " + needsRefresh +
-          ", db.isCurrentUserOwner = " + db.isCurrentUserOwner());
-      }
-      closeCurrent();
-      c.set("fs.scheme.class", "dfs");
-      Hive newdb = new Hive(c, true);
-      hiveDB.set(newdb);
-      return newdb;
-    }
-    db.conf = c;
-    return db;
-  }
-
-  public static Hive get() throws HiveException {
-    return get(true);
-  }
-
-  public static Hive get(boolean doRegisterAllFns) throws HiveException {
-    Hive db = hiveDB.get();
-    if (db != null && !db.isCurrentUserOwner()) {
-      LOG.debug("Creating new db. db.isCurrentUserOwner = " + db.isCurrentUserOwner());
-      db.close();
-      db = null;
-    }
-    if (db == null) {
-      SessionState session = SessionState.get();
-      HiveConf conf = session == null ? new HiveConf(Hive.class) : session.getConf();
-      db = new Hive(conf, doRegisterAllFns);
-      hiveDB.set(db);
-    }
-    return db;
+    return getInternal(c, needsRefresh, false, true);
   }
 
   public static void set(Hive hive) {
