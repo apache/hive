@@ -467,7 +467,7 @@
                   templatePath="${basedir}/${hive.path.to.root}/ql/src/test/templates/" template="TestNegativeCliDriver.vm"
                   queryDirectory="${basedir}/${hive.path.to.root}/ql/src/test/queries/clientnegative/"
                   queryFile="${qfile}"
-                  excludeQueryFile="${minimr.query.negative.files}"
+                  excludeQueryFile="${minimr.query.negative.files},authorization_uri_import.q"
                   queryFileRegex="${qfile_regex}"
                   clusterMode="${clustermode}"
                   runDisabled="${run_disabled}"
