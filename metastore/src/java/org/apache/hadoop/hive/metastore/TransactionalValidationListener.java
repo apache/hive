@@ -86,6 +86,12 @@ final class TransactionalValidationListener extends MetaStorePreEventListener {
         throw new MetaException("The table must be bucketed and stored using an ACID compliant" +
             " format (such as ORC)");
       }
+
+      if (newTable.getTableType().equals(TableType.EXTERNAL_TABLE.toString())) {
+        throw new MetaException(newTable.getDbName() + "." + newTable.getTableName() +
+            " cannot be declared transactional because it's an external table");
+      }
+
       return;
     }
     Table oldTable = context.getOldTable();
@@ -142,6 +148,11 @@ final class TransactionalValidationListener extends MetaStorePreEventListener {
       if (!conformToAcid(newTable)) {
         throw new MetaException("The table must be bucketed and stored using an ACID compliant" +
             " format (such as ORC)");
+      }
+
+      if (newTable.getTableType().equals(TableType.EXTERNAL_TABLE.toString())) {
+        throw new MetaException(newTable.getDbName() + "." + newTable.getTableName() +
+            " cannot be declared transactional because it's an external table");
       }
 
       // normalize prop name

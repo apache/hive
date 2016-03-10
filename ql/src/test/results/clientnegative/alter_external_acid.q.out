@@ -1,0 +1,13 @@
+PREHOOK: query: create external table acid_external (a int, b varchar(128)) clustered by (b) into 2 buckets stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@acid_external
+POSTHOOK: query: create external table acid_external (a int, b varchar(128)) clustered by (b) into 2 buckets stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@acid_external
+PREHOOK: query: alter table acid_external set TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@acid_external
+PREHOOK: Output: default@acid_external
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Unable to alter table. default.acid_external cannot be declared transactional because it's an external table
