@@ -25,6 +25,7 @@ import org.apache.commons.dbcp.DriverManagerConnectionFactory;
 import org.apache.commons.dbcp.PoolableConnectionFactory;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.commons.dbcp.PoolingDataSource;
@@ -1153,6 +1154,170 @@ abstract class TxnHandler implements TxnStore {
   }
 
   /**
+   * Clean up corresponding records in metastore tables, specifically:
+   * TXN_COMPONENTS, COMPLETED_TXN_COMPONENTS, COMPACTION_QUEUE, COMPLETED_COMPACTIONS
+   */
+  public void cleanupRecords(HiveObjectType type, Database db, Table table,
+                             Iterator<Partition> partitionIterator) throws MetaException {
+    try {
+      Connection dbConn = null;
+      Statement stmt = null;
+
+      try {
+        String dbName;
+        String tblName;
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        stmt = dbConn.createStatement();
+        List<String> queries = new ArrayList<String>();
+        StringBuilder buff = new StringBuilder();
+
+        switch (type) {
+          case DATABASE:
+            dbName = db.getName();
+
+            buff.append("delete from TXN_COMPONENTS where tc_database='");
+            buff.append(dbName);
+            buff.append("'");
+            queries.add(buff.toString());
+
+            buff.setLength(0);
+            buff.append("delete from COMPLETED_TXN_COMPONENTS where ctc_database='");
+            buff.append(dbName);
+            buff.append("'");
+            queries.add(buff.toString());
+
+            buff.setLength(0);
+            buff.append("delete from COMPACTION_QUEUE where cq_database='");
+            buff.append(dbName);
+            buff.append("'");
+            queries.add(buff.toString());
+
+            buff.setLength(0);
+            buff.append("delete from COMPLETED_COMPACTIONS where cc_database='");
+            buff.append(dbName);
+            buff.append("'");
+            queries.add(buff.toString());
+
+            break;
+          case TABLE:
+            dbName = table.getDbName();
+            tblName = table.getTableName();
+
+            buff.append("delete from TXN_COMPONENTS where tc_database='");
+            buff.append(dbName);
+            buff.append("' and tc_table='");
+            buff.append(tblName);
+            buff.append("'");
+            queries.add(buff.toString());
+
+            buff.setLength(0);
+            buff.append("delete from COMPLETED_TXN_COMPONENTS where ctc_database='");
+            buff.append(dbName);
+            buff.append("' and ctc_table='");
+            buff.append(tblName);
+            buff.append("'");
+            queries.add(buff.toString());
+
+            buff.setLength(0);
+            buff.append("delete from COMPACTION_QUEUE where cq_database='");
+            buff.append(dbName);
+            buff.append("' and cq_table='");
+            buff.append(tblName);
+            buff.append("'");
+            queries.add(buff.toString());
+
+            buff.setLength(0);
+            buff.append("delete from COMPLETED_COMPACTIONS where cc_database='");
+            buff.append(dbName);
+            buff.append("' and cc_table='");
+            buff.append(tblName);
+            buff.append("'");
+            queries.add(buff.toString());
+
+            break;
+          case PARTITION:
+            dbName = table.getDbName();
+            tblName = table.getTableName();
+            List<FieldSchema> partCols = table.getPartitionKeys();  // partition columns
+            List<String> partVals;                                  // partition values
+            String partName;
+
+            while (partitionIterator.hasNext()) {
+              Partition p = partitionIterator.next();
+              partVals = p.getValues();
+              partName = Warehouse.makePartName(partCols, partVals);
+
+              buff.append("delete from TXN_COMPONENTS where tc_database='");
+              buff.append(dbName);
+              buff.append("' and tc_table='");
+              buff.append(tblName);
+              buff.append("' and tc_partition='");
+              buff.append(partName);
+              buff.append("'");
+              queries.add(buff.toString());
+
+              buff.setLength(0);
+              buff.append("delete from COMPLETED_TXN_COMPONENTS where ctc_database='");
+              buff.append(dbName);
+              buff.append("' and ctc_table='");
+              buff.append(tblName);
+              buff.append("' and ctc_partition='");
+              buff.append(partName);
+              buff.append("'");
+              queries.add(buff.toString());
+
+              buff.setLength(0);
+              buff.append("delete from COMPACTION_QUEUE where cq_database='");
+              buff.append(dbName);
+              buff.append("' and cq_table='");
+              buff.append(tblName);
+              buff.append("' and cq_partition='");
+              buff.append(partName);
+              buff.append("'");
+              queries.add(buff.toString());
+
+              buff.setLength(0);
+              buff.append("delete from COMPLETED_COMPACTIONS where cc_database='");
+              buff.append(dbName);
+              buff.append("' and cc_table='");
+              buff.append(tblName);
+              buff.append("' and cc_partition='");
+              buff.append(partName);
+              buff.append("'");
+              queries.add(buff.toString());
+            }
+
+            break;
+          default:
+            throw new MetaException("Invalid object type for cleanup: " + type);
+        }
+
+        for (String query : queries) {
+          LOG.debug("Going to execute update <" + query + ">");
+          stmt.executeUpdate(query);
+        }
+
+        LOG.debug("Going to commit");
+        dbConn.commit();
+      } catch (SQLException e) {
+        LOG.debug("Going to rollback");
+        rollbackDBConn(dbConn);
+        checkRetryable(dbConn, e, "cleanupRecords");
+        if (e.getMessage().contains("does not exist")) {
+          LOG.warn("Cannot perform cleanup since metastore table does not exist");
+        } else {
+          throw new MetaException("Unable to clean up " + StringUtils.stringifyException(e));
+        }
+      } finally {
+        closeStmt(stmt);
+        closeDbConn(dbConn);
+      }
+    } catch (RetryException e) {
+      cleanupRecords(type, db, table, partitionIterator);
+    }
+  }
+
+  /**
    * For testing only, do not use.
    */
   @VisibleForTesting
@@ -1599,7 +1764,7 @@ abstract class TxnHandler implements TxnStore {
         TxnDbUtil.prepDb();
       } catch (Exception e) {
         // We may have already created the tables and thus don't need to redo it.
-        if (!e.getMessage().contains("already exists")) {
+        if (e.getMessage() != null && !e.getMessage().contains("already exists")) {
           throw new RuntimeException("Unable to set up transaction database for" +
             " testing: " + e.getMessage(), e);
         }

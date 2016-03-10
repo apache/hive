@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.io;
 
-import org.apache.hadoop.mapred.InputFormat;
-import org.apache.hadoop.mapred.OutputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -706,12 +704,7 @@ public class AcidUtils {
     HiveConf.setBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN, isAcidTable);
   }
 
-  /** Checks metadata to make sure it's a valid ACID table at metadata level
-   * Three things we will check:
-   * 1. TBLPROPERTIES 'transactional'='true'
-   * 2. The table should be bucketed
-   * 3. InputFormatClass/OutputFormatClass should implement AcidInputFormat/AcidOutputFormat
-   *    Currently OrcInputFormat/OrcOutputFormat is the only implementer
+  /** Checks if a table is a valid ACID table.
    * Note, users are responsible for using the correct TxnManager. We do not look at
    * SessionState.get().getTxnMgr().supportsAcid() here
    * @param table table
@@ -725,23 +718,7 @@ public class AcidUtils {
     if (tableIsTransactional == null) {
       tableIsTransactional = table.getProperty(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL.toUpperCase());
     }
-    if (tableIsTransactional == null || !tableIsTransactional.equalsIgnoreCase("true")) {
-      return false;
-    }
 
-    List<String> bucketCols = table.getBucketCols();
-    if (bucketCols == null || bucketCols.isEmpty()) {
-      return false;
-    }
-
-    Class<? extends InputFormat> inputFormatClass = table.getInputFormatClass();
-    Class<? extends OutputFormat> outputFormatClass = table.getOutputFormatClass();
-    if (inputFormatClass == null || outputFormatClass == null ||
-        !AcidInputFormat.class.isAssignableFrom(inputFormatClass) ||
-        !AcidOutputFormat.class.isAssignableFrom(outputFormatClass)) {
-      return false;
-    }
-
-    return true;
+    return tableIsTransactional != null && tableIsTransactional.equalsIgnoreCase("true");
   }
 }
