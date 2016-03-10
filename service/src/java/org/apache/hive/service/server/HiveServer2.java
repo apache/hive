@@ -220,10 +220,10 @@ public class HiveServer2 extends CompositeService {
    * ACLProvider for providing appropriate ACLs to CuratorFrameworkFactory
    */
   private final ACLProvider zooKeeperAclProvider = new ACLProvider() {
-    List<ACL> nodeAcls = new ArrayList<ACL>();
 
     @Override
     public List<ACL> getDefaultAcl() {
+      List<ACL> nodeAcls = new ArrayList<ACL>();
       if (UserGroupInformation.isSecurityEnabled()) {
         // Read all to the world
         nodeAcls.addAll(Ids.READ_ACL_UNSAFE);
