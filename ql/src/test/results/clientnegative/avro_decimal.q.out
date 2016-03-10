@@ -1,0 +1,22 @@
+PREHOOK: query: DROP TABLE IF EXISTS avro_dec
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS avro_dec
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE `avro_dec`(
+  `name` string COMMENT 'from deserializer',
+  `value` decimal(5,2) COMMENT 'from deserializer')
+COMMENT 'just drop the schema right into the HQL'
+ROW FORMAT SERDE
+  'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
+STORED AS INPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat'
+OUTPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat'
+TBLPROPERTIES (
+  'numFiles'='1',
+  'avro.schema.literal'='{\"namespace\":\"com.howdy\",\"name\":\"some_schema\",\"type\":\"record\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"value\",\"type\":{\"type\":\"bytes\",\"logicalType\":\"decimal\",\"precision\":"5",\"scale\":"2"}}]}'
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@avro_dec
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. java.lang.RuntimeException: MetaException(message:org.apache.hadoop.hive.serde2.avro.AvroSerdeException Invalid precision or scale for decimal type)
