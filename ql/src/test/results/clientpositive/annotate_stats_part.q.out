@@ -493,11 +493,11 @@ STAGE PLANS:
           Statistics: Num rows: 7 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
           Filter Operator
             predicate: (locid > 0) (type: boolean)
-            Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 7 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: locid (type: int)
               outputColumnNames: _col0
-              Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 7 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
               ListSink
 
 PREHOOK: query: explain select locid,year from loc_orc where locid>0 and year='2001'
@@ -517,11 +517,11 @@ STAGE PLANS:
           Statistics: Num rows: 7 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
           Filter Operator
             predicate: (locid > 0) (type: boolean)
-            Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 7 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: locid (type: int), '2001' (type: string)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 7 Data size: 644 Basic stats: COMPLETE Column stats: COMPLETE
               ListSink
 
 PREHOOK: query: explain select * from (select locid,year from loc_orc) test where locid>0 and year='2001'
@@ -541,10 +541,10 @@ STAGE PLANS:
           Statistics: Num rows: 7 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
           Filter Operator
             predicate: (locid > 0) (type: boolean)
-            Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 7 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: locid (type: int), '2001' (type: string)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 7 Data size: 644 Basic stats: COMPLETE Column stats: COMPLETE
               ListSink
 

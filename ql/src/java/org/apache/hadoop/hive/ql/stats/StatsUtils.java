@@ -724,6 +724,8 @@ public class StatsUtils {
       }
     } else if (colTypeLowerCase.equals(serdeConstants.DATE_TYPE_NAME)) {
       cs.setAvgColLen(JavaDataModel.get().lengthOfDate());
+      cs.setRange(csd.getDateStats().getLowValue().getDaysSinceEpoch(),
+              csd.getDateStats().getHighValue().getDaysSinceEpoch());
     } else {
       // Columns statistics for complex datatypes are not supported yet
       return null;

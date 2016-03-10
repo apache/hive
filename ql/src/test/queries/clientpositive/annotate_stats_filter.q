@@ -83,9 +83,17 @@ explain select * from loc_orc where (year=2001 and year is null) or (state='CA')
 -- numRows: 1 rawDataSize: 102
 explain select * from loc_orc where (year=2001 or year is null) and (state='CA');
 
--- all inequality conditions rows/3 is the rules
--- numRows: 2 rawDataSize: 204
+-- inequality conditions falling out of range. total or zero (converted to one)
+-- numRows: 1 rawDataSize: 102
+-- numRows: 8 rawDataSize: 804
 explain select * from loc_orc where locid < 30;
 explain select * from loc_orc where locid > 30;
 explain select * from loc_orc where locid <= 30;
 explain select * from loc_orc where locid >= 30;
+
+-- all inequality conditions falling within range. rows/3 is the rules
+-- numRows: 2 rawDataSize: 204
+explain select * from loc_orc where locid < 3;
+explain select * from loc_orc where locid > 3;
+explain select * from loc_orc where locid <= 3;
+explain select * from loc_orc where locid >= 3;

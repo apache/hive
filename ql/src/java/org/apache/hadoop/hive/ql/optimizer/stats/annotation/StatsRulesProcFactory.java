@@ -26,8 +26,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Stack;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -80,6 +78,8 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -500,6 +500,181 @@ public class StatsRulesProcFactory {
       return maxNoNulls;
     }
 
+    private long evaluateComparator(Statistics stats, ExprNodeGenericFuncDesc genFunc) {
+      long numRows = stats.getNumRows();
+      GenericUDF udf = genFunc.getGenericUDF();
+
+      ExprNodeColumnDesc columnDesc;
+      ExprNodeConstantDesc constantDesc;
+      boolean upperBound;
+      String boundValue = null;
+      if (genFunc.getChildren().get(0) instanceof ExprNodeColumnDesc &&
+              genFunc.getChildren().get(1) instanceof ExprNodeConstantDesc) {
+        columnDesc = (ExprNodeColumnDesc) genFunc.getChildren().get(0);
+        constantDesc = (ExprNodeConstantDesc) genFunc.getChildren().get(1);
+        // Comparison to null will always return false
+        if (constantDesc.getValue() == null) {
+          return 0;
+        }
+        if (udf instanceof GenericUDFOPEqualOrGreaterThan ||
+                udf instanceof GenericUDFOPGreaterThan) {
+          boundValue = constantDesc.getValue().toString();
+          upperBound = false;
+        } else {
+          boundValue = constantDesc.getValue().toString();
+          upperBound = true;
+        }
+      } else if (genFunc.getChildren().get(1) instanceof ExprNodeColumnDesc &&
+              genFunc.getChildren().get(0) instanceof ExprNodeConstantDesc) {
+        columnDesc = (ExprNodeColumnDesc) genFunc.getChildren().get(1);
+        constantDesc = (ExprNodeConstantDesc) genFunc.getChildren().get(0);
+        // Comparison to null will always return false
+        if (constantDesc.getValue() == null) {
+          return 0;
+        }
+        if (udf instanceof GenericUDFOPEqualOrGreaterThan ||
+                udf instanceof GenericUDFOPGreaterThan) {
+          boundValue = constantDesc.getValue().toString();
+          upperBound = true;
+        } else {
+          boundValue = constantDesc.getValue().toString();
+          upperBound = false;
+        }
+      } else {
+        // default
+        return numRows / 3;
+      }
+
+      ColStatistics cs = stats.getColumnStatisticsFromColName(columnDesc.getColumn());
+      if (cs != null && cs.getRange() != null &&
+              cs.getRange().maxValue != null && cs.getRange().minValue != null) {
+        String colTypeLowerCase = columnDesc.getTypeString().toLowerCase();
+        try {
+          if (colTypeLowerCase.equals(serdeConstants.TINYINT_TYPE_NAME)) {
+            byte value = new Byte(boundValue);
+            byte maxValue = cs.getRange().maxValue.byteValue();
+            byte minValue = cs.getRange().minValue.byteValue();
+            if (upperBound) {
+              if (maxValue < value) {
+                return numRows;
+              }
+              if (minValue > value) {
+                return 0;
+              }
+            } else {
+              if (minValue > value) {
+                return numRows;
+              }
+              if (maxValue < value) {
+                return 0;
+              }
+            }
+          } else if (colTypeLowerCase.equals(serdeConstants.SMALLINT_TYPE_NAME)) {
+            short value = new Short(boundValue);
+            short maxValue = cs.getRange().maxValue.shortValue();
+            short minValue = cs.getRange().minValue.shortValue();
+            if (upperBound) {
+              if (maxValue < value) {
+                return numRows;
+              }
+              if (minValue > value) {
+                return 0;
+              }
+            } else {
+              if (minValue > value) {
+                return numRows;
+              }
+              if (maxValue < value) {
+                return 0;
+              }
+            }
+          } else if (colTypeLowerCase.equals(serdeConstants.INT_TYPE_NAME) ||
+                  colTypeLowerCase.equals(serdeConstants.DATE_TYPE_NAME)) {
+            // Date is an integer internally
+            int value = new Integer(boundValue);
+            int maxValue = cs.getRange().maxValue.intValue();
+            int minValue = cs.getRange().minValue.intValue();
+            if (upperBound) {
+              if (maxValue < value) {
+                return numRows;
+              }
+              if (minValue > value) {
+                return 0;
+              }
+            } else {
+              if (minValue > value) {
+                return numRows;
+              }
+              if (maxValue < value) {
+                return 0;
+              }
+            }
+          } else if (colTypeLowerCase.equals(serdeConstants.BIGINT_TYPE_NAME)) {
+            long value = new Long(boundValue);
+            long maxValue = cs.getRange().maxValue.longValue();
+            long minValue = cs.getRange().minValue.longValue();
+            if (upperBound) {
+              if (maxValue < value) {
+                return numRows;
+              }
+              if (minValue > value) {
+                return 0;
+              }
+            } else {
+              if (minValue > value) {
+                return numRows;
+              }
+              if (maxValue < value) {
+                return 0;
+              }
+            }
+          } else if (colTypeLowerCase.equals(serdeConstants.FLOAT_TYPE_NAME)) {
+            float value = new Float(boundValue);
+            float maxValue = cs.getRange().maxValue.floatValue();
+            float minValue = cs.getRange().minValue.floatValue();
+            if (upperBound) {
+              if (maxValue < value) {
+                return numRows;
+              }
+              if (minValue > value) {
+                return 0;
+              }
+            } else {
+              if (minValue > value) {
+                return numRows;
+              }
+              if (maxValue < value) {
+                return 0;
+              }
+            }
+          } else if (colTypeLowerCase.equals(serdeConstants.DOUBLE_TYPE_NAME)) {
+            double value = new Double(boundValue);
+            double maxValue = cs.getRange().maxValue.doubleValue();
+            double minValue = cs.getRange().minValue.doubleValue();
+            if (upperBound) {
+              if (maxValue < value) {
+                return numRows;
+              }
+              if (minValue > value) {
+                return 0;
+              }
+            } else {
+              if (minValue > value) {
+                return numRows;
+              }
+              if (maxValue < value) {
+                return 0;
+              }
+            }
+          }
+        } catch (NumberFormatException nfe) {
+          return numRows / 3;
+        }
+      }
+      // default
+      return numRows / 3;
+    }
+
     private long evaluateChildExpr(Statistics stats, ExprNodeDesc child,
         AnnotateStatsProcCtx aspCtx, List<String> neededCols,
         FilterOperator fop, long evaluatedRowCount) throws CloneNotSupportedException {
@@ -578,9 +753,10 @@ public class StatsRulesProcFactory {
         } else if (udf instanceof GenericUDFOPNotEqual) {
           return numRows;
         } else if (udf instanceof GenericUDFOPEqualOrGreaterThan
-            || udf instanceof GenericUDFOPEqualOrLessThan || udf instanceof GenericUDFOPGreaterThan
+            || udf instanceof GenericUDFOPEqualOrLessThan
+            || udf instanceof GenericUDFOPGreaterThan
             || udf instanceof GenericUDFOPLessThan) {
-          return numRows / 3;
+          return evaluateComparator(stats, genFunc);
         } else if (udf instanceof GenericUDFOPNotNull) {
             return evaluateNotNullExpr(stats, genFunc);
         } else if (udf instanceof GenericUDFOPNull) {
