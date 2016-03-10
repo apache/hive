@@ -2944,6 +2944,7 @@ public abstract class TestHiveMetaStore extends TestCase {
 
     tbl.setSd(sd);
     tbl.setLastAccessTime(lastAccessTime);
+    tbl.setTableType(TableType.MANAGED_TABLE.toString());
 
     client.createTable(tbl);
 
