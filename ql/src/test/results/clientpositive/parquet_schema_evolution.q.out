@@ -123,6 +123,71 @@ POSTHOOK: Input: default@newstructfieldtable
 {"a1":{"k1":"v1"},"a2":{"e1":5,"e2":null},"a3":null}	NULL
 {"a1":{"k1":"v1"},"a2":{"e1":5,"e2":null},"a3":null}	NULL
 {"a1":{"k1":"v1"},"a2":{"e1":5,"e2":null},"a3":null}	NULL
+PREHOOK: query: -- test if the order of fields in array<struct<>> changes, it works fine
+
+DROP TABLE IF EXISTS schema_test
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: -- test if the order of fields in array<struct<>> changes, it works fine
+
+DROP TABLE IF EXISTS schema_test
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE schema_test (msg array<struct<f1: string, f2: string, a: array<struct<a1: string, a2: string>>, b: array<struct<b1: int, b2: int>>>>) STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@schema_test
+POSTHOOK: query: CREATE TABLE schema_test (msg array<struct<f1: string, f2: string, a: array<struct<a1: string, a2: string>>, b: array<struct<b1: int, b2: int>>>>) STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@schema_test
+PREHOOK: query: INSERT INTO TABLE schema_test SELECT array(named_struct('f1', 'abc', 'f2', 'abc2', 'a', array(named_struct('a1', 'a1', 'a2', 'a2')),
+   'b', array(named_struct('b1', 1, 'b2', 2)))) FROM NewStructField LIMIT 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@newstructfield
+PREHOOK: Output: default@schema_test
+POSTHOOK: query: INSERT INTO TABLE schema_test SELECT array(named_struct('f1', 'abc', 'f2', 'abc2', 'a', array(named_struct('a1', 'a1', 'a2', 'a2')),
+   'b', array(named_struct('b1', 1, 'b2', 2)))) FROM NewStructField LIMIT 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@newstructfield
+POSTHOOK: Output: default@schema_test
+POSTHOOK: Lineage: schema_test.msg EXPRESSION []
+PREHOOK: query: SELECT * FROM schema_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@schema_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM schema_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@schema_test
+#### A masked pattern was here ####
+[{"f1":"abc","f2":"abc2","a":[{"a1":"a1","a2":"a2"}],"b":[{"b1":1,"b2":2}]}]
+[{"f1":"abc","f2":"abc2","a":[{"a1":"a1","a2":"a2"}],"b":[{"b1":1,"b2":2}]}]
+PREHOOK: query: -- Order of fields swapped
+ALTER TABLE schema_test CHANGE msg msg array<struct<a: array<struct<a2: string, a1: string>>, b: array<struct<b2: int, b1: int>>, f2: string, f1: string>>
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@schema_test
+PREHOOK: Output: default@schema_test
+POSTHOOK: query: -- Order of fields swapped
+ALTER TABLE schema_test CHANGE msg msg array<struct<a: array<struct<a2: string, a1: string>>, b: array<struct<b2: int, b1: int>>, f2: string, f1: string>>
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@schema_test
+POSTHOOK: Output: default@schema_test
+PREHOOK: query: SELECT * FROM schema_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@schema_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM schema_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@schema_test
+#### A masked pattern was here ####
+[{"a":[{"a2":"a2","a1":"a1"}],"b":[{"b2":2,"b1":1}],"f2":"abc2","f1":"abc"}]
+[{"a":[{"a2":"a2","a1":"a1"}],"b":[{"b2":2,"b1":1}],"f2":"abc2","f1":"abc"}]
+PREHOOK: query: DROP TABLE schema_test
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@schema_test
+PREHOOK: Output: default@schema_test
+POSTHOOK: query: DROP TABLE schema_test
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@schema_test
+POSTHOOK: Output: default@schema_test
 PREHOOK: query: DROP TABLE NewStructField
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@newstructfield

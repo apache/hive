@@ -23,5 +23,19 @@ CREATE TABLE NewStructFieldTable STORED AS PARQUET AS SELECT * FROM NewStructFie
 DESCRIBE NewStructFieldTable;
 SELECT * FROM NewStructFieldTable;
 
+-- test if the order of fields in array<struct<>> changes, it works fine
+
+DROP TABLE IF EXISTS schema_test;
+CREATE TABLE schema_test (msg array<struct<f1: string, f2: string, a: array<struct<a1: string, a2: string>>, b: array<struct<b1: int, b2: int>>>>) STORED AS PARQUET;
+INSERT INTO TABLE schema_test SELECT array(named_struct('f1', 'abc', 'f2', 'abc2', 'a', array(named_struct('a1', 'a1', 'a2', 'a2')),
+   'b', array(named_struct('b1', 1, 'b2', 2)))) FROM NewStructField LIMIT 2;
+SELECT * FROM schema_test;
+set hive.metastore.disallow.incompatible.col.type.changes=false;
+-- Order of fields swapped
+ALTER TABLE schema_test CHANGE msg msg array<struct<a: array<struct<a2: string, a1: string>>, b: array<struct<b2: int, b1: int>>, f2: string, f1: string>>;
+reset hive.metastore.disallow.incompatible.col.type.changes;
+SELECT * FROM schema_test;
+
+DROP TABLE schema_test;
 DROP TABLE NewStructField;
 DROP TABLE NewStructFieldTable;
