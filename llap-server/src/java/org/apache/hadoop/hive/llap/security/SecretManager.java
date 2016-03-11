@@ -27,10 +27,43 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.delegation.ZKDelegationTokenSecretManager;
 import org.apache.hadoop.security.token.delegation.web.DelegationTokenManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SecretManager extends ZKDelegationTokenSecretManager<LlapTokenIdentifier> {
+  private static final Logger LOG = LoggerFactory.getLogger(SecretManager.class);
   public SecretManager(Configuration conf) {
     super(conf);
+    checkForZKDTSMBug(conf);
+  }
+
+  // Workaround for HADOOP-12659 - remove when Hadoop 2.7.X is no longer supported.
+  private void checkForZKDTSMBug(Configuration conf) {
+    // There's a bug in ZKDelegationTokenSecretManager ctor where seconds are not converted to ms.
+    long expectedRenewTimeSec = conf.getLong(DelegationTokenManager.RENEW_INTERVAL, -1);
+    LOG.info("Checking for tokenRenewInterval bug: " + expectedRenewTimeSec);
+    if (expectedRenewTimeSec == -1) return; // The default works, no bug.
+    java.lang.reflect.Field f = null;
+    try {
+     Class<?> c = org.apache.hadoop.security.token.delegation.AbstractDelegationTokenSecretManager.class;
+     f = c.getDeclaredField("tokenRenewInterval");
+     f.setAccessible(true);
+    } catch (Throwable t) {
+      // Maybe someone removed the field; probably ok to ignore.
+      LOG.error("Failed to check for tokenRenewInterval bug, hoping for the best", t);
+      return;
+    }
+    try {
+      long realValue = f.getLong(this);
+      long expectedValue = expectedRenewTimeSec * 1000;
+      LOG.info("tokenRenewInterval is: " + realValue + " (expected " + expectedValue + ")");
+      if (realValue == expectedRenewTimeSec) {
+        // Bug - the field has to be in ms, not sec. Override only if set precisely to sec.
+        f.setLong(this, expectedValue);
+      }
+    } catch (Exception ex) {
+      throw new RuntimeException("Failed to address tokenRenewInterval bug", ex);
+    }
   }
 
   @Override
@@ -62,8 +95,10 @@ public class SecretManager extends ZKDelegationTokenSecretManager<LlapTokenIdent
     // Override the default delegation token lifetime for LLAP.
     // Also set all the necessary ZK settings to defaults and LLAP configs, if not set.
     final Configuration zkConf = new Configuration(conf);
-    zkConf.setLong(DelegationTokenManager.MAX_LIFETIME,
-        HiveConf.getTimeVar(conf, ConfVars.LLAP_DELEGATION_TOKEN_LIFETIME, TimeUnit.SECONDS));
+    long tokenLifetime = HiveConf.getTimeVar(
+        conf, ConfVars.LLAP_DELEGATION_TOKEN_LIFETIME, TimeUnit.SECONDS);
+    zkConf.setLong(DelegationTokenManager.MAX_LIFETIME, tokenLifetime);
+    zkConf.setLong(DelegationTokenManager.RENEW_INTERVAL, tokenLifetime);
     zkConf.set(SecretManager.ZK_DTSM_ZK_KERBEROS_PRINCIPAL, principal);
     zkConf.set(SecretManager.ZK_DTSM_ZK_KERBEROS_KEYTAB, keyTab);
     setZkConfIfNotSet(zkConf, SecretManager.ZK_DTSM_ZNODE_WORKING_PATH, "llapzkdtsm");
