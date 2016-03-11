@@ -277,6 +277,192 @@ public class TestDbTxnManager2 {
     Assert.assertTrue(cpr.getErrorMessage().contains("Attempt to do update or delete using transaction manager that does not support these operations."));
   }
 
+  /**
+   * Normally the compaction process will clean up records in TXN_COMPONENTS, COMPLETED_TXN_COMPONENTS,
+   * COMPACTION_QUEUE and COMPLETED_COMPACTIONS. But if a table/partition has been dropped before
+   * compaction and there are still relevant records in those metastore tables, the Initiator will
+   * complain about not being able to find the table/partition. This method is to test and make sure
+   * we clean up relevant records as soon as a table/partition is dropped.
+   *
+   * Note, here we don't need to worry about cleaning up TXNS table, since it's handled separately.
+   * @throws Exception
+   */
+  @Test
+  public void testMetastoreTablesCleanup() throws Exception {
+    CommandProcessorResponse cpr = driver.run("create database if not exists temp");
+    checkCmdOnDriver(cpr);
+
+    // Create some ACID tables: T10, T11 - unpartitioned table, T12p, T13p - partitioned table
+    cpr = driver.run("create table temp.T10 (a int, b int) clustered by(b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')");
+    checkCmdOnDriver(cpr);
+    cpr = driver.run("create table temp.T11 (a int, b int) clustered by(b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')");
+    checkCmdOnDriver(cpr);
+    cpr = driver.run("create table temp.T12p (a int, b int) partitioned by (ds string, hour string) clustered by(b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')");
+    checkCmdOnDriver(cpr);
+    cpr = driver.run("create table temp.T13p (a int, b int) partitioned by (ds string, hour string) clustered by(b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')");
+    checkCmdOnDriver(cpr);
+
+    // Successfully insert some data into ACID tables, so that we have records in COMPLETED_TXN_COMPONENTS
+    cpr = driver.run("insert into temp.T10 values (1, 1)");
+    checkCmdOnDriver(cpr);
+    cpr = driver.run("insert into temp.T10 values (2, 2)");
+    checkCmdOnDriver(cpr);
+    cpr = driver.run("insert into temp.T11 values (3, 3)");
+    checkCmdOnDriver(cpr);
+    cpr = driver.run("insert into temp.T11 values (4, 4)");
+    checkCmdOnDriver(cpr);
+    cpr = driver.run("insert into temp.T12p partition (ds='today', hour='1') values (5, 5)");
+    checkCmdOnDriver(cpr);
+    cpr = driver.run("insert into temp.T12p partition (ds='tomorrow', hour='2') values (6, 6)");
+    checkCmdOnDriver(cpr);
+    cpr = driver.run("insert into temp.T13p partition (ds='today', hour='1') values (7, 7)");
+    checkCmdOnDriver(cpr);
+    cpr = driver.run("insert into temp.T13p partition (ds='tomorrow', hour='2') values (8, 8)");
+    checkCmdOnDriver(cpr);
+    int count = TxnDbUtil.countQueryAgent("select count(*) from COMPLETED_TXN_COMPONENTS where CTC_DATABASE='temp' and CTC_TABLE in ('t10', 't11')");
+    Assert.assertEquals(4, count);
+    count = TxnDbUtil.countQueryAgent("select count(*) from COMPLETED_TXN_COMPONENTS where CTC_DATABASE='temp' and CTC_TABLE in ('t12p', 't13p')");
+    Assert.assertEquals(4, count);
+
+    // Fail some inserts, so that we have records in TXN_COMPONENTS
+    conf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, true);
+    cpr = driver.run("insert into temp.T10 values (9, 9)");
+    checkCmdOnDriver(cpr);
+    cpr = driver.run("insert into temp.T11 values (10, 10)");
+    checkCmdOnDriver(cpr);
+    cpr = driver.run("insert into temp.T12p partition (ds='today', hour='1') values (11, 11)");
+    checkCmdOnDriver(cpr);
+    cpr = driver.run("insert into temp.T13p partition (ds='today', hour='1') values (12, 12)");
+    checkCmdOnDriver(cpr);
+    count = TxnDbUtil.countQueryAgent("select count(*) from TXN_COMPONENTS where TC_DATABASE='temp' and TC_TABLE in ('t10', 't11', 't12p', 't13p')");
+    Assert.assertEquals(4, count);
+    conf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, false);
+
+    // Drop a table/partition; corresponding records in TXN_COMPONENTS and COMPLETED_TXN_COMPONENTS should disappear
+    count = TxnDbUtil.countQueryAgent("select count(*) from TXN_COMPONENTS where TC_DATABASE='temp' and TC_TABLE='t10'");
+    Assert.assertEquals(1, count);
+    count = TxnDbUtil.countQueryAgent("select count(*) from COMPLETED_TXN_COMPONENTS where CTC_DATABASE='temp' and CTC_TABLE='t10'");
+    Assert.assertEquals(2, count);
+    cpr = driver.run("drop table temp.T10");
+    checkCmdOnDriver(cpr);
+    count = TxnDbUtil.countQueryAgent("select count(*) from TXN_COMPONENTS where TC_DATABASE='temp' and TC_TABLE='t10'");
+    Assert.assertEquals(0, count);
+    count = TxnDbUtil.countQueryAgent("select count(*) from COMPLETED_TXN_COMPONENTS where CTC_DATABASE='temp' and CTC_TABLE='t10'");
+    Assert.assertEquals(0, count);
+
+    count = TxnDbUtil.countQueryAgent("select count(*) from TXN_COMPONENTS where TC_DATABASE='temp' and TC_TABLE='t12p' and TC_PARTITION='ds=today/hour=1'");
+    Assert.assertEquals(1, count);
+    count = TxnDbUtil.countQueryAgent("select count(*) from COMPLETED_TXN_COMPONENTS where CTC_DATABASE='temp' and CTC_TABLE='t12p' and CTC_PARTITION='ds=today/hour=1'");
+    Assert.assertEquals(1, count);
+    cpr = driver.run("alter table temp.T12p drop partition (ds='today', hour='1')");
+    checkCmdOnDriver(cpr);
+    count = TxnDbUtil.countQueryAgent("select count(*) from TXN_COMPONENTS where TC_DATABASE='temp' and TC_TABLE='t12p' and TC_PARTITION='ds=today/hour=1'");
+    Assert.assertEquals(0, count);
+    count = TxnDbUtil.countQueryAgent("select count(*) from COMPLETED_TXN_COMPONENTS where CTC_DATABASE='temp' and CTC_TABLE='t12p' and CTC_PARTITION='ds=today/hour=1'");
+    Assert.assertEquals(0, count);
+
+    // Successfully perform compaction on a table/partition, so that we have successful records in COMPLETED_COMPACTIONS
+    cpr = driver.run("alter table temp.T11 compact 'minor'");
+    checkCmdOnDriver(cpr);
+    count = TxnDbUtil.countQueryAgent("select count(*) from COMPACTION_QUEUE where CQ_DATABASE='temp' and CQ_TABLE='t11' and CQ_STATE='i' and CQ_TYPE='i'");
+    Assert.assertEquals(1, count);
+    org.apache.hadoop.hive.ql.TestTxnCommands2.runWorker(conf);
+    count = TxnDbUtil.countQueryAgent("select count(*) from COMPACTION_QUEUE where CQ_DATABASE='temp' and CQ_TABLE='t11' and CQ_STATE='r' and CQ_TYPE='i'");
+    Assert.assertEquals(1, count);
+    org.apache.hadoop.hive.ql.TestTxnCommands2.runCleaner(conf);
+    count = TxnDbUtil.countQueryAgent("select count(*) from COMPACTION_QUEUE where CQ_DATABASE='temp' and CQ_TABLE='t11'");
+    Assert.assertEquals(0, count);
+    count = TxnDbUtil.countQueryAgent("select count(*) from COMPLETED_COMPACTIONS where CC_DATABASE='temp' and CC_TABLE='t11' and CC_STATE='s' and CC_TYPE='i'");
+    Assert.assertEquals(1, count);
+
+    cpr = driver.run("alter table temp.T12p partition (ds='tomorrow', hour='2') compact 'minor'");
+    checkCmdOnDriver(cpr);
+    count = TxnDbUtil.countQueryAgent("select count(*) from COMPACTION_QUEUE where CQ_DATABASE='temp' and CQ_TABLE='t12p' and CQ_PARTITION='ds=tomorrow/hour=2' and CQ_STATE='i' and CQ_TYPE='i'");
+    Assert.assertEquals(1, count);
+    org.apache.hadoop.hive.ql.TestTxnCommands2.runWorker(conf);
+    count = TxnDbUtil.countQueryAgent("select count(*) from COMPACTION_QUEUE where CQ_DATABASE='temp' and CQ_TABLE='t12p' and CQ_PARTITION='ds=tomorrow/hour=2' and CQ_STATE='r' and CQ_TYPE='i'");
+    Assert.assertEquals(1, count);
+    org.apache.hadoop.hive.ql.TestTxnCommands2.runCleaner(conf);
+    count = TxnDbUtil.countQueryAgent("select count(*) from COMPACTION_QUEUE where CQ_DATABASE='temp' and CQ_TABLE='t12p'");
+    Assert.assertEquals(0, count);
+    count = TxnDbUtil.countQueryAgent("select count(*) from COMPLETED_COMPACTIONS where CC_DATABASE='temp' and CC_TABLE='t12p' and CC_STATE='s' and CC_TYPE='i'");
+    Assert.assertEquals(1, count);
+
+    // Fail compaction, so that we have failed records in COMPLETED_COMPACTIONS
+    conf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION, true);
+    cpr = driver.run("alter table temp.T11 compact 'major'");
+    checkCmdOnDriver(cpr);
+    count = TxnDbUtil.countQueryAgent("select count(*) from COMPACTION_QUEUE where CQ_DATABASE='temp' and CQ_TABLE='t11' and CQ_STATE='i' and CQ_TYPE='a'");
+    Assert.assertEquals(1, count);
+    org.apache.hadoop.hive.ql.TestTxnCommands2.runWorker(conf); // will fail
+    count = TxnDbUtil.countQueryAgent("select count(*) from COMPACTION_QUEUE where CQ_DATABASE='temp' and CQ_TABLE='t11' and CQ_STATE='i' and CQ_TYPE='a'");
+    Assert.assertEquals(0, count);
+    count = TxnDbUtil.countQueryAgent("select count(*) from COMPLETED_COMPACTIONS where CC_DATABASE='temp' and CC_TABLE='t11' and CC_STATE='f' and CC_TYPE='a'");
+    Assert.assertEquals(1, count);
+
+    cpr = driver.run("alter table temp.T12p partition (ds='tomorrow', hour='2') compact 'major'");
+    checkCmdOnDriver(cpr);
+    count = TxnDbUtil.countQueryAgent("select count(*) from COMPACTION_QUEUE where CQ_DATABASE='temp' and CQ_TABLE='t12p' and CQ_PARTITION='ds=tomorrow/hour=2' and CQ_STATE='i' and CQ_TYPE='a'");
+    Assert.assertEquals(1, count);
+    org.apache.hadoop.hive.ql.TestTxnCommands2.runWorker(conf); // will fail
+    count = TxnDbUtil.countQueryAgent("select count(*) from COMPACTION_QUEUE where CQ_DATABASE='temp' and CQ_TABLE='t12p' and CQ_PARTITION='ds=tomorrow/hour=2' and CQ_STATE='i' and CQ_TYPE='a'");
+    Assert.assertEquals(0, count);
+    count = TxnDbUtil.countQueryAgent("select count(*) from COMPLETED_COMPACTIONS where CC_DATABASE='temp' and CC_TABLE='t12p' and CC_STATE='f' and CC_TYPE='a'");
+    Assert.assertEquals(1, count);
+    conf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION, false);
+
+    // Put 2 records into COMPACTION_QUEUE and do nothing
+    cpr = driver.run("alter table temp.T11 compact 'major'");
+    checkCmdOnDriver(cpr);
+    count = TxnDbUtil.countQueryAgent("select count(*) from COMPACTION_QUEUE where CQ_DATABASE='temp' and CQ_TABLE='t11' and CQ_STATE='i' and CQ_TYPE='a'");
+    Assert.assertEquals(1, count);
+    cpr = driver.run("alter table temp.T12p partition (ds='tomorrow', hour='2') compact 'major'");
+    checkCmdOnDriver(cpr);
+    count = TxnDbUtil.countQueryAgent("select count(*) from COMPACTION_QUEUE where CQ_DATABASE='temp' and CQ_TABLE='t12p' and CQ_PARTITION='ds=tomorrow/hour=2' and CQ_STATE='i' and CQ_TYPE='a'");
+    Assert.assertEquals(1, count);
+
+    // Drop a table/partition, corresponding records in COMPACTION_QUEUE and COMPLETED_COMPACTIONS should disappear
+    cpr = driver.run("drop table temp.T11");
+    checkCmdOnDriver(cpr);
+    count = TxnDbUtil.countQueryAgent("select count(*) from COMPACTION_QUEUE where CQ_DATABASE='temp' and CQ_TABLE='t11'");
+    Assert.assertEquals(0, count);
+    count = TxnDbUtil.countQueryAgent("select count(*) from COMPLETED_COMPACTIONS where CC_DATABASE='temp' and CC_TABLE='t11'");
+    Assert.assertEquals(0, count);
+
+    cpr = driver.run("alter table temp.T12p drop partition (ds='tomorrow', hour='2')");
+    checkCmdOnDriver(cpr);
+    count = TxnDbUtil.countQueryAgent("select count(*) from COMPACTION_QUEUE where CQ_DATABASE='temp' and CQ_TABLE='t12p'");
+    Assert.assertEquals(0, count);
+    count = TxnDbUtil.countQueryAgent("select count(*) from COMPLETED_COMPACTIONS where CC_DATABASE='temp' and CC_TABLE='t12p'");
+    Assert.assertEquals(0, count);
+
+    // Put 1 record into COMPACTION_QUEUE and do nothing
+    cpr = driver.run("alter table temp.T13p partition (ds='today', hour='1') compact 'major'");
+    checkCmdOnDriver(cpr);
+    count = TxnDbUtil.countQueryAgent("select count(*) from COMPACTION_QUEUE where CQ_DATABASE='temp' and CQ_TABLE='t13p' and CQ_STATE='i' and CQ_TYPE='a'");
+    Assert.assertEquals(1, count);
+
+    // Drop database, everything in all 4 meta tables should disappear
+    count = TxnDbUtil.countQueryAgent("select count(*) from TXN_COMPONENTS where TC_DATABASE='temp' and TC_TABLE in ('t10', 't11', 't12p', 't13p')");
+    Assert.assertEquals(1, count);
+    count = TxnDbUtil.countQueryAgent("select count(*) from COMPLETED_TXN_COMPONENTS where CTC_DATABASE='temp' and CTC_TABLE in ('t10', 't11', 't12p', 't13p')");
+    Assert.assertEquals(2, count);
+    count = TxnDbUtil.countQueryAgent("select count(*) from COMPACTION_QUEUE where CQ_DATABASE='temp' and CQ_TABLE in ('t10', 't11', 't12p', 't13p')");
+    Assert.assertEquals(1, count);
+    count = TxnDbUtil.countQueryAgent("select count(*) from COMPLETED_COMPACTIONS where CC_DATABASE='temp' and CC_TABLE in ('t10', 't11', 't12p', 't13p')");
+    Assert.assertEquals(0, count);
+    cpr = driver.run("drop database if exists temp cascade");
+    checkCmdOnDriver(cpr);
+    count = TxnDbUtil.countQueryAgent("select count(*) from TXN_COMPONENTS where TC_DATABASE='temp' and TC_TABLE in ('t10', 't11', 't12p', 't13p')");
+    Assert.assertEquals(0, count);
+    count = TxnDbUtil.countQueryAgent("select count(*) from COMPLETED_TXN_COMPONENTS where CTC_DATABASE='temp' and CTC_TABLE in ('t10', 't11', 't12p', 't13p')");
+    Assert.assertEquals(0, count);
+    count = TxnDbUtil.countQueryAgent("select count(*) from COMPACTION_QUEUE where CQ_DATABASE='temp' and CQ_TABLE in ('t10', 't11', 't12p', 't13p')");
+    Assert.assertEquals(0, count);
+    count = TxnDbUtil.countQueryAgent("select count(*) from COMPLETED_COMPACTIONS where CC_DATABASE='temp' and CC_TABLE in ('t10', 't11', 't12p', 't13p')");
+    Assert.assertEquals(0, count);
+  }
+
   private void checkLock(LockType type, LockState state, String db, String table, String partition, ShowLocksResponseElement l) {
     Assert.assertEquals(l.toString(),l.getType(), type);
     Assert.assertEquals(l.toString(),l.getState(), state);
