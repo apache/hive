@@ -21,6 +21,7 @@ import java.io.IOException;
 
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch;
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch.ColumnStreamData;
+import org.apache.hadoop.hive.llap.counters.LlapIOCounters;
 import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
 import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
 import org.apache.hadoop.hive.llap.io.metadata.OrcFileMetadata;
@@ -118,11 +119,11 @@ public class OrcEncodedDataConsumer
 
         // we are done reading a batch, send it to consumer for processing
         downstreamConsumer.consumeData(cvb);
-        counters.incrCounter(QueryFragmentCounters.Counter.ROWS_EMITTED, batchSize);
+        counters.incrCounter(LlapIOCounters.ROWS_EMITTED, batchSize);
       }
-      counters.incrTimeCounter(QueryFragmentCounters.Counter.DECODE_TIME_US, startTime);
-      counters.incrCounter(QueryFragmentCounters.Counter.NUM_VECTOR_BATCHES, maxBatchesRG);
-      counters.incrCounter(QueryFragmentCounters.Counter.NUM_DECODED_BATCHES);
+      counters.incrTimeCounter(LlapIOCounters.DECODE_TIME_NS, startTime);
+      counters.incrCounter(LlapIOCounters.NUM_VECTOR_BATCHES, maxBatchesRG);
+      counters.incrCounter(LlapIOCounters.NUM_DECODED_BATCHES);
     } catch (IOException e) {
       // Caller will return the batch.
       downstreamConsumer.setError(e);

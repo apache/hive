@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.hadoop.hive.llap.counters.LlapIOCounters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -47,7 +48,6 @@ import org.apache.hadoop.hive.llap.cache.Cache;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
-import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters.Counter;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.io.decode.OrcEncodedDataConsumer;
 import org.apache.hadoop.hive.llap.io.metadata.OrcFileMetadata;
@@ -78,7 +78,6 @@ import org.apache.hadoop.hive.ql.io.orc.RecordReaderUtils;
 import org.apache.orc.StripeInformation;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.mapred.FileSplit;
-import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.common.util.FixedSizedObjectPool;
 import org.apache.orc.OrcProto;
@@ -391,12 +390,12 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
           }
           isFoundInCache = (stripeMetadata != null);
           if (!isFoundInCache) {
-            counters.incrCounter(Counter.METADATA_CACHE_MISS);
+            counters.incrCounter(LlapIOCounters.METADATA_CACHE_MISS);
             ensureMetadataReader();
             long startTimeHdfs = counters.startTimeCounter();
             stripeMetadata = new OrcStripeMetadata(new OrcBatchKey(fileId, stripeIx, 0),
                 metadataReader, stripe, stripeIncludes, sargColumns);
-            counters.incrTimeCounter(Counter.HDFS_TIME_US, startTimeHdfs);
+            counters.incrTimeCounter(LlapIOCounters.HDFS_TIME_NS, startTimeHdfs);
             if (hasFileId && metadataCache != null) {
               stripeMetadata = metadataCache.putStripeMetadata(stripeMetadata);
               if (DebugUtils.isTraceOrcEnabled()) {
@@ -413,11 +412,11 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
                 + " metadata for includes: " + DebugUtils.toString(stripeIncludes));
           }
           assert isFoundInCache;
-          counters.incrCounter(Counter.METADATA_CACHE_MISS);
+          counters.incrCounter(LlapIOCounters.METADATA_CACHE_MISS);
           ensureMetadataReader();
           updateLoadedIndexes(stripeMetadata, stripe, stripeIncludes, sargColumns);
         } else if (isFoundInCache) {
-          counters.incrCounter(Counter.METADATA_CACHE_HIT);
+          counters.incrCounter(LlapIOCounters.METADATA_CACHE_HIT);
         }
       } catch (Throwable t) {
         consumer.setError(t);
@@ -462,7 +461,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   }
 
   private void recordReaderTime(long startTime) {
-    counters.incrTimeCounter(Counter.TOTAL_IO_TIME_US, startTime);
+    counters.incrTimeCounter(LlapIOCounters.TOTAL_IO_TIME_NS, startTime);
   }
 
   private static String getDbAndTableName(Path path) {
@@ -571,7 +570,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       if (stripeMetadata.hasAllIndexes(stripeIncludes)) return;
       long startTime = counters.startTimeCounter();
       stripeMetadata.loadMissingIndexes(metadataReader, stripe, stripeIncludes, sargColumns);
-      counters.incrTimeCounter(Counter.HDFS_TIME_US, startTime);
+      counters.incrTimeCounter(LlapIOCounters.HDFS_TIME_NS, startTime);
     }
   }
 
@@ -610,7 +609,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     long startTime = counters.startTimeCounter();
     ReaderOptions opts = OrcFile.readerOptions(conf).filesystem(fs).fileMetadata(fileMetadata);
     orcReader = EncodedOrcFile.createReader(path, opts);
-    counters.incrTimeCounter(Counter.HDFS_TIME_US, startTime);
+    counters.incrTimeCounter(LlapIOCounters.HDFS_TIME_NS, startTime);
   }
 
   /**
@@ -621,10 +620,10 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     if (fileId != null && metadataCache != null) {
       metadata = metadataCache.getFileMetadata(fileId);
       if (metadata != null) {
-        counters.incrCounter(Counter.METADATA_CACHE_HIT);
+        counters.incrCounter(LlapIOCounters.METADATA_CACHE_HIT);
         return metadata;
       } else {
-        counters.incrCounter(Counter.METADATA_CACHE_MISS);
+        counters.incrCounter(LlapIOCounters.METADATA_CACHE_MISS);
       }
     }
     ensureOrcReader();
@@ -651,14 +650,14 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
         value = metadataCache.getStripeMetadata(stripeKey);
       }
       if (value == null || !value.hasAllIndexes(globalInc)) {
-        counters.incrCounter(Counter.METADATA_CACHE_MISS);
+        counters.incrCounter(LlapIOCounters.METADATA_CACHE_MISS);
         ensureMetadataReader();
         StripeInformation si = fileMetadata.getStripes().get(stripeIx);
         if (value == null) {
           long startTime = counters.startTimeCounter();
           value = new OrcStripeMetadata(new OrcBatchKey(fileId, stripeIx, 0),
               metadataReader, si, globalInc, sargColumns);
-          counters.incrTimeCounter(Counter.HDFS_TIME_US, startTime);
+          counters.incrTimeCounter(LlapIOCounters.HDFS_TIME_NS, startTime);
           if (hasFileId && metadataCache != null) {
             value = metadataCache.putStripeMetadata(value);
             if (DebugUtils.isTraceOrcEnabled()) {
@@ -676,7 +675,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
           updateLoadedIndexes(value, si, globalInc, sargColumns);
         }
       } else {
-        counters.incrCounter(Counter.METADATA_CACHE_HIT);
+        counters.incrCounter(LlapIOCounters.METADATA_CACHE_HIT);
       }
       result.add(value);
       consumer.setStripeMetadata(value);
@@ -689,7 +688,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     if (metadataReader != null) return;
     long startTime = counters.startTimeCounter();
     metadataReader = orcReader.metadata();
-    counters.incrTimeCounter(Counter.HDFS_TIME_US, startTime);
+    counters.incrTimeCounter(LlapIOCounters.HDFS_TIME_NS, startTime);
   }
 
   @Override
@@ -772,7 +771,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     } else if (!isNone) {
       count = rgCount;
     }
-    counters.setCounter(QueryFragmentCounters.Counter.SELECTED_ROWGROUPS, count);
+    counters.setCounter(LlapIOCounters.SELECTED_ROWGROUPS, count);
   }
 
 

@@ -54,7 +54,7 @@ public class TestOperationLoggingAPIWithTez extends OperationLoggingAPITestBase 
       "org.apache.tez.common.counters.DAGCounter",
       "NUM_SUCCEEDED_TASKS",
       "TOTAL_LAUNCHED_TASKS",
-      "CPU_TIME_MILLIS"
+      "CPU_MILLISECONDS"
     };
     hiveConf = new HiveConf();
     hiveConf.set(ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LEVEL.varname, "verbose");
