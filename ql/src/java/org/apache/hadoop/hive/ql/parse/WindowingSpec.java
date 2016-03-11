@@ -20,10 +20,12 @@ package org.apache.hadoop.hive.ql.parse;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import org.antlr.runtime.CommonToken;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.WindowFunctionInfo;
+import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.OrderExpression;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.OrderSpec;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitionExpression;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitionSpec;
@@ -295,17 +297,30 @@ public class WindowingSpec {
     BoundarySpec end = wFrame.getEnd();
 
     if (start instanceof ValueBoundarySpec || end instanceof ValueBoundarySpec) {
-      if ( order != null ) {
-        if ( order.getExpressions().size() > 1 ) {
-          throw new SemanticException("Range based Window Frame can have only 1 Sort Key");
-        }
+      if (order == null || order.getExpressions().size() == 0) {
+        throw new SemanticException("Range based Window Frame needs to specify ORDER BY clause");
+      }
 
-        if (start instanceof ValueBoundarySpec) {
-          ((ValueBoundarySpec)start).setExpression(order.getExpressions().get(0).getExpression());
-        }
-        if (end instanceof ValueBoundarySpec) {
-          ((ValueBoundarySpec)end).setExpression(order.getExpressions().get(0).getExpression());
-        }
+      boolean defaultPreceding = start.getDirection() == Direction.PRECEDING &&
+              start.getAmt() == BoundarySpec.UNBOUNDED_AMOUNT &&
+              end.getDirection() == Direction.CURRENT;
+      boolean defaultFollowing = start.getDirection() == Direction.CURRENT &&
+              end.getDirection() == Direction.FOLLOWING &&
+              end.getAmt() == BoundarySpec.UNBOUNDED_AMOUNT;
+      boolean defaultPrecedingFollowing = start.getDirection() == Direction.PRECEDING &&
+              start.getAmt() == BoundarySpec.UNBOUNDED_AMOUNT &&
+              end.getDirection() == Direction.FOLLOWING &&
+              end.getAmt() == BoundarySpec.UNBOUNDED_AMOUNT;
+      boolean multiOrderAllowed = defaultPreceding || defaultFollowing || defaultPrecedingFollowing;
+      if ( order.getExpressions().size() != 1 && !multiOrderAllowed) {
+        throw new SemanticException("Range value based Window Frame can have only 1 Sort Key");
+      }
+
+      if (start instanceof ValueBoundarySpec) {
+        ((ValueBoundarySpec)start).setOrderExpressions(order.getExpressions());
+      }
+      if (end instanceof ValueBoundarySpec) {
+        ((ValueBoundarySpec)end).setOrderExpressions(order.getExpressions());
       }
     }
   }
@@ -683,8 +698,8 @@ public class WindowingSpec {
   public static class ValueBoundarySpec extends BoundarySpec
   {
     Direction direction;
-    ASTNode expression;
     int amt;
+    List<OrderExpression> orderExpressions;
 
     public ValueBoundarySpec() {
     }
@@ -708,14 +723,14 @@ public class WindowingSpec {
       this.direction = direction;
     }
 
-    public ASTNode getExpression()
+    public List<OrderExpression> getOrderExpressions()
     {
-      return expression;
+      return orderExpressions;
     }
 
-    public void setExpression(ASTNode expression)
+    public void setOrderExpressions(List<OrderExpression> orderExpressions)
     {
-      this.expression = expression;
+      this.orderExpressions = orderExpressions;
     }
 
     @Override
@@ -733,7 +748,16 @@ public class WindowingSpec {
     @Override
     public String toString()
     {
-      return String.format("value(%s %s %s)", expression.toStringTree(), amt, direction);
+      StringBuilder exprs = new StringBuilder();
+      if (orderExpressions != null) {
+        for (int i=0; i<orderExpressions.size(); i++) {
+          exprs.append(i == 0 ? orderExpressions.get(i).getExpression().toStringTree()
+                  : ", " + orderExpressions.get(i).getExpression().toStringTree());
+        }
+      } else {
+        exprs.append("No order expression");
+      }
+      return String.format("value(%s %s %s)", exprs.toString(), amt, direction);
     }
 
     public int compareTo(BoundarySpec other)

@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.LeadLagInfo;
 import org.apache.hadoop.hive.ql.parse.WindowingExprNodeEvaluatorFactory;
 import org.apache.hadoop.hive.ql.plan.ptf.BoundaryDef;
+import org.apache.hadoop.hive.ql.plan.ptf.OrderExpressionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.PTFExpressionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.PTFInputDef;
 import org.apache.hadoop.hive.ql.plan.ptf.PTFQueryInputDef;
@@ -214,7 +215,9 @@ public class PTFDeserializer {
   protected void initialize(BoundaryDef def, ShapeDetails inpShape) throws HiveException {
     if (def instanceof ValueBoundaryDef) {
       ValueBoundaryDef vDef = (ValueBoundaryDef) def;
-      initialize(vDef.getExpressionDef(), inpShape);
+      for (OrderExpressionDef exprDef : vDef.getOrderDef().getExpressions()) {
+        initialize(exprDef, inpShape);
+      }
     }
   }
 
