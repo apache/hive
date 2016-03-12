@@ -208,6 +208,12 @@ public class LlapServiceDriver {
       // TODO: vcpu settings - possibly when DRFA works right
     }
 
+    if (options.getIoThreads() != -1) {
+      conf.setLong(ConfVars.LLAP_IO_THREADPOOL_SIZE.varname, options.getIoThreads());
+      propsDirectOptions.setProperty(ConfVars.LLAP_IO_THREADPOOL_SIZE.varname,
+          String.valueOf(options.getIoThreads()));
+    }
+
     if (options.getCache() != -1) {
       conf.set(HiveConf.ConfVars.LLAP_IO_MEMORY_MAX_SIZE.varname,
           Long.toString(options.getCache()));

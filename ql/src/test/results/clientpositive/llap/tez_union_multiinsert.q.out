@@ -150,7 +150,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 464 Basic stats: COMPLETE Column stats: PARTIAL
             Execution mode: llap
         Reducer 2 
-            Execution mode: uber
+            Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -188,7 +188,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 1 Data size: 464 Basic stats: COMPLETE Column stats: PARTIAL
         Reducer 4 
-            Execution mode: uber
+            Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(DISTINCT KEY._col1:0._col0)
@@ -205,7 +205,7 @@ STAGE PLANS:
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: default.dest1
         Reducer 5 
-            Execution mode: uber
+            Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(DISTINCT KEY._col2:0._col0)
@@ -1054,7 +1054,7 @@ STAGE PLANS:
                           Statistics: Num rows: 1 Data size: 464 Basic stats: COMPLETE Column stats: PARTIAL
             Execution mode: llap
         Reducer 3 
-            Execution mode: uber
+            Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(DISTINCT KEY._col1:0._col0)
@@ -1071,7 +1071,7 @@ STAGE PLANS:
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: default.dest1
         Reducer 4 
-            Execution mode: uber
+            Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(DISTINCT KEY._col2:0._col0)
@@ -1088,7 +1088,7 @@ STAGE PLANS:
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: default.dest2
         Reducer 6 
-            Execution mode: uber
+            Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -1950,7 +1950,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 464 Basic stats: COMPLETE Column stats: PARTIAL
             Execution mode: llap
         Reducer 3 
-            Execution mode: uber
+            Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(DISTINCT KEY._col1:0._col0)
@@ -1967,7 +1967,7 @@ STAGE PLANS:
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: default.dest1
         Reducer 4 
-            Execution mode: uber
+            Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(DISTINCT KEY._col2:0._col0)
@@ -1984,7 +1984,7 @@ STAGE PLANS:
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: default.dest2
         Reducer 6 
-            Execution mode: uber
+            Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -2801,7 +2801,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 464 Basic stats: COMPLETE Column stats: PARTIAL
             Execution mode: llap
         Reducer 2 
-            Execution mode: uber
+            Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -2835,7 +2835,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                       Statistics: Num rows: 1 Data size: 464 Basic stats: COMPLETE Column stats: PARTIAL
         Reducer 4 
-            Execution mode: uber
+            Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(DISTINCT KEY._col1:0._col0)
@@ -2852,7 +2852,7 @@ STAGE PLANS:
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: default.dest1
         Reducer 5 
-            Execution mode: uber
+            Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(DISTINCT KEY._col2:0._col0)
@@ -3634,7 +3634,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 272 Basic stats: COMPLETE Column stats: PARTIAL
             Execution mode: llap
         Reducer 2 
-            Execution mode: uber
+            Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -3693,7 +3693,7 @@ STAGE PLANS:
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: default.dest2
         Reducer 5 
-            Execution mode: uber
+            Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(DISTINCT KEY._col1:0._col0)

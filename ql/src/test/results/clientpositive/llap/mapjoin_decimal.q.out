@@ -143,7 +143,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1049 Data size: 117488 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
         Reducer 2 
-            Execution mode: uber
+            Execution mode: llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: decimal(4,2)), VALUE._col0 (type: decimal(4,0))

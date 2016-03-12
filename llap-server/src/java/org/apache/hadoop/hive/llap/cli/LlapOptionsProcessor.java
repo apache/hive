@@ -52,12 +52,14 @@ public class LlapOptionsProcessor {
   public static final String OPTION_HIVECONF = "hiveconf"; // llap-daemon-site if relevant parameter
   public static final String OPTION_SLIDER_AM_CONTAINER_MB = "slider-am-container-mb"; // forward as arg
   public static final String OPTION_LLAP_QUEUE = "queue"; // forward via config.json
+  public static final String OPTION_IO_THREADS = "iothreads"; // llap-daemon-site
 
   public class LlapOptions {
     private final int instances;
     private final String directory;
     private final String name;
     private final int executors;
+    private final int ioThreads;
     private final long cache;
     private final long size;
     private final long xmx;
@@ -67,8 +69,8 @@ public class LlapOptionsProcessor {
     private final String javaPath;
     private final String llapQueueName;
 
-    public LlapOptions(String name, int instances, String directory, int executors, long cache,
-                       long size, long xmx, String jars, boolean isHbase,
+    public LlapOptions(String name, int instances, String directory, int executors, int ioThreads,
+                       long cache, long size, long xmx, String jars, boolean isHbase,
                        @Nonnull Properties hiveconf, String javaPath, String llapQueueName)
         throws ParseException {
       if (instances <= 0) {
@@ -79,6 +81,7 @@ public class LlapOptionsProcessor {
       this.directory = directory;
       this.name = name;
       this.executors = executors;
+      this.ioThreads = ioThreads;
       this.cache = cache;
       this.size = size;
       this.xmx = xmx;
@@ -103,6 +106,10 @@ public class LlapOptionsProcessor {
 
     public int getExecutors() {
       return executors;
+    }
+
+    public int getIoThreads() {
+      return ioThreads;
     }
 
     public long getCache() {
@@ -202,6 +209,9 @@ public class LlapOptionsProcessor {
         .withLongOpt(OPTION_SLIDER_AM_CONTAINER_MB)
         .withDescription("The size of the slider AppMaster container in MB").create());
 
+    options.addOption(OptionBuilder.hasArg().withArgName(OPTION_IO_THREADS)
+        .withLongOpt(OPTION_IO_THREADS).withDescription("executor per instance").create('t'));
+
     // [-H|--help]
     options.addOption(new Option("H", "help", false, "Print help information"));
   }
@@ -225,6 +235,9 @@ public class LlapOptionsProcessor {
     String name = commandLine.getOptionValue(OPTION_NAME, null);
 
     final int executors = Integer.parseInt(commandLine.getOptionValue(OPTION_EXECUTORS, "-1"));
+    // TODO# here
+    final int ioThreads = Integer.parseInt(
+        commandLine.getOptionValue(OPTION_IO_THREADS, Integer.toString(executors)));
     final long cache = parseSuffixed(commandLine.getOptionValue(OPTION_CACHE, "-1"));
     final long size = parseSuffixed(commandLine.getOptionValue(OPTION_SIZE, "-1"));
     final long xmx = parseSuffixed(commandLine.getOptionValue(OPTION_XMX, "-1"));
@@ -248,9 +261,8 @@ public class LlapOptionsProcessor {
 
     // loglevel, chaosmonkey & args are parsed by the python processor
 
-    return new LlapOptions(
-        name, instances, directory, executors, cache, size, xmx, jars, isHbase, hiveconf, javaHome,
-        queueName);
+    return new LlapOptions(name, instances, directory, executors, ioThreads, cache,
+        size, xmx, jars, isHbase, hiveconf, javaHome, queueName);
   }
 
   private void printUsage() {
