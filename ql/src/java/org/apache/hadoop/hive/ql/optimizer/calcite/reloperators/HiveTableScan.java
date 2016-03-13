@@ -64,6 +64,8 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
   private final String concatQbIDAlias;
   private final boolean useQBIdInDigest;
   private final ImmutableSet<Integer> viurtualOrPartColIndxsInTS;
+  // insiderView will tell this TableScan is inside a view or not.
+  private final boolean insideView;
 
   public String getTableAlias() {
     return tblAlias;
@@ -86,12 +88,12 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
    *          HiveDB table
    */
   public HiveTableScan(RelOptCluster cluster, RelTraitSet traitSet, RelOptHiveTable table,
-      String alias, String concatQbIDAlias, boolean useQBIdInDigest) {
-    this(cluster, traitSet, table, alias, concatQbIDAlias, table.getRowType(), useQBIdInDigest);
+      String alias, String concatQbIDAlias, boolean useQBIdInDigest, boolean insideView) {
+    this(cluster, traitSet, table, alias, concatQbIDAlias, table.getRowType(), useQBIdInDigest, insideView);
   }
 
   private HiveTableScan(RelOptCluster cluster, RelTraitSet traitSet, RelOptHiveTable table,
-      String alias, String concatQbIDAlias, RelDataType newRowtype, boolean useQBIdInDigest) {
+      String alias, String concatQbIDAlias, RelDataType newRowtype, boolean useQBIdInDigest, boolean insideView) {
     super(cluster, TraitsUtil.getDefaultTraitSet(cluster), table);
     assert getConvention() == HiveRelNode.CONVENTION;
     this.tblAlias = alias;
@@ -101,6 +103,7 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
     this.neededColIndxsFrmReloptHT = colIndxPair.getKey();
     this.viurtualOrPartColIndxsInTS = colIndxPair.getValue();
     this.useQBIdInDigest = useQBIdInDigest;
+    this.insideView = insideView;
   }
 
   @Override
@@ -118,7 +121,7 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
    */
   public HiveTableScan copy(RelDataType newRowtype) {
     return new HiveTableScan(getCluster(), getTraitSet(), ((RelOptHiveTable) table), this.tblAlias, this.concatQbIDAlias,
-            newRowtype, this.useQBIdInDigest);
+            newRowtype, this.useQBIdInDigest, this.insideView);
   }
 
   @Override
@@ -237,4 +240,16 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
     return new Pair<ImmutableList<Integer>, ImmutableSet<Integer>>(neededColIndxsFrmReloptHT,
         viurtualOrPartColIndxsInTS);
   }
+
+  public boolean isInsideView() {
+    return insideView;
+  }
+
+  // We need to include isInsideView inside digest to differentiate direct
+  // tables and tables inside view. Otherwise, Calcite will treat them as the same.
+  public String computeDigest() {
+    String digest = super.computeDigest();
+    return digest + "[" + this.isInsideView() + "]";
+  }
+
 }

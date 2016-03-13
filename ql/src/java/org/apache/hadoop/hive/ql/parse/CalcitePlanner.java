@@ -1706,7 +1706,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
         tableRel = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), optTable,
             null == tableAlias ? tabMetaData.getTableName() : tableAlias,
             getAliasId(tableAlias, qb), HiveConf.getBoolVar(conf,
-                HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP));
+                HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP), qb.isInsideView()
+                || qb.getAliasInsideView().contains(tableAlias.toLowerCase()));
 
         // 6. Add Schema(RR) to RelNode-Schema map
         ImmutableMap<String, Integer> hiveToCalciteColMap = buildHiveToCalciteColumnMap(rr,

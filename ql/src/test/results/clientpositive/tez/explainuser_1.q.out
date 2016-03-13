@@ -2001,7 +2001,7 @@ Stage-0
                 Filter Operator [FIL_16] (rows=166 width=178)
                   predicate:((value > 'val_9') and key is not null)
                   TableScan [TS_3] (rows=500 width=178)
-                    default@src_cbo,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
+                    default@src_cbo,a,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
 
 PREHOOK: query: explain select * 
 from (select * 

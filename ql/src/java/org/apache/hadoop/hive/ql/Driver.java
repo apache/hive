@@ -733,14 +733,14 @@ public class Driver implements CommandProcessor {
         }
       }
 
+      // column authorization is checked through table scan operators.
       getTablePartitionUsedColumns(op, sem, tab2Cols, part2Cols, tableUsePartLevelAuth);
-
-
 
       // cache the results for table authorization
       Set<String> tableAuthChecked = new HashSet<String>();
       for (ReadEntity read : inputs) {
-        if (read.isDummy() || read.isPathType()) {
+        // if read is not direct, we do not need to check its autho.
+        if (read.isDummy() || read.isPathType() || !read.isDirect()) {
           continue;
         }
         if (read.getType() == Entity.Type.DATABASE) {
@@ -796,46 +796,49 @@ public class Driver implements CommandProcessor {
     // for a select or create-as-select query, populate the partition to column
     // (par2Cols) or
     // table to columns mapping (tab2Cols)
-    if (op.equals(HiveOperation.CREATETABLE_AS_SELECT)
-        || op.equals(HiveOperation.QUERY)) {
+    if (op.equals(HiveOperation.CREATETABLE_AS_SELECT) || op.equals(HiveOperation.QUERY)) {
       SemanticAnalyzer querySem = (SemanticAnalyzer) sem;
       ParseContext parseCtx = querySem.getParseContext();
 
-      for (Map.Entry<String, TableScanOperator> topOpMap : querySem.getParseContext().getTopOps().entrySet()) {
-        TableScanOperator topOp = topOpMap.getValue();
-        TableScanOperator tableScanOp = topOp;
-        Table tbl = tableScanOp.getConf().getTableMetadata();
-        List<Integer> neededColumnIds = tableScanOp.getNeededColumnIDs();
-        List<FieldSchema> columns = tbl.getCols();
-        List<String> cols = new ArrayList<String>();
-        for (int i = 0; i < neededColumnIds.size(); i++) {
-          cols.add(columns.get(neededColumnIds.get(i)).getName());
-        }
-        //map may not contain all sources, since input list may have been optimized out
-        //or non-existent tho such sources may still be referenced by the TableScanOperator
-        //if it's null then the partition probably doesn't exist so let's use table permission
-        if (tbl.isPartitioned() &&
-            Boolean.TRUE.equals(tableUsePartLevelAuth.get(tbl.getTableName()))) {
-          String alias_id = topOpMap.getKey();
+      for (Map.Entry<String, TableScanOperator> topOpMap : querySem.getParseContext().getTopOps()
+          .entrySet()) {
+        TableScanOperator tableScanOp = topOpMap.getValue();
+        if (!tableScanOp.isInsideView()) {
+          Table tbl = tableScanOp.getConf().getTableMetadata();
+          List<Integer> neededColumnIds = tableScanOp.getNeededColumnIDs();
+          List<FieldSchema> columns = tbl.getCols();
+          List<String> cols = new ArrayList<String>();
+          for (int i = 0; i < neededColumnIds.size(); i++) {
+            cols.add(columns.get(neededColumnIds.get(i)).getName());
+          }
+          // map may not contain all sources, since input list may have been
+          // optimized out
+          // or non-existent tho such sources may still be referenced by the
+          // TableScanOperator
+          // if it's null then the partition probably doesn't exist so let's use
+          // table permission
+          if (tbl.isPartitioned()
+              && Boolean.TRUE.equals(tableUsePartLevelAuth.get(tbl.getTableName()))) {
+            String alias_id = topOpMap.getKey();
 
-          PrunedPartitionList partsList = PartitionPruner.prune(tableScanOp,
-              parseCtx, alias_id);
-          Set<Partition> parts = partsList.getPartitions();
-          for (Partition part : parts) {
-            List<String> existingCols = part2Cols.get(part);
+            PrunedPartitionList partsList = PartitionPruner.prune(tableScanOp, parseCtx, alias_id);
+            Set<Partition> parts = partsList.getPartitions();
+            for (Partition part : parts) {
+              List<String> existingCols = part2Cols.get(part);
+              if (existingCols == null) {
+                existingCols = new ArrayList<String>();
+              }
+              existingCols.addAll(cols);
+              part2Cols.put(part, existingCols);
+            }
+          } else {
+            List<String> existingCols = tab2Cols.get(tbl);
             if (existingCols == null) {
               existingCols = new ArrayList<String>();
             }
             existingCols.addAll(cols);
-            part2Cols.put(part, existingCols);
+            tab2Cols.put(tbl, existingCols);
           }
-        } else {
-          List<String> existingCols = tab2Cols.get(tbl);
-          if (existingCols == null) {
-            existingCols = new ArrayList<String>();
-          }
-          existingCols.addAll(cols);
-          tab2Cols.put(tbl, existingCols);
         }
       }
     }
