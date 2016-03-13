@@ -65,6 +65,8 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
 
   private transient int rowLimit = -1;
   private transient int currCount = 0;
+  // insiderView will tell this TableScan is inside a view or not.
+  private transient boolean insideView;
 
   private String defaultPartitionName;
 
@@ -334,6 +336,14 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
     ts.setNeededColumns(new ArrayList<String>(getNeededColumns()));
     ts.setReferencedColumns(new ArrayList<String>(getReferencedColumns()));
     return ts;
+  }
+
+  public boolean isInsideView() {
+    return insideView;
+  }
+
+  public void setInsideView(boolean insiderView) {
+    this.insideView = insiderView;
   }
 
 }

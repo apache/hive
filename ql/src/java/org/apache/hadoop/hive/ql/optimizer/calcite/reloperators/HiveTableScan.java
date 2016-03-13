@@ -42,6 +42,9 @@ import org.apache.hadoop.hive.ql.plan.ColStatistics;
  */
 public class HiveTableScan extends TableScan implements HiveRelNode {
 
+  // insiderView will tell this TableScan is inside a view or not.
+  private final boolean insideView;
+
   /**
    * Creates a HiveTableScan.
    *
@@ -55,9 +58,10 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
    *          HiveDB table
    */
   public HiveTableScan(RelOptCluster cluster, RelTraitSet traitSet, RelOptHiveTable table,
-      RelDataType rowtype) {
+      RelDataType rowtype, boolean insideView) {
     super(cluster, TraitsUtil.getDefaultTraitSet(cluster), table);
     assert getConvention() == HiveRelNode.CONVENTION;
+    this.insideView = insideView;
   }
 
   @Override
@@ -89,4 +93,16 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
   public List<ColStatistics> getColStat(List<Integer> projIndxLst) {
     return ((RelOptHiveTable) table).getColStat(projIndxLst);
   }
+
+  public boolean isInsideView() {
+    return insideView;
+  }
+
+  // We need to include isInsideView inside digest to differentiate direct
+  // tables and tables inside view. Otherwise, Calcite will treat them as the same.
+  public String computeDigest() {
+    String digest = super.computeDigest();
+    return digest + "[" + this.isInsideView() + "]";
+  }
+
 }

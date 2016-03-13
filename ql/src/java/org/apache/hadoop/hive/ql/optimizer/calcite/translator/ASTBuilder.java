@@ -27,6 +27,7 @@ import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
@@ -58,6 +59,14 @@ class ASTBuilder {
         ASTBuilder.construct(HiveParser.TOK_TABNAME, "TOK_TABNAME")
             .add(HiveParser.Identifier, hTbl.getHiveTableMD().getDbName())
             .add(HiveParser.Identifier, hTbl.getHiveTableMD().getTableName()));
+    // we need to carry the insideView information from calcite into the ast.
+    if (((HiveTableScan) scan).isInsideView()) {
+      b.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTIES, "TOK_TABLEPROPERTIES").add(
+          ASTBuilder.construct(HiveParser.TOK_TABLEPROPLIST, "TOK_TABLEPROPLIST").add(
+              ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTY, "TOK_TABLEPROPERTY")
+                  .add(HiveParser.StringLiteral, "\"insideView\"")
+                  .add(HiveParser.StringLiteral, "\"TRUE\""))));
+    }
 
     // NOTE: Calcite considers tbls to be equal if their names are the same. Hence
     // we need to provide Calcite the fully qualified table name (dbname.tblname)

@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.parse;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,6 +59,8 @@ public class QB {
   private CreateTableDesc tblDesc = null; // table descriptor of the final
   private List<Path> encryptedTargetTablePaths;
   private CreateTableDesc directoryDesc = null ;
+  private boolean insideView;
+  private Set<String> aliasInsideView;
 
   // used by PTFs
   /*
@@ -121,6 +124,7 @@ public class QB {
     ptfNodeToSpec = new LinkedHashMap<ASTNode, PTFInvocationSpec>();
     destToWindowingSpec = new LinkedHashMap<String, WindowingSpec>();
     id = getAppendedAliasFromId(outer_id, alias);
+    aliasInsideView = new HashSet<>();
   }
 
   // For sub-queries, the id. and alias should be appended since same aliases can be re-used
@@ -406,4 +410,17 @@ public class QB {
     }
     return encryptedTargetTablePaths;
   }
+
+  public boolean isInsideView() {
+    return insideView;
+  }
+
+  public void setInsideView(boolean insideView) {
+    this.insideView = insideView;
+  }
+
+  public Set<String> getAliasInsideView() {
+    return aliasInsideView;
+  }
+
 }

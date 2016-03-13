@@ -3220,7 +3220,7 @@ Stage-0
                            TableScan [TS_3]
                               alias:b
                               Statistics:Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
-PREHOOK: query: explain select * 
+PREHOOK: query: explain select *
 from (select * 
       from src_cbo b 
       where exists 
