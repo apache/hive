@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ColumnAccessInfo;
 import org.apache.hadoop.hive.ql.parse.TableAccessInfo;
+import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReducerTimeStatsPerJob;
 import org.apache.hadoop.hive.ql.plan.api.AdjacencyType;
@@ -113,13 +114,27 @@ public class QueryPlan implements Serializable {
   }
 
   public QueryPlan(String queryString, BaseSemanticAnalyzer sem, Long startTime, String queryId,
-      String operationName, Schema resultSchema) {
+                   HiveOperation operation, Schema resultSchema) {
+    this(queryString, sem, startTime, queryId, operation, resultSchema, null);
+  }
+  public QueryPlan(String queryString, BaseSemanticAnalyzer sem, Long startTime, String queryId,
+                  HiveOperation operation, Schema resultSchema, QueryDisplay queryDisplay) {
     this.queryString = queryString;
 
     rootTasks = new ArrayList<Task<? extends Serializable>>();
     this.reducerTimeStatsPerJobList = new ArrayList<ReducerTimeStatsPerJob>();
     rootTasks.addAll(sem.getRootTasks());
     fetchTask = sem.getFetchTask();
+    if (queryDisplay != null) {
+      if (fetchTask != null) {
+        fetchTask.setQueryDisplay(queryDisplay);
+      }
+      if (rootTasks!= null) {
+        for (Task t : rootTasks) {
+          t.setQueryDisplay(queryDisplay);
+        }
+      }
+    }
     // Note that inputs and outputs can be changed when the query gets executed
     inputs = sem.getInputs();
     outputs = sem.getOutputs();

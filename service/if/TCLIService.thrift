@@ -968,6 +968,19 @@ struct TGetOperationStatusResp {
 
   // Error message
   5: optional string errorMessage
+
+  // List of statuses of sub tasks
+  6: optional string taskStatus
+
+  // When was the operation started
+  7: optional i64 operationStarted
+
+  // When was the operation completed
+  8: optional i64 operationCompleted
+
+  // If the operation has the result
+  9: optional bool hasResultSet
+
 }
 
 

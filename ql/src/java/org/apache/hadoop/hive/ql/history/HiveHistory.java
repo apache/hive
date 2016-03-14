@@ -109,7 +109,7 @@ public interface HiveHistory {
   };
 
   /**
-   * TaskInfo.
+   * TaskDisplay.
    *
    */
   public static class TaskInfo extends Info {

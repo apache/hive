@@ -5252,6 +5252,10 @@ class TGetOperationStatusResp:
    - sqlState
    - errorCode
    - errorMessage
+   - taskStatus
+   - operationStarted
+   - operationCompleted
+   - hasResultSet
   """
 
   thrift_spec = (
@@ -5261,14 +5265,22 @@ class TGetOperationStatusResp:
     (3, TType.STRING, 'sqlState', None, None, ), # 3
     (4, TType.I32, 'errorCode', None, None, ), # 4
     (5, TType.STRING, 'errorMessage', None, None, ), # 5
+    (6, TType.STRING, 'taskStatus', None, None, ), # 6
+    (7, TType.I64, 'operationStarted', None, None, ), # 7
+    (8, TType.I64, 'operationCompleted', None, None, ), # 8
+    (9, TType.BOOL, 'hasResultSet', None, None, ), # 9
   )
 
-  def __init__(self, status=None, operationState=None, sqlState=None, errorCode=None, errorMessage=None,):
+  def __init__(self, status=None, operationState=None, sqlState=None, errorCode=None, errorMessage=None, taskStatus=None, operationStarted=None, operationCompleted=None, hasResultSet=None,):
     self.status = status
     self.operationState = operationState
     self.sqlState = sqlState
     self.errorCode = errorCode
     self.errorMessage = errorMessage
+    self.taskStatus = taskStatus
+    self.operationStarted = operationStarted
+    self.operationCompleted = operationCompleted
+    self.hasResultSet = hasResultSet
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -5305,6 +5317,26 @@ class TGetOperationStatusResp:
           self.errorMessage = iprot.readString();
         else:
           iprot.skip(ftype)
+      elif fid == 6:
+        if ftype == TType.STRING:
+          self.taskStatus = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 7:
+        if ftype == TType.I64:
+          self.operationStarted = iprot.readI64();
+        else:
+          iprot.skip(ftype)
+      elif fid == 8:
+        if ftype == TType.I64:
+          self.operationCompleted = iprot.readI64();
+        else:
+          iprot.skip(ftype)
+      elif fid == 9:
+        if ftype == TType.BOOL:
+          self.hasResultSet = iprot.readBool();
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -5334,6 +5366,22 @@ class TGetOperationStatusResp:
     if self.errorMessage is not None:
       oprot.writeFieldBegin('errorMessage', TType.STRING, 5)
       oprot.writeString(self.errorMessage)
+      oprot.writeFieldEnd()
+    if self.taskStatus is not None:
+      oprot.writeFieldBegin('taskStatus', TType.STRING, 6)
+      oprot.writeString(self.taskStatus)
+      oprot.writeFieldEnd()
+    if self.operationStarted is not None:
+      oprot.writeFieldBegin('operationStarted', TType.I64, 7)
+      oprot.writeI64(self.operationStarted)
+      oprot.writeFieldEnd()
+    if self.operationCompleted is not None:
+      oprot.writeFieldBegin('operationCompleted', TType.I64, 8)
+      oprot.writeI64(self.operationCompleted)
+      oprot.writeFieldEnd()
+    if self.hasResultSet is not None:
+      oprot.writeFieldBegin('hasResultSet', TType.BOOL, 9)
+      oprot.writeBool(self.hasResultSet)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()

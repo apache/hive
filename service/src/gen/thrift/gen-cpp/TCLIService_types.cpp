@@ -5615,8 +5615,8 @@ void swap(TGetOperationStatusReq &a, TGetOperationStatusReq &b) {
   swap(a.operationHandle, b.operationHandle);
 }
 
-const char* TGetOperationStatusResp::ascii_fingerprint = "BD124DB87A5A2E7D11945BD1B17F013D";
-const uint8_t TGetOperationStatusResp::binary_fingerprint[16] = {0xBD,0x12,0x4D,0xB8,0x7A,0x5A,0x2E,0x7D,0x11,0x94,0x5B,0xD1,0xB1,0x7F,0x01,0x3D};
+const char* TGetOperationStatusResp::ascii_fingerprint = "F236074CA75B2BE6D27F380B505DA5D2";
+const uint8_t TGetOperationStatusResp::binary_fingerprint[16] = {0xF2,0x36,0x07,0x4C,0xA7,0x5B,0x2B,0xE6,0xD2,0x7F,0x38,0x0B,0x50,0x5D,0xA5,0xD2};
 
 uint32_t TGetOperationStatusResp::read(::apache::thrift::protocol::TProtocol* iprot) {
 
@@ -5681,6 +5681,38 @@ uint32_t TGetOperationStatusResp::read(::apache::thrift::protocol::TProtocol* ip
           xfer += iprot->skip(ftype);
         }
         break;
+      case 6:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->taskStatus);
+          this->__isset.taskStatus = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 7:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->operationStarted);
+          this->__isset.operationStarted = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 8:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->operationCompleted);
+          this->__isset.operationCompleted = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 9:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->hasResultSet);
+          this->__isset.hasResultSet = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -5723,6 +5755,26 @@ uint32_t TGetOperationStatusResp::write(::apache::thrift::protocol::TProtocol* o
     xfer += oprot->writeString(this->errorMessage);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.taskStatus) {
+    xfer += oprot->writeFieldBegin("taskStatus", ::apache::thrift::protocol::T_STRING, 6);
+    xfer += oprot->writeString(this->taskStatus);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.operationStarted) {
+    xfer += oprot->writeFieldBegin("operationStarted", ::apache::thrift::protocol::T_I64, 7);
+    xfer += oprot->writeI64(this->operationStarted);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.operationCompleted) {
+    xfer += oprot->writeFieldBegin("operationCompleted", ::apache::thrift::protocol::T_I64, 8);
+    xfer += oprot->writeI64(this->operationCompleted);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.hasResultSet) {
+    xfer += oprot->writeFieldBegin("hasResultSet", ::apache::thrift::protocol::T_BOOL, 9);
+    xfer += oprot->writeBool(this->hasResultSet);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -5735,6 +5787,10 @@ void swap(TGetOperationStatusResp &a, TGetOperationStatusResp &b) {
   swap(a.sqlState, b.sqlState);
   swap(a.errorCode, b.errorCode);
   swap(a.errorMessage, b.errorMessage);
+  swap(a.taskStatus, b.taskStatus);
+  swap(a.operationStarted, b.operationStarted);
+  swap(a.operationCompleted, b.operationCompleted);
+  swap(a.hasResultSet, b.hasResultSet);
   swap(a.__isset, b.__isset);
 }
 

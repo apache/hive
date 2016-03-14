@@ -39,6 +39,10 @@ public class TGetOperationStatusResp implements org.apache.thrift.TBase<TGetOper
   private static final org.apache.thrift.protocol.TField SQL_STATE_FIELD_DESC = new org.apache.thrift.protocol.TField("sqlState", org.apache.thrift.protocol.TType.STRING, (short)3);
   private static final org.apache.thrift.protocol.TField ERROR_CODE_FIELD_DESC = new org.apache.thrift.protocol.TField("errorCode", org.apache.thrift.protocol.TType.I32, (short)4);
   private static final org.apache.thrift.protocol.TField ERROR_MESSAGE_FIELD_DESC = new org.apache.thrift.protocol.TField("errorMessage", org.apache.thrift.protocol.TType.STRING, (short)5);
+  private static final org.apache.thrift.protocol.TField TASK_STATUS_FIELD_DESC = new org.apache.thrift.protocol.TField("taskStatus", org.apache.thrift.protocol.TType.STRING, (short)6);
+  private static final org.apache.thrift.protocol.TField OPERATION_STARTED_FIELD_DESC = new org.apache.thrift.protocol.TField("operationStarted", org.apache.thrift.protocol.TType.I64, (short)7);
+  private static final org.apache.thrift.protocol.TField OPERATION_COMPLETED_FIELD_DESC = new org.apache.thrift.protocol.TField("operationCompleted", org.apache.thrift.protocol.TType.I64, (short)8);
+  private static final org.apache.thrift.protocol.TField HAS_RESULT_SET_FIELD_DESC = new org.apache.thrift.protocol.TField("hasResultSet", org.apache.thrift.protocol.TType.BOOL, (short)9);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -51,6 +55,10 @@ public class TGetOperationStatusResp implements org.apache.thrift.TBase<TGetOper
   private String sqlState; // optional
   private int errorCode; // optional
   private String errorMessage; // optional
+  private String taskStatus; // optional
+  private long operationStarted; // optional
+  private long operationCompleted; // optional
+  private boolean hasResultSet; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -62,7 +70,11 @@ public class TGetOperationStatusResp implements org.apache.thrift.TBase<TGetOper
     OPERATION_STATE((short)2, "operationState"),
     SQL_STATE((short)3, "sqlState"),
     ERROR_CODE((short)4, "errorCode"),
-    ERROR_MESSAGE((short)5, "errorMessage");
+    ERROR_MESSAGE((short)5, "errorMessage"),
+    TASK_STATUS((short)6, "taskStatus"),
+    OPERATION_STARTED((short)7, "operationStarted"),
+    OPERATION_COMPLETED((short)8, "operationCompleted"),
+    HAS_RESULT_SET((short)9, "hasResultSet");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -87,6 +99,14 @@ public class TGetOperationStatusResp implements org.apache.thrift.TBase<TGetOper
           return ERROR_CODE;
         case 5: // ERROR_MESSAGE
           return ERROR_MESSAGE;
+        case 6: // TASK_STATUS
+          return TASK_STATUS;
+        case 7: // OPERATION_STARTED
+          return OPERATION_STARTED;
+        case 8: // OPERATION_COMPLETED
+          return OPERATION_COMPLETED;
+        case 9: // HAS_RESULT_SET
+          return HAS_RESULT_SET;
         default:
           return null;
       }
@@ -128,8 +148,11 @@ public class TGetOperationStatusResp implements org.apache.thrift.TBase<TGetOper
 
   // isset id assignments
   private static final int __ERRORCODE_ISSET_ID = 0;
+  private static final int __OPERATIONSTARTED_ISSET_ID = 1;
+  private static final int __OPERATIONCOMPLETED_ISSET_ID = 2;
+  private static final int __HASRESULTSET_ISSET_ID = 3;
   private byte __isset_bitfield = 0;
-  private _Fields optionals[] = {_Fields.OPERATION_STATE,_Fields.SQL_STATE,_Fields.ERROR_CODE,_Fields.ERROR_MESSAGE};
+  private _Fields optionals[] = {_Fields.OPERATION_STATE,_Fields.SQL_STATE,_Fields.ERROR_CODE,_Fields.ERROR_MESSAGE,_Fields.TASK_STATUS,_Fields.OPERATION_STARTED,_Fields.OPERATION_COMPLETED,_Fields.HAS_RESULT_SET};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -143,6 +166,14 @@ public class TGetOperationStatusResp implements org.apache.thrift.TBase<TGetOper
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
     tmpMap.put(_Fields.ERROR_MESSAGE, new org.apache.thrift.meta_data.FieldMetaData("errorMessage", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.TASK_STATUS, new org.apache.thrift.meta_data.FieldMetaData("taskStatus", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.OPERATION_STARTED, new org.apache.thrift.meta_data.FieldMetaData("operationStarted", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.OPERATION_COMPLETED, new org.apache.thrift.meta_data.FieldMetaData("operationCompleted", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.HAS_RESULT_SET, new org.apache.thrift.meta_data.FieldMetaData("hasResultSet", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(TGetOperationStatusResp.class, metaDataMap);
   }
@@ -175,6 +206,12 @@ public class TGetOperationStatusResp implements org.apache.thrift.TBase<TGetOper
     if (other.isSetErrorMessage()) {
       this.errorMessage = other.errorMessage;
     }
+    if (other.isSetTaskStatus()) {
+      this.taskStatus = other.taskStatus;
+    }
+    this.operationStarted = other.operationStarted;
+    this.operationCompleted = other.operationCompleted;
+    this.hasResultSet = other.hasResultSet;
   }
 
   public TGetOperationStatusResp deepCopy() {
@@ -189,6 +226,13 @@ public class TGetOperationStatusResp implements org.apache.thrift.TBase<TGetOper
     setErrorCodeIsSet(false);
     this.errorCode = 0;
     this.errorMessage = null;
+    this.taskStatus = null;
+    setOperationStartedIsSet(false);
+    this.operationStarted = 0;
+    setOperationCompletedIsSet(false);
+    this.operationCompleted = 0;
+    setHasResultSetIsSet(false);
+    this.hasResultSet = false;
   }
 
   public TStatus getStatus() {
@@ -313,6 +357,95 @@ public class TGetOperationStatusResp implements org.apache.thrift.TBase<TGetOper
     }
   }
 
+  public String getTaskStatus() {
+    return this.taskStatus;
+  }
+
+  public void setTaskStatus(String taskStatus) {
+    this.taskStatus = taskStatus;
+  }
+
+  public void unsetTaskStatus() {
+    this.taskStatus = null;
+  }
+
+  /** Returns true if field taskStatus is set (has been assigned a value) and false otherwise */
+  public boolean isSetTaskStatus() {
+    return this.taskStatus != null;
+  }
+
+  public void setTaskStatusIsSet(boolean value) {
+    if (!value) {
+      this.taskStatus = null;
+    }
+  }
+
+  public long getOperationStarted() {
+    return this.operationStarted;
+  }
+
+  public void setOperationStarted(long operationStarted) {
+    this.operationStarted = operationStarted;
+    setOperationStartedIsSet(true);
+  }
+
+  public void unsetOperationStarted() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __OPERATIONSTARTED_ISSET_ID);
+  }
+
+  /** Returns true if field operationStarted is set (has been assigned a value) and false otherwise */
+  public boolean isSetOperationStarted() {
+    return EncodingUtils.testBit(__isset_bitfield, __OPERATIONSTARTED_ISSET_ID);
+  }
+
+  public void setOperationStartedIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __OPERATIONSTARTED_ISSET_ID, value);
+  }
+
+  public long getOperationCompleted() {
+    return this.operationCompleted;
+  }
+
+  public void setOperationCompleted(long operationCompleted) {
+    this.operationCompleted = operationCompleted;
+    setOperationCompletedIsSet(true);
+  }
+
+  public void unsetOperationCompleted() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __OPERATIONCOMPLETED_ISSET_ID);
+  }
+
+  /** Returns true if field operationCompleted is set (has been assigned a value) and false otherwise */
+  public boolean isSetOperationCompleted() {
+    return EncodingUtils.testBit(__isset_bitfield, __OPERATIONCOMPLETED_ISSET_ID);
+  }
+
+  public void setOperationCompletedIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __OPERATIONCOMPLETED_ISSET_ID, value);
+  }
+
+  public boolean isHasResultSet() {
+    return this.hasResultSet;
+  }
+
+  public void setHasResultSet(boolean hasResultSet) {
+    this.hasResultSet = hasResultSet;
+    setHasResultSetIsSet(true);
+  }
+
+  public void unsetHasResultSet() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __HASRESULTSET_ISSET_ID);
+  }
+
+  /** Returns true if field hasResultSet is set (has been assigned a value) and false otherwise */
+  public boolean isSetHasResultSet() {
+    return EncodingUtils.testBit(__isset_bitfield, __HASRESULTSET_ISSET_ID);
+  }
+
+  public void setHasResultSetIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __HASRESULTSET_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case STATUS:
@@ -355,6 +488,38 @@ public class TGetOperationStatusResp implements org.apache.thrift.TBase<TGetOper
       }
       break;
 
+    case TASK_STATUS:
+      if (value == null) {
+        unsetTaskStatus();
+      } else {
+        setTaskStatus((String)value);
+      }
+      break;
+
+    case OPERATION_STARTED:
+      if (value == null) {
+        unsetOperationStarted();
+      } else {
+        setOperationStarted((Long)value);
+      }
+      break;
+
+    case OPERATION_COMPLETED:
+      if (value == null) {
+        unsetOperationCompleted();
+      } else {
+        setOperationCompleted((Long)value);
+      }
+      break;
+
+    case HAS_RESULT_SET:
+      if (value == null) {
+        unsetHasResultSet();
+      } else {
+        setHasResultSet((Boolean)value);
+      }
+      break;
+
     }
   }
 
@@ -374,6 +539,18 @@ public class TGetOperationStatusResp implements org.apache.thrift.TBase<TGetOper
 
     case ERROR_MESSAGE:
       return getErrorMessage();
+
+    case TASK_STATUS:
+      return getTaskStatus();
+
+    case OPERATION_STARTED:
+      return Long.valueOf(getOperationStarted());
+
+    case OPERATION_COMPLETED:
+      return Long.valueOf(getOperationCompleted());
+
+    case HAS_RESULT_SET:
+      return Boolean.valueOf(isHasResultSet());
 
     }
     throw new IllegalStateException();
@@ -396,6 +573,14 @@ public class TGetOperationStatusResp implements org.apache.thrift.TBase<TGetOper
       return isSetErrorCode();
     case ERROR_MESSAGE:
       return isSetErrorMessage();
+    case TASK_STATUS:
+      return isSetTaskStatus();
+    case OPERATION_STARTED:
+      return isSetOperationStarted();
+    case OPERATION_COMPLETED:
+      return isSetOperationCompleted();
+    case HAS_RESULT_SET:
+      return isSetHasResultSet();
     }
     throw new IllegalStateException();
   }
@@ -458,6 +643,42 @@ public class TGetOperationStatusResp implements org.apache.thrift.TBase<TGetOper
         return false;
     }
 
+    boolean this_present_taskStatus = true && this.isSetTaskStatus();
+    boolean that_present_taskStatus = true && that.isSetTaskStatus();
+    if (this_present_taskStatus || that_present_taskStatus) {
+      if (!(this_present_taskStatus && that_present_taskStatus))
+        return false;
+      if (!this.taskStatus.equals(that.taskStatus))
+        return false;
+    }
+
+    boolean this_present_operationStarted = true && this.isSetOperationStarted();
+    boolean that_present_operationStarted = true && that.isSetOperationStarted();
+    if (this_present_operationStarted || that_present_operationStarted) {
+      if (!(this_present_operationStarted && that_present_operationStarted))
+        return false;
+      if (this.operationStarted != that.operationStarted)
+        return false;
+    }
+
+    boolean this_present_operationCompleted = true && this.isSetOperationCompleted();
+    boolean that_present_operationCompleted = true && that.isSetOperationCompleted();
+    if (this_present_operationCompleted || that_present_operationCompleted) {
+      if (!(this_present_operationCompleted && that_present_operationCompleted))
+        return false;
+      if (this.operationCompleted != that.operationCompleted)
+        return false;
+    }
+
+    boolean this_present_hasResultSet = true && this.isSetHasResultSet();
+    boolean that_present_hasResultSet = true && that.isSetHasResultSet();
+    if (this_present_hasResultSet || that_present_hasResultSet) {
+      if (!(this_present_hasResultSet && that_present_hasResultSet))
+        return false;
+      if (this.hasResultSet != that.hasResultSet)
+        return false;
+    }
+
     return true;
   }
 
@@ -489,6 +710,26 @@ public class TGetOperationStatusResp implements org.apache.thrift.TBase<TGetOper
     builder.append(present_errorMessage);
     if (present_errorMessage)
       builder.append(errorMessage);
+
+    boolean present_taskStatus = true && (isSetTaskStatus());
+    builder.append(present_taskStatus);
+    if (present_taskStatus)
+      builder.append(taskStatus);
+
+    boolean present_operationStarted = true && (isSetOperationStarted());
+    builder.append(present_operationStarted);
+    if (present_operationStarted)
+      builder.append(operationStarted);
+
+    boolean present_operationCompleted = true && (isSetOperationCompleted());
+    builder.append(present_operationCompleted);
+    if (present_operationCompleted)
+      builder.append(operationCompleted);
+
+    boolean present_hasResultSet = true && (isSetHasResultSet());
+    builder.append(present_hasResultSet);
+    if (present_hasResultSet)
+      builder.append(hasResultSet);
 
     return builder.toHashCode();
   }
@@ -547,6 +788,46 @@ public class TGetOperationStatusResp implements org.apache.thrift.TBase<TGetOper
     }
     if (isSetErrorMessage()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.errorMessage, typedOther.errorMessage);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetTaskStatus()).compareTo(typedOther.isSetTaskStatus());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetTaskStatus()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.taskStatus, typedOther.taskStatus);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetOperationStarted()).compareTo(typedOther.isSetOperationStarted());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetOperationStarted()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.operationStarted, typedOther.operationStarted);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetOperationCompleted()).compareTo(typedOther.isSetOperationCompleted());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetOperationCompleted()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.operationCompleted, typedOther.operationCompleted);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetHasResultSet()).compareTo(typedOther.isSetHasResultSet());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetHasResultSet()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.hasResultSet, typedOther.hasResultSet);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -612,6 +893,34 @@ public class TGetOperationStatusResp implements org.apache.thrift.TBase<TGetOper
       } else {
         sb.append(this.errorMessage);
       }
+      first = false;
+    }
+    if (isSetTaskStatus()) {
+      if (!first) sb.append(", ");
+      sb.append("taskStatus:");
+      if (this.taskStatus == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.taskStatus);
+      }
+      first = false;
+    }
+    if (isSetOperationStarted()) {
+      if (!first) sb.append(", ");
+      sb.append("operationStarted:");
+      sb.append(this.operationStarted);
+      first = false;
+    }
+    if (isSetOperationCompleted()) {
+      if (!first) sb.append(", ");
+      sb.append("operationCompleted:");
+      sb.append(this.operationCompleted);
+      first = false;
+    }
+    if (isSetHasResultSet()) {
+      if (!first) sb.append(", ");
+      sb.append("hasResultSet:");
+      sb.append(this.hasResultSet);
       first = false;
     }
     sb.append(")");
@@ -707,6 +1016,38 @@ public class TGetOperationStatusResp implements org.apache.thrift.TBase<TGetOper
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 6: // TASK_STATUS
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.taskStatus = iprot.readString();
+              struct.setTaskStatusIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 7: // OPERATION_STARTED
+            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+              struct.operationStarted = iprot.readI64();
+              struct.setOperationStartedIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 8: // OPERATION_COMPLETED
+            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+              struct.operationCompleted = iprot.readI64();
+              struct.setOperationCompletedIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 9: // HAS_RESULT_SET
+            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+              struct.hasResultSet = iprot.readBool();
+              struct.setHasResultSetIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -751,6 +1092,28 @@ public class TGetOperationStatusResp implements org.apache.thrift.TBase<TGetOper
           oprot.writeFieldEnd();
         }
       }
+      if (struct.taskStatus != null) {
+        if (struct.isSetTaskStatus()) {
+          oprot.writeFieldBegin(TASK_STATUS_FIELD_DESC);
+          oprot.writeString(struct.taskStatus);
+          oprot.writeFieldEnd();
+        }
+      }
+      if (struct.isSetOperationStarted()) {
+        oprot.writeFieldBegin(OPERATION_STARTED_FIELD_DESC);
+        oprot.writeI64(struct.operationStarted);
+        oprot.writeFieldEnd();
+      }
+      if (struct.isSetOperationCompleted()) {
+        oprot.writeFieldBegin(OPERATION_COMPLETED_FIELD_DESC);
+        oprot.writeI64(struct.operationCompleted);
+        oprot.writeFieldEnd();
+      }
+      if (struct.isSetHasResultSet()) {
+        oprot.writeFieldBegin(HAS_RESULT_SET_FIELD_DESC);
+        oprot.writeBool(struct.hasResultSet);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -782,7 +1145,19 @@ public class TGetOperationStatusResp implements org.apache.thrift.TBase<TGetOper
       if (struct.isSetErrorMessage()) {
         optionals.set(3);
       }
-      oprot.writeBitSet(optionals, 4);
+      if (struct.isSetTaskStatus()) {
+        optionals.set(4);
+      }
+      if (struct.isSetOperationStarted()) {
+        optionals.set(5);
+      }
+      if (struct.isSetOperationCompleted()) {
+        optionals.set(6);
+      }
+      if (struct.isSetHasResultSet()) {
+        optionals.set(7);
+      }
+      oprot.writeBitSet(optionals, 8);
       if (struct.isSetOperationState()) {
         oprot.writeI32(struct.operationState.getValue());
       }
@@ -795,6 +1170,18 @@ public class TGetOperationStatusResp implements org.apache.thrift.TBase<TGetOper
       if (struct.isSetErrorMessage()) {
         oprot.writeString(struct.errorMessage);
       }
+      if (struct.isSetTaskStatus()) {
+        oprot.writeString(struct.taskStatus);
+      }
+      if (struct.isSetOperationStarted()) {
+        oprot.writeI64(struct.operationStarted);
+      }
+      if (struct.isSetOperationCompleted()) {
+        oprot.writeI64(struct.operationCompleted);
+      }
+      if (struct.isSetHasResultSet()) {
+        oprot.writeBool(struct.hasResultSet);
+      }
     }
 
     @Override
@@ -803,7 +1190,7 @@ public class TGetOperationStatusResp implements org.apache.thrift.TBase<TGetOper
       struct.status = new TStatus();
       struct.status.read(iprot);
       struct.setStatusIsSet(true);
-      BitSet incoming = iprot.readBitSet(4);
+      BitSet incoming = iprot.readBitSet(8);
       if (incoming.get(0)) {
         struct.operationState = TOperationState.findByValue(iprot.readI32());
         struct.setOperationStateIsSet(true);
@@ -819,6 +1206,22 @@ public class TGetOperationStatusResp implements org.apache.thrift.TBase<TGetOper
       if (incoming.get(3)) {
         struct.errorMessage = iprot.readString();
         struct.setErrorMessageIsSet(true);
+      }
+      if (incoming.get(4)) {
+        struct.taskStatus = iprot.readString();
+        struct.setTaskStatusIsSet(true);
+      }
+      if (incoming.get(5)) {
+        struct.operationStarted = iprot.readI64();
+        struct.setOperationStartedIsSet(true);
+      }
+      if (incoming.get(6)) {
+        struct.operationCompleted = iprot.readI64();
+        struct.setOperationCompletedIsSet(true);
+      }
+      if (incoming.get(7)) {
+        struct.hasResultSet = iprot.readBool();
+        struct.setHasResultSetIsSet(true);
       }
     }
   }

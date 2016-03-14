@@ -74,6 +74,9 @@ public abstract class Operation {
   private volatile long lastAccessTime;
   private final long beginTime;
 
+  protected long operationStart;
+  protected long operationComplete;
+
   protected static final EnumSet<FetchOrientation> DEFAULT_FETCH_ORIENTATION_SET =
       EnumSet.of(FetchOrientation.FETCH_NEXT,FetchOrientation.FETCH_FIRST);
 
@@ -132,7 +135,13 @@ public abstract class Operation {
   }
 
   public OperationStatus getStatus() {
-    return new OperationStatus(state, operationException);
+    String taskStatus = null;
+    try {
+      taskStatus = getTaskStatus();
+    } catch (HiveSQLException sqlException) {
+      LOG.error("Error getting task status for " + opHandle.toString(), sqlException);
+    }
+    return new OperationStatus(state, taskStatus, operationStart, operationComplete, operationException);
   }
 
   public boolean hasResultSet() {
@@ -347,6 +356,10 @@ public abstract class Operation {
     return getNextRowSet(FetchOrientation.FETCH_NEXT, DEFAULT_FETCH_MAX_ROWS);
   }
 
+  public String getTaskStatus() throws HiveSQLException {
+    return null;
+  }
+
   /**
    * Verify if the given fetch orientation is part of the default orientation types.
    * @param orientation
@@ -432,5 +445,31 @@ public abstract class Operation {
   }
 
   protected void onNewState(OperationState state, OperationState prevState) {
+    switch(state) {
+      case RUNNING:
+      markOperationStartTime();
+        break;
+      case ERROR:
+      case FINISHED:
+      case CANCELED:
+        markOperationCompletedTime();
+        break;
+    }
+  }
+
+  public long getOperationComplete() {
+    return operationComplete;
+  }
+
+  public long getOperationStart() {
+    return operationStart;
+  }
+
+  protected void markOperationStartTime() {
+    operationStart = System.currentTimeMillis();
+  }
+
+  protected void markOperationCompletedTime() {
+    operationComplete = System.currentTimeMillis();
   }
 }

@@ -3279,20 +3279,24 @@ class TGetOperationStatusReq {
 void swap(TGetOperationStatusReq &a, TGetOperationStatusReq &b);
 
 typedef struct _TGetOperationStatusResp__isset {
-  _TGetOperationStatusResp__isset() : operationState(false), sqlState(false), errorCode(false), errorMessage(false) {}
+  _TGetOperationStatusResp__isset() : operationState(false), sqlState(false), errorCode(false), errorMessage(false), taskStatus(false), operationStarted(false), operationCompleted(false), hasResultSet(false) {}
   bool operationState;
   bool sqlState;
   bool errorCode;
   bool errorMessage;
+  bool taskStatus;
+  bool operationStarted;
+  bool operationCompleted;
+  bool hasResultSet;
 } _TGetOperationStatusResp__isset;
 
 class TGetOperationStatusResp {
  public:
 
-  static const char* ascii_fingerprint; // = "BD124DB87A5A2E7D11945BD1B17F013D";
-  static const uint8_t binary_fingerprint[16]; // = {0xBD,0x12,0x4D,0xB8,0x7A,0x5A,0x2E,0x7D,0x11,0x94,0x5B,0xD1,0xB1,0x7F,0x01,0x3D};
+  static const char* ascii_fingerprint; // = "F236074CA75B2BE6D27F380B505DA5D2";
+  static const uint8_t binary_fingerprint[16]; // = {0xF2,0x36,0x07,0x4C,0xA7,0x5B,0x2B,0xE6,0xD2,0x7F,0x38,0x0B,0x50,0x5D,0xA5,0xD2};
 
-  TGetOperationStatusResp() : operationState((TOperationState::type)0), sqlState(), errorCode(0), errorMessage() {
+  TGetOperationStatusResp() : operationState((TOperationState::type)0), sqlState(), errorCode(0), errorMessage(), taskStatus(), operationStarted(0), operationCompleted(0), hasResultSet(0) {
   }
 
   virtual ~TGetOperationStatusResp() throw() {}
@@ -3302,6 +3306,10 @@ class TGetOperationStatusResp {
   std::string sqlState;
   int32_t errorCode;
   std::string errorMessage;
+  std::string taskStatus;
+  int64_t operationStarted;
+  int64_t operationCompleted;
+  bool hasResultSet;
 
   _TGetOperationStatusResp__isset __isset;
 
@@ -3329,6 +3337,26 @@ class TGetOperationStatusResp {
     __isset.errorMessage = true;
   }
 
+  void __set_taskStatus(const std::string& val) {
+    taskStatus = val;
+    __isset.taskStatus = true;
+  }
+
+  void __set_operationStarted(const int64_t val) {
+    operationStarted = val;
+    __isset.operationStarted = true;
+  }
+
+  void __set_operationCompleted(const int64_t val) {
+    operationCompleted = val;
+    __isset.operationCompleted = true;
+  }
+
+  void __set_hasResultSet(const bool val) {
+    hasResultSet = val;
+    __isset.hasResultSet = true;
+  }
+
   bool operator == (const TGetOperationStatusResp & rhs) const
   {
     if (!(status == rhs.status))
@@ -3348,6 +3376,22 @@ class TGetOperationStatusResp {
     if (__isset.errorMessage != rhs.__isset.errorMessage)
       return false;
     else if (__isset.errorMessage && !(errorMessage == rhs.errorMessage))
+      return false;
+    if (__isset.taskStatus != rhs.__isset.taskStatus)
+      return false;
+    else if (__isset.taskStatus && !(taskStatus == rhs.taskStatus))
+      return false;
+    if (__isset.operationStarted != rhs.__isset.operationStarted)
+      return false;
+    else if (__isset.operationStarted && !(operationStarted == rhs.operationStarted))
+      return false;
+    if (__isset.operationCompleted != rhs.__isset.operationCompleted)
+      return false;
+    else if (__isset.operationCompleted && !(operationCompleted == rhs.operationCompleted))
+      return false;
+    if (__isset.hasResultSet != rhs.__isset.hasResultSet)
+      return false;
+    else if (__isset.hasResultSet && !(hasResultSet == rhs.hasResultSet))
       return false;
     return true;
   }

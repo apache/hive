@@ -24,15 +24,12 @@ import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.service.cli.OperationHandle;
 import org.apache.hive.service.cli.SessionHandle;
-import org.apache.hive.service.cli.operation.ExecuteStatementOperation;
 import org.apache.hive.service.cli.operation.SQLOperationDisplay;
 import org.apache.hive.service.cli.thrift.TProtocolVersion;
 import org.apache.hive.service.server.HiveServer2;
-import org.apache.hive.service.servlet.QueryProfileServlet;
 import org.apache.hive.tmpl.QueryProfileTmpl;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.StringWriter;
@@ -173,8 +170,8 @@ public class TestQueryDisplay {
     Assert.assertTrue(qDisplay1.getPerfLogStarts(QueryDisplay.Phase.COMPILATION).size() > 0);
     Assert.assertTrue(qDisplay1.getPerfLogEnds(QueryDisplay.Phase.COMPILATION).size() > 0);
 
-    Assert.assertEquals(qDisplay1.getTaskInfos().size(), 1);
-    QueryDisplay.TaskInfo tInfo1 = qDisplay1.getTaskInfos().get(0);
+    Assert.assertEquals(qDisplay1.getTaskDisplays().size(), 2);
+    QueryDisplay.TaskDisplay tInfo1 = qDisplay1.getTaskDisplays().get(1);
     Assert.assertEquals(tInfo1.getTaskId(), "Stage-0");
     Assert.assertEquals(tInfo1.getTaskType(), StageType.DDL);
     Assert.assertTrue(tInfo1.getBeginTime() > 0 && tInfo1.getBeginTime() <= System.currentTimeMillis());
