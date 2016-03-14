@@ -1,8 +1,8 @@
-PREHOOK: query: create table T1(key string, val string) partitioned by (ds string) stored as textfile
+PREHOOK: query: create table T1(key string, val string) partitioned by (ds string) clustered by (val) into 2 buckets stored as ORC TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@T1
-POSTHOOK: query: create table T1(key string, val string) partitioned by (ds string) stored as textfile
+POSTHOOK: query: create table T1(key string, val string) partitioned by (ds string) clustered by (val) into 2 buckets stored as ORC TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@T1
