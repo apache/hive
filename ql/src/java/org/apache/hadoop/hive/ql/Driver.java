@@ -496,7 +496,7 @@ public class Driver implements CommandProcessor {
       schema = getSchema(sem, conf);
 
       plan = new QueryPlan(queryStr, sem, perfLogger.getStartTime(PerfLogger.DRIVER_RUN), queryId,
-        SessionState.get().getHiveOperation(), schema);
+        SessionState.get().getHiveOperation(), schema, queryDisplay);
 
       conf.setQueryString(queryStr);
 
@@ -1189,7 +1189,7 @@ public class Driver implements CommandProcessor {
   private int compileInternal(String command) {
     int ret;
     final ReentrantLock compileLock = tryAcquireCompileLock(isParallelEnabled,
-        command);
+      command);
     if (compileLock == null) {
       return ErrorMsg.COMPILE_LOCK_TIMED_OUT.getErrorCode();
     }
@@ -1232,8 +1232,8 @@ public class Driver implements CommandProcessor {
     final ReentrantLock compileLock = isParallelEnabled ?
         SessionState.get().getCompileLock() : globalCompileLock;
     long maxCompileLockWaitTime = HiveConf.getTimeVar(
-          this.conf, ConfVars.HIVE_SERVER2_COMPILE_LOCK_TIMEOUT,
-          TimeUnit.SECONDS);
+      this.conf, ConfVars.HIVE_SERVER2_COMPILE_LOCK_TIMEOUT,
+      TimeUnit.SECONDS);
     if (maxCompileLockWaitTime > 0) {
       try {
         if (LOG.isDebugEnabled()) {
@@ -1576,7 +1576,6 @@ public class Driver implements CommandProcessor {
         // Launch upto maxthreads tasks
         Task<? extends Serializable> task;
         while ((task = driverCxt.getRunnable(maxthreads)) != null) {
-          queryDisplay.addTask(task);
           TaskRunner runner = launchTask(task, queryId, noName, jobname, jobs, driverCxt);
           if (!runner.isRunning()) {
             break;
@@ -1589,7 +1588,7 @@ public class Driver implements CommandProcessor {
           continue;
         }
         hookContext.addCompleteTask(tskRun);
-        queryDisplay.setTaskCompleted(tskRun.getTask().getId(), tskRun.getTaskResult());
+        queryDisplay.setTaskResult(tskRun.getTask().getId(), tskRun.getTaskResult());
 
         Task<? extends Serializable> tsk = tskRun.getTask();
         TaskResult result = tskRun.getTaskResult();

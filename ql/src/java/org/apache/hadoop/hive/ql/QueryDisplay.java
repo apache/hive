@@ -22,11 +22,12 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskResult;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.Serializable;
+import java.util.*;
+
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
+import org.codehaus.jackson.annotate.JsonWriteNullProperties;
+import org.codehaus.jackson.annotate.JsonIgnore;
 
 /**
  * Some limited query information to save for WebUI.
@@ -41,39 +42,56 @@ public class QueryDisplay {
   private String errorMessage;
   private String queryId;
 
-  private final Map<Phase, Map<String, Long>> hmsTimingMap = new HashMap();
-  private final Map<Phase, Map<String, Long>> perfLogStartMap = new HashMap();
-  private final Map<Phase, Map<String, Long>> perfLogEndMap = new HashMap();
+  private final Map<Phase, Map<String, Long>> hmsTimingMap = new HashMap<Phase, Map<String, Long>>();
+  private final Map<Phase, Map<String, Long>> perfLogStartMap = new HashMap<Phase, Map<String, Long>>();
+  private final Map<Phase, Map<String, Long>> perfLogEndMap = new HashMap<Phase, Map<String, Long>>();
 
-  private final LinkedHashMap<String, TaskInfo> tasks = new LinkedHashMap<String, TaskInfo>();
+  private final LinkedHashMap<String, TaskDisplay> tasks = new LinkedHashMap<String, TaskDisplay>();
+
+  public synchronized <T extends Serializable> void updateTaskStatus(Task<T> tTask) {
+    if (!tasks.containsKey(tTask.getId())) {
+      tasks.put(tTask.getId(), new TaskDisplay(tTask));
+    }
+    tasks.get(tTask.getId()).updateStatus(tTask);
+  }
 
   //Inner classes
-  public static enum Phase {
+  public enum Phase {
     COMPILATION,
     EXECUTION,
   }
 
-  public static class TaskInfo {
+  @JsonWriteNullProperties(false)
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  public static class TaskDisplay {
+
     private Integer returnVal;  //if set, determines that task is complete.
     private String errorMsg;
-    private long endTime;
 
-    final long beginTime;
-    final String taskId;
-    final StageType taskType;
-    final String name;
-    final boolean requireLock;
-    final boolean retryIfFail;
+    private Long beginTime;
+    private Long endTime;
 
-    public TaskInfo (Task task) {
-      beginTime = System.currentTimeMillis();
+    private String taskId;
+    private String taskExternalHandle;
+
+    public Task.TaskState taskState;
+    private StageType taskType;
+    private String name;
+    private boolean requireLock;
+    private boolean retryIfFail;
+    // required for jackson
+    public TaskDisplay() {
+
+    }
+    public TaskDisplay(Task task) {
       taskId = task.getId();
+      taskExternalHandle = task.getExternalHandle();
       taskType = task.getType();
       name = task.getName();
       requireLock = task.requireLock();
       retryIfFail = task.ifRetryCmdWhenFail();
     }
-
+    @JsonIgnore
     public synchronized String getStatus() {
       if (returnVal == null) {
         return "Running";
@@ -84,67 +102,82 @@ public class QueryDisplay {
       }
     }
 
-    public synchronized long getElapsedTime() {
-      if (endTime == 0) {
+    public synchronized Long getElapsedTime() {
+      if (endTime == null) {
+        if (beginTime == null) {
+          return null;
+        }
         return System.currentTimeMillis() - beginTime;
       } else {
         return endTime - beginTime;
       }
     }
 
+    public synchronized Integer getReturnValue() {
+      return returnVal;
+    }
+
     public synchronized String getErrorMsg() {
       return errorMsg;
     }
 
-    public synchronized long getEndTime() {
-      return endTime;
-    }
-
-    //Following methods do not need to be synchronized, because they are final fields.
-    public long getBeginTime() {
+    public synchronized Long getBeginTime() {
       return beginTime;
     }
 
-    public String getTaskId() {
+    public synchronized Long getEndTime() {
+      return endTime;
+    }
+
+    public synchronized String getTaskId() {
       return taskId;
     }
 
-    public StageType getTaskType() {
+    public synchronized StageType getTaskType() {
       return taskType;
     }
 
-    public String getName() {
+    public synchronized String getName() {
       return name;
     }
-
-    public boolean isRequireLock() {
+    @JsonIgnore
+    public synchronized boolean isRequireLock() {
       return requireLock;
     }
-
-    public boolean isRetryIfFail() {
+    @JsonIgnore
+    public synchronized boolean isRetryIfFail() {
       return retryIfFail;
     }
-  }
 
-  public synchronized void addTask(Task task) {
-    tasks.put(task.getId(), new TaskInfo(task));
-  }
+    public synchronized String getExternalHandle() {
+      return taskExternalHandle;
+    }
 
-  public synchronized void setTaskCompleted(String taskId, TaskResult result) {
-    TaskInfo taskInfo = tasks.get(taskId);
-    if (taskInfo != null) {
-      taskInfo.returnVal = result.getExitVal();
-      if (result.getTaskError() != null) {
-        taskInfo.errorMsg = result.getTaskError().toString();
+    public synchronized <T extends Serializable> void updateStatus(Task<T> tTask) {
+      this.taskState = tTask.getTaskState();
+      switch(taskState) {
+        case RUNNING:
+          beginTime = System.currentTimeMillis();
+          break;
+        case FINISHED:
+          endTime = System.currentTimeMillis();
+          break;
       }
-      taskInfo.endTime = System.currentTimeMillis();
     }
   }
-
-  public synchronized List<TaskInfo> getTaskInfos() {
-    List<TaskInfo> taskInfos = new ArrayList<TaskInfo>();
-    taskInfos.addAll(tasks.values());
-    return taskInfos;
+  public synchronized void setTaskResult(String taskId, TaskResult result) {
+    TaskDisplay taskDisplay = tasks.get(taskId);
+    if (taskDisplay != null) {
+      taskDisplay.returnVal = result.getExitVal();
+      if (result.getTaskError() != null) {
+        taskDisplay.errorMsg = result.getTaskError().toString();
+      }
+    }
+  }
+  public synchronized List<TaskDisplay> getTaskDisplays() {
+    List<TaskDisplay> taskDisplays = new ArrayList<TaskDisplay>();
+    taskDisplays.addAll(tasks.values());
+    return taskDisplays;
   }
 
   public synchronized void setQueryStr(String queryStr) {

@@ -361,7 +361,8 @@ public class ThriftCLIServiceClient extends CLIServiceClient {
       if (opState == OperationState.ERROR) {
         opException = new HiveSQLException(resp.getErrorMessage(), resp.getSqlState(), resp.getErrorCode());
       }
-      return new OperationStatus(opState, opException);
+      return new OperationStatus(opState, resp.getTaskStatus(), resp.getOperationStarted(),
+        resp.getOperationCompleted(), opException);
     } catch (HiveSQLException e) {
       throw e;
     } catch (Exception e) {

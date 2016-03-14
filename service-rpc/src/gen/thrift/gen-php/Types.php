@@ -7416,6 +7416,18 @@ class TGetOperationStatusResp {
    * @var string
    */
   public $errorMessage = null;
+  /**
+   * @var string
+   */
+  public $taskStatus = null;
+  /**
+   * @var int
+   */
+  public $operationStarted = null;
+  /**
+   * @var int
+   */
+  public $operationCompleted = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -7441,6 +7453,18 @@ class TGetOperationStatusResp {
           'var' => 'errorMessage',
           'type' => TType::STRING,
           ),
+        6 => array(
+          'var' => 'taskStatus',
+          'type' => TType::STRING,
+          ),
+        7 => array(
+          'var' => 'operationStarted',
+          'type' => TType::I64,
+          ),
+        8 => array(
+          'var' => 'operationCompleted',
+          'type' => TType::I64,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -7458,6 +7482,15 @@ class TGetOperationStatusResp {
       }
       if (isset($vals['errorMessage'])) {
         $this->errorMessage = $vals['errorMessage'];
+      }
+      if (isset($vals['taskStatus'])) {
+        $this->taskStatus = $vals['taskStatus'];
+      }
+      if (isset($vals['operationStarted'])) {
+        $this->operationStarted = $vals['operationStarted'];
+      }
+      if (isset($vals['operationCompleted'])) {
+        $this->operationCompleted = $vals['operationCompleted'];
       }
     }
   }
@@ -7517,6 +7550,27 @@ class TGetOperationStatusResp {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 6:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->taskStatus);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 7:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->operationStarted);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 8:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->operationCompleted);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -7556,6 +7610,21 @@ class TGetOperationStatusResp {
     if ($this->errorMessage !== null) {
       $xfer += $output->writeFieldBegin('errorMessage', TType::STRING, 5);
       $xfer += $output->writeString($this->errorMessage);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->taskStatus !== null) {
+      $xfer += $output->writeFieldBegin('taskStatus', TType::STRING, 6);
+      $xfer += $output->writeString($this->taskStatus);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->operationStarted !== null) {
+      $xfer += $output->writeFieldBegin('operationStarted', TType::I64, 7);
+      $xfer += $output->writeI64($this->operationStarted);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->operationCompleted !== null) {
+      $xfer += $output->writeFieldBegin('operationCompleted', TType::I64, 8);
+      $xfer += $output->writeI64($this->operationCompleted);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
