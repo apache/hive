@@ -1,0 +1,11 @@
+PREHOOK: query: create table not_an_acid_table (a int, b varchar(128))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@not_an_acid_table
+POSTHOOK: query: create table not_an_acid_table (a int, b varchar(128))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@not_an_acid_table
+PREHOOK: query: alter table not_an_acid_table compact 'major'
+PREHOOK: type: ALTERTABLE_COMPACT
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Compaction is not allowed on non-ACID table default.not_an_acid_table

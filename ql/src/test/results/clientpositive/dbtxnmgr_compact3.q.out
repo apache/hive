@@ -10,11 +10,11 @@ PREHOOK: Input: database:d1
 POSTHOOK: query: use D1
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:d1
-PREHOOK: query: create table T1(key string, val string) stored as textfile
+PREHOOK: query: create table T1(key string, val string) clustered by (val) into 2 buckets stored as ORC TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: D1@T1
 PREHOOK: Output: database:d1
-POSTHOOK: query: create table T1(key string, val string) stored as textfile
+POSTHOOK: query: create table T1(key string, val string) clustered by (val) into 2 buckets stored as ORC TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: D1@T1
 POSTHOOK: Output: database:d1
