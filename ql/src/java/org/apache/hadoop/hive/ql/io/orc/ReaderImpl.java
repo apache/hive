@@ -256,21 +256,22 @@ public class ReaderImpl implements Reader {
                                       Path path,
                                       int psLen,
                                       ByteBuffer buffer) throws IOException {
-    int len = OrcFile.MAGIC.length();
-    if (psLen < len + 1) {
+    int magicLength = OrcFile.MAGIC.length();
+    int fullLength = magicLength + 1;
+    if (psLen < fullLength || buffer.remaining() < fullLength) {
       throw new FileFormatException("Malformed ORC file " + path +
           ". Invalid postscript length " + psLen);
     }
-    int offset = buffer.arrayOffset() + buffer.position() + buffer.limit() - 1 - len;
+    int offset = buffer.arrayOffset() + buffer.position() + buffer.limit() - fullLength;
     byte[] array = buffer.array();
     // now look for the magic string at the end of the postscript.
-    if (!Text.decode(array, offset, len).equals(OrcFile.MAGIC)) {
+    if (!Text.decode(array, offset, magicLength).equals(OrcFile.MAGIC)) {
       // If it isn't there, this may be the 0.11.0 version of ORC.
       // Read the first 3 bytes of the file to check for the header
-      byte[] header = new byte[len];
-      in.readFully(0, header, 0, len);
+      byte[] header = new byte[magicLength];
+      in.readFully(0, header, 0, magicLength);
       // if it isn't there, this isn't an ORC file
-      if (!Text.decode(header, 0 , len).equals(OrcFile.MAGIC)) {
+      if (!Text.decode(header, 0 , magicLength).equals(OrcFile.MAGIC)) {
         throw new FileFormatException("Malformed ORC file " + path +
             ". Invalid postscript.");
       }
