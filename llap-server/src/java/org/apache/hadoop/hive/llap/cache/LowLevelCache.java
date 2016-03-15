@@ -49,7 +49,7 @@ public interface LowLevelCache {
    *    Some sort of InvalidCacheChunk could be placed to avoid them. TODO
    * @param base base offset for the ranges (stripe/stream offset in case of ORC).
    */
-  DiskRangeList getFileData(long fileId, DiskRangeList range, long baseOffset,
+  DiskRangeList getFileData(Object fileKey, DiskRangeList range, long baseOffset,
       DiskRangeListFactory factory, LowLevelCacheCounters qfCounters, BooleanRef gotAllData);
 
   /**
@@ -57,6 +57,6 @@ public interface LowLevelCache {
    * @return null if all data was put; bitmask indicating which chunks were not put otherwise;
    *         the replacement chunks from cache are updated directly in the array.
    */
-  long[] putFileData(long fileId, DiskRange[] ranges, MemoryBuffer[] chunks,
+  long[] putFileData(Object fileKey, DiskRange[] ranges, MemoryBuffer[] chunks,
       long baseOffset, Priority priority, LowLevelCacheCounters qfCounters);
 }

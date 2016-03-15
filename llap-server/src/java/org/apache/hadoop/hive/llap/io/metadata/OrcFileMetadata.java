@@ -18,23 +18,22 @@
 
 package org.apache.hadoop.hive.llap.io.metadata;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
 import org.apache.hadoop.hive.llap.IncrementalObjectSizeEstimator;
 import org.apache.hadoop.hive.llap.IncrementalObjectSizeEstimator.ObjectEstimator;
 import org.apache.hadoop.hive.llap.cache.EvictionDispatcher;
 import org.apache.hadoop.hive.llap.cache.LlapCacheableBuffer;
-import org.apache.orc.CompressionKind;
-import org.apache.orc.FileMetadata;
+import org.apache.hadoop.hive.ql.io.SyntheticFileId;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.Reader;
 import org.apache.hadoop.hive.ql.io.orc.ReaderImpl.StripeInformationImpl;
-import org.apache.orc.StripeInformation;
+import org.apache.orc.CompressionKind;
+import org.apache.orc.FileMetadata;
 import org.apache.orc.OrcProto;
-
-import com.google.common.annotations.VisibleForTesting;
+import org.apache.orc.StripeInformation;
 
 /** ORC file metadata. Currently contains some duplicate info due to how different parts
  * of ORC use different info. Ideally we would get rid of protobuf structs in code beyond reading,
@@ -46,7 +45,7 @@ public final class OrcFileMetadata extends LlapCacheableBuffer implements FileMe
   private final List<OrcProto.StripeStatistics> stripeStats;
   private final List<OrcProto.Type> types;
   private final List<OrcProto.ColumnStatistics> fileStats;
-  private final long fileId;
+  private final Object fileKey;
   private final CompressionKind compressionKind;
   private final int rowIndexStride;
   private final int compressionBufferSize;
@@ -61,16 +60,18 @@ public final class OrcFileMetadata extends LlapCacheableBuffer implements FileMe
   private final static HashMap<Class<?>, ObjectEstimator> SIZE_ESTIMATORS;
   private final static ObjectEstimator SIZE_ESTIMATOR;
   static {
-    OrcFileMetadata ofm = createDummy(0);
+    OrcFileMetadata ofm = createDummy(new SyntheticFileId());
     SIZE_ESTIMATORS = IncrementalObjectSizeEstimator.createEstimators(ofm);
     IncrementalObjectSizeEstimator.addEstimator(
         "com.google.protobuf.LiteralByteString", SIZE_ESTIMATORS);
+    // Add long for the regular file ID estimation.
+    IncrementalObjectSizeEstimator.createEstimators(Long.class, SIZE_ESTIMATORS);
     SIZE_ESTIMATOR = SIZE_ESTIMATORS.get(OrcFileMetadata.class);
   }
 
   @VisibleForTesting
-  public static OrcFileMetadata createDummy(int fileId) {
-    OrcFileMetadata ofm = new OrcFileMetadata(fileId);
+  public static OrcFileMetadata createDummy(Object fileKey) {
+    OrcFileMetadata ofm = new OrcFileMetadata(fileKey);
     ofm.stripes.add(new StripeInformationImpl(
         OrcProto.StripeInformation.getDefaultInstance()));
     ofm.fileStats.add(OrcProto.ColumnStatistics.getDefaultInstance());
@@ -87,8 +88,8 @@ public final class OrcFileMetadata extends LlapCacheableBuffer implements FileMe
   }
 
   // Ctor for memory estimation and tests
-  private OrcFileMetadata(int fileId) {
-    this.fileId = fileId;
+  private OrcFileMetadata(Object fileKey) {
+    this.fileKey = fileKey;
     stripes = new ArrayList<StripeInformation>();
     versionList = new ArrayList<Integer>();
     fileStats = new ArrayList<>();
@@ -101,8 +102,8 @@ public final class OrcFileMetadata extends LlapCacheableBuffer implements FileMe
     compressionKind = CompressionKind.NONE;
   }
 
-  public OrcFileMetadata(long fileId, Reader reader) {
-    this.fileId = fileId;
+  public OrcFileMetadata(Object fileKey, Reader reader) {
+    this.fileKey = fileKey;
     this.stripeStats = reader.getOrcProtoStripeStatistics();
     this.compressionKind = reader.getCompressionKind();
     this.compressionBufferSize = reader.getCompressionSize();
@@ -183,8 +184,8 @@ public final class OrcFileMetadata extends LlapCacheableBuffer implements FileMe
   }
 
   @Override
-  public long getFileId() {
-    return fileId;
+  public Object getFileKey() {
+    return fileKey;
   }
 
   @Override

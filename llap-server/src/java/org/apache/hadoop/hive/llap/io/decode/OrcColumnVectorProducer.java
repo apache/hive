@@ -23,7 +23,6 @@ import java.util.List;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.cache.BufferUsageManager;
-import org.apache.hadoop.hive.llap.cache.Cache;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache;
 import org.apache.hadoop.hive.llap.cache.LowLevelCacheImpl;
 import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
@@ -34,14 +33,12 @@ import org.apache.hadoop.hive.llap.io.metadata.OrcMetadataCache;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonQueueMetrics;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Consumer;
-import org.apache.hadoop.hive.ql.io.orc.encoded.OrcCacheKey;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.mapred.FileSplit;
 
 public class OrcColumnVectorProducer implements ColumnVectorProducer {
 
   private final OrcMetadataCache metadataCache;
-  private final Cache<OrcCacheKey> cache;
   private final LowLevelCache lowLevelCache;
   private final BufferUsageManager bufferManager;
   private final Configuration conf;
@@ -50,7 +47,7 @@ public class OrcColumnVectorProducer implements ColumnVectorProducer {
   private LlapDaemonQueueMetrics queueMetrics;
 
   public OrcColumnVectorProducer(OrcMetadataCache metadataCache,
-      LowLevelCacheImpl lowLevelCache, BufferUsageManager bufferManager, Cache<OrcCacheKey> cache,
+      LowLevelCacheImpl lowLevelCache, BufferUsageManager bufferManager,
       Configuration conf, LlapDaemonCacheMetrics metrics, LlapDaemonQueueMetrics queueMetrics) {
     if (LlapIoImpl.LOGL.isInfoEnabled()) {
       LlapIoImpl.LOG.info("Initializing ORC column vector producer");
@@ -59,7 +56,6 @@ public class OrcColumnVectorProducer implements ColumnVectorProducer {
     this.metadataCache = metadataCache;
     this.lowLevelCache = lowLevelCache;
     this.bufferManager = bufferManager;
-    this.cache = cache;
     this.conf = conf;
     this._skipCorrupt = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ORC_SKIP_CORRUPT_DATA);
     this.cacheMetrics = metrics;
@@ -74,7 +70,7 @@ public class OrcColumnVectorProducer implements ColumnVectorProducer {
     cacheMetrics.incrCacheReadRequests();
     OrcEncodedDataConsumer edc = new OrcEncodedDataConsumer(consumer, columnIds.size(),
         _skipCorrupt, counters, queueMetrics);
-    OrcEncodedDataReader reader = new OrcEncodedDataReader(lowLevelCache, bufferManager, cache,
+    OrcEncodedDataReader reader = new OrcEncodedDataReader(lowLevelCache, bufferManager,
         metadataCache, conf, split, columnIds, sarg, columnNames, edc, counters);
     edc.init(reader, reader);
     return edc;

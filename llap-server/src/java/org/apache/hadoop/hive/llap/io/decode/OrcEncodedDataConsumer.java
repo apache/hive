@@ -54,6 +54,7 @@ public class OrcEncodedDataConsumer
       Consumer<ColumnVectorBatch> consumer, int colCount, boolean skipCorrupt,
       QueryFragmentCounters counters, LlapDaemonQueueMetrics queueMetrics) {
     super(consumer, colCount, queueMetrics);
+    // TODO: get rid of this
     this.skipCorrupt = skipCorrupt;
     this.counters = counters;
   }
@@ -62,7 +63,6 @@ public class OrcEncodedDataConsumer
     assert fileMetadata == null;
     fileMetadata = f;
     stripes = new OrcStripeMetadata[f.getStripes().size()];
-    // TODO: get rid of this
     codec = WriterImpl.createCodec(fileMetadata.getCompressionKind());
   }
 

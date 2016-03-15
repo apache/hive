@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.llap;
 
+import com.google.common.collect.Lists;
+import com.google.protobuf.UnknownFieldSet;
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
@@ -35,12 +37,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.llap.IncrementalObjectSizeEstimator.ObjectEstimator;
 import org.apache.hadoop.hive.llap.cache.LlapCacheableBuffer;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
-
-import com.google.common.collect.Lists;
-import com.google.protobuf.UnknownFieldSet;
 
 /**
  * Creates size estimators for java objects. The estimators attempt to do most of the reflection
@@ -622,6 +622,7 @@ public class IncrementalObjectSizeEstimator {
     } catch (ClassNotFoundException e) {
       // Ignore and hope for the best.
       LlapIoImpl.LOG.warn("Cannot find " + className);
+      return;
     }
     IncrementalObjectSizeEstimator.createEstimators(clazz, sizeEstimators);
   }

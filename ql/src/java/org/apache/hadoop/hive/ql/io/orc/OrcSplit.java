@@ -26,13 +26,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.orc.FileMetaInfo;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.ColumnarSplit;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.LlapAwareSplit;
+import org.apache.hadoop.hive.ql.io.SyntheticFileId;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableUtils;
 import org.apache.hadoop.mapred.FileSplit;
 
@@ -48,11 +48,11 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
   private boolean isOriginal;
   private boolean hasBase;
   private final List<AcidInputFormat.DeltaMetaData> deltas = new ArrayList<>();
-  private OrcFile.WriterVersion writerVersion;
   private long projColsUncompressedSize;
-  private transient Long fileId;
+  private transient Object fileKey;
 
-  static final int HAS_FILEID_FLAG = 8;
+  static final int HAS_SYNTHETIC_FILEID_FLAG = 16;
+  static final int HAS_LONG_FILEID_FLAG = 8;
   static final int BASE_FLAG = 4;
   static final int ORIGINAL_FLAG = 2;
   static final int FOOTER_FLAG = 1;
@@ -64,13 +64,13 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
     super(null, 0, 0, (String[]) null);
   }
 
-  public OrcSplit(Path path, Long fileId, long offset, long length, String[] hosts,
+  public OrcSplit(Path path, Object fileId, long offset, long length, String[] hosts,
       FileMetaInfo fileMetaInfo, boolean isOriginal, boolean hasBase,
       List<AcidInputFormat.DeltaMetaData> deltas, long projectedDataSize) {
     super(path, offset, length, hosts);
-    // We could avoid serializing file ID and just replace the path with inode-based path.
-    // However, that breaks bunch of stuff because Hive later looks up things by split path.
-    this.fileId = fileId;
+    // For HDFS, we could avoid serializing file ID and just replace the path with inode-based
+    // path. However, that breaks bunch of stuff because Hive later looks up things by split path.
+    this.fileKey = fileId;
     this.fileMetaInfo = fileMetaInfo;
     hasFooter = this.fileMetaInfo != null;
     this.isOriginal = isOriginal;
@@ -84,10 +84,12 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
     //serialize path, offset, length using FileSplit
     super.write(out);
 
+    boolean isFileIdLong = fileKey instanceof Long, isFileIdWritable = fileKey instanceof Writable;
     int flags = (hasBase ? BASE_FLAG : 0) |
         (isOriginal ? ORIGINAL_FLAG : 0) |
         (hasFooter ? FOOTER_FLAG : 0) |
-        (fileId != null ? HAS_FILEID_FLAG : 0);
+        (isFileIdLong ? HAS_LONG_FILEID_FLAG : 0) |
+        (isFileIdWritable ? HAS_SYNTHETIC_FILEID_FLAG : 0);
     out.writeByte(flags);
     out.writeInt(deltas.size());
     for(AcidInputFormat.DeltaMetaData delta: deltas) {
@@ -109,8 +111,10 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
           footerBuff.limit() - footerBuff.position());
       WritableUtils.writeVInt(out, fileMetaInfo.writerVersion.getId());
     }
-    if (fileId != null) {
-      out.writeLong(fileId.longValue());
+    if (isFileIdLong) {
+      out.writeLong(((Long)fileKey).longValue());
+    } else if (isFileIdWritable) {
+      ((Writable)fileKey).write(out);
     }
   }
 
@@ -123,7 +127,11 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
     hasFooter = (FOOTER_FLAG & flags) != 0;
     isOriginal = (ORIGINAL_FLAG & flags) != 0;
     hasBase = (BASE_FLAG & flags) != 0;
-    boolean hasFileId = (HAS_FILEID_FLAG & flags) != 0;
+    boolean hasLongFileId = (HAS_LONG_FILEID_FLAG & flags) != 0,
+        hasWritableFileId = (HAS_SYNTHETIC_FILEID_FLAG & flags) != 0;
+    if (hasLongFileId && hasWritableFileId) {
+      throw new IOException("Invalid split - both file ID types present");
+    }
 
     deltas.clear();
     int numDeltas = in.readInt();
@@ -148,8 +156,12 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
       fileMetaInfo = new FileMetaInfo(compressionType, bufferSize,
           metadataSize, footerBuff, writerVersion);
     }
-    if (hasFileId) {
-      fileId = in.readLong();
+    if (hasLongFileId) {
+      fileKey = in.readLong();
+    } else if (hasWritableFileId) {
+      SyntheticFileId fileId = new SyntheticFileId();
+      fileId.readFields(in);
+      this.fileKey = fileId;
     }
   }
 
@@ -186,8 +198,8 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
     return projColsUncompressedSize;
   }
 
-  public Long getFileId() {
-    return fileId;
+  public Object getFileKey() {
+    return fileKey;
   }
 
   @Override
