@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -58,8 +59,8 @@ import com.google.common.collect.Lists;
  */
 public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
 
-  public LoadSemanticAnalyzer(HiveConf conf) throws SemanticException {
-    super(conf);
+  public LoadSemanticAnalyzer(QueryState queryState) throws SemanticException {
+    super(queryState);
   }
 
   public static FileStatus[] matchFilesOrDir(FileSystem fs, Path path)

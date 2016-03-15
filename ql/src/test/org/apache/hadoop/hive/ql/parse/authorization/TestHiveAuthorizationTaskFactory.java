@@ -19,12 +19,13 @@ package org.apache.hadoop.hive.ql.parse.authorization;
 
 import java.util.HashMap;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -89,7 +90,7 @@ public class TestHiveAuthorizationTaskFactory {
 
   private ParseDriver parseDriver;
   private DDLSemanticAnalyzer analyzer;
-  private HiveConf conf;
+  private QueryState queryState;
   private Context context;
   private String currentUser;
   private Hive db;
@@ -98,7 +99,8 @@ public class TestHiveAuthorizationTaskFactory {
 
   @Before
   public void setup() throws Exception {
-    conf = new HiveConf();
+    queryState = new QueryState(null);
+    HiveConf conf = queryState.getConf();
     conf.setVar(ConfVars.HIVE_AUTHORIZATION_TASK_FACTORY,
         TestHiveAuthorizationTaskFactory.DummyHiveAuthorizationTaskFactoryImpl.class.getName());
     db = Mockito.mock(Hive.class);
@@ -107,7 +109,7 @@ public class TestHiveAuthorizationTaskFactory {
     SessionState.start(conf);
     context = new Context(conf);
     parseDriver = new ParseDriver();
-    analyzer = new DDLSemanticAnalyzer(conf, db);
+    analyzer = new DDLSemanticAnalyzer(queryState, db);
     Mockito.when(db.getTable(DB, TABLE, false)).thenReturn(table);
     Mockito.when(db.getTable(TABLE_QNAME, false)).thenReturn(table);
     Mockito.when(db.getPartition(table, new HashMap<String, String>(), false))
@@ -478,7 +480,7 @@ public class TestHiveAuthorizationTaskFactory {
   }
 
   private DDLWork analyze(String command) throws Exception {
-    return AuthorizationTestUtil.analyze(command, conf, db);
+    return AuthorizationTestUtil.analyze(command, queryState, db);
   }
 
 

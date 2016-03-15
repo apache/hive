@@ -33,7 +33,7 @@ import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.common.metrics.common.MetricsScope;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.QueryPlan;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.OperationLog;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -62,7 +62,6 @@ public abstract class Operation {
   private volatile OperationState state = OperationState.INITIALIZED;
   private volatile MetricsScope currentStateScope;
   private final OperationHandle opHandle;
-  private HiveConf configuration;
   public static final FetchOrientation DEFAULT_FETCH_ORIENTATION = FetchOrientation.FETCH_NEXT;
   public static final Logger LOG = LoggerFactory.getLogger(Operation.class.getName());
   public static final long DEFAULT_FETCH_MAX_ROWS = 100;
@@ -81,13 +80,13 @@ public abstract class Operation {
   protected long operationStart;
   protected long operationComplete;
 
+  protected final QueryState queryState;
+
   protected static final EnumSet<FetchOrientation> DEFAULT_FETCH_ORIENTATION_SET =
       EnumSet.of(FetchOrientation.FETCH_NEXT,FetchOrientation.FETCH_FIRST);
 
   protected Operation(HiveSession parentSession, OperationType opType, boolean runInBackground) {
     this(parentSession, null, opType, runInBackground);
-    // Generate a queryId for the operation if no queryId is provided
-    confOverlay.put(HiveConf.ConfVars.HIVEQUERYID.varname, QueryPlan.makeQueryId());
  }
 
   protected Operation(HiveSession parentSession, Map<String, String> confOverlay, OperationType opType, boolean runInBackground) {
@@ -102,6 +101,11 @@ public abstract class Operation {
     operationTimeout = HiveConf.getTimeVar(parentSession.getHiveConf(),
         HiveConf.ConfVars.HIVE_SERVER2_IDLE_OPERATION_TIMEOUT, TimeUnit.MILLISECONDS);
     setMetrics(state);
+    queryState = new QueryState(parentSession.getHiveConf(), confOverlay, runAsync);
+  }
+
+  public QueryState getQueryState() {
+    return queryState;
   }
 
   public Future<?> getBackgroundHandle() {
@@ -116,13 +120,6 @@ public abstract class Operation {
     return runAsync;
   }
 
-  public void setConfiguration(HiveConf configuration) {
-    this.configuration = new HiveConf(configuration);
-  }
-
-  public HiveConf getConfiguration() {
-    return new HiveConf(configuration);
-  }
 
   public HiveSession getParentSession() {
     return parentSession;

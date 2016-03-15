@@ -165,6 +165,9 @@ public class Driver implements CommandProcessor {
   // For WebUI.  Kept alive after queryPlan is freed.
   private final QueryDisplay queryDisplay = new QueryDisplay();
 
+  // Query specific info
+  private QueryState queryState;
+
   private boolean checkConcurrency() {
     boolean supportConcurrency = conf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY);
     if (!supportConcurrency) {
@@ -290,22 +293,28 @@ public class Driver implements CommandProcessor {
     this.maxRows = maxRows;
   }
 
+  public Driver() {
+    this(new QueryState((SessionState.get() != null) ?
+        SessionState.get().getConf() : new HiveConf()), null);
+  }
+
   /**
    * for backwards compatibility with current tests
    */
   public Driver(HiveConf conf) {
-    this.conf = conf;
-    isParallelEnabled = (conf != null)
-        && HiveConf.getBoolVar(conf, ConfVars.HIVE_SERVER2_PARALLEL_COMPILATION);
+    this(new QueryState(conf), null);
   }
 
   public Driver(HiveConf conf, String userName) {
-    this(conf);
-    this.userName = userName;
+    this(new QueryState(conf), userName);
   }
 
-  public Driver() {
-    this((SessionState.get() != null) ? SessionState.get().getConf() : null);
+  public Driver(QueryState queryState, String userName) {
+    this.queryState = queryState;
+    this.conf = queryState.getConf();
+    isParallelEnabled = (conf != null)
+        && HiveConf.getBoolVar(conf, ConfVars.HIVE_SERVER2_PARALLEL_COMPILATION);
+    this.userName = userName;
   }
 
   /**
@@ -317,52 +326,6 @@ public class Driver implements CommandProcessor {
    */
   public int compile(String command) {
     return compile(command, true);
-  }
-
-  /**
-   * Hold state variables specific to each query being executed, that may not
-   * be consistent in the overall SessionState
-   */
-  private static class QueryState {
-    private HiveOperation op;
-    private String cmd;
-    private boolean init = false;
-
-    /**
-     * Initialize the queryState with the query state variables
-     */
-    public void init(HiveOperation op, String cmd) {
-      this.op = op;
-      this.cmd = cmd;
-      this.init = true;
-    }
-
-    public boolean isInitialized() {
-      return this.init;
-    }
-
-    public HiveOperation getOp() {
-      return this.op;
-    }
-
-    public String getCmd() {
-      return this.cmd;
-    }
-  }
-
-  public void saveSession(QueryState qs) {
-    SessionState oldss = SessionState.get();
-    if (oldss != null && oldss.getHiveOperation() != null) {
-      qs.init(oldss.getHiveOperation(), oldss.getCmd());
-    }
-  }
-
-  public void restoreSession(QueryState qs) {
-    SessionState ss = SessionState.get();
-    if (ss != null && qs != null && qs.isInitialized()) {
-      ss.setCmd(qs.getCmd());
-      ss.setCommandType(qs.getOp());
-    }
   }
 
   /**
@@ -392,9 +355,6 @@ public class Driver implements CommandProcessor {
       LOG.warn("WARNING! Query command could not be redacted." + e);
     }
 
-    //holder for parent command type/string when executing reentrant queries
-    QueryState queryState = new QueryState();
-
     if (ctx != null) {
       close();
     }
@@ -402,7 +362,6 @@ public class Driver implements CommandProcessor {
     if (resetTaskIds) {
       TaskFactory.resetId();
     }
-    saveSession(queryState);
 
     String queryId = conf.getVar(HiveConf.ConfVars.HIVEQUERYID);
 
@@ -447,7 +406,7 @@ public class Driver implements CommandProcessor {
 
 
       perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.ANALYZE);
-      BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(conf, tree);
+      BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(queryState, tree);
       List<HiveSemanticAnalyzerHook> saHooks =
           getHooks(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK,
               HiveSemanticAnalyzerHook.class);
@@ -491,7 +450,7 @@ public class Driver implements CommandProcessor {
       schema = getSchema(sem, conf);
 
       plan = new QueryPlan(queryStr, sem, perfLogger.getStartTime(PerfLogger.DRIVER_RUN), queryId,
-        SessionState.get().getHiveOperation(), schema, queryDisplay);
+        queryState.getHiveOperation(), schema, queryDisplay);
 
       conf.setQueryString(queryStr);
 
@@ -500,7 +459,7 @@ public class Driver implements CommandProcessor {
 
       // initialize FetchTask right here
       if (plan.getFetchTask() != null) {
-        plan.getFetchTask().initialize(conf, plan, null, ctx.getOpContext());
+        plan.getFetchTask().initialize(queryState, plan, null, ctx.getOpContext());
       }
 
       //do the authorization check
@@ -509,7 +468,7 @@ public class Driver implements CommandProcessor {
 
         try {
           perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.DO_AUTHORIZATION);
-          doAuthorization(sem, command);
+          doAuthorization(queryState.getHiveOperation(), sem, command);
         } catch (AuthorizationException authExp) {
           console.printError("Authorization failed:" + authExp.getMessage()
               + ". Use SHOW GRANT to get more details.");
@@ -562,7 +521,6 @@ public class Driver implements CommandProcessor {
       double duration = perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.COMPILE)/1000.00;
       ImmutableMap<String, Long> compileHMSTimings = dumpMetaCallTimingWithoutEx("compilation");
       queryDisplay.setHmsTimings(QueryDisplay.Phase.COMPILATION, compileHMSTimings);
-      restoreSession(queryState);
       LOG.info("Completed compiling command(queryId=" + queryId + "); Time taken: " + duration + " seconds");
     }
   }
@@ -589,7 +547,7 @@ public class Driver implements CommandProcessor {
       ASTNode astTree) throws IOException {
     String ret = null;
     ExplainTask task = new ExplainTask();
-    task.initialize(conf, plan, null, ctx.getOpContext());
+    task.initialize(queryState, plan, null, ctx.getOpContext());
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     PrintStream ps = new PrintStream(baos);
     try {
@@ -612,10 +570,9 @@ public class Driver implements CommandProcessor {
    * @throws HiveException
    * @throws AuthorizationException
    */
-  public static void doAuthorization(BaseSemanticAnalyzer sem, String command)
+  public static void doAuthorization(HiveOperation op, BaseSemanticAnalyzer sem, String command)
       throws HiveException, AuthorizationException {
     SessionState ss = SessionState.get();
-    HiveOperation op = ss.getHiveOperation();
     Hive db = sem.getDb();
 
     Set<ReadEntity> additionalInputs = new HashSet<ReadEntity>();
@@ -1530,7 +1487,7 @@ public class Driver implements CommandProcessor {
       resStream = null;
 
       SessionState ss = SessionState.get();
-      hookContext = new HookContext(plan, conf, ctx.getPathToCS(), ss.getUserName(),
+      hookContext = new HookContext(plan, queryState, ctx.getPathToCS(), ss.getUserName(),
           ss.getUserIpAddress(), operationId);
       hookContext.setHookType(HookContext.HookType.PRE_EXEC_HOOK);
 
@@ -1857,7 +1814,7 @@ public class Driver implements CommandProcessor {
       cxt.incCurJobNo(1);
       console.printInfo("Launching Job " + cxt.getCurJobNo() + " out of " + jobs);
     }
-    tsk.initialize(conf, plan, cxt, ctx.getOpContext());
+    tsk.initialize(queryState, plan, cxt, ctx.getOpContext());
     TaskResult tskRes = new TaskResult();
     TaskRunner tskRun = new TaskRunner(tsk, tskRes);
 
@@ -1958,7 +1915,7 @@ public class Driver implements CommandProcessor {
         throw new IOException("Error closing the current fetch task", e);
       }
       // FetchTask should not depend on the plan.
-      fetchTask.initialize(conf, null, null, ctx.getOpContext());
+      fetchTask.initialize(queryState, null, null, ctx.getOpContext());
     } else {
       ctx.resetStream();
       resStream = null;

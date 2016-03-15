@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.parse.authorization;
 import java.util.HashMap;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -32,15 +33,16 @@ import org.mockito.Mockito;
 
 public class TestPrivilegesV2 extends PrivilegesTestBase{
 
-  private HiveConf conf;
+  private QueryState queryState;
   private Hive db;
   private Table table;
   private Partition partition;
 
   @Before
   public void setup() throws Exception {
-    conf = new HiveConf();
+    queryState = new QueryState(null);
     //set authorization mode to V2
+    HiveConf conf = queryState.getConf();
     conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         SQLStdHiveAuthorizerFactory.class.getName());
     db = Mockito.mock(Hive.class);
@@ -67,7 +69,7 @@ public class TestPrivilegesV2 extends PrivilegesTestBase{
   }
 
   private void grantUserTable(String privName, PrivilegeType privType) throws Exception {
-    grantUserTable(privName, privType, conf, db);
+    grantUserTable(privName, privType, queryState, db);
   }
 
 }

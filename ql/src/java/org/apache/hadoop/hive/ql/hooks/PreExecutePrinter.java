@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.hadoop.hive.common.io.FetchConverter;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.hooks.HookContext.HookType;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -40,8 +41,9 @@ public class PreExecutePrinter implements ExecuteWithHookContext {
   public void run(HookContext hookContext) throws Exception {
     assert(hookContext.getHookType() == HookType.PRE_EXEC_HOOK);
     SessionState ss = SessionState.get();
+    QueryState queryState = hookContext.getQueryState();
     if (ss != null && ss.out instanceof FetchConverter) {
-      boolean foundQuery = ss.getHiveOperation() == HiveOperation.QUERY &&
+      boolean foundQuery = queryState.getHiveOperation() == HiveOperation.QUERY &&
               !hookContext.getQueryPlan().isForExplain();
       ((FetchConverter)ss.out).foundQuery(foundQuery);
     }
@@ -49,10 +51,10 @@ public class PreExecutePrinter implements ExecuteWithHookContext {
     Set<ReadEntity> inputs = hookContext.getInputs();
     Set<WriteEntity> outputs = hookContext.getOutputs();
     UserGroupInformation ugi = hookContext.getUgi();
-    this.run(ss,inputs,outputs,ugi);
+    this.run(queryState,inputs,outputs,ugi);
   }
 
-  public void run(SessionState sess, Set<ReadEntity> inputs,
+  public void run(QueryState queryState, Set<ReadEntity> inputs,
       Set<WriteEntity> outputs, UserGroupInformation ugi)
     throws Exception {
 
@@ -62,9 +64,9 @@ public class PreExecutePrinter implements ExecuteWithHookContext {
       return;
     }
 
-    if (sess != null) {
-      console.printError("PREHOOK: query: " + sess.getCmd().trim());
-      console.printError("PREHOOK: type: " + sess.getCommandType());
+    if (queryState != null) {
+      console.printError("PREHOOK: query: " + queryState.getQueryString().trim());
+      console.printError("PREHOOK: type: " + queryState.getCommandType());
     }
 
     printEntities(console, inputs, "PREHOOK: Input: ");

@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
 import org.apache.hadoop.hive.ql.exec.CommonMergeJoinOperator;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
@@ -101,8 +102,8 @@ public class TezCompiler extends TaskCompiler {
   }
 
   @Override
-  public void init(HiveConf conf, LogHelper console, Hive db) {
-    super.init(conf, console, db);
+  public void init(QueryState queryState, LogHelper console, Hive db) {
+    super.init(queryState, console, db);
 
     // Tez requires us to use RPC for the query plan
     HiveConf.setBoolVar(conf, ConfVars.HIVE_RPC_QUERY_PLAN, true);

@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
@@ -56,16 +57,16 @@ public final class RewriteParseContextGenerator {
    * @param command
    * @throws SemanticException
    */
-  public static Operator<? extends OperatorDesc> generateOperatorTree(HiveConf conf,
+  public static Operator<? extends OperatorDesc> generateOperatorTree(QueryState queryState,
       String command) throws SemanticException {
     Operator<? extends OperatorDesc> operatorTree;
     try {
-      Context ctx = new Context(conf);
+      Context ctx = new Context(queryState.getConf());
       ParseDriver pd = new ParseDriver();
       ASTNode tree = pd.parse(command, ctx);
       tree = ParseUtils.findRootNonNullToken(tree);
 
-      BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(conf, tree);
+      BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(queryState, tree);
       assert(sem instanceof SemanticAnalyzer);
       operatorTree = doSemanticAnalysis((SemanticAnalyzer) sem, tree, ctx);
       LOG.info("Sub-query Semantic Analysis Completed");

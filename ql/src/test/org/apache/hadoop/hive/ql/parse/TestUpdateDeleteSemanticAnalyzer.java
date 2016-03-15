@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryPlan;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.ExplainTask;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat;
@@ -47,6 +48,7 @@ public class TestUpdateDeleteSemanticAnalyzer {
 
   static final private Logger LOG = LoggerFactory.getLogger(TestUpdateDeleteSemanticAnalyzer.class.getName());
 
+  private QueryState queryState;
   private HiveConf conf;
   private Hive db;
 
@@ -221,7 +223,8 @@ public class TestUpdateDeleteSemanticAnalyzer {
 
   @Before
   public void setup() {
-    conf = new HiveConf();
+    queryState = new QueryState(null);
+    conf = queryState.getConf();
     conf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
     conf.setVar(HiveConf.ConfVars.HIVEMAPREDMODE, "nonstrict");
     conf.setVar(HiveConf.ConfVars.HIVE_TXN_MANAGER, "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
@@ -256,7 +259,7 @@ public class TestUpdateDeleteSemanticAnalyzer {
     ASTNode tree = pd.parse(query, ctx);
     tree = ParseUtils.findRootNonNullToken(tree);
 
-    BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(conf, tree);
+    BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(queryState, tree);
     SessionState.get().initTxnMgr(conf);
     db = sem.getDb();
 
@@ -295,7 +298,7 @@ public class TestUpdateDeleteSemanticAnalyzer {
         sem.getFetchTask(), sem, true, false, false, false, false, false, null);
     ExplainTask task = new ExplainTask();
     task.setWork(work);
-    task.initialize(conf, plan, null, null);
+    task.initialize(queryState, plan, null, null);
     task.execute(null);
     FSDataInputStream in = fs.open(tmp);
     StringBuilder builder = new StringBuilder();

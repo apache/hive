@@ -163,6 +163,7 @@ public class QTestUtil {
   private static MiniClusterType clusterType = MiniClusterType.none;
   private ParseDriver pd;
   protected Hive db;
+  protected QueryState queryState;
   protected HiveConf conf;
   private Driver drv;
   private BaseSemanticAnalyzer sem;
@@ -389,10 +390,12 @@ public class QTestUtil {
       HiveConf.setHiveSiteLocation(new URL("file://"+ new File(confDir).toURI().getPath() + "/hive-site.xml"));
       System.out.println("Setting hive-site: "+HiveConf.getHiveSiteLocation());
     }
+
+    queryState = new QueryState(new HiveConf(Driver.class));
     if (useHBaseMetastore) {
       startMiniHBaseCluster();
     } else {
-      conf = new HiveConf(Driver.class);
+      conf = queryState.getConf();
     }
     this.hadoopVer = getHadoopMainVersion(hadoopVer);
     qMap = new TreeMap<String, String>();
@@ -922,7 +925,7 @@ public class QTestUtil {
     drv = new Driver(conf);
     drv.init();
     pd = new ParseDriver();
-    sem = new SemanticAnalyzer(conf);
+    sem = new SemanticAnalyzer(queryState);
   }
 
   public void init(String tname) throws Exception {
@@ -1648,7 +1651,7 @@ public class QTestUtil {
   public void resetParser() throws SemanticException {
     drv.init();
     pd = new ParseDriver();
-    sem = new SemanticAnalyzer(conf);
+    sem = new SemanticAnalyzer(queryState);
   }
 
 

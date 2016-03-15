@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.BucketMatcher;
 import org.apache.hadoop.hive.ql.exec.FetchOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -121,13 +122,13 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
   }
 
   @Override
-  public void initialize(HiveConf conf, QueryPlan queryPlan, DriverContext driverContext,
+  public void initialize(QueryState queryState, QueryPlan queryPlan, DriverContext driverContext,
       CompilationOpContext opContext) {
-    super.initialize(conf, queryPlan, driverContext, opContext);
+    super.initialize(queryState, queryPlan, driverContext, opContext);
     job = new JobConf(conf, ExecDriver.class);
     execContext = new ExecMapperContext(job);
     //we don't use the HadoopJobExecHooks for local tasks
-    this.jobExecHelper = new HadoopJobExecHelper(job, console, this, null);
+    this.jobExecHelper = new HadoopJobExecHelper(queryState, job, console, this, null);
   }
 
   public static String now() {

@@ -312,7 +312,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       throws Exception {
 
     BaseSemanticAnalyzer analyzer = work.getAnalyzer();
-    HiveOperation operation = SessionState.get().getHiveOperation();
+    HiveOperation operation = queryState.getHiveOperation();
 
     JSONObject object = new JSONObject(new LinkedHashMap<>());
     Object jsonInput = toJson("INPUTS", toString(analyzer.getInputs()), out, work);
@@ -349,7 +349,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
 
       SessionState.get().setActiveAuthorizer(authorizer);
       try {
-        Driver.doAuthorization(analyzer, "");
+        Driver.doAuthorization(queryState.getHiveOperation(), analyzer, "");
       } finally {
         SessionState.get().setActiveAuthorizer(delegate);
       }

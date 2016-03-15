@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.ColumnStatsTask;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.StatsTask;
@@ -82,10 +83,12 @@ public abstract class TaskCompiler {
   // Assumes one instance of this + single-threaded compilation for each query.
   protected Hive db;
   protected LogHelper console;
+  protected QueryState queryState;
   protected HiveConf conf;
 
-  public void init(HiveConf conf, LogHelper console, Hive db) {
-    this.conf = conf;
+  public void init(QueryState queryState, LogHelper console, Hive db) {
+    this.queryState = queryState;
+    this.conf = queryState.getConf();
     this.db = db;
     this.console = console;
   }
@@ -447,7 +450,7 @@ public abstract class TaskCompiler {
    * Create a clone of the parse context
    */
   public ParseContext getParseContext(ParseContext pCtx, List<Task<? extends Serializable>> rootTasks) {
-    ParseContext clone = new ParseContext(conf,
+    ParseContext clone = new ParseContext(queryState,
         pCtx.getOpToPartPruner(), pCtx.getOpToPartList(), pCtx.getTopOps(),
         pCtx.getJoinOps(), pCtx.getSmbMapJoinOps(),
         pCtx.getLoadTableWork(), pCtx.getLoadFileWork(), pCtx.getContext(),

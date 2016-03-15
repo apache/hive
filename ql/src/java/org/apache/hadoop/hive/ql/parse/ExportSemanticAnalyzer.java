@@ -30,6 +30,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
@@ -47,8 +48,8 @@ public class ExportSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private ReplicationSpec replicationSpec;
 
-  public ExportSemanticAnalyzer(HiveConf conf) throws SemanticException {
-    super(conf);
+  public ExportSemanticAnalyzer(QueryState queryState) throws SemanticException {
+    super(queryState);
   }
 
   @Override

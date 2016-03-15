@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -60,11 +61,11 @@ public class MergeFileTask extends Task<MergeFileWork> implements Serializable,
   private boolean success = true;
 
   @Override
-  public void initialize(HiveConf conf, QueryPlan queryPlan,
+  public void initialize(QueryState queryState, QueryPlan queryPlan,
       DriverContext driverContext, CompilationOpContext opContext) {
-    super.initialize(conf, queryPlan, driverContext, opContext);
+    super.initialize(queryState, queryPlan, driverContext, opContext);
     job = new JobConf(conf, MergeFileTask.class);
-    jobExecHelper = new HadoopJobExecHelper(job, this.console, this, this);
+    jobExecHelper = new HadoopJobExecHelper(queryState, job, this.console, this, this);
   }
 
   @Override

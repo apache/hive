@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.WindowsPathUtil;
 import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
@@ -71,6 +72,7 @@ import org.apache.hadoop.util.Shell;
  */
 public class TestExecDriver extends TestCase {
 
+  static QueryState queryState;
   static HiveConf conf;
 
   private static final String tmpdir;
@@ -82,7 +84,8 @@ public class TestExecDriver extends TestCase {
 
   static {
     try {
-      conf = new HiveConf(ExecDriver.class);
+      queryState = new QueryState(new HiveConf(ExecDriver.class));
+      conf = queryState.getConf();
       conf.setBoolVar(HiveConf.ConfVars.SUBMITVIACHILD, true);
       conf.setBoolVar(HiveConf.ConfVars.SUBMITLOCALTASKVIACHILD, true);
 
@@ -480,7 +483,7 @@ public class TestExecDriver extends TestCase {
     MapRedTask mrtask = new MapRedTask();
     DriverContext dctx = new DriverContext ();
     mrtask.setWork(mr);
-    mrtask.initialize(conf, null, dctx, null);
+    mrtask.initialize(queryState, null, dctx, null);
     int exitVal =  mrtask.execute(dctx);
 
     if (exitVal != 0) {

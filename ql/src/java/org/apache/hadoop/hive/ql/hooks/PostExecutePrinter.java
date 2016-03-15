@@ -27,6 +27,7 @@ import java.util.Set;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.hooks.HookContext.HookType;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo.BaseColumnInfo;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo.Dependency;
@@ -97,15 +98,14 @@ public class PostExecutePrinter implements ExecuteWithHookContext {
   @Override
   public void run(HookContext hookContext) throws Exception {
     assert(hookContext.getHookType() == HookType.POST_EXEC_HOOK);
-    SessionState ss = SessionState.get();
     Set<ReadEntity> inputs = hookContext.getInputs();
     Set<WriteEntity> outputs = hookContext.getOutputs();
     LineageInfo linfo = hookContext.getLinfo();
     UserGroupInformation ugi = hookContext.getUgi();
-    this.run(ss,inputs,outputs,linfo,ugi);
+    this.run(hookContext.getQueryState(),inputs,outputs,linfo,ugi);
   }
 
-  public void run(SessionState sess, Set<ReadEntity> inputs,
+  public void run(QueryState queryState, Set<ReadEntity> inputs,
       Set<WriteEntity> outputs, LineageInfo linfo,
       UserGroupInformation ugi) throws Exception {
 
@@ -115,9 +115,9 @@ public class PostExecutePrinter implements ExecuteWithHookContext {
       return;
     }
 
-    if (sess != null) {
-      console.printError("POSTHOOK: query: " + sess.getCmd().trim());
-      console.printError("POSTHOOK: type: " + sess.getCommandType());
+    if (queryState != null) {
+      console.printError("POSTHOOK: query: " + queryState.getQueryString().trim());
+      console.printError("POSTHOOK: type: " + queryState.getCommandType());
     }
 
     PreExecutePrinter.printEntities(console, inputs, "POSTHOOK: Input: ");

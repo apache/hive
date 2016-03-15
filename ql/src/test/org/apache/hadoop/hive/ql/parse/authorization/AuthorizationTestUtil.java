@@ -22,8 +22,8 @@ import java.util.List;
 
 import junit.framework.Assert;
 
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
@@ -46,10 +46,10 @@ public class AuthorizationTestUtil {
    * @return
    * @throws Exception
    */
-  public static DDLWork analyze(ASTNode ast, HiveConf conf, Hive db) throws Exception {
-    DDLSemanticAnalyzer analyzer = new DDLSemanticAnalyzer(conf, db);
-    SessionState.start(conf);
-    analyzer.analyze(ast, new Context(conf));
+  public static DDLWork analyze(ASTNode ast, QueryState queryState, Hive db) throws Exception {
+    DDLSemanticAnalyzer analyzer = new DDLSemanticAnalyzer(queryState, db);
+    SessionState.start(queryState.getConf());
+    analyzer.analyze(ast, new Context(queryState.getConf()));
     List<Task<? extends Serializable>> rootTasks = analyzer.getRootTasks();
     return (DDLWork) inList(rootTasks).ofSize(1).get(0).getWork();
   }
@@ -62,8 +62,8 @@ public class AuthorizationTestUtil {
    * @return
    * @throws Exception
    */
-  public static DDLWork analyze(String command, HiveConf conf, Hive db) throws Exception {
-    return analyze(parse(command), conf, db);
+  public static DDLWork analyze(String command, QueryState queryState, Hive db) throws Exception {
+    return analyze(parse(command), queryState, db);
   }
 
   private static ASTNode parse(String command) throws Exception {

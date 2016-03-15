@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryProperties;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -87,6 +88,7 @@ public abstract class BaseSemanticAnalyzer {
   // Assumes one instance of this + single-threaded compilation for each query.
   protected final Hive db;
   protected final HiveConf conf;
+  protected final QueryState queryState;
   protected List<Task<? extends Serializable>> rootTasks;
   protected FetchTask fetchTask;
   protected final Logger LOG;
@@ -199,13 +201,14 @@ public abstract class BaseSemanticAnalyzer {
     }
   }
 
-  public BaseSemanticAnalyzer(HiveConf conf) throws SemanticException {
-    this(conf, createHiveDB(conf));
+  public BaseSemanticAnalyzer(QueryState queryState) throws SemanticException {
+    this(queryState, createHiveDB(queryState.getConf()));
   }
 
-  public BaseSemanticAnalyzer(HiveConf conf, Hive db) throws SemanticException {
+  public BaseSemanticAnalyzer(QueryState queryState, Hive db) throws SemanticException {
     try {
-      this.conf = conf;
+      this.queryState = queryState;
+      this.conf = queryState.getConf();
       this.db = db;
       rootTasks = new ArrayList<Task<? extends Serializable>>();
       LOG = LoggerFactory.getLogger(this.getClass().getName());
@@ -1501,5 +1504,8 @@ public abstract class BaseSemanticAnalyzer {
 
   public HashSet<WriteEntity> getAllOutputs() {
     return outputs;
+  }
+  public QueryState getQueryState() {
+    return queryState;
   }
 }

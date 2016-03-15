@@ -25,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryPlan;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.ExplainTask;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -94,6 +95,7 @@ public class ATSHook implements ExecuteWithHookContext {
   public void run(final HookContext hookContext) throws Exception {
     final long currentTime = System.currentTimeMillis();
     final HiveConf conf = new HiveConf(hookContext.getConf());
+    final QueryState queryState = hookContext.getQueryState();
 
     executor.submit(new Runnable() {
         @Override
@@ -134,7 +136,7 @@ public class ATSHook implements ExecuteWithHookContext {
             );
               @SuppressWarnings("unchecked")
               ExplainTask explain = (ExplainTask) TaskFactory.get(work, conf);
-              explain.initialize(conf, plan, null, null);
+              explain.initialize(queryState, plan, null, null);
               String query = plan.getQueryStr();
               JSONObject explainPlan = explain.getJSONPlan(null, work);
               String logID = conf.getLogIdVar(SessionState.get().getSessionId());

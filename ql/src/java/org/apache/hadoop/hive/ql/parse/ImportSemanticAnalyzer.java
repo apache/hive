@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -74,8 +75,8 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   public static final String METADATA_NAME="_metadata";
 
-  public ImportSemanticAnalyzer(HiveConf conf) throws SemanticException {
-    super(conf);
+  public ImportSemanticAnalyzer(QueryState queryState) throws SemanticException {
+    super(queryState);
   }
 
   private boolean tableExists = false;

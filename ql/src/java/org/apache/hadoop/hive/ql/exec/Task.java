@@ -51,6 +51,7 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   public transient HashMap<String, Long> taskCounters;
   public transient TaskHandle taskHandle;
   protected transient HiveConf conf;
+  protected transient QueryState queryState;
   protected transient LogHelper console;
   protected transient QueryPlan queryPlan;
   protected transient DriverContext driverContext;
@@ -124,11 +125,12 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
     return taskHandle;
   }
 
-  public void initialize(HiveConf conf, QueryPlan queryPlan, DriverContext driverContext,
+  public void initialize(QueryState queryState, QueryPlan queryPlan, DriverContext driverContext,
       CompilationOpContext opContext) {
     this.queryPlan = queryPlan;
     setInitialized();
-    this.conf = conf;
+    this.queryState = queryState;
+    this.conf = queryState.getConf();
     this.driverContext = driverContext;
     console = new LogHelper(LOG);
   }

@@ -33,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.MapRedStats;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskHandle;
@@ -75,6 +76,7 @@ public class HadoopJobExecHelper {
   public transient JobID jobId;
   private final LogHelper console;
   private final HadoopJobExecHook callBackObj;
+  private final QueryState queryState;
 
   /**
    * Update counters relevant to this task.
@@ -135,8 +137,9 @@ public class HadoopJobExecHelper {
     this.jobId = jobId;
   }
 
-  public HadoopJobExecHelper(JobConf job, LogHelper console,
+  public HadoopJobExecHelper(QueryState queryState, JobConf job, LogHelper console,
       Task<? extends Serializable> task, HadoopJobExecHook hookCallBack) {
+    this.queryState = queryState;
     this.job = job;
     this.console = console;
     this.task = task;
@@ -250,14 +253,14 @@ public class HadoopJobExecHelper {
 
           String logMapper;
           String logReducer;
-
+          String queryId = queryState.getQueryId();
           TaskReport[] mappers = jc.getMapTaskReports(rj.getID());
           if (mappers == null) {
             logMapper = "no information for number of mappers; ";
           } else {
             numMap = mappers.length;
             if (ss != null) {
-              ss.getHiveHistory().setTaskProperty(SessionState.get().getQueryId(), getId(),
+              ss.getHiveHistory().setTaskProperty(queryId, getId(),
                 Keys.TASK_NUM_MAPPERS, Integer.toString(numMap));
             }
             logMapper = "number of mappers: " + numMap + "; ";
@@ -269,7 +272,7 @@ public class HadoopJobExecHelper {
           } else {
             numReduce = reducers.length;
             if (ss != null) {
-              ss.getHiveHistory().setTaskProperty(SessionState.get().getQueryId(), getId(),
+              ss.getHiveHistory().setTaskProperty(queryId, getId(),
                 Keys.TASK_NUM_REDUCERS, Integer.toString(numReduce));
             }
             logReducer = "number of reducers: " + numReduce;
@@ -355,11 +358,11 @@ public class HadoopJobExecHelper {
       String output = report.toString();
       SessionState ss = SessionState.get();
       if (ss != null) {
-        ss.getHiveHistory().setTaskCounters(SessionState.get().getQueryId(), getId(), ctrs);
-        ss.getHiveHistory().setTaskProperty(SessionState.get().getQueryId(), getId(),
+        ss.getHiveHistory().setTaskCounters(queryState.getQueryId(), getId(), ctrs);
+        ss.getHiveHistory().setTaskProperty(queryState.getQueryId(), getId(),
             Keys.TASK_HADOOP_PROGRESS, output);
         if (ss.getConf().getBoolVar(HiveConf.ConfVars.HIVE_LOG_INCREMENTAL_PLAN_PROGRESS)) {
-          ss.getHiveHistory().progressTask(SessionState.get().getQueryId(), this.task);
+          ss.getHiveHistory().progressTask(queryState.getQueryId(), this.task);
           this.callBackObj.logPlanProgress(ss);
         }
       }
@@ -386,7 +389,7 @@ public class HadoopJobExecHelper {
       } else {
         SessionState ss = SessionState.get();
         if (ss != null) {
-          ss.getHiveHistory().setTaskCounters(SessionState.get().getQueryId(), getId(), ctrs);
+          ss.getHiveHistory().setTaskCounters(queryState.getQueryId(), getId(), ctrs);
         }
         success = rj.isSuccessful();
       }
@@ -430,7 +433,7 @@ public class HadoopJobExecHelper {
       console.printInfo("Job running in-process (local Hadoop)");
     } else {
       if (SessionState.get() != null) {
-        SessionState.get().getHiveHistory().setTaskProperty(SessionState.get().getQueryId(),
+        SessionState.get().getHiveHistory().setTaskProperty(queryState.getQueryId(),
             getId(), Keys.TASK_HADOOP_ID, rj.getID().toString());
       }
       console.printInfo(getJobStartMsg(rj.getID()) + ", Tracking URL = "

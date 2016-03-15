@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapOperator;
@@ -71,9 +72,9 @@ public class SparkTask extends Task<SparkWork> {
   private static final long serialVersionUID = 1L;
 
   @Override
-  public void initialize(HiveConf conf, QueryPlan queryPlan, DriverContext driverContext,
+  public void initialize(QueryState queryState, QueryPlan queryPlan, DriverContext driverContext,
       CompilationOpContext opContext) {
-    super.initialize(conf, queryPlan, driverContext, opContext);
+    super.initialize(queryState, queryPlan, driverContext, opContext);
   }
 
   @Override
@@ -137,7 +138,7 @@ public class SparkTask extends Task<SparkWork> {
     console.printInfo("Starting Spark Job = " + jobRef.getJobId());
     if (SessionState.get() != null) {
       SessionState.get().getHiveHistory()
-	  .setQueryProperty(SessionState.get().getQueryId(), Keys.SPARK_JOB_ID, jobRef.getJobId());
+	  .setQueryProperty(queryState.getQueryId(), Keys.SPARK_JOB_ID, jobRef.getJobId());
     }
   }
 

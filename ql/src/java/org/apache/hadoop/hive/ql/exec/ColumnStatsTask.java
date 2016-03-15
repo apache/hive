@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -83,9 +84,9 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
   }
 
   @Override
-  public void initialize(HiveConf conf, QueryPlan queryPlan, DriverContext ctx,
+  public void initialize(QueryState queryState, QueryPlan queryPlan, DriverContext ctx,
       CompilationOpContext opContext) {
-    super.initialize(conf, queryPlan, ctx, opContext);
+    super.initialize(queryState, queryPlan, ctx, opContext);
     work.initializeForFetch(opContext);
     try {
       JobConf job = new JobConf(conf);

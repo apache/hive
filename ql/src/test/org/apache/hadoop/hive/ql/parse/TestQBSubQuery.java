@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.Assert;
 import org.junit.Before;
@@ -29,6 +30,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class TestQBSubQuery {
+  static QueryState queryState;
   static HiveConf conf;
 
   private static String IN_QUERY = " select * " +
@@ -46,14 +48,15 @@ public class TestQBSubQuery {
 
   @BeforeClass
   public static void initialize() {
-    conf = new HiveConf(SemanticAnalyzer.class);
+    queryState = new QueryState(new HiveConf(SemanticAnalyzer.class));
+    conf = queryState.getConf();
     SessionState.start(conf);
   }
 
   @Before
   public void setup() throws SemanticException {
     pd = new ParseDriver();
-    sA = new CalcitePlanner(conf);
+    sA = new CalcitePlanner(queryState);
   }
 
   ASTNode parse(String query) throws ParseException {
