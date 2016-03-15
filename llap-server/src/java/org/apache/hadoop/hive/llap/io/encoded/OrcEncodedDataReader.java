@@ -771,7 +771,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     } else if (!isNone) {
       count = rgCount;
     }
-    counters.setCounter(LlapIOCounters.SELECTED_ROWGROUPS, count);
+    counters.incrCounter(LlapIOCounters.SELECTED_ROWGROUPS, count);
   }
 
 
