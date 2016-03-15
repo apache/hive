@@ -10,9 +10,16 @@ CRYPTO CREATE_KEY --keyName key_128 --bitLength 128;
 CRYPTO CREATE_ZONE --keyName key_128 --path ${hiveconf:hive.metastore.warehouse.dir}/default/encrypted_table;
 
 INSERT OVERWRITE TABLE encrypted_table SELECT * FROM src;
+
+CREATE EXTERNAL TABLE encrypted_ext_table (key INT, value STRING) LOCATION '${hiveconf:hive.metastore.warehouse.dir}/default/encrypted_table';
 SHOW TABLES;
+
+DROP TABLE default.encrypted_ext_table;
+SHOW TABLES;
+
 DROP TABLE default.encrypted_table;
 SHOW TABLES;
+
 DROP TABLE default.encrypted_table PURGE;
 SHOW TABLES;
 CRYPTO DELETE_KEY --keyName key_128;
