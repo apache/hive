@@ -312,17 +312,15 @@ public class ReduceSinkDeDuplication extends Transform {
       if (result[4] > 0) {
         // This case happens only when pRS key is empty in which case we can use
         // number of distribution keys and key serialization info from cRS
-        pRS.getConf().setNumDistributionKeys(cRS.getConf().getNumDistributionKeys());
-        List<FieldSchema> fields = PlanUtils.getFieldSchemasFromColumnList(pRS.getConf()
-            .getKeyCols(), "reducesinkkey");
-        TableDesc keyTable = PlanUtils.getReduceKeyTableDesc(fields, pRS.getConf().getOrder(),
-                pRS.getConf().getNullOrder());
-        ArrayList<String> outputKeyCols = Lists.newArrayList();
-        for (int i = 0; i < fields.size(); i++) {
-          outputKeyCols.add(fields.get(i).getName());
+        if (pRS.getConf().getKeyCols() != null && pRS.getConf().getKeyCols().size() == 0
+            && cRS.getConf().getKeyCols() != null && cRS.getConf().getKeyCols().size() == 0) {
+          // As setNumDistributionKeys is a subset of keycols, the size should
+          // be 0 too. This condition maybe too strict. We may extend it in the
+          // future.
+          TableDesc keyTable = PlanUtils.getReduceKeyTableDesc(new ArrayList<FieldSchema>(), pRS
+              .getConf().getOrder(), pRS.getConf().getNullOrder());
+          pRS.getConf().setKeySerializeInfo(keyTable);
         }
-        pRS.getConf().setOutputKeyColumnNames(outputKeyCols);
-        pRS.getConf().setKeySerializeInfo(keyTable);
       }
       return true;
     }
