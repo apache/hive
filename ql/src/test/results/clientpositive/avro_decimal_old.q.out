@@ -44,10 +44,10 @@ POSTHOOK: Input: default@avro_dec_old
 77.3
 55.7
 4.3
-6.0
+6
 12.3
 33.3
-19.0
+19
 3.2
 79.9
 PREHOOK: query: DROP TABLE avro_dec_old
