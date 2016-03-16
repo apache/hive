@@ -202,18 +202,23 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
   @Override
   public void closeOp(boolean abort) throws HiveException {
     try {
-      if (!exception) {
-        FileStatus fss = fs.getFileStatus(outPath);
-        if (!fs.rename(outPath, finalPath)) {
-          throw new IOException(
-              "Unable to rename " + outPath + " to " + finalPath);
+      if (!abort) {
+        // if outPath does not exist, then it means all paths within combine split are skipped as
+        // they are incompatible for merge (for example: files without stripe stats).
+        // Those files will be added to incompatFileSet
+        if (fs.exists(outPath)) {
+          FileStatus fss = fs.getFileStatus(outPath);
+          if (!fs.rename(outPath, finalPath)) {
+            throw new IOException(
+                "Unable to rename " + outPath + " to " + finalPath);
+          }
+          LOG.info("renamed path " + outPath + " to " + finalPath + " . File" +
+              " size is "
+              + fss.getLen());
         }
-        LOG.info("renamed path " + outPath + " to " + finalPath + " . File" +
-            " size is "
-            + fss.getLen());
 
         // move any incompatible files to final path
-        if (!incompatFileSet.isEmpty()) {
+        if (incompatFileSet != null && !incompatFileSet.isEmpty()) {
           for (Path incompatFile : incompatFileSet) {
             Path destDir = finalPath.getParent();
             try {

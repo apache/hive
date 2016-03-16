@@ -221,22 +221,22 @@ public class OrcFileMergeOperator extends
 
   @Override
   public void closeOp(boolean abort) throws HiveException {
-    // close writer
-    if (outWriter == null) {
-      return;
-    }
-
     try {
       if (fdis != null) {
         fdis.close();
         fdis = null;
       }
 
-      outWriter.close();
-      outWriter = null;
+      if (outWriter != null) {
+        outWriter.close();
+        outWriter = null;
+      }
     } catch (Exception e) {
       throw new HiveException("Unable to close OrcFileMergeOperator", e);
     }
+
+    // When there are no exceptions, this has to be called always to make sure incompatible files
+    // are moved properly to the destination path
     super.closeOp(abort);
   }
 }
