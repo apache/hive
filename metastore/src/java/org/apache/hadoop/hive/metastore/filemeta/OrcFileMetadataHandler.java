@@ -23,6 +23,7 @@ import java.nio.ByteBuffer;
 import java.util.List;
 
 import org.apache.hadoop.hive.metastore.FileMetadataHandler;
+import org.apache.hadoop.hive.metastore.Metastore.SplitInfos;
 import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 
@@ -44,11 +45,21 @@ public class OrcFileMetadataHandler extends FileMetadataHandler {
     }
     getStore().getFileMetadata(fileIds, metadatas);
     for (int i = 0; i < metadatas.length;  ++i) {
+      eliminated[i] = false;
+      results[i] = null;
       if (metadatas[i] == null) continue;
-      ByteBuffer result = getFileFormatProxy().applySargToMetadata(sarg, metadatas[i]);
+      ByteBuffer metadata = metadatas[i].duplicate(); // Duplicate to avoid modification.
+      SplitInfos result = null;
+      try {
+        result = getFileFormatProxy().applySargToMetadata(sarg, metadata);
+      } catch (IOException ex) {
+        LOG.error("Failed to apply SARG to metadata", ex);
+        metadatas[i] = null;
+        continue;
+      }
       eliminated[i] = (result == null);
       if (!eliminated[i]) {
-        results[i] = result;
+        results[i] = ByteBuffer.wrap(result.toByteArray());
       }
     }
   }

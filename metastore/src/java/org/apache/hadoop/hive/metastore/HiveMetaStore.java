@@ -5947,17 +5947,16 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       boolean[] eliminated = new boolean[fileIds.size()];
 
       getMS().getFileMetadataByExpr(fileIds, type, req.getExpr(), metadatas, ppdResults, eliminated);
-      for (int i = 0; i < metadatas.length; ++i) {
-        long fileId = fileIds.get(i);
-        ByteBuffer metadata = metadatas[i];
-        if (metadata == null) continue;
-        metadata = (eliminated[i] || !needMetadata) ? null
-            : handleReadOnlyBufferForThrift(metadata);
+      for (int i = 0; i < fileIds.size(); ++i) {
+        if (!eliminated[i] && ppdResults[i] == null) continue; // No metadata => no ppd.
         MetadataPpdResult mpr = new MetadataPpdResult();
-        ByteBuffer bitset = eliminated[i] ? null : handleReadOnlyBufferForThrift(ppdResults[i]);
-        mpr.setMetadata(metadata);
-        mpr.setIncludeBitset(bitset);
-        result.putToMetadata(fileId, mpr);
+        ByteBuffer ppdResult = eliminated[i] ? null : handleReadOnlyBufferForThrift(ppdResults[i]);
+        mpr.setIncludeBitset(ppdResult);
+        if (needMetadata) {
+          ByteBuffer metadata = eliminated[i] ? null : handleReadOnlyBufferForThrift(metadatas[i]);
+          mpr.setMetadata(metadata);
+        }
+        result.putToMetadata(fileIds.get(i), mpr);
       }
       if (!result.isSetMetadata()) {
         result.setMetadata(EMPTY_MAP_FM2); // Set the required field.

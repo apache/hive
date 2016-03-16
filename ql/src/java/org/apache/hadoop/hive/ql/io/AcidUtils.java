@@ -481,7 +481,7 @@ public class AcidUtils {
       try {
         childrenWithId = SHIMS.listLocatedHdfsStatus(fs, directory, hiddenFileFilter);
       } catch (Throwable t) {
-        LOG.error("Failed to get files with ID; using regular API", t);
+        LOG.error("Failed to get files with ID; using regular API: " + t.getMessage());
         useFileIds = false;
       }
     }
@@ -648,7 +648,7 @@ public class AcidUtils {
       try {
         childrenWithId = SHIMS.listLocatedHdfsStatus(fs, stat.getPath(), hiddenFileFilter);
       } catch (Throwable t) {
-        LOG.error("Failed to get files with ID; using regular API", t);
+        LOG.error("Failed to get files with ID; using regular API: " + t.getMessage());
         useFileIds = false;
       }
     }

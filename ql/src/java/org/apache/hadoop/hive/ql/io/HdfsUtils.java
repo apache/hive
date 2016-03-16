@@ -47,6 +47,23 @@ public class HdfsUtils {
     return new SyntheticFileId(path, fs.getLen(), fs.getModificationTime());
   }
 
+  public static long createFileId(String pathStr, FileStatus fs, boolean doLog, String fsName) {
+    int nameHash = pathStr.hashCode();
+    long fileSize = fs.getLen(), modTime = fs.getModificationTime();
+    int fileSizeHash = (int)(fileSize ^ (fileSize >>> 32)),
+        modTimeHash = (int)(modTime ^ (modTime >>> 32)),
+        combinedHash = modTimeHash ^ fileSizeHash;
+    long id = (((long)nameHash & 0xffffffffL) << 32) | ((long)combinedHash & 0xffffffffL);
+    if (doLog) {
+      LOG.warn("Cannot get unique file ID from " + fsName + "; using " + id
+          + " (" + pathStr + "," + nameHash + "," + fileSize + ")");
+    }
+    return id;
+  }
+
+
+
+
   // TODO: this relies on HDFS not changing the format; we assume if we could get inode ID, this
   //       is still going to work. Otherwise, file IDs can be turned off. Later, we should use
   //       as public utility method in HDFS to obtain the inode-based path.

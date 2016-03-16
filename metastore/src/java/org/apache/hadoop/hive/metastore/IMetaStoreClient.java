@@ -55,6 +55,7 @@ import org.apache.hadoop.hive.metastore.api.InvalidPartitionException;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.MetadataPpdResult;
 import org.apache.hadoop.hive.metastore.api.NoSuchLockException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
@@ -1533,6 +1534,9 @@ public interface IMetaStoreClient {
    * The metadata that is not cached in metastore may be missing.
    */
   Iterable<Entry<Long, ByteBuffer>> getFileMetadata(List<Long> fileIds) throws TException;
+
+  Iterable<Entry<Long, MetadataPpdResult>> getFileMetadataBySarg(
+      List<Long> fileIds, ByteBuffer sarg, boolean doGetFooters) throws TException;
 
   /**
    * Cleares the file metadata cache for respective file IDs.

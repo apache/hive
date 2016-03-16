@@ -89,6 +89,7 @@ import org.apache.hadoop.hive.metastore.api.HiveObjectType;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.InsertEventRequestData;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
+import org.apache.hadoop.hive.metastore.api.MetadataPpdResult;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Order;
@@ -3485,9 +3486,18 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
   public Iterable<Map.Entry<Long, ByteBuffer>> getFileMetadata(
-      List<Long> fileIds, Configuration conf) throws HiveException {
+      List<Long> fileIds) throws HiveException {
     try {
       return getMSC().getFileMetadata(fileIds);
+    } catch (TException e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public Iterable<Map.Entry<Long, MetadataPpdResult>> getFileMetadataByExpr(
+      List<Long> fileIds, ByteBuffer sarg, boolean doGetFooters) throws HiveException {
+    try {
+      return getMSC().getFileMetadataBySarg(fileIds, sarg, doGetFooters);
     } catch (TException e) {
       throw new HiveException(e);
     }

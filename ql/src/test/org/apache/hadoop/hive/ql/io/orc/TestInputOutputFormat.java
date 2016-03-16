@@ -65,12 +65,12 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
-import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
+import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat.Context;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat.SplitStrategy;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
@@ -1113,7 +1113,7 @@ public class TestInputOutputFormat {
     OrcInputFormat.Context context = new OrcInputFormat.Context(conf);
     OrcInputFormat.SplitGenerator splitter =
         new OrcInputFormat.SplitGenerator(new OrcInputFormat.SplitInfo(context, fs,
-            AcidUtils.createOriginalObj(null, fs.getFileStatus(new Path("/a/file"))), null, true,
+            fs.getFileStatus(new Path("/a/file")), null, true,
             new ArrayList<AcidInputFormat.DeltaMetaData>(), true, null, null), null, true);
     OrcSplit result = splitter.createSplit(0, 200, null);
     assertEquals(0, result.getStart());
@@ -1154,7 +1154,7 @@ public class TestInputOutputFormat {
     OrcInputFormat.Context context = new OrcInputFormat.Context(conf);
     OrcInputFormat.SplitGenerator splitter =
         new OrcInputFormat.SplitGenerator(new OrcInputFormat.SplitInfo(context, fs,
-            AcidUtils.createOriginalObj(null, fs.getFileStatus(new Path("/a/file"))), null, true,
+            fs.getFileStatus(new Path("/a/file")), null, true,
             new ArrayList<AcidInputFormat.DeltaMetaData>(), true, null, null), null, true);
     List<OrcSplit> results = splitter.call();
     OrcSplit result = results.get(0);
@@ -1177,7 +1177,7 @@ public class TestInputOutputFormat {
     HiveConf.setLongVar(conf, HiveConf.ConfVars.MAPREDMINSPLITSIZE, 0);
     context = new OrcInputFormat.Context(conf);
     splitter = new OrcInputFormat.SplitGenerator(new OrcInputFormat.SplitInfo(context, fs,
-      AcidUtils.createOriginalObj(null, fs.getFileStatus(new Path("/a/file"))), null, true,
+      fs.getFileStatus(new Path("/a/file")), null, true,
         new ArrayList<AcidInputFormat.DeltaMetaData>(), true, null, null), null, true);
     results = splitter.call();
     for(int i=0; i < stripeSizes.length; ++i) {
@@ -2165,7 +2165,7 @@ public class TestInputOutputFormat {
         ugi.doAs(new PrivilegedExceptionAction<Void>() {
           @Override
           public Void run() throws Exception {
-            OrcInputFormat.generateSplitsInfo(conf, -1);
+            OrcInputFormat.generateSplitsInfo(conf, new Context(conf, -1, null));
             return null;
           }
         });
@@ -2184,7 +2184,7 @@ public class TestInputOutputFormat {
       }
       assertEquals(1, OrcInputFormat.Context.getCurrentThreadPoolSize());
       FileInputFormat.setInputPaths(conf, "mock:/ugi/2");
-      List<OrcSplit> splits = OrcInputFormat.generateSplitsInfo(conf, -1);
+      List<OrcSplit> splits = OrcInputFormat.generateSplitsInfo(conf, new Context(conf, -1, null));
       assertEquals(1, splits.size());
     } finally {
       MockFileSystem.clearGlobalFiles();

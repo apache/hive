@@ -29,16 +29,19 @@ import org.apache.hadoop.hive.metastore.Metastore.SplitInfos;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.orc.OrcProto;
 import org.apache.orc.StripeInformation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** File format proxy for ORC. */
 public class OrcFileFormatProxy implements FileFormatProxy {
+  private static final Logger LOG = LoggerFactory.getLogger(OrcFileFormatProxy.class);
 
   @Override
-  public ByteBuffer applySargToMetadata(
-      SearchArgument sarg, ByteBuffer byteBuffer) throws IOException {
+  public SplitInfos applySargToMetadata(
+      SearchArgument sarg, ByteBuffer fileMetadata) throws IOException {
     // TODO: ideally we should store shortened representation of only the necessary fields
     //       in HBase; it will probably require custom SARG application code.
-    ReaderImpl.FooterInfo fi = ReaderImpl.extractMetaInfoFromFooter(byteBuffer, null);
+    ReaderImpl.FooterInfo fi = ReaderImpl.extractMetaInfoFromFooter(fileMetadata, null);
     OrcProto.Footer footer = fi.getFooter();
     int stripeCount = footer.getStripesCount();
     boolean[] result = OrcInputFormat.pickStripesViaTranslatedSarg(
@@ -52,10 +55,13 @@ public class OrcFileFormatProxy implements FileFormatProxy {
       if (result != null && !result[i]) continue;
       isEliminated = false;
       StripeInformation si = stripes.get(i);
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("PPD is adding a split " + i + ": " + si.getOffset() + ", " + si.getLength());
+      }
       sb.addInfos(SplitInfo.newBuilder().setIndex(i)
           .setOffset(si.getOffset()).setLength(si.getLength()));
     }
-    return isEliminated ? null : ByteBuffer.wrap(sb.build().toByteArray());
+    return isEliminated ? null : sb.build();
   }
 
   public ByteBuffer[] getAddedColumnsToCache() {

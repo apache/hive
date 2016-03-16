@@ -171,7 +171,6 @@ final class SearchArgumentImpl implements SearchArgument {
     }
   }
 
-
   private final List<PredicateLeaf> leaves;
   private final ExpressionTree expression;
 

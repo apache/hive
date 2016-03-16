@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.metastore.Metastore.SplitInfos;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 
 /**
@@ -33,11 +34,10 @@ public interface FileFormatProxy {
   /**
    * Applies SARG to file metadata, and produces some result for this file.
    * @param sarg SARG
-   * @param byteBuffer File metadata from metastore cache.
+   * @param fileMetadata File metadata from metastore cache.
    * @return The result to return to client for this file, or null if file is eliminated.
-   * @throws IOException
    */
-  ByteBuffer applySargToMetadata(SearchArgument sarg, ByteBuffer byteBuffer) throws IOException;
+  SplitInfos applySargToMetadata(SearchArgument sarg, ByteBuffer fileMetadata) throws IOException;
 
   /**
    * @param fs The filesystem of the file.
