@@ -179,5 +179,20 @@ public class MiniHiveKdc {
         withMiniKdc(hivePrincipal, hiveKeytab).build();
   }
 
+  /**
+   * Create a MiniHS2 with the hive service principal and keytab in MiniHiveKdc
+   * @param miniHiveKdc
+   * @param hiveConf
+   * @return new MiniHS2 instance
+   * @throws Exception
+   */
+  public static MiniHS2 getMiniHS2WithKerbWithRemoteHMS(MiniHiveKdc miniHiveKdc, HiveConf hiveConf) throws Exception {
+    String hivePrincipal =
+        miniHiveKdc.getFullyQualifiedServicePrincipal(MiniHiveKdc.HIVE_SERVICE_PRINCIPAL);
+    String hiveKeytab = miniHiveKdc.getKeyTabFile(
+        miniHiveKdc.getServicePrincipalForUser(MiniHiveKdc.HIVE_SERVICE_PRINCIPAL));
 
+    return new MiniHS2.Builder().withConf(hiveConf).withRemoteMetastore().
+        withMiniKdc(hivePrincipal, hiveKeytab).build();
+  }
 }

@@ -63,6 +63,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 import javax.security.sasl.Sasl;
 import javax.security.sasl.SaslException;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
@@ -176,6 +177,13 @@ public class HiveConnection implements java.sql.Connection {
   }
 
   private void openTransport() throws SQLException {
+    int numRetries = 0;
+    int maxRetries = 1;
+    try {
+      maxRetries = Integer.parseInt(sessConfMap.get(JdbcConnectionParams.RETRIES));
+    } catch(NumberFormatException e) {
+    }
+
     while (true) {
       try {
         assumeSubject =
@@ -208,8 +216,15 @@ public class HiveConnection implements java.sql.Connection {
         } else {
           LOG.info("Transport Used for JDBC connection: " +
             sessConfMap.get(JdbcConnectionParams.TRANSPORT_MODE));
-          throw new SQLException("Could not open client transport with JDBC Uri: " + jdbcUriString
-              + ": " + e.getMessage(), " 08S01", e);
+
+          // Retry maxRetries times
+          String errMsg = "Could not open client transport with JDBC Uri: " +
+              jdbcUriString + ": " + e.getMessage();
+          if (++numRetries >= maxRetries) {
+            throw new SQLException(errMsg, " 08S01", e);
+          } else {
+            LOG.warn(errMsg + " Retrying " + numRetries + " of " + maxRetries);
+          }
         }
       }
     }
@@ -296,8 +311,14 @@ public class HiveConnection implements java.sql.Connection {
           new HttpKerberosRequestInterceptor(sessConfMap.get(JdbcConnectionParams.AUTH_PRINCIPAL),
               host, getServerHttpUrl(useSsl), assumeSubject, cookieStore, cookieName, useSsl,
               additionalHttpHeaders);
-    }
-    else {
+    } else {
+      // Check for delegation token, if present add it in the header
+      String tokenStr = getClientDelegationToken(sessConfMap);
+      if (tokenStr != null) {
+        requestInterceptor =
+            new HttpTokenAuthInterceptor(tokenStr, cookieStore, cookieName, useSsl,
+                additionalHttpHeaders);
+      } else {
       /**
        * Add an interceptor to pass username/password in the header.
        * In https mode, the entire information is encrypted
@@ -305,6 +326,7 @@ public class HiveConnection implements java.sql.Connection {
       requestInterceptor = new HttpBasicAuthInterceptor(getUserName(), getPassword(),
                                                         cookieStore, cookieName, useSsl,
                                                         additionalHttpHeaders);
+      }
     }
     // Configure http client for cookie based authentication
     if (isCookieEnabled) {

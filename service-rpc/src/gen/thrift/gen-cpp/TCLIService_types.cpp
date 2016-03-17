@@ -7612,6 +7612,21 @@ void TGetOperationStatusResp::__set_errorMessage(const std::string& val) {
 __isset.errorMessage = true;
 }
 
+void TGetOperationStatusResp::__set_taskStatus(const std::string& val) {
+  this->taskStatus = val;
+__isset.taskStatus = true;
+}
+
+void TGetOperationStatusResp::__set_operationStarted(const int64_t val) {
+  this->operationStarted = val;
+__isset.operationStarted = true;
+}
+
+void TGetOperationStatusResp::__set_operationCompleted(const int64_t val) {
+  this->operationCompleted = val;
+__isset.operationCompleted = true;
+}
+
 uint32_t TGetOperationStatusResp::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
@@ -7676,6 +7691,30 @@ uint32_t TGetOperationStatusResp::read(::apache::thrift::protocol::TProtocol* ip
           xfer += iprot->skip(ftype);
         }
         break;
+      case 6:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->taskStatus);
+          this->__isset.taskStatus = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 7:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->operationStarted);
+          this->__isset.operationStarted = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 8:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->operationCompleted);
+          this->__isset.operationCompleted = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -7719,6 +7758,21 @@ uint32_t TGetOperationStatusResp::write(::apache::thrift::protocol::TProtocol* o
     xfer += oprot->writeString(this->errorMessage);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.taskStatus) {
+    xfer += oprot->writeFieldBegin("taskStatus", ::apache::thrift::protocol::T_STRING, 6);
+    xfer += oprot->writeString(this->taskStatus);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.operationStarted) {
+    xfer += oprot->writeFieldBegin("operationStarted", ::apache::thrift::protocol::T_I64, 7);
+    xfer += oprot->writeI64(this->operationStarted);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.operationCompleted) {
+    xfer += oprot->writeFieldBegin("operationCompleted", ::apache::thrift::protocol::T_I64, 8);
+    xfer += oprot->writeI64(this->operationCompleted);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -7731,6 +7785,9 @@ void swap(TGetOperationStatusResp &a, TGetOperationStatusResp &b) {
   swap(a.sqlState, b.sqlState);
   swap(a.errorCode, b.errorCode);
   swap(a.errorMessage, b.errorMessage);
+  swap(a.taskStatus, b.taskStatus);
+  swap(a.operationStarted, b.operationStarted);
+  swap(a.operationCompleted, b.operationCompleted);
   swap(a.__isset, b.__isset);
 }
 
@@ -7740,6 +7797,9 @@ TGetOperationStatusResp::TGetOperationStatusResp(const TGetOperationStatusResp& 
   sqlState = other263.sqlState;
   errorCode = other263.errorCode;
   errorMessage = other263.errorMessage;
+  taskStatus = other263.taskStatus;
+  operationStarted = other263.operationStarted;
+  operationCompleted = other263.operationCompleted;
   __isset = other263.__isset;
 }
 TGetOperationStatusResp& TGetOperationStatusResp::operator=(const TGetOperationStatusResp& other264) {
@@ -7748,6 +7808,9 @@ TGetOperationStatusResp& TGetOperationStatusResp::operator=(const TGetOperationS
   sqlState = other264.sqlState;
   errorCode = other264.errorCode;
   errorMessage = other264.errorMessage;
+  taskStatus = other264.taskStatus;
+  operationStarted = other264.operationStarted;
+  operationCompleted = other264.operationCompleted;
   __isset = other264.__isset;
   return *this;
 }
@@ -7759,6 +7822,9 @@ void TGetOperationStatusResp::printTo(std::ostream& out) const {
   out << ", " << "sqlState="; (__isset.sqlState ? (out << to_string(sqlState)) : (out << "<null>"));
   out << ", " << "errorCode="; (__isset.errorCode ? (out << to_string(errorCode)) : (out << "<null>"));
   out << ", " << "errorMessage="; (__isset.errorMessage ? (out << to_string(errorMessage)) : (out << "<null>"));
+  out << ", " << "taskStatus="; (__isset.taskStatus ? (out << to_string(taskStatus)) : (out << "<null>"));
+  out << ", " << "operationStarted="; (__isset.operationStarted ? (out << to_string(operationStarted)) : (out << "<null>"));
+  out << ", " << "operationCompleted="; (__isset.operationCompleted ? (out << to_string(operationCompleted)) : (out << "<null>"));
   out << ")";
 }
 

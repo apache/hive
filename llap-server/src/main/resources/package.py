@@ -37,6 +37,12 @@ class LlapResource(object):
 		self.container_cores = self.cores
 		self.heap_size = h
 
+		if (not config.get("hive.llap.daemon.queue.name","")):
+			self.queueString = ""
+		else:
+			self.queueString = "--queue "
+			self.queueString += config["hive.llap.daemon.queue.name"]
+
 	def __repr__(self):
 		return "<LlapResource heap=%d container=%d>" % (self.heap_size, self.container_size)
 
@@ -61,6 +67,7 @@ def main(args):
 	parser.add_argument("--name", default="llap0")
 	parser.add_argument("--loglevel", default="INFO")
 	parser.add_argument("--chaosmonkey", type=int, default=0)
+	parser.add_argument("--slider-am-container-mb", type=int, default=1024)
 	parser.add_argument("--slider-keytab-dir", default="")
 	parser.add_argument("--slider-keytab", default="")
 	parser.add_argument("--slider-principal", default="")
@@ -71,6 +78,7 @@ def main(args):
 	(args, unknown_args) = parser.parse_known_args(args)
 	input = args.input
 	output = args.output
+	slider_am_jvm_heapsize = max(args.slider_am_container_mb * 0.8, args.slider_am_container_mb - 1024)
 	slider_keytab_dir = args.slider_keytab_dir
 	slider_keytab = args.slider_keytab
 	slider_principal = args.slider_principal
@@ -103,9 +111,12 @@ def main(args):
 		"name" : args.name,
 		"daemon_args" : args.args,
 		"daemon_loglevel" : args.loglevel,
+		"queue.string" : resource.queueString,
 		"monkey_interval" : args.chaosmonkey,
 		"monkey_percentage" : monkey_percentage,
 		"monkey_enabled" : args.chaosmonkey > 0,
+		"slider.am.container.mb" : args.slider_am_container_mb,
+		"slider_am_jvm_heapsize" : slider_am_jvm_heapsize,
 		"slider_keytab_dir" : slider_keytab_dir,
 		"slider_keytab" : slider_keytab,
 		"slider_principal" : slider_principal

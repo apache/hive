@@ -45,6 +45,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@rcfile_default_format_ctas
+POSTHOOK: Lineage: rcfile_default_format_ctas.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: rcfile_default_format_ctas.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE FORMATTED rcfile_default_format_ctas
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@rcfile_default_format_ctas
@@ -141,6 +143,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@rcfile_default_format_ctas
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@textfile_default_format_ctas
+POSTHOOK: Lineage: textfile_default_format_ctas.key SIMPLE [(rcfile_default_format_ctas)rcfile_default_format_ctas.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: textfile_default_format_ctas.value SIMPLE [(rcfile_default_format_ctas)rcfile_default_format_ctas.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: DESCRIBE FORMATTED textfile_default_format_ctas
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@textfile_default_format_ctas
@@ -186,6 +190,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@rcfile_default_format_ctas
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@rcfile_default_format_ctas_default_serde
+POSTHOOK: Lineage: rcfile_default_format_ctas_default_serde.key SIMPLE [(rcfile_default_format_ctas)rcfile_default_format_ctas.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: rcfile_default_format_ctas_default_serde.value SIMPLE [(rcfile_default_format_ctas)rcfile_default_format_ctas.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: DESCRIBE FORMATTED rcfile_default_format_ctas_default_serde
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@rcfile_default_format_ctas_default_serde
@@ -268,6 +274,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@rcfile_default_format_ctas
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@rcfile_ctas_default_serde
+POSTHOOK: Lineage: rcfile_ctas_default_serde.key SIMPLE [(rcfile_default_format_ctas)rcfile_default_format_ctas.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: rcfile_ctas_default_serde.value SIMPLE [(rcfile_default_format_ctas)rcfile_default_format_ctas.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: DESCRIBE FORMATTED rcfile_ctas_default_serde
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@rcfile_ctas_default_serde

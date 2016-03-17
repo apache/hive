@@ -36,6 +36,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@parquet_map_of_arrays_of_ints
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_map_of_arrays_of_ints_copy
+POSTHOOK: Lineage: parquet_map_of_arrays_of_ints_copy.examples SIMPLE [(parquet_map_of_arrays_of_ints)parquet_map_of_arrays_of_ints.FieldSchema(name:examples, type:map<string,array<int>>, comment:null), ]
 PREHOOK: query: SELECT * FROM parquet_map_of_arrays_of_ints_copy
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_map_of_arrays_of_ints_copy

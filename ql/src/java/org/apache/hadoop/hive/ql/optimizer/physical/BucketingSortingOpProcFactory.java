@@ -548,7 +548,8 @@ public class BucketingSortingOpProcFactory {
       if (index < 0) {
         break;
       }
-      sortCols.add(new SortCol(((ExprNodeColumnDesc) keyCol).getColumn(), index, sortOrder.charAt(i)));
+      sortCols.add(new SortCol(((ExprNodeColumnDesc) keyCol).getColumn(), index,
+              sortOrder.charAt(i)));
     }
     // If the sorted columns can't all be found in the values then the data is only sorted on
     // the columns seen up until now

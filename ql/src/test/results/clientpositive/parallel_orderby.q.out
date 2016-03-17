@@ -91,6 +91,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src5
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@total_ordered
+POSTHOOK: Lineage: total_ordered.key SIMPLE [(src5)src5.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: total_ordered.value SIMPLE [(src5)src5.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: desc formatted total_ordered
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@total_ordered
@@ -204,6 +206,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src5
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@total_ordered
+POSTHOOK: Lineage: total_ordered.key SIMPLE [(src5)src5.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: total_ordered.value SIMPLE [(src5)src5.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: desc formatted total_ordered
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@total_ordered

@@ -201,7 +201,8 @@ public class ReduceSinkDeDuplication extends Transform {
           return false;
         }
 
-        Integer moveRSOrderTo = checkOrder(cRSc.getOrder(), pRSNc.getOrder());
+        Integer moveRSOrderTo = checkOrder(cRSc.getOrder(), pRSNc.getOrder(),
+                cRSc.getNullOrder(), pRSNc.getNullOrder());
         if (moveRSOrderTo == null) {
           return false;
         }
@@ -298,6 +299,7 @@ public class ReduceSinkDeDuplication extends Transform {
               "Try set " + HiveConf.ConfVars.HIVEOPTREDUCEDEDUPLICATION + "=false;");
         }
         pRS.getConf().setOrder(cRS.getConf().getOrder());
+        pRS.getConf().setNullOrder(cRS.getConf().getNullOrder());
       }
 
       if (result[3] > 0) {
@@ -310,16 +312,15 @@ public class ReduceSinkDeDuplication extends Transform {
       if (result[4] > 0) {
         // This case happens only when pRS key is empty in which case we can use
         // number of distribution keys and key serialization info from cRS
-        pRS.getConf().setNumDistributionKeys(cRS.getConf().getNumDistributionKeys());
-        List<FieldSchema> fields = PlanUtils.getFieldSchemasFromColumnList(pRS.getConf()
-            .getKeyCols(), "reducesinkkey");
-        TableDesc keyTable = PlanUtils.getReduceKeyTableDesc(fields, pRS.getConf().getOrder());
-        ArrayList<String> outputKeyCols = Lists.newArrayList();
-        for (int i = 0; i < fields.size(); i++) {
-          outputKeyCols.add(fields.get(i).getName());
+        if (pRS.getConf().getKeyCols() != null && pRS.getConf().getKeyCols().size() == 0
+            && cRS.getConf().getKeyCols() != null && cRS.getConf().getKeyCols().size() == 0) {
+          // As setNumDistributionKeys is a subset of keycols, the size should
+          // be 0 too. This condition maybe too strict. We may extend it in the
+          // future.
+          TableDesc keyTable = PlanUtils.getReduceKeyTableDesc(new ArrayList<FieldSchema>(), pRS
+              .getConf().getOrder(), pRS.getConf().getNullOrder());
+          pRS.getConf().setKeySerializeInfo(keyTable);
         }
-        pRS.getConf().setOutputKeyColumnNames(outputKeyCols);
-        pRS.getConf().setKeySerializeInfo(keyTable);
       }
       return true;
     }
@@ -337,7 +338,8 @@ public class ReduceSinkDeDuplication extends Transform {
         throws SemanticException {
       ReduceSinkDesc cConf = cRS.getConf();
       ReduceSinkDesc pConf = pRS.getConf();
-      Integer moveRSOrderTo = checkOrder(cConf.getOrder(), pConf.getOrder());
+      Integer moveRSOrderTo = checkOrder(cConf.getOrder(), pConf.getOrder(),
+              cConf.getNullOrder(), pConf.getNullOrder());
       if (moveRSOrderTo == null) {
         return null;
       }
@@ -447,7 +449,10 @@ public class ReduceSinkDeDuplication extends Transform {
     }
 
     // order of overlapping keys should be exactly the same
-    protected Integer checkOrder(String corder, String porder) {
+    protected Integer checkOrder(String corder, String porder,
+            String cNullOrder, String pNullOrder) {
+      assert corder.length() == cNullOrder.length();
+      assert porder.length() == pNullOrder.length();
       if (corder == null || corder.trim().equals("")) {
         if (porder == null || porder.trim().equals("")) {
           return 0;
@@ -459,8 +464,11 @@ public class ReduceSinkDeDuplication extends Transform {
       }
       corder = corder.trim();
       porder = porder.trim();
+      cNullOrder = cNullOrder.trim();
+      pNullOrder = pNullOrder.trim();
       int target = Math.min(corder.length(), porder.length());
-      if (!corder.substring(0, target).equals(porder.substring(0, target))) {
+      if (!corder.substring(0, target).equals(porder.substring(0, target)) ||
+              !cNullOrder.substring(0, target).equals(pNullOrder.substring(0, target))) {
         return null;
       }
       return Integer.valueOf(corder.length()).compareTo(porder.length());

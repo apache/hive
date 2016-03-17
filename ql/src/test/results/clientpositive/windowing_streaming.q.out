@@ -84,7 +84,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col1
+                  order by: _col1 ASC NULLS FIRST
                   partition by: _col2
                   raw input shape:
                   window functions:
@@ -155,7 +155,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col1
+                  order by: _col1 ASC NULLS FIRST
                   partition by: _col2
                   raw input shape:
                   window functions:
@@ -324,7 +324,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col5
+                  order by: _col5 ASC NULLS FIRST
                   partition by: _col0
                   raw input shape:
                   window functions:
@@ -373,6 +373,9 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@sB
+POSTHOOK: Lineage: sb.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: sb.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: sb.r SCRIPT [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
 PREHOOK: query: select * from sB
 where ctinyint is null
 PREHOOK: type: QUERY
@@ -441,6 +444,9 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@sD
+POSTHOOK: Lineage: sd.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: sd.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: sd.r SCRIPT [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
 PREHOOK: query: select * from sD
 where ctinyint is null
 PREHOOK: type: QUERY

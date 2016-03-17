@@ -105,7 +105,7 @@ public class HiveSessionImpl implements HiveSession {
   private final Set<OperationHandle> opHandleSet = new HashSet<OperationHandle>();
   private boolean isOperationLogEnabled;
   private File sessionLogDir;
-
+  // TODO: the control flow for this needs to be defined. Hive is supposed to be thread-local.
   private Hive sessionHive;
 
   private volatile long lastAccessTime;
@@ -330,10 +330,7 @@ public class HiveSessionImpl implements HiveSession {
       lastAccessTime = System.currentTimeMillis();
     }
     // set the thread name with the logging prefix.
-    String logPrefix = getHiveConf().getLogIdVar(sessionState.getSessionId());
-    LOG.info(
-        "Prefixing the thread name (" + Thread.currentThread().getName() + ") with " + logPrefix);
-    Thread.currentThread().setName(logPrefix + Thread.currentThread().getName());
+    sessionState.updateThreadName();
     Hive.set(sessionHive);
   }
 
@@ -348,17 +345,7 @@ public class HiveSessionImpl implements HiveSession {
     if (sessionState != null) {
       // can be null in-case of junit tests. skip reset.
       // reset thread name at release time.
-      String[] names = Thread.currentThread().getName()
-          .split(getHiveConf().getLogIdVar(sessionState.getSessionId()));
-      String threadName = null;
-      if (names.length > 1) {
-        threadName = names[names.length - 1];
-      } else if (names.length == 1) {
-        threadName = names[0];
-      } else {
-        threadName = "";
-      }
-      Thread.currentThread().setName(threadName);
+      sessionState.resetThreadName();
     }
 
     SessionState.detachSession();
@@ -827,7 +814,7 @@ public class HiveSessionImpl implements HiveSession {
   public String getDelegationToken(HiveAuthFactory authFactory, String owner, String renewer)
       throws HiveSQLException {
     HiveAuthFactory.verifyProxyAccess(getUserName(), owner, getIpAddress(), getHiveConf());
-    return authFactory.getDelegationToken(owner, renewer);
+    return authFactory.getDelegationToken(owner, renewer, getIpAddress());
   }
 
   @Override

@@ -1324,6 +1324,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:db2
 POSTHOOK: Output: db2@conflict_name
+POSTHOOK: Lineage: conflict_name.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: -- CREATE foreign table
 CREATE TABLE db1.conflict_name AS
 SELECT value FROM db1.src WHERE key = 8
@@ -1338,6 +1339,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: db1@src
 POSTHOOK: Output: database:db1
 POSTHOOK: Output: db1@conflict_name
+POSTHOOK: Lineage: conflict_name.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: -- query tables with the same names in different DBs
 SELECT * FROM (
   SELECT value FROM db1.conflict_name

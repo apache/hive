@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.hive.common.ObjectPair;
-import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.Public;
@@ -54,6 +53,8 @@ import org.apache.hadoop.hive.metastore.api.FireEventResponse;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.GetAllFunctionsResponse;
 import org.apache.hadoop.hive.metastore.api.GetChangeVersionRequest;
+import org.apache.hadoop.hive.metastore.api.GetFileMetadataByExprRequest;
+import org.apache.hadoop.hive.metastore.api.GetFileMetadataByExprResult;
 import org.apache.hadoop.hive.metastore.api.GetFileMetadataRequest;
 import org.apache.hadoop.hive.metastore.api.GetFileMetadataResult;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
@@ -79,6 +80,7 @@ import org.apache.hadoop.hive.metastore.api.InvalidPartitionException;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.MetadataPpdResult;
 import org.apache.hadoop.hive.metastore.api.NoSuchLockException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
@@ -1938,6 +1940,48 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   }
 
   @Override
+  public boolean addToken(String tokenIdentifier, String delegationToken) throws TException {
+     return client.add_token(tokenIdentifier, delegationToken);
+  }
+
+  @Override
+  public boolean removeToken(String tokenIdentifier) throws TException {
+    return client.remove_token(tokenIdentifier);
+  }
+
+  @Override
+  public String getToken(String tokenIdentifier) throws TException {
+    return client.get_token(tokenIdentifier);
+  }
+
+  @Override
+  public List<String> getAllTokenIdentifiers() throws TException {
+    return client.get_all_token_identifiers();
+  }
+
+  @Override
+  public int addMasterKey(String key) throws MetaException, TException {
+    return client.add_master_key(key);
+  }
+
+  @Override
+  public void updateMasterKey(Integer seqNo, String key)
+      throws NoSuchObjectException, MetaException, TException {
+    client.update_master_key(seqNo, key);
+  }
+
+  @Override
+  public boolean removeMasterKey(Integer keySeq) throws TException {
+    return client.remove_master_key(keySeq);
+  }
+
+  @Override
+  public String[] getMasterKeys() throws TException {
+    List<String> keyList = client.get_master_keys();
+    return keyList.toArray(new String[keyList.size()]);
+  }
+
+  @Override
   public ValidTxnList getValidTxns() throws TException {
     return TxnUtils.createValidReadTxnList(client.get_open_txns(), 0);
   }
@@ -2205,13 +2249,46 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
         if (listIndex == fileIds.size()) return null;
         int endIndex = Math.min(listIndex + fileMetadataBatchSize, fileIds.size());
         List<Long> subList = fileIds.subList(listIndex, endIndex);
-        GetFileMetadataRequest req = new GetFileMetadataRequest();
-        req.setFileIds(subList);
-        GetFileMetadataResult resp = client.get_file_metadata(req);
+        GetFileMetadataResult resp = sendGetFileMetadataReq(subList);
+        // TODO: we could remember if it's unsupported and stop sending calls; although, it might
+        //       be a bad idea for HS2+standalone metastore that could be updated with support.
+        //       Maybe we should just remember this for some time.
+        if (!resp.isIsSupported()) return null;
         listIndex = endIndex;
         return resp.getMetadata();
       }
     };
+  }
+
+  private GetFileMetadataResult sendGetFileMetadataReq(List<Long> fileIds) throws TException {
+    return client.get_file_metadata(new GetFileMetadataRequest(fileIds));
+  }
+
+  @Override
+  public Iterable<Entry<Long, MetadataPpdResult>> getFileMetadataBySarg(
+      final List<Long> fileIds, final ByteBuffer sarg, final boolean doGetFooters)
+          throws TException {
+    return new MetastoreMapIterable<Long, MetadataPpdResult>() {
+      private int listIndex = 0;
+      @Override
+      protected Map<Long, MetadataPpdResult> fetchNextBatch() throws TException {
+        if (listIndex == fileIds.size()) return null;
+        int endIndex = Math.min(listIndex + fileMetadataBatchSize, fileIds.size());
+        List<Long> subList = fileIds.subList(listIndex, endIndex);
+        GetFileMetadataByExprResult resp = sendGetFileMetadataBySargReq(
+            sarg, subList, doGetFooters);
+        if (!resp.isIsSupported()) return null;
+        listIndex = endIndex;
+        return resp.getMetadata();
+      }
+    };
+  }
+
+  private GetFileMetadataByExprResult sendGetFileMetadataBySargReq(
+      ByteBuffer sarg, List<Long> fileIds, boolean doGetFooters) throws TException {
+    GetFileMetadataByExprRequest req = new GetFileMetadataByExprRequest(fileIds, sarg);
+    req.setDoGetFooters(doGetFooters); // No need to get footers
+    return client.get_file_metadata_by_expr(req);
   }
 
   public static abstract class MetastoreMapIterable<K, V>

@@ -173,6 +173,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@char_nested_struct
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@char_nested_cta
+POSTHOOK: Lineage: char_nested_cta.c1 SIMPLE [(char_nested_struct)char_nested_struct.FieldSchema(name:c1, type:struct<a:int,b:char(20),c:string>, comment:null), ]
 PREHOOK: query: describe char_nested_cta
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@char_nested_cta
@@ -203,6 +204,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@char_nested_struct
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@char_nested_view
+POSTHOOK: Lineage: char_nested_view.c1 SIMPLE [(char_nested_struct)char_nested_struct.FieldSchema(name:c1, type:struct<a:int,b:char(20),c:string>, comment:null), ]
 PREHOOK: query: describe char_nested_view
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@char_nested_view

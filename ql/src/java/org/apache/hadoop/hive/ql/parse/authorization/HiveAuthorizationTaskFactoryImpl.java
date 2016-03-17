@@ -61,6 +61,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 public class HiveAuthorizationTaskFactoryImpl implements HiveAuthorizationTaskFactory {
 
   private final HiveConf conf;
+  // Assumes one instance of this + single-threaded compilation for each query.
   private final Hive db;
 
   public HiveAuthorizationTaskFactoryImpl(HiveConf conf, Hive db) {

@@ -109,6 +109,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ut
+POSTHOOK: Lineage: ut.key EXPRESSION [(src)s1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ut.value EXPRESSION [(src)s1.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select * from ut order by key, value limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ut
@@ -299,6 +301,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ut
+POSTHOOK: Lineage: ut.cnt EXPRESSION [(src)src.null, ]
 PREHOOK: query: select * from ut order by cnt limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ut
@@ -444,6 +447,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ut
+POSTHOOK: Lineage: ut.skey SIMPLE [(src)s1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ut.ukey EXPRESSION [(src)s1.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: select * from ut order by skey, ukey limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ut
@@ -800,6 +805,9 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ut
+POSTHOOK: Lineage: ut.lkey SIMPLE [(src)s1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ut.skey SIMPLE [(src)s1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ut.ukey EXPRESSION [(src)s1.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: select * from ut order by skey, ukey, lkey limit 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ut
@@ -1054,6 +1062,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ut
+POSTHOOK: Lineage: ut.key EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: select * from ut order by key limit 30
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ut
@@ -1311,6 +1320,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ut
+POSTHOOK: Lineage: ut.skey SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ut.ukey EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: select * from ut order by ukey, skey limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ut

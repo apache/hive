@@ -73,7 +73,7 @@ public class TestHooks {
     Driver driver = createDriver(conf);
     int ret = driver.compile("select 'XXX' from t1");
     assertEquals("Checking command success", 0, ret);
-    assertEquals("select 'AAA' from t1", HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYSTRING));
+    assertEquals("select 'AAA' from t1", conf.getQueryString());
   }
 
   public static class SimpleQueryRedactor extends Redactor {

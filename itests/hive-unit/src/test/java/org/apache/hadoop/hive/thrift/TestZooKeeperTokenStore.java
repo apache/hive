@@ -70,9 +70,9 @@ public class TestZooKeeperTokenStore extends TestCase {
 
   private Configuration createConf(String zkPath) {
     Configuration conf = new Configuration();
-    conf.set(HadoopThriftAuthBridge.Server.DELEGATION_TOKEN_STORE_ZK_CONNECT_STR, "localhost:"
+    conf.set(HiveDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_CONNECT_STR, "localhost:"
         + this.zkPort);
-    conf.set(HadoopThriftAuthBridge.Server.DELEGATION_TOKEN_STORE_ZK_ZNODE, zkPath);
+    conf.set(HiveDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_ZNODE, zkPath);
     return conf;
   }
 
@@ -80,7 +80,7 @@ public class TestZooKeeperTokenStore extends TestCase {
     String ZK_PATH = "/zktokenstore-testTokenStorage";
     ts = new ZooKeeperTokenStore();
     Configuration conf = createConf(ZK_PATH);
-    conf.set(HadoopThriftAuthBridge.Server.DELEGATION_TOKEN_STORE_ZK_ACL, "world:anyone:cdrwa");
+    conf.set(HiveDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_ACL, "world:anyone:cdrwa");
     ts.setConf(conf);
     ts.init(null, ServerMode.METASTORE);
 
@@ -129,7 +129,7 @@ public class TestZooKeeperTokenStore extends TestCase {
     String ZK_PATH = "/zktokenstore-testAclNoAuth";
     Configuration conf = createConf(ZK_PATH);
     conf.set(
-        HadoopThriftAuthBridge.Server.DELEGATION_TOKEN_STORE_ZK_ACL,
+        HiveDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_ACL,
         "ip:127.0.0.1:r");
 
     ts = new ZooKeeperTokenStore();
@@ -147,7 +147,7 @@ public class TestZooKeeperTokenStore extends TestCase {
     String aclString = "sasl:hive/host@TEST.DOMAIN:cdrwa, fail-parse-ignored";
     Configuration conf = createConf(ZK_PATH);
     conf.set(
-        HadoopThriftAuthBridge.Server.DELEGATION_TOKEN_STORE_ZK_ACL,
+        HiveDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_ACL,
         aclString);
 
     List<ACL> aclList = ZooKeeperTokenStore.parseACLs(aclString);
@@ -167,7 +167,7 @@ public class TestZooKeeperTokenStore extends TestCase {
     String ZK_PATH = "/zktokenstore-testAcl";
     Configuration conf = createConf(ZK_PATH);
     conf.set(
-        HadoopThriftAuthBridge.Server.DELEGATION_TOKEN_STORE_ZK_ACL,
+        HiveDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_ACL,
         "ip:127.0.0.1:cdrwa,world:anyone:cdrwa");
     ts = new ZooKeeperTokenStore();
     ts.setConf(conf);

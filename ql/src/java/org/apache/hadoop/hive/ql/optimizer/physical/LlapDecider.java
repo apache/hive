@@ -102,11 +102,14 @@ public class LlapDecider implements PhysicalPlanResolver {
     private final HiveConf conf;
     private final boolean doSkipUdfCheck;
     private final boolean arePermanentFnsAllowed;
+    private final boolean shouldUber;
 
-    public LlapDecisionDispatcher(PhysicalContext pctx) {
+    public LlapDecisionDispatcher(PhysicalContext pctx, LlapMode mode) {
       conf = pctx.getConf();
       doSkipUdfCheck = HiveConf.getBoolVar(conf, ConfVars.LLAP_SKIP_COMPILE_UDF_CHECK);
       arePermanentFnsAllowed = HiveConf.getBoolVar(conf, ConfVars.LLAP_DAEMON_ALLOW_PERMANENT_FNS);
+      // Don't user uber in "all" mode - everything can go into LLAP, which is better than uber.
+      shouldUber = HiveConf.getBoolVar(conf, ConfVars.LLAP_AUTO_ALLOW_UBER) && (mode != all);
     }
 
     @Override
@@ -133,7 +136,7 @@ public class LlapDecider implements PhysicalPlanResolver {
     private void convertWork(TezWork tezWork, BaseWork work)
       throws SemanticException {
 
-      if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_AUTO_ALLOW_UBER)) {
+      if (shouldUber) {
         // let's see if we can go one step further and just uber this puppy
         if (tezWork.getChildren(work).isEmpty()
             && work instanceof ReduceWork
@@ -420,7 +423,7 @@ public class LlapDecider implements PhysicalPlanResolver {
     this.conf = pctx.getConf();
 
     this.mode = LlapMode.valueOf(HiveConf.getVar(conf, HiveConf.ConfVars.LLAP_EXECUTION_MODE));
-    LOG.info("llap mode: "+this.mode);
+    LOG.info("llap mode: " + this.mode);
 
     if (mode == none) {
       LOG.info("LLAP disabled.");
@@ -428,7 +431,7 @@ public class LlapDecider implements PhysicalPlanResolver {
     }
 
     // create dispatcher and graph walker
-    Dispatcher disp = new LlapDecisionDispatcher(pctx);
+    Dispatcher disp = new LlapDecisionDispatcher(pctx, mode);
     TaskGraphWalker ogw = new TaskGraphWalker(disp);
 
     // get all the tasks nodes from root task

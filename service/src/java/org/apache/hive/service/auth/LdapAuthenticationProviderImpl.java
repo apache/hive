@@ -52,8 +52,7 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
   private static List<String> groupFilter;
   private String customQuery;
 
-  LdapAuthenticationProviderImpl() {
-    HiveConf conf = new HiveConf();
+  LdapAuthenticationProviderImpl(HiveConf conf) {
     init(conf);
   }
 

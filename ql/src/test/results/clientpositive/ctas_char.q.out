@@ -42,6 +42,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@ctas_char_1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ctas_char_2
+POSTHOOK: Lineage: ctas_char_2.key SIMPLE [(ctas_char_1)ctas_char_1.FieldSchema(name:key, type:char(10), comment:null), ]
+POSTHOOK: Lineage: ctas_char_2.value SIMPLE [(ctas_char_1)ctas_char_1.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: -- view with char column
 create view ctas_char_3 as select key, value from ctas_char_2
 PREHOOK: type: CREATEVIEW

@@ -35,7 +35,7 @@ import com.google.protobuf.CodedInputStream;
 public abstract class InStream extends InputStream {
 
   private static final Logger LOG = LoggerFactory.getLogger(InStream.class);
-  private static final int PROTOBUF_MESSAGE_MAX_LIMIT = 1024 << 20; // 1GB
+  public static final int PROTOBUF_MESSAGE_MAX_LIMIT = 1024 << 20; // 1GB
 
   protected final String name;
   protected long length;

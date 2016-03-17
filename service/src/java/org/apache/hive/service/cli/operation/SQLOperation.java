@@ -18,17 +18,10 @@
 
 package org.apache.hive.service.cli.operation;
 
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.security.PrivilegedExceptionAction;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -44,6 +37,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.QueryDisplay;
 import org.apache.hadoop.hive.ql.exec.ExplainTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -69,6 +63,9 @@ import org.apache.hive.service.cli.RowSetFactory;
 import org.apache.hive.service.cli.TableSchema;
 import org.apache.hive.service.cli.session.HiveSession;
 import org.apache.hive.service.server.ThreadWithGarbageCleanup;
+import org.codehaus.jackson.JsonGenerationException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
 
 /**
  * SQLOperation.
@@ -128,7 +125,6 @@ public class SQLOperation extends ExecuteStatementOperation {
    */
   public void prepare(HiveConf sqlOperationConf) throws HiveSQLException {
     setState(OperationState.RUNNING);
-
     try {
       driver = new Driver(sqlOperationConf, getParentSession().getUserName());
       sqlOpDisplay.setQueryDisplay(driver.getQueryDisplay());
@@ -387,6 +383,38 @@ public class SQLOperation extends ExecuteStatementOperation {
     }
   }
 
+  @Override
+  public String getTaskStatus() throws HiveSQLException {
+    if (driver != null) {
+      List<QueryDisplay.TaskDisplay> statuses = driver.getQueryDisplay().getTaskDisplays();
+      if (statuses != null) {
+        ByteArrayOutputStream out = null;
+        try {
+          ObjectMapper mapper = new ObjectMapper();
+          out = new ByteArrayOutputStream();
+          mapper.writeValue(out, statuses);
+          return out.toString("UTF-8");
+        } catch (JsonGenerationException e) {
+          throw new HiveSQLException(e);
+        } catch (JsonMappingException e) {
+          throw new HiveSQLException(e);
+        } catch (IOException e) {
+          throw new HiveSQLException(e);
+        } finally {
+          if (out != null) {
+            try {
+              out.close();
+            } catch (IOException e) {
+              throw new HiveSQLException(e);
+            }
+          }
+        }
+      }
+    }
+    // Driver not initialized
+    return null;
+  }
+
   private RowSet decode(List<Object> rows, RowSet rowSet) throws Exception {
     if (driver.isFetchingTable()) {
       return prepareFromRow(rows, rowSet);
@@ -508,6 +536,7 @@ public class SQLOperation extends ExecuteStatementOperation {
 
   @Override
   protected void onNewState(OperationState state, OperationState prevState) {
+    super.onNewState(state, prevState);
     currentSQLStateScope = setMetrics(currentSQLStateScope, MetricsConstant.SQL_OPERATION_PREFIX,
       MetricsConstant.COMPLETED_SQL_OPERATION_PREFIX, state);
 

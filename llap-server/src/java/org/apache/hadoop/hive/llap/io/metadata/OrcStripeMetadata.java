@@ -17,22 +17,21 @@
  */
 package org.apache.hadoop.hive.llap.io.metadata;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
 import org.apache.hadoop.hive.llap.IncrementalObjectSizeEstimator;
 import org.apache.hadoop.hive.llap.IncrementalObjectSizeEstimator.ObjectEstimator;
 import org.apache.hadoop.hive.llap.cache.EvictionDispatcher;
 import org.apache.hadoop.hive.llap.cache.LlapCacheableBuffer;
-import org.apache.orc.impl.MetadataReader;
-import org.apache.orc.impl.OrcIndex;
-import org.apache.orc.StripeInformation;
+import org.apache.hadoop.hive.ql.io.SyntheticFileId;
 import org.apache.hadoop.hive.ql.io.orc.encoded.OrcBatchKey;
 import org.apache.orc.OrcProto;
-
-import com.google.common.annotations.VisibleForTesting;
+import org.apache.orc.StripeInformation;
+import org.apache.orc.impl.MetadataReader;
+import org.apache.orc.impl.OrcIndex;
 
 public class OrcStripeMetadata extends LlapCacheableBuffer {
   private final OrcBatchKey stripeKey;
@@ -46,10 +45,12 @@ public class OrcStripeMetadata extends LlapCacheableBuffer {
   private final static HashMap<Class<?>, ObjectEstimator> SIZE_ESTIMATORS;
   private final static ObjectEstimator SIZE_ESTIMATOR;
   static {
-    OrcStripeMetadata osm = createDummy(0);
+    OrcStripeMetadata osm = createDummy(new SyntheticFileId());
     SIZE_ESTIMATORS = IncrementalObjectSizeEstimator.createEstimators(osm);
     IncrementalObjectSizeEstimator.addEstimator(
         "com.google.protobuf.LiteralByteString", SIZE_ESTIMATORS);
+    // Add long for the regular file ID estimation.
+    IncrementalObjectSizeEstimator.createEstimators(Long.class, SIZE_ESTIMATORS);
     SIZE_ESTIMATOR = SIZE_ESTIMATORS.get(OrcStripeMetadata.class);
   }
 
@@ -65,7 +66,7 @@ public class OrcStripeMetadata extends LlapCacheableBuffer {
     estimatedMemUsage = SIZE_ESTIMATOR.estimate(this, SIZE_ESTIMATORS);
   }
 
-  private OrcStripeMetadata(long id) {
+  private OrcStripeMetadata(Object id) {
     stripeKey = new OrcBatchKey(id, 0, 0);
     encodings = new ArrayList<>();
     streams = new ArrayList<>();
@@ -73,7 +74,7 @@ public class OrcStripeMetadata extends LlapCacheableBuffer {
   }
 
   @VisibleForTesting
-  public static OrcStripeMetadata createDummy(long id) {
+  public static OrcStripeMetadata createDummy(Object id) {
     OrcStripeMetadata dummy = new OrcStripeMetadata(id);
     dummy.encodings.add(OrcProto.ColumnEncoding.getDefaultInstance());
     dummy.streams.add(OrcProto.Stream.getDefaultInstance());

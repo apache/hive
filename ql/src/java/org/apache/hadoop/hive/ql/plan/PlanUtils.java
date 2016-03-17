@@ -23,15 +23,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -39,7 +36,6 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
-import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -67,8 +63,8 @@ import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
-import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
+import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -77,6 +73,8 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * PlanUtils.
@@ -399,7 +397,7 @@ public final class PlanUtils {
    * Generate the table descriptor for reduce key.
    */
   public static TableDesc getReduceKeyTableDesc(List<FieldSchema> fieldSchemas,
-      String order) {
+      String order, String nullOrder) {
     return new TableDesc(
         SequenceFileInputFormat.class, SequenceFileOutputFormat.class,
         Utilities.makeProperties(serdeConstants.LIST_COLUMNS, MetaStoreUtils
@@ -407,6 +405,7 @@ public final class PlanUtils {
         serdeConstants.LIST_COLUMN_TYPES, MetaStoreUtils
         .getColumnTypesFromFieldSchema(fieldSchemas),
         serdeConstants.SERIALIZATION_SORT_ORDER, order,
+        serdeConstants.SERIALIZATION_NULL_SORT_ORDER, nullOrder,
         serdeConstants.SERIALIZATION_LIB, BinarySortableSerDe.class.getName()));
   }
 
@@ -421,8 +420,10 @@ public final class PlanUtils {
       // be broadcast (instead of partitioned). As a consequence we use
       // a different SerDe than in the MR mapjoin case.
       StringBuilder order = new StringBuilder();
+      StringBuilder nullOrder = new StringBuilder();
       for (FieldSchema f: fieldSchemas) {
         order.append("+");
+        nullOrder.append("a");
       }
       return new TableDesc(
           SequenceFileInputFormat.class, SequenceFileOutputFormat.class,
@@ -431,6 +432,7 @@ public final class PlanUtils {
               serdeConstants.LIST_COLUMN_TYPES, MetaStoreUtils
               .getColumnTypesFromFieldSchema(fieldSchemas),
               serdeConstants.SERIALIZATION_SORT_ORDER, order.toString(),
+              serdeConstants.SERIALIZATION_NULL_SORT_ORDER, nullOrder.toString(),
               serdeConstants.SERIALIZATION_LIB, BinarySortableSerDe.class.getName()));
     } else {
       return new TableDesc(SequenceFileInputFormat.class,
@@ -616,15 +618,15 @@ public final class PlanUtils {
   public static ReduceSinkDesc getReduceSinkDesc(
       ArrayList<ExprNodeDesc> keyCols, ArrayList<ExprNodeDesc> valueCols,
       List<String> outputColumnNames, boolean includeKeyCols, int tag,
-      ArrayList<ExprNodeDesc> partitionCols, String order, int numReducers,
-      AcidUtils.Operation writeType) {
+      ArrayList<ExprNodeDesc> partitionCols, String order, String nullOrder,
+      int numReducers, AcidUtils.Operation writeType) {
     return getReduceSinkDesc(keyCols, keyCols.size(), valueCols,
         new ArrayList<List<Integer>>(),
         includeKeyCols ? outputColumnNames.subList(0, keyCols.size()) :
           new ArrayList<String>(),
         includeKeyCols ? outputColumnNames.subList(keyCols.size(),
             outputColumnNames.size()) : outputColumnNames,
-        includeKeyCols, tag, partitionCols, order, numReducers, writeType);
+        includeKeyCols, tag, partitionCols, order, nullOrder, numReducers, writeType);
   }
 
   /**
@@ -661,8 +663,8 @@ public final class PlanUtils {
       List<String> outputKeyColumnNames,
       List<String> outputValueColumnNames,
       boolean includeKeyCols, int tag,
-      ArrayList<ExprNodeDesc> partitionCols, String order, int numReducers,
-      AcidUtils.Operation writeType) {
+      ArrayList<ExprNodeDesc> partitionCols, String order, String nullOrder,
+      int numReducers, AcidUtils.Operation writeType) {
     TableDesc keyTable = null;
     TableDesc valueTable = null;
     ArrayList<String> outputKeyCols = new ArrayList<String>();
@@ -673,11 +675,14 @@ public final class PlanUtils {
       if (order.length() < outputKeyColumnNames.size()) {
         order = order + "+";
       }
-      keyTable = getReduceKeyTableDesc(keySchema, order);
+      if (nullOrder.length() < outputKeyColumnNames.size()) {
+        nullOrder = nullOrder + "a";
+      }
+      keyTable = getReduceKeyTableDesc(keySchema, order, nullOrder);
       outputKeyCols.addAll(outputKeyColumnNames);
     } else {
       keyTable = getReduceKeyTableDesc(getFieldSchemasFromColumnList(
-          keyCols, "reducesinkkey"),order);
+          keyCols, "reducesinkkey"), order, nullOrder);
      for (int i = 0; i < keyCols.size(); i++) {
         outputKeyCols.add("reducesinkkey" + i);
       }
@@ -774,12 +779,14 @@ public final class PlanUtils {
     }
 
     StringBuilder order = new StringBuilder();
+    StringBuilder nullOrder = new StringBuilder();
     for (int i = 0; i < keyCols.size(); i++) {
       order.append("+");
+      nullOrder.append("a");
     }
     return getReduceSinkDesc(keyCols, numKeys, valueCols, distinctColIndices,
         outputKeyColumnNames, outputValueColumnNames, includeKey, tag,
-        partitionCols, order.toString(), numReducers, writeType);
+        partitionCols, order.toString(), nullOrder.toString(), numReducers, writeType);
   }
 
   /**

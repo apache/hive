@@ -32,7 +32,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.shims.ShimLoader;
 
 /**
- * Utility methods for creating and destroying txn database/schema.
+ * Utility methods for creating and destroying txn database/schema, plus methods for
+ * querying against metastore tables.
  * Placed here in a separate class so it can be shared across unit tests.
  */
 public final class TxnDbUtil {
@@ -142,8 +143,13 @@ public final class TxnDbUtil {
 
       conn.commit();
     } catch (SQLException e) {
+      try {
+        conn.rollback();
+      } catch (SQLException re) {
+        System.err.println("Error rolling back: " + re.getMessage());
+      }
+
       // This might be a deadlock, if so, let's retry
-      conn.rollback();
       if (e instanceof SQLTransactionRollbackException && deadlockCnt++ < 5) {
         LOG.warn("Caught deadlock, retrying db creation");
         prepDb();
@@ -219,14 +225,20 @@ public final class TxnDbUtil {
     }
   }
 
-  public static int findNumCurrentLocks() throws Exception {
+  /**
+   * Utility method used to run COUNT queries like "select count(*) from ..." against metastore tables
+   * @param countQuery countQuery text
+   * @return count countQuery result
+   * @throws Exception
+   */
+  public static int countQueryAgent(String countQuery) throws Exception {
     Connection conn = null;
     Statement stmt = null;
     ResultSet rs = null;
     try {
       conn = getConnection();
       stmt = conn.createStatement();
-      rs = stmt.executeQuery("select count(*) from hive_locks");
+      rs = stmt.executeQuery(countQuery);
       if (!rs.next()) {
         return 0;
       }

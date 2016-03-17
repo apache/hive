@@ -28,8 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
@@ -92,16 +90,18 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * BinarySortableSerDe can be used to write data in a way that the data can be
  * compared byte-by-byte with the same order.
  *
- * The data format: NULL: a single byte \0 NON-NULL Primitives: ALWAYS prepend a
- * single byte \1, and then: Boolean: FALSE = \1, TRUE = \2 Byte: flip the
- * sign-bit to make sure negative comes before positive Short: flip the sign-bit
- * to make sure negative comes before positive Int: flip the sign-bit to make
- * sure negative comes before positive Long: flip the sign-bit to make sure
+ * The data format: NULL: a single byte (\0 or \1, check below) NON-NULL Primitives:
+ * ALWAYS prepend a single byte (\0 or \1), and then: Boolean: FALSE = \1, TRUE = \2
+ * Byte: flip the sign-bit to make sure negative comes before positive Short: flip the
+ * sign-bit to make sure negative comes before positive Int: flip the sign-bit to
+ * make sure negative comes before positive Long: flip the sign-bit to make sure
  * negative comes before positive Double: flip the sign-bit for positive double,
  * and all bits for negative double values String: NULL-terminated UTF-8 string,
  * with NULL escaped to \1 \1, and \1 escaped to \1 \2 NON-NULL Complex Types:
@@ -115,13 +115,22 @@ import org.apache.hadoop.io.Writable;
  * field should be sorted ascendingly, and "-" means descendingly. The sub
  * fields in the same top-level field will have the same sort order.
  *
+ * This SerDe takes an additional parameter SERIALIZATION_NULL_SORT_ORDER which is a
+ * string containing only "a" and "z". The length of the string should equal to
+ * the number of fields in the top-level struct for serialization. "a" means that
+ * NULL should come first (thus, single byte is \0 for ascending order, \1
+ * for descending order), while "z" means that NULL should come last (thus, single
+ * byte is \1 for ascending order, \0 for descending order).
  */
 @SerDeSpec(schemaProps = {
     serdeConstants.LIST_COLUMNS, serdeConstants.LIST_COLUMN_TYPES,
-    serdeConstants.SERIALIZATION_SORT_ORDER})
+    serdeConstants.SERIALIZATION_SORT_ORDER, serdeConstants.SERIALIZATION_NULL_SORT_ORDER})
 public class BinarySortableSerDe extends AbstractSerDe {
 
   public static final Logger LOG = LoggerFactory.getLogger(BinarySortableSerDe.class.getName());
+
+  public static final byte ZERO = (byte) 0;
+  public static final byte ONE = (byte) 1;
 
   List<String> columnNames;
   List<TypeInfo> columnTypes;
@@ -130,6 +139,8 @@ public class BinarySortableSerDe extends AbstractSerDe {
   StructObjectInspector rowObjectInspector;
 
   boolean[] columnSortOrderIsDesc;
+  byte[] columnNullMarker;
+  byte[] columnNotNullMarker;
 
   public static Charset decimalCharSet = Charset.forName("US-ASCII");
 
@@ -170,6 +181,37 @@ public class BinarySortableSerDe extends AbstractSerDe {
       columnSortOrderIsDesc[i] = (columnSortOrder != null && columnSortOrder
           .charAt(i) == '-');
     }
+
+    // Null first/last
+    String columnNullOrder = tbl
+        .getProperty(serdeConstants.SERIALIZATION_NULL_SORT_ORDER);
+    columnNullMarker = new byte[columnNames.size()];
+    columnNotNullMarker = new byte[columnNames.size()];
+    for (int i = 0; i < columnSortOrderIsDesc.length; i++) {
+      if (columnSortOrderIsDesc[i]) {
+        // Descending
+        if (columnNullOrder != null && columnNullOrder.charAt(i) == 'a') {
+          // Null first
+          columnNullMarker[i] = ONE;
+          columnNotNullMarker[i] = ZERO;
+        } else {
+          // Null last (default for descending order)
+          columnNullMarker[i] = ZERO;
+          columnNotNullMarker[i] = ONE;
+        }
+      } else {
+        // Ascending
+        if (columnNullOrder != null && columnNullOrder.charAt(i) == 'z') {
+          // Null last
+          columnNullMarker[i] = ONE;
+          columnNotNullMarker[i] = ZERO;
+        } else {
+          // Null first (default for ascending order)
+          columnNullMarker[i] = ZERO;
+          columnNotNullMarker[i] = ONE;
+        }
+      }
+    }
   }
 
   @Override
@@ -193,7 +235,7 @@ public class BinarySortableSerDe extends AbstractSerDe {
     try {
       for (int i = 0; i < columnNames.size(); i++) {
         row.set(i, deserialize(inputByteBuffer, columnTypes.get(i),
-            columnSortOrderIsDesc[i], row.get(i)));
+            columnSortOrderIsDesc[i], columnNullMarker[i], columnNotNullMarker[i], row.get(i)));
       }
     } catch (IOException e) {
       throw new SerDeException(e);
@@ -203,14 +245,14 @@ public class BinarySortableSerDe extends AbstractSerDe {
   }
 
   static Object deserialize(InputByteBuffer buffer, TypeInfo type,
-      boolean invert, Object reuse) throws IOException {
+      boolean invert, byte nullMarker, byte notNullMarker, Object reuse) throws IOException {
 
     // Is this field a null?
     byte isNull = buffer.read(invert);
-    if (isNull == 0) {
+    if (isNull == nullMarker) {
       return null;
     }
-    assert (isNull == 1);
+    assert (isNull == notNullMarker);
 
     switch (type.getCategory()) {
     case PRIMITIVE: {
@@ -475,7 +517,7 @@ public class BinarySortableSerDe extends AbstractSerDe {
         if (size == r.size()) {
           r.add(null);
         }
-        r.set(size, deserialize(buffer, etype, invert, r.get(size)));
+        r.set(size, deserialize(buffer, etype, invert, nullMarker, notNullMarker, r.get(size)));
         size++;
       }
       // Remove additional elements if the list is reused
@@ -506,8 +548,8 @@ public class BinarySortableSerDe extends AbstractSerDe {
         }
         // \1 followed by each key and then each value
         assert (more == 1);
-        Object k = deserialize(buffer, ktype, invert, null);
-        Object v = deserialize(buffer, vtype, invert, null);
+        Object k = deserialize(buffer, ktype, invert, nullMarker, notNullMarker, null);
+        Object v = deserialize(buffer, vtype, invert, nullMarker, notNullMarker, null);
         r.put(k, v);
       }
       return r;
@@ -527,7 +569,7 @@ public class BinarySortableSerDe extends AbstractSerDe {
       // Read one field by one field
       for (int eid = 0; eid < size; eid++) {
         r
-            .set(eid, deserialize(buffer, fieldTypes.get(eid), invert, r
+            .set(eid, deserialize(buffer, fieldTypes.get(eid), invert, nullMarker, notNullMarker, r
             .get(eid)));
       }
       return r;
@@ -540,7 +582,7 @@ public class BinarySortableSerDe extends AbstractSerDe {
       byte tag = buffer.read(invert);
       r.setTag(tag);
       r.setObject(deserialize(buffer, utype.getAllUnionObjectTypeInfos().get(tag),
-          invert, null));
+          invert, nullMarker, notNullMarker, null));
       return r;
     }
     default: {
@@ -626,7 +668,8 @@ public class BinarySortableSerDe extends AbstractSerDe {
 
     for (int i = 0; i < columnNames.size(); i++) {
       serialize(output, soi.getStructFieldData(obj, fields.get(i)),
-          fields.get(i).getFieldObjectInspector(), columnSortOrderIsDesc[i]);
+          fields.get(i).getFieldObjectInspector(), columnSortOrderIsDesc[i],
+          columnNullMarker[i], columnNotNullMarker[i]);
     }
 
     serializeBytesWritable.set(output.getData(), 0, output.getLength());
@@ -641,14 +684,14 @@ public class BinarySortableSerDe extends AbstractSerDe {
   }
 
   static void serialize(ByteStream.Output buffer, Object o, ObjectInspector oi,
-      boolean invert) throws SerDeException {
+      boolean invert, byte nullMarker, byte notNullMarker) throws SerDeException {
     // Is this field a null?
     if (o == null) {
-      writeByte(buffer, (byte) 0, invert);
+      writeByte(buffer, nullMarker, invert);
       return;
     }
     // This field is not a null.
-    writeByte(buffer, (byte) 1, invert);
+    writeByte(buffer, notNullMarker, invert);
 
     switch (oi.getCategory()) {
     case PRIMITIVE: {
@@ -786,7 +829,7 @@ public class BinarySortableSerDe extends AbstractSerDe {
       int size = loi.getListLength(o);
       for (int eid = 0; eid < size; eid++) {
         writeByte(buffer, (byte) 1, invert);
-        serialize(buffer, loi.getListElement(o, eid), eoi, invert);
+        serialize(buffer, loi.getListElement(o, eid), eoi, invert, nullMarker, notNullMarker);
       }
       // and \0 to terminate
       writeByte(buffer, (byte) 0, invert);
@@ -801,8 +844,8 @@ public class BinarySortableSerDe extends AbstractSerDe {
       Map<?, ?> map = moi.getMap(o);
       for (Map.Entry<?, ?> entry : map.entrySet()) {
         writeByte(buffer, (byte) 1, invert);
-        serialize(buffer, entry.getKey(), koi, invert);
-        serialize(buffer, entry.getValue(), voi, invert);
+        serialize(buffer, entry.getKey(), koi, invert, nullMarker, notNullMarker);
+        serialize(buffer, entry.getValue(), voi, invert, nullMarker, notNullMarker);
       }
       // and \0 to terminate
       writeByte(buffer, (byte) 0, invert);
@@ -814,7 +857,7 @@ public class BinarySortableSerDe extends AbstractSerDe {
 
       for (int i = 0; i < fields.size(); i++) {
         serialize(buffer, soi.getStructFieldData(o, fields.get(i)), fields.get(
-            i).getFieldObjectInspector(), invert);
+            i).getFieldObjectInspector(), invert, nullMarker, notNullMarker);
       }
       return;
     }
@@ -823,7 +866,7 @@ public class BinarySortableSerDe extends AbstractSerDe {
       byte tag = uoi.getTag(o);
       writeByte(buffer, tag, invert);
       serialize(buffer, uoi.getField(o), uoi.getObjectInspectors().get(tag),
-          invert);
+          invert, nullMarker, notNullMarker);
       return;
     }
     default: {
@@ -971,13 +1014,24 @@ public class BinarySortableSerDe extends AbstractSerDe {
   }
 
   public static void serializeStruct(Output byteStream, Object[] fieldData,
-      List<ObjectInspector> fieldOis, boolean[] sortableSortOrders) throws SerDeException {
+      List<ObjectInspector> fieldOis, boolean[] sortableSortOrders,
+      byte[] nullMarkers, byte[] notNullMarkers) throws SerDeException {
     for (int i = 0; i < fieldData.length; i++) {
-      serialize(byteStream, fieldData[i], fieldOis.get(i), sortableSortOrders[i]);
+      serialize(byteStream, fieldData[i], fieldOis.get(i), sortableSortOrders[i],
+              nullMarkers[i], notNullMarkers[i]);
     }
   }
 
   public boolean[] getSortOrders() {
     return columnSortOrderIsDesc;
   }
+
+  public byte[] getNullMarkers() {
+    return columnNullMarker;
+  }
+
+  public byte[] getNotNullMarkers() {
+    return columnNotNullMarker;
+  }
+
 }

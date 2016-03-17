@@ -68,7 +68,7 @@ STAGE PLANS:
               predicate: (UDFToDouble(key) = 86.0) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
-                expressions: '86' (type: string), val (type: string)
+                expressions: key (type: string), val (type: string)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator

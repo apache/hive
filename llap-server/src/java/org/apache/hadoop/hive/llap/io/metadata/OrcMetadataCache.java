@@ -27,8 +27,8 @@ import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.ql.io.orc.encoded.OrcBatchKey;
 
 public class OrcMetadataCache {
-  private final ConcurrentHashMap<Long, OrcFileMetadata> metadata =
-      new ConcurrentHashMap<Long, OrcFileMetadata>();
+  private final ConcurrentHashMap<Object, OrcFileMetadata> metadata =
+      new ConcurrentHashMap<Object, OrcFileMetadata>();
   private final ConcurrentHashMap<OrcBatchKey, OrcStripeMetadata> stripeMetadata =
       new ConcurrentHashMap<OrcBatchKey, OrcStripeMetadata>();
   private final MemoryManager memoryManager;
@@ -42,7 +42,7 @@ public class OrcMetadataCache {
   public OrcFileMetadata putFileMetadata(OrcFileMetadata metaData) {
     long memUsage = metaData.getMemoryUsage();
     memoryManager.reserveMemory(memUsage, false);
-    OrcFileMetadata val = metadata.putIfAbsent(metaData.getFileId(), metaData);
+    OrcFileMetadata val = metadata.putIfAbsent(metaData.getFileKey(), metaData);
     // See OrcFileMetadata; it is always unlocked, so we just "touch" it here to simulate use.
     if (val == null) {
       val = metaData;
@@ -75,12 +75,12 @@ public class OrcMetadataCache {
     return stripeMetadata.get(stripeKey);
   }
 
-  public OrcFileMetadata getFileMetadata(long fileId) throws IOException {
-    return metadata.get(fileId);
+  public OrcFileMetadata getFileMetadata(Object fileKey) throws IOException {
+    return metadata.get(fileKey);
   }
 
   public void notifyEvicted(OrcFileMetadata buffer) {
-    metadata.remove(buffer.getFileId());
+    metadata.remove(buffer.getFileKey());
     // See OrcFileMetadata - we don't clear the object, it will be GCed when released by users.
   }
 

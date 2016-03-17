@@ -53,7 +53,7 @@ public class TaskLogProcessor {
   private final String query;
 
   public TaskLogProcessor(JobConf conf) {
-    query = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYSTRING);
+    query = HiveConf.getQueryString(conf);
 
     heuristics.put(new ScriptErrorHeuristic(), new HeuristicStats());
     heuristics.put(new MapAggrMemErrorHeuristic(), new HeuristicStats());

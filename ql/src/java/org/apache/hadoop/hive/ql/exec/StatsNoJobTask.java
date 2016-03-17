@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.io.StatsProvidingRecordReader;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -96,6 +97,7 @@ public class StatsNoJobTask extends Task<StatsNoJobWork> implements Serializable
 
     String tableName = "";
     ExecutorService threadPool = null;
+    Hive db = getHive();
     try {
       tableName = work.getTableSpecs().tableName;
       table = db.getTable(tableName);
@@ -111,7 +113,7 @@ public class StatsNoJobTask extends Task<StatsNoJobWork> implements Serializable
       console.printError("Cannot get table " + tableName, e.toString());
     }
 
-    return aggregateStats(threadPool);
+    return aggregateStats(threadPool, db);
   }
 
   @Override
@@ -126,7 +128,7 @@ public class StatsNoJobTask extends Task<StatsNoJobWork> implements Serializable
 
   class StatsCollection implements Runnable {
 
-    private Partition partn;
+    private final Partition partn;
 
     public StatsCollection(Partition part) {
       this.partn = part;
@@ -151,7 +153,7 @@ public class StatsNoJobTask extends Task<StatsNoJobWork> implements Serializable
         boolean statsAvailable = false;
         for(FileStatus file: fileList) {
           if (!file.isDir()) {
-            InputFormat<?, ?> inputFormat = (InputFormat<?, ?>) ReflectionUtil.newInstance(
+            InputFormat<?, ?> inputFormat = ReflectionUtil.newInstance(
                 partn.getInputFormatClass(), jc);
             InputSplit dummySplit = new FileSplit(file.getPath(), 0, 0,
                 new String[] { partn.getLocation() });
@@ -195,7 +197,7 @@ public class StatsNoJobTask extends Task<StatsNoJobWork> implements Serializable
             "Failed with exception " + e.getMessage() + "\n" + StringUtils.stringifyException(e));
 
         // Before updating the partition params, if any partition params is null
-        // and if statsReliable is true then updatePartition() function  will fail 
+        // and if statsReliable is true then updatePartition() function  will fail
         // the task by returning 1
         if (work.isStatsReliable()) {
           partUpdates.put(tPart.getSd().getLocation(), null);
@@ -219,7 +221,7 @@ public class StatsNoJobTask extends Task<StatsNoJobWork> implements Serializable
 
   }
 
-  private int aggregateStats(ExecutorService threadPool) {
+  private int aggregateStats(ExecutorService threadPool, Hive db) {
     int ret = 0;
 
     try {
@@ -246,22 +248,27 @@ public class StatsNoJobTask extends Task<StatsNoJobWork> implements Serializable
           boolean statsAvailable = false;
           for(FileStatus file: fileList) {
             if (!file.isDir()) {
-              InputFormat<?, ?> inputFormat = (InputFormat<?, ?>) ReflectionUtil.newInstance(
+              InputFormat<?, ?> inputFormat = ReflectionUtil.newInstance(
                   table.getInputFormatClass(), jc);
               InputSplit dummySplit = new FileSplit(file.getPath(), 0, 0, new String[] { table
                   .getDataLocation().toString() });
-              org.apache.hadoop.mapred.RecordReader<?, ?> recordReader =
-                  inputFormat.getRecordReader(dummySplit, jc, Reporter.NULL);
-              StatsProvidingRecordReader statsRR;
-              if (recordReader instanceof StatsProvidingRecordReader) {
-                statsRR = (StatsProvidingRecordReader) recordReader;
-                numRows += statsRR.getStats().getRowCount();
-                rawDataSize += statsRR.getStats().getRawDataSize();
-                fileSize += file.getLen();
+              if (file.getLen() == 0) {
                 numFiles += 1;
                 statsAvailable = true;
+              } else {
+                org.apache.hadoop.mapred.RecordReader<?, ?> recordReader =
+                    inputFormat.getRecordReader(dummySplit, jc, Reporter.NULL);
+                StatsProvidingRecordReader statsRR;
+                if (recordReader instanceof StatsProvidingRecordReader) {
+                  statsRR = (StatsProvidingRecordReader) recordReader;
+                  numRows += statsRR.getStats().getRowCount();
+                  rawDataSize += statsRR.getStats().getRawDataSize();
+                  fileSize += file.getLen();
+                  numFiles += 1;
+                  statsAvailable = true;
+                }
+                recordReader.close();
               }
-              recordReader.close();
             }
           }
 
@@ -297,7 +304,7 @@ public class StatsNoJobTask extends Task<StatsNoJobWork> implements Serializable
         shutdownAndAwaitTermination(threadPool);
         LOG.debug("Stats collection threadpool shutdown successful.");
 
-        ret = updatePartitions();
+        ret = updatePartitions(db);
       }
 
     } catch (Exception e) {
@@ -312,7 +319,7 @@ public class StatsNoJobTask extends Task<StatsNoJobWork> implements Serializable
     return ret;
   }
 
-  private int updatePartitions() throws InvalidOperationException, HiveException {
+  private int updatePartitions(Hive db) throws InvalidOperationException, HiveException {
     if (!partUpdates.isEmpty()) {
       List<Partition> updatedParts = Lists.newArrayList(partUpdates.values());
       if (updatedParts.contains(null) && work.isStatsReliable()) {

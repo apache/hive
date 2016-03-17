@@ -19,16 +19,16 @@
 package org.apache.hadoop.hive.ql.plan.ptf;
 
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.Direction;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
 public class ValueBoundaryDef extends BoundaryDef {
-  private PTFExpressionDef expressionDef;
+  private OrderDef orderDef;
   private final int amt;
   private final int relativeOffset;
 
   public ValueBoundaryDef(Direction direction, int amt) {
     this.direction = direction;
     this.amt = amt;
+    this.orderDef = new OrderDef();
 
     // Calculate relative offset
     switch(this.direction) {
@@ -52,16 +52,12 @@ public class ValueBoundaryDef extends BoundaryDef {
     return this.direction == Direction.PRECEDING ? vb.amt - this.amt : this.amt - vb.amt;
   }
 
-  public PTFExpressionDef getExpressionDef() {
-    return expressionDef;
+  public OrderDef getOrderDef() {
+    return orderDef;
   }
 
-  public void setExpressionDef(PTFExpressionDef expressionDef) {
-    this.expressionDef = expressionDef;
-  }
-
-  public ObjectInspector getOI() {
-    return expressionDef == null ? null : expressionDef.getOI();
+  public void addOrderExpressionDef(OrderExpressionDef expressionDef) {
+    this.orderDef.addExpression(expressionDef);
   }
 
   @Override

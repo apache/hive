@@ -735,6 +735,8 @@ public class TypeCheckProcFactory {
       windowingTokens.add(HiveParser.KW_CURRENT);
       windowingTokens.add(HiveParser.TOK_TABSORTCOLNAMEASC);
       windowingTokens.add(HiveParser.TOK_TABSORTCOLNAMEDESC);
+      windowingTokens.add(HiveParser.TOK_NULLS_FIRST);
+      windowingTokens.add(HiveParser.TOK_NULLS_LAST);
     }
 
     protected static boolean isRedundantConversionFunction(ASTNode expr,

@@ -150,6 +150,9 @@ POSTHOOK: Input: default@rcfile_createas1a@ds=1
 POSTHOOK: Input: default@rcfile_createas1a@ds=2
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@rcfile_createas1b
+POSTHOOK: Lineage: rcfile_createas1b.key SIMPLE [(rcfile_createas1a)rcfile_createas1a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: rcfile_createas1b.part EXPRESSION [(rcfile_createas1a)rcfile_createas1a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: rcfile_createas1b.value SIMPLE [(rcfile_createas1a)rcfile_createas1a.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(key, value) USING 'tr \t _' AS (c)
     FROM rcfile_createas1a

@@ -28,7 +28,7 @@ public class BinarySortableSerDeWithEndPrefix extends BinarySortableSerDe {
   public static void serializeStruct(Output byteStream, Object[] fieldData,
       List<ObjectInspector> fieldOis, boolean endPrefix) throws SerDeException {
     for (int i = 0; i < fieldData.length; i++) {
-      serialize(byteStream, fieldData[i], fieldOis.get(i), false);
+      serialize(byteStream, fieldData[i], fieldOis.get(i), false, ZERO, ONE);
     }
     if (endPrefix) {
       if (fieldData[fieldData.length-1]!=null) {

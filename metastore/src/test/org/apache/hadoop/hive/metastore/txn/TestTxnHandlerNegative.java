@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.txn;
 
+import org.apache.tools.ant.RuntimeConfigurable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -35,15 +36,14 @@ public class TestTxnHandlerNegative {
   public void testBadConnection() throws Exception {
     HiveConf conf = new HiveConf();
     conf.setVar(HiveConf.ConfVars.METASTORECONNECTURLKEY, "blah");
-    TxnStore txnHandler1 = TxnUtils.getTxnStore(conf);
-    MetaException e = null;
+    RuntimeException e = null;
     try {
-      txnHandler1.getOpenTxns();
+      TxnUtils.getTxnStore(conf);
     }
-    catch(MetaException ex) {
+    catch(RuntimeException ex) {
       LOG.info("Expected error: " + ex.getMessage(), ex);
       e = ex;
     }
-    assert e != null : "did not get exception";
+    assert e != null && e.getMessage().contains("No suitable driver found for blah") : "did not get exception";
   }
 }

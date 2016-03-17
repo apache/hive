@@ -49,11 +49,11 @@ public interface Reader extends org.apache.hadoop.hive.ql.io.orc.Reader {
      * We assume the sort will stay the same for backward compat.
      */
     public static final int MAX_DATA_STREAMS = OrcProto.Stream.Kind.ROW_INDEX.getNumber();
-    public void init(long fileId, int stripeIx, int rgIx, int columnCount) {
+    public void init(Object fileKey, int stripeIx, int rgIx, int columnCount) {
       if (batchKey == null) {
-        batchKey = new OrcBatchKey(fileId, stripeIx, rgIx);
+        batchKey = new OrcBatchKey(fileKey, stripeIx, rgIx);
       } else {
-        batchKey.set(fileId, stripeIx, rgIx);
+        batchKey.set(fileKey, stripeIx, rgIx);
       }
       resetColumnArrays(columnCount);
     }
@@ -61,12 +61,12 @@ public interface Reader extends org.apache.hadoop.hive.ql.io.orc.Reader {
 
   /**
    * Creates the encoded reader.
-   * @param fileId File ID to read, to use for cache lookups and such.
+   * @param fileKey File ID to read, to use for cache lookups and such.
    * @param dataCache Data cache to use for cache lookups.
    * @param dataReader Data reader to read data not found in cache (from disk, HDFS, and such).
    * @param pf Pool factory to create object pools.
    * @return The reader.
    */
   EncodedReader encodedReader(
-      Long fileId, DataCache dataCache, DataReader dataReader, PoolFactory pf) throws IOException;
+      Object fileKey, DataCache dataCache, DataReader dataReader, PoolFactory pf) throws IOException;
 }

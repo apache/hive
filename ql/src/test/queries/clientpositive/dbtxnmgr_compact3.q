@@ -5,7 +5,7 @@ create database D1;
 
 use D1;
 
-create table T1(key string, val string) stored as textfile;
+create table T1(key string, val string) clustered by (val) into 2 buckets stored as ORC TBLPROPERTIES ('transactional'='true');
 
 alter table T1 compact 'major';
 

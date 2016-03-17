@@ -37,7 +37,7 @@ import org.apache.hadoop.hive.metastore.hbase.MetadataStore;
  * contains the actual implementation that depends on some stuff in QL (for ORC).
  */
 public abstract class FileMetadataHandler {
-  static final Log LOG = LogFactory.getLog(FileMetadataHandler.class);
+  protected static final Log LOG = LogFactory.getLog(FileMetadataHandler.class);
 
   private Configuration conf;
   private PartitionExpressionProxy expressionProxy;

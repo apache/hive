@@ -57,7 +57,7 @@ public interface DataCache {
    * @param gotAllData An out param - whether all the requested data was found in cache.
    * @return The new or modified list of DiskRange-s, where some ranges may contain cached data.
    */
-  DiskRangeList getFileData(long fileId, DiskRangeList range, long baseOffset,
+  DiskRangeList getFileData(Object fileKey, DiskRangeList range, long baseOffset,
       DiskRangeListFactory factory, BooleanRef gotAllData);
 
   /**
@@ -79,7 +79,7 @@ public interface DataCache {
    * @return null if all data was put; bitmask indicating which chunks were not put otherwise;
    *         the replacement chunks from cache are updated directly in the array.
    */
-  long[] putFileData(long fileId, DiskRange[] ranges, MemoryBuffer[] data, long baseOffset);
+  long[] putFileData(Object fileKey, DiskRange[] ranges, MemoryBuffer[] data, long baseOffset);
 
   /**
    * Releases the buffer returned by getFileData/provided to putFileData back to cache.

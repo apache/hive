@@ -256,21 +256,22 @@ public class ReaderImpl implements Reader {
                                       Path path,
                                       int psLen,
                                       ByteBuffer buffer) throws IOException {
-    int len = OrcFile.MAGIC.length();
-    if (psLen < len + 1) {
+    int magicLength = OrcFile.MAGIC.length();
+    int fullLength = magicLength + 1;
+    if (psLen < fullLength || buffer.remaining() < fullLength) {
       throw new FileFormatException("Malformed ORC file " + path +
           ". Invalid postscript length " + psLen);
     }
-    int offset = buffer.arrayOffset() + buffer.position() + buffer.limit() - 1 - len;
+    int offset = buffer.arrayOffset() + buffer.position() + buffer.limit() - fullLength;
     byte[] array = buffer.array();
     // now look for the magic string at the end of the postscript.
-    if (!Text.decode(array, offset, len).equals(OrcFile.MAGIC)) {
+    if (!Text.decode(array, offset, magicLength).equals(OrcFile.MAGIC)) {
       // If it isn't there, this may be the 0.11.0 version of ORC.
       // Read the first 3 bytes of the file to check for the header
-      byte[] header = new byte[len];
-      in.readFully(0, header, 0, len);
+      byte[] header = new byte[magicLength];
+      in.readFully(0, header, 0, magicLength);
       // if it isn't there, this isn't an ORC file
-      if (!Text.decode(header, 0 , len).equals(OrcFile.MAGIC)) {
+      if (!Text.decode(header, 0 , magicLength).equals(OrcFile.MAGIC)) {
         throw new FileFormatException("Malformed ORC file " + path +
             ". Invalid postscript.");
       }
@@ -485,61 +486,67 @@ public class ReaderImpl implements Reader {
                                                         long maxFileLength
                                                         ) throws IOException {
     FSDataInputStream file = fs.open(path);
+    ByteBuffer buffer = null, fullFooterBuffer = null;
+    OrcProto.PostScript ps = null;
+    OrcFile.WriterVersion writerVersion = null;
+    try {
+      // figure out the size of the file using the option or filesystem
+      long size;
+      if (maxFileLength == Long.MAX_VALUE) {
+        size = fs.getFileStatus(path).getLen();
+      } else {
+        size = maxFileLength;
+      }
 
-    // figure out the size of the file using the option or filesystem
-    long size;
-    if (maxFileLength == Long.MAX_VALUE) {
-      size = fs.getFileStatus(path).getLen();
-    } else {
-      size = maxFileLength;
-    }
-
-    //read last bytes into buffer to get PostScript
-    int readSize = (int) Math.min(size, DIRECTORY_SIZE_GUESS);
-    ByteBuffer buffer = ByteBuffer.allocate(readSize);
-    assert buffer.position() == 0;
-    file.readFully((size - readSize),
-        buffer.array(), buffer.arrayOffset(), readSize);
-    buffer.position(0);
-
-    //read the PostScript
-    //get length of PostScript
-    int psLen = buffer.get(readSize - 1) & 0xff;
-    ensureOrcFooter(file, path, psLen, buffer);
-    int psOffset = readSize - 1 - psLen;
-    OrcProto.PostScript ps = extractPostScript(buffer, path, psLen, psOffset);
-
-    int footerSize = (int) ps.getFooterLength();
-    int metadataSize = (int) ps.getMetadataLength();
-    OrcFile.WriterVersion writerVersion = extractWriterVersion(ps);
-
-
-    //check if extra bytes need to be read
-    ByteBuffer fullFooterBuffer = null;
-    int extra = Math.max(0, psLen + 1 + footerSize + metadataSize - readSize);
-    if (extra > 0) {
-      //more bytes need to be read, seek back to the right place and read extra bytes
-      ByteBuffer extraBuf = ByteBuffer.allocate(extra + readSize);
-      file.readFully((size - readSize - extra), extraBuf.array(),
-          extraBuf.arrayOffset() + extraBuf.position(), extra);
-      extraBuf.position(extra);
-      //append with already read bytes
-      extraBuf.put(buffer);
-      buffer = extraBuf;
+      //read last bytes into buffer to get PostScript
+      int readSize = (int) Math.min(size, DIRECTORY_SIZE_GUESS);
+      buffer = ByteBuffer.allocate(readSize);
+      assert buffer.position() == 0;
+      file.readFully((size - readSize),
+          buffer.array(), buffer.arrayOffset(), readSize);
       buffer.position(0);
-      fullFooterBuffer = buffer.slice();
-      buffer.limit(footerSize + metadataSize);
-    } else {
-      //footer is already in the bytes in buffer, just adjust position, length
-      buffer.position(psOffset - footerSize - metadataSize);
-      fullFooterBuffer = buffer.slice();
-      buffer.limit(psOffset);
+
+      //read the PostScript
+      //get length of PostScript
+      int psLen = buffer.get(readSize - 1) & 0xff;
+      ensureOrcFooter(file, path, psLen, buffer);
+      int psOffset = readSize - 1 - psLen;
+      ps = extractPostScript(buffer, path, psLen, psOffset);
+
+      int footerSize = (int) ps.getFooterLength();
+      int metadataSize = (int) ps.getMetadataLength();
+      writerVersion = extractWriterVersion(ps);
+
+      //check if extra bytes need to be read
+      int extra = Math.max(0, psLen + 1 + footerSize + metadataSize - readSize);
+      if (extra > 0) {
+        //more bytes need to be read, seek back to the right place and read extra bytes
+        ByteBuffer extraBuf = ByteBuffer.allocate(extra + readSize);
+        file.readFully((size - readSize - extra), extraBuf.array(),
+            extraBuf.arrayOffset() + extraBuf.position(), extra);
+        extraBuf.position(extra);
+        //append with already read bytes
+        extraBuf.put(buffer);
+        buffer = extraBuf;
+        buffer.position(0);
+        fullFooterBuffer = buffer.slice();
+        buffer.limit(footerSize + metadataSize);
+      } else {
+        //footer is already in the bytes in buffer, just adjust position, length
+        buffer.position(psOffset - footerSize - metadataSize);
+        fullFooterBuffer = buffer.slice();
+        buffer.limit(psOffset);
+      }
+
+      // remember position for later TODO: what later? this comment is useless
+      buffer.mark();
+    } finally {
+      try {
+        file.close();
+      } catch (IOException ex) {
+        LOG.error("Failed to close the file after another error", ex);
+      }
     }
-
-    // remember position for later
-    buffer.mark();
-
-    file.close();
 
     return new FileMetaInfo(
         ps.getCompression().toString(),
@@ -585,7 +592,7 @@ public class ReaderImpl implements Reader {
     MetaInfoObjExtractor(String codecStr, int bufferSize, int metadataSize, 
         ByteBuffer footerBuffer) throws IOException {
 
-      this.compressionKind = org.apache.orc.CompressionKind.valueOf(codecStr);
+      this.compressionKind = org.apache.orc.CompressionKind.valueOf(codecStr.toUpperCase());
       this.bufferSize = bufferSize;
       this.codec = WriterImpl.createCodec(compressionKind);
       this.metadataSize = metadataSize;

@@ -24,6 +24,9 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src_null
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@all_nulls
+POSTHOOK: Lineage: all_nulls.a SIMPLE [(src_null)src_null.FieldSchema(name:a, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all_nulls.b EXPRESSION [(src_null)src_null.FieldSchema(name:a, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all_nulls.c EXPRESSION [(src_null)src_null.FieldSchema(name:a, type:bigint, comment:null), ]
 PREHOOK: query: analyze table all_nulls compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@all_nulls

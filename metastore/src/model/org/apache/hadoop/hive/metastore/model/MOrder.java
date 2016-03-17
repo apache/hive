@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.metastore.model;
 public class MOrder {
   private String col;
   private int order;
-  
+
   /**
    * @param col
    * @param order
@@ -58,5 +58,5 @@ public class MOrder {
   public void setOrder(int order) {
     this.order = order;
   }
-  
+
 }

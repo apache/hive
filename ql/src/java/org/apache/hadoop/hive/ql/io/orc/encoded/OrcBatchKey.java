@@ -19,28 +19,33 @@
 package org.apache.hadoop.hive.ql.io.orc.encoded;
 
 public class OrcBatchKey {
-  public long file;
+  public Object fileKey;
   public int stripeIx, rgIx;
 
+  // Make sure all the numbers are converted to long for size estimation.
   public OrcBatchKey(long file, int stripeIx, int rgIx) {
     set(file, stripeIx, rgIx);
   }
 
-  public void set(long file, int stripeIx, int rgIx) {
-    this.file = file;
+  public OrcBatchKey(Object file, int stripeIx, int rgIx) {
+    set(file, stripeIx, rgIx);
+  }
+
+  public void set(Object file, int stripeIx, int rgIx) {
+    this.fileKey = file;
     this.stripeIx = stripeIx;
     this.rgIx = rgIx;
   }
 
   @Override
   public String toString() {
-    return "[" + file + ", stripe " + stripeIx + ", rgIx " + rgIx + "]";
+    return "[" + fileKey + ", stripe " + stripeIx + ", rgIx " + rgIx + "]";
   }
 
   @Override
   public int hashCode() {
     final int prime = 31;
-    int result = prime + (int)(file ^ (file >>> 32));
+    int result = prime + fileKey.hashCode();
     return (prime * result + rgIx) * prime + stripeIx;
   }
 
@@ -50,11 +55,12 @@ public class OrcBatchKey {
     if (!(obj instanceof OrcBatchKey)) return false;
     OrcBatchKey other = (OrcBatchKey)obj;
     // Strings are interned and can thus be compared like this.
-    return stripeIx == other.stripeIx && rgIx == other.rgIx && file == other.file;
+    return stripeIx == other.stripeIx && rgIx == other.rgIx
+        && (fileKey == null ? (other.fileKey == null) : fileKey.equals(other.fileKey));
   }
 
   @Override
   public OrcBatchKey clone() throws CloneNotSupportedException {
-    return new OrcBatchKey(file, stripeIx, rgIx);
+    return new OrcBatchKey(fileKey, stripeIx, rgIx);
   }
 }

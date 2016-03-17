@@ -34,6 +34,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.hadoop.hive.llap.counters.FragmentCountersMap;
 import org.apache.hadoop.hive.llap.protocol.LlapTaskUmbilicalProtocol;
 import org.apache.tez.common.counters.TezCounters;
 import org.apache.tez.dag.api.TezException;
@@ -43,11 +44,11 @@ import org.apache.tez.runtime.api.events.TaskAttemptCompletedEvent;
 import org.apache.tez.runtime.api.events.TaskAttemptFailedEvent;
 import org.apache.tez.runtime.api.events.TaskStatusUpdateEvent;
 import org.apache.tez.runtime.api.impl.EventMetaData;
+import org.apache.tez.runtime.api.impl.EventMetaData.EventProducerConsumerType;
 import org.apache.tez.runtime.api.impl.TaskStatistics;
 import org.apache.tez.runtime.api.impl.TezEvent;
 import org.apache.tez.runtime.api.impl.TezHeartbeatRequest;
 import org.apache.tez.runtime.api.impl.TezHeartbeatResponse;
-import org.apache.tez.runtime.api.impl.EventMetaData.EventProducerConsumerType;
 import org.apache.tez.runtime.internals.api.TaskReporterInterface;
 import org.apache.tez.runtime.task.ErrorReporter;
 import org.slf4j.Logger;
@@ -71,13 +72,13 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 public class LlapTaskReporter implements TaskReporterInterface {
 
   private static final Logger LOG = LoggerFactory.getLogger(LlapTaskReporter.class);
-
   private final LlapTaskUmbilicalProtocol umbilical;
   private final long pollInterval;
   private final long sendCounterInterval;
   private final int maxEventsToGet;
   private final AtomicLong requestCounter;
   private final String containerIdStr;
+  private final String fragmentFullId;
 
   private final ListeningExecutorService heartbeatExecutor;
 
@@ -85,13 +86,15 @@ public class LlapTaskReporter implements TaskReporterInterface {
   HeartbeatCallable currentCallable;
 
   public LlapTaskReporter(LlapTaskUmbilicalProtocol umbilical, long amPollInterval,
-                      long sendCounterInterval, int maxEventsToGet, AtomicLong requestCounter, String containerIdStr) {
+                      long sendCounterInterval, int maxEventsToGet, AtomicLong requestCounter,
+      String containerIdStr, final String fragFullId) {
     this.umbilical = umbilical;
     this.pollInterval = amPollInterval;
     this.sendCounterInterval = sendCounterInterval;
     this.maxEventsToGet = maxEventsToGet;
     this.requestCounter = requestCounter;
     this.containerIdStr = containerIdStr;
+    this.fragmentFullId = fragFullId;
     ExecutorService executor = Executors.newFixedThreadPool(1, new ThreadFactoryBuilder()
         .setDaemon(true).setNameFormat("TaskHeartbeatThread").build());
     heartbeatExecutor = MoreExecutors.listeningDecorator(executor);
@@ -103,6 +106,9 @@ public class LlapTaskReporter implements TaskReporterInterface {
   @Override
   public synchronized void registerTask(RuntimeTask task,
                                         ErrorReporter errorReporter) {
+    TezCounters tezCounters = task.addAndGetTezCounter(fragmentFullId);
+    FragmentCountersMap.registerCountersForFragment(fragmentFullId, tezCounters);
+    LOG.info("Registered counters for fragment: {} vertexName: {}", fragmentFullId, task.getVertexName());
     currentCallable = new HeartbeatCallable(task, umbilical, pollInterval, sendCounterInterval,
         maxEventsToGet, requestCounter, containerIdStr);
     ListenableFuture<Boolean> future = heartbeatExecutor.submit(currentCallable);
@@ -115,6 +121,8 @@ public class LlapTaskReporter implements TaskReporterInterface {
    */
   @Override
   public synchronized void unregisterTask(TezTaskAttemptID taskAttemptID) {
+    LOG.info("Unregistered counters for fragment: {}", fragmentFullId);
+    FragmentCountersMap.unregisterCountersForFragment(fragmentFullId);
     currentCallable.markComplete();
     currentCallable = null;
   }

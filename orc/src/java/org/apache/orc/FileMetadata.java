@@ -44,7 +44,7 @@ public interface FileMetadata {
 
   int getFlattenedColumnCount();
 
-  long getFileId();
+  Object getFileKey();
 
   List<Integer> getVersionList();
 

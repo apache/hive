@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -102,6 +103,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
     assert (workComponentsPresent == 1);
 
     String tableName = "";
+    Hive hive = getHive();
     try {
       if (work.getLoadTableDesc() != null) {
         tableName = work.getLoadTableDesc().getTable().getTableName();
@@ -111,14 +113,14 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
         tableName = work.getLoadFileDesc().getDestinationCreateTable();
       }
 
-      table = db.getTable(tableName);
+      table = hive.getTable(tableName);
 
     } catch (HiveException e) {
       LOG.error("Cannot get table " + tableName, e);
       console.printError("Cannot get table " + tableName, e.toString());
     }
 
-    return aggregateStats();
+    return aggregateStats(hive);
 
   }
 
@@ -132,7 +134,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
     return "STATS";
   }
 
-  private int aggregateStats() {
+  private int aggregateStats(Hive db) {
 
     StatsAggregator statsAggregator = null;
     int ret = 0;
@@ -153,7 +155,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
         }
       }
 
-      List<Partition> partitions = getPartitionsList();
+      List<Partition> partitions = getPartitionsList(db);
       boolean atomic = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_ATOMIC);
 
       String tableFullName = table.getDbName() + "." + table.getTableName();
@@ -185,7 +187,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
           environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED, StatsSetupConst.TASK);
         }
 
-        db.alterTable(tableFullName, new Table(tTable), environmentContext);
+        getHive().alterTable(tableFullName, new Table(tTable), environmentContext);
         if (conf.getBoolVar(ConfVars.TEZ_EXEC_SUMMARY)) {
           console.printInfo("Table " + tableFullName + " stats: [" + toString(parameters) + ']');
         }
@@ -374,7 +376,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
    * @return a list of partitions that need to update statistics.
    * @throws HiveException
    */
-  private List<Partition> getPartitionsList() throws HiveException {
+  private List<Partition> getPartitionsList(Hive db) throws HiveException {
     if (work.getLoadFileDesc() != null) {
       return null; //we are in CTAS, so we know there are no partitions
     }

@@ -26,6 +26,7 @@ final class Constant extends \Thrift\Type\TConstant {
   static protected $SERIALIZATION_ESCAPE_CRLF;
   static protected $SERIALIZATION_LAST_COLUMN_TAKES_REST;
   static protected $SERIALIZATION_SORT_ORDER;
+  static protected $SERIALIZATION_NULL_SORT_ORDER;
   static protected $SERIALIZATION_USE_JSON_OBJECTS;
   static protected $SERIALIZATION_ENCODING;
   static protected $FIELD_DELIM;
@@ -95,6 +96,10 @@ final class Constant extends \Thrift\Type\TConstant {
 
   static protected function init_SERIALIZATION_SORT_ORDER() {
     return "serialization.sort.order";
+  }
+
+  static protected function init_SERIALIZATION_NULL_SORT_ORDER() {
+    return "serialization.sort.order.null";
   }
 
   static protected function init_SERIALIZATION_USE_JSON_OBJECTS() {

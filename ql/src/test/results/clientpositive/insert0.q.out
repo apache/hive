@@ -94,6 +94,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ctas_table
+POSTHOOK: Lineage: ctas_table.foo EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: ctas_table.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: describe extended ctas_table
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ctas_table

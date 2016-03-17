@@ -430,6 +430,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
 
       // Finally SUBMIT the JOB!
       rj = jc.submitJob(job);
+      this.jobID = rj.getJobID();
 
       returnVal = jobExecHelper.progress(rj, jc);
       success = (returnVal == 0);
@@ -568,7 +569,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     // Intentionally overwrites anything the user may have put here
     conf.setBoolean("hive.input.format.sorted", mWork.isInputFormatSorted());
 
-    if (HiveConf.getVar(conf, ConfVars.HIVE_CURRENT_DATABASE, null) == null) {
+    if (HiveConf.getVar(conf, ConfVars.HIVE_CURRENT_DATABASE, (String)null) == null) {
       HiveConf.setVar(conf, ConfVars.HIVE_CURRENT_DATABASE, getCurrentDB());
     }
   }
@@ -848,6 +849,11 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       }
       rj = null;
     }
+  }
+
+  @Override
+  public String getExternalHandle() {
+    return this.jobID;
   }
 }
 

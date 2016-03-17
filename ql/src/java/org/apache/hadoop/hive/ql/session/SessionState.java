@@ -373,11 +373,11 @@ public class SessionState {
   }
 
   public void setCmd(String cmdString) {
-    conf.setVar(HiveConf.ConfVars.HIVEQUERYSTRING, cmdString);
+    conf.setQueryString(cmdString);
   }
 
   public String getCmd() {
-    return (conf.getVar(HiveConf.ConfVars.HIVEQUERYSTRING));
+    return (conf.getQueryString());
   }
 
   public String getQueryId() {
@@ -397,6 +397,28 @@ public class SessionState {
 
   public String getSessionId() {
     return (conf.getVar(HiveConf.ConfVars.HIVESESSIONID));
+  }
+
+  public void updateThreadName() {
+    final String sessionId = getSessionId();
+    final String logPrefix = getConf().getLogIdVar(sessionId);
+    final String currThreadName = Thread.currentThread().getName();
+    if (!currThreadName.contains(logPrefix)) {
+      final String newThreadName = logPrefix + " " + currThreadName;
+      LOG.info("Updating thread name to {}", newThreadName);
+      Thread.currentThread().setName(newThreadName);
+    }
+  }
+
+  public void resetThreadName() {
+    final String sessionId = getSessionId();
+    final String logPrefix = getConf().getLogIdVar(sessionId);
+    final String currThreadName = Thread.currentThread().getName();
+    if (currThreadName.contains(logPrefix)) {
+      final String[] names = currThreadName.split(logPrefix);
+      LOG.info("Resetting thread name to {}", names[names.length - 1]);
+      Thread.currentThread().setName(names[names.length - 1]);
+    }
   }
 
   /**
@@ -1620,7 +1642,7 @@ public class SessionState {
     // Provide a facility to set current timestamp during tests
     if (conf.getBoolVar(ConfVars.HIVE_IN_TEST)) {
       String overrideTimestampString =
-          HiveConf.getVar(conf, HiveConf.ConfVars.HIVETESTCURRENTTIMESTAMP, null);
+          HiveConf.getVar(conf, HiveConf.ConfVars.HIVETESTCURRENTTIMESTAMP, (String)null);
       if (overrideTimestampString != null && overrideTimestampString.length() > 0) {
         queryCurrentTimestamp = Timestamp.valueOf(overrideTimestampString);
       }

@@ -1,0 +1,60 @@
+PREHOOK: query: DROP TABLE IF EXISTS avro_dec_old
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS avro_dec_old
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE `avro_dec_old`(
+  `name` string COMMENT 'from deserializer',
+  `value` decimal(4,1) COMMENT 'from deserializer')
+STORED AS AVRO
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@avro_dec_old
+POSTHOOK: query: CREATE TABLE `avro_dec_old`(
+  `name` string COMMENT 'from deserializer',
+  `value` decimal(4,1) COMMENT 'from deserializer')
+STORED AS AVRO
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@avro_dec_old
+PREHOOK: query: DESC avro_dec_old
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@avro_dec_old
+POSTHOOK: query: DESC avro_dec_old
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@avro_dec_old
+name                	string              	from deserializer   
+value               	decimal(4,1)        	from deserializer   
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dec_old.avro' into TABLE avro_dec_old
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@avro_dec_old
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dec_old.avro' into TABLE avro_dec_old
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@avro_dec_old
+PREHOOK: query: select value from avro_dec_old
+PREHOOK: type: QUERY
+PREHOOK: Input: default@avro_dec_old
+#### A masked pattern was here ####
+POSTHOOK: query: select value from avro_dec_old
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@avro_dec_old
+#### A masked pattern was here ####
+234.8
+77.3
+55.7
+4.3
+6.0
+12.3
+33.3
+19.0
+3.2
+79.9
+PREHOOK: query: DROP TABLE avro_dec_old
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@avro_dec_old
+PREHOOK: Output: default@avro_dec_old
+POSTHOOK: query: DROP TABLE avro_dec_old
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@avro_dec_old
+POSTHOOK: Output: default@avro_dec_old

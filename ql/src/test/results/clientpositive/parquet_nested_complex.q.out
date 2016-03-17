@@ -78,6 +78,11 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@nestedcomplex
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_nested_complex
+POSTHOOK: Lineage: parquet_nested_complex.max_nested_array SIMPLE [(nestedcomplex)nestedcomplex.FieldSchema(name:max_nested_array, type:array<array<array<array<array<array<array<array<array<array<array<array<array<array<array<array<array<array<array<array<array<array<array<int>>>>>>>>>>>>>>>>>>>>>>>, comment:null), ]
+POSTHOOK: Lineage: parquet_nested_complex.max_nested_map SIMPLE [(nestedcomplex)nestedcomplex.FieldSchema(name:max_nested_map, type:array<array<array<array<array<array<array<array<array<array<array<array<array<array<array<array<array<array<array<array<array<map<string,string>>>>>>>>>>>>>>>>>>>>>>, comment:null), ]
+POSTHOOK: Lineage: parquet_nested_complex.max_nested_struct SIMPLE [(nestedcomplex)nestedcomplex.FieldSchema(name:max_nested_struct, type:array<array<array<array<array<array<array<array<array<array<array<array<array<array<array<array<array<array<array<array<array<array<struct<s:string,i:bigint>>>>>>>>>>>>>>>>>>>>>>>, comment:null), ]
+POSTHOOK: Lineage: parquet_nested_complex.simple_int SIMPLE [(nestedcomplex)nestedcomplex.FieldSchema(name:simple_int, type:int, comment:null), ]
+POSTHOOK: Lineage: parquet_nested_complex.simple_string SIMPLE [(nestedcomplex)nestedcomplex.FieldSchema(name:simple_string, type:string, comment:null), ]
 PREHOOK: query: SELECT * FROM parquet_nested_complex SORT BY simple_int
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_nested_complex

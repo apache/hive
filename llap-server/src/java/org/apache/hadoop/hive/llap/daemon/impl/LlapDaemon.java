@@ -135,7 +135,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
         daemonConf, ConfVars.LLAP_DAEMON_TASK_SCHEDULER_WAIT_QUEUE_SIZE);
     boolean enablePreemption = HiveConf.getBoolVar(
         daemonConf, ConfVars.LLAP_DAEMON_TASK_SCHEDULER_ENABLE_PREEMPTION);
-    LOG.info("Attempting to start LlapDaemonConf with the following configuration: " +
+    LOG.warn("Attempting to start LlapDaemonConf with the following configuration: " +
         "numExecutors=" + numExecutors +
         ", rpcListenerPort=" + srvPort +
         ", mngListenerPort=" + mngPort +
@@ -225,7 +225,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     if (llap_l4j2 != null) {
       Configurator.initialize("LlapDaemonLog4j2", llap_l4j2.toString());
       long end = System.currentTimeMillis();
-      LOG.info("LLAP daemon logging initialized from {} in {} ms", llap_l4j2, (end - start));
+      LOG.warn("LLAP daemon logging initialized from {} in {} ms", llap_l4j2, (end - start));
     } else {
       throw new RuntimeException("Log initialization failed." +
           " Unable to locate " + LOG4j2_PROPERTIES_FILE + " file in classpath");
@@ -266,7 +266,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
         "$$$$$$$$\\ $$$$$$$$\\ $$ |  $$ |$$ |\n" +
         "\\________|\\________|\\__|  \\__|\\__|\n" +
         "\n";
-    LOG.info("\n\n" + asciiArt);
+    LOG.warn("\n\n" + asciiArt);
   }
 
   @Override

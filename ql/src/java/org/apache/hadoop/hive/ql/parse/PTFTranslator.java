@@ -31,8 +31,6 @@ import java.util.Stack;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.tree.TreeWizard;
 import org.antlr.runtime.tree.TreeWizard.ContextVisitor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -99,6 +97,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PTFTranslator {
 
@@ -499,6 +499,7 @@ public class PTFTranslator {
       throws SemanticException {
     OrderExpressionDef oexpDef = new OrderExpressionDef();
     oexpDef.setOrder(oExpr.getOrder());
+    oexpDef.setNullOrder(oExpr.getNullOrder());
     try {
       PTFExpressionDef expDef = buildExpressionDef(inpShape, oExpr.getExpression());
       oexpDef.setExpressionTreeString(expDef.getExpressionTreeString());
@@ -546,15 +547,20 @@ public class PTFTranslator {
     if (bndSpec instanceof ValueBoundarySpec) {
       ValueBoundarySpec vBndSpec = (ValueBoundarySpec) bndSpec;
       ValueBoundaryDef vbDef = new ValueBoundaryDef(vBndSpec.getDirection(), vBndSpec.getAmt());
-      PTFTranslator.validateNoLeadLagInValueBoundarySpec(vBndSpec.getExpression());
-      PTFExpressionDef exprDef = null;
-      try {
-        exprDef = buildExpressionDef(inpShape, vBndSpec.getExpression());
-      } catch (HiveException he) {
-        throw new SemanticException(he);
+      for (OrderExpression oe : vBndSpec.getOrderExpressions()) {
+        PTFTranslator.validateNoLeadLagInValueBoundarySpec(oe.getExpression());
+        PTFExpressionDef exprDef = null;
+        try {
+          exprDef = buildExpressionDef(inpShape, oe.getExpression());
+        } catch (HiveException he) {
+          throw new SemanticException(he);
+        }
+        PTFTranslator.validateValueBoundaryExprType(exprDef.getOI());
+        OrderExpressionDef orderExprDef = new OrderExpressionDef(exprDef);
+        orderExprDef.setOrder(oe.getOrder());
+        orderExprDef.setNullOrder(oe.getNullOrder());
+        vbDef.addOrderExpressionDef(orderExprDef);
       }
-      PTFTranslator.validateValueBoundaryExprType(exprDef.getOI());
-      vbDef.setExpressionDef(exprDef);
       return vbDef;
     }
     else if (bndSpec instanceof RangeBoundarySpec) {

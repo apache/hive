@@ -133,6 +133,14 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void get_delegation_token(std::string& _return, const std::string& token_owner, const std::string& renewer_kerberos_principal_name) = 0;
   virtual int64_t renew_delegation_token(const std::string& token_str_form) = 0;
   virtual void cancel_delegation_token(const std::string& token_str_form) = 0;
+  virtual bool add_token(const std::string& token_identifier, const std::string& delegation_token) = 0;
+  virtual bool remove_token(const std::string& token_identifier) = 0;
+  virtual void get_token(std::string& _return, const std::string& token_identifier) = 0;
+  virtual void get_all_token_identifiers(std::vector<std::string> & _return) = 0;
+  virtual int32_t add_master_key(const std::string& key) = 0;
+  virtual void update_master_key(const int32_t seq_number, const std::string& key) = 0;
+  virtual bool remove_master_key(const int32_t key_seq) = 0;
+  virtual void get_master_keys(std::vector<std::string> & _return) = 0;
   virtual void get_open_txns(GetOpenTxnsResponse& _return) = 0;
   virtual void get_open_txns_info(GetOpenTxnsInfoResponse& _return) = 0;
   virtual void open_txns(OpenTxnsResponse& _return, const OpenTxnRequest& rqst) = 0;
@@ -541,6 +549,34 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return _return;
   }
   void cancel_delegation_token(const std::string& /* token_str_form */) {
+    return;
+  }
+  bool add_token(const std::string& /* token_identifier */, const std::string& /* delegation_token */) {
+    bool _return = false;
+    return _return;
+  }
+  bool remove_token(const std::string& /* token_identifier */) {
+    bool _return = false;
+    return _return;
+  }
+  void get_token(std::string& /* _return */, const std::string& /* token_identifier */) {
+    return;
+  }
+  void get_all_token_identifiers(std::vector<std::string> & /* _return */) {
+    return;
+  }
+  int32_t add_master_key(const std::string& /* key */) {
+    int32_t _return = 0;
+    return _return;
+  }
+  void update_master_key(const int32_t /* seq_number */, const std::string& /* key */) {
+    return;
+  }
+  bool remove_master_key(const int32_t /* key_seq */) {
+    bool _return = false;
+    return _return;
+  }
+  void get_master_keys(std::vector<std::string> & /* _return */) {
     return;
   }
   void get_open_txns(GetOpenTxnsResponse& /* _return */) {
@@ -15023,6 +15059,844 @@ class ThriftHiveMetastore_cancel_delegation_token_presult {
 
 };
 
+typedef struct _ThriftHiveMetastore_add_token_args__isset {
+  _ThriftHiveMetastore_add_token_args__isset() : token_identifier(false), delegation_token(false) {}
+  bool token_identifier :1;
+  bool delegation_token :1;
+} _ThriftHiveMetastore_add_token_args__isset;
+
+class ThriftHiveMetastore_add_token_args {
+ public:
+
+  ThriftHiveMetastore_add_token_args(const ThriftHiveMetastore_add_token_args&);
+  ThriftHiveMetastore_add_token_args& operator=(const ThriftHiveMetastore_add_token_args&);
+  ThriftHiveMetastore_add_token_args() : token_identifier(), delegation_token() {
+  }
+
+  virtual ~ThriftHiveMetastore_add_token_args() throw();
+  std::string token_identifier;
+  std::string delegation_token;
+
+  _ThriftHiveMetastore_add_token_args__isset __isset;
+
+  void __set_token_identifier(const std::string& val);
+
+  void __set_delegation_token(const std::string& val);
+
+  bool operator == (const ThriftHiveMetastore_add_token_args & rhs) const
+  {
+    if (!(token_identifier == rhs.token_identifier))
+      return false;
+    if (!(delegation_token == rhs.delegation_token))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_add_token_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_add_token_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_add_token_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_add_token_pargs() throw();
+  const std::string* token_identifier;
+  const std::string* delegation_token;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_add_token_result__isset {
+  _ThriftHiveMetastore_add_token_result__isset() : success(false) {}
+  bool success :1;
+} _ThriftHiveMetastore_add_token_result__isset;
+
+class ThriftHiveMetastore_add_token_result {
+ public:
+
+  ThriftHiveMetastore_add_token_result(const ThriftHiveMetastore_add_token_result&);
+  ThriftHiveMetastore_add_token_result& operator=(const ThriftHiveMetastore_add_token_result&);
+  ThriftHiveMetastore_add_token_result() : success(0) {
+  }
+
+  virtual ~ThriftHiveMetastore_add_token_result() throw();
+  bool success;
+
+  _ThriftHiveMetastore_add_token_result__isset __isset;
+
+  void __set_success(const bool val);
+
+  bool operator == (const ThriftHiveMetastore_add_token_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_add_token_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_add_token_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_add_token_presult__isset {
+  _ThriftHiveMetastore_add_token_presult__isset() : success(false) {}
+  bool success :1;
+} _ThriftHiveMetastore_add_token_presult__isset;
+
+class ThriftHiveMetastore_add_token_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_add_token_presult() throw();
+  bool* success;
+
+  _ThriftHiveMetastore_add_token_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_remove_token_args__isset {
+  _ThriftHiveMetastore_remove_token_args__isset() : token_identifier(false) {}
+  bool token_identifier :1;
+} _ThriftHiveMetastore_remove_token_args__isset;
+
+class ThriftHiveMetastore_remove_token_args {
+ public:
+
+  ThriftHiveMetastore_remove_token_args(const ThriftHiveMetastore_remove_token_args&);
+  ThriftHiveMetastore_remove_token_args& operator=(const ThriftHiveMetastore_remove_token_args&);
+  ThriftHiveMetastore_remove_token_args() : token_identifier() {
+  }
+
+  virtual ~ThriftHiveMetastore_remove_token_args() throw();
+  std::string token_identifier;
+
+  _ThriftHiveMetastore_remove_token_args__isset __isset;
+
+  void __set_token_identifier(const std::string& val);
+
+  bool operator == (const ThriftHiveMetastore_remove_token_args & rhs) const
+  {
+    if (!(token_identifier == rhs.token_identifier))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_remove_token_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_remove_token_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_remove_token_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_remove_token_pargs() throw();
+  const std::string* token_identifier;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_remove_token_result__isset {
+  _ThriftHiveMetastore_remove_token_result__isset() : success(false) {}
+  bool success :1;
+} _ThriftHiveMetastore_remove_token_result__isset;
+
+class ThriftHiveMetastore_remove_token_result {
+ public:
+
+  ThriftHiveMetastore_remove_token_result(const ThriftHiveMetastore_remove_token_result&);
+  ThriftHiveMetastore_remove_token_result& operator=(const ThriftHiveMetastore_remove_token_result&);
+  ThriftHiveMetastore_remove_token_result() : success(0) {
+  }
+
+  virtual ~ThriftHiveMetastore_remove_token_result() throw();
+  bool success;
+
+  _ThriftHiveMetastore_remove_token_result__isset __isset;
+
+  void __set_success(const bool val);
+
+  bool operator == (const ThriftHiveMetastore_remove_token_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_remove_token_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_remove_token_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_remove_token_presult__isset {
+  _ThriftHiveMetastore_remove_token_presult__isset() : success(false) {}
+  bool success :1;
+} _ThriftHiveMetastore_remove_token_presult__isset;
+
+class ThriftHiveMetastore_remove_token_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_remove_token_presult() throw();
+  bool* success;
+
+  _ThriftHiveMetastore_remove_token_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_get_token_args__isset {
+  _ThriftHiveMetastore_get_token_args__isset() : token_identifier(false) {}
+  bool token_identifier :1;
+} _ThriftHiveMetastore_get_token_args__isset;
+
+class ThriftHiveMetastore_get_token_args {
+ public:
+
+  ThriftHiveMetastore_get_token_args(const ThriftHiveMetastore_get_token_args&);
+  ThriftHiveMetastore_get_token_args& operator=(const ThriftHiveMetastore_get_token_args&);
+  ThriftHiveMetastore_get_token_args() : token_identifier() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_token_args() throw();
+  std::string token_identifier;
+
+  _ThriftHiveMetastore_get_token_args__isset __isset;
+
+  void __set_token_identifier(const std::string& val);
+
+  bool operator == (const ThriftHiveMetastore_get_token_args & rhs) const
+  {
+    if (!(token_identifier == rhs.token_identifier))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_token_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_token_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_token_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_token_pargs() throw();
+  const std::string* token_identifier;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_token_result__isset {
+  _ThriftHiveMetastore_get_token_result__isset() : success(false) {}
+  bool success :1;
+} _ThriftHiveMetastore_get_token_result__isset;
+
+class ThriftHiveMetastore_get_token_result {
+ public:
+
+  ThriftHiveMetastore_get_token_result(const ThriftHiveMetastore_get_token_result&);
+  ThriftHiveMetastore_get_token_result& operator=(const ThriftHiveMetastore_get_token_result&);
+  ThriftHiveMetastore_get_token_result() : success() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_token_result() throw();
+  std::string success;
+
+  _ThriftHiveMetastore_get_token_result__isset __isset;
+
+  void __set_success(const std::string& val);
+
+  bool operator == (const ThriftHiveMetastore_get_token_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_token_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_token_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_token_presult__isset {
+  _ThriftHiveMetastore_get_token_presult__isset() : success(false) {}
+  bool success :1;
+} _ThriftHiveMetastore_get_token_presult__isset;
+
+class ThriftHiveMetastore_get_token_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_token_presult() throw();
+  std::string* success;
+
+  _ThriftHiveMetastore_get_token_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+
+class ThriftHiveMetastore_get_all_token_identifiers_args {
+ public:
+
+  ThriftHiveMetastore_get_all_token_identifiers_args(const ThriftHiveMetastore_get_all_token_identifiers_args&);
+  ThriftHiveMetastore_get_all_token_identifiers_args& operator=(const ThriftHiveMetastore_get_all_token_identifiers_args&);
+  ThriftHiveMetastore_get_all_token_identifiers_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_all_token_identifiers_args() throw();
+
+  bool operator == (const ThriftHiveMetastore_get_all_token_identifiers_args & /* rhs */) const
+  {
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_all_token_identifiers_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_all_token_identifiers_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_all_token_identifiers_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_all_token_identifiers_pargs() throw();
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_all_token_identifiers_result__isset {
+  _ThriftHiveMetastore_get_all_token_identifiers_result__isset() : success(false) {}
+  bool success :1;
+} _ThriftHiveMetastore_get_all_token_identifiers_result__isset;
+
+class ThriftHiveMetastore_get_all_token_identifiers_result {
+ public:
+
+  ThriftHiveMetastore_get_all_token_identifiers_result(const ThriftHiveMetastore_get_all_token_identifiers_result&);
+  ThriftHiveMetastore_get_all_token_identifiers_result& operator=(const ThriftHiveMetastore_get_all_token_identifiers_result&);
+  ThriftHiveMetastore_get_all_token_identifiers_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_all_token_identifiers_result() throw();
+  std::vector<std::string>  success;
+
+  _ThriftHiveMetastore_get_all_token_identifiers_result__isset __isset;
+
+  void __set_success(const std::vector<std::string> & val);
+
+  bool operator == (const ThriftHiveMetastore_get_all_token_identifiers_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_all_token_identifiers_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_all_token_identifiers_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_all_token_identifiers_presult__isset {
+  _ThriftHiveMetastore_get_all_token_identifiers_presult__isset() : success(false) {}
+  bool success :1;
+} _ThriftHiveMetastore_get_all_token_identifiers_presult__isset;
+
+class ThriftHiveMetastore_get_all_token_identifiers_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_all_token_identifiers_presult() throw();
+  std::vector<std::string> * success;
+
+  _ThriftHiveMetastore_get_all_token_identifiers_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_add_master_key_args__isset {
+  _ThriftHiveMetastore_add_master_key_args__isset() : key(false) {}
+  bool key :1;
+} _ThriftHiveMetastore_add_master_key_args__isset;
+
+class ThriftHiveMetastore_add_master_key_args {
+ public:
+
+  ThriftHiveMetastore_add_master_key_args(const ThriftHiveMetastore_add_master_key_args&);
+  ThriftHiveMetastore_add_master_key_args& operator=(const ThriftHiveMetastore_add_master_key_args&);
+  ThriftHiveMetastore_add_master_key_args() : key() {
+  }
+
+  virtual ~ThriftHiveMetastore_add_master_key_args() throw();
+  std::string key;
+
+  _ThriftHiveMetastore_add_master_key_args__isset __isset;
+
+  void __set_key(const std::string& val);
+
+  bool operator == (const ThriftHiveMetastore_add_master_key_args & rhs) const
+  {
+    if (!(key == rhs.key))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_add_master_key_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_add_master_key_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_add_master_key_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_add_master_key_pargs() throw();
+  const std::string* key;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_add_master_key_result__isset {
+  _ThriftHiveMetastore_add_master_key_result__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_add_master_key_result__isset;
+
+class ThriftHiveMetastore_add_master_key_result {
+ public:
+
+  ThriftHiveMetastore_add_master_key_result(const ThriftHiveMetastore_add_master_key_result&);
+  ThriftHiveMetastore_add_master_key_result& operator=(const ThriftHiveMetastore_add_master_key_result&);
+  ThriftHiveMetastore_add_master_key_result() : success(0) {
+  }
+
+  virtual ~ThriftHiveMetastore_add_master_key_result() throw();
+  int32_t success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_add_master_key_result__isset __isset;
+
+  void __set_success(const int32_t val);
+
+  void __set_o1(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_add_master_key_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_add_master_key_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_add_master_key_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_add_master_key_presult__isset {
+  _ThriftHiveMetastore_add_master_key_presult__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_add_master_key_presult__isset;
+
+class ThriftHiveMetastore_add_master_key_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_add_master_key_presult() throw();
+  int32_t* success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_add_master_key_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_update_master_key_args__isset {
+  _ThriftHiveMetastore_update_master_key_args__isset() : seq_number(false), key(false) {}
+  bool seq_number :1;
+  bool key :1;
+} _ThriftHiveMetastore_update_master_key_args__isset;
+
+class ThriftHiveMetastore_update_master_key_args {
+ public:
+
+  ThriftHiveMetastore_update_master_key_args(const ThriftHiveMetastore_update_master_key_args&);
+  ThriftHiveMetastore_update_master_key_args& operator=(const ThriftHiveMetastore_update_master_key_args&);
+  ThriftHiveMetastore_update_master_key_args() : seq_number(0), key() {
+  }
+
+  virtual ~ThriftHiveMetastore_update_master_key_args() throw();
+  int32_t seq_number;
+  std::string key;
+
+  _ThriftHiveMetastore_update_master_key_args__isset __isset;
+
+  void __set_seq_number(const int32_t val);
+
+  void __set_key(const std::string& val);
+
+  bool operator == (const ThriftHiveMetastore_update_master_key_args & rhs) const
+  {
+    if (!(seq_number == rhs.seq_number))
+      return false;
+    if (!(key == rhs.key))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_update_master_key_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_update_master_key_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_update_master_key_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_update_master_key_pargs() throw();
+  const int32_t* seq_number;
+  const std::string* key;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_update_master_key_result__isset {
+  _ThriftHiveMetastore_update_master_key_result__isset() : o1(false), o2(false) {}
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_update_master_key_result__isset;
+
+class ThriftHiveMetastore_update_master_key_result {
+ public:
+
+  ThriftHiveMetastore_update_master_key_result(const ThriftHiveMetastore_update_master_key_result&);
+  ThriftHiveMetastore_update_master_key_result& operator=(const ThriftHiveMetastore_update_master_key_result&);
+  ThriftHiveMetastore_update_master_key_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_update_master_key_result() throw();
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_update_master_key_result__isset __isset;
+
+  void __set_o1(const NoSuchObjectException& val);
+
+  void __set_o2(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_update_master_key_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_update_master_key_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_update_master_key_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_update_master_key_presult__isset {
+  _ThriftHiveMetastore_update_master_key_presult__isset() : o1(false), o2(false) {}
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_update_master_key_presult__isset;
+
+class ThriftHiveMetastore_update_master_key_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_update_master_key_presult() throw();
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_update_master_key_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_remove_master_key_args__isset {
+  _ThriftHiveMetastore_remove_master_key_args__isset() : key_seq(false) {}
+  bool key_seq :1;
+} _ThriftHiveMetastore_remove_master_key_args__isset;
+
+class ThriftHiveMetastore_remove_master_key_args {
+ public:
+
+  ThriftHiveMetastore_remove_master_key_args(const ThriftHiveMetastore_remove_master_key_args&);
+  ThriftHiveMetastore_remove_master_key_args& operator=(const ThriftHiveMetastore_remove_master_key_args&);
+  ThriftHiveMetastore_remove_master_key_args() : key_seq(0) {
+  }
+
+  virtual ~ThriftHiveMetastore_remove_master_key_args() throw();
+  int32_t key_seq;
+
+  _ThriftHiveMetastore_remove_master_key_args__isset __isset;
+
+  void __set_key_seq(const int32_t val);
+
+  bool operator == (const ThriftHiveMetastore_remove_master_key_args & rhs) const
+  {
+    if (!(key_seq == rhs.key_seq))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_remove_master_key_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_remove_master_key_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_remove_master_key_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_remove_master_key_pargs() throw();
+  const int32_t* key_seq;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_remove_master_key_result__isset {
+  _ThriftHiveMetastore_remove_master_key_result__isset() : success(false) {}
+  bool success :1;
+} _ThriftHiveMetastore_remove_master_key_result__isset;
+
+class ThriftHiveMetastore_remove_master_key_result {
+ public:
+
+  ThriftHiveMetastore_remove_master_key_result(const ThriftHiveMetastore_remove_master_key_result&);
+  ThriftHiveMetastore_remove_master_key_result& operator=(const ThriftHiveMetastore_remove_master_key_result&);
+  ThriftHiveMetastore_remove_master_key_result() : success(0) {
+  }
+
+  virtual ~ThriftHiveMetastore_remove_master_key_result() throw();
+  bool success;
+
+  _ThriftHiveMetastore_remove_master_key_result__isset __isset;
+
+  void __set_success(const bool val);
+
+  bool operator == (const ThriftHiveMetastore_remove_master_key_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_remove_master_key_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_remove_master_key_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_remove_master_key_presult__isset {
+  _ThriftHiveMetastore_remove_master_key_presult__isset() : success(false) {}
+  bool success :1;
+} _ThriftHiveMetastore_remove_master_key_presult__isset;
+
+class ThriftHiveMetastore_remove_master_key_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_remove_master_key_presult() throw();
+  bool* success;
+
+  _ThriftHiveMetastore_remove_master_key_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+
+class ThriftHiveMetastore_get_master_keys_args {
+ public:
+
+  ThriftHiveMetastore_get_master_keys_args(const ThriftHiveMetastore_get_master_keys_args&);
+  ThriftHiveMetastore_get_master_keys_args& operator=(const ThriftHiveMetastore_get_master_keys_args&);
+  ThriftHiveMetastore_get_master_keys_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_master_keys_args() throw();
+
+  bool operator == (const ThriftHiveMetastore_get_master_keys_args & /* rhs */) const
+  {
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_master_keys_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_master_keys_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_master_keys_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_master_keys_pargs() throw();
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_master_keys_result__isset {
+  _ThriftHiveMetastore_get_master_keys_result__isset() : success(false) {}
+  bool success :1;
+} _ThriftHiveMetastore_get_master_keys_result__isset;
+
+class ThriftHiveMetastore_get_master_keys_result {
+ public:
+
+  ThriftHiveMetastore_get_master_keys_result(const ThriftHiveMetastore_get_master_keys_result&);
+  ThriftHiveMetastore_get_master_keys_result& operator=(const ThriftHiveMetastore_get_master_keys_result&);
+  ThriftHiveMetastore_get_master_keys_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_master_keys_result() throw();
+  std::vector<std::string>  success;
+
+  _ThriftHiveMetastore_get_master_keys_result__isset __isset;
+
+  void __set_success(const std::vector<std::string> & val);
+
+  bool operator == (const ThriftHiveMetastore_get_master_keys_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_master_keys_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_master_keys_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_master_keys_presult__isset {
+  _ThriftHiveMetastore_get_master_keys_presult__isset() : success(false) {}
+  bool success :1;
+} _ThriftHiveMetastore_get_master_keys_presult__isset;
+
+class ThriftHiveMetastore_get_master_keys_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_master_keys_presult() throw();
+  std::vector<std::string> * success;
+
+  _ThriftHiveMetastore_get_master_keys_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 
 class ThriftHiveMetastore_get_open_txns_args {
  public:
@@ -17859,6 +18733,30 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void cancel_delegation_token(const std::string& token_str_form);
   void send_cancel_delegation_token(const std::string& token_str_form);
   void recv_cancel_delegation_token();
+  bool add_token(const std::string& token_identifier, const std::string& delegation_token);
+  void send_add_token(const std::string& token_identifier, const std::string& delegation_token);
+  bool recv_add_token();
+  bool remove_token(const std::string& token_identifier);
+  void send_remove_token(const std::string& token_identifier);
+  bool recv_remove_token();
+  void get_token(std::string& _return, const std::string& token_identifier);
+  void send_get_token(const std::string& token_identifier);
+  void recv_get_token(std::string& _return);
+  void get_all_token_identifiers(std::vector<std::string> & _return);
+  void send_get_all_token_identifiers();
+  void recv_get_all_token_identifiers(std::vector<std::string> & _return);
+  int32_t add_master_key(const std::string& key);
+  void send_add_master_key(const std::string& key);
+  int32_t recv_add_master_key();
+  void update_master_key(const int32_t seq_number, const std::string& key);
+  void send_update_master_key(const int32_t seq_number, const std::string& key);
+  void recv_update_master_key();
+  bool remove_master_key(const int32_t key_seq);
+  void send_remove_master_key(const int32_t key_seq);
+  bool recv_remove_master_key();
+  void get_master_keys(std::vector<std::string> & _return);
+  void send_get_master_keys();
+  void recv_get_master_keys(std::vector<std::string> & _return);
   void get_open_txns(GetOpenTxnsResponse& _return);
   void send_get_open_txns();
   void recv_get_open_txns(GetOpenTxnsResponse& _return);
@@ -18052,6 +18950,14 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_get_delegation_token(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_renew_delegation_token(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_cancel_delegation_token(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_add_token(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_remove_token(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_token(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_all_token_identifiers(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_add_master_key(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_update_master_key(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_remove_master_key(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_master_keys(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_open_txns(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_open_txns_info(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_open_txns(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -18191,6 +19097,14 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["get_delegation_token"] = &ThriftHiveMetastoreProcessor::process_get_delegation_token;
     processMap_["renew_delegation_token"] = &ThriftHiveMetastoreProcessor::process_renew_delegation_token;
     processMap_["cancel_delegation_token"] = &ThriftHiveMetastoreProcessor::process_cancel_delegation_token;
+    processMap_["add_token"] = &ThriftHiveMetastoreProcessor::process_add_token;
+    processMap_["remove_token"] = &ThriftHiveMetastoreProcessor::process_remove_token;
+    processMap_["get_token"] = &ThriftHiveMetastoreProcessor::process_get_token;
+    processMap_["get_all_token_identifiers"] = &ThriftHiveMetastoreProcessor::process_get_all_token_identifiers;
+    processMap_["add_master_key"] = &ThriftHiveMetastoreProcessor::process_add_master_key;
+    processMap_["update_master_key"] = &ThriftHiveMetastoreProcessor::process_update_master_key;
+    processMap_["remove_master_key"] = &ThriftHiveMetastoreProcessor::process_remove_master_key;
+    processMap_["get_master_keys"] = &ThriftHiveMetastoreProcessor::process_get_master_keys;
     processMap_["get_open_txns"] = &ThriftHiveMetastoreProcessor::process_get_open_txns;
     processMap_["get_open_txns_info"] = &ThriftHiveMetastoreProcessor::process_get_open_txns_info;
     processMap_["open_txns"] = &ThriftHiveMetastoreProcessor::process_open_txns;
@@ -19312,6 +20226,81 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     ifaces_[i]->cancel_delegation_token(token_str_form);
   }
 
+  bool add_token(const std::string& token_identifier, const std::string& delegation_token) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->add_token(token_identifier, delegation_token);
+    }
+    return ifaces_[i]->add_token(token_identifier, delegation_token);
+  }
+
+  bool remove_token(const std::string& token_identifier) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->remove_token(token_identifier);
+    }
+    return ifaces_[i]->remove_token(token_identifier);
+  }
+
+  void get_token(std::string& _return, const std::string& token_identifier) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_token(_return, token_identifier);
+    }
+    ifaces_[i]->get_token(_return, token_identifier);
+    return;
+  }
+
+  void get_all_token_identifiers(std::vector<std::string> & _return) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_all_token_identifiers(_return);
+    }
+    ifaces_[i]->get_all_token_identifiers(_return);
+    return;
+  }
+
+  int32_t add_master_key(const std::string& key) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->add_master_key(key);
+    }
+    return ifaces_[i]->add_master_key(key);
+  }
+
+  void update_master_key(const int32_t seq_number, const std::string& key) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->update_master_key(seq_number, key);
+    }
+    ifaces_[i]->update_master_key(seq_number, key);
+  }
+
+  bool remove_master_key(const int32_t key_seq) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->remove_master_key(key_seq);
+    }
+    return ifaces_[i]->remove_master_key(key_seq);
+  }
+
+  void get_master_keys(std::vector<std::string> & _return) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_master_keys(_return);
+    }
+    ifaces_[i]->get_master_keys(_return);
+    return;
+  }
+
   void get_open_txns(GetOpenTxnsResponse& _return) {
     size_t sz = ifaces_.size();
     size_t i = 0;
@@ -19894,6 +20883,30 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void cancel_delegation_token(const std::string& token_str_form);
   int32_t send_cancel_delegation_token(const std::string& token_str_form);
   void recv_cancel_delegation_token(const int32_t seqid);
+  bool add_token(const std::string& token_identifier, const std::string& delegation_token);
+  int32_t send_add_token(const std::string& token_identifier, const std::string& delegation_token);
+  bool recv_add_token(const int32_t seqid);
+  bool remove_token(const std::string& token_identifier);
+  int32_t send_remove_token(const std::string& token_identifier);
+  bool recv_remove_token(const int32_t seqid);
+  void get_token(std::string& _return, const std::string& token_identifier);
+  int32_t send_get_token(const std::string& token_identifier);
+  void recv_get_token(std::string& _return, const int32_t seqid);
+  void get_all_token_identifiers(std::vector<std::string> & _return);
+  int32_t send_get_all_token_identifiers();
+  void recv_get_all_token_identifiers(std::vector<std::string> & _return, const int32_t seqid);
+  int32_t add_master_key(const std::string& key);
+  int32_t send_add_master_key(const std::string& key);
+  int32_t recv_add_master_key(const int32_t seqid);
+  void update_master_key(const int32_t seq_number, const std::string& key);
+  int32_t send_update_master_key(const int32_t seq_number, const std::string& key);
+  void recv_update_master_key(const int32_t seqid);
+  bool remove_master_key(const int32_t key_seq);
+  int32_t send_remove_master_key(const int32_t key_seq);
+  bool recv_remove_master_key(const int32_t seqid);
+  void get_master_keys(std::vector<std::string> & _return);
+  int32_t send_get_master_keys();
+  void recv_get_master_keys(std::vector<std::string> & _return, const int32_t seqid);
   void get_open_txns(GetOpenTxnsResponse& _return);
   int32_t send_get_open_txns();
   void recv_get_open_txns(GetOpenTxnsResponse& _return, const int32_t seqid);

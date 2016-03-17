@@ -1,5 +1,5 @@
 Structure for TestOrcFile.testHasNull.orc
-File Version: 0.12 with HIVE_12055
+File Version: 0.12 with HIVE_13083
 Rows: 20000
 Compression: ZLIB
 Compression size: 4096

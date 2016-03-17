@@ -1964,6 +1964,10 @@ POSTHOOK: Input: default@orc_llap_part@ctinyint=9
 POSTHOOK: Input: default@orc_llap_part@ctinyint=__HIVE_DEFAULT_PARTITION__
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@llap_temp_table
+POSTHOOK: Lineage: llap_temp_table.cchar1 SIMPLE [(orc_llap_part)oft.FieldSchema(name:cchar1, type:char(255), comment:null), ]
+POSTHOOK: Lineage: llap_temp_table.cint SIMPLE [(orc_llap_part)oft.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: llap_temp_table.ctinyint SIMPLE [(orc_llap_part)oft.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: llap_temp_table.cvchar1 SIMPLE [(orc_llap_part)oft.FieldSchema(name:cvchar1, type:varchar(255), comment:null), ]
 PREHOOK: query: select sum(hash(*)) from llap_temp_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@llap_temp_table

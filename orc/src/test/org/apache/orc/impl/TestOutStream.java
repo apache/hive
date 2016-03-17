@@ -16,18 +16,28 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.llap.cache;
+package org.apache.orc.impl;
 
-import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch.ColumnStreamData;
+import org.apache.orc.CompressionCodec;
+import org.junit.Test;
+import org.mockito.Mockito;
 
-public class NoopCache<CacheKey> implements Cache<CacheKey> {
-  @Override
-  public ColumnStreamData[] cacheOrGet(CacheKey key, ColumnStreamData[] value) {
-    return value;
-  }
+import java.nio.ByteBuffer;
 
-  @Override
-  public ColumnStreamData[] get(CacheKey key) {
-    return null;  // TODO: ensure real implementation increases refcount
+import static org.junit.Assert.assertEquals;
+
+public class TestOutStream {
+
+  @Test
+  public void testFlush() throws Exception {
+    OutStream.OutputReceiver receiver =
+        Mockito.mock(OutStream.OutputReceiver.class);
+    CompressionCodec codec = new ZlibCodec();
+    OutStream stream = new OutStream("test", 128*1024, codec, receiver);
+    assertEquals(0L, stream.getBufferSize());
+    stream.write(new byte[]{0, 1, 2});
+    stream.flush();
+    Mockito.verify(receiver).output(Mockito.any(ByteBuffer.class));
+    assertEquals(0L, stream.getBufferSize());
   }
 }

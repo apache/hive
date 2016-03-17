@@ -105,6 +105,7 @@ public class OrcFile {
     HIVE_8732(1), // corrupted stripe/file maximum column statistics
     HIVE_4243(2), // use real column names from Hive tables
     HIVE_12055(3), // vectorized writer
+    HIVE_13083(4), // decimal writer updating present stream wrongly
 
     // Don't use any magic numbers here except for the below:
     FUTURE(Integer.MAX_VALUE); // a version from a future writer
@@ -142,7 +143,7 @@ public class OrcFile {
       return values[val];
     }
   }
-  public static final WriterVersion CURRENT_WRITER = WriterVersion.HIVE_12055;
+  public static final WriterVersion CURRENT_WRITER = WriterVersion.HIVE_13083;
 
   public enum EncodingStrategy {
     SPEED, COMPRESSION
@@ -255,7 +256,7 @@ public class OrcFile {
           OrcConf.BLOCK_PADDING.getBoolean(tableProperties, conf);
       compressValue =
           CompressionKind.valueOf(OrcConf.COMPRESS.getString(tableProperties,
-              conf));
+              conf).toUpperCase());
       String versionName = OrcConf.WRITE_FORMAT.getString(tableProperties,
           conf);
       versionValue = Version.byName(versionName);

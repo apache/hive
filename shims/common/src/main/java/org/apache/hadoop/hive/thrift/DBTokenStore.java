@@ -33,13 +33,14 @@ import org.slf4j.LoggerFactory;
 
 public class DBTokenStore implements DelegationTokenStore {
   private static final Logger LOG = LoggerFactory.getLogger(DBTokenStore.class);
+  private Configuration conf;
 
   @Override
   public int addMasterKey(String s) throws TokenStoreException {
     if (LOG.isTraceEnabled()) {
       LOG.trace("addMasterKey: s = " + s);
     }
-    return (Integer)invokeOnRawStore("addMasterKey", new Object[]{s},String.class);
+    return (Integer)invokeOnTokenStore("addMasterKey", new Object[]{s},String.class);
   }
 
   @Override
@@ -47,19 +48,19 @@ public class DBTokenStore implements DelegationTokenStore {
     if (LOG.isTraceEnabled()) {
       LOG.trace("updateMasterKey: s = " + s + ", keySeq = " + keySeq);
     }
-    invokeOnRawStore("updateMasterKey", new Object[] {Integer.valueOf(keySeq), s},
+    invokeOnTokenStore("updateMasterKey", new Object[] {Integer.valueOf(keySeq), s},
         Integer.class, String.class);
   }
 
   @Override
   public boolean removeMasterKey(int keySeq) {
-    return (Boolean)invokeOnRawStore("removeMasterKey", new Object[] {Integer.valueOf(keySeq)},
+    return (Boolean)invokeOnTokenStore("removeMasterKey", new Object[] {Integer.valueOf(keySeq)},
       Integer.class);
   }
 
   @Override
   public String[] getMasterKeys() throws TokenStoreException {
-    return (String[])invokeOnRawStore("getMasterKeys", new Object[0]);
+    return (String[])invokeOnTokenStore("getMasterKeys", new Object[0]);
   }
 
   @Override
@@ -70,7 +71,7 @@ public class DBTokenStore implements DelegationTokenStore {
       String identifier = TokenStoreDelegationTokenSecretManager.encodeWritable(tokenIdentifier);
       String tokenStr = Base64.encodeBase64URLSafeString(
         HiveDelegationTokenSupport.encodeDelegationTokenInformation(token));
-      boolean result = (Boolean)invokeOnRawStore("addToken", new Object[] {identifier, tokenStr},
+      boolean result = (Boolean)invokeOnTokenStore("addToken", new Object[] {identifier, tokenStr},
         String.class, String.class);
       if (LOG.isTraceEnabled()) {
         LOG.trace("addToken: tokenIdentifier = " + tokenIdentifier + ", added = " + result);
@@ -85,7 +86,7 @@ public class DBTokenStore implements DelegationTokenStore {
   public DelegationTokenInformation getToken(DelegationTokenIdentifier tokenIdentifier)
       throws TokenStoreException {
     try {
-      String tokenStr = (String)invokeOnRawStore("getToken", new Object[] {
+      String tokenStr = (String)invokeOnTokenStore("getToken", new Object[] {
           TokenStoreDelegationTokenSecretManager.encodeWritable(tokenIdentifier)}, String.class);
       DelegationTokenInformation result = null;
       if (tokenStr != null) {
@@ -103,7 +104,7 @@ public class DBTokenStore implements DelegationTokenStore {
   @Override
   public boolean removeToken(DelegationTokenIdentifier tokenIdentifier) throws TokenStoreException{
     try {
-      boolean result = (Boolean)invokeOnRawStore("removeToken", new Object[] {
+      boolean result = (Boolean)invokeOnTokenStore("removeToken", new Object[] {
         TokenStoreDelegationTokenSecretManager.encodeWritable(tokenIdentifier)}, String.class);
       if (LOG.isTraceEnabled()) {
         LOG.trace("removeToken: tokenIdentifier = " + tokenIdentifier + ", removed = " + result);
@@ -117,7 +118,7 @@ public class DBTokenStore implements DelegationTokenStore {
   @Override
   public List<DelegationTokenIdentifier> getAllDelegationTokenIdentifiers() throws TokenStoreException{
 
-    List<String> tokenIdents = (List<String>)invokeOnRawStore("getAllTokenIdentifiers", new Object[0]);
+    List<String> tokenIdents = (List<String>)invokeOnTokenStore("getAllTokenIdentifiers", new Object[0]);
     List<DelegationTokenIdentifier> delTokenIdents = new ArrayList<DelegationTokenIdentifier>(tokenIdents.size());
 
     for (String tokenIdent : tokenIdents) {
@@ -132,19 +133,33 @@ public class DBTokenStore implements DelegationTokenStore {
     return delTokenIdents;
   }
 
-  private Object hmsHandler;
+  private Object handler;
+  private ServerMode smode;
 
   @Override
-  public void init(Object hms, ServerMode smode) throws TokenStoreException {
-    this.hmsHandler = hms;
+  public void init(Object handler, ServerMode smode) throws TokenStoreException {
+    this.handler = handler;
+    this.smode = smode;
   }
 
-  private Object invokeOnRawStore(String methName, Object[] params, Class<?> ... paramTypes)
+  private Object invokeOnTokenStore(String methName, Object[] params, Class<?> ... paramTypes)
       throws TokenStoreException{
-
+    Object tokenStore;
     try {
-      Object rawStore = hmsHandler.getClass().getMethod("getMS").invoke(hmsHandler);
-      return rawStore.getClass().getMethod(methName, paramTypes).invoke(rawStore, params);
+      switch (smode) {
+        case METASTORE :
+          tokenStore = handler.getClass().getMethod("getMS").invoke(handler);
+          break;
+        case HIVESERVER2 :
+          Object hiveObject = ((Class<?>)handler)
+            .getMethod("get", org.apache.hadoop.conf.Configuration.class, java.lang.Class.class)
+            .invoke(handler, conf, DBTokenStore.class);
+          tokenStore = ((Class<?>)handler).getMethod("getMSC").invoke(hiveObject);
+          break;
+       default:
+         throw new TokenStoreException(new Exception("unknown server mode"));
+      }
+      return tokenStore.getClass().getMethod(methName, paramTypes).invoke(tokenStore, params);
     } catch (IllegalArgumentException e) {
         throw new TokenStoreException(e);
     } catch (SecurityException e) {
@@ -160,12 +175,12 @@ public class DBTokenStore implements DelegationTokenStore {
 
   @Override
   public void setConf(Configuration conf) {
-    // No-op
+    this.conf = conf;
   }
 
   @Override
   public Configuration getConf() {
-    return null;
+    return conf;
   }
 
   @Override

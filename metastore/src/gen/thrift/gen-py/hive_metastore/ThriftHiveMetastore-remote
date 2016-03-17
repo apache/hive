@@ -135,6 +135,14 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  string get_delegation_token(string token_owner, string renewer_kerberos_principal_name)')
   print('  i64 renew_delegation_token(string token_str_form)')
   print('  void cancel_delegation_token(string token_str_form)')
+  print('  bool add_token(string token_identifier, string delegation_token)')
+  print('  bool remove_token(string token_identifier)')
+  print('  string get_token(string token_identifier)')
+  print('   get_all_token_identifiers()')
+  print('  i32 add_master_key(string key)')
+  print('  void update_master_key(i32 seq_number, string key)')
+  print('  bool remove_master_key(i32 key_seq)')
+  print('   get_master_keys()')
   print('  GetOpenTxnsResponse get_open_txns()')
   print('  GetOpenTxnsInfoResponse get_open_txns_info()')
   print('  OpenTxnsResponse open_txns(OpenTxnRequest rqst)')
@@ -893,6 +901,54 @@ elif cmd == 'cancel_delegation_token':
     print('cancel_delegation_token requires 1 args')
     sys.exit(1)
   pp.pprint(client.cancel_delegation_token(args[0],))
+
+elif cmd == 'add_token':
+  if len(args) != 2:
+    print('add_token requires 2 args')
+    sys.exit(1)
+  pp.pprint(client.add_token(args[0],args[1],))
+
+elif cmd == 'remove_token':
+  if len(args) != 1:
+    print('remove_token requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.remove_token(args[0],))
+
+elif cmd == 'get_token':
+  if len(args) != 1:
+    print('get_token requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_token(args[0],))
+
+elif cmd == 'get_all_token_identifiers':
+  if len(args) != 0:
+    print('get_all_token_identifiers requires 0 args')
+    sys.exit(1)
+  pp.pprint(client.get_all_token_identifiers())
+
+elif cmd == 'add_master_key':
+  if len(args) != 1:
+    print('add_master_key requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.add_master_key(args[0],))
+
+elif cmd == 'update_master_key':
+  if len(args) != 2:
+    print('update_master_key requires 2 args')
+    sys.exit(1)
+  pp.pprint(client.update_master_key(eval(args[0]),args[1],))
+
+elif cmd == 'remove_master_key':
+  if len(args) != 1:
+    print('remove_master_key requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.remove_master_key(eval(args[0]),))
+
+elif cmd == 'get_master_keys':
+  if len(args) != 0:
+    print('get_master_keys requires 0 args')
+    sys.exit(1)
+  pp.pprint(client.get_master_keys())
 
 elif cmd == 'get_open_txns':
   if len(args) != 0:

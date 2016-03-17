@@ -148,6 +148,8 @@ public class CLIService extends CompositeService implements ICLIService {
   @Override
   public synchronized void stop() {
     super.stop();
+    // Release the HMS connection for this service thread
+    Hive.closeCurrent();
   }
 
   /**
@@ -479,7 +481,7 @@ public class CLIService extends CompositeService implements ICLIService {
       String owner, String renewer) throws HiveSQLException {
     String delegationToken = sessionManager.getSession(sessionHandle).
         getDelegationToken(authFactory, owner, renewer);
-    LOG.info(sessionHandle  + ": getDelegationToken()");
+    LOG.info(sessionHandle  + ": getDelegationToken()" + " owner: " + owner + ", renewer: " + renewer);
     return delegationToken;
   }
 

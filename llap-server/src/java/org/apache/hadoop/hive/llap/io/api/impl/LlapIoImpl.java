@@ -32,7 +32,6 @@ import org.apache.hadoop.hive.common.io.Allocator;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.cache.BuddyAllocator;
 import org.apache.hadoop.hive.llap.cache.BufferUsageManager;
-import org.apache.hadoop.hive.llap.cache.Cache;
 import org.apache.hadoop.hive.llap.cache.EvictionAwareAllocator;
 import org.apache.hadoop.hive.llap.cache.EvictionDispatcher;
 import org.apache.hadoop.hive.llap.cache.LowLevelCacheImpl;
@@ -50,7 +49,6 @@ import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonQueueMetrics;
 import org.apache.hadoop.hive.llap.metrics.MetricsUtils;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.io.orc.encoded.OrcCacheKey;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.metrics2.util.MBeans;
@@ -91,8 +89,6 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
     LOG.info("Started llap daemon metrics with displayName: " + displayName +
         " sessionId: " + sessionId);
 
-    Cache<OrcCacheKey> cache = null; // High-level cache is not implemented or supported.
-
     OrcMetadataCache metadataCache = null;
     LowLevelCacheImpl orcCache = null;
     BufferUsageManager bufferManager = null;
@@ -131,7 +127,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
 
     // TODO: this should depends on input format and be in a map, or something.
     this.cvp = new OrcColumnVectorProducer(
-        metadataCache, orcCache, bufferManager, cache, conf, cacheMetrics, queueMetrics);
+        metadataCache, orcCache, bufferManager, conf, cacheMetrics, queueMetrics);
     if (LOGL.isInfoEnabled()) {
       LOG.info("LLAP IO initialized");
     }

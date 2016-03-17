@@ -17,18 +17,12 @@
  */
 package org.apache.hadoop.hive.serde2.binarysortable;
 
-import java.sql.Date;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 
-import junit.framework.TestCase;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
@@ -39,6 +33,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.Obje
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
+
+import junit.framework.TestCase;
 
 /**
  * TestBinarySortableSerDe.
@@ -66,12 +62,13 @@ public class TestBinarySortableSerDe extends TestCase {
     return sb.toString();
   }
 
-  public static SerDe getSerDe(String fieldNames, String fieldTypes, String order)
+  public static SerDe getSerDe(String fieldNames, String fieldTypes, String order, String nullOrder)
       throws Throwable {
     Properties schema = new Properties();
     schema.setProperty(serdeConstants.LIST_COLUMNS, fieldNames);
     schema.setProperty(serdeConstants.LIST_COLUMN_TYPES, fieldTypes);
     schema.setProperty(serdeConstants.SERIALIZATION_SORT_ORDER, order);
+    schema.setProperty(serdeConstants.SERIALIZATION_NULL_SORT_ORDER, nullOrder);
 
     BinarySortableSerDe serde = new BinarySortableSerDe();
     SerDeUtils.initializeSerDe(serde, new Configuration(), schema, null);
@@ -172,11 +169,14 @@ public class TestBinarySortableSerDe extends TestCase {
 
       String order;
       order = StringUtils.leftPad("", MyTestClass.fieldCount, '+');
+      String nullOrder;
+      nullOrder = StringUtils.leftPad("", MyTestClass.fieldCount, 'a');
       testBinarySortableSerDe(rows, rowOI, getSerDe(fieldNames, fieldTypes,
-          order), true);
+          order, nullOrder), true);
       order = StringUtils.leftPad("", MyTestClass.fieldCount, '-');
+      nullOrder = StringUtils.leftPad("", MyTestClass.fieldCount, 'z');
       testBinarySortableSerDe(rows, rowOI, getSerDe(fieldNames, fieldTypes,
-          order), false);
+          order, nullOrder), false);
 
       System.out.println("Test testTBinarySortableProtocol passed!");
     } catch (Throwable e) {

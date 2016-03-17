@@ -88,6 +88,7 @@ import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge.Server.ServerMode;
 import org.apache.hadoop.hive.thrift.TUGIContainingTransport;
+import org.apache.hadoop.hive.thrift.HiveDelegationTokenManager;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
@@ -178,6 +179,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   public static final String PUBLIC = "public";
 
   private static HadoopThriftAuthBridge.Server saslServer;
+  private static HiveDelegationTokenManager delegationTokenManager;
   private static boolean useSasl;
 
   private static final class ChainedTTransportFactory extends TTransportFactory {
@@ -282,20 +284,25 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       final Formatter fmt = auditFormatter.get();
       ((StringBuilder) fmt.out()).setLength(0);
 
-      String address = null;
-      if (useSasl) {
-        if (saslServer != null && saslServer.getRemoteAddress() != null) {
-          address = String.valueOf(saslServer.getRemoteAddress());
-        }
-      } else {
-        address = getIpAddress();
-      }
+      String address = getIPAddress();
       if (address == null) {
         address = "unknown-ip-addr";
       }
 
       auditLog.info(fmt.format(AUDIT_FORMAT, ugi.getUserName(),
           address, cmd).toString());
+    }
+
+    String getIPAddress() {
+      if (useSasl) {
+        if (saslServer != null && saslServer.getRemoteAddress() != null) {
+          return saslServer.getRemoteAddress().getHostAddress();
+        }
+      } else {
+        // if kerberos is not enabled
+        return getThreadLocalIpAddress();
+      }
+      return null;
     }
 
     private static int nextSerialNum = 0;
@@ -308,7 +315,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     // This will only be set if the metastore is being accessed from a metastore Thrift server,
     // not if it is from the CLI. Also, only if the TTransport being used to connect is an
-    // instance of TSocket.
+    // instance of TSocket. This is also not set when kerberos is used.
     private static ThreadLocal<String> threadLocalIpAddress = new ThreadLocal<String>() {
       @Override
       protected String initialValue() {
@@ -316,13 +323,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     };
 
-    public static void setIpAddress(String ipAddress) {
+    public static void setThreadLocalIpAddress(String ipAddress) {
       threadLocalIpAddress.set(ipAddress);
     }
 
     // This will return null if the metastore is not being accessed from a metastore Thrift server,
-    // or if the TTransport being used to connect is not an instance of TSocket.
-    public static String getIpAddress() {
+    // or if the TTransport being used to connect is not an instance of TSocket, or if kereberos
+    // is used
+    public static String getThreadLocalIpAddress() {
       return threadLocalIpAddress.get();
     }
 
@@ -435,6 +443,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       listeners = MetaStoreUtils.getMetaStoreListeners(MetaStoreEventListener.class, hiveConf,
           hiveConf.getVar(HiveConf.ConfVars.METASTORE_EVENT_LISTENERS));
       listeners.add(new SessionPropertiesListener(hiveConf));
+      listeners.add(new AcidEventListener(hiveConf));
 
       if (metrics != null) {
         listeners.add(new HMSMetricsListener(hiveConf, metrics));
@@ -725,7 +734,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     private String startFunction(String function, String extraLogInfo) {
       incrementCounter(function);
-      logInfo((getIpAddress() == null ? "" : "source:" + getIpAddress() + " ") +
+      logInfo((getThreadLocalIpAddress() == null ? "" : "source:" + getThreadLocalIpAddress() + " ") +
           function + extraLogInfo);
       if (MetricsFactory.getInstance() != null) {
         try {
@@ -1499,8 +1508,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           }
         }
 
-        // tblPath will be null when tbl is a view. We skip the following if block in that case.
-        checkTrashPurgeCombination(tblPath, dbname + "." + name, ifPurge);
+        checkTrashPurgeCombination(tblPath, dbname + "." + name, ifPurge, deleteData && !isExternal);
         // Drop the partitions and get a list of locations which need to be deleted
         partPaths = dropPartitionsAndGetLocations(ms, dbname, name, tblPath,
             tbl.getPartitionKeys(), deleteData && !isExternal);
@@ -1537,15 +1545,20 @@ public class HiveMetaStore extends ThriftHiveMetastore {
      * @param objectName db.table, or db.table.part
      * @param ifPurge if PURGE options is specified
      */
-    private void checkTrashPurgeCombination(Path pathToData, String objectName, boolean ifPurge)
-      throws MetaException {
-      if (!(pathToData != null && !ifPurge)) {//pathToData may be NULL for a view
+    private void checkTrashPurgeCombination(Path pathToData, String objectName, boolean ifPurge,
+        boolean deleteData) throws MetaException {
+      // There is no need to check TrashPurgeCombination in following cases since Purge/Trash
+      // is not applicable:
+      // a) deleteData is false -- drop an external table
+      // b) pathToData is null -- a view
+      // c) ifPurge is true -- force delete without Trash
+      if (!deleteData || pathToData == null || ifPurge) {
         return;
       }
 
       boolean trashEnabled = false;
       try {
-  trashEnabled = 0 < hiveConf.getFloat("fs.trash.interval", -1);
+        trashEnabled = 0 < hiveConf.getFloat("fs.trash.interval", -1);
       } catch(NumberFormatException ex) {
   // nothing to do
       }
@@ -2635,11 +2648,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       boolean isArchived = false;
       Path archiveParentDir = null;
       boolean mustPurge = false;
+      boolean isExternalTbl = false;
 
       try {
         ms.openTransaction();
         part = ms.getPartition(db_name, tbl_name, part_vals);
         tbl = get_table_core(db_name, tbl_name);
+        isExternalTbl = isExternal(tbl);
         firePreEvent(new PreDropPartitionEvent(tbl, part, deleteData, this));
         mustPurge = isMustPurge(envContext, tbl);
 
@@ -2652,7 +2667,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (isArchived) {
           archiveParentDir = MetaStoreUtils.getOriginalLocation(part);
           verifyIsWritablePath(archiveParentDir);
-          checkTrashPurgeCombination(archiveParentDir, db_name + "." + tbl_name + "." + part_vals, mustPurge);
+          checkTrashPurgeCombination(archiveParentDir, db_name + "." + tbl_name + "." + part_vals,
+              mustPurge, deleteData && !isExternalTbl);
         }
         if (!ms.dropPartition(db_name, tbl_name, part_vals)) {
           throw new MetaException("Unable to drop partition");
@@ -2661,13 +2677,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if ((part.getSd() != null) && (part.getSd().getLocation() != null)) {
           partPath = new Path(part.getSd().getLocation());
           verifyIsWritablePath(partPath);
-          checkTrashPurgeCombination(partPath, db_name + "." + tbl_name + "." + part_vals, mustPurge);
+          checkTrashPurgeCombination(partPath, db_name + "." + tbl_name + "." + part_vals,
+              mustPurge, deleteData && !isExternalTbl);
         }
       } finally {
         if (!success) {
           ms.rollbackTransaction();
         } else if (deleteData && ((partPath != null) || (archiveParentDir != null))) {
-          if (tbl != null && !isExternal(tbl)) {
+          if (!isExternalTbl) {
             if (mustPurge) {
               LOG.info("dropPartition() will purge " + partPath + " directly, skipping trash.");
             }
@@ -2752,10 +2769,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Table tbl = null;
       List<Partition> parts = null;
       boolean mustPurge = false;
+      boolean isExternalTbl = false;
       try {
         // We need Partition-s for firing events and for result; DN needs MPartition-s to drop.
         // Great... Maybe we could bypass fetching MPartitions by issuing direct SQL deletes.
         tbl = get_table_core(dbName, tblName);
+        isExternalTbl = isExternal(tbl);
         mustPurge = isMustPurge(envContext, tbl);
         int minCount = 0;
         RequestPartsSpec spec = request.getParts();
@@ -2820,13 +2839,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           if (MetaStoreUtils.isArchived(part)) {
             Path archiveParentDir = MetaStoreUtils.getOriginalLocation(part);
             verifyIsWritablePath(archiveParentDir);
-            checkTrashPurgeCombination(archiveParentDir, dbName + "." + tblName + "." + part.getValues(), mustPurge);
+            checkTrashPurgeCombination(archiveParentDir, dbName + "." + tblName + "." +
+                part.getValues(), mustPurge, deleteData && !isExternalTbl);
             archToDelete.add(archiveParentDir);
           }
           if ((part.getSd() != null) && (part.getSd().getLocation() != null)) {
             Path partPath = new Path(part.getSd().getLocation());
             verifyIsWritablePath(partPath);
-            checkTrashPurgeCombination(partPath, dbName + "." + tblName + "." + part.getValues(), mustPurge);
+            checkTrashPurgeCombination(partPath, dbName + "." + tblName + "." + part.getValues(),
+                mustPurge, deleteData && !isExternalTbl);
             dirsToDelete.add(new PathAndPartValSize(partPath, part.getValues().size()));
           }
         }
@@ -5240,7 +5261,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ret =
             HiveMetaStore.getDelegationToken(token_owner,
-                renewer_kerberos_principal_name);
+                renewer_kerberos_principal_name, getIPAddress());
       } catch (IOException e) {
         ex = e;
         throw new MetaException(e.getMessage());
@@ -5260,6 +5281,165 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         endFunction("get_delegation_token", ret != null, ex);
       }
       return ret;
+    }
+
+    @Override
+    public boolean add_token(String token_identifier, String delegation_token) throws TException {
+      startFunction("add_token", ": " + token_identifier);
+      boolean ret = false;
+      Exception ex = null;
+      try {
+        ret = getMS().addToken(token_identifier, delegation_token);
+      } catch (Exception e) {
+        ex = e;
+        if (e instanceof MetaException) {
+          throw (MetaException) e;
+        } else {
+          throw newMetaException(e);
+        }
+      } finally {
+        endFunction("add_token", ret == true, ex);
+      }
+      return ret;
+    }
+
+    @Override
+    public boolean remove_token(String token_identifier) throws TException {
+      startFunction("remove_token", ": " + token_identifier);
+      boolean ret = false;
+      Exception ex = null;
+      try {
+        ret = getMS().removeToken(token_identifier);
+      } catch (Exception e) {
+        ex = e;
+        if (e instanceof MetaException) {
+          throw (MetaException) e;
+        } else {
+          throw newMetaException(e);
+        }
+      } finally {
+        endFunction("remove_token", ret == true, ex);
+      }
+      return ret;
+    }
+
+    @Override
+    public String get_token(String token_identifier) throws TException {
+      startFunction("get_token for", ": " + token_identifier);
+      String ret = null;
+      Exception ex = null;
+      try {
+        ret = getMS().getToken(token_identifier);
+      } catch (Exception e) {
+        ex = e;
+        if (e instanceof MetaException) {
+          throw (MetaException) e;
+        } else {
+          throw newMetaException(e);
+        }
+      } finally {
+        endFunction("get_token", ret != null, ex);
+      }
+      return ret;
+    }
+
+    @Override
+    public List<String> get_all_token_identifiers() throws TException {
+      startFunction("get_all_token_identifiers.");
+      List<String> ret = null;
+      Exception ex = null;
+      try {
+        ret = getMS().getAllTokenIdentifiers();
+      } catch (Exception e) {
+        ex = e;
+        if (e instanceof MetaException) {
+          throw (MetaException) e;
+        } else {
+          throw newMetaException(e);
+        }
+      } finally {
+        endFunction("get_all_token_identifiers.", ex == null, ex);
+      }
+      return ret;
+    }
+
+    @Override
+    public int add_master_key(String key) throws MetaException, TException {
+      startFunction("add_master_key.");
+      int ret = -1;
+      Exception ex = null;
+      try {
+        ret = getMS().addMasterKey(key);
+      } catch (Exception e) {
+        ex = e;
+        if (e instanceof MetaException) {
+          throw (MetaException) e;
+        } else {
+          throw newMetaException(e);
+        }
+      } finally {
+        endFunction("add_master_key.", ex == null, ex);
+      }
+      return ret;
+    }
+
+    @Override
+    public void update_master_key(int seq_number, String key) throws NoSuchObjectException,
+      MetaException, TException {
+      startFunction("update_master_key.");
+      Exception ex = null;
+      try {
+        getMS().updateMasterKey(seq_number, key);
+      } catch (Exception e) {
+        ex = e;
+        if (e instanceof MetaException) {
+          throw (MetaException) e;
+        } else {
+          throw newMetaException(e);
+        }
+      } finally {
+        endFunction("update_master_key.", ex == null, ex);
+      }
+    }
+
+    @Override
+    public boolean remove_master_key(int key_seq) throws TException {
+      startFunction("remove_master_key.");
+      Exception ex = null;
+      boolean ret;
+      try {
+        ret = getMS().removeMasterKey(key_seq);
+      } catch (Exception e) {
+        ex = e;
+        if (e instanceof MetaException) {
+          throw (MetaException) e;
+        } else {
+          throw newMetaException(e);
+        }
+      } finally {
+        endFunction("remove_master_key.", ex == null, ex);
+      }
+      return ret;
+    }
+
+    @Override
+    public List<String> get_master_keys() throws TException {
+      startFunction("get_master_keys.");
+      Exception ex = null;
+      String [] ret = null;
+      try {
+        ret = getMS().getMasterKeys();
+      } catch (Exception e) {
+        ex = e;
+        if (e instanceof MetaException) {
+          throw (MetaException) e;
+        } else {
+          throw newMetaException(e);
+        }
+      } finally {
+        endFunction("get_master_keys.", ret != null, ex);
+      }
+      return Arrays.asList(ret);
     }
 
     @Override
@@ -5767,17 +5947,16 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       boolean[] eliminated = new boolean[fileIds.size()];
 
       getMS().getFileMetadataByExpr(fileIds, type, req.getExpr(), metadatas, ppdResults, eliminated);
-      for (int i = 0; i < metadatas.length; ++i) {
-        long fileId = fileIds.get(i);
-        ByteBuffer metadata = metadatas[i];
-        if (metadata == null) continue;
-        metadata = (eliminated[i] || !needMetadata) ? null
-            : handleReadOnlyBufferForThrift(metadata);
+      for (int i = 0; i < fileIds.size(); ++i) {
+        if (!eliminated[i] && ppdResults[i] == null) continue; // No metadata => no ppd.
         MetadataPpdResult mpr = new MetadataPpdResult();
-        ByteBuffer bitset = eliminated[i] ? null : handleReadOnlyBufferForThrift(ppdResults[i]);
-        mpr.setMetadata(metadata);
-        mpr.setIncludeBitset(bitset);
-        result.putToMetadata(fileId, mpr);
+        ByteBuffer ppdResult = eliminated[i] ? null : handleReadOnlyBufferForThrift(ppdResults[i]);
+        mpr.setIncludeBitset(ppdResult);
+        if (needMetadata) {
+          ByteBuffer metadata = eliminated[i] ? null : handleReadOnlyBufferForThrift(metadatas[i]);
+          mpr.setMetadata(metadata);
+        }
+        result.putToMetadata(fileIds.get(i), mpr);
       }
       if (!result.isSetMetadata()) {
         result.setMetadata(EMPTY_MAP_FM2); // Set the required field.
@@ -5979,7 +6158,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
    */
   public static void cancelDelegationToken(String tokenStrForm
       ) throws IOException {
-    saslServer.cancelDelegationToken(tokenStrForm);
+    delegationTokenManager.cancelDelegationToken(tokenStrForm);
   }
 
   /**
@@ -5988,9 +6167,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
    * @param renewer
    *          the designated renewer
    */
-  public static String getDelegationToken(String owner, String renewer)
+  public static String getDelegationToken(String owner, String renewer, String remoteAddr)
       throws IOException, InterruptedException {
-    return saslServer.getDelegationToken(owner, renewer);
+    return delegationTokenManager.getDelegationToken(owner, renewer, remoteAddr);
   }
 
   /**
@@ -6008,7 +6187,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
    */
   public static long renewDelegationToken(String tokenStrForm
       ) throws IOException {
-    return saslServer.renewDelegationToken(tokenStrForm);
+    return delegationTokenManager.renewDelegationToken(tokenStrForm);
   }
 
   /**
@@ -6092,6 +6271,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         HMSHandler.LOG.warn(e.getMessage());
       }
     }
+    HiveStringUtils.startupShutdownMessage(HiveMetaStore.class, args, LOG);
 
     try {
       String msg = "Starting hive metastore on port " + cli.port;
@@ -6223,8 +6403,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         saslServer = bridge.createServer(
             conf.getVar(HiveConf.ConfVars.METASTORE_KERBEROS_KEYTAB_FILE),
             conf.getVar(HiveConf.ConfVars.METASTORE_KERBEROS_PRINCIPAL));
-        // start delegation token manager
-        saslServer.startDelegationTokenSecretManager(conf, baseHandler, ServerMode.METASTORE);
+        // Start delegation token manager
+        delegationTokenManager = new HiveDelegationTokenManager();
+        delegationTokenManager.startDelegationTokenSecretManager(conf, baseHandler,
+            ServerMode.METASTORE);
+        saslServer.setSecretManager(delegationTokenManager.getSecretManager());
         transFactory = saslServer.createTransportFactory(
                 MetaStoreUtils.getMetaStoreSaslProperties(conf));
         processor = saslServer.wrapProcessor(

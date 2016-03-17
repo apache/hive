@@ -25,6 +25,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat.Context;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.InputFormat;
@@ -121,9 +123,8 @@ public class OrcNewInputFormat extends InputFormat<NullWritable, OrcStruct>{
     if (LOG.isDebugEnabled()) {
       LOG.debug("getSplits started");
     }
-    List<OrcSplit> splits =
-        OrcInputFormat.generateSplitsInfo(ShimLoader.getHadoopShims()
-        .getConfiguration(jobContext));
+    Configuration conf = ShimLoader.getHadoopShims().getConfiguration(jobContext);
+    List<OrcSplit> splits = OrcInputFormat.generateSplitsInfo(conf, createContext(conf, -1));
     List<InputSplit> result = new ArrayList<InputSplit>(splits.size());
     for(OrcSplit split: splits) {
       result.add(new OrcNewSplit(split));
@@ -134,4 +135,13 @@ public class OrcNewInputFormat extends InputFormat<NullWritable, OrcStruct>{
     return result;
   }
 
+  // Nearly C/P from OrcInputFormat; there are too many statics everywhere to sort this out.
+  private Context createContext(Configuration conf, int numSplits) {
+    // Use threads to resolve directories into splits.
+    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ORC_MS_FOOTER_CACHE_ENABLED)) {
+      // Create HiveConf once, since this is expensive.
+      conf = new HiveConf(conf, OrcInputFormat.class);
+    }
+    return new Context(conf, numSplits, null);
+  }
 }

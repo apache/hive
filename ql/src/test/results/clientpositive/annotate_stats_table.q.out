@@ -299,6 +299,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmp
+POSTHOOK: Lineage: tmp._c0 SIMPLE []
 PREHOOK: query: explain create table tmp as select 1
 PREHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: query: explain create table tmp as select 1

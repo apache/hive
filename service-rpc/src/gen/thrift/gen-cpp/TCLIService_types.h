@@ -3408,11 +3408,14 @@ inline std::ostream& operator<<(std::ostream& out, const TGetOperationStatusReq&
 }
 
 typedef struct _TGetOperationStatusResp__isset {
-  _TGetOperationStatusResp__isset() : operationState(false), sqlState(false), errorCode(false), errorMessage(false) {}
+  _TGetOperationStatusResp__isset() : operationState(false), sqlState(false), errorCode(false), errorMessage(false), taskStatus(false), operationStarted(false), operationCompleted(false) {}
   bool operationState :1;
   bool sqlState :1;
   bool errorCode :1;
   bool errorMessage :1;
+  bool taskStatus :1;
+  bool operationStarted :1;
+  bool operationCompleted :1;
 } _TGetOperationStatusResp__isset;
 
 class TGetOperationStatusResp {
@@ -3420,7 +3423,7 @@ class TGetOperationStatusResp {
 
   TGetOperationStatusResp(const TGetOperationStatusResp&);
   TGetOperationStatusResp& operator=(const TGetOperationStatusResp&);
-  TGetOperationStatusResp() : operationState((TOperationState::type)0), sqlState(), errorCode(0), errorMessage() {
+  TGetOperationStatusResp() : operationState((TOperationState::type)0), sqlState(), errorCode(0), errorMessage(), taskStatus(), operationStarted(0), operationCompleted(0) {
   }
 
   virtual ~TGetOperationStatusResp() throw();
@@ -3429,6 +3432,9 @@ class TGetOperationStatusResp {
   std::string sqlState;
   int32_t errorCode;
   std::string errorMessage;
+  std::string taskStatus;
+  int64_t operationStarted;
+  int64_t operationCompleted;
 
   _TGetOperationStatusResp__isset __isset;
 
@@ -3441,6 +3447,12 @@ class TGetOperationStatusResp {
   void __set_errorCode(const int32_t val);
 
   void __set_errorMessage(const std::string& val);
+
+  void __set_taskStatus(const std::string& val);
+
+  void __set_operationStarted(const int64_t val);
+
+  void __set_operationCompleted(const int64_t val);
 
   bool operator == (const TGetOperationStatusResp & rhs) const
   {
@@ -3461,6 +3473,18 @@ class TGetOperationStatusResp {
     if (__isset.errorMessage != rhs.__isset.errorMessage)
       return false;
     else if (__isset.errorMessage && !(errorMessage == rhs.errorMessage))
+      return false;
+    if (__isset.taskStatus != rhs.__isset.taskStatus)
+      return false;
+    else if (__isset.taskStatus && !(taskStatus == rhs.taskStatus))
+      return false;
+    if (__isset.operationStarted != rhs.__isset.operationStarted)
+      return false;
+    else if (__isset.operationStarted && !(operationStarted == rhs.operationStarted))
+      return false;
+    if (__isset.operationCompleted != rhs.__isset.operationCompleted)
+      return false;
+    else if (__isset.operationCompleted && !(operationCompleted == rhs.operationCompleted))
       return false;
     return true;
   }

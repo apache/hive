@@ -144,6 +144,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@base_tab
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@null_tab3
+POSTHOOK: Lineage: null_tab3.a SIMPLE [(base_tab)base_tab.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: null_tab3.b SIMPLE [(base_tab)base_tab.FieldSchema(name:b, type:string, comment:null), ]
 PREHOOK: query: DESCRIBE EXTENDED null_tab3
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@null_tab3

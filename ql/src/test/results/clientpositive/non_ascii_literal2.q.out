@@ -10,6 +10,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@non_ascii_literal2
+POSTHOOK: Lineage: non_ascii_literal2.col1 SIMPLE []
+POSTHOOK: Lineage: non_ascii_literal2.col2 SIMPLE []
 PREHOOK: query: select * from non_ascii_literal2
 where col2 = "Абвгде"
 PREHOOK: type: QUERY

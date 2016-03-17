@@ -50,7 +50,7 @@ public class IpAddressListener extends MetaStoreEventListener{
   private void checkIpAddress() {
     try {
       String localhostIp = InetAddress.getByName(LOCAL_HOST).getHostAddress();
-      Assert.assertEquals(localhostIp, HMSHandler.getIpAddress());
+      Assert.assertEquals(localhostIp, HMSHandler.getThreadLocalIpAddress());
     } catch (UnknownHostException e) {
       Assert.assertTrue("InetAddress.getLocalHost threw an exception: " + e.getMessage(), false);
     }

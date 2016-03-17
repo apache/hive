@@ -390,14 +390,17 @@ TOK_QUERY
                   b
       TOK_ORDERBY
          TOK_TABSORTCOLNAMEASC
-            TOK_TABLE_OR_COL
-               ds
+            TOK_NULLS_FIRST
+               TOK_TABLE_OR_COL
+                  ds
          TOK_TABSORTCOLNAMEASC
-            TOK_TABLE_OR_COL
-               hr
+            TOK_NULLS_FIRST
+               TOK_TABLE_OR_COL
+                  hr
          TOK_TABSORTCOLNAMEASC
-            TOK_TABLE_OR_COL
-               BLOCK__OFFSET__INSIDE__FILE
+            TOK_NULLS_FIRST
+               TOK_TABLE_OR_COL
+                  BLOCK__OFFSET__INSIDE__FILE
 
 
 STAGE DEPENDENCIES:
@@ -423,6 +426,7 @@ STAGE PLANS:
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
+                  null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -442,6 +446,7 @@ STAGE PLANS:
                 Statistics: Num rows: 222 Data size: 2358 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
+                  null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 222 Data size: 2358 Basic stats: COMPLETE Column stats: NONE
@@ -724,6 +729,7 @@ STAGE PLANS:
             GatherStats: false
             Reduce Output Operator
               key expressions: _col2 (type: string), _col3 (type: string), _col4 (type: bigint)
+              null sort order: aaa
               sort order: +++
               Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
               tag: -1

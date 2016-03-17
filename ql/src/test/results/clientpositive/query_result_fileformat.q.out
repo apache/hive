@@ -14,6 +14,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nzhang_test1
+POSTHOOK: Lineage: nzhang_test1.key SIMPLE []
+POSTHOOK: Lineage: nzhang_test1.value SIMPLE []
 PREHOOK: query: select * from nzhang_test1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_test1

@@ -84,6 +84,7 @@ import com.google.common.annotations.VisibleForTesting;
  */
 public abstract class BaseSemanticAnalyzer {
   protected static final Logger STATIC_LOG = LoggerFactory.getLogger(BaseSemanticAnalyzer.class.getName());
+  // Assumes one instance of this + single-threaded compilation for each query.
   protected final Hive db;
   protected final HiveConf conf;
   protected List<Task<? extends Serializable>> rootTasks;
@@ -108,6 +109,8 @@ public abstract class BaseSemanticAnalyzer {
 
   public static int HIVE_COLUMN_ORDER_ASC = 1;
   public static int HIVE_COLUMN_ORDER_DESC = 0;
+  public static int HIVE_COLUMN_NULLS_FIRST = 0;
+  public static int HIVE_COLUMN_NULLS_LAST = 1;
 
   /**
    * ReadEntities that are passed to the hooks.
@@ -197,7 +200,7 @@ public abstract class BaseSemanticAnalyzer {
   }
 
   public BaseSemanticAnalyzer(HiveConf conf) throws SemanticException {
-   this(conf, createHiveDB(conf));
+    this(conf, createHiveDB(conf));
   }
 
   public BaseSemanticAnalyzer(HiveConf conf, Hive db) throws SemanticException {
@@ -650,17 +653,29 @@ public abstract class BaseSemanticAnalyzer {
     return colList;
   }
 
-  protected List<Order> getColumnNamesOrder(ASTNode ast) {
+  protected List<Order> getColumnNamesOrder(ASTNode ast) throws SemanticException {
     List<Order> colList = new ArrayList<Order>();
     int numCh = ast.getChildCount();
     for (int i = 0; i < numCh; i++) {
       ASTNode child = (ASTNode) ast.getChild(i);
       if (child.getToken().getType() == HiveParser.TOK_TABSORTCOLNAMEASC) {
-        colList.add(new Order(unescapeIdentifier(child.getChild(0).getText()).toLowerCase(),
-            HIVE_COLUMN_ORDER_ASC));
+        child = (ASTNode) child.getChild(0);
+        if (child.getToken().getType() == HiveParser.TOK_NULLS_FIRST) {
+          colList.add(new Order(unescapeIdentifier(child.getChild(0).getText()).toLowerCase(),
+              HIVE_COLUMN_ORDER_ASC));
+        } else {
+          throw new SemanticException("create/alter table: "
+                  + "not supported NULLS LAST for ORDER BY in ASC order");
+        }
       } else {
-        colList.add(new Order(unescapeIdentifier(child.getChild(0).getText()).toLowerCase(),
-            HIVE_COLUMN_ORDER_DESC));
+        child = (ASTNode) child.getChild(0);
+        if (child.getToken().getType() == HiveParser.TOK_NULLS_LAST) {
+          colList.add(new Order(unescapeIdentifier(child.getChild(0).getText()).toLowerCase(),
+              HIVE_COLUMN_ORDER_DESC));
+        } else {
+          throw new SemanticException("create/alter table: "
+                  + "not supported NULLS FIRST for ORDER BY in DESC order");
+        }
       }
     }
     return colList;

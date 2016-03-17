@@ -67,11 +67,13 @@ TOK_QUERY
                5
       TOK_ORDERBY
          TOK_TABSORTCOLNAMEASC
-            TOK_TABLE_OR_COL
-               key
+            TOK_NULLS_FIRST
+               TOK_TABLE_OR_COL
+                  key
          TOK_TABSORTCOLNAMEASC
-            TOK_TABLE_OR_COL
-               ds
+            TOK_NULLS_FIRST
+               TOK_TABLE_OR_COL
+                  ds
 
 
 STAGE DEPENDENCIES:
@@ -96,6 +98,7 @@ STAGE PLANS:
                 Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int), _col2 (type: string)
+                  null sort order: aa
                   sort order: ++
                   Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
                   tag: -1

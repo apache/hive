@@ -1894,6 +1894,128 @@ module ThriftHiveMetastore
       return
     end
 
+    def add_token(token_identifier, delegation_token)
+      send_add_token(token_identifier, delegation_token)
+      return recv_add_token()
+    end
+
+    def send_add_token(token_identifier, delegation_token)
+      send_message('add_token', Add_token_args, :token_identifier => token_identifier, :delegation_token => delegation_token)
+    end
+
+    def recv_add_token()
+      result = receive_message(Add_token_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'add_token failed: unknown result')
+    end
+
+    def remove_token(token_identifier)
+      send_remove_token(token_identifier)
+      return recv_remove_token()
+    end
+
+    def send_remove_token(token_identifier)
+      send_message('remove_token', Remove_token_args, :token_identifier => token_identifier)
+    end
+
+    def recv_remove_token()
+      result = receive_message(Remove_token_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'remove_token failed: unknown result')
+    end
+
+    def get_token(token_identifier)
+      send_get_token(token_identifier)
+      return recv_get_token()
+    end
+
+    def send_get_token(token_identifier)
+      send_message('get_token', Get_token_args, :token_identifier => token_identifier)
+    end
+
+    def recv_get_token()
+      result = receive_message(Get_token_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_token failed: unknown result')
+    end
+
+    def get_all_token_identifiers()
+      send_get_all_token_identifiers()
+      return recv_get_all_token_identifiers()
+    end
+
+    def send_get_all_token_identifiers()
+      send_message('get_all_token_identifiers', Get_all_token_identifiers_args)
+    end
+
+    def recv_get_all_token_identifiers()
+      result = receive_message(Get_all_token_identifiers_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_all_token_identifiers failed: unknown result')
+    end
+
+    def add_master_key(key)
+      send_add_master_key(key)
+      return recv_add_master_key()
+    end
+
+    def send_add_master_key(key)
+      send_message('add_master_key', Add_master_key_args, :key => key)
+    end
+
+    def recv_add_master_key()
+      result = receive_message(Add_master_key_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'add_master_key failed: unknown result')
+    end
+
+    def update_master_key(seq_number, key)
+      send_update_master_key(seq_number, key)
+      recv_update_master_key()
+    end
+
+    def send_update_master_key(seq_number, key)
+      send_message('update_master_key', Update_master_key_args, :seq_number => seq_number, :key => key)
+    end
+
+    def recv_update_master_key()
+      result = receive_message(Update_master_key_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      return
+    end
+
+    def remove_master_key(key_seq)
+      send_remove_master_key(key_seq)
+      return recv_remove_master_key()
+    end
+
+    def send_remove_master_key(key_seq)
+      send_message('remove_master_key', Remove_master_key_args, :key_seq => key_seq)
+    end
+
+    def recv_remove_master_key()
+      result = receive_message(Remove_master_key_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'remove_master_key failed: unknown result')
+    end
+
+    def get_master_keys()
+      send_get_master_keys()
+      return recv_get_master_keys()
+    end
+
+    def send_get_master_keys()
+      send_message('get_master_keys', Get_master_keys_args)
+    end
+
+    def recv_get_master_keys()
+      result = receive_message(Get_master_keys_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_master_keys failed: unknown result')
+    end
+
     def get_open_txns()
       send_get_open_txns()
       return recv_get_open_txns()
@@ -3742,6 +3864,72 @@ module ThriftHiveMetastore
         result.o1 = o1
       end
       write_result(result, oprot, 'cancel_delegation_token', seqid)
+    end
+
+    def process_add_token(seqid, iprot, oprot)
+      args = read_args(iprot, Add_token_args)
+      result = Add_token_result.new()
+      result.success = @handler.add_token(args.token_identifier, args.delegation_token)
+      write_result(result, oprot, 'add_token', seqid)
+    end
+
+    def process_remove_token(seqid, iprot, oprot)
+      args = read_args(iprot, Remove_token_args)
+      result = Remove_token_result.new()
+      result.success = @handler.remove_token(args.token_identifier)
+      write_result(result, oprot, 'remove_token', seqid)
+    end
+
+    def process_get_token(seqid, iprot, oprot)
+      args = read_args(iprot, Get_token_args)
+      result = Get_token_result.new()
+      result.success = @handler.get_token(args.token_identifier)
+      write_result(result, oprot, 'get_token', seqid)
+    end
+
+    def process_get_all_token_identifiers(seqid, iprot, oprot)
+      args = read_args(iprot, Get_all_token_identifiers_args)
+      result = Get_all_token_identifiers_result.new()
+      result.success = @handler.get_all_token_identifiers()
+      write_result(result, oprot, 'get_all_token_identifiers', seqid)
+    end
+
+    def process_add_master_key(seqid, iprot, oprot)
+      args = read_args(iprot, Add_master_key_args)
+      result = Add_master_key_result.new()
+      begin
+        result.success = @handler.add_master_key(args.key)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'add_master_key', seqid)
+    end
+
+    def process_update_master_key(seqid, iprot, oprot)
+      args = read_args(iprot, Update_master_key_args)
+      result = Update_master_key_result.new()
+      begin
+        @handler.update_master_key(args.seq_number, args.key)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'update_master_key', seqid)
+    end
+
+    def process_remove_master_key(seqid, iprot, oprot)
+      args = read_args(iprot, Remove_master_key_args)
+      result = Remove_master_key_result.new()
+      result.success = @handler.remove_master_key(args.key_seq)
+      write_result(result, oprot, 'remove_master_key', seqid)
+    end
+
+    def process_get_master_keys(seqid, iprot, oprot)
+      args = read_args(iprot, Get_master_keys_args)
+      result = Get_master_keys_result.new()
+      result.success = @handler.get_master_keys()
+      write_result(result, oprot, 'get_master_keys', seqid)
     end
 
     def process_get_open_txns(seqid, iprot, oprot)
@@ -8286,6 +8474,268 @@ module ThriftHiveMetastore
 
     FIELDS = {
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Add_token_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    TOKEN_IDENTIFIER = 1
+    DELEGATION_TOKEN = 2
+
+    FIELDS = {
+      TOKEN_IDENTIFIER => {:type => ::Thrift::Types::STRING, :name => 'token_identifier'},
+      DELEGATION_TOKEN => {:type => ::Thrift::Types::STRING, :name => 'delegation_token'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Add_token_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::BOOL, :name => 'success'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Remove_token_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    TOKEN_IDENTIFIER = 1
+
+    FIELDS = {
+      TOKEN_IDENTIFIER => {:type => ::Thrift::Types::STRING, :name => 'token_identifier'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Remove_token_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::BOOL, :name => 'success'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_token_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    TOKEN_IDENTIFIER = 1
+
+    FIELDS = {
+      TOKEN_IDENTIFIER => {:type => ::Thrift::Types::STRING, :name => 'token_identifier'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_token_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRING, :name => 'success'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_all_token_identifiers_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+
+    FIELDS = {
+
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_all_token_identifiers_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRING}}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Add_master_key_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    KEY = 1
+
+    FIELDS = {
+      KEY => {:type => ::Thrift::Types::STRING, :name => 'key'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Add_master_key_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::I32, :name => 'success'},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Update_master_key_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SEQ_NUMBER = 1
+    KEY = 2
+
+    FIELDS = {
+      SEQ_NUMBER => {:type => ::Thrift::Types::I32, :name => 'seq_number'},
+      KEY => {:type => ::Thrift::Types::STRING, :name => 'key'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Update_master_key_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Remove_master_key_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    KEY_SEQ = 1
+
+    FIELDS = {
+      KEY_SEQ => {:type => ::Thrift::Types::I32, :name => 'key_seq'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Remove_master_key_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::BOOL, :name => 'success'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_master_keys_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+
+    FIELDS = {
+
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_master_keys_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRING}}
     }
 
     def struct_fields; FIELDS; end

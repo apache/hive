@@ -26,6 +26,9 @@ POSTHOOK: Input: default@pokes
 POSTHOOK: Input: default@pokes2
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@jssarma_nilzma_bad
+POSTHOOK: Lineage: jssarma_nilzma_bad.filename SIMPLE [(pokes)pokes.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: jssarma_nilzma_bad.offset SIMPLE [(pokes)pokes.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: jssarma_nilzma_bad.val EXPRESSION [(pokes)pokes.FieldSchema(name:foo, type:int, comment:null), ]
 PREHOOK: query: drop table jssarma_nilzma_bad
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@jssarma_nilzma_bad
@@ -78,6 +81,9 @@ POSTHOOK: Input: default@pokes
 POSTHOOK: Input: default@pokes2
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@jssarma_nilzma_bad
+POSTHOOK: Lineage: jssarma_nilzma_bad.filename SIMPLE [(pokes)pokes.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: jssarma_nilzma_bad.offset SIMPLE [(pokes)pokes.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: jssarma_nilzma_bad.val EXPRESSION [(pokes)pokes.FieldSchema(name:foo, type:int, comment:null), ]
 PREHOOK: query: drop table jssarma_nilzma_bad
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@jssarma_nilzma_bad
@@ -130,6 +136,9 @@ POSTHOOK: Input: default@pokes
 POSTHOOK: Input: default@pokes2
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@jssarma_nilzma_bad
+POSTHOOK: Lineage: jssarma_nilzma_bad.filename SIMPLE [(pokes)pokes.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: jssarma_nilzma_bad.offset SIMPLE [(pokes)pokes.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: jssarma_nilzma_bad.val EXPRESSION [(pokes)pokes.FieldSchema(name:foo, type:int, comment:null), ]
 PREHOOK: query: drop table jssarma_nilzma_bad
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@jssarma_nilzma_bad

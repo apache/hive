@@ -176,16 +176,16 @@ org.apache.hive.service.cli.operation.SQLOperationDisplay;
            <th>Retry If Fail</th>
         </tr>
 
-       <%if sod.getQueryDisplay() != null && sod.getQueryDisplay().getTaskInfos() != null %>
-           <%for QueryDisplay.TaskInfo taskInfo : sod.getQueryDisplay().getTaskInfos() %>
+       <%if sod.getQueryDisplay() != null && sod.getQueryDisplay().getTaskDisplays() != null %>
+           <%for QueryDisplay.TaskDisplay taskDisplay : sod.getQueryDisplay().getTaskDisplays() %>
                <tr>
-                   <td><% taskInfo.getTaskId() + ":" + taskInfo.getTaskType() %></td>
-                   <td><% taskInfo.getStatus() %></td>
-                   <td><% new Date(taskInfo.getBeginTime()) %>
-                   <td><% taskInfo.getEndTime() == 0 ? "" : new Date(taskInfo.getEndTime()) %></td>
-                   <td><% taskInfo.getElapsedTime()/1000 %> (s) </td>
-                   <td><% taskInfo.isRequireLock() %></td>
-                   <td><% taskInfo.isRetryIfFail() %></td>
+                   <td><% taskDisplay.getTaskId() + ":" + taskDisplay.getTaskType() %></td>
+                   <td><% taskDisplay.getStatus() %></td>
+                   <td><% taskDisplay.getBeginTime() == null ? "" : new Date(taskDisplay.getBeginTime()) %></td>
+                   <td><% taskDisplay.getEndTime() == null ? "" : new Date(taskDisplay.getEndTime()) %></td>
+                   <td><% taskDisplay.getElapsedTime() == null ? "" : taskDisplay.getElapsedTime()/1000 %> (s) </td>
+                   <td><% taskDisplay.isRequireLock() %></td>
+                   <td><% taskDisplay.isRetryIfFail() %></td>
                </tr>
            </%for>
        </%if>

@@ -12,6 +12,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1
+POSTHOOK: Lineage: t1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select * from t1 sort by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
@@ -41,6 +43,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t2
+POSTHOOK: Lineage: t2.key EXPRESSION [(t1)t1.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: t2.value SIMPLE [(t1)t1.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: select * from t2 sort by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
@@ -72,6 +76,8 @@ POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t3
+POSTHOOK: Lineage: t3.key EXPRESSION [(t1)t1.FieldSchema(name:key, type:int, comment:null), (t2)t2.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: t3.value EXPRESSION [(t1)t1.FieldSchema(name:value, type:string, comment:null), (t2)t2.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: select * from t3 sort by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t3

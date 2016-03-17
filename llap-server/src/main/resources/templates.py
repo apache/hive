@@ -88,7 +88,7 @@ appConfig = """
   },
   "components": {
     "slider-appmaster": {
-      "jvm.heapsize": "1024M",
+      "jvm.heapsize": "%(slider_am_jvm_heapsize)dM",
       "slider.hdfs.keytab.dir": "%(slider_keytab_dir)s",
       "slider.am.login.keytab.name": "%(slider_keytab)s",
       "slider.keytab.principal.name": "%(slider_principal)s"
@@ -106,6 +106,8 @@ resources = """
   },
   "components": {
     "slider-appmaster": {
+      "yarn.memory": "%(slider.am.container.mb)d",
+      "yarn.component.instances": "1"
     },
     "LLAP": {
       "yarn.role.priority": "1",
@@ -126,5 +128,5 @@ BASEDIR=$(dirname $0)
 slider stop %(name)s
 slider destroy %(name)s --force || slider destroy %(name)s
 slider install-package --name LLAP --package  $BASEDIR/llap-%(version)s.zip --replacepkg
-slider create %(name)s --resources $BASEDIR/resources.json --template $BASEDIR/appConfig.json
+slider create %(name)s --resources $BASEDIR/resources.json --template $BASEDIR/appConfig.json %(queue.string)s
 """

@@ -46,6 +46,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@staging
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_ctas
+POSTHOOK: Lineage: parquet_ctas.key SIMPLE [(staging)staging.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: parquet_ctas.value SIMPLE [(staging)staging.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: describe parquet_ctas
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@parquet_ctas
@@ -82,6 +84,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@staging
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_ctas_advanced
+POSTHOOK: Lineage: parquet_ctas_advanced.c0 EXPRESSION [(staging)staging.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: parquet_ctas_advanced.c1 EXPRESSION [(staging)staging.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: describe parquet_ctas_advanced
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@parquet_ctas_advanced
@@ -118,6 +122,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@staging
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_ctas_alias
+POSTHOOK: Lineage: parquet_ctas_alias.mykey EXPRESSION [(staging)staging.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: parquet_ctas_alias.myvalue EXPRESSION [(staging)staging.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: describe parquet_ctas_alias
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@parquet_ctas_alias
@@ -154,6 +160,9 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@staging
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_ctas_mixed
+POSTHOOK: Lineage: parquet_ctas_mixed.c1 EXPRESSION [(staging)staging.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: parquet_ctas_mixed.key SIMPLE [(staging)staging.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: parquet_ctas_mixed.myvalue EXPRESSION [(staging)staging.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: describe parquet_ctas_mixed
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@parquet_ctas_mixed

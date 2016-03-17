@@ -82,13 +82,6 @@ public class EncodedColumnBatch<BatchKey> {
   protected ColumnStreamData[][] columnData;
   /** Column indexes included in the batch. Correspond to columnData elements. */
   protected int[] columnIxs;
-  // TODO: Maybe remove when solving the pooling issue.
-  /** Generation version necessary to sync pooling reuse with the fact that two separate threads
-   * operate on batches - the one that decodes them, and potential separate thread w/a "stop" call
-   * that cleans them up. We don't want the decode thread to use the ECB that was thrown out and
-   * reused, so it remembers the version and checks it after making sure no cleanup thread can ever
-   * get to this ECB anymore. All this sync is ONLY needed because of high level cache code. */
-  public int version = Integer.MIN_VALUE;
 
   public void reset() {
     if (columnData == null) return;
@@ -117,7 +110,7 @@ public class EncodedColumnBatch<BatchKey> {
   }
 
   public BatchKey getBatchKey() {
-    return batchKey;
+    return batchKey; // TODO#: who uses this? can we remove fileId?
   }
 
   public ColumnStreamData[][] getColumnData() {

@@ -38,6 +38,7 @@ public class FilterStringColLikeStringScalar extends AbstractFilterStringColLike
       new EndCheckerFactory(),
       new MiddleCheckerFactory(),
       new NoneCheckerFactory(),
+      new ChainedCheckerFactory(),
       new ComplexCheckerFactory());
 
   public FilterStringColLikeStringScalar() {
@@ -113,6 +114,23 @@ public class FilterStringColLikeStringScalar extends AbstractFilterStringColLike
       Matcher matcher = NONE_PATTERN.matcher(pattern);
       if (matcher.matches()) {
         return new NoneChecker(pattern);
+      }
+      return null;
+    }
+  }
+
+  /**
+   * Accepts chained LIKE patterns without escaping like "abc%def%ghi%" and creates corresponding
+   * checkers.
+   *
+   */
+  private static class ChainedCheckerFactory implements CheckerFactory {
+    private static final Pattern CHAIN_PATTERN = Pattern.compile("(%?[^%_\\\\]+%?)+");
+
+    public Checker tryCreate(String pattern) {
+      Matcher matcher = CHAIN_PATTERN.matcher(pattern);
+      if (matcher.matches()) {
+        return new ChainedChecker(pattern);
       }
       return null;
     }

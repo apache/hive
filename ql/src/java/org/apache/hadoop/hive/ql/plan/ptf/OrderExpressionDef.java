@@ -18,15 +18,18 @@
 
 package org.apache.hadoop.hive.ql.plan.ptf;
 
+import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.NullOrder;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.Order;
 
 public class OrderExpressionDef extends PTFExpressionDef {
   private Order order;
+  private NullOrder nullOrder;
 
   public OrderExpressionDef() {}
   public OrderExpressionDef(PTFExpressionDef e) {
     super(e);
     order = Order.ASC;
+    nullOrder = NullOrder.NULLS_FIRST;
   }
 
   public Order getOrder() {
@@ -36,5 +39,13 @@ public class OrderExpressionDef extends PTFExpressionDef {
   public void setOrder(Order order) {
     this.order = order;
   }
-}
 
+  public NullOrder getNullOrder() {
+    return nullOrder;
+  }
+
+  public void setNullOrder(NullOrder nullOrder) {
+    this.nullOrder = nullOrder;
+  }
+
+}

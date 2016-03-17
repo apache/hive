@@ -1,0 +1,5 @@
+PREHOOK: query: create external table acid_external (a int, b varchar(128)) clustered by (b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@acid_external
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. MetaException(message:default.acid_external cannot be declared transactional because it's an external table)

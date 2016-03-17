@@ -38,6 +38,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.slf4j.Logger;
@@ -495,9 +496,9 @@ public class Driver implements CommandProcessor {
       schema = getSchema(sem, conf);
 
       plan = new QueryPlan(queryStr, sem, perfLogger.getStartTime(PerfLogger.DRIVER_RUN), queryId,
-        SessionState.get().getHiveOperation(), schema);
+        SessionState.get().getHiveOperation(), schema, queryDisplay);
 
-      conf.setVar(HiveConf.ConfVars.HIVEQUERYSTRING, queryStr);
+      conf.setQueryString(queryStr);
 
       conf.set("mapreduce.workflow.id", "hive_" + queryId);
       conf.set("mapreduce.workflow.name", queryStr);
@@ -732,14 +733,14 @@ public class Driver implements CommandProcessor {
         }
       }
 
+      // column authorization is checked through table scan operators.
       getTablePartitionUsedColumns(op, sem, tab2Cols, part2Cols, tableUsePartLevelAuth);
-
-
 
       // cache the results for table authorization
       Set<String> tableAuthChecked = new HashSet<String>();
       for (ReadEntity read : inputs) {
-        if (read.isDummy() || read.isPathType()) {
+        // if read is not direct, we do not need to check its autho.
+        if (read.isDummy() || read.isPathType() || !read.isDirect()) {
           continue;
         }
         if (read.getType() == Entity.Type.DATABASE) {
@@ -747,6 +748,10 @@ public class Driver implements CommandProcessor {
           continue;
         }
         Table tbl = read.getTable();
+        if (tbl.isView() && sem instanceof SemanticAnalyzer) {
+          tab2Cols.put(tbl,
+              sem.getColumnAccessInfo().getTableToColumnAccessMap().get(tbl.getTableName()));
+        }
         if (read.getPartition() != null) {
           Partition partition = read.getPartition();
           tbl = partition.getTable();
@@ -791,46 +796,49 @@ public class Driver implements CommandProcessor {
     // for a select or create-as-select query, populate the partition to column
     // (par2Cols) or
     // table to columns mapping (tab2Cols)
-    if (op.equals(HiveOperation.CREATETABLE_AS_SELECT)
-        || op.equals(HiveOperation.QUERY)) {
+    if (op.equals(HiveOperation.CREATETABLE_AS_SELECT) || op.equals(HiveOperation.QUERY)) {
       SemanticAnalyzer querySem = (SemanticAnalyzer) sem;
       ParseContext parseCtx = querySem.getParseContext();
 
-      for (Map.Entry<String, TableScanOperator> topOpMap : querySem.getParseContext().getTopOps().entrySet()) {
-        TableScanOperator topOp = topOpMap.getValue();
-        TableScanOperator tableScanOp = topOp;
-        Table tbl = tableScanOp.getConf().getTableMetadata();
-        List<Integer> neededColumnIds = tableScanOp.getNeededColumnIDs();
-        List<FieldSchema> columns = tbl.getCols();
-        List<String> cols = new ArrayList<String>();
-        for (int i = 0; i < neededColumnIds.size(); i++) {
-          cols.add(columns.get(neededColumnIds.get(i)).getName());
-        }
-        //map may not contain all sources, since input list may have been optimized out
-        //or non-existent tho such sources may still be referenced by the TableScanOperator
-        //if it's null then the partition probably doesn't exist so let's use table permission
-        if (tbl.isPartitioned() &&
-            Boolean.TRUE.equals(tableUsePartLevelAuth.get(tbl.getTableName()))) {
-          String alias_id = topOpMap.getKey();
+      for (Map.Entry<String, TableScanOperator> topOpMap : querySem.getParseContext().getTopOps()
+          .entrySet()) {
+        TableScanOperator tableScanOp = topOpMap.getValue();
+        if (!tableScanOp.isInsideView()) {
+          Table tbl = tableScanOp.getConf().getTableMetadata();
+          List<Integer> neededColumnIds = tableScanOp.getNeededColumnIDs();
+          List<FieldSchema> columns = tbl.getCols();
+          List<String> cols = new ArrayList<String>();
+          for (int i = 0; i < neededColumnIds.size(); i++) {
+            cols.add(columns.get(neededColumnIds.get(i)).getName());
+          }
+          // map may not contain all sources, since input list may have been
+          // optimized out
+          // or non-existent tho such sources may still be referenced by the
+          // TableScanOperator
+          // if it's null then the partition probably doesn't exist so let's use
+          // table permission
+          if (tbl.isPartitioned()
+              && Boolean.TRUE.equals(tableUsePartLevelAuth.get(tbl.getTableName()))) {
+            String alias_id = topOpMap.getKey();
 
-          PrunedPartitionList partsList = PartitionPruner.prune(tableScanOp,
-              parseCtx, alias_id);
-          Set<Partition> parts = partsList.getPartitions();
-          for (Partition part : parts) {
-            List<String> existingCols = part2Cols.get(part);
+            PrunedPartitionList partsList = PartitionPruner.prune(tableScanOp, parseCtx, alias_id);
+            Set<Partition> parts = partsList.getPartitions();
+            for (Partition part : parts) {
+              List<String> existingCols = part2Cols.get(part);
+              if (existingCols == null) {
+                existingCols = new ArrayList<String>();
+              }
+              existingCols.addAll(cols);
+              part2Cols.put(part, existingCols);
+            }
+          } else {
+            List<String> existingCols = tab2Cols.get(tbl);
             if (existingCols == null) {
               existingCols = new ArrayList<String>();
             }
             existingCols.addAll(cols);
-            part2Cols.put(part, existingCols);
+            tab2Cols.put(tbl, existingCols);
           }
-        } else {
-          List<String> existingCols = tab2Cols.get(tbl);
-          if (existingCols == null) {
-            existingCols = new ArrayList<String>();
-          }
-          existingCols.addAll(cols);
-          tab2Cols.put(tbl, existingCols);
         }
       }
     }
@@ -1181,7 +1189,7 @@ public class Driver implements CommandProcessor {
   private int compileInternal(String command) {
     int ret;
     final ReentrantLock compileLock = tryAcquireCompileLock(isParallelEnabled,
-        command);
+      command);
     if (compileLock == null) {
       return ErrorMsg.COMPILE_LOCK_TIMED_OUT.getErrorCode();
     }
@@ -1224,8 +1232,8 @@ public class Driver implements CommandProcessor {
     final ReentrantLock compileLock = isParallelEnabled ?
         SessionState.get().getCompileLock() : globalCompileLock;
     long maxCompileLockWaitTime = HiveConf.getTimeVar(
-          this.conf, ConfVars.HIVE_SERVER2_COMPILE_LOCK_TIMEOUT,
-          TimeUnit.SECONDS);
+      this.conf, ConfVars.HIVE_SERVER2_COMPILE_LOCK_TIMEOUT,
+      TimeUnit.SECONDS);
     if (maxCompileLockWaitTime > 0) {
       try {
         if (LOG.isDebugEnabled()) {
@@ -1478,7 +1486,7 @@ public class Driver implements CommandProcessor {
     String queryId = plan.getQueryId();
     // Get the query string from the conf file as the compileInternal() method might
     // hide sensitive information during query redaction.
-    String queryStr = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYSTRING);
+    String queryStr = conf.getQueryString();
 
     maxthreads = HiveConf.getIntVar(conf, HiveConf.ConfVars.EXECPARALLETHREADNUMBER);
 
@@ -1568,7 +1576,6 @@ public class Driver implements CommandProcessor {
         // Launch upto maxthreads tasks
         Task<? extends Serializable> task;
         while ((task = driverCxt.getRunnable(maxthreads)) != null) {
-          queryDisplay.addTask(task);
           TaskRunner runner = launchTask(task, queryId, noName, jobname, jobs, driverCxt);
           if (!runner.isRunning()) {
             break;
@@ -1581,7 +1588,7 @@ public class Driver implements CommandProcessor {
           continue;
         }
         hookContext.addCompleteTask(tskRun);
-        queryDisplay.setTaskCompleted(tskRun.getTask().getId(), tskRun.getTaskResult());
+        queryDisplay.setTaskResult(tskRun.getTask().getId(), tskRun.getTaskResult());
 
         Task<? extends Serializable> tsk = tskRun.getTask();
         TaskResult result = tskRun.getTaskResult();

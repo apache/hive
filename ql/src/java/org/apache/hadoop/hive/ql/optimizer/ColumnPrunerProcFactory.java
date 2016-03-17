@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -781,6 +782,17 @@ public final class ColumnPrunerProcFactory {
       // by now, 'prunedCols' are columns used by child operators, and 'columns'
       // are columns used by this select operator.
       List<String> originalOutputColumnNames = conf.getOutputColumnNames();
+      // get view column authorization.
+      if (cppCtx.getParseContext().getColumnAccessInfo() != null
+          && cppCtx.getParseContext().getViewProjectToTableSchema() != null
+          && cppCtx.getParseContext().getViewProjectToTableSchema().containsKey(op)) {
+        for (String col : cols) {
+          int index = originalOutputColumnNames.indexOf(col);
+          Table tab = cppCtx.getParseContext().getViewProjectToTableSchema().get(op);
+          cppCtx.getParseContext().getColumnAccessInfo()
+              .add(tab.getTableName(), tab.getCols().get(index).getName());
+        }
+      }
       if (cols.size() < originalOutputColumnNames.size()) {
         ArrayList<ExprNodeDesc> newColList = new ArrayList<ExprNodeDesc>();
         ArrayList<String> newOutputColumnNames = new ArrayList<String>();

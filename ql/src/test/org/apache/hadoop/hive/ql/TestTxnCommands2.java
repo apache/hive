@@ -331,14 +331,7 @@ public class TestTxnCommands2 {
 
     // 4. Perform a major compaction
     runStatementOnDriver("alter table "+ Table.NONACIDORCTBL + " compact 'MAJOR'");
-    Worker w = new Worker();
-    w.setThreadId((int) w.getId());
-    w.setHiveConf(hiveConf);
-    AtomicBoolean stop = new AtomicBoolean();
-    AtomicBoolean looped = new AtomicBoolean();
-    stop.set(true);
-    w.init(stop, looped);
-    w.run();
+    runWorker(hiveConf);
     // There should be 1 new directory: base_xxxxxxx.
     // Original bucket files and delta directory should stay until Cleaner kicks in.
     status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
@@ -375,14 +368,7 @@ public class TestTxnCommands2 {
     // Before Cleaner, there should be 5 items:
     // 2 original files, 1 original directory, 1 base directory and 1 delta directory
     Assert.assertEquals(5, status.length);
-    Cleaner c = new Cleaner();
-    c.setThreadId((int) c.getId());
-    c.setHiveConf(hiveConf);
-    stop = new AtomicBoolean();
-    looped = new AtomicBoolean();
-    stop.set(true);
-    c.init(stop, looped);
-    c.run();
+    runCleaner(hiveConf);
     // There should be only 1 directory left: base_xxxxxxx.
     // Original bucket files and delta directory should have been cleaned up.
     status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
@@ -596,7 +582,7 @@ public class TestTxnCommands2 {
     }
     return compactionsByState;
   }
-  private static void runWorker(HiveConf hiveConf) throws MetaException {
+  public static void runWorker(HiveConf hiveConf) throws MetaException {
     AtomicBoolean stop = new AtomicBoolean(true);
     Worker t = new Worker();
     t.setThreadId((int) t.getId());
@@ -605,7 +591,7 @@ public class TestTxnCommands2 {
     t.init(stop, looped);
     t.run();
   }
-  private static void runCleaner(HiveConf hiveConf) throws MetaException {
+  public static void runCleaner(HiveConf hiveConf) throws MetaException {
     AtomicBoolean stop = new AtomicBoolean(true);
     Cleaner t = new Cleaner();
     t.setThreadId((int) t.getId());

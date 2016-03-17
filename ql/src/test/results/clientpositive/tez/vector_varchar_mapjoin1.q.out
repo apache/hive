@@ -98,6 +98,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@varchar_join1_vc1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@varchar_join1_vc1_orc
+POSTHOOK: Lineage: varchar_join1_vc1_orc.c1 SIMPLE [(varchar_join1_vc1)varchar_join1_vc1.FieldSchema(name:c1, type:int, comment:null), ]
+POSTHOOK: Lineage: varchar_join1_vc1_orc.c2 SIMPLE [(varchar_join1_vc1)varchar_join1_vc1.FieldSchema(name:c2, type:varchar(10), comment:null), ]
 PREHOOK: query: create table varchar_join1_vc2_orc stored as orc as select * from varchar_join1_vc2
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@varchar_join1_vc2
@@ -108,6 +110,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@varchar_join1_vc2
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@varchar_join1_vc2_orc
+POSTHOOK: Lineage: varchar_join1_vc2_orc.c1 SIMPLE [(varchar_join1_vc2)varchar_join1_vc2.FieldSchema(name:c1, type:int, comment:null), ]
+POSTHOOK: Lineage: varchar_join1_vc2_orc.c2 SIMPLE [(varchar_join1_vc2)varchar_join1_vc2.FieldSchema(name:c2, type:varchar(20), comment:null), ]
 PREHOOK: query: create table varchar_join1_str_orc stored as orc as select * from varchar_join1_str
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@varchar_join1_str
@@ -118,6 +122,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@varchar_join1_str
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@varchar_join1_str_orc
+POSTHOOK: Lineage: varchar_join1_str_orc.c1 SIMPLE [(varchar_join1_str)varchar_join1_str.FieldSchema(name:c1, type:int, comment:null), ]
+POSTHOOK: Lineage: varchar_join1_str_orc.c2 SIMPLE [(varchar_join1_str)varchar_join1_str.FieldSchema(name:c2, type:string, comment:null), ]
 PREHOOK: query: -- Join varchar with same length varchar
 explain select * from varchar_join1_vc1_orc a join varchar_join1_vc1_orc b on (a.c2 = b.c2) order by a.c1
 PREHOOK: type: QUERY

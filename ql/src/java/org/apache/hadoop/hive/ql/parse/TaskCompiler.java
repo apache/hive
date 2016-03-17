@@ -71,6 +71,7 @@ public abstract class TaskCompiler {
 
   protected final Logger LOG = LoggerFactory.getLogger(TaskCompiler.class);
 
+  // Assumes one instance of this + single-threaded compilation for each query.
   protected Hive db;
   protected LogHelper console;
   protected HiveConf conf;
@@ -402,7 +403,7 @@ public abstract class TaskCompiler {
         pCtx.getNameToSplitSample(), pCtx.getSemanticInputs(), rootTasks,
         pCtx.getOpToPartToSkewedPruner(), pCtx.getViewAliasToInput(),
         pCtx.getReduceSinkOperatorsAddedByEnforceBucketingSorting(),
-        pCtx.getAnalyzeRewrite(), pCtx.getCreateTable(), pCtx.getQueryProperties());
+        pCtx.getAnalyzeRewrite(), pCtx.getCreateTable(), pCtx.getQueryProperties(), pCtx.getViewProjectToTableSchema());
     clone.setFetchTask(pCtx.getFetchTask());
     clone.setLineageInfo(pCtx.getLineageInfo());
     clone.setMapJoinOps(pCtx.getMapJoinOps());

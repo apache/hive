@@ -198,6 +198,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_s2m
+POSTHOOK: Lineage: tbl_s2m.t SIMPLE []
 PREHOOK: query: select str_to_map(t,'_','=')['333'] from tbl_s2m
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_s2m

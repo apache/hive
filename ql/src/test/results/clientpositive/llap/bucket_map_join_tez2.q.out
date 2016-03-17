@@ -593,7 +593,7 @@ STAGE PLANS:
                         Statistics: Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
         Reducer 2 
-            Execution mode: uber
+            Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: int)
@@ -680,7 +680,7 @@ STAGE PLANS:
                         value expressions: _col1 (type: string)
             Execution mode: llap
         Reducer 2 
-            Execution mode: uber
+            Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string)

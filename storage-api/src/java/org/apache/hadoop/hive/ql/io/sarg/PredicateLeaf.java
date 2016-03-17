@@ -99,5 +99,4 @@ public interface PredicateLeaf {
    *
    */
   public List<Object> getLiteralList();
-
 }

@@ -25,6 +25,7 @@ import static junit.framework.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.sql.Date;
@@ -107,6 +108,14 @@ import com.google.common.collect.Lists;
  */
 @RunWith(value = Parameterized.class)
 public class TestOrcFile {
+
+  public static class DecimalStruct {
+    HiveDecimalWritable dec;
+
+    DecimalStruct(HiveDecimalWritable hdw) {
+      this.dec = hdw;
+    }
+  }
 
   public static class SimpleStruct {
     BytesWritable bytes1;
@@ -538,6 +547,110 @@ public class TestOrcFile {
     boolean[] expected = new boolean[] {false};
     boolean[] included = OrcUtils.includeColumns("", writer.getSchema());
     assertEquals(true, Arrays.equals(expected, included));
+  }
+
+  @Test
+  public void testHiveDecimalAllNulls() throws Exception {
+    ObjectInspector inspector;
+    synchronized (TestOrcFile.class) {
+      inspector = ObjectInspectorFactory.getReflectionObjectInspector
+          (DecimalStruct.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
+    }
+
+    Writer writer = OrcFile.createWriter(testFilePath,
+        OrcFile.writerOptions(conf).inspector(inspector).stripeSize(100000).bufferSize(10000));
+    // this is an invalid decimal value, getting HiveDecimal from it will return null
+    writer.addRow(new DecimalStruct(new HiveDecimalWritable("1.463040009E9".getBytes(), 8)));
+    writer.addRow(new DecimalStruct(null));
+    writer.close();
+
+    Reader reader = OrcFile.createReader(testFilePath,
+        OrcFile.readerOptions(conf).filesystem(fs));
+    StructObjectInspector readerInspector =
+        (StructObjectInspector) reader.getObjectInspector();
+    List<? extends StructField> fields = readerInspector.getAllStructFieldRefs();
+    HiveDecimalObjectInspector doi = (HiveDecimalObjectInspector) readerInspector.
+        getStructFieldRef("dec").getFieldObjectInspector();
+    RecordReader rows = reader.rows(null);
+    while (rows.hasNext()) {
+      Object row = rows.next(null);
+      assertEquals(null, doi.getPrimitiveWritableObject(readerInspector.getStructFieldData(row,
+          fields.get(0))));
+    }
+
+    // check the stats
+    ColumnStatistics[] stats = reader.getStatistics();
+    assertEquals(2, stats[0].getNumberOfValues());
+    assertEquals(0, stats[1].getNumberOfValues());
+    assertEquals(true, stats[1].hasNull());
+  }
+
+  @Test
+  public void testHiveDecimalIsNullReset() throws Exception {
+    ObjectInspector inspector;
+    synchronized (TestOrcFile.class) {
+      inspector = ObjectInspectorFactory.getReflectionObjectInspector
+          (DecimalStruct.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
+    }
+
+    Writer writer = OrcFile.createWriter(testFilePath,
+        OrcFile.writerOptions(conf).inspector(inspector).stripeSize(100000).bufferSize(10000));
+
+    // orc creates 1000 batch size to make memory check align with 5000 instead of 5120
+    for (int i = 0; i < 1000; i++) {
+      writer.addRow(new DecimalStruct(null));
+    }
+
+    writer.addRow(new DecimalStruct(new HiveDecimalWritable("1.00")));
+    writer.addRow(new DecimalStruct(new HiveDecimalWritable("2.00")));
+    writer.addRow(new DecimalStruct(new HiveDecimalWritable("3.00")));
+
+    writer.close();
+
+    Reader reader = OrcFile.createReader(testFilePath,
+        OrcFile.readerOptions(conf).filesystem(fs));
+    StructObjectInspector readerInspector =
+        (StructObjectInspector) reader.getObjectInspector();
+    List<? extends StructField> fields = readerInspector.getAllStructFieldRefs();
+    HiveDecimalObjectInspector doi = (HiveDecimalObjectInspector) readerInspector.
+        getStructFieldRef("dec").getFieldObjectInspector();
+    RecordReader rows = reader.rows(null);
+    int idx = 0;
+    while (rows.hasNext()) {
+      Object row = rows.next(null);
+      if (idx < 1000) {
+        assertEquals(null, doi.getPrimitiveWritableObject(readerInspector.getStructFieldData(row,
+            fields.get(0))));
+      }
+
+      if (idx == 1000) {
+        assertEquals(new HiveDecimalWritable(1),
+            doi.getPrimitiveWritableObject(readerInspector.getStructFieldData(row,
+                fields.get(0))));
+      }
+
+      if (idx == 1001) {
+        assertEquals(new HiveDecimalWritable(2),
+            doi.getPrimitiveWritableObject(readerInspector.getStructFieldData(row,
+                fields.get(0))));
+      }
+
+      if (idx == 10002) {
+        assertEquals(new HiveDecimalWritable(3),
+            doi.getPrimitiveWritableObject(readerInspector.getStructFieldData(row,
+                fields.get(0))));
+      }
+      idx++;
+    }
+
+    // check the stats
+    ColumnStatistics[] stats = reader.getStatistics();
+    assertEquals(1003, stats[0].getNumberOfValues());
+    assertEquals(3, stats[1].getNumberOfValues());
+    assertEquals(HiveDecimal.create(3), ((DecimalColumnStatistics) stats[1]).getMaximum());
+    assertEquals(HiveDecimal.create(1), ((DecimalColumnStatistics) stats[1]).getMinimum());
+    assertEquals(HiveDecimal.create(6), ((DecimalColumnStatistics) stats[1]).getSum());
+    assertEquals(true, stats[1].hasNull());
   }
 
   @Test

@@ -48,6 +48,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@tsint_txt
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@TSINT
+POSTHOOK: Lineage: tsint.csint SIMPLE [(tsint_txt)tsint_txt.FieldSchema(name:csint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: tsint.rnum SIMPLE [(tsint_txt)tsint_txt.FieldSchema(name:rnum, type:int, comment:null), ]
 tsint_txt.rnum	tsint_txt.csint
 PREHOOK: query: create table TINT stored as orc AS SELECT * FROM TINT_txt
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -59,6 +61,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@tint_txt
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@TINT
+POSTHOOK: Lineage: tint.cint SIMPLE [(tint_txt)tint_txt.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: tint.rnum SIMPLE [(tint_txt)tint_txt.FieldSchema(name:rnum, type:int, comment:null), ]
 tint_txt.rnum	tint_txt.cint
 Warning: Map Join MAPJOIN[11][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
 PREHOOK: query: -- We DO NOT expect the following to vectorized because the BETWEEN range expressions

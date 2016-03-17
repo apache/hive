@@ -447,15 +447,15 @@ public final class Metastore {
 
       public final boolean isInitialized() {
         if (!hasOffset()) {
-
+          
           return false;
         }
         if (!hasLength()) {
-
+          
           return false;
         }
         if (!hasIndex()) {
-
+          
           return false;
         }
         return true;
@@ -597,7 +597,7 @@ public final class Metastore {
     /**
      * <code>repeated .org.apache.hadoop.hive.metastore.SplitInfo infos = 1;</code>
      */
-    java.util.List<org.apache.hadoop.hive.metastore.Metastore.SplitInfo>
+    java.util.List<org.apache.hadoop.hive.metastore.Metastore.SplitInfo> 
         getInfosList();
     /**
      * <code>repeated .org.apache.hadoop.hive.metastore.SplitInfo infos = 1;</code>
@@ -610,7 +610,7 @@ public final class Metastore {
     /**
      * <code>repeated .org.apache.hadoop.hive.metastore.SplitInfo infos = 1;</code>
      */
-    java.util.List<? extends org.apache.hadoop.hive.metastore.Metastore.SplitInfoOrBuilder>
+    java.util.List<? extends org.apache.hadoop.hive.metastore.Metastore.SplitInfoOrBuilder> 
         getInfosOrBuilderList();
     /**
      * <code>repeated .org.apache.hadoop.hive.metastore.SplitInfo infos = 1;</code>
@@ -731,7 +731,7 @@ public final class Metastore {
     /**
      * <code>repeated .org.apache.hadoop.hive.metastore.SplitInfo infos = 1;</code>
      */
-    public java.util.List<? extends org.apache.hadoop.hive.metastore.Metastore.SplitInfoOrBuilder>
+    public java.util.List<? extends org.apache.hadoop.hive.metastore.Metastore.SplitInfoOrBuilder> 
         getInfosOrBuilderList() {
       return infos_;
     }
@@ -984,7 +984,7 @@ public final class Metastore {
               infosBuilder_ = null;
               infos_ = other.infos_;
               bitField0_ = (bitField0_ & ~0x00000001);
-              infosBuilder_ =
+              infosBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getInfosFieldBuilder() : null;
             } else {
@@ -999,7 +999,7 @@ public final class Metastore {
       public final boolean isInitialized() {
         for (int i = 0; i < getInfosCount(); i++) {
           if (!getInfos(i).isInitialized()) {
-
+            
             return false;
           }
         }
@@ -1220,7 +1220,7 @@ public final class Metastore {
       /**
        * <code>repeated .org.apache.hadoop.hive.metastore.SplitInfo infos = 1;</code>
        */
-      public java.util.List<? extends org.apache.hadoop.hive.metastore.Metastore.SplitInfoOrBuilder>
+      public java.util.List<? extends org.apache.hadoop.hive.metastore.Metastore.SplitInfoOrBuilder> 
            getInfosOrBuilderList() {
         if (infosBuilder_ != null) {
           return infosBuilder_.getMessageOrBuilderList();
@@ -1246,12 +1246,12 @@ public final class Metastore {
       /**
        * <code>repeated .org.apache.hadoop.hive.metastore.SplitInfo infos = 1;</code>
        */
-      public java.util.List<org.apache.hadoop.hive.metastore.Metastore.SplitInfo.Builder>
+      public java.util.List<org.apache.hadoop.hive.metastore.Metastore.SplitInfo.Builder> 
            getInfosBuilderList() {
         return getInfosFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.apache.hadoop.hive.metastore.Metastore.SplitInfo, org.apache.hadoop.hive.metastore.Metastore.SplitInfo.Builder, org.apache.hadoop.hive.metastore.Metastore.SplitInfoOrBuilder>
+          org.apache.hadoop.hive.metastore.Metastore.SplitInfo, org.apache.hadoop.hive.metastore.Metastore.SplitInfo.Builder, org.apache.hadoop.hive.metastore.Metastore.SplitInfoOrBuilder> 
           getInfosFieldBuilder() {
         if (infosBuilder_ == null) {
           infosBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<

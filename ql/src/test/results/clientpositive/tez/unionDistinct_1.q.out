@@ -6644,6 +6644,7 @@ STAGE PLANS:
                         Statistics: Num rows: 348 Data size: 9684 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
+                          null sort order: aaaa
                           sort order: ++++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
                           Statistics: Num rows: 348 Data size: 9684 Basic stats: COMPLETE Column stats: NONE
@@ -6742,6 +6743,7 @@ STAGE PLANS:
                             Statistics: Num rows: 348 Data size: 9684 Basic stats: COMPLETE Column stats: NONE
                             Reduce Output Operator
                               key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
+                              null sort order: aaaa
                               sort order: ++++
                               Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
                               Statistics: Num rows: 348 Data size: 9684 Basic stats: COMPLETE Column stats: NONE
@@ -6813,6 +6815,7 @@ STAGE PLANS:
                       Statistics: Num rows: 55 Data size: 1862 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 55 Data size: 1862 Basic stats: COMPLETE Column stats: NONE
@@ -7775,6 +7778,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src2
+POSTHOOK: Lineage: src2.count EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: src2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: create table src3 as select * from src2
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src2
@@ -7785,6 +7790,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src2
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src3
+POSTHOOK: Lineage: src3.count SIMPLE [(src2)src2.FieldSchema(name:count, type:bigint, comment:null), ]
+POSTHOOK: Lineage: src3.key SIMPLE [(src2)src2.FieldSchema(name:key, type:string, comment:null), ]
 PREHOOK: query: create table src4 as select * from src2
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src2
@@ -7795,6 +7802,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src2
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src4
+POSTHOOK: Lineage: src4.count SIMPLE [(src2)src2.FieldSchema(name:count, type:bigint, comment:null), ]
+POSTHOOK: Lineage: src4.key SIMPLE [(src2)src2.FieldSchema(name:key, type:string, comment:null), ]
 PREHOOK: query: create table src5 as select * from src2
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src2
@@ -7805,6 +7814,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src2
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src5
+POSTHOOK: Lineage: src5.count SIMPLE [(src2)src2.FieldSchema(name:count, type:bigint, comment:null), ]
+POSTHOOK: Lineage: src5.key SIMPLE [(src2)src2.FieldSchema(name:key, type:string, comment:null), ]
 PREHOOK: query: explain extended
 select s.key, s.count from (
   select key, count from src2  where key < 10
@@ -8014,6 +8025,7 @@ STAGE PLANS:
                         Statistics: Num rows: 206 Data size: 988 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: string), _col1 (type: bigint)
+                          null sort order: aa
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
                           Statistics: Num rows: 206 Data size: 988 Basic stats: COMPLETE Column stats: NONE
@@ -8090,6 +8102,7 @@ STAGE PLANS:
                         Statistics: Num rows: 103 Data size: 494 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: string)
+                          null sort order: a
                           sort order: +
                           Map-reduce partition columns: _col0 (type: string)
                           Statistics: Num rows: 103 Data size: 494 Basic stats: COMPLETE Column stats: NONE
@@ -8166,6 +8179,7 @@ STAGE PLANS:
                         Statistics: Num rows: 206 Data size: 988 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: string), _col1 (type: bigint)
+                          null sort order: aa
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
                           Statistics: Num rows: 206 Data size: 988 Basic stats: COMPLETE Column stats: NONE
@@ -8241,6 +8255,7 @@ STAGE PLANS:
                         Statistics: Num rows: 206 Data size: 988 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: string), _col1 (type: bigint)
+                          null sort order: aa
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
                           Statistics: Num rows: 206 Data size: 988 Basic stats: COMPLETE Column stats: NONE
@@ -8311,6 +8326,7 @@ STAGE PLANS:
                   Statistics: Num rows: 154 Data size: 738 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: string), _col1 (type: bigint)
+                    null sort order: aa
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
                     Statistics: Num rows: 154 Data size: 738 Basic stats: COMPLETE Column stats: NONE
@@ -8331,6 +8347,7 @@ STAGE PLANS:
                   Statistics: Num rows: 206 Data size: 988 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: string), _col1 (type: bigint)
+                    null sort order: aa
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
                     Statistics: Num rows: 206 Data size: 988 Basic stats: COMPLETE Column stats: NONE
@@ -8351,6 +8368,7 @@ STAGE PLANS:
                   Statistics: Num rows: 154 Data size: 738 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: string), _col1 (type: bigint)
+                    null sort order: aa
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
                     Statistics: Num rows: 154 Data size: 738 Basic stats: COMPLETE Column stats: NONE
@@ -8625,6 +8643,7 @@ STAGE PLANS:
                         Statistics: Num rows: 206 Data size: 988 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: string), _col1 (type: bigint)
+                          null sort order: aa
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
                           Statistics: Num rows: 206 Data size: 988 Basic stats: COMPLETE Column stats: NONE
@@ -8700,6 +8719,7 @@ STAGE PLANS:
                         Statistics: Num rows: 206 Data size: 988 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: string), _col1 (type: bigint)
+                          null sort order: aa
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
                           Statistics: Num rows: 206 Data size: 988 Basic stats: COMPLETE Column stats: NONE
@@ -8792,6 +8812,7 @@ STAGE PLANS:
                             Statistics: Num rows: 216 Data size: 1037 Basic stats: COMPLETE Column stats: NONE
                             Reduce Output Operator
                               key expressions: _col0 (type: string), _col1 (type: bigint)
+                              null sort order: aa
                               sort order: ++
                               Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
                               Statistics: Num rows: 216 Data size: 1037 Basic stats: COMPLETE Column stats: NONE
@@ -8862,6 +8883,7 @@ STAGE PLANS:
                       Statistics: Num rows: 103 Data size: 494 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 103 Data size: 494 Basic stats: COMPLETE Column stats: NONE
@@ -8932,6 +8954,7 @@ STAGE PLANS:
                   Statistics: Num rows: 216 Data size: 1037 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: string), _col1 (type: bigint)
+                    null sort order: aa
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
                     Statistics: Num rows: 216 Data size: 1037 Basic stats: COMPLETE Column stats: NONE
@@ -9203,6 +9226,7 @@ STAGE PLANS:
                         Statistics: Num rows: 206 Data size: 988 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: string), _col1 (type: bigint)
+                          null sort order: aa
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
                           Statistics: Num rows: 206 Data size: 988 Basic stats: COMPLETE Column stats: NONE
@@ -9278,6 +9302,7 @@ STAGE PLANS:
                         Statistics: Num rows: 206 Data size: 988 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: string), _col1 (type: bigint)
+                          null sort order: aa
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
                           Statistics: Num rows: 206 Data size: 988 Basic stats: COMPLETE Column stats: NONE
@@ -9367,6 +9392,7 @@ STAGE PLANS:
                           Statistics: Num rows: 113 Data size: 543 Basic stats: COMPLETE Column stats: NONE
                           Reduce Output Operator
                             key expressions: _col0 (type: string)
+                            null sort order: a
                             sort order: +
                             Map-reduce partition columns: _col0 (type: string)
                             Statistics: Num rows: 113 Data size: 543 Basic stats: COMPLETE Column stats: NONE
@@ -9438,6 +9464,7 @@ STAGE PLANS:
                       Statistics: Num rows: 103 Data size: 494 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 103 Data size: 494 Basic stats: COMPLETE Column stats: NONE
@@ -9507,6 +9534,7 @@ STAGE PLANS:
                   Statistics: Num rows: 159 Data size: 763 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: string), _col1 (type: bigint)
+                    null sort order: aa
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
                     Statistics: Num rows: 159 Data size: 763 Basic stats: COMPLETE Column stats: NONE
@@ -9558,6 +9586,7 @@ STAGE PLANS:
                   Statistics: Num rows: 159 Data size: 763 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: string), _col1 (type: bigint)
+                    null sort order: aa
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
                     Statistics: Num rows: 159 Data size: 763 Basic stats: COMPLETE Column stats: NONE
@@ -11113,6 +11142,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@jackson_sev_same
+POSTHOOK: Lineage: jackson_sev_same.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: jackson_sev_same.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: create table dim_pho as select * from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
@@ -11123,6 +11154,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dim_pho
+POSTHOOK: Lineage: dim_pho.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dim_pho.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: create table jackson_sev_add as select * from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
@@ -11133,6 +11166,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@jackson_sev_add
+POSTHOOK: Lineage: jackson_sev_add.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: jackson_sev_add.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain select b.* from jackson_sev_same a join (select * from dim_pho UNION DISTINCT select * from jackson_sev_add)b on a.key=b.key and b.key=97
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select b.* from jackson_sev_same a join (select * from dim_pho UNION DISTINCT select * from jackson_sev_add)b on a.key=b.key and b.key=97
@@ -11160,11 +11195,13 @@ STAGE PLANS:
                     predicate: (UDFToDouble(key) = 97.0) (type: boolean)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: '97' (type: string)
+                        key expressions: _col0 (type: string)
                         sort order: +
-                        Map-reduce partition columns: '97' (type: string)
+                        Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
         Map 2 
             Map Operator Tree:
@@ -11175,23 +11212,19 @@ STAGE PLANS:
                     predicate: (UDFToDouble(key) = 97.0) (type: boolean)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: value (type: string)
-                      outputColumnNames: _col1
+                      expressions: key (type: string), value (type: string)
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        expressions: '97' (type: string), _col1 (type: string)
+                      Group By Operator
+                        keys: _col0 (type: string), _col1 (type: string)
+                        mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          keys: _col0 (type: string), _col1 (type: string)
-                          mode: hash
-                          outputColumnNames: _col0, _col1
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string), _col1 (type: string)
+                          sort order: ++
+                          Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                          Reduce Output Operator
-                            key expressions: _col0 (type: string), _col1 (type: string)
-                            sort order: ++
-                            Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -11201,23 +11234,19 @@ STAGE PLANS:
                     predicate: (UDFToDouble(key) = 97.0) (type: boolean)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: value (type: string)
-                      outputColumnNames: _col1
+                      expressions: key (type: string), value (type: string)
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        expressions: '97' (type: string), _col1 (type: string)
+                      Group By Operator
+                        keys: _col0 (type: string), _col1 (type: string)
+                        mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          keys: _col0 (type: string), _col1 (type: string)
-                          mode: hash
-                          outputColumnNames: _col0, _col1
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string), _col1 (type: string)
+                          sort order: ++
+                          Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                          Reduce Output Operator
-                            key expressions: _col0 (type: string), _col1 (type: string)
-                            sort order: ++
-                            Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
         Reducer 4 
             Reduce Operator Tree:
               Group By Operator
@@ -11229,7 +11258,7 @@ STAGE PLANS:
                   condition map:
                        Inner Join 0 to 1
                   keys:
-                    0 '97' (type: string)
+                    0 _col0 (type: string)
                     1 _col0 (type: string)
                   outputColumnNames: _col1, _col2
                   input vertices:
@@ -12444,6 +12473,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1
+POSTHOOK: Lineage: t1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: create table t2 as select * from src where key < 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
@@ -12454,6 +12485,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t2
+POSTHOOK: Lineage: t2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: create table t3(key string, cnt int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -13016,6 +13049,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1
+POSTHOOK: Lineage: t1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: create table t2 as select key, count(1) as cnt from src where key < 10 group by key
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
@@ -13026,6 +13061,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t2
+POSTHOOK: Lineage: t2.cnt EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: t2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: create table t7(c1 string, cnt int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -13333,6 +13370,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1
+POSTHOOK: Lineage: t1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: CREATE TABLE t2 AS SELECT * FROM src WHERE key < 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
@@ -13343,6 +13382,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t2
+POSTHOOK: Lineage: t2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: -- Test simple union with double
 EXPLAIN
 SELECT * FROM 
@@ -14124,7 +14165,7 @@ STAGE PLANS:
                     predicate: (UDFToDouble(key) = 0.0) (type: boolean)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: '0' (type: string), value (type: string)
+                      expressions: key (type: string), value (type: string)
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
@@ -14311,7 +14352,7 @@ STAGE PLANS:
                     predicate: (UDFToDouble(key) = 0.0) (type: boolean)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: '0' (type: string), value (type: string)
+                      expressions: key (type: string), value (type: string)
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator

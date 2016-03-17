@@ -52,6 +52,8 @@ public class serdeConstants {
 
   public static final String SERIALIZATION_SORT_ORDER = "serialization.sort.order";
 
+  public static final String SERIALIZATION_NULL_SORT_ORDER = "serialization.sort.order.null";
+
   public static final String SERIALIZATION_USE_JSON_OBJECTS = "serialization.use.json.object";
 
   public static final String SERIALIZATION_ENCODING = "serialization.encoding";

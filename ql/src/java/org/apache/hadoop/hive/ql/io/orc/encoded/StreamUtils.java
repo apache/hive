@@ -35,7 +35,6 @@ public class StreamUtils {
    * Create SettableUncompressedStream from stream buffer.
    *
    * @param streamName - stream name
-   * @param fileId - file id
    * @param streamBuffer - stream buffer
    * @return - SettableUncompressedStream
    * @throws IOException

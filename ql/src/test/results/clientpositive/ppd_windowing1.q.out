@@ -37,7 +37,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col0
+                  order by: _col0 ASC NULLS FIRST
                   partition by: _col0
                   raw input shape:
                   window functions:
@@ -103,7 +103,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col0
+                  order by: _col0 ASC NULLS FIRST
                   partition by: _col0
                   raw input shape:
                   window functions:
@@ -169,7 +169,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col0
+                  order by: _col0 ASC NULLS FIRST
                   partition by: _col0
                   raw input shape:
                   window functions:
@@ -235,7 +235,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col0
+                  order by: _col0 ASC NULLS FIRST
                   partition by: _col0
                   raw input shape:
                   window functions:
@@ -301,7 +301,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col0
+                  order by: _col0 ASC NULLS FIRST
                   partition by: _col0
                   raw input shape:
                   window functions:
@@ -369,7 +369,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col0, _col1
+                  order by: _col0 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                   partition by: _col0, _col1
                   raw input shape:
                   window functions:
@@ -435,7 +435,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col0, _col1
+                  order by: _col0 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                   partition by: _col0, _col1
                   raw input shape:
                   window functions:
@@ -501,7 +501,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col0, _col1
+                  order by: _col0 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                   partition by: _col0, _col1
                   raw input shape:
                   window functions:
@@ -567,7 +567,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col0, _col1
+                  order by: _col0 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                   partition by: _col0, _col1
                   raw input shape:
                   window functions:
@@ -633,7 +633,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col0, _col1
+                  order by: _col0 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                   partition by: _col0, _col1
                   raw input shape:
                   window functions:
@@ -702,7 +702,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col0, _col1
+                  order by: _col0 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                   partition by: _col0, _col1
                   raw input shape:
                   window functions:
@@ -748,7 +748,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col1
+                  order by: _col1 ASC NULLS FIRST
                   partition by: _col1
                   raw input shape:
                   window functions:
@@ -815,7 +815,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col0, _col1
+                  order by: _col0 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                   partition by: _col0, _col1
                   raw input shape:
                   window functions:
@@ -861,7 +861,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col1
+                  order by: _col1 ASC NULLS FIRST
                   partition by: _col1
                   raw input shape:
                   window functions:
@@ -928,7 +928,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col0, _col1
+                  order by: _col0 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                   partition by: _col0, _col1
                   raw input shape:
                   window functions:
@@ -974,7 +974,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col1
+                  order by: _col1 ASC NULLS FIRST
                   partition by: _col1
                   raw input shape:
                   window functions:
@@ -1041,7 +1041,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col0, _col1
+                  order by: _col0 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                   partition by: _col0, _col1
                   raw input shape:
                   window functions:
@@ -1087,7 +1087,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col1
+                  order by: _col1 ASC NULLS FIRST
                   partition by: _col1
                   raw input shape:
                   window functions:
@@ -1156,7 +1156,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col0, _col1
+                  order by: _col0 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                   partition by: _col0, _col1
                   raw input shape:
                   window functions:
@@ -1202,7 +1202,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col1
+                  order by: _col1 ASC NULLS FIRST
                   partition by: _col1
                   raw input shape:
                   window functions:
@@ -1269,7 +1269,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col0, _col1
+                  order by: _col0 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                   partition by: _col0, _col1
                   raw input shape:
                   window functions:
@@ -1315,7 +1315,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col1
+                  order by: _col1 ASC NULLS FIRST
                   partition by: _col1
                   raw input shape:
                   window functions:
@@ -1382,7 +1382,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col0, _col1
+                  order by: _col0 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                   partition by: _col0, _col1
                   raw input shape:
                   window functions:
@@ -1428,7 +1428,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col1
+                  order by: _col1 ASC NULLS FIRST
                   partition by: _col1
                   raw input shape:
                   window functions:
@@ -1495,7 +1495,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col0, _col1
+                  order by: _col0 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                   partition by: _col0, _col1
                   raw input shape:
                   window functions:
@@ -1541,7 +1541,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col1
+                  order by: _col1 ASC NULLS FIRST
                   partition by: _col1
                   raw input shape:
                   window functions:
@@ -1607,7 +1607,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col0, _col1
+                  order by: _col0 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                   partition by: _col0, _col1
                   raw input shape:
                   window functions:
@@ -1653,7 +1653,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col2
+                  order by: _col2 ASC NULLS FIRST
                   partition by: _col2
                   raw input shape:
                   window functions:
@@ -1722,7 +1722,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: (UDFToDouble(_col0) + UDFToDouble(2))
+                  order by: (UDFToDouble(_col0) + UDFToDouble(2)) ASC NULLS FIRST
                   partition by: (UDFToDouble(_col0) + UDFToDouble(2))
                   raw input shape:
                   window functions:
@@ -1789,7 +1789,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: (UDFToDouble(_col0) + UDFToDouble(_col1))
+                  order by: (UDFToDouble(_col0) + UDFToDouble(_col1)) ASC NULLS FIRST
                   partition by: (UDFToDouble(_col0) + UDFToDouble(_col1))
                   raw input shape:
                   window functions:
@@ -1857,7 +1857,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col0, _col1
+                  order by: _col0 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                   partition by: _col0, _col1
                   raw input shape:
                   window functions:
@@ -1924,7 +1924,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: (UDFToDouble(_col0) + UDFToDouble(_col1))
+                  order by: (UDFToDouble(_col0) + UDFToDouble(_col1)) ASC NULLS FIRST
                   partition by: (UDFToDouble(_col0) + UDFToDouble(_col1))
                   raw input shape:
                   window functions:
@@ -1991,7 +1991,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col0
+                  order by: _col0 ASC NULLS FIRST
                   partition by: _col0
                   raw input shape:
                   window functions:

@@ -136,7 +136,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: b
+            alias: a
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((value > 'val_11') and (key is null or value is null)) (type: boolean)
@@ -217,7 +217,7 @@ STAGE PLANS:
               Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col0 (type: string)
               Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
           TableScan
-            alias: b
+            alias: a
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((value > 'val_11') and (key < '11')) (type: boolean)
@@ -291,7 +291,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: b
+            alias: a
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((value > 'val_11') and (key is null or value is null)) (type: boolean)
@@ -372,7 +372,7 @@ STAGE PLANS:
               Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col0 (type: string)
               Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
           TableScan
-            alias: b
+            alias: a
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((value > 'val_11') and (key < '11')) (type: boolean)

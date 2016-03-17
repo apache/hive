@@ -577,6 +577,46 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("cancel_delegation_token\n");
   }
 
+  bool add_token(const std::string& token_identifier, const std::string& delegation_token) {
+    // Your implementation goes here
+    printf("add_token\n");
+  }
+
+  bool remove_token(const std::string& token_identifier) {
+    // Your implementation goes here
+    printf("remove_token\n");
+  }
+
+  void get_token(std::string& _return, const std::string& token_identifier) {
+    // Your implementation goes here
+    printf("get_token\n");
+  }
+
+  void get_all_token_identifiers(std::vector<std::string> & _return) {
+    // Your implementation goes here
+    printf("get_all_token_identifiers\n");
+  }
+
+  int32_t add_master_key(const std::string& key) {
+    // Your implementation goes here
+    printf("add_master_key\n");
+  }
+
+  void update_master_key(const int32_t seq_number, const std::string& key) {
+    // Your implementation goes here
+    printf("update_master_key\n");
+  }
+
+  bool remove_master_key(const int32_t key_seq) {
+    // Your implementation goes here
+    printf("remove_master_key\n");
+  }
+
+  void get_master_keys(std::vector<std::string> & _return) {
+    // Your implementation goes here
+    printf("get_master_keys\n");
+  }
+
   void get_open_txns(GetOpenTxnsResponse& _return) {
     // Your implementation goes here
     printf("get_open_txns\n");

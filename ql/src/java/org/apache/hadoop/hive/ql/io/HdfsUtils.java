@@ -33,31 +33,36 @@ public class HdfsUtils {
   private static final HadoopShims SHIMS = ShimLoader.getHadoopShims();
   private static final Logger LOG = LoggerFactory.getLogger(HdfsUtils.class);
 
-  public static Long getFileId(
+  public static Object getFileId(
       FileSystem fileSystem, Path path, boolean allowSynthetic) throws IOException {
-    String pathStr = path.toUri().getPath();
     if (fileSystem instanceof DistributedFileSystem) {
-      return SHIMS.getFileId(fileSystem, pathStr);
+      return SHIMS.getFileId(fileSystem, path.toUri().getPath());
     }
     if (!allowSynthetic) {
       LOG.warn("Cannot get unique file ID from "
         + fileSystem.getClass().getSimpleName() + "; returning null");
       return null;
     }
-    // If we are not on DFS, we just hash the file name + size and hope for the best.
-    // TODO: we assume it only happens in tests. Fix?
-    int nameHash = pathStr.hashCode();
     FileStatus fs = fileSystem.getFileStatus(path);
+    return new SyntheticFileId(path, fs.getLen(), fs.getModificationTime());
+  }
+
+  public static long createFileId(String pathStr, FileStatus fs, boolean doLog, String fsName) {
+    int nameHash = pathStr.hashCode();
     long fileSize = fs.getLen(), modTime = fs.getModificationTime();
     int fileSizeHash = (int)(fileSize ^ (fileSize >>> 32)),
         modTimeHash = (int)(modTime ^ (modTime >>> 32)),
         combinedHash = modTimeHash ^ fileSizeHash;
     long id = (((long)nameHash & 0xffffffffL) << 32) | ((long)combinedHash & 0xffffffffL);
-    LOG.warn("Cannot get unique file ID from "
-        + fileSystem.getClass().getSimpleName() + "; using " + id + " (" + pathStr
-        + "," + nameHash + "," + fileSize + ")");
+    if (doLog) {
+      LOG.warn("Cannot get unique file ID from " + fsName + "; using " + id
+          + " (" + pathStr + "," + nameHash + "," + fileSize + ")");
+    }
     return id;
   }
+
+
+
 
   // TODO: this relies on HDFS not changing the format; we assume if we could get inode ID, this
   //       is still going to work. Otherwise, file IDs can be turned off. Later, we should use

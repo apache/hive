@@ -27,9 +27,9 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator.Counter;
 import org.apache.hadoop.hive.ql.exec.TerminalOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator.Counter;
 import org.apache.hadoop.hive.ql.exec.vector.VectorSerializeRow;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContextRegion;
@@ -39,14 +39,15 @@ import org.apache.hadoop.hive.ql.exec.vector.keyseries.VectorKeySeriesSerialized
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
-import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.VectorReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.VectorReduceSinkInfo;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
+import org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe;
 import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableSerializeWrite;
 import org.apache.hadoop.hive.serde2.lazybinary.fast.LazyBinarySerializeWrite;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -188,6 +189,60 @@ public abstract class VectorReduceSinkCommonOperator extends TerminalOperator<Re
     return columnSortOrderIsDesc;
   }
 
+  private byte[] getColumnNullMarker(Properties properties, int columnCount, boolean[] columnSortOrder) {
+    String columnNullOrder = properties.getProperty(serdeConstants.SERIALIZATION_NULL_SORT_ORDER);
+    byte[] columnNullMarker = new byte[columnCount];
+      for (int i = 0; i < columnNullMarker.length; i++) {
+        if (columnSortOrder[i]) {
+          // Descending
+          if (columnNullOrder != null && columnNullOrder.charAt(i) == 'a') {
+            // Null first
+            columnNullMarker[i] = BinarySortableSerDe.ONE;
+          } else {
+            // Null last (default for descending order)
+            columnNullMarker[i] = BinarySortableSerDe.ZERO;
+          }
+        } else {
+          // Ascending
+          if (columnNullOrder != null && columnNullOrder.charAt(i) == 'z') {
+            // Null last
+            columnNullMarker[i] = BinarySortableSerDe.ONE;
+          } else {
+            // Null first (default for ascending order)
+            columnNullMarker[i] = BinarySortableSerDe.ZERO;
+          }
+        }
+    }
+    return columnNullMarker;
+  }
+
+  private byte[] getColumnNotNullMarker(Properties properties, int columnCount, boolean[] columnSortOrder) {
+    String columnNullOrder = properties.getProperty(serdeConstants.SERIALIZATION_NULL_SORT_ORDER);
+    byte[] columnNotNullMarker = new byte[columnCount];
+      for (int i = 0; i < columnNotNullMarker.length; i++) {
+        if (columnSortOrder[i]) {
+          // Descending
+          if (columnNullOrder != null && columnNullOrder.charAt(i) == 'a') {
+            // Null first
+            columnNotNullMarker[i] = BinarySortableSerDe.ZERO;
+          } else {
+            // Null last (default for descending order)
+            columnNotNullMarker[i] = BinarySortableSerDe.ONE;
+          }
+        } else {
+          // Ascending
+          if (columnNullOrder != null && columnNullOrder.charAt(i) == 'z') {
+            // Null last
+            columnNotNullMarker[i] = BinarySortableSerDe.ZERO;
+          } else {
+            // Null first (default for ascending order)
+            columnNotNullMarker[i] = BinarySortableSerDe.ONE;
+          }
+        }
+    }
+    return columnNotNullMarker;
+  }
+
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
     super.initializeOp(hconf);
@@ -217,8 +272,13 @@ public abstract class VectorReduceSinkCommonOperator extends TerminalOperator<Re
     TableDesc keyTableDesc = conf.getKeySerializeInfo();
     boolean[] columnSortOrder =
         getColumnSortOrder(keyTableDesc.getProperties(), reduceSinkKeyColumnMap.length);
+    byte[] columnNullMarker =
+        getColumnNullMarker(keyTableDesc.getProperties(), reduceSinkKeyColumnMap.length, columnSortOrder);
+    byte[] columnNotNullMarker =
+        getColumnNotNullMarker(keyTableDesc.getProperties(), reduceSinkKeyColumnMap.length, columnSortOrder);
 
-    keyBinarySortableSerializeWrite = new BinarySortableSerializeWrite(columnSortOrder);
+    keyBinarySortableSerializeWrite = new BinarySortableSerializeWrite(columnSortOrder,
+            columnNullMarker, columnNotNullMarker);
 
     // Create all nulls key.
     try {

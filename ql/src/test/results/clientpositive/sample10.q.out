@@ -77,8 +77,9 @@ TOK_QUERY
             ds
       TOK_ORDERBY
          TOK_TABSORTCOLNAMEASC
-            TOK_TABLE_OR_COL
-               ds
+            TOK_NULLS_FIRST
+               TOK_TABLE_OR_COL
+                  ds
 
 
 STAGE DEPENDENCIES:
@@ -111,6 +112,7 @@ STAGE PLANS:
                   Statistics: Num rows: 20 Data size: 120 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: string)
+                    null sort order: a
                     sort order: +
                     Map-reduce partition columns: _col0 (type: string)
                     Statistics: Num rows: 20 Data size: 120 Basic stats: COMPLETE Column stats: NONE
@@ -350,6 +352,7 @@ STAGE PLANS:
             GatherStats: false
             Reduce Output Operator
               key expressions: _col0 (type: string)
+              null sort order: a
               sort order: +
               Statistics: Num rows: 10 Data size: 60 Basic stats: COMPLETE Column stats: NONE
               tag: -1

@@ -27,8 +27,7 @@ public class PamAuthenticationProviderImpl implements PasswdAuthenticationProvid
 
   private final String pamServiceNames;
 
-  PamAuthenticationProviderImpl() {
-    HiveConf conf = new HiveConf();
+  PamAuthenticationProviderImpl(HiveConf conf) {
     pamServiceNames = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_PAM_SERVICES);
   }
 

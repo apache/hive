@@ -243,8 +243,8 @@ public class OutStream extends PositionedOutputStream {
     if (compressed != null && compressed.position() != 0) {
       compressed.flip();
       receiver.output(compressed);
-      compressed = null;
     }
+    compressed = null;
     uncompressedBytes = 0;
     compressedBytes = 0;
     overflow = null;

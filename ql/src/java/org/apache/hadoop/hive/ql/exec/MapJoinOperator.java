@@ -653,6 +653,8 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     spilledMapJoinTables[pos] = new MapJoinBytesTableContainer(restoredHashMap);
     spilledMapJoinTables[pos].setInternalValueOi(container.getInternalValueOi());
     spilledMapJoinTables[pos].setSortableSortOrders(container.getSortableSortOrders());
+    spilledMapJoinTables[pos].setNullMarkers(container.getNullMarkers());
+    spilledMapJoinTables[pos].setNotNullMarkers(container.getNotNullMarkers());
   }
 
   /**

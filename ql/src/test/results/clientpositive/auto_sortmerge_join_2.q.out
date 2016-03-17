@@ -154,6 +154,7 @@ STAGE PLANS:
                     mode: hash
                     outputColumnNames: _col0
                     Reduce Output Operator
+                      null sort order: 
                       sort order: 
                       tag: -1
                       value expressions: _col0 (type: bigint)
@@ -453,6 +454,7 @@ STAGE PLANS:
                     mode: hash
                     outputColumnNames: _col0
                     Reduce Output Operator
+                      null sort order: 
                       sort order: 
                       tag: -1
                       value expressions: _col0 (type: bigint)
@@ -769,6 +771,7 @@ STAGE PLANS:
                     mode: hash
                     outputColumnNames: _col0
                     Reduce Output Operator
+                      null sort order: 
                       sort order: 
                       tag: -1
                       value expressions: _col0 (type: bigint)
@@ -970,6 +973,7 @@ STAGE PLANS:
                     mode: hash
                     outputColumnNames: _col0
                     Reduce Output Operator
+                      null sort order: 
                       sort order: 
                       tag: -1
                       value expressions: _col0 (type: bigint)

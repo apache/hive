@@ -695,7 +695,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
   ASTNode getOptimizedAST() throws SemanticException {
     ASTNode optiqOptimizedAST = null;
     RelNode optimizedOptiqPlan = null;
-    CalcitePlannerAction calcitePlannerAction = new CalcitePlannerAction(prunedPartitions);
+
+    CalcitePlannerAction calcitePlannerAction = null;
+    if (this.columnAccessInfo == null) {
+      this.columnAccessInfo = new ColumnAccessInfo();
+    }
+    calcitePlannerAction = new CalcitePlannerAction(prunedPartitions, this.columnAccessInfo);
 
     try {
       optimizedOptiqPlan = Frameworks.withPlanner(calcitePlannerAction, Frameworks
@@ -717,7 +722,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
    */
   Operator getOptimizedHiveOPDag() throws SemanticException {
     RelNode optimizedOptiqPlan = null;
-    CalcitePlannerAction calcitePlannerAction = new CalcitePlannerAction(prunedPartitions);
+    CalcitePlannerAction calcitePlannerAction = null;
+    if (this.columnAccessInfo == null) {
+      this.columnAccessInfo = new ColumnAccessInfo();
+    }
+    calcitePlannerAction = new CalcitePlannerAction(prunedPartitions, this.columnAccessInfo);
 
     try {
       optimizedOptiqPlan = Frameworks.withPlanner(calcitePlannerAction, Frameworks
@@ -879,14 +888,17 @@ public class CalcitePlanner extends SemanticAnalyzer {
     private RelOptCluster                                 cluster;
     private RelOptSchema                                  relOptSchema;
     private final Map<String, PrunedPartitionList>        partitionCache;
+    private final ColumnAccessInfo columnAccessInfo;
+    private Map<HiveProject, Table> viewProjectToTableSchema;
 
     // TODO: Do we need to keep track of RR, ColNameToPosMap for every op or
     // just last one.
     LinkedHashMap<RelNode, RowResolver>                   relToHiveRR                   = new LinkedHashMap<RelNode, RowResolver>();
     LinkedHashMap<RelNode, ImmutableMap<String, Integer>> relToHiveColNameCalcitePosMap = new LinkedHashMap<RelNode, ImmutableMap<String, Integer>>();
 
-    CalcitePlannerAction(Map<String, PrunedPartitionList> partitionCache) {
+    CalcitePlannerAction(Map<String, PrunedPartitionList> partitionCache, ColumnAccessInfo columnAccessInfo) {
       this.partitionCache = partitionCache;
+      this.columnAccessInfo = columnAccessInfo;
     }
 
     @Override
@@ -927,6 +939,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
         throw new RuntimeException(e);
       }
       perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Plan generation");
+
+      // We need to get the ColumnAccessInfo and viewToTableSchema for views.
+      HiveRelFieldTrimmer fieldTrimmer = new HiveRelFieldTrimmer(null,
+          HiveRelFactories.HIVE_BUILDER.create(cluster, null), this.columnAccessInfo,
+          this.viewProjectToTableSchema);
+      fieldTrimmer.trim(calciteGenPlan);
 
       // Create MD provider
       HiveDefaultRelMetadataProvider mdProvider = new HiveDefaultRelMetadataProvider(conf);
@@ -1048,7 +1066,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
                 HiveJoinToMultiJoinRule.INSTANCE, HiveProjectMergeRule.INSTANCE);
         // The previous rules can pull up projections through join operators,
         // thus we run the field trimmer again to push them back down
-        HiveRelFieldTrimmer fieldTrimmer = new HiveRelFieldTrimmer(null,
+        fieldTrimmer = new HiveRelFieldTrimmer(null,
             HiveRelFactories.HIVE_BUILDER.create(cluster, null));
         calciteOptimizedPlan = fieldTrimmer.trim(calciteOptimizedPlan);
         calciteOptimizedPlan = hepPlan(calciteOptimizedPlan, false, mdProvider.getMetadataProvider(), null,
@@ -1688,7 +1706,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
         tableRel = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), optTable,
             null == tableAlias ? tabMetaData.getTableName() : tableAlias,
             getAliasId(tableAlias, qb), HiveConf.getBoolVar(conf,
-                HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP));
+                HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP), qb.isInsideView()
+                || qb.getAliasInsideView().contains(tableAlias.toLowerCase()));
 
         // 6. Add Schema(RR) to RelNode-Schema map
         ImmutableMap<String, Integer> hiveToCalciteColMap = buildHiveToCalciteColumnMap(rr,
@@ -2395,6 +2414,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
         List<Node> obASTExprLst = obAST.getChildren();
         ASTNode obASTExpr;
+        ASTNode nullObASTExpr;
         List<Pair<ASTNode, TypeInfo>> vcASTTypePairs = new ArrayList<Pair<ASTNode, TypeInfo>>();
         RowResolver inputRR = relToHiveRR.get(srcRel);
         RowResolver outputRR = new RowResolver();
@@ -2407,9 +2427,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
         for (int i = 0; i < obASTExprLst.size(); i++) {
           // 2.1 Convert AST Expr to ExprNode
           obASTExpr = (ASTNode) obASTExprLst.get(i);
+          nullObASTExpr = (ASTNode) obASTExpr.getChild(0);
+          ASTNode ref = (ASTNode) nullObASTExpr.getChild(0);
           Map<ASTNode, ExprNodeDesc> astToExprNDescMap = TypeCheckProcFactory.genExprNode(
               obASTExpr, new TypeCheckCtx(inputRR));
-          ExprNodeDesc obExprNDesc = astToExprNDescMap.get(obASTExpr.getChild(0));
+          ExprNodeDesc obExprNDesc = astToExprNDescMap.get(ref);
           if (obExprNDesc == null)
             throw new SemanticException("Invalid order by expression: " + obASTExpr.toString());
 
@@ -2424,18 +2446,26 @@ public class CalcitePlanner extends SemanticAnalyzer {
           } else {
             fieldIndex = srcRelRecordSz + newVCLst.size();
             newVCLst.add(rnd);
-            vcASTTypePairs.add(new Pair<ASTNode, TypeInfo>((ASTNode) obASTExpr.getChild(0),
-                obExprNDesc.getTypeInfo()));
+            vcASTTypePairs.add(new Pair<ASTNode, TypeInfo>(ref, obExprNDesc.getTypeInfo()));
           }
 
           // 2.4 Determine the Direction of order by
-          org.apache.calcite.rel.RelFieldCollation.Direction order = RelFieldCollation.Direction.DESCENDING;
+          RelFieldCollation.Direction order = RelFieldCollation.Direction.DESCENDING;
           if (obASTExpr.getType() == HiveParser.TOK_TABSORTCOLNAMEASC) {
             order = RelFieldCollation.Direction.ASCENDING;
           }
+          RelFieldCollation.NullDirection nullOrder;
+          if (nullObASTExpr.getType() == HiveParser.TOK_NULLS_FIRST) {
+            nullOrder = RelFieldCollation.NullDirection.FIRST;
+          } else if (nullObASTExpr.getType() == HiveParser.TOK_NULLS_LAST) {
+            nullOrder = RelFieldCollation.NullDirection.LAST;
+          } else {
+            throw new SemanticException(
+                    "Unexpected null ordering option: " + nullObASTExpr.getType());
+          }
 
           // 2.5 Add to field collations
-          fieldCollations.add(new RelFieldCollation(fieldIndex, order));
+          fieldCollations.add(new RelFieldCollation(fieldIndex, order, nullOrder));
         }
 
         // 3. Add Child Project Rel if needed, Generate Output RR, input Sel Rel
@@ -2565,8 +2595,17 @@ public class CalcitePlanner extends SemanticAnalyzer {
           ExprNodeDesc exp = genExprNodeDesc(oExpr.getExpression(), inputRR, tcCtx);
           RexNode ordExp = converter.convert(exp);
           Set<SqlKind> flags = new HashSet<SqlKind>();
-          if (oExpr.getOrder() == org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.Order.DESC)
+          if (oExpr.getOrder() == org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.Order.DESC) {
             flags.add(SqlKind.DESCENDING);
+          }
+          if (oExpr.getNullOrder() == org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.NullOrder.NULLS_FIRST) {
+            flags.add(SqlKind.NULLS_FIRST);
+          } else if (oExpr.getNullOrder() == org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.NullOrder.NULLS_LAST) {
+            flags.add(SqlKind.NULLS_LAST);
+          } else {
+            throw new SemanticException(
+                    "Unexpected null ordering option: " + oExpr.getNullOrder());
+          }
           oKeys.add(new RexFieldCollation(ordExp, flags));
         }
       }
@@ -3020,7 +3059,19 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // 1.1. Recurse over the subqueries to fill the subquery part of the plan
       for (String subqAlias : qb.getSubqAliases()) {
         QBExpr qbexpr = qb.getSubqForAlias(subqAlias);
-        aliasToRel.put(subqAlias, genLogicalPlan(qbexpr));
+        RelNode relNode = genLogicalPlan(qbexpr);
+        aliasToRel.put(subqAlias, relNode);
+        if (qb.getViewToTabSchema().containsKey(subqAlias)) {
+          if (relNode instanceof HiveProject) {
+            if (this.viewProjectToTableSchema == null) {
+              this.viewProjectToTableSchema = new LinkedHashMap<>();
+            }
+            viewProjectToTableSchema.put((HiveProject) relNode, qb.getViewToTabSchema().get(subqAlias));
+          } else {
+            throw new SemanticException("View " + subqAlias + " is corresponding to "
+                + relNode.toString() + ", rather than a HiveProject.");
+          }
+        }
       }
 
       // 1.2 Recurse over all the source tables

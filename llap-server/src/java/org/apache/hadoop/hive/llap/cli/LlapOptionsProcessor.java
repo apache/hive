@@ -18,9 +18,7 @@
 
 package org.apache.hadoop.hive.llap.cli;
 
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Properties;
 
 import javax.annotation.Nonnull;
@@ -31,6 +29,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.util.StringUtils;
@@ -51,12 +50,16 @@ public class LlapOptionsProcessor {
   public static final String OPTION_AUXHBASE = "auxhbase"; // used to localize jars
   public static final String OPTION_JAVA_HOME = "javaHome"; // forward via config.json
   public static final String OPTION_HIVECONF = "hiveconf"; // llap-daemon-site if relevant parameter
+  public static final String OPTION_SLIDER_AM_CONTAINER_MB = "slider-am-container-mb"; // forward as arg
+  public static final String OPTION_LLAP_QUEUE = "queue"; // forward via config.json
+  public static final String OPTION_IO_THREADS = "iothreads"; // llap-daemon-site
 
   public class LlapOptions {
     private final int instances;
     private final String directory;
     private final String name;
     private final int executors;
+    private final int ioThreads;
     private final long cache;
     private final long size;
     private final long xmx;
@@ -64,10 +67,11 @@ public class LlapOptionsProcessor {
     private final boolean isHbase;
     private final Properties conf;
     private final String javaPath;
+    private final String llapQueueName;
 
-    public LlapOptions(String name, int instances, String directory, int executors, long cache,
-                       long size, long xmx, String jars, boolean isHbase,
-                       @Nonnull Properties hiveconf, String javaPath)
+    public LlapOptions(String name, int instances, String directory, int executors, int ioThreads,
+                       long cache, long size, long xmx, String jars, boolean isHbase,
+                       @Nonnull Properties hiveconf, String javaPath, String llapQueueName)
         throws ParseException {
       if (instances <= 0) {
         throw new ParseException("Invalid configuration: " + instances
@@ -77,6 +81,7 @@ public class LlapOptionsProcessor {
       this.directory = directory;
       this.name = name;
       this.executors = executors;
+      this.ioThreads = ioThreads;
       this.cache = cache;
       this.size = size;
       this.xmx = xmx;
@@ -84,6 +89,7 @@ public class LlapOptionsProcessor {
       this.isHbase = isHbase;
       this.conf = hiveconf;
       this.javaPath = javaPath;
+      this.llapQueueName = llapQueueName;
     }
 
     public String getName() {
@@ -100,6 +106,10 @@ public class LlapOptionsProcessor {
 
     public int getExecutors() {
       return executors;
+    }
+
+    public int getIoThreads() {
+      return ioThreads;
     }
 
     public long getCache() {
@@ -128,6 +138,10 @@ public class LlapOptionsProcessor {
 
     public String getJavaPath() {
       return javaPath;
+    }
+
+    public String getLlapQueueName() {
+      return llapQueueName;
     }
   }
 
@@ -169,6 +183,10 @@ public class LlapOptionsProcessor {
     options.addOption(OptionBuilder.hasArg().withArgName(OPTION_XMX).withLongOpt(OPTION_XMX)
         .withDescription("working memory size").create('w'));
 
+    options.addOption(OptionBuilder.hasArg().withArgName(OPTION_LLAP_QUEUE)
+        .withLongOpt(OPTION_LLAP_QUEUE)
+        .withDescription("The queue within which LLAP will be started").create('q'));
+
     options.addOption(OptionBuilder.hasArg().withArgName(OPTION_AUXJARS).withLongOpt(OPTION_AUXJARS)
         .withDescription("additional jars to package (by default, JSON SerDe jar is packaged"
             + " if available)").create('j'));
@@ -186,6 +204,13 @@ public class LlapOptionsProcessor {
         .withLongOpt(OPTION_HIVECONF)
         .withDescription("Use value for given property. Overridden by explicit parameters")
         .create());
+
+    options.addOption(OptionBuilder.hasArg().withArgName(OPTION_SLIDER_AM_CONTAINER_MB)
+        .withLongOpt(OPTION_SLIDER_AM_CONTAINER_MB)
+        .withDescription("The size of the slider AppMaster container in MB").create());
+
+    options.addOption(OptionBuilder.hasArg().withArgName(OPTION_IO_THREADS)
+        .withLongOpt(OPTION_IO_THREADS).withDescription("executor per instance").create('t'));
 
     // [-H|--help]
     options.addOption(new Option("H", "help", false, "Print help information"));
@@ -210,10 +235,16 @@ public class LlapOptionsProcessor {
     String name = commandLine.getOptionValue(OPTION_NAME, null);
 
     final int executors = Integer.parseInt(commandLine.getOptionValue(OPTION_EXECUTORS, "-1"));
+    // TODO# here
+    final int ioThreads = Integer.parseInt(
+        commandLine.getOptionValue(OPTION_IO_THREADS, Integer.toString(executors)));
     final long cache = parseSuffixed(commandLine.getOptionValue(OPTION_CACHE, "-1"));
     final long size = parseSuffixed(commandLine.getOptionValue(OPTION_SIZE, "-1"));
     final long xmx = parseSuffixed(commandLine.getOptionValue(OPTION_XMX, "-1"));
     final boolean isHbase = Boolean.parseBoolean(commandLine.getOptionValue(OPTION_AUXHBASE, "true"));
+
+    final String queueName = commandLine.getOptionValue(OPTION_LLAP_QUEUE,
+        HiveConf.ConfVars.LLAP_DAEMON_QUEUE_NAME.getDefaultValue());
 
     final Properties hiveconf;
 
@@ -227,10 +258,11 @@ public class LlapOptionsProcessor {
     if (commandLine.hasOption(OPTION_JAVA_HOME)) {
       javaHome = commandLine.getOptionValue(OPTION_JAVA_HOME);
     }
+
     // loglevel, chaosmonkey & args are parsed by the python processor
 
-    return new LlapOptions(
-        name, instances, directory, executors, cache, size, xmx, jars, isHbase, hiveconf, javaHome);
+    return new LlapOptions(name, instances, directory, executors, ioThreads, cache,
+        size, xmx, jars, isHbase, hiveconf, javaHome, queueName);
   }
 
   private void printUsage() {

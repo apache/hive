@@ -45,11 +45,16 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 public class HiveV1Authorizer extends AbstractHiveAuthorizer {
 
   private final HiveConf conf;
-  private final Hive hive;
 
-  public HiveV1Authorizer(HiveConf conf, Hive hive) {
+  public HiveV1Authorizer(HiveConf conf) {
     this.conf = conf;
-    this.hive = hive;
+  }
+
+
+  // Leave this ctor around for backward compat.
+  @Deprecated
+  public HiveV1Authorizer(HiveConf conf, Hive hive) {
+    this(conf);
   }
 
   @Override
@@ -98,6 +103,7 @@ public class HiveV1Authorizer extends AbstractHiveAuthorizer {
         priv.setPrincipalName(principal.getName());
         priv.setPrincipalType(type);
       }
+      Hive hive = Hive.getWithFastCheck(this.conf);
       if (isGrant) {
         hive.grantPrivileges(privBag);
       } else {
@@ -136,6 +142,7 @@ public class HiveV1Authorizer extends AbstractHiveAuthorizer {
     if (privObject.getPartKeys() != null && grantOption) {
       throw new HiveException("Grant does not support partition level.");
     }
+    Hive hive = Hive.getWithFastCheck(this.conf);
     Database dbObj = hive.getDatabase(privObject.getDbname());
     if (dbObj == null) {
       throw new HiveException("Database " + privObject.getDbname() + " does not exists");
@@ -202,6 +209,7 @@ public class HiveV1Authorizer extends AbstractHiveAuthorizer {
   @Override
   public void createRole(String roleName, HivePrincipal adminGrantor) throws HiveAuthzPluginException, HiveAccessControlException {
     try {
+      Hive hive = Hive.getWithFastCheck(this.conf);
       hive.createRole(roleName, adminGrantor == null ? null : adminGrantor.getName());
     } catch (HiveException e) {
       throw new HiveAuthzPluginException(e);
@@ -211,6 +219,7 @@ public class HiveV1Authorizer extends AbstractHiveAuthorizer {
   @Override
   public void dropRole(String roleName) throws HiveAuthzPluginException, HiveAccessControlException {
     try {
+      Hive hive = Hive.getWithFastCheck(this.conf);
       hive.dropRole(roleName);
     } catch (HiveException e) {
       throw new HiveAuthzPluginException(e);
@@ -220,6 +229,7 @@ public class HiveV1Authorizer extends AbstractHiveAuthorizer {
   @Override
   public List<HiveRoleGrant> getPrincipalGrantInfoForRole(String roleName) throws HiveAuthzPluginException, HiveAccessControlException {
     try {
+      Hive hive = Hive.getWithFastCheck(this.conf);
       return SQLStdHiveAccessController.getHiveRoleGrants(hive.getMSC(), roleName);
     } catch (Exception e) {
       throw new HiveAuthzPluginException(e);
@@ -231,6 +241,7 @@ public class HiveV1Authorizer extends AbstractHiveAuthorizer {
     PrincipalType type = AuthorizationUtils.getThriftPrincipalType(principal.getType());
     try {
       List<HiveRoleGrant> grants = new ArrayList<HiveRoleGrant>();
+      Hive hive = Hive.getWithFastCheck(this.conf);
       for (RolePrincipalGrant grant : hive.getRoleGrantInfoForPrincipal(principal.getName(), type)) {
         grants.add(new HiveRoleGrant(grant));
       }
@@ -263,6 +274,7 @@ public class HiveV1Authorizer extends AbstractHiveAuthorizer {
   private void grantOrRevokeRole(List<HivePrincipal> principals, List<String> roles,
       boolean grantOption, HivePrincipal grantor, boolean isGrant) throws HiveException {
     PrincipalType grantorType = AuthorizationUtils.getThriftPrincipalType(grantor.getType());
+    Hive hive = Hive.getWithFastCheck(this.conf);
     for (HivePrincipal principal : principals) {
       PrincipalType principalType = AuthorizationUtils.getThriftPrincipalType(principal.getType());
       String userName = principal.getName();
@@ -280,6 +292,7 @@ public class HiveV1Authorizer extends AbstractHiveAuthorizer {
   @Override
   public List<String> getAllRoles() throws HiveAuthzPluginException, HiveAccessControlException {
     try {
+      Hive hive = Hive.getWithFastCheck(this.conf);
       return hive.getAllRoleNames();
     } catch (HiveException e) {
       throw new HiveAuthzPluginException(e);
@@ -295,6 +308,7 @@ public class HiveV1Authorizer extends AbstractHiveAuthorizer {
 
     List<HiveObjectPrivilege> privs = new ArrayList<HiveObjectPrivilege>();
     try {
+      Hive hive = Hive.getWithFastCheck(this.conf);
       if (privObj == null) {
         // show user level privileges
         privs.addAll(hive.showPrivilegeGrant(HiveObjectType.GLOBAL, name, type,
@@ -358,6 +372,7 @@ public class HiveV1Authorizer extends AbstractHiveAuthorizer {
       throw new HiveAuthzPluginException("Cannot resolve current user name");
     }
     try {
+      Hive hive = Hive.getWithFastCheck(this.conf);
       List<String> roleNames = new ArrayList<String>();
       for (Role role : hive.listRoles(userName, PrincipalType.USER)) {
         roleNames.add(role.getRoleName());

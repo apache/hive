@@ -95,7 +95,7 @@ class EncodedReaderImpl implements EncodedReader {
           return tcc;
         }
       };
-  private final Long fileId;
+  private final Object fileKey;
   private final DataReader dataReader;
   private boolean isDataReaderOpen = false;
   private final CompressionCodec codec;
@@ -106,10 +106,10 @@ class EncodedReaderImpl implements EncodedReader {
   private ByteBufferAllocatorPool pool;
   private boolean isDebugTracingEnabled;
 
-  public EncodedReaderImpl(Long fileId, List<OrcProto.Type> types, CompressionCodec codec,
+  public EncodedReaderImpl(Object fileKey, List<OrcProto.Type> types, CompressionCodec codec,
       int bufferSize, long strideRate, DataCache cache, DataReader dataReader, PoolFactory pf)
           throws IOException {
-    this.fileId = fileId;
+    this.fileKey = fileKey;
     this.codec = codec;
     this.types = types;
     this.bufferSize = bufferSize;
@@ -271,14 +271,13 @@ class EncodedReaderImpl implements EncodedReader {
       offset += length;
     }
 
-    boolean hasFileId = this.fileId != null;
-    long fileId = hasFileId ? this.fileId : 0;
+    boolean hasFileId = this.fileKey != null;
     if (listToRead.get() == null) {
       // No data to read for this stripe. Check if we have some included index-only columns.
       // TODO: there may be a bug here. Could there be partial RG filtering on index-only column?
       if (hasIndexOnlyCols && (includedRgs == null)) {
         OrcEncodedColumnBatch ecb = POOLS.ecbPool.take();
-        ecb.init(fileId, stripeIx, OrcEncodedColumnBatch.ALL_RGS, colRgs.length);
+        ecb.init(fileKey, stripeIx, OrcEncodedColumnBatch.ALL_RGS, colRgs.length);
         consumer.consumeData(ecb);
       } else {
         LOG.warn("Nothing to read for stripe [" + stripe + "]");
@@ -289,14 +288,14 @@ class EncodedReaderImpl implements EncodedReader {
     // 2. Now, read all of the ranges from cache or disk.
     DiskRangeList.MutateHelper toRead = new DiskRangeList.MutateHelper(listToRead.get());
     if (isDebugTracingEnabled && LOG.isInfoEnabled()) {
-      LOG.info("Resulting disk ranges to read (file " + fileId + "): "
+      LOG.info("Resulting disk ranges to read (file " + fileKey + "): "
           + RecordReaderUtils.stringifyDiskRanges(toRead.next));
     }
     BooleanRef isAllInCache = new BooleanRef();
     if (hasFileId) {
-      cache.getFileData(fileId, toRead.next, stripeOffset, CC_FACTORY, isAllInCache);
+      cache.getFileData(fileKey, toRead.next, stripeOffset, CC_FACTORY, isAllInCache);
       if (isDebugTracingEnabled && LOG.isInfoEnabled()) {
-        LOG.info("Disk ranges after cache (file " + fileId + ", base offset " + stripeOffset
+        LOG.info("Disk ranges after cache (file " + fileKey + ", base offset " + stripeOffset
             + "): " + RecordReaderUtils.stringifyDiskRanges(toRead.next));
       }
     }
@@ -324,7 +323,7 @@ class EncodedReaderImpl implements EncodedReader {
         }
       }
       if (isDebugTracingEnabled) {
-        LOG.info("Disk ranges after pre-read (file " + fileId + ", base offset "
+        LOG.info("Disk ranges after pre-read (file " + fileKey + ", base offset "
             + stripeOffset + "): " + RecordReaderUtils.stringifyDiskRanges(toRead.next));
       }
       iter = toRead.next; // Reset the iter to start.
@@ -337,13 +336,14 @@ class EncodedReaderImpl implements EncodedReader {
       boolean isLastRg = rgIx == rgCount - 1;
       // Create the batch we will use to return data for this RG.
       OrcEncodedColumnBatch ecb = POOLS.ecbPool.take();
-      ecb.init(fileId, stripeIx, rgIx, colRgs.length);
+      ecb.init(fileKey, stripeIx, rgIx, colRgs.length);
       boolean isRGSelected = true;
       for (int colIxMod = 0; colIxMod < colRgs.length; ++colIxMod) {
+        // TODO: simplify this now that high-level cache has been removed.
         if (colRgs[colIxMod] != null && !colRgs[colIxMod][rgIx]) {
           // RG x col filtered.
           isRGSelected = false;
-          continue; // TODO: this would be invalid with HL cache, where RG x col can be excluded.
+          continue;
         }
         ColumnReadContext ctx = colCtxs[colIxMod];
         OrcProto.RowIndexEntry index = ctx.rowIndex.getEntry(rgIx),
@@ -663,8 +663,8 @@ class EncodedReaderImpl implements EncodedReader {
     }
 
     // 6. Finally, put uncompressed data to cache.
-    if (fileId != null) {
-      long[] collisionMask = cache.putFileData(fileId, cacheKeys, targetBuffers, baseOffset);
+    if (fileKey != null) {
+      long[] collisionMask = cache.putFileData(fileKey, cacheKeys, targetBuffers, baseOffset);
       processCacheCollisions(collisionMask, toDecompress, targetBuffers, csd.getCacheBuffers());
     }
 
@@ -914,8 +914,8 @@ class EncodedReaderImpl implements EncodedReader {
     }
 
     // 6. Finally, put uncompressed data to cache.
-    if (fileId != null) {
-      long[] collisionMask = cache.putFileData(fileId, cacheKeys, targetBuffers, baseOffset);
+    if (fileKey != null) {
+      long[] collisionMask = cache.putFileData(fileKey, cacheKeys, targetBuffers, baseOffset);
       processCacheCollisions(collisionMask, toCache, targetBuffers, null);
     }
 

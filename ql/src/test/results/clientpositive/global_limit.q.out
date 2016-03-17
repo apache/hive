@@ -58,6 +58,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@gl_src1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@gl_tgt
+POSTHOOK: Lineage: gl_tgt.key SIMPLE [(gl_src1)gl_src1.FieldSchema(name:key, type:int, comment:null), ]
 PREHOOK: query: select * from gl_tgt ORDER BY key ASC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@gl_tgt
