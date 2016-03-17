@@ -52,7 +52,6 @@ import org.apache.calcite.plan.hep.HepMatchOrder;
 import org.apache.calcite.plan.hep.HepPlanner;
 import org.apache.calcite.plan.hep.HepProgram;
 import org.apache.calcite.plan.hep.HepProgramBuilder;
-import org.apache.calcite.rel.InvalidRelException;
 import org.apache.calcite.rel.RelCollation;
 import org.apache.calcite.rel.RelCollationImpl;
 import org.apache.calcite.rel.RelCollations;
@@ -2047,14 +2046,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
       RelNode gbInputRel = HiveProject.create(srcRel, gbChildProjLst, null);
 
-      HiveRelNode aggregateRel = null;
-      try {
-        aggregateRel = new HiveAggregate(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),
+      HiveRelNode aggregateRel = new HiveAggregate(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),
             gbInputRel, (transformedGroupSets!=null ? true:false), groupSet,
             transformedGroupSets, aggregateCalls);
-      } catch (InvalidRelException e) {
-        throw new SemanticException(e);
-      }
 
       return aggregateRel;
     }
@@ -2231,7 +2225,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         }
       }
 
-      List<ASTNode> grpByAstExprs = SemanticAnalyzer.getGroupByForClause(qbp, detsClauseName);
+      List<ASTNode> grpByAstExprs = getGroupByForClause(qbp, detsClauseName);
       HashMap<String, ASTNode> aggregationTrees = qbp.getAggregationExprsForClause(detsClauseName);
       boolean hasGrpByAstExprs = (grpByAstExprs != null && !grpByAstExprs.isEmpty()) ? true : false;
       boolean hasAggregationTrees = (aggregationTrees != null && !aggregationTrees.isEmpty()) ? true
@@ -3013,9 +3007,26 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
 
       // 8. Build Calcite Rel
-      RelNode selRel = genSelectRelNode(calciteColLst, out_rwsch, srcRel);
+      RelNode outputRel = genSelectRelNode(calciteColLst, out_rwsch, srcRel);
 
-      return selRel;
+      // 9. Handle select distinct as GBY if there exist windowing functions
+      if (selForWindow != null && selExprList.getToken().getType() == HiveParser.TOK_SELECTDI) {
+        ImmutableBitSet groupSet = ImmutableBitSet.range(outputRel.getRowType().getFieldList().size());
+        outputRel = new HiveAggregate(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),
+              outputRel, false, groupSet, null, new ArrayList<AggregateCall>());
+        RowResolver groupByOutputRowResolver = new RowResolver();
+        for (int i = 0; i < out_rwsch.getColumnInfos().size(); i++) {
+          ColumnInfo colInfo = out_rwsch.getColumnInfos().get(i);
+          ColumnInfo newColInfo = new ColumnInfo(colInfo.getInternalName(),
+              colInfo.getType(), colInfo.getTabAlias(), colInfo.getIsVirtualCol());
+          groupByOutputRowResolver.put(colInfo.getTabAlias(), colInfo.getAlias(), newColInfo);
+        }
+        relToHiveColNameCalcitePosMap.put(outputRel,
+            buildHiveToCalciteColumnMap(groupByOutputRowResolver, outputRel));
+        this.relToHiveRR.put(outputRel, groupByOutputRowResolver);
+      }
+
+      return outputRel;
     }
 
     private RelNode genLogicalPlan(QBExpr qbexpr) throws SemanticException {

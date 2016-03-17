@@ -3756,7 +3756,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * automatically translates SELECT DISTINCT a,b,c to SELECT a,b,c GROUP BY
    * a,b,c.
    */
-  static List<ASTNode> getGroupByForClause(QBParseInfo parseInfo, String dest) {
+  List<ASTNode> getGroupByForClause(QBParseInfo parseInfo, String dest) throws SemanticException {
     if (parseInfo.getSelForClause(dest).getToken().getType() == HiveParser.TOK_SELECTDI) {
       ASTNode selectExprs = parseInfo.getSelForClause(dest);
       List<ASTNode> result = new ArrayList<ASTNode>(selectExprs == null ? 0
@@ -3774,6 +3774,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
            * If this is handled by Windowing then ignore it.
            */
           if (windowingExprs != null && windowingExprs.containsKey(grpbyExpr.toStringTree())) {
+            if (!isCBOExecuted()) {
+              throw new SemanticException("SELECT DISTINCT not allowed in the presence of windowing"
+                      + " functions when CBO is off");
+            }
             continue;
           }
           result.add(grpbyExpr);
@@ -4161,6 +4165,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       output = genUDTFPlan(genericUDTF, udtfTableAlias, udtfColAliases, qb,
           output, outerLV);
     }
+
     if (LOG.isDebugEnabled()) {
       LOG.debug("Created Select Plan row schema: " + out_rwsch.toString());
     }
@@ -5852,7 +5857,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return groupByOperatorInfo2;
   }
 
-  private boolean optimizeMapAggrGroupBy(String dest, QB qb) {
+  private boolean optimizeMapAggrGroupBy(String dest, QB qb) throws SemanticException {
     List<ASTNode> grpByExprs = getGroupByForClause(qb.getParseInfo(), dest);
     if ((grpByExprs != null) && !grpByExprs.isEmpty()) {
       return false;
