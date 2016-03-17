@@ -90,6 +90,7 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
   private static final String IPC_MNG = "llapmng";
   private static final String IPC_SHUFFLE = "shuffle";
   private static final String IPC_LLAP = "llap";
+  private static final String IPC_OUTPUTFORMAT = "llapoutputformat";
   private final static String ROOT_NAMESPACE = "llap";
 
   private final Configuration conf;
@@ -241,6 +242,11 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
         HiveConf.getIntVar(conf, ConfVars.LLAP_MANAGEMENT_RPC_PORT)));
   }
 
+  public Endpoint getOutputFormatEndpoint() {
+    return RegistryTypeUtils.ipcEndpoint(IPC_OUTPUTFORMAT, new InetSocketAddress(hostname,
+        HiveConf.getIntVar(conf, ConfVars.LLAP_DAEMON_OUTPUT_SERVICE_PORT)));
+  }
+
   @Override
   public void register() throws IOException {
     ServiceRecord srv = new ServiceRecord();
@@ -310,6 +316,7 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
     private final int rpcPort;
     private final int mngPort;
     private final int shufflePort;
+    private final int outputFormatPort;
 
     public DynamicServiceInstance(ServiceRecord srv) throws IOException {
       this.srv = srv;
@@ -317,6 +324,7 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
       final Endpoint shuffle = srv.getInternalEndpoint(IPC_SHUFFLE);
       final Endpoint rpc = srv.getInternalEndpoint(IPC_LLAP);
       final Endpoint mng = srv.getInternalEndpoint(IPC_MNG);
+      final Endpoint outputFormat = srv.getInternalEndpoint(IPC_OUTPUTFORMAT);
 
       this.host =
           RegistryTypeUtils.getAddressField(rpc.addresses.get(0),
@@ -329,6 +337,9 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
               AddressTypes.ADDRESS_PORT_FIELD));
       this.shufflePort =
           Integer.valueOf(RegistryTypeUtils.getAddressField(shuffle.addresses.get(0),
+              AddressTypes.ADDRESS_PORT_FIELD));
+      this.outputFormatPort =
+          Integer.valueOf(RegistryTypeUtils.getAddressField(outputFormat.addresses.get(0),
               AddressTypes.ADDRESS_PORT_FIELD));
     }
 
@@ -384,6 +395,11 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
     @Override
     public int getManagementPort() {
       return mngPort;
+    }
+
+    @Override
+    public int getOutputFormatPort() {
+      return outputFormatPort;
     }
 
     // Relying on the identity hashCode and equality, since refreshing instances retains the old copy

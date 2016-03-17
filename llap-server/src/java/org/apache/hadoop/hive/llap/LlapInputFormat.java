@@ -17,10 +17,12 @@
 package org.apache.hadoop.hive.llap;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.List;
+import java.util.Set;
 
 import com.google.common.collect.Lists;
 import com.google.protobuf.ByteString;
@@ -28,6 +30,9 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto;
 import org.apache.hadoop.hive.llap.ext.LlapTaskUmbilicalExternalClient;
+import org.apache.hadoop.hive.llap.registry.ServiceInstance;
+import org.apache.hadoop.hive.llap.registry.ServiceInstanceSet;
+import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.hive.llap.tez.Converters;
 import org.apache.hadoop.io.DataInputBuffer;
 import org.apache.hadoop.io.DataOutputBuffer;
@@ -72,8 +77,12 @@ public class LlapInputFormat<V extends WritableComparable> implements InputForma
     LlapInputSplit llapSplit = (LlapInputSplit) split;
     SubmitWorkInfo submitWorkInfo = SubmitWorkInfo.fromBytes(llapSplit.getPlanBytes());
 
-    // TODO HACK: Spark is built with Hive-1.2.1, does not have access to HiveConf.ConfVars.LLAP_DAEMON_RPC_PORT
-    int llapSubmitPort = job.getInt("hive.llap.daemon.rpc.port", 15001);
+    ServiceInstance serviceInstance = getServiceInstance(job, llapSplit);
+    String host = serviceInstance.getHost();
+    int llapSubmitPort = serviceInstance.getRpcPort();
+
+    LOG.info("Found service instance for host " + host + " with rpc port " + llapSubmitPort
+        + " and outputformat port " + serviceInstance.getOutputFormatPort());
 
     LlapTaskUmbilicalExternalClient llapClient =
       new LlapTaskUmbilicalExternalClient(job, submitWorkInfo.getTokenIdentifier(),
@@ -92,16 +101,13 @@ public class LlapInputFormat<V extends WritableComparable> implements InputForma
     List<TezEvent> tezEventList = Lists.newArrayList();
     tezEventList.add(tezEvent);
 
-    // this is just the portion that sets up the io to receive data
-    String host = split.getLocations()[0];
-
     llapClient.submitWork(submitWorkRequestProto, host, llapSubmitPort, tezEventList);
 
     String id = HiveConf.getVar(job, HiveConf.ConfVars.HIVEQUERYID) + "_" + llapSplit.getSplitNum();
 
     HiveConf conf = new HiveConf();
     Socket socket = new Socket(host,
-        conf.getIntVar(HiveConf.ConfVars.LLAP_DAEMON_OUTPUT_SERVICE_PORT));
+        serviceInstance.getOutputFormatPort());
 
     LOG.debug("Socket connected");
 
@@ -117,6 +123,66 @@ public class LlapInputFormat<V extends WritableComparable> implements InputForma
   @Override
   public InputSplit[] getSplits(JobConf job, int numSplits) throws IOException {
     throw new IOException("These are not the splits you are looking for.");
+  }
+
+  private ServiceInstance getServiceInstance(JobConf job, LlapInputSplit llapSplit) throws IOException {
+    LlapRegistryService registryService = LlapRegistryService.getClient(job);
+    String host = llapSplit.getLocations()[0];
+
+    ServiceInstance serviceInstance = getServiceInstanceForHost(registryService, host);
+    if (serviceInstance == null) {
+      throw new IOException("No service instances found for " + host + " in registry");
+    }
+
+    return serviceInstance;
+  }
+
+  private ServiceInstance getServiceInstanceForHost(LlapRegistryService registryService, String host) throws IOException {
+    InetAddress address = InetAddress.getByName(host);
+    ServiceInstanceSet instanceSet = registryService.getInstances();
+    ServiceInstance serviceInstance = null;
+
+    // The name used in the service registry may not match the host name we're using.
+    // Try hostname/canonical hostname/host address
+
+    String name = address.getHostName();
+    LOG.info("Searching service instance by hostname " + name);
+    serviceInstance = selectServiceInstance(instanceSet.getByHost(name));
+    if (serviceInstance != null) {
+      return serviceInstance;
+    }
+
+    name = address.getCanonicalHostName();
+    LOG.info("Searching service instance by canonical hostname " + name);
+    serviceInstance = selectServiceInstance(instanceSet.getByHost(name));
+    if (serviceInstance != null) {
+      return serviceInstance;
+    }
+
+    name = address.getHostAddress();
+    LOG.info("Searching service instance by address " + name);
+    serviceInstance = selectServiceInstance(instanceSet.getByHost(name));
+    if (serviceInstance != null) {
+      return serviceInstance;
+    }
+
+    return serviceInstance;
+  }
+
+  private ServiceInstance selectServiceInstance(Set<ServiceInstance> serviceInstances) {
+    if (serviceInstances == null || serviceInstances.isEmpty()) {
+      return null;
+    }
+
+    // Get the first live service instance
+    for (ServiceInstance serviceInstance : serviceInstances) {
+      if (serviceInstance.isAlive()) {
+        return serviceInstance;
+      }
+    }
+
+    LOG.info("No live service instances were found");
+    return null;
   }
 
   private SubmitWorkRequestProto constructSubmitWorkRequestProto(SubmitWorkInfo submitWorkInfo,
