@@ -102,7 +102,7 @@ def find_qtestgen(pomtree, properties):
                         arg1 = equals.get("arg1")
                         arg2 = equals.get("arg2")
 
-                        thentag = iftag.find(get_tag("then"), None)
+                        thentag = iftag.find(get_tag("then"))
                         if POM_HADOOP_VERSION_NAME in arg1:
                             if properties[POM_HADOOP_VERSION_NAME] in arg2:
                                 for qtest in thentag.findall(get_tag("qtestgen")):

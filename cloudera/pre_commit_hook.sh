@@ -78,7 +78,8 @@ if [ -n "$tests_modified" ]; then
   )
 
   for pom in ${QTEST_POM_PATHS[@]}; do
-    for t in `python ../cloudera/qtest-driver-info.py --hadoopVersion "hadoop-23" --pom $pom --properties ../itests/src/test/resources/testconfiguration.properties --paths $tests_modified`
+    tests=`python ../cloudera/qtest-driver-info.py --hadoopVersion "hadoop-23" --pom $pom --properties ../itests/src/test/resources/testconfiguration.properties --paths $tests_modified`
+    for t in $tests
     do
       driver=`echo $t | cut -d: -f1`
       files=`echo $t | cut -d: -f2`
