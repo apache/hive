@@ -39,12 +39,14 @@ public class HBaseQTestUtil extends QTestUtil {
   /** A handle to this harness's cluster */
   private final HConnection conn;
 
+  private HBaseTestSetup setup;
+
   public HBaseQTestUtil(
     String outDir, String logDir, MiniClusterType miniMr, HBaseTestSetup setup,
     String initScript, String cleanupScript)
     throws Exception {
-
     super(outDir, logDir, miniMr, null, "0.20", initScript, cleanupScript, false, false);
+    this.setup = setup;
     setup.preTest(conf);
     this.conn = setup.getConnection();
     super.init();
@@ -66,6 +68,12 @@ public class HBaseQTestUtil extends QTestUtil {
   @Override
   public void init() throws Exception {
     // defer
+  }
+
+  @Override
+  protected void initConfFromSetup() throws Exception {
+    super.initConfFromSetup();
+    setup.preTest(conf);
   }
 
   @Override

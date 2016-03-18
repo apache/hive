@@ -178,7 +178,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   private boolean isConnected = false;
   private URI metastoreUris[];
   private final HiveMetaHookLoader hookLoader;
-  protected final HiveConf conf;
+  protected final HiveConf conf;  // Keep a copy of HiveConf so if Session conf changes, we may need to get a new HMS client.
   protected boolean fastpath = false;
   private String tokenStrForm;
   private final boolean localMetaStore;
@@ -205,8 +205,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     this.hookLoader = hookLoader;
     if (conf == null) {
       conf = new HiveConf(HiveMetaStoreClient.class);
+      this.conf = conf;
+    } else {
+      this.conf = new HiveConf(conf);
     }
-    this.conf = conf;
     filterHook = loadFilterHooks();
     fileMetadataBatchSize = HiveConf.getIntVar(
         conf, HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_OBJECTS_MAX);
@@ -221,10 +223,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
       // instantiate the metastore server handler directly instead of connecting
       // through the network
       if (conf.getBoolVar(ConfVars.METASTORE_FASTPATH)) {
-        client = new HiveMetaStore.HMSHandler("hive client", conf, true);
+        client = new HiveMetaStore.HMSHandler("hive client", this.conf, true);
         fastpath = true;
       } else {
-        client = HiveMetaStore.newRetryingHMSHandler("hive client", conf, true);
+        client = HiveMetaStore.newRetryingHMSHandler("hive client", this.conf, true);
       }
       isConnected = true;
       snapshotActiveConf();
