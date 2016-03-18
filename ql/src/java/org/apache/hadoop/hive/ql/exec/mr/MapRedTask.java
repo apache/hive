@@ -301,8 +301,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
 
       return exitVal;
     } catch (Exception e) {
-      e.printStackTrace();
-      LOG.error("Exception: " + e.getMessage());
+      LOG.error("Got exception", e);
       return (1);
     } finally {
       try {
@@ -313,7 +312,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
         }
 
       } catch (Exception e) {
-        LOG.error("Exception: " + e.getMessage());
+        LOG.error("Exception: ", e);
       }
     }
   }

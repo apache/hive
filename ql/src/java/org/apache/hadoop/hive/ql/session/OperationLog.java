@@ -39,7 +39,11 @@ public class OperationLog {
   private final LogFile logFile;
   private LoggingLevel opLoggingLevel = LoggingLevel.UNKNOWN;
 
-  public static enum LoggingLevel {
+  public PrintStream getPrintStream() {
+    return logFile.getPrintStream();
+  }
+
+  public enum LoggingLevel {
     NONE, EXECUTION, PERFORMANCE, VERBOSE, UNKNOWN
   }
 
@@ -220,6 +224,10 @@ public class OperationLog {
         }
       }
       return logs;
+    }
+
+    public PrintStream getPrintStream() {
+      return out;
     }
   }
 }
