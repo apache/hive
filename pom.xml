@@ -43,7 +43,6 @@
     <module>hwi</module>
     <module>jdbc</module>
     <module>metastore</module>
-    <module>odbc</module>
     <module>orc</module>
     <module>ql</module>
     <module>serde</module>

@@ -83,7 +83,6 @@
         <include>llap-server/**/*</include>
         <include>lib/**/*</include>
         <include>findbugs/**/*</include>
-        <include>odbc/**/*</include>
         <include>orc/**/*</include>
         <include>packaging/pom.xml</include>
         <include>packaging/src/**/*</include>
