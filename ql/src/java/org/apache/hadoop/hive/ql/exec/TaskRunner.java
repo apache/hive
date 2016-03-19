@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
  **/
 
 public class TaskRunner extends Thread {
+
   protected Task<? extends Serializable> tsk;
   protected TaskResult result;
   protected SessionState ss;
@@ -102,7 +103,7 @@ public class TaskRunner extends Thread {
       if (tsk.getException() == null) {
         tsk.setException(t);
       }
-      LOG.error("Error in executeTask", t);
+      t.printStackTrace();
     }
     result.setExitVal(exitVal, tsk.getException());
   }

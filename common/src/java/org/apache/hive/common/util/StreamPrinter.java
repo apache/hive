@@ -33,12 +33,12 @@ import org.apache.hadoop.io.IOUtils;
 public class StreamPrinter extends Thread {
   InputStream is;
   String type;
-  PrintStream[] outputStreams;
+  PrintStream os;
 
-  public StreamPrinter(InputStream is, String type, PrintStream... outputStreams) {
+  public StreamPrinter(InputStream is, String type, PrintStream os) {
     this.is = is;
     this.type = type;
-    this.outputStreams = outputStreams;
+    this.os = os;
   }
 
   @Override
@@ -50,22 +50,18 @@ public class StreamPrinter extends Thread {
       String line = null;
       if (type != null) {
         while ((line = br.readLine()) != null) {
-          for (PrintStream os: outputStreams) {
-            os.println(type + ">" + line);
-          }
+          os.println(type + ">" + line);
         }
       } else {
         while ((line = br.readLine()) != null) {
-          for (PrintStream os: outputStreams) {
-            os.println(line);
-          }
+          os.println(line);
         }
       }
       br.close();
-      br = null;
+      br=null;
     } catch (IOException ioe) {
       ioe.printStackTrace();
-    } finally {
+    }finally{
       IOUtils.closeStream(br);
     }
   }

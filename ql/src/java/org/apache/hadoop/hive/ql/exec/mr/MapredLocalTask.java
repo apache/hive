@@ -65,7 +65,6 @@ import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
-import org.apache.hadoop.hive.ql.session.OperationLog;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
@@ -318,10 +317,8 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
 
       CachingPrintStream errPrintStream = new CachingPrintStream(System.err);
 
-      StreamPrinter outPrinter = new StreamPrinter(executor.getInputStream(), null, System.out,
-        OperationLog.getCurrentOperationLog().getPrintStream());
-      StreamPrinter errPrinter = new StreamPrinter(executor.getErrorStream(), null, errPrintStream,
-        OperationLog.getCurrentOperationLog().getPrintStream());
+      StreamPrinter outPrinter = new StreamPrinter(executor.getInputStream(), null, System.out);
+      StreamPrinter errPrinter = new StreamPrinter(executor.getErrorStream(), null, errPrintStream);
 
       outPrinter.start();
       errPrinter.start();
@@ -343,7 +340,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
 
       return exitVal;
     } catch (Exception e) {
-      LOG.error("Exception: ", e);
+      LOG.error("Exception: " + e, e);
       return (1);
     } finally {
       if (secureDoAs != null) {
