@@ -1339,7 +1339,7 @@ public class ObjectStore implements RawStore, Configurable {
     if (keys != null) {
       mkeys = new ArrayList<MFieldSchema>(keys.size());
       for (FieldSchema part : keys) {
-        mkeys.add(new MFieldSchema(HiveStringUtils.normalizeIdentifier(part.getName()),
+        mkeys.add(new MFieldSchema(part.getName().toLowerCase(),
             part.getType(), part.getComment()));
       }
     }
