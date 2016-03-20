@@ -25,6 +25,7 @@ import javax.annotation.Nullable;
 
 import org.apache.hadoop.classification.InterfaceAudience.Private;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
@@ -102,6 +103,34 @@ public class SQLStdHiveAuthorizationValidatorForTest extends SQLStdHiveAuthoriza
       super.checkPrivileges(hiveOpType, filterForBypass(inputHObjs), filterForBypass(outputHObjs), context);
     }
 
+  }
+
+  public String getRowFilterExpression(String database, String table) throws SemanticException {
+    if (table.equals("masking_test")) {
+      return "key % 2 = 0 and key < 10";
+    } else if (table.equals("masking_test_subq")) {
+      return "key in (select key from src where src.key = masking_test_subq.key)";
+    }
+    return null;
+  }
+
+  public boolean needTransform() {
+    // In the future, we can add checking for username, groupname, etc based on
+    // HiveAuthenticationProvider. For example,
+    // "hive_test_user".equals(context.getUserName());
+    return true;
+  }
+
+  public boolean needTransform(String database, String table) {
+    return "masking_test".equals(table) || "masking_test_subq".equals(table);
+  }
+
+  public String getCellValueTransformer(String database, String table, String columnName)
+      throws SemanticException {
+    if (table.equals("masking_test") && columnName.equals("value")) {
+      return "reverse(value)";
+    }
+    return columnName;
   }
 
 }

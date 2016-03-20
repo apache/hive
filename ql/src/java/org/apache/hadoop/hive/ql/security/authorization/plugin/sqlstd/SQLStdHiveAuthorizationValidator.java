@@ -27,6 +27,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizationValidator;
@@ -147,6 +148,27 @@ public class SQLStdHiveAuthorizationValidator implements HiveAuthorizationValida
       LOG.debug(msg);
     }
     return listObjs;
+  }
+
+  @Override
+  public String getRowFilterExpression(String database, String table) throws SemanticException {
+    return null;
+  }
+
+  @Override
+  public String getCellValueTransformer(String database, String table, String columnName)
+      throws SemanticException {
+    return null;
+  }
+
+  @Override
+  public boolean needTransform() {
+    return false;
+  }
+
+  @Override
+  public boolean needTransform(String database, String table) {
+    return false;
   }
 
 }

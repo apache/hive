@@ -37,6 +37,8 @@ import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationUtils;
 import org.apache.hadoop.hive.ql.security.authorization.PrivilegeScope;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAccessController;
@@ -392,6 +394,29 @@ public class HiveV1Authorizer extends AbstractHiveAuthorizer {
       HiveAuthzContext context) throws HiveAuthzPluginException, HiveAccessControlException {
     // do no filtering in old authorizer
     return listObjs;
+  }
+
+
+  @Override
+  public String getRowFilterExpression(String database, String table) throws SemanticException {
+    return null;
+  }
+
+
+  @Override
+  public boolean needTransform() {
+    return false;
+  }
+
+  @Override
+  public boolean needTransform(String database, String table) {
+    return false;
+  }
+
+  @Override
+  public String getCellValueTransformer(String database, String table, String columnName)
+      throws SemanticException {
+    return null;
   }
 
 }

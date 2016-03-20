@@ -22,6 +22,8 @@ import java.util.List;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 
 /**
  * Convenience implementation of HiveAuthorizer.
@@ -133,6 +135,27 @@ public class HiveAuthorizerImpl extends AbstractHiveAuthorizer {
   @Override
   public void applyAuthorizationConfigPolicy(HiveConf hiveConf) throws HiveAuthzPluginException {
     accessController.applyAuthorizationConfigPolicy(hiveConf);
+  }
+
+  @Override
+  public String getRowFilterExpression(String database, String table) throws SemanticException {
+    return authValidator.getRowFilterExpression(table, table);
+  }
+
+  @Override
+  public String getCellValueTransformer(String database, String table, String columnName)
+      throws SemanticException {
+    return authValidator.getCellValueTransformer(database, table, columnName);
+  }
+
+  @Override
+  public boolean needTransform() {
+    return authValidator.needTransform();
+  }
+
+  @Override
+  public boolean needTransform(String database, String table) {
+    return authValidator.needTransform(database, table);
   }
 
 }
