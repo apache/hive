@@ -555,6 +555,101 @@ public class TestInputOutputFormat {
   }
 
   @Test
+  public void testBIStrategySplitBlockBoundary() throws Exception {
+    conf.set(HiveConf.ConfVars.HIVE_ORC_SPLIT_STRATEGY.varname, "BI");
+    OrcInputFormat.Context context = new OrcInputFormat.Context(conf);
+    MockFileSystem fs = new MockFileSystem(conf,
+        new MockFile("mock:/a/b/part-00", 1000, new byte[1], new MockBlock("host1", "host2")),
+        new MockFile("mock:/a/b/part-01", 1000, new byte[1], new MockBlock("host1", "host2")),
+        new MockFile("mock:/a/b/part-02", 1000, new byte[1], new MockBlock("host1", "host2")),
+        new MockFile("mock:/a/b/part-03", 1000, new byte[1], new MockBlock("host1", "host2")),
+        new MockFile("mock:/a/b/part-04", 1000, new byte[1], new MockBlock("host1", "host2")));
+    OrcInputFormat.FileGenerator gen =
+        new OrcInputFormat.FileGenerator(context, fs,
+            new MockPath(fs, "mock:/a/b"), false, null);
+    OrcInputFormat.SplitStrategy splitStrategy = createSplitStrategy(context, gen);
+    assertEquals(true, splitStrategy instanceof OrcInputFormat.BISplitStrategy);
+    List<OrcSplit> splits = splitStrategy.getSplits();
+    int numSplits = splits.size();
+    assertEquals(5, numSplits);
+
+    context = new OrcInputFormat.Context(conf);
+    fs = new MockFileSystem(conf,
+        new MockFile("mock:/a/b/part-00", 1000, new byte[1000], new MockBlock("host1", "host2")),
+        new MockFile("mock:/a/b/part-01", 1000, new byte[1000], new MockBlock("host1", "host2")),
+        new MockFile("mock:/a/b/part-02", 1000, new byte[1000], new MockBlock("host1", "host2")),
+        new MockFile("mock:/a/b/part-03", 1000, new byte[1000], new MockBlock("host1", "host2")),
+        new MockFile("mock:/a/b/part-04", 1000, new byte[1000], new MockBlock("host1", "host2")));
+    gen = new OrcInputFormat.FileGenerator(context, fs,
+        new MockPath(fs, "mock:/a/b"), false, null);
+    splitStrategy = createSplitStrategy(context, gen);
+    assertEquals(true, splitStrategy instanceof OrcInputFormat.BISplitStrategy);
+    splits = splitStrategy.getSplits();
+    numSplits = splits.size();
+    assertEquals(5, numSplits);
+
+    context = new OrcInputFormat.Context(conf);
+    fs = new MockFileSystem(conf,
+        new MockFile("mock:/a/b/part-00", 1000, new byte[1100], new MockBlock("host1", "host2"),
+            new MockBlock("host1", "host2")),
+        new MockFile("mock:/a/b/part-01", 1000, new byte[1100], new MockBlock("host1", "host2"),
+            new MockBlock("host1", "host2")),
+        new MockFile("mock:/a/b/part-02", 1000, new byte[1100], new MockBlock("host1", "host2"),
+            new MockBlock("host1", "host2")),
+        new MockFile("mock:/a/b/part-03", 1000, new byte[1100], new MockBlock("host1", "host2"),
+            new MockBlock("host1", "host2")),
+        new MockFile("mock:/a/b/part-04", 1000, new byte[1100], new MockBlock("host1", "host2"),
+            new MockBlock("host1", "host2")));
+    gen = new OrcInputFormat.FileGenerator(context, fs,
+        new MockPath(fs, "mock:/a/b"), false, null);
+    splitStrategy = createSplitStrategy(context, gen);
+    assertEquals(true, splitStrategy instanceof OrcInputFormat.BISplitStrategy);
+    splits = splitStrategy.getSplits();
+    numSplits = splits.size();
+    assertEquals(10, numSplits);
+
+    context = new OrcInputFormat.Context(conf);
+    fs = new MockFileSystem(conf,
+        new MockFile("mock:/a/b/part-00", 1000, new byte[2000], new MockBlock("host1", "host2"),
+            new MockBlock("host1", "host2")),
+        new MockFile("mock:/a/b/part-01", 1000, new byte[2000], new MockBlock("host1", "host2"),
+            new MockBlock("host1", "host2")),
+        new MockFile("mock:/a/b/part-02", 1000, new byte[2000], new MockBlock("host1", "host2"),
+            new MockBlock("host1", "host2")),
+        new MockFile("mock:/a/b/part-03", 1000, new byte[2000], new MockBlock("host1", "host2"),
+            new MockBlock("host1", "host2")),
+        new MockFile("mock:/a/b/part-04", 1000, new byte[2000], new MockBlock("host1", "host2"),
+            new MockBlock("host1", "host2")));
+    gen = new OrcInputFormat.FileGenerator(context, fs,
+        new MockPath(fs, "mock:/a/b"), false, null);
+    splitStrategy = createSplitStrategy(context, gen);
+    assertEquals(true, splitStrategy instanceof OrcInputFormat.BISplitStrategy);
+    splits = splitStrategy.getSplits();
+    numSplits = splits.size();
+    assertEquals(10, numSplits);
+
+    context = new OrcInputFormat.Context(conf);
+    fs = new MockFileSystem(conf,
+        new MockFile("mock:/a/b/part-00", 1000, new byte[2200], new MockBlock("host1", "host2"),
+            new MockBlock("host1", "host2"), new MockBlock("host1", "host2")),
+        new MockFile("mock:/a/b/part-01", 1000, new byte[2200], new MockBlock("host1", "host2"),
+            new MockBlock("host1", "host2"), new MockBlock("host1", "host2")),
+        new MockFile("mock:/a/b/part-02", 1000, new byte[2200], new MockBlock("host1", "host2"),
+            new MockBlock("host1", "host2"), new MockBlock("host1", "host2")),
+        new MockFile("mock:/a/b/part-03", 1000, new byte[2200], new MockBlock("host1", "host2"),
+            new MockBlock("host1", "host2"), new MockBlock("host1", "host2")),
+        new MockFile("mock:/a/b/part-04", 1000, new byte[2200], new MockBlock("host1", "host2"),
+            new MockBlock("host1", "host2"), new MockBlock("host1", "host2")));
+    gen = new OrcInputFormat.FileGenerator(context, fs,
+        new MockPath(fs, "mock:/a/b"), false, null);
+    splitStrategy = createSplitStrategy(context, gen);
+    assertEquals(true, splitStrategy instanceof OrcInputFormat.BISplitStrategy);
+    splits = splitStrategy.getSplits();
+    numSplits = splits.size();
+    assertEquals(15, numSplits);
+  }
+
+  @Test
   public void testEtlCombinedStrategy() throws Exception {
     conf.set(HiveConf.ConfVars.HIVE_ORC_SPLIT_STRATEGY.varname, "ETL");
     conf.set(HiveConf.ConfVars.HIVE_ORC_SPLIT_DIRECTORY_BATCH_MS.varname, "1000000");

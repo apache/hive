@@ -891,7 +891,6 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     private final boolean isOriginal;
     private final List<DeltaMetaData> deltas;
     private final FileSystem fs;
-    private final Context context;
     private final Path dir;
     private final boolean allowSyntheticFileIds;
 
@@ -899,7 +898,6 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
         Path dir, List<HdfsFileStatusWithId> fileStatuses, boolean isOriginal,
         List<DeltaMetaData> deltas, boolean[] covered, boolean allowSyntheticFileIds) {
       super(dir, context.numBuckets, deltas, covered);
-      this.context = context;
       this.fileStatuses = fileStatuses;
       this.isOriginal = isOriginal;
       this.deltas = deltas;
@@ -914,15 +912,17 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       for (HdfsFileStatusWithId file : fileStatuses) {
         FileStatus fileStatus = file.getFileStatus();
         if (fileStatus.getLen() != 0) {
-          String[] hosts = SHIMS.getLocationsWithOffset(fs, fileStatus).firstEntry().getValue()
-              .getHosts();
           Object fileKey = file.getFileId();
           if (fileKey == null && allowSyntheticFileIds) {
             fileKey = new SyntheticFileId(fileStatus);
           }
-          OrcSplit orcSplit = new OrcSplit(fileStatus.getPath(), fileKey, 0,
-              fileStatus.getLen(), hosts, null, isOriginal, true, deltas, -1);
-          splits.add(orcSplit);
+          TreeMap<Long, BlockLocation> blockOffsets = SHIMS.getLocationsWithOffset(fs, fileStatus);
+          for (Map.Entry<Long, BlockLocation> entry : blockOffsets.entrySet()) {
+            OrcSplit orcSplit = new OrcSplit(fileStatus.getPath(), fileKey, entry.getKey(),
+                entry.getValue().getLength(), entry.getValue().getHosts(), null, isOriginal, true,
+                deltas, -1);
+            splits.add(orcSplit);
+          }
         }
       }
 
