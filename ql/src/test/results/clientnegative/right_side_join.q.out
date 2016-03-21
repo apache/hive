@@ -1,0 +1,1 @@
+FAILED: SemanticException Invalid token on the right side of the join: TOK_LEFTOUTERJOIN; please rewrite your query; for example, put the nested join on the left side, or nest joins differently
