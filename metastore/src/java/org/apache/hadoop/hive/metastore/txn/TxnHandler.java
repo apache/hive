@@ -376,19 +376,46 @@ public class TxnHandler {
         s = "update NEXT_TXN_ID set ntxn_next = " + (first + numTxns);
         LOG.debug("Going to execute update <" + s + ">");
         stmt.executeUpdate(s);
+
         long now = getDbTime(dbConn);
-        s = "insert into TXNS (txn_id, txn_state, txn_started, " +
-          "txn_last_heartbeat, txn_user, txn_host) values (?, 'o', " + now + ", " +
-          now + ", '" + rqst.getUser() + "', '" + rqst.getHostname() + "')";
-        LOG.debug("Going to prepare statement <" + s + ">");
-        PreparedStatement ps = dbConn.prepareStatement(s);
         List<Long> txnIds = new ArrayList<Long>(numTxns);
+        ArrayList<String> queries = new ArrayList<String>();
+        String query;
+        String insertClause = "insert into TXNS (txn_id, txn_state, txn_started, txn_last_heartbeat, txn_user, txn_host) values ";
+        StringBuilder valuesClause = new StringBuilder();
+
         for (long i = first; i < first + numTxns; i++) {
-          ps.setLong(1, i);
-          //todo: this would be more efficient with a single insert with multiple rows in values()
-          //need add a safeguard to not exceed the DB capabilities.
-          ps.executeUpdate();
           txnIds.add(i);
+
+          if (i > first &&
+              (i - first) % conf.getIntVar(HiveConf.ConfVars.METASTORE_DIRECT_SQL_MAX_ELEMENTS_VALUES_CLAUSE) == 0) {
+            // wrap up the current query, and start a new one
+            query = insertClause + valuesClause.toString();
+            queries.add(query);
+
+            valuesClause.setLength(0);
+            valuesClause.append("(").append(i).append(", 'o', ").append(now).append(", ").append(now)
+                .append(", '").append(rqst.getUser()).append("', '").append(rqst.getHostname())
+                .append("')");
+
+            continue;
+          }
+
+          if (i > first) {
+            valuesClause.append(", ");
+          }
+
+          valuesClause.append("(").append(i).append(", 'o', ").append(now).append(", ").append(now)
+              .append(", '").append(rqst.getUser()).append("', '").append(rqst.getHostname())
+              .append("')");
+        }
+
+        query = insertClause + valuesClause.toString();
+        queries.add(query);
+
+        for (String q : queries) {
+          LOG.debug("Going to execute update <" + q + ">");
+          stmt.execute(q);
         }
         LOG.debug("Going to commit");
         dbConn.commit();
@@ -1361,6 +1388,100 @@ public class TxnHandler {
   }
 
   /**
+   * Build a query (or queries if one query is too big) with specified "prefix" and "suffix",
+   * while populating the IN list into multiple OR clauses, e.g. id in (1,2,3) OR id in (4,5,6)
+   * For NOT IN case, NOT IN list is broken into multiple AND clauses.
+   * @param queries array of complete query strings
+   * @param prefix part of the query that comes before IN list
+   * @param suffix part of the query that comes after IN list
+   * @param inList the list containing IN list values
+   * @param inColumn column name of IN list operator
+   * @param addParens add a pair of parenthesis outside the IN lists
+   *                  e.g. ( id in (1,2,3) OR id in (4,5,6) )
+   * @param notIn clause to be broken up is NOT IN
+   */
+  public static void buildQueryWithINClause(HiveConf conf, List<String> queries, StringBuilder prefix,
+                                            StringBuilder suffix, List<Long> inList,
+                                            String inColumn, boolean addParens, boolean notIn) {
+    int batchSize = conf.getIntVar(HiveConf.ConfVars.METASTORE_DIRECT_SQL_MAX_ELEMENTS_IN_CLAUSE);
+    int numWholeBatches = inList.size() / batchSize;
+    StringBuilder buf = new StringBuilder();
+    buf.append(prefix);
+    if (addParens) {
+      buf.append("(");
+    }
+    buf.append(inColumn);
+    if (notIn) {
+      buf.append(" not in (");
+    } else {
+      buf.append(" in (");
+    }
+
+    for (int i = 0; i <= numWholeBatches; i++) {
+      if (needNewQuery(conf, buf)) {
+        // Wrap up current query string
+        if (addParens) {
+          buf.append(")");
+        }
+        buf.append(suffix);
+        queries.add(buf.toString());
+
+        // Prepare a new query string
+        buf.setLength(0);
+      }
+
+      if (i > 0) {
+        if (notIn) {
+          if (buf.length() == 0) {
+            buf.append(prefix);
+            if (addParens) {
+              buf.append("(");
+            }
+          } else {
+            buf.append(" and ");
+          }
+          buf.append(inColumn);
+          buf.append(" not in (");
+        } else {
+          if (buf.length() == 0) {
+            buf.append(prefix);
+            if (addParens) {
+              buf.append("(");
+            }
+          } else {
+            buf.append(" or ");
+          }
+          buf.append(inColumn);
+          buf.append(" in (");
+        }
+      }
+
+      if (i * batchSize == inList.size()) {
+        // At this point we just realized we don't need another query
+        return;
+      }
+      for (int j = i * batchSize; j < (i + 1) * batchSize && j < inList.size(); j++) {
+        buf.append(inList.get(j)).append(",");
+      }
+      buf.setCharAt(buf.length() - 1, ')');
+    }
+
+    if (addParens) {
+      buf.append(")");
+    }
+    buf.append(suffix);
+    queries.add(buf.toString());
+  }
+
+  /** Estimate if the size of a string will exceed certain limit */
+  private static boolean needNewQuery(HiveConf conf, StringBuilder sb) {
+    int queryMemoryLimit = conf.getIntVar(HiveConf.ConfVars.METASTORE_DIRECT_SQL_MAX_QUERY_LENGTH);
+    // http://www.javamex.com/tutorials/memory/string_memory_usage.shtml
+    long sizeInBytes = 8 * (((sb.length() * 2) + 45) / 8);
+    return sizeInBytes / 1024 > queryMemoryLimit;
+  }
+
+  /**
    * For testing only, do not use.
    */
   @VisibleForTesting
@@ -1841,40 +1962,49 @@ public class TxnHandler {
       stmt = dbConn.createStatement();
       //This is an update statement, thus at any Isolation level will take Write locks so will block
       //all other ops using S4U on TXNS row.
-      StringBuilder buf = new StringBuilder("update TXNS set txn_state = '" + TXN_ABORTED +
-        "' where txn_state = '" + TXN_OPEN + "' and txn_id in (");
-      boolean first = true;
-      for (Long id : txnids) {
-        if (first) first = false;
-        else buf.append(',');
-        buf.append(id);
-      }
-      buf.append(')');
+      List<String> queries = new ArrayList<String>();
+
+      StringBuilder prefix = new StringBuilder();
+      StringBuilder suffix = new StringBuilder();
+
+      prefix.append("update TXNS set txn_state = " + quoteChar(TXN_ABORTED) +
+        " where txn_state = " + quoteChar(TXN_OPEN) + " and ");
       if(max_heartbeat > 0) {
-        buf.append(" and txn_last_heartbeat < ").append(max_heartbeat);
-      }
-      LOG.debug("Going to execute update <" + buf.toString() + ">");
-      updateCnt = stmt.executeUpdate(buf.toString());
-      if(updateCnt < txnids.size()) {
-        /**
-         * have to bail in this case since we don't know which transactions were not Aborted and
-         * thus don't know which locks to delete
-         * This may happen due to a race between {@link #heartbeat(HeartbeatRequest)}  operation and
-         * {@link #performTimeOuts()}
-         */
-        return updateCnt;
+        suffix.append(" and txn_last_heartbeat < ").append(max_heartbeat);
+      } else {
+        suffix.append("");
       }
 
-      buf = new StringBuilder("delete from HIVE_LOCKS where hl_txnid in (");
-      first = true;
-      for (Long id : txnids) {
-        if (first) first = false;
-        else buf.append(',');
-        buf.append(id);
+      TxnHandler.buildQueryWithINClause(conf, queries, prefix, suffix, txnids, "txn_id", true, false);
+
+      for (String query : queries) {
+        LOG.debug("Going to execute update <" + query + ">");
+        updateCnt = stmt.executeUpdate(query);
+        if (updateCnt < txnids.size()) {
+          /**
+           * have to bail in this case since we don't know which transactions were not Aborted and
+           * thus don't know which locks to delete
+           * This may happen due to a race between {@link #heartbeat(HeartbeatRequest)}  operation and
+           * {@link #performTimeOuts()}
+           */
+          return updateCnt;
+        }
       }
-      buf.append(')');
-      LOG.debug("Going to execute update <" + buf.toString() + ">");
-      stmt.executeUpdate(buf.toString());
+
+      queries.clear();
+      prefix.setLength(0);
+      suffix.setLength(0);
+
+      prefix.append("delete from HIVE_LOCKS where ");
+      suffix.append("");
+
+      TxnHandler.buildQueryWithINClause(conf, queries, prefix, suffix, txnids, "hl_txnid", false, false);
+
+      for (String query : queries) {
+        LOG.debug("Going to execute update <" + query + ">");
+        int rc = stmt.executeUpdate(query);
+        LOG.debug("Removed " + rc + " records from HIVE_LOCKS");
+      }
     } finally {
       closeStmt(stmt);
     }
@@ -2293,31 +2423,28 @@ public class TxnHandler {
       if(extLockIDs.size() <= 0) {
         return;
       }
-      int deletedLocks = 0;
+
+      List<String> queries = new ArrayList<String>();
+
+      StringBuilder prefix = new StringBuilder();
+      StringBuilder suffix = new StringBuilder();
+
       //include same hl_last_heartbeat condition in case someone heartbeated since the select
-      s = "delete from HIVE_LOCKS where hl_last_heartbeat < " + maxHeartbeatTime + " and hl_txnid = 0" +
-        " and hl_lock_ext_id IN (";
-      int numWholeBatches = extLockIDs.size() / TIMED_OUT_TXN_ABORT_BATCH_SIZE;
-      for(int i = 0; i < numWholeBatches; i++) {
-        StringBuilder sb = new StringBuilder(s);
-        for(int j = i * TIMED_OUT_TXN_ABORT_BATCH_SIZE; j < (i + 1) * TIMED_OUT_TXN_ABORT_BATCH_SIZE; j++) {
-          sb.append(extLockIDs.get(j)).append(",");
-        }
-        sb.setCharAt(sb.length() - 1, ')');
-        LOG.debug("Removing expired locks via: " + sb.toString());
-        deletedLocks += stmt.executeUpdate(sb.toString());
-        dbConn.commit();
+      prefix.append("delete from HIVE_LOCKS where hl_last_heartbeat < ");
+      prefix.append(maxHeartbeatTime);
+      prefix.append(" and hl_txnid = 0 and ");
+      suffix.append("");
+
+      TxnHandler.buildQueryWithINClause(conf, queries, prefix, suffix, extLockIDs, "hl_lock_ext_id", true, false);
+
+      int deletedLocks = 0;
+      for (String query : queries) {
+        LOG.debug("Removing expired locks via: " + query);
+        deletedLocks += stmt.executeUpdate(query);
       }
-      StringBuilder sb = new StringBuilder(s);
-      for(int i = numWholeBatches * TIMED_OUT_TXN_ABORT_BATCH_SIZE; i < extLockIDs.size(); i++) {
-        sb.append(extLockIDs.get(i)).append(",");
-      }
-      sb.setCharAt(sb.length() - 1, ')');
-      LOG.debug("Removing expired locks via: " + sb.toString());
-      deletedLocks += stmt.executeUpdate(sb.toString());
       if(deletedLocks > 0) {
         LOG.info("Deleted " + deletedLocks + " ext locks from HIVE_LOCKS due to timeout (vs. " +
-          extLockIDs.size() + " found. List: " + extLockIDs + ") maxHeartbeatTime=" + maxHeartbeatTime);
+            extLockIDs.size() + " found. List: " + extLockIDs + ") maxHeartbeatTime=" + maxHeartbeatTime);
       }
       LOG.debug("Going to commit");
       dbConn.commit();

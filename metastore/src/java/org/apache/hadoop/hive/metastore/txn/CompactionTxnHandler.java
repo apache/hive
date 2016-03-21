@@ -364,36 +364,38 @@ public class CompactionTxnHandler extends TxnHandler {
         rs = stmt.executeQuery(s);
         List<Long> txnids = new ArrayList<>();
         while (rs.next()) txnids.add(rs.getLong(1));
+        // Remove entries from txn_components, as there may be aborted txn components
         if (txnids.size() > 0) {
+          List<String> queries = new ArrayList<String>();
 
-          // Remove entries from txn_components, as there may be aborted txn components
-          StringBuilder buf = new StringBuilder();
-          //todo: add a safeguard to make sure IN clause is not too large; break up by txn id
-          buf.append("delete from TXN_COMPONENTS where tc_txnid in (");
-          boolean first = true;
-          for (long id : txnids) {
-            if (first) first = false;
-            else buf.append(", ");
-            buf.append(id);
-          }
+          // Prepare prefix and suffix
+          StringBuilder prefix = new StringBuilder();
+          StringBuilder suffix = new StringBuilder();
+
+          prefix.append("delete from TXN_COMPONENTS where ");
+
           //because 1 txn may include different partitions/tables even in auto commit mode
-          buf.append(") and tc_database = '");
-          buf.append(info.dbname);
-          buf.append("' and tc_table = '");
-          buf.append(info.tableName);
-          buf.append("'");
+          suffix.append(" and tc_database = ");
+          suffix.append(quoteString(info.dbname));
+          suffix.append(" and tc_table = ");
+          suffix.append(quoteString(info.tableName));
           if (info.partName != null) {
-            buf.append(" and tc_partition = '");
-            buf.append(info.partName);
-            buf.append("'");
+            suffix.append(" and tc_partition = ");
+            suffix.append(quoteString(info.partName));
           }
-          LOG.debug("Going to execute update <" + buf.toString() + ">");
-          int rc = stmt.executeUpdate(buf.toString());
-          LOG.debug("Removed " + rc + " records from txn_components");
 
-          // Don't bother cleaning from the txns table.  A separate call will do that.  We don't
-          // know here which txns still have components from other tables or partitions in the
-          // table, so we don't know which ones we can and cannot clean.
+          // Populate the complete query with provided prefix and suffix
+          TxnHandler.buildQueryWithINClause(conf, queries, prefix, suffix, txnids, "tc_txnid", true, false);
+
+          for (String query : queries) {
+            LOG.debug("Going to execute update <" + query + ">");
+            int rc = stmt.executeUpdate(query);
+            LOG.debug("Removed " + rc + " records from txn_components");
+
+            // Don't bother cleaning from the txns table.  A separate call will do that.  We don't
+            // know here which txns still have components from other tables or partitions in the
+            // table, so we don't know which ones we can and cannot clean.
+          }
         }
 
         LOG.debug("Going to commit");
@@ -440,16 +442,25 @@ public class CompactionTxnHandler extends TxnHandler {
         if(txnids.size() <= 0) {
           return;
         }
-        for(int i = 0; i < txnids.size() / TIMED_OUT_TXN_ABORT_BATCH_SIZE; i++) {
-          List<Long> txnIdBatch = txnids.subList(i * TIMED_OUT_TXN_ABORT_BATCH_SIZE,
-            (i + 1) * TIMED_OUT_TXN_ABORT_BATCH_SIZE);
-          deleteTxns(dbConn, stmt, txnIdBatch);
+
+        List<String> queries = new ArrayList<String>();
+        StringBuilder prefix = new StringBuilder();
+        StringBuilder suffix = new StringBuilder();
+
+        prefix.append("delete from TXNS where ");
+        suffix.append("");
+
+        TxnHandler.buildQueryWithINClause(conf, queries, prefix, suffix, txnids, "txn_id", false, false);
+
+        for (String query : queries) {
+          LOG.debug("Going to execute update <" + query + ">");
+          int rc = stmt.executeUpdate(query);
+          LOG.info("Removed " + rc + "  empty Aborted transactions from TXNS");
         }
-        int partialBatchSize = txnids.size() % TIMED_OUT_TXN_ABORT_BATCH_SIZE;
-        if(partialBatchSize > 0) {
-          List<Long> txnIdBatch = txnids.subList(txnids.size() - partialBatchSize, txnids.size());
-          deleteTxns(dbConn, stmt, txnIdBatch);
-        }
+        LOG.info("Aborted transactions removed from TXNS: " + txnids);
+
+        LOG.debug("Going to commit");
+        dbConn.commit();
       } catch (SQLException e) {
         LOG.error("Unable to delete from txns table " + e.getMessage());
         LOG.debug("Going to rollback");
@@ -463,18 +474,6 @@ public class CompactionTxnHandler extends TxnHandler {
     } catch (RetryException e) {
       cleanEmptyAbortedTxns();
     }
-  }
-  private static void deleteTxns(Connection dbConn, Statement stmt, List<Long> txnIdBatch) throws SQLException {
-    StringBuilder buf = new StringBuilder("delete from TXNS where txn_id in (");
-    for(long txnid : txnIdBatch) {
-      buf.append(txnid).append(',');
-    }
-    buf.setCharAt(buf.length() - 1, ')');
-    LOG.debug("Going to execute update <" + buf + ">");
-    int rc = stmt.executeUpdate(buf.toString());
-    LOG.info("Removed " + rc + "  empty Aborted transactions: " + txnIdBatch + " from TXNS");
-    LOG.debug("Going to commit");
-    dbConn.commit();
   }
 
   /**
@@ -738,22 +737,21 @@ public class CompactionTxnHandler extends TxnHandler {
           checkForDeletion(deleteSet, ci, rc);
         }
         close(rs);
-        
-        String baseDeleteSql = "delete from COMPLETED_COMPACTIONS where cc_id IN(";
-        StringBuilder queryStr = new StringBuilder(baseDeleteSql);
-        for(int i = 0; i < deleteSet.size(); i++) {
-          if(i > 0 && i % TIMED_OUT_TXN_ABORT_BATCH_SIZE == 0) {
-            queryStr.setCharAt(queryStr.length() - 1, ')');
-            stmt.executeUpdate(queryStr.toString());
-            dbConn.commit();
-            queryStr = new StringBuilder(baseDeleteSql);
-          }
-          queryStr.append(deleteSet.get(i)).append(',');
-        }
-        if(queryStr.length() > baseDeleteSql.length()) {
-          queryStr.setCharAt(queryStr.length() - 1, ')');
-          int updCnt = stmt.executeUpdate(queryStr.toString());
-          dbConn.commit();
+
+        List<String> queries = new ArrayList<String>();
+
+        StringBuilder prefix = new StringBuilder();
+        StringBuilder suffix = new StringBuilder();
+
+        prefix.append("delete from COMPLETED_COMPACTIONS where ");
+        suffix.append("");
+
+        TxnHandler.buildQueryWithINClause(conf, queries, prefix, suffix, deleteSet, "cc_id", false, false);
+
+        for (String query : queries) {
+          LOG.debug("Going to execute update <" + query + ">");
+          int count = stmt.executeUpdate(query);
+          LOG.debug("Removed " + count + " records from COMPLETED_COMPACTIONS");
         }
         dbConn.commit();
       } catch (SQLException e) {

@@ -23,12 +23,10 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -1217,6 +1215,83 @@ public class TestTxnHandler {
   private void updateLocks(Connection conn) throws SQLException {
     Statement stmt = conn.createStatement();
     stmt.executeUpdate("update HIVE_LOCKS set hl_last_heartbeat = hl_last_heartbeat + 1");
+  }
+
+  @Test
+  public void testBuildQueryWithINClause() throws Exception {
+    List<String> queries = new ArrayList<String>();
+
+    StringBuilder prefix = new StringBuilder();
+    StringBuilder suffix = new StringBuilder();
+
+    // Note, this is a "real" query that depends on one of the metastore tables
+    prefix.append("select count(*) from TXNS where ");
+    suffix.append(" and TXN_STATE = 'o'");
+
+    // Case 1 - Max in list members: 10; Max query string length: 1KB
+    //          The first query happens to have 2 full batches.
+    conf.setIntVar(HiveConf.ConfVars.METASTORE_DIRECT_SQL_MAX_QUERY_LENGTH, 1);
+    conf.setIntVar(HiveConf.ConfVars.METASTORE_DIRECT_SQL_MAX_ELEMENTS_IN_CLAUSE, 10);
+    List<Long> inList = new ArrayList<Long>();
+    for (long i = 1; i <= 200; i++) {
+      inList.add(i);
+    }
+    TxnHandler.buildQueryWithINClause(conf, queries, prefix, suffix, inList, "TXN_ID", true, false);
+    Assert.assertEquals(1, queries.size());
+    runAgainstDerby(queries);
+
+    // Case 2 - Max in list members: 10; Max query string length: 1KB
+    //          The first query has 2 full batches, and the second query only has 1 batch which only contains 1 member
+    queries.clear();
+    inList.add((long)201);
+    TxnHandler.buildQueryWithINClause(conf, queries, prefix, suffix, inList, "TXN_ID", true, false);
+    Assert.assertEquals(2, queries.size());
+    runAgainstDerby(queries);
+
+    // Case 3 - Max in list members: 1000; Max query string length: 5KB
+    conf.setIntVar(HiveConf.ConfVars.METASTORE_DIRECT_SQL_MAX_QUERY_LENGTH, 10);
+    conf.setIntVar(HiveConf.ConfVars.METASTORE_DIRECT_SQL_MAX_ELEMENTS_IN_CLAUSE, 1000);
+    queries.clear();
+    for (long i = 202; i <= 4321; i++) {
+      inList.add(i);
+    }
+    TxnHandler.buildQueryWithINClause(conf, queries, prefix, suffix, inList, "TXN_ID", true, false);
+    Assert.assertEquals(3, queries.size());
+    runAgainstDerby(queries);
+
+    // Case 4 - NOT IN list
+    queries.clear();
+    TxnHandler.buildQueryWithINClause(conf, queries, prefix, suffix, inList, "TXN_ID", true, true);
+    Assert.assertEquals(3, queries.size());
+    runAgainstDerby(queries);
+
+    // Case 5 - No parenthesis
+    queries.clear();
+    suffix.setLength(0);
+    suffix.append("");
+    TxnHandler.buildQueryWithINClause(conf, queries, prefix, suffix, inList, "TXN_ID", false, false);
+    Assert.assertEquals(3, queries.size());
+    runAgainstDerby(queries);
+  }
+
+  /** Verify queries can run against Derby DB.
+   *  As long as Derby doesn't complain, we assume the query is syntactically/semantically correct.
+   */
+  private void runAgainstDerby(List<String> queries) throws Exception {
+    Connection conn = null;
+    Statement stmt = null;
+    ResultSet rs = null;
+
+    try {
+      conn = TxnDbUtil.getConnection();
+      stmt = conn.createStatement();
+      for (String query : queries) {
+        rs = stmt.executeQuery(query);
+        Assert.assertTrue("The query is not valid", rs.next());
+      }
+    } finally {
+      TxnDbUtil.closeResources(conn, stmt, rs);
+    }
   }
 
   @Before

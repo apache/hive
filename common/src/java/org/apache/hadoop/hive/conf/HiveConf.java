@@ -573,6 +573,13 @@ public class HiveConf extends Configuration {
         "select query has incorrect syntax or something similar inside a transaction, the\n" +
         "entire transaction will fail and fall-back to DataNucleus will not be possible. You\n" +
         "should disable the usage of direct SQL inside transactions if that happens in your case."),
+    METASTORE_DIRECT_SQL_MAX_QUERY_LENGTH("hive.direct.sql.max.query.length", 100, "The maximum\n" +
+        " size of a query string (in KB)."),
+    METASTORE_DIRECT_SQL_MAX_ELEMENTS_IN_CLAUSE("hive.direct.sql.max.elements.in.clause", 1000,
+        "The maximum number of values in a IN clause. Once exceeded, it will be broken into\n" +
+        " multiple OR separated IN clauses."),
+    METASTORE_DIRECT_SQL_MAX_ELEMENTS_VALUES_CLAUSE("hive.direct.sql.max.elements.values.clause",
+        1000, "The maximum number of values in a VALUES clause for INSERT statement."),
     METASTORE_ORM_RETRIEVE_MAPNULLS_AS_EMPTY_STRINGS("hive.metastore.orm.retrieveMapNullsAsEmptyStrings",false,
         "Thrift does not support nulls in maps, so any nulls present in maps retrieved from ORM must " +
         "either be pruned or converted to empty strings. Some backing dbs such as Oracle persist empty strings " +
