@@ -248,7 +248,7 @@ public final class TxnDbUtil {
     }
   }
 
-  private static Connection getConnection() throws Exception {
+  static Connection getConnection() throws Exception {
     HiveConf conf = new HiveConf();
     String jdbcDriver = HiveConf.getVar(conf, HiveConf.ConfVars.METASTORE_CONNECTION_DRIVER);
     Driver driver = (Driver) Class.forName(jdbcDriver).newInstance();
@@ -264,7 +264,7 @@ public final class TxnDbUtil {
     return conn;
   }
 
-  private static void closeResources(Connection conn, Statement stmt, ResultSet rs) {
+  static void closeResources(Connection conn, Statement stmt, ResultSet rs) {
     if (rs != null) {
       try {
         rs.close();
