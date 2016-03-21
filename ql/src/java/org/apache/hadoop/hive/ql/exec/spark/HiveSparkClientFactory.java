@@ -146,7 +146,7 @@ public class HiveSparkClientFactory {
         if (value != null && !value.isEmpty()) {
           sparkConf.put("spark.hadoop." + propertyName, value);
         }
-      } else if (propertyName.startsWith("hbase")) {
+      } else if (propertyName.startsWith("hbase") || propertyName.startsWith("zookeeper.znode")) {
         // Add HBase related configuration to Spark because in security mode, Spark needs it
         // to generate hbase delegation token for Spark. This is a temp solution to deal with
         // Spark problem.
