@@ -8100,6 +8100,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     QBJoinTree joinTree = new QBJoinTree();
     JoinCond[] condn = new JoinCond[1];
 
+    int joinType = joinParseTree.getToken().getType();
     switch (joinParseTree.getToken().getType()) {
     case HiveParser.TOK_LEFTOUTERJOIN:
       joinTree.setNoOuterJoin(false);
@@ -8127,10 +8128,27 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     ASTNode left = (ASTNode) joinParseTree.getChild(0);
     ASTNode right = (ASTNode) joinParseTree.getChild(1);
+    boolean isValidLeftToken = isValidJoinSide(left);
+    boolean isJoinLeftToken = !isValidLeftToken && isJoinToken(left);
+    boolean isValidRightToken = isValidJoinSide(right);
+    boolean isJoinRightToken = !isValidRightToken && isJoinToken(right);
+    // TODO: if we didn't care about the column order, we could switch join sides here
+    //       for TOK_JOIN and TOK_FULLOUTERJOIN.
+    if (!isValidLeftToken && !isJoinLeftToken) {
+      throw new SemanticException("Invalid token on the left side of the join: "
+          + left.getToken().getText() + "; please rewrite your query");
+    } else if (!isValidRightToken) {
+      String advice= "";
+      if (isJoinRightToken && !isJoinLeftToken) {
+        advice = "; for example, put the nested join on the left side, or nest joins differently";
+      } else if (isJoinRightToken) {
+        advice = "; for example, nest joins differently";
+      }
+      throw new SemanticException("Invalid token on the right side of the join: "
+      + right.getToken().getText() + "; please rewrite your query" + advice);
+    }
 
-    if ((left.getToken().getType() == HiveParser.TOK_TABREF)
-        || (left.getToken().getType() == HiveParser.TOK_SUBQUERY)
-        || (left.getToken().getType() == HiveParser.TOK_PTBLFUNCTION)) {
+    if (isValidLeftToken) {
       String tableName = getUnescapedUnqualifiedTableName((ASTNode) left.getChild(0))
           .toLowerCase();
       String alias = extractJoinAlias(left, tableName);
@@ -8144,7 +8162,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       joinTree.setId(qb.getId());
       joinTree.getAliasToOpInfo().put(
           getModifiedAlias(qb, alias), aliasToOpInfo.get(alias));
-    } else if (isJoinToken(left)) {
+    } else if (isJoinLeftToken) {
       QBJoinTree leftTree = genJoinTree(qb, left, aliasToOpInfo);
       joinTree.setJoinSrc(leftTree);
       String[] leftChildAliases = leftTree.getLeftAliases();
@@ -8158,9 +8176,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       assert (false);
     }
 
-    if ((right.getToken().getType() == HiveParser.TOK_TABREF)
-        || (right.getToken().getType() == HiveParser.TOK_SUBQUERY)
-        || (right.getToken().getType() == HiveParser.TOK_PTBLFUNCTION)) {
+    if (isValidRightToken) {
       String tableName = getUnescapedUnqualifiedTableName((ASTNode) right.getChild(0))
           .toLowerCase();
       String alias = extractJoinAlias(right, tableName);
@@ -8248,6 +8264,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     return joinTree;
+  }
+
+  private static boolean isValidJoinSide(ASTNode right) {
+    return (right.getToken().getType() == HiveParser.TOK_TABREF)
+        || (right.getToken().getType() == HiveParser.TOK_SUBQUERY)
+        || (right.getToken().getType() == HiveParser.TOK_PTBLFUNCTION);
   }
 
   private String extractJoinAlias(ASTNode node, String tableName) {
