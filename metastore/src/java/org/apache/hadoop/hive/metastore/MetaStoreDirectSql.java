@@ -359,7 +359,7 @@ class MetaStoreDirectSql {
     // Derby and Oracle do not interpret filters ANSI-properly in some cases and need a workaround.
     boolean dbHasJoinCastBug = (dbType == DB.DERBY || dbType == DB.ORACLE);
     String sqlFilter = PartitionFilterGenerator.generateSqlFilter(
-        table, tree, params, joins, dbHasJoinCastBug);
+        table, tree, params, joins, dbHasJoinCastBug, dbType);
     if (sqlFilter == null) {
       return null; // Cannot make SQL filter to push down.
     }
@@ -901,14 +901,16 @@ class MetaStoreDirectSql {
     private final List<Object> params;
     private final List<String> joins;
     private final boolean dbHasJoinCastBug;
+    private final DB dbType;
 
-    private PartitionFilterGenerator(
-        Table table, List<Object> params, List<String> joins, boolean dbHasJoinCastBug) {
+    private PartitionFilterGenerator(Table table, List<Object> params, List<String> joins,
+        boolean dbHasJoinCastBug, DB dbType) {
       this.table = table;
       this.params = params;
       this.joins = joins;
       this.dbHasJoinCastBug = dbHasJoinCastBug;
       this.filterBuffer = new FilterBuilder(false);
+      this.dbType = dbType;
     }
 
     /**
@@ -918,14 +920,14 @@ class MetaStoreDirectSql {
      * @param joins the joins necessary for the resulting expression
      * @return the string representation of the expression tree
      */
-    private static String generateSqlFilter(Table table, ExpressionTree tree,
-        List<Object> params, List<String> joins, boolean dbHasJoinCastBug) throws MetaException {
+    private static String generateSqlFilter(Table table, ExpressionTree tree, List<Object> params,
+        List<String> joins, boolean dbHasJoinCastBug, DB dbType) throws MetaException {
       assert table != null;
       if (tree.getRoot() == null) {
         return "";
       }
       PartitionFilterGenerator visitor = new PartitionFilterGenerator(
-          table, params, joins, dbHasJoinCastBug);
+          table, params, joins, dbHasJoinCastBug, dbType);
       tree.accept(visitor);
       if (visitor.filterBuffer.hasError()) {
         LOG.info("Unable to push down SQL filter: " + visitor.filterBuffer.getErrorMessage());
@@ -1061,7 +1063,12 @@ class MetaStoreDirectSql {
         if (colType == FilterType.Integral) {
           tableValue = "cast(" + tableValue + " as decimal(21,0))";
         } else if (colType == FilterType.Date) {
-          tableValue = "cast(" + tableValue + " as date)";
+          if (dbType == DB.ORACLE) {
+            // Oracle requires special treatment... as usual.
+            tableValue = "TO_DATE(" + tableValue + ", 'YYYY-MM-DD')";
+          } else {
+            tableValue = "cast(" + tableValue + " as date)";
+          }
         }
 
         if (dbHasJoinCastBug) {
