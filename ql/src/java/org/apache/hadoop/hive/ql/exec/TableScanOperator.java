@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -107,9 +108,21 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
    **/
   @Override
   public void process(Object row, int tag) throws HiveException {
-    if (rowLimit >= 0 && currCount++ >= rowLimit) {
-      setDone(true);
-      return;
+    if (rowLimit >= 0) {
+      if (row instanceof VectorizedRowBatch) {
+        VectorizedRowBatch batch = (VectorizedRowBatch) row;
+        if (currCount >= rowLimit) {
+          setDone(true);
+          return;
+        }
+        if (currCount + batch.size > rowLimit) {
+          batch.size = rowLimit - currCount;
+        }
+        currCount += batch.size;
+      } else if (currCount++ >= rowLimit) {
+        setDone(true);
+        return;
+      }
     }
     if (conf != null && conf.isGatherStats()) {
       gatherStats(row);
