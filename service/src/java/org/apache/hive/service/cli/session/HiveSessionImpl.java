@@ -432,16 +432,15 @@ public class HiveSessionImpl implements HiveSession {
           throws HiveSQLException {
     acquire(true);
 
-    // Create the queryId if the client doesn't pass in.
-    // Reuse the client's queryId if exists.
+    // Make a copy of confOverlay
     if (confOverlay == null) {
       confOverlay = new HashMap<String, String>();
+    } else {
+      Map<String, String> conf = new HashMap<String, String>();
+      conf.putAll(confOverlay);
+      confOverlay = conf;
     }
-    String queryId = confOverlay.get(HiveConf.ConfVars.HIVEQUERYID.varname);
-    if (queryId == null || queryId.isEmpty()) {
-      queryId = QueryPlan.makeQueryId();
-      confOverlay.put(HiveConf.ConfVars.HIVEQUERYID.varname, queryId);
-    }
+    confOverlay.put(HiveConf.ConfVars.HIVEQUERYID.varname, QueryPlan.makeQueryId());
 
     OperationManager operationManager = getOperationManager();
     ExecuteStatementOperation operation = operationManager

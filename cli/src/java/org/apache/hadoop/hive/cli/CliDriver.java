@@ -68,6 +68,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.mr.HadoopJobExecHelper;
 import org.apache.hadoop.hive.ql.exec.tez.TezJobExecHelper;
@@ -119,6 +120,8 @@ public class CliDriver {
     ss.setLastCommand(cmd);
 
     ss.updateThreadName();
+
+    conf.set(HiveConf.ConfVars.HIVEQUERYID.varname, QueryPlan.makeQueryId());
 
     // Flush the print stream, so it doesn't include output from the last command
     ss.err.flush();
