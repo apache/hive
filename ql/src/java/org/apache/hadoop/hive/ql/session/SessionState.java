@@ -415,7 +415,7 @@ public class SessionState {
     if (currThreadName.contains(logPrefix)) {
       final String[] names = currThreadName.split(logPrefix);
       LOG.info("Resetting thread name to {}", names[names.length - 1]);
-      Thread.currentThread().setName(names[names.length - 1]);
+      Thread.currentThread().setName(names[names.length - 1].trim());
     }
   }
 
