@@ -577,6 +577,8 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
       setupZookeeperAuth(this.conf);
       zooKeeperClient.start();
     }
+    // Init closeable utils in case register is not called (see HIVE-13322)
+    CloseableUtils.class.getName();
   }
 
   @Override
