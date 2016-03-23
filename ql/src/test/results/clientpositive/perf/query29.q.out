@@ -52,7 +52,7 @@ Stage-0
                         <-Reducer 7 [SIMPLE_EDGE]
                           SHUFFLE [RS_42]
                             PartitionCols:_col1
-                            Merge Join Operator [MERGEJOIN_102] (rows=44193 width=1119)
+                            Merge Join Operator [MERGEJOIN_102] (rows=44194 width=1119)
                               Conds:RS_39._col3=RS_40._col0(Inner),Output:["_col1","_col5","_col10","_col14","_col24","_col25"]
                             <-Map 16 [SIMPLE_EDGE]
                               SHUFFLE [RS_40]
@@ -66,14 +66,14 @@ Stage-0
                             <-Reducer 6 [SIMPLE_EDGE]
                               SHUFFLE [RS_39]
                                 PartitionCols:_col3
-                                Merge Join Operator [MERGEJOIN_101] (rows=40176 width=1119)
+                                Merge Join Operator [MERGEJOIN_101] (rows=40177 width=1119)
                                   Conds:RS_36._col11=RS_37._col0(Inner),Output:["_col1","_col3","_col5","_col10","_col14"]
                                 <-Map 15 [SIMPLE_EDGE]
                                   SHUFFLE [RS_37]
                                     PartitionCols:_col0
-                                    Select Operator [SEL_17] (rows=36524 width=1119)
+                                    Select Operator [SEL_17] (rows=36525 width=1119)
                                       Output:["_col0"]
-                                      Filter Operator [FIL_94] (rows=36524 width=1119)
+                                      Filter Operator [FIL_94] (rows=36525 width=1119)
                                         predicate:((d_year) IN (2000, 2001, 2002) and d_date_sk is not null)
                                         TableScan [TS_15] (rows=73049 width=1119)
                                           default@date_dim,d1,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year"]
