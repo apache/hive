@@ -608,14 +608,12 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     boolean isOriginal;
     List<DeltaMetaData> deltas;
     FileSystem fs;
-    Context context;
     Path dir;
 
     public BISplitStrategy(Context context, FileSystem fs,
         Path dir, List<FileStatus> fileStatuses, boolean isOriginal,
         List<DeltaMetaData> deltas, boolean[] covered) {
       super(dir, context.numBuckets, deltas, covered);
-      this.context = context;
       this.fileStatuses = fileStatuses;
       this.isOriginal = isOriginal;
       this.deltas = deltas;
@@ -627,11 +625,13 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     public List<OrcSplit> getSplits() throws IOException {
       List<OrcSplit> splits = Lists.newArrayList();
       for (FileStatus fileStatus : fileStatuses) {
-        String[] hosts = SHIMS.getLocationsWithOffset(fs, fileStatus).firstEntry().getValue()
-            .getHosts();
-        OrcSplit orcSplit = new OrcSplit(fileStatus.getPath(), 0, fileStatus.getLen(), hosts,
-            null, isOriginal, true, deltas, -1);
-        splits.add(orcSplit);
+        TreeMap<Long, BlockLocation> blockOffsets = SHIMS.getLocationsWithOffset(fs, fileStatus);
+        for (Map.Entry<Long, BlockLocation> entry : blockOffsets.entrySet()) {
+          OrcSplit orcSplit = new OrcSplit(fileStatus.getPath(), entry.getKey(),
+                  entry.getValue().getLength(), entry.getValue().getHosts(), null, isOriginal, true,
+                  deltas, -1);
+          splits.add(orcSplit);
+        }
       }
 
       // add uncovered ACID delta splits
