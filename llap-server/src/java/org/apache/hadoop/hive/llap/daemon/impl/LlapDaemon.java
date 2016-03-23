@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge.UdfWhitelistChecker;
 import org.apache.hadoop.metrics2.util.MBeans;
 import org.apache.hadoop.service.CompositeService;
 import org.apache.hadoop.util.ExitUtil;
@@ -168,7 +169,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
 
     // Initialize the function localizer.
     ClassLoader executorClassLoader = null;
-    if (HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_DAEMON_ALLOW_PERMANENT_FNS)) {
+    if (HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_DAEMON_DOWNLOAD_PERMANENT_FNS)) {
       this.fnLocalizer = new FunctionLocalizer(daemonConf, localDirs[0]);
       executorClassLoader = fnLocalizer.getClassLoader();
       // Set up the hook that will disallow creating non-whitelisted UDFs anywhere in the plan.
@@ -177,6 +178,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
       SerializationUtilities.setGlobalHook(new LlapGlobalUdfChecker(fnLocalizer));
     } else {
       this.fnLocalizer = null;
+      SerializationUtilities.setGlobalHook(new LlapGlobalUdfChecker(new StaticPermanentFunctionChecker(daemonConf)));
       executorClassLoader = Thread.currentThread().getContextClassLoader();
     }
 
@@ -449,9 +451,9 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
    * us into GenericUDFBridge-s, to check with the whitelist before instantiating a UDF.
    */
   private static final class LlapGlobalUdfChecker extends SerializationUtilities.Hook {
-    private FunctionLocalizer fnLocalizer;
-    public LlapGlobalUdfChecker(FunctionLocalizer fnLocalizer) {
-      this.fnLocalizer = fnLocalizer;
+    private UdfWhitelistChecker fnCheckerImpl;
+    public LlapGlobalUdfChecker(UdfWhitelistChecker fnCheckerImpl) {
+      this.fnCheckerImpl = fnCheckerImpl;
     }
 
     @Override
@@ -460,7 +462,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
       // 2) Ignore GenericUDFBridge, it's checked separately in LlapUdfBridgeChecker.
       if (GenericUDFBridge.class == type) return true; // Run post-hook.
       if (!(GenericUDF.class.isAssignableFrom(type) || UDF.class.isAssignableFrom(type))
-          || fnLocalizer.isUdfAllowed(type)) return false;
+          || fnCheckerImpl.isUdfAllowed(type)) return false;
       throw new SecurityException("UDF " + type.getCanonicalName() + " is not allowed");
     }
 
@@ -469,7 +471,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
       if (o == null) return o;
       Class<?> type = o.getClass();
       if (GenericUDFBridge.class == type)  {
-        ((GenericUDFBridge)o).setUdfChecker(fnLocalizer);
+        ((GenericUDFBridge)o).setUdfChecker(fnCheckerImpl);
       }
       // This won't usually be called otherwise.
       preRead(type);
