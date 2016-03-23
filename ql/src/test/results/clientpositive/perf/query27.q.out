@@ -57,7 +57,7 @@ Stage-0
                                 Select Operator [SEL_11] (rows=852 width=1910)
                                   Output:["_col0","_col1"]
                                   Filter Operator [FIL_53] (rows=852 width=1910)
-                                    predicate:((s_state) IN ('KS', 'AL', 'MN', 'AL', 'SC', 'VT') and s_store_sk is not null)
+                                    predicate:((s_state) IN ('KS', 'AL', 'MN', 'SC', 'VT') and s_store_sk is not null)
                                     TableScan [TS_9] (rows=1704 width=1910)
                                       default@store,store,Tbl:COMPLETE,Col:NONE,Output:["s_store_sk","s_state"]
                             <-Reducer 3 [SIMPLE_EDGE]

@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcCtx.ConstantPropagateOption;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.HiveOpConverterPostProc;
 import org.apache.hadoop.hive.ql.optimizer.correlation.CorrelationOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.correlation.ReduceSinkDeDuplication;
@@ -83,7 +82,8 @@ public class Optimizer {
     }
 
     // Try to transform OR predicates in Filter into simpler IN clauses first
-    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEPOINTLOOKUPOPTIMIZER)) {
+    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEPOINTLOOKUPOPTIMIZER) &&
+            !pctx.getContext().isCboSucceeded()) {
       final int min = HiveConf.getIntVar(hiveConf,
           HiveConf.ConfVars.HIVEPOINTLOOKUPOPTIMIZERMIN);
       transformations.add(new PointLookupOptimizer(min));

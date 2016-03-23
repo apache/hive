@@ -153,6 +153,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinProjectTranspos
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinPushTransitivePredicatesRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinToMultiJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HivePartitionPruneRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HivePointLookupOptimizerRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HivePreFilteringRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveProjectMergeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveProjectSortTransposeRule;
@@ -1138,23 +1139,32 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       // 3. Run exhaustive PPD, add not null filters, transitive inference,
       // constant propagation, constant folding
+      List<RelOptRule> rules = Lists.newArrayList();
+      if (conf.getBoolVar(HiveConf.ConfVars.HIVEOPTPPD_WINDOWING)) {
+        rules.add(HiveFilterProjectTransposeRule.INSTANCE_DETERMINISTIC_WINDOWING);
+      } else {
+        rules.add(HiveFilterProjectTransposeRule.INSTANCE_DETERMINISTIC);
+      }
+      rules.add(HiveFilterSetOpTransposeRule.INSTANCE);
+      rules.add(HiveFilterSortTransposeRule.INSTANCE);
+      rules.add(HiveFilterJoinRule.JOIN);
+      rules.add(HiveFilterJoinRule.FILTER_ON_JOIN);
+      rules.add(new HiveFilterAggregateTransposeRule(Filter.class, HiveRelFactories.HIVE_FILTER_FACTORY, Aggregate.class));
+      rules.add(new FilterMergeRule(HiveRelFactories.HIVE_FILTER_FACTORY));
+      rules.add(HiveReduceExpressionsRule.PROJECT_INSTANCE);
+      rules.add(HiveReduceExpressionsRule.FILTER_INSTANCE);
+      rules.add(HiveReduceExpressionsRule.JOIN_INSTANCE);
+      if (conf.getBoolVar(HiveConf.ConfVars.HIVEPOINTLOOKUPOPTIMIZER)) {
+        final int min = conf.getIntVar(HiveConf.ConfVars.HIVEPOINTLOOKUPOPTIMIZERMIN);
+        rules.add(new HivePointLookupOptimizerRule(min));
+      }
+      rules.add(HiveJoinAddNotNullRule.INSTANCE_JOIN);
+      rules.add(HiveJoinAddNotNullRule.INSTANCE_SEMIJOIN);
+      rules.add(HiveJoinPushTransitivePredicatesRule.INSTANCE_JOIN);
+      rules.add(HiveJoinPushTransitivePredicatesRule.INSTANCE_SEMIJOIN);
       perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
       basePlan = hepPlan(basePlan, true, mdProvider, executorProvider, HepMatchOrder.BOTTOM_UP,
-          conf.getBoolVar(HiveConf.ConfVars.HIVEOPTPPD_WINDOWING) ? HiveFilterProjectTransposeRule.INSTANCE_DETERMINISTIC_WINDOWING
-              : HiveFilterProjectTransposeRule.INSTANCE_DETERMINISTIC,
-          HiveFilterSetOpTransposeRule.INSTANCE,
-          HiveFilterSortTransposeRule.INSTANCE,
-          HiveFilterJoinRule.JOIN,
-          HiveFilterJoinRule.FILTER_ON_JOIN,
-          new HiveFilterAggregateTransposeRule(Filter.class, HiveRelFactories.HIVE_FILTER_FACTORY, Aggregate.class),
-          new FilterMergeRule(HiveRelFactories.HIVE_FILTER_FACTORY),
-          HiveReduceExpressionsRule.PROJECT_INSTANCE,
-          HiveReduceExpressionsRule.FILTER_INSTANCE,
-          HiveReduceExpressionsRule.JOIN_INSTANCE,
-          HiveJoinAddNotNullRule.INSTANCE_JOIN,
-          HiveJoinAddNotNullRule.INSTANCE_SEMIJOIN,
-          HiveJoinPushTransitivePredicatesRule.INSTANCE_JOIN,
-          HiveJoinPushTransitivePredicatesRule.INSTANCE_SEMIJOIN);
+              rules.toArray(new RelOptRule[rules.size()]));
       perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER,
         "Calcite: Prejoin ordering transformation, PPD, not null predicates, transitive inference, constant folding");
 

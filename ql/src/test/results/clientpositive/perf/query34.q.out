@@ -94,7 +94,7 @@ Stage-0
                                         Select Operator [SEL_5] (rows=36524 width=1119)
                                           Output:["_col0"]
                                           Filter Operator [FIL_53] (rows=36524 width=1119)
-                                            predicate:(((d_dom BETWEEN 1 AND 3 or d_dom BETWEEN 25 AND 28) and (d_year) IN (1998, 1999, 2000)) and d_date_sk is not null)
+                                            predicate:(((d_year) IN (1998, 1999, 2000) and (d_dom BETWEEN 1 AND 3 or d_dom BETWEEN 25 AND 28)) and d_date_sk is not null)
                                             TableScan [TS_3] (rows=73049 width=1119)
                                               default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year","d_dom"]
 

@@ -1398,6 +1398,13 @@ public final class FunctionRegistry {
   }
 
   /**
+   * Returns whether the exprNodeDesc is a node of "in".
+   */
+  public static boolean isIn(ExprNodeDesc desc) {
+    return GenericUDFIn.class == getGenericUDFClassFromExprDesc(desc);
+  }
+
+  /**
    * Returns whether the exprNodeDesc is a node of "not".
    */
   public static boolean isOpNot(ExprNodeDesc desc) {

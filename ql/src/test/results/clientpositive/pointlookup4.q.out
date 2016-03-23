@@ -384,7 +384,7 @@ STAGE PLANS:
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: (struct(ds1,key,ds2)) IN (const struct('2000-04-08',1,'2001-04-08'), const struct('2000-04-09',2,'2001-04-09')) (type: boolean)
+              predicate: (struct(key,ds1,ds2)) IN (const struct(1,'2000-04-08','2001-04-08'), const struct(2,'2000-04-09','2001-04-09')) (type: boolean)
               Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), value (type: string), ds1 (type: string), ds2 (type: string)
