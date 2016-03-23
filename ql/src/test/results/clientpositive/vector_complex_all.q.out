@@ -1,0 +1,235 @@
+PREHOOK: query: CREATE TABLE orc_create_staging (
+  str STRING,
+  mp  MAP<STRING,STRING>,
+  lst ARRAY<STRING>,
+  strct STRUCT<A:STRING,B:STRING>
+) ROW FORMAT DELIMITED
+    FIELDS TERMINATED BY '|'
+    COLLECTION ITEMS TERMINATED BY ','
+    MAP KEYS TERMINATED BY ':'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_create_staging
+POSTHOOK: query: CREATE TABLE orc_create_staging (
+  str STRING,
+  mp  MAP<STRING,STRING>,
+  lst ARRAY<STRING>,
+  strct STRUCT<A:STRING,B:STRING>
+) ROW FORMAT DELIMITED
+    FIELDS TERMINATED BY '|'
+    COLLECTION ITEMS TERMINATED BY ','
+    MAP KEYS TERMINATED BY ':'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_create_staging
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/orc_create.txt' OVERWRITE INTO TABLE orc_create_staging
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@orc_create_staging
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/orc_create.txt' OVERWRITE INTO TABLE orc_create_staging
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@orc_create_staging
+PREHOOK: query: CREATE TABLE orc_create_complex (
+  str STRING,
+  mp  MAP<STRING,STRING>,
+  lst ARRAY<STRING>,
+  strct STRUCT<A:STRING,B:STRING>
+) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_create_complex
+POSTHOOK: query: CREATE TABLE orc_create_complex (
+  str STRING,
+  mp  MAP<STRING,STRING>,
+  lst ARRAY<STRING>,
+  strct STRUCT<A:STRING,B:STRING>
+) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_create_complex
+PREHOOK: query: INSERT OVERWRITE TABLE orc_create_complex SELECT * FROM orc_create_staging
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_create_staging
+PREHOOK: Output: default@orc_create_complex
+POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_complex SELECT * FROM orc_create_staging
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_create_staging
+POSTHOOK: Output: default@orc_create_complex
+POSTHOOK: Lineage: orc_create_complex.lst SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:lst, type:array<string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.mp SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:mp, type:map<string,string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.str SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:str, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.strct SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:strct, type:struct<A:string,B:string>, comment:null), ]
+orc_create_staging.str	orc_create_staging.mp	orc_create_staging.lst	orc_create_staging.strct
+PREHOOK: query: -- Since complex types are not supported, this query should not vectorize.
+EXPLAIN
+SELECT * FROM orc_create_complex
+PREHOOK: type: QUERY
+POSTHOOK: query: -- Since complex types are not supported, this query should not vectorize.
+EXPLAIN
+SELECT * FROM orc_create_complex
+POSTHOOK: type: QUERY
+Explain
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: orc_create_complex
+            Statistics: Num rows: 3 Data size: 3177 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: str (type: string), mp (type: map<string,string>), lst (type: array<string>), strct (type: struct<a:string,b:string>)
+              outputColumnNames: _col0, _col1, _col2, _col3
+              Statistics: Num rows: 3 Data size: 3177 Basic stats: COMPLETE Column stats: NONE
+              File Output Operator
+                compressed: false
+                Statistics: Num rows: 3 Data size: 3177 Basic stats: COMPLETE Column stats: NONE
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT * FROM orc_create_complex
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_create_complex
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM orc_create_complex
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_create_complex
+#### A masked pattern was here ####
+orc_create_complex.str	orc_create_complex.mp	orc_create_complex.lst	orc_create_complex.strct
+line1	{"key11":"value11","key12":"value12","key13":"value13"}	["a","b","c"]	{"a":"one","b":"two"}
+line2	{"key21":"value21","key22":"value22","key23":"value23"}	["d","e","f"]	{"a":"three","b":"four"}
+line3	{"key31":"value31","key32":"value32","key33":"value33"}	["g","h","i"]	{"a":"five","b":"six"}
+PREHOOK: query: -- However, since this query is not referencing the complex fields, it should vectorize.
+EXPLAIN
+SELECT COUNT(*) FROM orc_create_complex
+PREHOOK: type: QUERY
+POSTHOOK: query: -- However, since this query is not referencing the complex fields, it should vectorize.
+EXPLAIN
+SELECT COUNT(*) FROM orc_create_complex
+POSTHOOK: type: QUERY
+Explain
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: orc_create_complex
+            Statistics: Num rows: 3 Data size: 3177 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              Statistics: Num rows: 3 Data size: 3177 Basic stats: COMPLETE Column stats: COMPLETE
+              Group By Operator
+                aggregations: count()
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT COUNT(*) FROM orc_create_complex
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_create_complex
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM orc_create_complex
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_create_complex
+#### A masked pattern was here ####
+c0
+3
+PREHOOK: query: -- Also, since this query is not referencing the complex fields, it should vectorize.
+EXPLAIN
+SELECT str FROM orc_create_complex ORDER BY str
+PREHOOK: type: QUERY
+POSTHOOK: query: -- Also, since this query is not referencing the complex fields, it should vectorize.
+EXPLAIN
+SELECT str FROM orc_create_complex ORDER BY str
+POSTHOOK: type: QUERY
+Explain
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: orc_create_complex
+            Statistics: Num rows: 3 Data size: 3177 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: str (type: string)
+              outputColumnNames: _col0
+              Statistics: Num rows: 3 Data size: 3177 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: _col0 (type: string)
+                sort order: +
+                Statistics: Num rows: 3 Data size: 3177 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string)
+          outputColumnNames: _col0
+          Statistics: Num rows: 3 Data size: 3177 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 3 Data size: 3177 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT str FROM orc_create_complex ORDER BY str
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_create_complex
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT str FROM orc_create_complex ORDER BY str
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_create_complex
+#### A masked pattern was here ####
+str
+line1
+line2
+line3
