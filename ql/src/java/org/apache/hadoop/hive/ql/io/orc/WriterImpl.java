@@ -227,6 +227,9 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
 
     // ensure that we are able to handle callbacks before we register ourselves
     memoryManager.addWriter(path, stripeSize, this);
+
+    LOG.info("ORC writer created for path: " + path + " with stripeSize: " + defaultStripeSize + " blockSize: " +
+            blockSize + " compression: " + compress + " estimatedBufferSize: " + bufferSize);
   }
 
   private String getColumnNamesFromInspector(ObjectInspector inspector) {
