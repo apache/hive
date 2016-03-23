@@ -116,6 +116,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: llap
+            LLAP IO: no inputs
 
   Stage: Stage-0
     Fetch Operator
@@ -157,6 +158,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: llap
+            LLAP IO: no inputs
 
   Stage: Stage-0
     Fetch Operator
@@ -206,6 +208,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: llap
+            LLAP IO: no inputs
 
   Stage: Stage-0
     Fetch Operator

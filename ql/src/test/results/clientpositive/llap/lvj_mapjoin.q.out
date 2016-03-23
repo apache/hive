@@ -200,6 +200,7 @@ STAGE PLANS:
                                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: llap
+            LLAP IO: no inputs
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -248,6 +249,7 @@ STAGE PLANS:
                                 Statistics: Num rows: 6 Data size: 78 Basic stats: COMPLETE Column stats: NONE
                                 value expressions: _col1 (type: string)
             Execution mode: llap
+            LLAP IO: no inputs
 
   Stage: Stage-0
     Fetch Operator

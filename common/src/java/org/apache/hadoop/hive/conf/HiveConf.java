@@ -2522,7 +2522,7 @@ public class HiveConf extends Configuration {
         "hive.tez.exec.inplace.progress",
         true,
         "Updates tez job execution progress in-place in the terminal."),
-    LLAP_IO_ENABLED("hive.llap.io.enabled", false, "Whether the LLAP IO layer is enabled."),
+    LLAP_IO_ENABLED("hive.llap.io.enabled", null, "Whether the LLAP IO layer is enabled."),
     LLAP_IO_MEMORY_MODE("hive.llap.io.memory.mode", "cache",
         new StringSet("cache", "allocator", "none"),
         "LLAP IO memory usage; 'cache' (the default) uses data and metadata cache with a\n" +

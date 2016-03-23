@@ -348,8 +348,8 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
 
       long ioMemoryBytes = HiveConf.getSizeVar(daemonConf, ConfVars.LLAP_IO_MEMORY_MAX_SIZE);
       boolean isDirectCache = HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_ALLOCATOR_DIRECT);
-      boolean llapIoEnabled = HiveConf.getBoolVar(daemonConf, HiveConf.ConfVars.LLAP_IO_ENABLED);
-      llapDaemon = new LlapDaemon(daemonConf, numExecutors, executorMemoryBytes, llapIoEnabled,
+      boolean isLlapIo = HiveConf.getBoolVar(daemonConf, HiveConf.ConfVars.LLAP_IO_ENABLED, true);
+      llapDaemon = new LlapDaemon(daemonConf, numExecutors, executorMemoryBytes, isLlapIo,
               isDirectCache, ioMemoryBytes, localDirs, rpcPort, mngPort, shufflePort);
 
       LOG.info("Adding shutdown hook for LlapDaemon");

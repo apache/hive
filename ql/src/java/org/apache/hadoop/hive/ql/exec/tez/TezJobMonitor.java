@@ -225,7 +225,7 @@ public class TezJobMonitor {
     long startTime = 0;
     boolean isProfileEnabled = HiveConf.getBoolVar(conf, HiveConf.ConfVars.TEZ_EXEC_SUMMARY) ||
         Utilities.isPerfOrAboveLogging(conf);
-    boolean llapIoEnabled = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_IO_ENABLED);
+    boolean llapIoEnabled = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_IO_ENABLED, true);
 
     boolean inPlaceEligible = InPlaceUpdates.inPlaceEligible(conf);
     synchronized(shutdownList) {

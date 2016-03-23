@@ -81,6 +81,7 @@ STAGE PLANS:
                             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col0 (type: bigint)
             Execution mode: llap
+            LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -99,6 +100,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 4096 Data size: 880654 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
+            LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -205,6 +207,7 @@ STAGE PLANS:
                             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col0 (type: bigint)
             Execution mode: llap
+            LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -223,6 +226,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 4096 Data size: 880654 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
+            LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -324,6 +328,7 @@ STAGE PLANS:
                             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col0 (type: bigint)
             Execution mode: llap
+            LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -342,6 +347,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
+            LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -444,6 +450,7 @@ STAGE PLANS:
                             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col0 (type: bigint)
             Execution mode: llap
+            LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -462,6 +469,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
+            LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -558,6 +566,7 @@ STAGE PLANS:
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: bigint)
             Execution mode: llap
+            LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -573,6 +582,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: int)
                       Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
+            LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -670,6 +680,7 @@ STAGE PLANS:
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: bigint)
             Execution mode: llap
+            LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -685,6 +696,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: int)
                       Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
+            LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -818,6 +830,7 @@ STAGE PLANS:
                             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col0 (type: bigint)
             Execution mode: llap
+            LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -836,6 +849,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 525 Data size: 12474 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
+            LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -940,6 +954,7 @@ STAGE PLANS:
                             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col0 (type: bigint)
             Execution mode: llap
+            LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -958,6 +973,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 525 Data size: 12474 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
+            LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -1061,6 +1077,7 @@ STAGE PLANS:
                             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col0 (type: bigint)
             Execution mode: llap
+            LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -1079,6 +1096,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 525 Data size: 12474 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
+            LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -1183,6 +1201,7 @@ STAGE PLANS:
                             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col0 (type: bigint)
             Execution mode: llap
+            LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -1201,6 +1220,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 525 Data size: 12474 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
+            LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -1335,6 +1355,7 @@ STAGE PLANS:
                                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -1352,6 +1373,7 @@ STAGE PLANS:
                         Statistics: Num rows: 6144 Data size: 1082530 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: decimal(23,14))
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
 
   Stage: Stage-0
     Fetch Operator
@@ -1531,6 +1553,7 @@ STAGE PLANS:
                                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -1548,6 +1571,7 @@ STAGE PLANS:
                         Statistics: Num rows: 6144 Data size: 1082530 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: decimal(23,14))
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
 
   Stage: Stage-0
     Fetch Operator
