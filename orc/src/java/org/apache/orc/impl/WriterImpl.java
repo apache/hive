@@ -198,6 +198,9 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
 
     // ensure that we are able to handle callbacks before we register ourselves
     memoryManager.addWriter(path, opts.getStripeSize(), this);
+    LOG.info("ORC writer created for path: {} with stripeSize: {} blockSize: {}" +
+        " compression: {} estimatedBufferSize: {}", path, defaultStripeSize, blockSize,
+        compress, bufferSize);
   }
 
   @VisibleForTesting
