@@ -103,7 +103,7 @@ STAGE PLANS:
           alias: src
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
-            predicate: (unix_timestamp(key) > 10) (type: boolean)
+            predicate: (to_unix_timestamp(key) > 10) (type: boolean)
             Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), value (type: string)

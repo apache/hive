@@ -126,6 +126,7 @@ import org.apache.hadoop.hive.ql.udf.UDFCos;
 import org.apache.hadoop.hive.ql.udf.UDFDayOfMonth;
 import org.apache.hadoop.hive.ql.udf.UDFDegrees;
 import org.apache.hadoop.hive.ql.udf.UDFExp;
+import org.apache.hadoop.hive.ql.udf.UDFFromUnixTime;
 import org.apache.hadoop.hive.ql.udf.UDFHex;
 import org.apache.hadoop.hive.ql.udf.UDFHour;
 import org.apache.hadoop.hive.ql.udf.UDFLength;
@@ -247,6 +248,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     supportedGenericUDFs.add(UDFSecond.class);
     supportedGenericUDFs.add(UDFWeekOfYear.class);
     supportedGenericUDFs.add(GenericUDFToUnixTimeStamp.class);
+    supportedGenericUDFs.add(UDFFromUnixTime.class);
 
     supportedGenericUDFs.add(GenericUDFDateAdd.class);
     supportedGenericUDFs.add(GenericUDFDateSub.class);
