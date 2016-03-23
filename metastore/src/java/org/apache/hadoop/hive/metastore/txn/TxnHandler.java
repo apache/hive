@@ -23,6 +23,8 @@ import com.jolbox.bonecp.BoneCPDataSource;
 import org.apache.commons.dbcp.ConnectionFactory;
 import org.apache.commons.dbcp.DriverManagerConnectionFactory;
 import org.apache.commons.dbcp.PoolableConnectionFactory;
+import org.apache.commons.lang.NotImplementedException;
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -43,6 +45,8 @@ import javax.sql.DataSource;
 import java.io.IOException;
 import java.sql.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -85,7 +89,7 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 @InterfaceAudience.Private
 @InterfaceStability.Evolving
-abstract class TxnHandler implements TxnStore {
+abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
   static final protected char INITIATED_STATE = 'i';
   static final protected char WORKING_STATE = 'w';
@@ -136,6 +140,12 @@ abstract class TxnHandler implements TxnStore {
    * Derby specific concurrency control
    */
   private static final ReentrantLock derbyLock = new ReentrantLock(true);
+  /**
+   * must be static since even in UT there may be > 1 instance of TxnHandler
+   * (e.g. via Compactor services)
+   */
+  private final static ConcurrentHashMap<String, Semaphore> derbyKey2Lock = new ConcurrentHashMap<>();
+  private static final String hostname = ServerUtils.hostname();
 
   // Private methods should never catch SQLException and then throw MetaException.  The public
   // methods depend on SQLException coming back so they can detect and handle deadlocks.  Private
@@ -541,7 +551,7 @@ abstract class TxnHandler implements TxnStore {
    * @throws MetaException
    */
   private ResultSet lockTransactionRecord(Statement stmt, long txnId, Character txnState) throws SQLException, MetaException {
-    String query = "select TXN_STATE from TXNS where TXN_ID = " + txnId + (txnState != null ? "AND TXN_STATE=" + quoteChar(txnState) : "");
+    String query = "select TXN_STATE from TXNS where TXN_ID = " + txnId + (txnState != null ? " AND TXN_STATE=" + quoteChar(txnState) : "");
     ResultSet rs = stmt.executeQuery(addForUpdateClause(query));
     if(rs.next()) {
       return rs;
@@ -1399,14 +1409,14 @@ abstract class TxnHandler implements TxnStore {
     }
   }
 
-  void rollbackDBConn(Connection dbConn) {
+  static void rollbackDBConn(Connection dbConn) {
     try {
       if (dbConn != null && !dbConn.isClosed()) dbConn.rollback();
     } catch (SQLException e) {
       LOG.warn("Failed to rollback db connection " + getMessage(e));
     }
   }
-  protected void closeDbConn(Connection dbConn) {
+  protected static void closeDbConn(Connection dbConn) {
     try {
       if (dbConn != null && !dbConn.isClosed()) {
         dbConn.close();
@@ -1420,7 +1430,7 @@ abstract class TxnHandler implements TxnStore {
    * Close statement instance.
    * @param stmt statement instance.
    */
-  protected void closeStmt(Statement stmt) {
+  protected static void closeStmt(Statement stmt) {
     try {
       if (stmt != null && !stmt.isClosed()) stmt.close();
     } catch (SQLException e) {
@@ -1432,7 +1442,7 @@ abstract class TxnHandler implements TxnStore {
    * Close the ResultSet.
    * @param rs may be {@code null}
    */
-  void close(ResultSet rs) {
+  static void close(ResultSet rs) {
     try {
       if (rs != null && !rs.isClosed()) {
         rs.close();
@@ -1446,7 +1456,7 @@ abstract class TxnHandler implements TxnStore {
   /**
    * Close all 3 JDBC artifacts in order: {@code rs stmt dbConn}
    */
-  void close(ResultSet rs, Statement stmt, Connection dbConn) {
+  static void close(ResultSet rs, Statement stmt, Connection dbConn) {
     close(rs);
     closeStmt(stmt);
     closeDbConn(dbConn);
@@ -2597,6 +2607,40 @@ abstract class TxnHandler implements TxnStore {
     }
     return false;
   }
+  private boolean isDuplicateKeyError(SQLException ex) {
+    switch (dbProduct) {
+      case DERBY:
+        if("23505".equals(ex.getSQLState())) {
+          return true;
+        }
+        break;
+      case MYSQL:
+        if(ex.getErrorCode() == 1022 && "23000".equals(ex.getSQLState())) {
+          return true;
+        }
+        break;
+      case SQLSERVER:
+        //2627 is unique constaint violation incl PK, 2601 - unique key
+        if(ex.getErrorCode() == 2627 && "23000".equals(ex.getSQLState())) {
+          return true;
+        }
+        break;
+      case ORACLE:
+        if(ex.getErrorCode() == 1 && "23000".equals(ex.getSQLState())) {
+          return true;
+        }
+        break;
+      case POSTGRES:
+        //http://www.postgresql.org/docs/8.1/static/errcodes-appendix.html
+        if("23505".equals(ex.getSQLState())) {
+          return true;
+        }
+        break;
+      default:
+        throw new IllegalArgumentException("Unexpected DB type: " + dbProduct + "; " + getMessage(ex));
+    }
+    return false;
+  }
   private static String getMessage(SQLException ex) {
     return ex.getMessage() + "(SQLState=" + ex.getSQLState() + ",ErrorCode=" + ex.getErrorCode() + ")";
   }
@@ -2669,6 +2713,117 @@ abstract class TxnHandler implements TxnStore {
   private void unlockInternal() {
     if(dbProduct == DatabaseProduct.DERBY) {
       derbyLock.unlock();
+    }
+  }
+  @Override
+  public MutexAPI getMutexAPI() {
+    return this;
+  }
+
+  @Override
+  public LockHandle acquireLock(String key) throws MetaException {
+    /**
+     * The implementation here is a bit kludgey but done so that code exercised by unit tests
+     * (which run against Derby which has no support for select for update) is as similar to
+     * production code as possible.
+     * In particular, with Derby we always run in a single process with a single metastore and
+     * the absence of For Update is handled via a Semaphore.  The later would strictly speaking
+     * make the SQL statments below unnecessary (for Derby), but then they would not be tested.
+     */
+    Connection dbConn = null;
+    Statement stmt = null;
+    ResultSet rs = null;
+    try {
+      try {
+        String sqlStmt = addForUpdateClause("select MT_COMMENT from AUX_TABLE where MT_KEY1=" + quoteString(key) + " and MT_KEY2=0");
+        lockInternal();
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        stmt = dbConn.createStatement();
+        if(LOG.isDebugEnabled()) {
+          LOG.debug("About to execute SQL: " + sqlStmt);
+        }
+        rs = stmt.executeQuery(sqlStmt);
+        if (!rs.next()) {
+          close(rs);
+          try {
+            stmt.executeUpdate("insert into AUX_TABLE(MT_KEY1,MT_KEY2) values(" + quoteString(key) + ", 0)");
+            dbConn.commit();
+          } catch (SQLException ex) {
+            if (!isDuplicateKeyError(ex)) {
+              throw new RuntimeException("Unable to lock " + quoteString(key) + " due to: " + getMessage(ex), ex);
+            }
+          }
+          rs = stmt.executeQuery(sqlStmt);
+          if (!rs.next()) {
+            throw new IllegalStateException("Unable to lock " + quoteString(key) + ".  Expected row in AUX_TABLE is missing.");
+          }
+        }
+        Semaphore derbySemaphore = null;
+        if(dbProduct == DatabaseProduct.DERBY) {
+          derbyKey2Lock.putIfAbsent(key, new Semaphore(1));
+          derbySemaphore =  derbyKey2Lock.get(key);
+          derbySemaphore.acquire();
+        }
+        LOG.info(quoteString(key) + " locked by " + quoteString(TxnHandler.hostname));
+        //OK, so now we have a lock
+        return new LockHandleImpl(dbConn, stmt, rs, key, derbySemaphore);
+      } catch (SQLException ex) {
+        rollbackDBConn(dbConn);
+        close(rs, stmt, dbConn);
+        checkRetryable(dbConn, ex, "acquireLock(" + key + ")");
+        throw new MetaException("Unable to lock " + quoteString(key) + " due to: " + getMessage(ex) + "; " + StringUtils.stringifyException(ex));
+      }
+      catch(InterruptedException ex) {
+        rollbackDBConn(dbConn);
+        close(rs, stmt, dbConn);
+        throw new MetaException("Unable to lock " + quoteString(key) + " due to: " + ex.getMessage() + StringUtils.stringifyException(ex));
+      }
+      finally {
+        unlockInternal();
+      }
+    }
+    catch(RetryException ex) {
+      acquireLock(key);
+    }
+    throw new MetaException("This can't happen because checkRetryable() has a retry limit");
+  }
+  public void acquireLock(String key, LockHandle handle) {
+    //the idea is that this will use LockHandle.dbConn
+    throw new NotImplementedException();
+  }
+  private static final class LockHandleImpl implements LockHandle {
+    private final Connection dbConn;
+    private final Statement stmt;
+    private final ResultSet rs;
+    private final Semaphore derbySemaphore;
+    private final List<String> keys = new ArrayList<>();
+    LockHandleImpl(Connection conn, Statement stmt, ResultSet rs, String key, Semaphore derbySemaphore) {
+      this.dbConn = conn;
+      this.stmt = stmt;
+      this.rs = rs;
+      this.derbySemaphore = derbySemaphore;
+      if(derbySemaphore != null) {
+        //oterwise it may later release permit acquired by someone else
+        assert derbySemaphore.availablePermits() == 0 : "Expected locked Semaphore";
+      }
+      keys.add(key);
+    }
+    void addKey(String key) {
+      //keys.add(key);
+      //would need a list of (stmt,rs) pairs - 1 for each key
+      throw new NotImplementedException();
+    }
+    
+    @Override
+    public void releaseLocks() {
+      rollbackDBConn(dbConn);
+      close(rs, stmt, dbConn);
+      if(derbySemaphore != null) {
+        derbySemaphore.release();
+      }
+      for(String key : keys) {
+        LOG.info(quoteString(key) + " unlocked by " + quoteString(TxnHandler.hostname));
+      }
     }
   }
 }

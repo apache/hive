@@ -58,13 +58,14 @@
         <name>hive.exec.dynamic.partition.mode</name>
         <value>nonstrict</value>
     </property>
+
     <property>
         <name>hive.compactor.initiator.on</name>
-        <value>false</value>
+        <value>true</value>
     </property>
     <property>
         <name>hive.compactor.worker.threads</name>
-        <value>2</value>
+        <value>5</value>
     </property>
     <property>
         <name>hive.timedout.txn.reaper.start</name>
@@ -77,9 +78,24 @@
     -->
     <property>
         <name>hive.timedout.txn.reaper.interval</name>
-        <value>30s</value>
+        <value>1s</value>
     </property>
-
+    <property>
+        <name>hive.compactor.history.reaper.interval</name>
+        <value>1s</value>
+    </property>
+    <property>
+        <name>hive.compactor.cleaner.run.interval</name>
+        <value>1s</value>
+    </property>
+    <property>
+        <name>hive.compactor.check.interval</name>
+        <value>1s</value>
+    </property>
+    <property>
+        <name>hive.compactor.delta.num.threshold</name>
+        <value>2</value>
+    </property>
     <!--end ACID related properties-->
 <!--
     <property>

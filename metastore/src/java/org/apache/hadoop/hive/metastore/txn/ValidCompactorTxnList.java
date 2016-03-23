@@ -24,7 +24,7 @@ import org.apache.hadoop.hive.common.ValidReadTxnList;
 import java.util.Arrays;
 
 /**
- * And implmentation of {@link org.apache.hadoop.hive.common.ValidTxnList} for use by the compactor.
+ * And implementation of {@link org.apache.hadoop.hive.common.ValidTxnList} for use by the compactor.
  * For the purposes of {@link #isTxnRangeValid} this class will view a transaction as valid if it
  * is committed or aborted.  Additionally it will return none if there are any open transactions
  * below the max transaction given, since we don't want to compact above open transactions.  For

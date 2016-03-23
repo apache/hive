@@ -61,7 +61,9 @@ public class AcidCompactionHistoryService extends HouseKeeperServiceBase {
     
     @Override
     public void run() {
+      TxnStore.MutexAPI.LockHandle handle = null;
       try {
+        handle = txnHandler.getMutexAPI().acquireLock(TxnStore.MUTEX_KEY.CompactionHistory.name());
         long startTime = System.currentTimeMillis();
         txnHandler.purgeCompactionHistory();
         int count = isAliveCounter.incrementAndGet(); 
@@ -69,6 +71,11 @@ public class AcidCompactionHistoryService extends HouseKeeperServiceBase {
       }
       catch(Throwable t) {
         LOG.error("Serious error in {}", Thread.currentThread().getName(), ": {}" + t.getMessage(), t);
+      }
+      finally {
+        if(handle != null) {
+          handle.releaseLocks();
+        }
       }
     }
   }

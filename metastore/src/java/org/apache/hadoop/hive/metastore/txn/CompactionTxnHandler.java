@@ -160,6 +160,8 @@ class CompactionTxnHandler extends TxnHandler {
     try {
       Connection dbConn = null;
       Statement stmt = null;
+      //need a separate stmt for executeUpdate() otherwise it will close the ResultSet(HIVE-12725)
+      Statement updStmt = null;
       ResultSet rs = null;
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
@@ -173,6 +175,7 @@ class CompactionTxnHandler extends TxnHandler {
           dbConn.rollback();
           return null;
         }
+        updStmt = dbConn.createStatement();
         do {
           CompactionInfo info = new CompactionInfo();
           info.id = rs.getLong(1);
@@ -186,7 +189,7 @@ class CompactionTxnHandler extends TxnHandler {
             "cq_start = " + now + ", cq_state = '" + WORKING_STATE + "' where cq_id = " + info.id +
             " AND cq_state='" + INITIATED_STATE + "'";
           LOG.debug("Going to execute update <" + s + ">");
-          int updCount = stmt.executeUpdate(s);
+          int updCount = updStmt.executeUpdate(s);
           if(updCount == 1) {
             dbConn.commit();
             return info;
@@ -210,6 +213,7 @@ class CompactionTxnHandler extends TxnHandler {
         throw new MetaException("Unable to connect to transaction database " +
           StringUtils.stringifyException(e));
       } finally {
+        closeStmt(updStmt);
         close(rs, stmt, dbConn);
       }
     } catch (RetryException e) {
@@ -626,6 +630,7 @@ class CompactionTxnHandler extends TxnHandler {
 
   /**
    * Record the highest txn id that the {@code ci} compaction job will pay attention to.
+   * This is the highest resolved txn id, i.e. such that there are no open txns with lower ids.
    */
   public void setCompactionHighestTxnId(CompactionInfo ci, long highestTxnId) throws MetaException {
     Connection dbConn = null;

@@ -74,11 +74,15 @@ public class Initiator extends CompactorThread {
       // much easier.  The stop value is only for testing anyway and not used when called from
       // HiveMetaStore.
       do {
-        long startedAt = System.currentTimeMillis();
+        long startedAt = -1;
+        TxnStore.MutexAPI.LockHandle handle = null;
 
         // Wrap the inner parts of the loop in a catch throwable so that any errors in the loop
         // don't doom the entire thread.
-        try {//todo: add method to only get current i.e. skip history - more efficient
+        try {
+          handle = txnHandler.getMutexAPI().acquireLock(TxnStore.MUTEX_KEY.Initiator.name());
+          startedAt = System.currentTimeMillis();
+          //todo: add method to only get current i.e. skip history - more efficient
           ShowCompactResponse currentCompactions = txnHandler.showCompact(new ShowCompactRequest());
           ValidTxnList txns =
               TxnUtils.createValidCompactTxnList(txnHandler.getOpenTxnsInfo());
@@ -114,6 +118,8 @@ public class Initiator extends CompactorThread {
               // Check if we already have initiated or are working on a compaction for this partition
               // or table.  If so, skip it.  If we are just waiting on cleaning we can still check,
               // as it may be time to compact again even though we haven't cleaned.
+              //todo: this is not robust.  You can easily run Alter Table to start a compaction between
+              //the time currentCompactions is generated and now
               if (lookForCurrentCompactions(currentCompactions, ci)) {
                 LOG.debug("Found currently initiated or working compaction for " +
                     ci.getFullPartitionName() + " so we will not initiate another compaction");
@@ -134,7 +140,9 @@ public class Initiator extends CompactorThread {
               }
               StorageDescriptor sd = resolveStorageDescriptor(t, p);
               String runAs = findUserToRunAs(sd.getLocation(), t);
-
+              /*Future thought: checkForCompaction will check a lot of file metadata and may be expensive.
+              * Long term we should consider having a thread pool here and running checkForCompactionS
+              * in parallel*/
               CompactionType compactionNeeded = checkForCompaction(ci, txns, sd, runAs);
               if (compactionNeeded != null) requestCompaction(ci, runAs, compactionNeeded);
             } catch (Throwable t) {
@@ -153,6 +161,11 @@ public class Initiator extends CompactorThread {
         } catch (Throwable t) {
           LOG.error("Initiator loop caught unexpected exception this time through the loop: " +
               StringUtils.stringifyException(t));
+        }
+        finally {
+          if(handle != null) {
+            handle.releaseLocks();
+          }
         }
 
         long elapsedTime = System.currentTimeMillis() - startedAt;
