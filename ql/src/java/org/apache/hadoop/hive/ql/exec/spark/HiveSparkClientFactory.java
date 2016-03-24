@@ -28,6 +28,7 @@ import java.util.Set;
 
 import org.apache.commons.compress.utils.CharsetNames;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hbase.HBaseConfiguration;
@@ -119,6 +120,9 @@ public class HiveSparkClientFactory {
     if (sparkMaster == null) {
       sparkMaster = sparkConf.get("spark.master");
       hiveConf.set("spark.master", sparkMaster);
+    }
+    if (SessionState.get() != null && SessionState.get().getConf() != null) {
+      SessionState.get().getConf().set("spark.master", sparkMaster);
     }
     if (sparkMaster.equals("yarn-cluster")) {
       sparkConf.put("spark.yarn.maxAppAttempts", "1");
