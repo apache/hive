@@ -1849,6 +1849,15 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_PLAIN_LDAP_USERFILTER("hive.server2.authentication.ldap.userFilter", null,
         "COMMA-separated list of LDAP usernames (just short names, not full DNs).\n" +
         "For example: hiveuser,impalauser,hiveadmin,hadoopadmin"),
+    HIVE_SERVER2_PLAIN_LDAP_GUIDKEY("hive.server2.authentication.ldap.guidKey", "uid",
+        "LDAP attribute name whose values are unique in this LDAP server.\n" +
+        "For example: uid or CN."),
+    HIVE_SERVER2_PLAIN_LDAP_GROUPMEMBERSHIP_KEY("hive.server2.authentication.ldap.groupMembershipKey", "member",
+        "LDAP attribute name on the user entry that references a group, the user belongs to.\n" +
+        "For example: member, uniqueMember or memberUid"),
+    HIVE_SERVER2_PLAIN_LDAP_GROUPCLASS_KEY("hive.server2.authentication.ldap.groupClassKey", "groupOfNames",
+        "LDAP attribute name on the group entry that is to be used in LDAP group searches.\n" +
+        "For example: group, groupOfNames or groupOfUniqueNames."),
     HIVE_SERVER2_PLAIN_LDAP_CUSTOMLDAPQUERY("hive.server2.authentication.ldap.customLDAPQuery", null,
         "A full LDAP query that LDAP Atn provider uses to execute against LDAP Server.\n" +
         "If this query returns a null resultset, the LDAP Provider fails the Authentication\n" +
