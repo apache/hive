@@ -1,0 +1,392 @@
+PREHOOK: query: CREATE TABLE partitioned1(a INT, b STRING) PARTITIONED BY(part INT) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@partitioned1
+POSTHOOK: query: CREATE TABLE partitioned1(a INT, b STRING) PARTITIONED BY(part INT) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@partitioned1
+PREHOOK: query: insert into table partitioned1 partition(part=1) values(1, 'original'),(2, 'original'), (3, 'original'),(4, 'original')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__1
+PREHOOK: Output: default@partitioned1@part=1
+POSTHOOK: query: insert into table partitioned1 partition(part=1) values(1, 'original'),(2, 'original'), (3, 'original'),(4, 'original')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__1
+POSTHOOK: Output: default@partitioned1@part=1
+POSTHOOK: Lineage: partitioned1 PARTITION(part=1).a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned1 PARTITION(part=1).b SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: -- Table-Non-Cascade ADD COLUMNS ...
+alter table partitioned1 add columns(c int, d string)
+PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: default@partitioned1
+PREHOOK: Output: default@partitioned1
+POSTHOOK: query: -- Table-Non-Cascade ADD COLUMNS ...
+alter table partitioned1 add columns(c int, d string)
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: default@partitioned1
+POSTHOOK: Output: default@partitioned1
+PREHOOK: query: insert into table partitioned1 partition(part=2) values(1, 'new', 10, 'ten'),(2, 'new', NULL, 'twenty'), (3, 'new', 30, 'thirty'),(4, 'new', 40, 'forty')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__2
+PREHOOK: Output: default@partitioned1@part=2
+POSTHOOK: query: insert into table partitioned1 partition(part=2) values(1, 'new', 10, 'ten'),(2, 'new', NULL, 'twenty'), (3, 'new', 30, 'thirty'),(4, 'new', 40, 'forty')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__2
+POSTHOOK: Output: default@partitioned1@part=2
+POSTHOOK: Lineage: partitioned1 PARTITION(part=2).a EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned1 PARTITION(part=2).b SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned1 PARTITION(part=2).c EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned1 PARTITION(part=2).d SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+PREHOOK: query: analyze table partitioned1 compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partitioned1
+PREHOOK: Input: default@partitioned1@part=1
+PREHOOK: Input: default@partitioned1@part=2
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table partitioned1 compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partitioned1
+POSTHOOK: Input: default@partitioned1@part=1
+POSTHOOK: Input: default@partitioned1@part=2
+#### A masked pattern was here ####
+PREHOOK: query: desc formatted partitioned1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@partitioned1
+POSTHOOK: query: desc formatted partitioned1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@partitioned1
+# col_name            	data_type           	comment             
+	 	 
+a                   	int                 	                    
+b                   	string              	                    
+c                   	int                 	                    
+d                   	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+part                	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: desc formatted partitioned1 PARTITION(part=1)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@partitioned1
+POSTHOOK: query: desc formatted partitioned1 PARTITION(part=1)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@partitioned1
+# col_name            	data_type           	comment             
+	 	 
+a                   	int                 	                    
+b                   	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+part                	int                 	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[1]                 	 
+Database:           	default             	 
+Table:              	partitioned1        	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\",\"d\":\"true\"},\"BASIC_STATS\":\"true\"}
+	numFiles            	1                   
+	numRows             	4                   
+	rawDataSize         	40                  
+	totalSize           	44                  
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: desc formatted partitioned1 PARTITION(part=2)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@partitioned1
+POSTHOOK: query: desc formatted partitioned1 PARTITION(part=2)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@partitioned1
+# col_name            	data_type           	comment             
+	 	 
+a                   	int                 	                    
+b                   	string              	                    
+c                   	int                 	                    
+d                   	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+part                	int                 	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2]                 	 
+Database:           	default             	 
+Table:              	partitioned1        	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\",\"d\":\"true\"},\"BASIC_STATS\":\"true\"}
+	numFiles            	1                   
+	numRows             	4                   
+	rawDataSize         	56                  
+	totalSize           	60                  
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: explain select count(c) from partitioned1
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select count(c) from partitioned1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(c) from partitioned1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partitioned1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(c) from partitioned1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partitioned1
+#### A masked pattern was here ####
+3
+PREHOOK: query: drop table partitioned1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@partitioned1
+PREHOOK: Output: default@partitioned1
+POSTHOOK: query: drop table partitioned1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@partitioned1
+POSTHOOK: Output: default@partitioned1
+PREHOOK: query: CREATE TABLE partitioned1(a INT, b STRING) PARTITIONED BY(part INT) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@partitioned1
+POSTHOOK: query: CREATE TABLE partitioned1(a INT, b STRING) PARTITIONED BY(part INT) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@partitioned1
+PREHOOK: query: insert into table partitioned1 partition(part=1) values(1, 'original'),(2, 'original'), (3, 'original'),(4, 'original')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__3
+PREHOOK: Output: default@partitioned1@part=1
+POSTHOOK: query: insert into table partitioned1 partition(part=1) values(1, 'original'),(2, 'original'), (3, 'original'),(4, 'original')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__3
+POSTHOOK: Output: default@partitioned1@part=1
+POSTHOOK: Lineage: partitioned1 PARTITION(part=1).a EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned1 PARTITION(part=1).b SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: -- Table-Non-Cascade ADD COLUMNS ...
+alter table partitioned1 add columns(c int, d string)
+PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: default@partitioned1
+PREHOOK: Output: default@partitioned1
+POSTHOOK: query: -- Table-Non-Cascade ADD COLUMNS ...
+alter table partitioned1 add columns(c int, d string)
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: default@partitioned1
+POSTHOOK: Output: default@partitioned1
+PREHOOK: query: insert into table partitioned1 partition(part=2) values(1, 'new', 10, 'ten'),(2, 'new', NULL, 'twenty'), (3, 'new', 30, 'thirty'),(4, 'new', 40, 'forty')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__4
+PREHOOK: Output: default@partitioned1@part=2
+POSTHOOK: query: insert into table partitioned1 partition(part=2) values(1, 'new', 10, 'ten'),(2, 'new', NULL, 'twenty'), (3, 'new', 30, 'thirty'),(4, 'new', 40, 'forty')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__4
+POSTHOOK: Output: default@partitioned1@part=2
+POSTHOOK: Lineage: partitioned1 PARTITION(part=2).a EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned1 PARTITION(part=2).b SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned1 PARTITION(part=2).c EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned1 PARTITION(part=2).d SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+PREHOOK: query: analyze table partitioned1 compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partitioned1
+PREHOOK: Input: default@partitioned1@part=1
+PREHOOK: Input: default@partitioned1@part=2
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table partitioned1 compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partitioned1
+POSTHOOK: Input: default@partitioned1@part=1
+POSTHOOK: Input: default@partitioned1@part=2
+#### A masked pattern was here ####
+PREHOOK: query: desc formatted partitioned1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@partitioned1
+POSTHOOK: query: desc formatted partitioned1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@partitioned1
+# col_name            	data_type           	comment             
+	 	 
+a                   	int                 	                    
+b                   	string              	                    
+c                   	int                 	                    
+d                   	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+part                	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: desc formatted partitioned1 PARTITION(part=1)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@partitioned1
+POSTHOOK: query: desc formatted partitioned1 PARTITION(part=1)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@partitioned1
+# col_name            	data_type           	comment             
+	 	 
+a                   	int                 	                    
+b                   	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+part                	int                 	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[1]                 	 
+Database:           	default             	 
+Table:              	partitioned1        	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\",\"d\":\"true\"},\"BASIC_STATS\":\"true\"}
+	numFiles            	1                   
+	numRows             	4                   
+	rawDataSize         	384                 
+	totalSize           	313                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: desc formatted partitioned1 PARTITION(part=2)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@partitioned1
+POSTHOOK: query: desc formatted partitioned1 PARTITION(part=2)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@partitioned1
+# col_name            	data_type           	comment             
+	 	 
+a                   	int                 	                    
+b                   	string              	                    
+c                   	int                 	                    
+d                   	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+part                	int                 	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2]                 	 
+Database:           	default             	 
+Table:              	partitioned1        	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\",\"d\":\"true\"},\"BASIC_STATS\":\"true\"}
+	numFiles            	1                   
+	numRows             	4                   
+	rawDataSize         	732                 
+	totalSize           	506                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: explain select count(c) from partitioned1
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select count(c) from partitioned1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(c) from partitioned1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partitioned1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(c) from partitioned1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partitioned1
+#### A masked pattern was here ####
+3

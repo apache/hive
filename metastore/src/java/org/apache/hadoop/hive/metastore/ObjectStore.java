@@ -6482,16 +6482,14 @@ public class ObjectStore implements RawStore, Configurable {
     boolean foundCol = false;
     List<FieldSchema> colList = partition.getSd().getCols();
     for (FieldSchema col : colList) {
-      if (col.getName().equals(mStatsObj.getColName().trim())) {
+      if (col.getName().equals(mStatsObj.getColName())) {
         foundCol = true;
         break;
       }
     }
 
     if (!foundCol) {
-      throw new
-        NoSuchObjectException("Column " + colName +
-        " for which stats gathering is requested doesn't exist.");
+      LOG.warn("Column " + colName + " for which stats gathering is requested doesn't exist.");
     }
 
     QueryWrapper queryWrapper = new QueryWrapper();
