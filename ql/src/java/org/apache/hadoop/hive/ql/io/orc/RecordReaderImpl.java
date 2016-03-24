@@ -385,9 +385,9 @@ class RecordReaderImpl implements RecordReader {
     }
 
     TruthValue result;
+    Object baseObj = predicate.getLiteral();
     try {
       // Predicate object and stats objects are converted to the type of the predicate object.
-      Object baseObj = predicate.getLiteral();
       Object minValue = getBaseObjectForComparison(predicate.getType(), min);
       Object maxValue = getBaseObjectForComparison(predicate.getType(), max);
       Object predObj = getBaseObjectForComparison(predicate.getType(), baseObj);
@@ -399,8 +399,17 @@ class RecordReaderImpl implements RecordReader {
       // in case failed conversion, return the default YES_NO_NULL truth value
     } catch (Exception e) {
       if (LOG.isWarnEnabled()) {
-        LOG.warn("Exception when evaluating predicate. Skipping ORC PPD." +
-            " Exception: " + ExceptionUtils.getStackTrace(e));
+        final String statsType = min == null ?
+            (max == null ? "null" : max.getClass().getSimpleName()) :
+            min.getClass().getSimpleName();
+        final String predicateType = baseObj == null ? "null" : baseObj.getClass().getSimpleName();
+        final String reason = e.getClass().getSimpleName() + " when evaluating predicate." +
+            " Skipping ORC PPD." +
+            " Exception: " + e.getMessage() +
+            " StatsType: " + statsType +
+            " PredicateType: " + predicateType;
+        LOG.warn(reason);
+        LOG.debug(reason, e);
       }
       if (predicate.getOperator().equals(PredicateLeaf.Operator.NULL_SAFE_EQUALS) || !hasNull) {
         result = TruthValue.YES_NO;
