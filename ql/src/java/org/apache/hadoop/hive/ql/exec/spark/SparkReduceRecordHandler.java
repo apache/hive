@@ -230,8 +230,10 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
       if (isTagged) {
         // remove the tag from key coming out of reducer
         // and store it in separate variable.
+        // make a copy for multi-insert with join case as Spark re-uses input key from same parent
         int size = keyWritable.getSize() - 1;
         tag = keyWritable.get()[size];
+        keyWritable = new BytesWritable(keyWritable.getBytes(), size);
         keyWritable.setSize(size);
       }
 
