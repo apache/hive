@@ -44,11 +44,13 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
 public class SparkHashTableSinkOperator
     extends TerminalOperator<SparkHashTableSinkDesc> implements Serializable {
-  private static final int MIN_REPLICATION = 10;
   private static final long serialVersionUID = 1L;
   private final String CLASS_NAME = this.getClass().getName();
   private final PerfLogger perfLogger = SessionState.getPerfLogger();
+
   protected static final Log LOG = LogFactory.getLog(SparkHashTableSinkOperator.class.getName());
+  public static final String DFS_REPLICATION_MAX = "dfs.replication.max";
+  private int minReplication = 10;
 
   private HashTableSinkOperator htsOperator;
 
@@ -64,6 +66,9 @@ public class SparkHashTableSinkOperator
     ObjectInspector[] inputOIs = new ObjectInspector[conf.getTagLength()];
     inputOIs[tag] = inputObjInspectors[0];
     conf.setTagOrder(new Byte[]{ tag });
+    int dfsMaxReplication = hconf.getInt(DFS_REPLICATION_MAX, minReplication);
+    // minReplication value should not cross the value of dfs.replication.max
+    minReplication = Math.min(minReplication, dfsMaxReplication);
     htsOperator.setConf(conf);
     htsOperator.initialize(hconf, inputOIs);
   }
@@ -141,7 +146,7 @@ public class SparkHashTableSinkOperator
     }
     // TODO find out numOfPartitions for the big table
     int numOfPartitions = replication;
-    replication = (short) Math.max(MIN_REPLICATION, numOfPartitions);
+    replication = (short) Math.max(minReplication, numOfPartitions);
     htsOperator.console.printInfo(Utilities.now() + "\tDump the side-table for tag: " + tag
       + " with group count: " + tableContainer.size() + " into file: " + path);
     // get the hashtable file and path
