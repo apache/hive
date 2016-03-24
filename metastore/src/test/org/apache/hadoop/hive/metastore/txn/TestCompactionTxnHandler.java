@@ -42,8 +42,7 @@ import static junit.framework.Assert.*;
 public class TestCompactionTxnHandler {
 
   private HiveConf conf = new HiveConf();
-  private CompactionTxnHandler txnHandler;
-  static final private Log LOG = LogFactory.getLog(TestCompactionTxnHandler.class);
+  private TxnStore txnHandler;
 
   public TestCompactionTxnHandler() throws Exception {
     TxnDbUtil.setConfValues(conf);
@@ -424,7 +423,7 @@ public class TestCompactionTxnHandler {
   @Before
   public void setUp() throws Exception {
     TxnDbUtil.prepDb();
-    txnHandler = new CompactionTxnHandler(conf);
+    txnHandler = TxnUtils.getTxnStore(conf);
   }
 
   @After

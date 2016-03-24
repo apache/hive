@@ -31,7 +31,8 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
-import org.apache.hadoop.hive.metastore.txn.CompactionTxnHandler;
+import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.security.UserGroupInformation;
 
@@ -50,7 +51,7 @@ abstract class CompactorThread extends Thread implements MetaStoreThread {
   static final private Log LOG = LogFactory.getLog(CLASS_NAME);
 
   protected HiveConf conf;
-  protected CompactionTxnHandler txnHandler;
+  protected TxnStore txnHandler;
   protected RawStore rs;
   protected int threadId;
   protected AtomicBoolean stop;
@@ -75,7 +76,7 @@ abstract class CompactorThread extends Thread implements MetaStoreThread {
     setDaemon(true); // this means the process will exit without waiting for this thread
 
     // Get our own instance of the transaction handler
-    txnHandler = new CompactionTxnHandler(conf);
+    txnHandler = TxnUtils.getTxnStore(conf);
 
     // Get our own connection to the database so we can get table and partition information.
     rs = RawStoreProxy.getProxy(conf, conf,

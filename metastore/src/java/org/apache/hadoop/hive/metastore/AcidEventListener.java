@@ -25,7 +25,8 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
-import org.apache.hadoop.hive.metastore.txn.TxnHandler;
+import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 
 
 /**
@@ -33,7 +34,7 @@ import org.apache.hadoop.hive.metastore.txn.TxnHandler;
  */
 public class AcidEventListener extends MetaStoreEventListener {
 
-  private TxnHandler txnHandler;
+  private TxnStore txnHandler;
   private HiveConf hiveConf;
 
   public AcidEventListener(Configuration configuration) {
@@ -46,24 +47,47 @@ public class AcidEventListener extends MetaStoreEventListener {
     // We can loop thru all the tables to check if they are ACID first and then perform cleanup,
     // but it's more efficient to unconditionally perform cleanup for the database, especially
     // when there are a lot of tables
-    txnHandler = new TxnHandler(hiveConf);
+    txnHandler = getTxnHandler();
     txnHandler.cleanupRecords(HiveObjectType.DATABASE, dbEvent.getDatabase(), null, null);
   }
 
   @Override
   public void onDropTable(DropTableEvent tableEvent)  throws MetaException {
-    if (TxnHandler.isAcidTable(tableEvent.getTable())) {
-      txnHandler = new TxnHandler(hiveConf);
+    if (TxnUtils.isAcidTable(tableEvent.getTable())) {
+      txnHandler = getTxnHandler();
       txnHandler.cleanupRecords(HiveObjectType.TABLE, null, tableEvent.getTable(), null);
     }
   }
 
   @Override
   public void onDropPartition(DropPartitionEvent partitionEvent)  throws MetaException {
-    if (TxnHandler.isAcidTable(partitionEvent.getTable())) {
-      txnHandler = new TxnHandler(hiveConf);
+    if (TxnUtils.isAcidTable(partitionEvent.getTable())) {
+      txnHandler = getTxnHandler();
       txnHandler.cleanupRecords(HiveObjectType.PARTITION, null, partitionEvent.getTable(),
           partitionEvent.getPartitionIterator());
     }
+  }
+  private TxnStore getTxnHandler() {
+    boolean hackOn = HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_IN_TEST) ||
+      HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_IN_TEZ_TEST);
+    String origTxnMgr = null;
+    boolean origConcurrency = false;
+
+    // Since TxnUtils.getTxnStore calls TxnHandler.setConf -> checkQFileTestHack -> TxnDbUtil.setConfValues,
+    // which may change the values of below two entries, we need to avoid pulluting the original values
+    if (hackOn) {
+      origTxnMgr = hiveConf.getVar(HiveConf.ConfVars.HIVE_TXN_MANAGER);
+      origConcurrency = hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY);
+    }
+
+    txnHandler = TxnUtils.getTxnStore(hiveConf);
+
+    // Set them back
+    if (hackOn) {
+      hiveConf.setVar(HiveConf.ConfVars.HIVE_TXN_MANAGER, origTxnMgr);
+      hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, origConcurrency);
+    }
+
+    return txnHandler;
   }
 }

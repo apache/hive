@@ -39,6 +39,7 @@ import java.util.regex.Pattern;
 
 import javax.security.auth.login.LoginException;
 
+import com.google.common.base.Joiner;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -56,7 +57,6 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Shell;
 import org.apache.hive.common.HiveCompat;
 
-import com.google.common.base.Joiner;
 
 /**
  * Hive Configuration.
@@ -607,6 +607,10 @@ public class HiveConf extends Configuration {
     METASTORE_RAW_STORE_IMPL("hive.metastore.rawstore.impl", "org.apache.hadoop.hive.metastore.ObjectStore",
         "Name of the class that implements org.apache.hadoop.hive.metastore.rawstore interface. \n" +
         "This class is used to store and retrieval of raw metadata objects such as table, database"),
+    METASTORE_TXN_STORE_IMPL("hive.metastore.txn.store.impl",
+        "org.apache.hadoop.hive.metastore.txn.CompactionTxnHandler",
+        "Name of class that implements org.apache.hadoop.hive.metastore.txn.TxnStore.  This " +
+        "class is used to store and retrieve transactions and locks"),
     METASTORE_CONNECTION_DRIVER("javax.jdo.option.ConnectionDriverName", "org.apache.derby.jdbc.EmbeddedDriver",
         "Driver class name for a JDBC metastore"),
     METASTORE_MANAGER_FACTORY_CLASS("javax.jdo.PersistenceManagerFactoryClass",

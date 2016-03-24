@@ -20,15 +20,10 @@ package org.apache.hadoop.hive.ql.txn;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.HouseKeeperService;
-import org.apache.hadoop.hive.metastore.txn.TxnHandler;
-import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
-import org.apache.hadoop.hive.ql.lockmgr.TxnManagerFactory;
+import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.txn.compactor.HouseKeeperServiceBase;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -58,10 +53,10 @@ public class AcidHouseKeeperService extends HouseKeeperServiceBase {
   }
 
   private static final class TimedoutTxnReaper implements Runnable {
-    private final TxnHandler txnHandler;
+    private final TxnStore txnHandler;
     private final AtomicInteger isAliveCounter;
     private TimedoutTxnReaper(HiveConf hiveConf, AtomicInteger isAliveCounter) {
-      txnHandler = new TxnHandler(hiveConf);
+      txnHandler = TxnUtils.getTxnStore(hiveConf);
       this.isAliveCounter = isAliveCounter;
     }
     @Override

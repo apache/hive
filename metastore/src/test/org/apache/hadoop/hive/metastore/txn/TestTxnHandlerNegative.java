@@ -37,7 +37,7 @@ public class TestTxnHandlerNegative {
     conf.setVar(HiveConf.ConfVars.METASTORECONNECTURLKEY, "blah");
     RuntimeException e = null;
     try {
-      TxnHandler txnHandler1 = new TxnHandler(conf);
+      TxnUtils.getTxnStore(conf);
     }
     catch(RuntimeException ex) {
       LOG.info("Expected error: " + ex.getMessage(), ex);

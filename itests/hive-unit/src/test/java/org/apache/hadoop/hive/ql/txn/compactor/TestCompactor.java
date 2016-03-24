@@ -8,7 +8,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
@@ -20,10 +19,10 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
-import org.apache.hadoop.hive.metastore.txn.CompactionTxnHandler;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
+import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
@@ -187,7 +186,7 @@ public class TestCompactor {
     initiator.init(stop, new AtomicBoolean());
     initiator.run();
 
-    CompactionTxnHandler txnHandler = new CompactionTxnHandler(conf);
+    TxnStore txnHandler = TxnUtils.getTxnStore(conf);
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
     Assert.assertEquals(4, compacts.size());
@@ -290,7 +289,7 @@ public class TestCompactor {
     initiator.init(stop, new AtomicBoolean());
     initiator.run();
 
-    CompactionTxnHandler txnHandler = new CompactionTxnHandler(conf);
+    TxnStore txnHandler = TxnUtils.getTxnStore(conf);
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
     Assert.assertEquals(4, compacts.size());
@@ -363,7 +362,7 @@ public class TestCompactor {
     execSelectAndDumpData("select * from " + tblName, driver, "Dumping data for " +
       tblName + " after load:");
 
-    CompactionTxnHandler txnHandler = new CompactionTxnHandler(conf);
+    TxnStore txnHandler = TxnUtils.getTxnStore(conf);
     CompactionInfo ci = new CompactionInfo("default", tblName, "bkt=0", CompactionType.MAJOR);
     LOG.debug("List of stats columns before analyze Part1: " + txnHandler.findColumnsWithStats(ci));
     Worker.StatsUpdater su = Worker.StatsUpdater.init(ci, colNames, conf,
@@ -498,7 +497,7 @@ public class TestCompactor {
     initiator.init(stop, new AtomicBoolean());
     initiator.run();
 
-    CompactionTxnHandler txnHandler = new CompactionTxnHandler(conf);
+    TxnStore txnHandler = TxnUtils.getTxnStore(conf);
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
     Assert.assertEquals(2, compacts.size());
@@ -538,7 +537,7 @@ public class TestCompactor {
     initiator.init(stop, new AtomicBoolean());
     initiator.run();
 
-    CompactionTxnHandler txnHandler = new CompactionTxnHandler(conf);
+    TxnStore txnHandler = TxnUtils.getTxnStore(conf);
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
     Assert.assertEquals(2, compacts.size());
@@ -580,7 +579,7 @@ public class TestCompactor {
     initiator.init(stop, new AtomicBoolean());
     initiator.run();
 
-    CompactionTxnHandler txnHandler = new CompactionTxnHandler(conf);
+    TxnStore txnHandler = TxnUtils.getTxnStore(conf);
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
     Assert.assertEquals(1, compacts.size());
@@ -620,7 +619,7 @@ public class TestCompactor {
       writeBatch(connection, writer, true);
 
       // Now, compact
-      CompactionTxnHandler txnHandler = new CompactionTxnHandler(conf);
+      TxnStore txnHandler = TxnUtils.getTxnStore(conf);
       txnHandler.compact(new CompactionRequest(dbName, tblName, CompactionType.MINOR));
       Worker t = new Worker();
       t.setThreadId((int) t.getId());
@@ -682,7 +681,7 @@ public class TestCompactor {
       writeBatch(connection, writer, true);
 
       // Now, compact
-      CompactionTxnHandler txnHandler = new CompactionTxnHandler(conf);
+      TxnStore txnHandler = TxnUtils.getTxnStore(conf);
       txnHandler.compact(new CompactionRequest(dbName, tblName, CompactionType.MAJOR));
       Worker t = new Worker();
       t.setThreadId((int) t.getId());
@@ -738,7 +737,7 @@ public class TestCompactor {
       txnBatch.abort();
 
       // Now, compact
-      CompactionTxnHandler txnHandler = new CompactionTxnHandler(conf);
+      TxnStore txnHandler = TxnUtils.getTxnStore(conf);
       txnHandler.compact(new CompactionRequest(dbName, tblName, CompactionType.MINOR));
       Worker t = new Worker();
       t.setThreadId((int) t.getId());
@@ -804,7 +803,7 @@ public class TestCompactor {
 
 
       // Now, compact
-      CompactionTxnHandler txnHandler = new CompactionTxnHandler(conf);
+      TxnStore txnHandler = TxnUtils.getTxnStore(conf);
       txnHandler.compact(new CompactionRequest(dbName, tblName, CompactionType.MAJOR));
       Worker t = new Worker();
       t.setThreadId((int) t.getId());

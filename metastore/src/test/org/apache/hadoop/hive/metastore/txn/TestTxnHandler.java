@@ -34,7 +34,11 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static junit.framework.Assert.*;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertNull;
+import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.fail;
 
 /**
  * Tests for TxnHandler.
@@ -44,7 +48,7 @@ public class TestTxnHandler {
   static final private Log LOG = LogFactory.getLog(CLASS_NAME);
 
   private HiveConf conf = new HiveConf();
-  private TxnHandler txnHandler;
+  private TxnStore txnHandler;
 
   public TestTxnHandler() throws Exception {
     TxnDbUtil.setConfValues(conf);
@@ -1111,99 +1115,102 @@ public class TestTxnHandler {
   @Ignore
   public void deadlockDetected() throws Exception {
     LOG.debug("Starting deadlock test");
-    Connection conn = txnHandler.getDbConn(Connection.TRANSACTION_SERIALIZABLE);
-    Statement stmt = conn.createStatement();
-    long now = txnHandler.getDbTime(conn);
-    stmt.executeUpdate("insert into TXNS (txn_id, txn_state, txn_started, txn_last_heartbeat, " +
-        "txn_user, txn_host) values (1, 'o', " + now + ", " + now + ", 'shagy', " +
-        "'scooby.com')");
-    stmt.executeUpdate("insert into HIVE_LOCKS (hl_lock_ext_id, hl_lock_int_id, hl_txnid, " +
-        "hl_db, hl_table, hl_partition, hl_lock_state, hl_lock_type, hl_last_heartbeat, " +
-        "hl_user, hl_host) values (1, 1, 1, 'mydb', 'mytable', 'mypartition', '" +
-        txnHandler.LOCK_WAITING + "', '" + txnHandler.LOCK_EXCLUSIVE + "', " + now + ", 'fred', " +
-        "'scooby.com')");
-    conn.commit();
-    txnHandler.closeDbConn(conn);
+    if (txnHandler instanceof TxnHandler) {
+      final TxnHandler tHndlr = (TxnHandler)txnHandler;
+      Connection conn = tHndlr.getDbConn(Connection.TRANSACTION_SERIALIZABLE);
+      Statement stmt = conn.createStatement();
+      long now = tHndlr.getDbTime(conn);
+      stmt.executeUpdate("insert into TXNS (txn_id, txn_state, txn_started, txn_last_heartbeat, " +
+          "txn_user, txn_host) values (1, 'o', " + now + ", " + now + ", 'shagy', " +
+          "'scooby.com')");
+      stmt.executeUpdate("insert into HIVE_LOCKS (hl_lock_ext_id, hl_lock_int_id, hl_txnid, " +
+          "hl_db, hl_table, hl_partition, hl_lock_state, hl_lock_type, hl_last_heartbeat, " +
+          "hl_user, hl_host) values (1, 1, 1, 'mydb', 'mytable', 'mypartition', '" +
+          tHndlr.LOCK_WAITING + "', '" + tHndlr.LOCK_EXCLUSIVE + "', " + now + ", 'fred', " +
+          "'scooby.com')");
+      conn.commit();
+      tHndlr.closeDbConn(conn);
 
-    final AtomicBoolean sawDeadlock = new AtomicBoolean();
+      final AtomicBoolean sawDeadlock = new AtomicBoolean();
 
-    final Connection conn1 = txnHandler.getDbConn(Connection.TRANSACTION_SERIALIZABLE);
-    final Connection conn2 = txnHandler.getDbConn(Connection.TRANSACTION_SERIALIZABLE);
-    try {
+      final Connection conn1 = tHndlr.getDbConn(Connection.TRANSACTION_SERIALIZABLE);
+      final Connection conn2 = tHndlr.getDbConn(Connection.TRANSACTION_SERIALIZABLE);
+      try {
 
-      for (int i = 0; i < 5; i++) {
-        Thread t1 = new Thread() {
-          @Override
-          public void run() {
-            try {
+        for (int i = 0; i < 5; i++) {
+          Thread t1 = new Thread() {
+            @Override
+            public void run() {
               try {
-                updateTxns(conn1);
-                updateLocks(conn1);
-                Thread.sleep(1000);
-                conn1.commit();
-                LOG.debug("no exception, no deadlock");
-              } catch (SQLException e) {
                 try {
-                  txnHandler.checkRetryable(conn1, e, "thread t1");
-                  LOG.debug("Got an exception, but not a deadlock, SQLState is " +
-                      e.getSQLState() + " class of exception is " + e.getClass().getName() +
-                      " msg is <" + e.getMessage() + ">");
-                } catch (TxnHandler.RetryException de) {
-                  LOG.debug("Forced a deadlock, SQLState is " + e.getSQLState() + " class of " +
-                      "exception is " + e.getClass().getName() + " msg is <" + e
-                      .getMessage() + ">");
-                  sawDeadlock.set(true);
+                  updateTxns(conn1);
+                  updateLocks(conn1);
+                  Thread.sleep(1000);
+                  conn1.commit();
+                  LOG.debug("no exception, no deadlock");
+                } catch (SQLException e) {
+                  try {
+                    tHndlr.checkRetryable(conn1, e, "thread t1");
+                    LOG.debug("Got an exception, but not a deadlock, SQLState is " +
+                        e.getSQLState() + " class of exception is " + e.getClass().getName() +
+                        " msg is <" + e.getMessage() + ">");
+                  } catch (TxnHandler.RetryException de) {
+                    LOG.debug("Forced a deadlock, SQLState is " + e.getSQLState() + " class of " +
+                        "exception is " + e.getClass().getName() + " msg is <" + e
+                        .getMessage() + ">");
+                    sawDeadlock.set(true);
+                  }
                 }
+                conn1.rollback();
+              } catch (Exception e) {
+                throw new RuntimeException(e);
               }
-              conn1.rollback();
-            } catch (Exception e) {
-              throw new RuntimeException(e);
             }
-          }
-        };
+          };
 
-        Thread t2 = new Thread() {
-          @Override
-          public void run() {
-            try {
+          Thread t2 = new Thread() {
+            @Override
+            public void run() {
               try {
-                updateLocks(conn2);
-                updateTxns(conn2);
-                Thread.sleep(1000);
-                conn2.commit();
-                LOG.debug("no exception, no deadlock");
-              } catch (SQLException e) {
                 try {
-                  txnHandler.checkRetryable(conn2, e, "thread t2");
-                  LOG.debug("Got an exception, but not a deadlock, SQLState is " +
-                      e.getSQLState() + " class of exception is " + e.getClass().getName() +
-                      " msg is <" + e.getMessage() + ">");
-                } catch (TxnHandler.RetryException de) {
-                  LOG.debug("Forced a deadlock, SQLState is " + e.getSQLState() + " class of " +
-                      "exception is " + e.getClass().getName() + " msg is <" + e
-                      .getMessage() + ">");
-                  sawDeadlock.set(true);
+                  updateLocks(conn2);
+                  updateTxns(conn2);
+                  Thread.sleep(1000);
+                  conn2.commit();
+                  LOG.debug("no exception, no deadlock");
+                } catch (SQLException e) {
+                  try {
+                    tHndlr.checkRetryable(conn2, e, "thread t2");
+                    LOG.debug("Got an exception, but not a deadlock, SQLState is " +
+                        e.getSQLState() + " class of exception is " + e.getClass().getName() +
+                        " msg is <" + e.getMessage() + ">");
+                  } catch (TxnHandler.RetryException de) {
+                    LOG.debug("Forced a deadlock, SQLState is " + e.getSQLState() + " class of " +
+                        "exception is " + e.getClass().getName() + " msg is <" + e
+                        .getMessage() + ">");
+                    sawDeadlock.set(true);
+                  }
                 }
+                conn2.rollback();
+              } catch (Exception e) {
+                throw new RuntimeException(e);
               }
-              conn2.rollback();
-            } catch (Exception e) {
-              throw new RuntimeException(e);
             }
-          }
-        };
+          };
 
-        t1.start();
-        t2.start();
-        t1.join();
-        t2.join();
-        if (sawDeadlock.get()) break;
+          t1.start();
+          t2.start();
+          t1.join();
+          t2.join();
+          if (sawDeadlock.get()) break;
+        }
+        assertTrue(sawDeadlock.get());
+      } finally {
+        conn1.rollback();
+        tHndlr.closeDbConn(conn1);
+        conn2.rollback();
+        tHndlr.closeDbConn(conn2);
       }
-      assertTrue(sawDeadlock.get());
-    } finally {
-      conn1.rollback();
-      txnHandler.closeDbConn(conn1);
-      conn2.rollback();
-      txnHandler.closeDbConn(conn2);
     }
   }
 
@@ -1236,7 +1243,7 @@ public class TestTxnHandler {
     for (long i = 1; i <= 200; i++) {
       inList.add(i);
     }
-    TxnHandler.buildQueryWithINClause(conf, queries, prefix, suffix, inList, "TXN_ID", true, false);
+    TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, inList, "TXN_ID", true, false);
     Assert.assertEquals(1, queries.size());
     runAgainstDerby(queries);
 
@@ -1244,7 +1251,7 @@ public class TestTxnHandler {
     //          The first query has 2 full batches, and the second query only has 1 batch which only contains 1 member
     queries.clear();
     inList.add((long)201);
-    TxnHandler.buildQueryWithINClause(conf, queries, prefix, suffix, inList, "TXN_ID", true, false);
+    TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, inList, "TXN_ID", true, false);
     Assert.assertEquals(2, queries.size());
     runAgainstDerby(queries);
 
@@ -1255,13 +1262,13 @@ public class TestTxnHandler {
     for (long i = 202; i <= 4321; i++) {
       inList.add(i);
     }
-    TxnHandler.buildQueryWithINClause(conf, queries, prefix, suffix, inList, "TXN_ID", true, false);
+    TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, inList, "TXN_ID", true, false);
     Assert.assertEquals(3, queries.size());
     runAgainstDerby(queries);
 
     // Case 4 - NOT IN list
     queries.clear();
-    TxnHandler.buildQueryWithINClause(conf, queries, prefix, suffix, inList, "TXN_ID", true, true);
+    TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, inList, "TXN_ID", true, true);
     Assert.assertEquals(3, queries.size());
     runAgainstDerby(queries);
 
@@ -1269,7 +1276,7 @@ public class TestTxnHandler {
     queries.clear();
     suffix.setLength(0);
     suffix.append("");
-    TxnHandler.buildQueryWithINClause(conf, queries, prefix, suffix, inList, "TXN_ID", false, false);
+    TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, inList, "TXN_ID", false, false);
     Assert.assertEquals(3, queries.size());
     runAgainstDerby(queries);
   }
@@ -1297,7 +1304,7 @@ public class TestTxnHandler {
   @Before
   public void setUp() throws Exception {
     TxnDbUtil.prepDb();
-    txnHandler = new TxnHandler(conf);
+    txnHandler = TxnUtils.getTxnStore(conf);
   }
 
   @After

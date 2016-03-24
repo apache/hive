@@ -87,14 +87,7 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 @InterfaceAudience.Private
 @InterfaceStability.Evolving
-public class TxnHandler {
-  // Compactor states (Should really be enum)
-  static final public String INITIATED_RESPONSE = "initiated";
-  static final public String WORKING_RESPONSE = "working";
-  static final public String CLEANING_RESPONSE = "ready for cleaning";
-  static final public String FAILED_RESPONSE = "failed";
-  static final public String SUCCEEDED_RESPONSE = "succeeded";
-  static final public String ATTEMPTED_RESPONSE = "attempted";
+abstract class TxnHandler implements TxnStore {
 
   static final protected char INITIATED_STATE = 'i';
   static final protected char WORKING_STATE = 'w';
@@ -131,7 +124,7 @@ public class TxnHandler {
    * Number of consecutive deadlocks we have seen
    */
   private int deadlockCnt;
-  private final long deadlockRetryInterval;
+  private long deadlockRetryInterval;
   protected HiveConf conf;
   protected DatabaseProduct dbProduct;
 
@@ -139,8 +132,8 @@ public class TxnHandler {
   private long timeout;
 
   private String identifierQuoteString; // quotes to use for quoting tables, where necessary
-  private final long retryInterval;
-  private final int retryLimit;
+  private long retryInterval;
+  private int retryLimit;
   private int retryNum;
   /**
    * Derby specific concurrency control
@@ -157,7 +150,10 @@ public class TxnHandler {
   // in mind.  To do this they should call checkRetryable() AFTER rolling back the db transaction,
   // and then they should catch RetryException and call themselves recursively. See commitTxn for an example.
 
-  public TxnHandler(HiveConf conf) {
+  public TxnHandler() {
+  }
+
+  public void setConf(HiveConf conf) {
     this.conf = conf;
 
     checkQFileTestHack();
@@ -183,7 +179,6 @@ public class TxnHandler {
         TimeUnit.MILLISECONDS);
     retryLimit = HiveConf.getIntVar(conf, HiveConf.ConfVars.HMSHANDLERATTEMPTS);
     deadlockRetryInterval = retryInterval / 10;
-
   }
 
   public GetOpenTxnsInfoResponse getOpenTxnsInfo() throws MetaException {
@@ -1211,6 +1206,7 @@ public class TxnHandler {
    * Clean up corresponding records in metastore tables, specifically:
    * TXN_COMPONENTS, COMPLETED_TXN_COMPONENTS, COMPACTION_QUEUE, COMPLETED_COMPACTIONS
    */
+  @Override
   public void cleanupRecords(HiveObjectType type, Database db, Table table,
                              Iterator<Partition> partitionIterator) throws MetaException {
     try {
@@ -1386,106 +1382,11 @@ public class TxnHandler {
     String tableIsTransactional = parameters.get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
     return tableIsTransactional != null && tableIsTransactional.equalsIgnoreCase("true");
   }
-
-  /**
-   * Build a query (or queries if one query is too big) with specified "prefix" and "suffix",
-   * while populating the IN list into multiple OR clauses, e.g. id in (1,2,3) OR id in (4,5,6)
-   * For NOT IN case, NOT IN list is broken into multiple AND clauses.
-   * @param queries array of complete query strings
-   * @param prefix part of the query that comes before IN list
-   * @param suffix part of the query that comes after IN list
-   * @param inList the list containing IN list values
-   * @param inColumn column name of IN list operator
-   * @param addParens add a pair of parenthesis outside the IN lists
-   *                  e.g. ( id in (1,2,3) OR id in (4,5,6) )
-   * @param notIn clause to be broken up is NOT IN
-   */
-  public static void buildQueryWithINClause(HiveConf conf, List<String> queries, StringBuilder prefix,
-                                            StringBuilder suffix, List<Long> inList,
-                                            String inColumn, boolean addParens, boolean notIn) {
-    int batchSize = conf.getIntVar(HiveConf.ConfVars.METASTORE_DIRECT_SQL_MAX_ELEMENTS_IN_CLAUSE);
-    int numWholeBatches = inList.size() / batchSize;
-    StringBuilder buf = new StringBuilder();
-    buf.append(prefix);
-    if (addParens) {
-      buf.append("(");
-    }
-    buf.append(inColumn);
-    if (notIn) {
-      buf.append(" not in (");
-    } else {
-      buf.append(" in (");
-    }
-
-    for (int i = 0; i <= numWholeBatches; i++) {
-      if (needNewQuery(conf, buf)) {
-        // Wrap up current query string
-        if (addParens) {
-          buf.append(")");
-        }
-        buf.append(suffix);
-        queries.add(buf.toString());
-
-        // Prepare a new query string
-        buf.setLength(0);
-      }
-
-      if (i > 0) {
-        if (notIn) {
-          if (buf.length() == 0) {
-            buf.append(prefix);
-            if (addParens) {
-              buf.append("(");
-            }
-          } else {
-            buf.append(" and ");
-          }
-          buf.append(inColumn);
-          buf.append(" not in (");
-        } else {
-          if (buf.length() == 0) {
-            buf.append(prefix);
-            if (addParens) {
-              buf.append("(");
-            }
-          } else {
-            buf.append(" or ");
-          }
-          buf.append(inColumn);
-          buf.append(" in (");
-        }
-      }
-
-      if (i * batchSize == inList.size()) {
-        // At this point we just realized we don't need another query
-        return;
-      }
-      for (int j = i * batchSize; j < (i + 1) * batchSize && j < inList.size(); j++) {
-        buf.append(inList.get(j)).append(",");
-      }
-      buf.setCharAt(buf.length() - 1, ')');
-    }
-
-    if (addParens) {
-      buf.append(")");
-    }
-    buf.append(suffix);
-    queries.add(buf.toString());
-  }
-
-  /** Estimate if the size of a string will exceed certain limit */
-  private static boolean needNewQuery(HiveConf conf, StringBuilder sb) {
-    int queryMemoryLimit = conf.getIntVar(HiveConf.ConfVars.METASTORE_DIRECT_SQL_MAX_QUERY_LENGTH);
-    // http://www.javamex.com/tutorials/memory/string_memory_usage.shtml
-    long sizeInBytes = 8 * (((sb.length() * 2) + 45) / 8);
-    return sizeInBytes / 1024 > queryMemoryLimit;
-  }
-
   /**
    * For testing only, do not use.
    */
   @VisibleForTesting
-  int numLocksInLockTable() throws SQLException, MetaException {
+  public int numLocksInLockTable() throws SQLException, MetaException {
     Connection dbConn = null;
     Statement stmt = null;
     ResultSet rs = null;
@@ -1508,7 +1409,7 @@ public class TxnHandler {
   /**
    * For testing only, do not use.
    */
-  long setTimeout(long milliseconds) {
+  public long setTimeout(long milliseconds) {
     long previous_timeout = timeout;
     timeout = milliseconds;
     return previous_timeout;
@@ -1975,7 +1876,7 @@ public class TxnHandler {
         suffix.append("");
       }
 
-      TxnHandler.buildQueryWithINClause(conf, queries, prefix, suffix, txnids, "txn_id", true, false);
+      TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, txnids, "txn_id", true, false);
 
       for (String query : queries) {
         LOG.debug("Going to execute update <" + query + ">");
@@ -1998,7 +1899,7 @@ public class TxnHandler {
       prefix.append("delete from HIVE_LOCKS where ");
       suffix.append("");
 
-      TxnHandler.buildQueryWithINClause(conf, queries, prefix, suffix, txnids, "hl_txnid", false, false);
+      TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, txnids, "hl_txnid", false, false);
 
       for (String query : queries) {
         LOG.debug("Going to execute update <" + query + ">");
@@ -2435,7 +2336,7 @@ public class TxnHandler {
       prefix.append(" and hl_txnid = 0 and ");
       suffix.append("");
 
-      TxnHandler.buildQueryWithINClause(conf, queries, prefix, suffix, extLockIDs, "hl_lock_ext_id", true, false);
+      TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, extLockIDs, "hl_lock_ext_id", true, false);
 
       int deletedLocks = 0;
       for (String query : queries) {
