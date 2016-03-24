@@ -74,6 +74,7 @@ import java.util.Set;
 @InterfaceStability.Evolving
 public interface TxnStore {
 
+  public static enum MUTEX_KEY {Initiator, Cleaner, HouseKeeper, CompactionHistory}
   // Compactor states (Should really be enum)
   static final public String INITIATED_RESPONSE = "initiated";
   static final public String WORKING_RESPONSE = "working";
@@ -355,10 +356,40 @@ public interface TxnStore {
    */
   public boolean checkFailedCompactions(CompactionInfo ci) throws MetaException;
 
-
   @VisibleForTesting
   public int numLocksInLockTable() throws SQLException, MetaException;
 
   @VisibleForTesting
   long setTimeout(long milliseconds);
+
+  public MutexAPI getMutexAPI();
+
+  /**
+   * This is primarily designed to provide coarse grained mutex support to operations running
+   * inside the Metastore (of which there could be several instances).  The initial goal is to 
+   * ensure that various sub-processes of the Compactor don't step on each other.
+   * 
+   * In RDMBS world each {@code LockHandle} uses a java.sql.Connection so use it sparingly.
+   */
+  public static interface MutexAPI {
+    /**
+     * The {@code key} is name of the lock. Will acquire and exclusive lock or block.  It retuns
+     * a handle which must be used to release the lock.  Each invocation returns a new handle.
+     */
+    public LockHandle acquireLock(String key) throws MetaException;
+
+    /**
+     * Same as {@link #acquireLock(String)} but takes an already existing handle as input.  This 
+     * will associate the lock on {@code key} with the same handle.  All locks associated with
+     * the same handle will be released together.
+     * @param handle not NULL
+     */
+    public void acquireLock(String key, LockHandle handle) throws MetaException;
+    public static interface LockHandle {
+      /**
+       * Releases all locks associcated with this handle.
+       */
+      public void releaseLocks();
+    }
+  }
 }

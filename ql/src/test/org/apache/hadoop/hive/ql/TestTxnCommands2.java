@@ -229,7 +229,6 @@ public class TestTxnCommands2 {
     }
     Assert.assertFalse("PPD '" + ppd + "' wasn't pushed", true);
   }
-  @Ignore("alter table")
   @Test
   public void testAlterTable() throws Exception {
     int[][] tableData = {{1,2}};
@@ -604,7 +603,13 @@ public class TestTxnCommands2 {
   private static void runHouseKeeperService(HouseKeeperService houseKeeperService, HiveConf conf) throws Exception {
     int lastCount = houseKeeperService.getIsAliveCounter();
     houseKeeperService.start(conf);
+    int maxIter = 10;
+    int iterCount = 0;
     while(houseKeeperService.getIsAliveCounter() <= lastCount) {
+      if(iterCount++ >= maxIter) {
+        //prevent test hangs
+        throw new IllegalStateException("HouseKeeper didn't run after " + iterCount + " waits");
+      }
       try {
         Thread.sleep(100);//make sure it has run at least once
       }

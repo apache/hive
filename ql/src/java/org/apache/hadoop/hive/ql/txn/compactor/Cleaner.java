@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -72,11 +73,13 @@ public class Cleaner extends CompactorThread {
       // and if so remembers that and then sets it to true at the end.  We have to check here
       // first to make sure we go through a complete iteration of the loop before resetting it.
       boolean setLooped = !looped.get();
-      long startedAt = System.currentTimeMillis();
+      TxnStore.MutexAPI.LockHandle handle = null;
+      long startedAt = -1;
       // Make sure nothing escapes this run method and kills the metastore at large,
       // so wrap it in a big catch Throwable statement.
       try {
-
+        handle = txnHandler.getMutexAPI().acquireLock(TxnStore.MUTEX_KEY.Cleaner.name());
+        startedAt = System.currentTimeMillis();
         // First look for all the compactions that are waiting to be cleaned.  If we have not
         // seen an entry before, look for all the locks held on that table or partition and
         // record them.  We will then only clean the partition once all of those locks have been
@@ -86,6 +89,31 @@ public class Cleaner extends CompactorThread {
         // done the compaction will read the more up to date version of the data (either in a
         // newer delta or in a newer base).
         List<CompactionInfo> toClean = txnHandler.findReadyToClean();
+        {
+          /**
+           * Since there may be more than 1 instance of Cleaner running we may have state info
+           * for items which were cleaned by instances.  Here we remove them.
+           *
+           * In the long run if we add end_time to compaction_queue, then we can check that
+           * hive_locks.acquired_at > compaction_queue.end_time + safety_buffer in which case
+           * we know the lock owner is reading files created by this compaction or later.
+           * The advantage is that we don't have to store the locks.
+           */
+          Set<Long> currentToCleanSet = new HashSet<>();
+          for (CompactionInfo ci : toClean) {
+            currentToCleanSet.add(ci.id);
+          }
+          Set<Long> cleanPerformedByOthers = new HashSet<>();
+          for (long id : compactId2CompactInfoMap.keySet()) {
+            if (!currentToCleanSet.contains(id)) {
+              cleanPerformedByOthers.add(id);
+            }
+          }
+          for (long id : cleanPerformedByOthers) {
+            compactId2CompactInfoMap.remove(id);
+            compactId2LockMap.remove(id);
+          }
+        }
         if (toClean.size() > 0 || compactId2LockMap.size() > 0) {
           ShowLocksResponse locksResponse = txnHandler.showLocks(new ShowLocksRequest());
 
@@ -119,6 +147,7 @@ public class Cleaner extends CompactorThread {
                 // Remember to remove this when we're out of the loop,
                 // we can't do it in the loop or we'll get a concurrent modification exception.
                 compactionsCleaned.add(queueEntry.getKey());
+                //Future thought: this may be expensive so consider having a thread pool run in parallel
                 clean(compactId2CompactInfoMap.get(queueEntry.getKey()));
               } else {
                 // Remove the locks we didn't see so we don't look for them again next time
@@ -139,6 +168,11 @@ public class Cleaner extends CompactorThread {
       } catch (Throwable t) {
         LOG.error("Caught an exception in the main loop of compactor cleaner, " +
             StringUtils.stringifyException(t));
+      }
+      finally {
+        if (handle != null) {
+          handle.releaseLocks();
+        }
       }
       if (setLooped) {
         looped.set(true);
@@ -206,10 +240,24 @@ public class Cleaner extends CompactorThread {
       StorageDescriptor sd = resolveStorageDescriptor(t, p);
       final String location = sd.getLocation();
 
-      // Create a bogus validTxnList with a high water mark set to MAX_LONG and no open
-      // transactions.  This assures that all deltas are treated as valid and all we return are
-      // obsolete files.
-      final ValidTxnList txnList = new ValidReadTxnList();
+      /**
+       * Each Compaction only compacts as far as the highest txn id such that all txns below it
+       * are resolved (i.e. not opened).  This is what "highestTxnId" tracks.  This is only tracked
+       * since Hive 1.3.0/2.0 - thus may be 0.  See ValidCompactorTxnList and uses for more info.
+       * 
+       * We only want to clean up to the highestTxnId - otherwise we risk deleteing deltas from
+       * under an active reader.
+       * 
+       * Suppose we have deltas D2 D3 for table T, i.e. the last compaction created D3 so now there is a 
+       * clean request for D2.  
+       * Cleaner checks existing locks and finds none.
+       * Between that check and removeFiles() a query starts (it will be reading D3) and another compaction
+       * completes which creates D4.
+       * Now removeFiles() (more specifically AcidUtils.getAcidState()) will declare D3 to be obsolete
+       * unless ValidTxnList is "capped" at highestTxnId.
+       */
+      final ValidTxnList txnList = ci.highestTxnId > 0 ? 
+        new ValidReadTxnList(new long[0], ci.highestTxnId) : new ValidReadTxnList();
 
       if (runJobAsSelf(ci.runAs)) {
         removeFiles(location, txnList);
@@ -249,7 +297,7 @@ public class Cleaner extends CompactorThread {
     FileSystem fs = filesToDelete.get(0).getFileSystem(conf);
 
     for (Path dead : filesToDelete) {
-      LOG.debug("Doing to delete path " + dead.toString());
+      LOG.debug("Going to delete path " + dead.toString());
       fs.delete(dead, true);
     }
   }

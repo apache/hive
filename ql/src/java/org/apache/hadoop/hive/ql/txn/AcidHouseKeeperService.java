@@ -61,7 +61,9 @@ public class AcidHouseKeeperService extends HouseKeeperServiceBase {
     }
     @Override
     public void run() {
+      TxnStore.MutexAPI.LockHandle handle = null;
       try {
+        handle = txnHandler.getMutexAPI().acquireLock(TxnStore.MUTEX_KEY.HouseKeeper.name());
         long startTime = System.currentTimeMillis();
         txnHandler.performTimeOuts();
         int count = isAliveCounter.incrementAndGet();
@@ -69,6 +71,11 @@ public class AcidHouseKeeperService extends HouseKeeperServiceBase {
       }
       catch(Throwable t) {
         LOG.fatal("Serious error in " + Thread.currentThread().getName() + ": " + t.getMessage(), t);
+      }
+      finally {
+        if(handle != null) {
+          handle.releaseLocks();
+        }
       }
     }
   }

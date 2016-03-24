@@ -68,7 +68,7 @@ public final class TxnDbUtil {
     Connection conn = null;
     Statement stmt = null;
     try {
-      conn = getConnection();
+      conn = getConnection(true);
       stmt = conn.createStatement();
       stmt.execute("CREATE TABLE TXNS (" +
           "  TXN_ID bigint PRIMARY KEY," +
@@ -140,8 +140,13 @@ public final class TxnDbUtil {
         " CC_HIGHEST_TXN_ID bigint," +
         " CC_META_INFO varchar(2048) for bit data," +
         " CC_HADOOP_JOB_ID varchar(32))");
-
-      conn.commit();
+      
+      stmt.execute("CREATE TABLE AUX_TABLE (" +
+        "  MT_KEY1 varchar(128) NOT NULL," +
+        "  MT_KEY2 bigint NOT NULL," +
+        "  MT_COMMENT varchar(255)," +
+        "  PRIMARY KEY(MT_KEY1, MT_KEY2)" +
+        ")");
     } catch (SQLException e) {
       try {
         conn.rollback();
@@ -166,7 +171,7 @@ public final class TxnDbUtil {
     Connection conn = null;
     Statement stmt = null;
     try {
-      conn = getConnection();
+      conn = getConnection(true);
       stmt = conn.createStatement();
 
       // We want to try these, whether they succeed or fail.
@@ -185,7 +190,7 @@ public final class TxnDbUtil {
       dropTable(stmt, "COMPACTION_QUEUE");
       dropTable(stmt, "NEXT_COMPACTION_QUEUE_ID");
       dropTable(stmt, "COMPLETED_COMPACTIONS");
-      conn.commit();
+      dropTable(stmt, "AUX_TABLE");
     } finally {
       closeResources(conn, stmt, null);
     }
@@ -249,6 +254,9 @@ public final class TxnDbUtil {
   }
 
   static Connection getConnection() throws Exception {
+    return getConnection(false);
+  }
+  static Connection getConnection(boolean isAutoCommit) throws Exception {
     HiveConf conf = new HiveConf();
     String jdbcDriver = HiveConf.getVar(conf, HiveConf.ConfVars.METASTORE_CONNECTION_DRIVER);
     Driver driver = (Driver) Class.forName(jdbcDriver).newInstance();
@@ -260,7 +268,7 @@ public final class TxnDbUtil {
     prop.setProperty("user", user);
     prop.setProperty("password", passwd);
     Connection conn = driver.connect(driverUrl, prop);
-    conn.setAutoCommit(false);
+    conn.setAutoCommit(isAutoCommit);
     return conn;
   }
 

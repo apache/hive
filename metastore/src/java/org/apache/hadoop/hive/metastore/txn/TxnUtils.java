@@ -75,8 +75,8 @@ public class TxnUtils {
     int i = 0;
     for (TxnInfo txn : txns.getOpen_txns()) {
       if (txn.getState() == TxnState.OPEN) minOpenTxn = Math.min(minOpenTxn, txn.getId());
-      exceptions[i++] = txn.getId();
-    }
+      exceptions[i++] = txn.getId();//todo: only add Aborted
+    }//remove all exceptions < minOpenTxn
     highWater = minOpenTxn == Long.MAX_VALUE ? highWater : minOpenTxn - 1;
     return new ValidCompactorTxnList(exceptions, -1, highWater);
   }

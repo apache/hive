@@ -24,6 +24,9 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 /**
  * ServerUtils (specific to HiveServer version 1)
  */
@@ -47,4 +50,15 @@ public class ServerUtils {
     }
   }
 
+  /**
+   * @return name of current host
+   */
+  public static String hostname() {
+    try {
+      return InetAddress.getLocalHost().getHostName();
+    } catch (UnknownHostException e) {
+      LOG.error("Unable to resolve my host name " + e.getMessage());
+      throw new RuntimeException(e);
+    }
+  }
 }
