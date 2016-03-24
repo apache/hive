@@ -109,21 +109,23 @@ partitions = {
       "dn: uid=group1,ou=Groups,dc=example,dc=com",
       "distinguishedName: uid=group1,ou=Groups,dc=example,dc=com",
       "objectClass: top",
-      "objectClass: organizationalUnit",
+      "objectClass: groupOfNames",
       "objectClass: ExtensibleObject",
       "cn: group1",
       "ou: Groups",
       "sn: group1",
+      "member: uid=user1,ou=People,dc=example,dc=com",
 
       "dn: uid=group2,ou=Groups,dc=example,dc=com",
       "distinguishedName: uid=group2,ou=Groups,dc=example,dc=com",
       "objectClass: top",
-      "objectClass: organizationalUnit",
+      "objectClass: groupOfNames",
       "objectClass: ExtensibleObject",
       "givenName: Group2",
       "ou: Groups",
       "cn: group1",
       "sn: group1",
+      "member: uid=user2,ou=People,dc=example,dc=com",
 
       "dn: uid=user1,ou=People,dc=example,dc=com",
       "distinguishedName: uid=user1,ou=People,dc=example,dc=com",
@@ -535,4 +537,198 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
     }
   }
 
+  @Test
+  public void testUserFilterPositive() throws Exception {
+    String user;
+    Map<String, String> ldapProperties = new HashMap<String, String>();
+    ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
+    ldapProperties.put("hive.server2.authentication.ldap.userFilter", "user2");
+    initLdapAtn(ldapProperties);
+
+    user = "uid=user2,ou=People,dc=example,dc=com";
+    try {
+      ldapProvider.Authenticate(user, "user2");
+      assertTrue("testUserFilterPositive: Authentication succeeded for " + user + " as expected", true);
+
+      user = "user2";
+      ldapProvider.Authenticate(user, "user2");
+      assertTrue("testUserFilterPositive: Authentication succeeded for " + user + " as expected", true);
+    } catch (AuthenticationException e) {
+      Assert.fail("testUserFilterPositive: Authentication failed for " + user + ",user expected to pass userfilter");
+    }
+
+    ldapProperties = new HashMap<String, String>();
+    ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
+    ldapProperties.put("hive.server2.authentication.ldap.userFilter", "user1");
+    initLdapAtn(ldapProperties);
+
+    try {
+      user = "uid=user1,ou=People,dc=example,dc=com";
+      ldapProvider.Authenticate(user, "user1");
+      assertTrue("testUserFilterPositive: Authentication succeeded for " + user + " as expected", true);
+
+      user = "user1";
+      ldapProvider.Authenticate(user, "user1");
+      assertTrue("testUserFilterPositive: Authentication succeeded for " + user + " as expected", true);
+    } catch (AuthenticationException e) {
+      Assert.fail("testUserFilterPositive: Authentication failed for " + user + ",user expected to pass userfilter");
+    }
+
+    ldapProperties = new HashMap<String, String>();
+    ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
+    ldapProperties.put("hive.server2.authentication.ldap.userFilter", "user2,user1");
+    initLdapAtn(ldapProperties);
+
+    try {
+      user = "uid=user1,ou=People,dc=example,dc=com";
+      ldapProvider.Authenticate(user, "user1");
+      assertTrue("testUserFilterPositive: Authentication succeeded for " + user + " as expected", true);
+
+      user = "user2";
+      ldapProvider.Authenticate(user, "user2");
+      assertTrue("testUserFilterPositive: Authentication succeeded for " + user + " as expected", true);
+
+    } catch (AuthenticationException e) {
+      Assert.fail("testUserFilterPositive: Authentication failed for user, user is expected to pass userfilter");
+    }
+  }
+
+  @Test
+  public void testUserFilterNegative() throws Exception {
+    String user;
+    Map<String, String> ldapProperties = new HashMap<String, String>();
+    ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
+    ldapProperties.put("hive.server2.authentication.ldap.userFilter", "user2");
+    initLdapAtn(ldapProperties);
+
+    user = "uid=user1,ou=People,dc=example,dc=com";
+    try {
+      ldapProvider.Authenticate(user, "user1");
+      Assert.fail("testUserFilterNegative: Authentication succeeded for " + user + ",user is expected to fail userfilter");
+    } catch (AuthenticationException e) {
+      assertTrue("testUserFilterNegative: Authentication failed for " + user + " as expected", true);
+    }
+
+    user = "user1";
+    try {
+      ldapProvider.Authenticate(user, "user1");
+      Assert.fail("testUserFilterNegative: Authentication succeeded for " + user + ",user is expected to fail userfilter");
+    } catch (AuthenticationException e) {
+      assertTrue("testUserFilterNegative: Authentication failed for " + user + " as expected", true);
+    }
+
+    ldapProperties = new HashMap<String, String>();
+    ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
+    ldapProperties.put("hive.server2.authentication.ldap.userFilter", "user1");
+    initLdapAtn(ldapProperties);
+
+    user = "uid=user2,ou=People,dc=example,dc=com";
+    try {
+      ldapProvider.Authenticate(user, "user2");
+      Assert.fail("testUserFilterNegative: Authentication succeeded for " + user + ",user is expected to fail userfilter");
+    } catch (AuthenticationException e) {
+      assertTrue("testUserFilterNegative: Authentication failed for " + user + " as expected", true);
+    }
+
+    user = "user2";
+    try {
+      ldapProvider.Authenticate(user, "user2");
+      Assert.fail("testUserFilterNegative: Authentication succeeded for " + user + ",user is expected to fail userfilter");
+    } catch (AuthenticationException e) {
+      assertTrue("testUserFilterNegative: Authentication failed for " + user + " as expected", true);
+    }
+
+    ldapProperties = new HashMap<String, String>();
+    ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
+    ldapProperties.put("hive.server2.authentication.ldap.userFilter", "user3");
+    initLdapAtn(ldapProperties);
+
+    user = "user1";
+    try {
+      ldapProvider.Authenticate(user, "user1");
+      Assert.fail("testUserFilterNegative: Authentication succeeded for " + user + ",user expected to fail userfilter");
+    } catch (AuthenticationException e) {
+      assertTrue("testUserFilterNegative: Authentication failed for " + user + " as expected", true);
+    }
+
+    user = "uid=user2,ou=People,dc=example,dc=com";
+    try {
+      ldapProvider.Authenticate(user, "user2");
+      Assert.fail("testUserFilterNegative: Authentication succeeded for " + user + ",user expected to fail userfilter");
+    } catch (AuthenticationException e) {
+      assertTrue("testUserFilterNegative: Authentication failed for " + user + " as expected", true);
+    }
+  }
+
+  @Test
+  public void testGroupFilterPositive() throws Exception {
+    String user;
+    Map<String, String> ldapProperties = new HashMap<String, String>();
+    ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
+    ldapProperties.put("hive.server2.authentication.ldap.groupDNPattern", "uid=%s,ou=Groups,dc=example,dc=com");
+    ldapProperties.put("hive.server2.authentication.ldap.groupFilter", "group1,group2");
+    initLdapAtn(ldapProperties);
+
+    user = "uid=user1,ou=People,dc=example,dc=com";
+    try {
+      ldapProvider.Authenticate(user, "user1");
+      assertTrue("testGroupFilterPositive: Authentication succeeded for " + user + " as expected", true);
+
+      user = "user1";
+      ldapProvider.Authenticate(user, "user1");
+      assertTrue("testGroupFilterPositive: Authentication succeeded for " + user + " as expected", true);
+
+      user = "uid=user2,ou=People,dc=example,dc=com";
+      ldapProvider.Authenticate(user, "user2");
+      assertTrue("testGroupFilterPositive: Authentication succeeded for " + user + " as expected", true);
+    } catch (AuthenticationException e) {
+      Assert.fail("testGroupFilterPositive: Authentication failed for " + user + ",user expected to pass groupfilter");
+    }
+
+    ldapProperties = new HashMap<String, String>();
+    ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
+    ldapProperties.put("hive.server2.authentication.ldap.groupDNPattern", "uid=%s,ou=Groups,dc=example,dc=com");
+    ldapProperties.put("hive.server2.authentication.ldap.groupFilter", "group2");
+    initLdapAtn(ldapProperties);
+
+    user = "uid=user2,ou=People,dc=example,dc=com";
+    try {
+      ldapProvider.Authenticate(user, "user2");
+      assertTrue("testGroupFilterPositive: Authentication succeeded for " + user + " as expected", true);
+    } catch (AuthenticationException e) {
+      Assert.fail("testGroupFilterPositive: Authentication failed for " + user + ",user expected to pass groupfilter");
+    }
+  }
+
+  @Test
+  public void testGroupFilterNegative() throws Exception {
+    String user;
+    Map<String, String> ldapProperties = new HashMap<String, String>();
+    ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
+    ldapProperties.put("hive.server2.authentication.ldap.groupDNPattern", "uid=%s,ou=Groups,dc=example,dc=com");
+    ldapProperties.put("hive.server2.authentication.ldap.groupFilter", "group1");
+    initLdapAtn(ldapProperties);
+
+    user = "uid=user2,ou=People,dc=example,dc=com";
+    try {
+      ldapProvider.Authenticate(user, "user2");
+      Assert.fail("testGroupFilterNegative: Authentication succeeded for " + user + ",user expected to fail groupfilter");
+    } catch (AuthenticationException e) {
+      assertTrue("testGroupFilterNegative: Authentication failed for " + user + " as expected", true);
+    }
+
+    ldapProperties = new HashMap<String, String>();
+    ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
+    ldapProperties.put("hive.server2.authentication.ldap.groupDNPattern", "uid=%s,ou=Groups,dc=example,dc=com");
+    ldapProperties.put("hive.server2.authentication.ldap.groupFilter", "group2");
+    initLdapAtn(ldapProperties);
+
+    user = "uid=user1,ou=People,dc=example,dc=com";
+    try {
+      ldapProvider.Authenticate(user, "user1");
+      Assert.fail("testGroupFilterNegative: Authentication succeeded for " + user + ",user expected to fail groupfilter");
+    } catch (AuthenticationException e) {
+      assertTrue("testGroupFilterNegative: Authentication failed for " + user + " as expected", true);
+    }
+  }
 }
