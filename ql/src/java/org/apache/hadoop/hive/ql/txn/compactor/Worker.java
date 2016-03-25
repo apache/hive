@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import org.apache.hadoop.fs.FileSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.ValidTxnList;
@@ -171,6 +172,11 @@ public class Worker extends CompactorThread {
                 return null;
               }
             });
+            try {
+              FileSystem.closeAllForUGI(ugi);
+            } catch (IOException exception) {
+              LOG.error("Could not clean up file-system handles for UGI: " + ugi, exception + " for " +
+                  ci.getFullPartitionName());            }
           }
           txnHandler.markCompacted(ci);
         } catch (Exception e) {

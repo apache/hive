@@ -18,6 +18,7 @@
 
 package org.apache.hive.hcatalog.streaming;
 
+import org.apache.hadoop.fs.FileSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.cli.CliSessionState;
@@ -342,6 +343,11 @@ public class HiveEndPoint {
                 return null;
               }
             } );
+        try {
+          FileSystem.closeAllForUGI(ugi);
+        } catch (IOException exception) {
+          LOG.error("Could not clean up file-system handles for UGI: " + ugi, exception);
+        }
       } catch (IOException e) {
         LOG.error("Error closing connection to " + endPt, e);
       } catch (InterruptedException e) {
@@ -937,6 +943,11 @@ public class HiveEndPoint {
                   }
                 }
         );
+        try {
+          FileSystem.closeAllForUGI(ugi);
+        } catch (IOException exception) {
+          LOG.error("Could not clean up file-system handles for UGI: " + ugi, exception);
+        }
       } catch (IOException e) {
         throw new ImpersonationFailed("Failed closing Txn Batch as user '" + username +
                 "' on  endPoint :" + endPt, e);

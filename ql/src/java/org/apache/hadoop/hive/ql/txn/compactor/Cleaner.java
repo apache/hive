@@ -224,6 +224,11 @@ public class Cleaner extends CompactorThread {
             return null;
           }
         });
+        try {
+          FileSystem.closeAllForUGI(ugi);
+        } catch (IOException exception) {
+          LOG.error("Could not clean up file-system handles for UGI: " + ugi, exception + " for " +
+              ci.getFullPartitionName());        }
       }
       txnHandler.markCleaned(ci);
     } catch (Exception e) {
