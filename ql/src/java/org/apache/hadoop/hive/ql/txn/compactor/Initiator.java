@@ -235,8 +235,8 @@ public class Initiator extends CompactorThread {
       try {
         FileSystem.closeAllForUGI(ugi);
       } catch (IOException exception) {
-        LOG.error("Could not clean up file-system handles for UGI: " + ugi, exception + " for " +
-            ci.getFullPartitionName());
+        LOG.error("Could not clean up file-system handles for UGI: " + ugi + " for " +
+            ci.getFullPartitionName(), exception);
       }
       return compactionType;
     }
