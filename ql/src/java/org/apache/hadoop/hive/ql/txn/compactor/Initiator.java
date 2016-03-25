@@ -226,12 +226,19 @@ public class Initiator extends CompactorThread {
       LOG.info("Going to initiate as user " + runAs);
       UserGroupInformation ugi = UserGroupInformation.createProxyUser(runAs,
         UserGroupInformation.getLoginUser());
-      return ugi.doAs(new PrivilegedExceptionAction<CompactionType>() {
+      CompactionType compactionType = ugi.doAs(new PrivilegedExceptionAction<CompactionType>() {
         @Override
         public CompactionType run() throws Exception {
           return determineCompactionType(ci, txns, sd);
         }
       });
+      try {
+        FileSystem.closeAllForUGI(ugi);
+      } catch (IOException exception) {
+        LOG.error("Could not clean up file-system handles for UGI: " + ugi + " for " +
+            ci.getFullPartitionName(), exception);
+      }
+      return compactionType;
     }
   }
 
