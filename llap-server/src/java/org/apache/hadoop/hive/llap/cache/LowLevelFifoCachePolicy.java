@@ -35,9 +35,7 @@ public class LowLevelFifoCachePolicy implements LowLevelCachePolicy {
   private LlapOomDebugDump parentDebugDump;
 
   public LowLevelFifoCachePolicy(Configuration conf) {
-    if (LlapIoImpl.LOGL.isInfoEnabled()) {
-      LlapIoImpl.LOG.info("FIFO cache policy");
-    }
+    LlapIoImpl.LOG.info("FIFO cache policy");
     buffers = new LinkedList<LlapCacheableBuffer>();
   }
 

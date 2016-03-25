@@ -58,9 +58,8 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
   @VisibleForTesting
   LowLevelCacheImpl(LlapDaemonCacheMetrics metrics, LowLevelCachePolicy cachePolicy,
       EvictionAwareAllocator allocator, boolean doAssumeGranularBlocks, long cleanupInterval) {
-    if (LlapIoImpl.LOGL.isInfoEnabled()) {
-      LlapIoImpl.LOG.info("Low level cache; cleanup interval " + cleanupInterval + "sec");
-    }
+
+    LlapIoImpl.LOG.info("Low level cache; cleanup interval {} sec", cleanupInterval);
     this.cachePolicy = cachePolicy;
     this.allocator = allocator;
     this.cleanupInterval = cleanupInterval;
@@ -148,8 +147,8 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
       LlapDataBuffer buffer = e.getValue();
       long requestedLength = currentNotCached.getLength();
       // Lock the buffer, validate it and add to results.
-      if (DebugUtils.isTraceLockingEnabled()) {
-        LlapIoImpl.LOG.info("Locking " + buffer + " during get");
+      if (LlapIoImpl.LOCKING_LOGGER.isTraceEnabled()) {
+        LlapIoImpl.LOCKING_LOGGER.trace("Locking {} during get", buffer);
       }
 
       if (!lockBuffer(buffer, true)) {
@@ -183,7 +182,6 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
    * Adds cached buffer to buffer list.
    * @param currentNotCached Pointer to the list node where we are inserting.
    * @param currentCached The cached buffer found for this node, to insert.
-   * @param resultObj
    * @return The new currentNotCached pointer, following the cached buffer insertion.
    */
   private DiskRangeList addCachedBufferToIter(
@@ -240,8 +238,8 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
     try {
       for (int i = 0; i < ranges.length; ++i) {
         LlapDataBuffer buffer = (LlapDataBuffer)buffers[i];
-        if (DebugUtils.isTraceLockingEnabled()) {
-          LlapIoImpl.LOG.info("Locking " + buffer + " at put time");
+        if (LlapIoImpl.LOCKING_LOGGER.isTraceEnabled()) {
+          LlapIoImpl.LOCKING_LOGGER.trace("Locking {} at put time", buffer);
         }
         boolean canLock = lockBuffer(buffer, false);
         assert canLock;
@@ -258,13 +256,13 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
             }
             break;
           }
-          if (DebugUtils.isTraceCachingEnabled()) {
-            LlapIoImpl.LOG.info("Trying to cache when the chunk is already cached for "
-                + fileKey + "@" + offset  + " (base " + baseOffset + "); old " + oldVal
-                + ", new " + buffer);
+          if (LlapIoImpl.CACHE_LOGGER.isTraceEnabled()) {
+            LlapIoImpl.CACHE_LOGGER.trace("Trying to cache when the chunk is already cached for" +
+                " {}@{} (base {}); old {}, new {}", fileKey, offset, baseOffset, oldVal, buffer);
           }
-          if (DebugUtils.isTraceLockingEnabled()) {
-            LlapIoImpl.LOG.info("Locking " + oldVal + "  due to cache collision");
+
+          if (LlapIoImpl.LOCKING_LOGGER.isTraceEnabled()) {
+            LlapIoImpl.LOCKING_LOGGER.trace("Locking {} due to cache collision", oldVal);
           }
           if (lockBuffer(oldVal, true)) {
             // We don't do proper overlap checking because it would cost cycles and we
@@ -275,8 +273,9 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
                   + " (base " + baseOffset + ")");
             }
             // We found an old, valid block for this key in the cache.
-            if (DebugUtils.isTraceLockingEnabled()) {
-              LlapIoImpl.LOG.info("Unlocking " + buffer + " due to cache collision with " + oldVal);
+            if (LlapIoImpl.LOCKING_LOGGER.isTraceEnabled()) {
+              LlapIoImpl.LOCKING_LOGGER.trace("Unlocking {} due to cache collision with {}",
+                  buffer, oldVal);
             }
 
             unlockBuffer(buffer, false);
@@ -353,8 +352,8 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
       if (buffer.declaredCachedLength != LlapDataBuffer.UNKNOWN_CACHED_LENGTH) {
         cachePolicy.notifyUnlock(buffer);
       } else {
-        if (DebugUtils.isTraceCachingEnabled()) {
-          LlapIoImpl.LOG.info("Deallocating " + buffer + " that was not cached");
+        if (LlapIoImpl.CACHE_LOGGER.isTraceEnabled()) {
+          LlapIoImpl.CACHE_LOGGER.trace("Deallocating {} that was not cached", buffer);
         }
         allocator.deallocate(buffer);
       }

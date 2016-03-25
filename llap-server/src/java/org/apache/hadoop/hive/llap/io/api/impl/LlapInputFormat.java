@@ -264,21 +264,21 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
       }
       synchronized (pendingData) {
         // We are waiting for next block. Either we will get it, or be told we are done.
-        boolean doLogBlocking = DebugUtils.isTraceMttEnabled() && isNothingToReport();
+        boolean doLogBlocking = LlapIoImpl.LOG.isTraceEnabled() && isNothingToReport();
         if (doLogBlocking) {
-          LlapIoImpl.LOG.info("next will block");
+          LlapIoImpl.LOG.trace("next will block");
         }
         while (isNothingToReport()) {
           pendingData.wait(100);
         }
         if (doLogBlocking) {
-          LlapIoImpl.LOG.info("next is unblocked");
+          LlapIoImpl.LOG.trace("next is unblocked");
         }
         rethrowErrorIfAny();
         lastCvb = pendingData.poll();
       }
-      if (DebugUtils.isTraceMttEnabled() && lastCvb != null) {
-        LlapIoImpl.LOG.info("Processing will receive vector " + lastCvb);
+      if (LlapIoImpl.LOG.isTraceEnabled() && lastCvb != null) {
+        LlapIoImpl.LOG.trace("Processing will receive vector {}", lastCvb);
       }
       return lastCvb;
     }
@@ -304,9 +304,9 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
 
     @Override
     public void close() throws IOException {
-      if (DebugUtils.isTraceMttEnabled()) {
-        LlapIoImpl.LOG.info("close called; closed " + isClosed + ", done " + isDone
-            + ", err " + pendingError + ", pending " + pendingData.size());
+      if (LlapIoImpl.LOG.isTraceEnabled()) {
+        LlapIoImpl.LOG.trace("close called; closed {}, done {}, err {}, pending {}",
+            isClosed, isDone, pendingError, pendingData.size());
       }
       LlapIoImpl.LOG.info("Llap counters: {}" ,counters); // This is where counters are logged!
       feedback.stop();
@@ -323,9 +323,9 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
 
     @Override
     public void setDone() {
-      if (DebugUtils.isTraceMttEnabled()) {
-        LlapIoImpl.LOG.info("setDone called; closed " + isClosed
-          + ", done " + isDone + ", err " + pendingError + ", pending " + pendingData.size());
+      if (LlapIoImpl.LOG.isTraceEnabled()) {
+        LlapIoImpl.LOG.trace("setDone called; closed {}, done {}, err {}, pending {}",
+            isClosed, isDone, pendingError, pendingData.size());
       }
       synchronized (pendingData) {
         isDone = true;
@@ -335,9 +335,9 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
 
     @Override
     public void consumeData(ColumnVectorBatch data) {
-      if (DebugUtils.isTraceMttEnabled()) {
-        LlapIoImpl.LOG.info("consume called; closed " + isClosed + ", done " + isDone
-            + ", err " + pendingError + ", pending " + pendingData.size());
+      if (LlapIoImpl.LOG.isTraceEnabled()) {
+        LlapIoImpl.LOG.trace("consume called; closed {}, done {}, err {}, pending {}",
+            isClosed, isDone, pendingError, pendingData.size());
       }
       synchronized (pendingData) {
         if (isClosed) {
@@ -351,8 +351,8 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
     @Override
     public void setError(Throwable t) {
       counters.incrCounter(LlapIOCounters.NUM_ERRORS);
-      LlapIoImpl.LOG.info("setError called; closed " + isClosed
-        + ", done " + isDone + ", err " + pendingError + ", pending " + pendingData.size());
+      LlapIoImpl.LOG.info("setError called; closed {}, done {}, err {}, pending {}",
+          isClosed, isDone, pendingError, pendingData.size());
       assert t != null;
       synchronized (pendingData) {
         pendingError = t;

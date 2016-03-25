@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.llap.io.api.impl;
 
-import org.apache.hadoop.hive.llap.LogLevels;
-
 import java.io.IOException;
 import java.util.concurrent.Executors;
 
@@ -58,8 +56,11 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
-  public static final Logger LOG = LoggerFactory.getLogger(LlapIoImpl.class);
-  public static final LogLevels LOGL = new LogLevels(LOG);
+  public static final Logger LOG = LoggerFactory.getLogger("LlapIoImpl");
+  public static final Logger ORC_LOGGER = LoggerFactory.getLogger("LlapIoOrc");
+  public static final Logger CACHE_LOGGER = LoggerFactory.getLogger("LlapIoCache");
+  public static final Logger LOCKING_LOGGER = LoggerFactory.getLogger("LlapIoLocking");
+
   private static final String MODE_CACHE = "cache", MODE_ALLOCATOR = "allocator";
 
   private final ColumnVectorProducer cvp;
@@ -73,9 +74,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
     String ioMode = HiveConf.getVar(conf, HiveConf.ConfVars.LLAP_IO_MEMORY_MODE);
     boolean useLowLevelCache = LlapIoImpl.MODE_CACHE.equalsIgnoreCase(ioMode),
         useAllocOnly = !useLowLevelCache && LlapIoImpl.MODE_ALLOCATOR.equalsIgnoreCase(ioMode);
-    if (LOGL.isInfoEnabled()) {
-      LOG.info("Initializing LLAP IO in " + ioMode + " mode");
-    }
+    LOG.info("Initializing LLAP IO in {} mode", ioMode);
 
     String displayName = "LlapDaemonCacheMetrics-" + MetricsUtils.getHostName();
     String sessionId = conf.get("llap.daemon.metrics.sessionid");
@@ -86,8 +85,8 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
         HiveConf.ConfVars.LLAP_QUEUE_METRICS_PERCENTILE_INTERVALS));
     this.queueMetrics = LlapDaemonQueueMetrics.create(displayName, sessionId, intervals);
 
-    LOG.info("Started llap daemon metrics with displayName: " + displayName +
-        " sessionId: " + sessionId);
+    LOG.info("Started llap daemon metrics with displayName: {} sessionId: {}", displayName,
+        sessionId);
 
     OrcMetadataCache metadataCache = null;
     LowLevelCacheImpl orcCache = null;
@@ -128,9 +127,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
     // TODO: this should depends on input format and be in a map, or something.
     this.cvp = new OrcColumnVectorProducer(
         metadataCache, orcCache, bufferManager, conf, cacheMetrics, queueMetrics);
-    if (LOGL.isInfoEnabled()) {
-      LOG.info("LLAP IO initialized");
-    }
+    LOG.info("LLAP IO initialized");
 
     registerMXBeans();
   }
