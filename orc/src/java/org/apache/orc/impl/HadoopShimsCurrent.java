@@ -18,10 +18,14 @@
 
 package org.apache.orc.impl;
 
+import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.compress.snappy.SnappyDecompressor;
 import org.apache.hadoop.io.compress.zlib.ZlibDecompressor;
 
+import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 
 /**
@@ -59,4 +63,30 @@ public class HadoopShimsCurrent implements HadoopShims {
         return null;
     }
   }
+
+  @Override
+  public ZeroCopyReaderShim getZeroCopyReader(FSDataInputStream in,
+                                              ByteBufferPoolShim pool
+                                              ) throws IOException {
+    return ZeroCopyShims.getZeroCopyReader(in, pool);
+  }
+
+  private final class FastTextReaderShim implements TextReaderShim {
+    private final DataInputStream din;
+
+    public FastTextReaderShim(InputStream in) {
+      this.din = new DataInputStream(in);
+    }
+
+    @Override
+    public void read(Text txt, int len) throws IOException {
+      txt.readWithKnownLength(din, len);
+    }
+  }
+
+  @Override
+  public TextReaderShim getTextReaderShim(InputStream in) throws IOException {
+    return new FastTextReaderShim(in);
+  }
+
 }

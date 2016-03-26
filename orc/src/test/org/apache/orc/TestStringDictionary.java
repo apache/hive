@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.io.orc;
+package org.apache.orc;
 
 import static org.junit.Assert.assertEquals;
 
@@ -25,14 +25,10 @@ import java.util.Random;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.io.Text;
-import org.apache.orc.CompressionKind;
-import org.apache.orc.OrcProto;
+import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 
-import org.apache.orc.StripeInformation;
+import org.apache.orc.impl.RecordReaderImpl;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -60,27 +56,34 @@ public class TestStringDictionary {
 
   @Test
   public void testTooManyDistinct() throws Exception {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector(Text.class,
-          ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
+    TypeDescription schema = TypeDescription.createString();
 
     Writer writer = OrcFile.createWriter(
         testFilePath,
-        OrcFile.writerOptions(conf).inspector(inspector).compress(CompressionKind.NONE)
-            .bufferSize(10000));
+        OrcFile.writerOptions(conf).setSchema(schema)
+                                   .compress(CompressionKind.NONE)
+                                   .bufferSize(10000));
+    VectorizedRowBatch batch = schema.createRowBatch();
+    BytesColumnVector col = (BytesColumnVector) batch.cols[0];
     for (int i = 0; i < 20000; i++) {
-      writer.addRow(new Text(String.valueOf(i)));
+      if (batch.size == batch.getMaxSize()) {
+        writer.addRowBatch(batch);
+        batch.reset();
+      }
+      col.setVal(batch.size++, String.valueOf(i).getBytes());
     }
+    writer.addRowBatch(batch);
     writer.close();
 
     Reader reader = OrcFile.createReader(testFilePath, OrcFile.readerOptions(conf).filesystem(fs));
     RecordReader rows = reader.rows();
+    batch = reader.getSchema().createRowBatch();
+    col = (BytesColumnVector) batch.cols[0];
     int idx = 0;
-    while (rows.hasNext()) {
-      Object row = rows.next(null);
-      assertEquals(new Text(String.valueOf(idx++)), row);
+    while (rows.nextBatch(batch)) {
+      for(int r=0; r < batch.size; ++r) {
+        assertEquals(String.valueOf(idx++), col.toString(r));
+      }
     }
 
     // make sure the encoding type is correct
@@ -97,15 +100,11 @@ public class TestStringDictionary {
 
   @Test
   public void testHalfDistinct() throws Exception {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector(Text.class,
-          ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
+    TypeDescription schema = TypeDescription.createString();
 
     Writer writer = OrcFile.createWriter(
         testFilePath,
-        OrcFile.writerOptions(conf).inspector(inspector).compress(CompressionKind.NONE)
+        OrcFile.writerOptions(conf).setSchema(schema).compress(CompressionKind.NONE)
             .bufferSize(10000));
     Random rand = new Random(123);
     int[] input = new int[20000];
@@ -113,17 +112,27 @@ public class TestStringDictionary {
       input[i] = rand.nextInt(10000);
     }
 
+    VectorizedRowBatch batch = schema.createRowBatch();
+    BytesColumnVector col = (BytesColumnVector) batch.cols[0];
     for (int i = 0; i < 20000; i++) {
-      writer.addRow(new Text(String.valueOf(input[i])));
+      if (batch.size == batch.getMaxSize()) {
+        writer.addRowBatch(batch);
+        batch.reset();
+      }
+      col.setVal(batch.size++, String.valueOf(input[i]).getBytes());
     }
+    writer.addRowBatch(batch);
     writer.close();
 
     Reader reader = OrcFile.createReader(testFilePath, OrcFile.readerOptions(conf).filesystem(fs));
     RecordReader rows = reader.rows();
+    batch = reader.getSchema().createRowBatch();
+    col = (BytesColumnVector) batch.cols[0];
     int idx = 0;
-    while (rows.hasNext()) {
-      Object row = rows.next(null);
-      assertEquals(new Text(String.valueOf(input[idx++])), row);
+    while (rows.nextBatch(batch)) {
+      for(int r=0; r < batch.size; ++r) {
+        assertEquals(String.valueOf(input[idx++]), col.toString(r));
+      }
     }
 
     // make sure the encoding type is correct
@@ -140,28 +149,34 @@ public class TestStringDictionary {
 
   @Test
   public void testTooManyDistinctCheckDisabled() throws Exception {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector(Text.class,
-          ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
+    TypeDescription schema = TypeDescription.createString();
 
-    conf.setBoolean(ConfVars.HIVE_ORC_ROW_INDEX_STRIDE_DICTIONARY_CHECK.varname, false);
+    conf.setBoolean(OrcConf.ROW_INDEX_STRIDE_DICTIONARY_CHECK.getAttribute(), false);
     Writer writer = OrcFile.createWriter(
         testFilePath,
-        OrcFile.writerOptions(conf).inspector(inspector).compress(CompressionKind.NONE)
+        OrcFile.writerOptions(conf).setSchema(schema).compress(CompressionKind.NONE)
             .bufferSize(10000));
+    VectorizedRowBatch batch = schema.createRowBatch();
+    BytesColumnVector string = (BytesColumnVector) batch.cols[0];
     for (int i = 0; i < 20000; i++) {
-      writer.addRow(new Text(String.valueOf(i)));
+      if (batch.size == batch.getMaxSize()) {
+        writer.addRowBatch(batch);
+        batch.reset();
+      }
+      string.setVal(batch.size++, String.valueOf(i).getBytes());
     }
+    writer.addRowBatch(batch);
     writer.close();
 
     Reader reader = OrcFile.createReader(testFilePath, OrcFile.readerOptions(conf).filesystem(fs));
     RecordReader rows = reader.rows();
+    batch = reader.getSchema().createRowBatch();
+    string = (BytesColumnVector) batch.cols[0];
     int idx = 0;
-    while (rows.hasNext()) {
-      Object row = rows.next(null);
-      assertEquals(new Text(String.valueOf(idx++)), row);
+    while (rows.nextBatch(batch)) {
+      for(int r=0; r < batch.size; ++r) {
+        assertEquals(String.valueOf(idx++), string.toString(r));
+      }
     }
 
     // make sure the encoding type is correct
@@ -178,34 +193,41 @@ public class TestStringDictionary {
 
   @Test
   public void testHalfDistinctCheckDisabled() throws Exception {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector(Text.class,
-          ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
+    TypeDescription schema = TypeDescription.createString();
 
-    conf.setBoolean(ConfVars.HIVE_ORC_ROW_INDEX_STRIDE_DICTIONARY_CHECK.varname, false);
+    conf.setBoolean(OrcConf.ROW_INDEX_STRIDE_DICTIONARY_CHECK.getAttribute(),
+        false);
     Writer writer = OrcFile.createWriter(
         testFilePath,
-        OrcFile.writerOptions(conf).inspector(inspector).compress(CompressionKind.NONE)
+        OrcFile.writerOptions(conf).setSchema(schema)
+            .compress(CompressionKind.NONE)
             .bufferSize(10000));
     Random rand = new Random(123);
     int[] input = new int[20000];
     for (int i = 0; i < 20000; i++) {
       input[i] = rand.nextInt(10000);
     }
-
+    VectorizedRowBatch batch = schema.createRowBatch();
+    BytesColumnVector string = (BytesColumnVector) batch.cols[0];
     for (int i = 0; i < 20000; i++) {
-      writer.addRow(new Text(String.valueOf(input[i])));
+      if (batch.size == batch.getMaxSize()) {
+        writer.addRowBatch(batch);
+        batch.reset();
+      }
+      string.setVal(batch.size++, String.valueOf(input[i]).getBytes());
     }
+    writer.addRowBatch(batch);
     writer.close();
 
     Reader reader = OrcFile.createReader(testFilePath, OrcFile.readerOptions(conf).filesystem(fs));
     RecordReader rows = reader.rows();
+    batch = reader.getSchema().createRowBatch();
+    string = (BytesColumnVector) batch.cols[0];
     int idx = 0;
-    while (rows.hasNext()) {
-      Object row = rows.next(null);
-      assertEquals(new Text(String.valueOf(input[idx++])), row);
+    while (rows.nextBatch(batch)) {
+      for(int r=0; r < batch.size; ++r) {
+        assertEquals(String.valueOf(input[idx++]), string.toString(r));
+      }
     }
 
     // make sure the encoding type is correct
@@ -222,27 +244,34 @@ public class TestStringDictionary {
 
   @Test
   public void testTooManyDistinctV11AlwaysDictionary() throws Exception {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector(Text.class,
-          ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
+    TypeDescription schema = TypeDescription.createString();
 
     Writer writer = OrcFile.createWriter(
         testFilePath,
-        OrcFile.writerOptions(conf).inspector(inspector).compress(CompressionKind.NONE)
+        OrcFile.writerOptions(conf).setSchema(schema)
+            .compress(CompressionKind.NONE)
             .version(OrcFile.Version.V_0_11).bufferSize(10000));
+    VectorizedRowBatch batch = schema.createRowBatch();
+    BytesColumnVector string = (BytesColumnVector) batch.cols[0];
     for (int i = 0; i < 20000; i++) {
-      writer.addRow(new Text(String.valueOf(i)));
+      if (batch.size == batch.getMaxSize()) {
+        writer.addRowBatch(batch);
+        batch.reset();
+      }
+      string.setVal(batch.size++, String.valueOf(i).getBytes());
     }
+    writer.addRowBatch(batch);
     writer.close();
 
     Reader reader = OrcFile.createReader(testFilePath, OrcFile.readerOptions(conf).filesystem(fs));
+    batch = reader.getSchema().createRowBatch();
+    string = (BytesColumnVector) batch.cols[0];
     RecordReader rows = reader.rows();
     int idx = 0;
-    while (rows.hasNext()) {
-      Object row = rows.next(null);
-      assertEquals(new Text(String.valueOf(idx++)), row);
+    while (rows.nextBatch(batch)) {
+      for(int r=0; r < batch.size; ++r) {
+        assertEquals(String.valueOf(idx++), string.toString(r));
+      }
     }
 
     // make sure the encoding type is correct

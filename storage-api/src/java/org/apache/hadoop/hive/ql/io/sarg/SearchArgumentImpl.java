@@ -32,11 +32,11 @@ import java.util.Queue;
 import java.util.Set;
 
 /**
- * The implementation of SearchArguments.
+ * The implementation of SearchArguments. Visible for testing only.
  */
-final class SearchArgumentImpl implements SearchArgument {
+public final class SearchArgumentImpl implements SearchArgument {
 
-  static final class PredicateLeafImpl implements PredicateLeaf {
+  public static final class PredicateLeafImpl implements PredicateLeaf {
     private final Operator operator;
     private final Type type;
     private String columnName;
@@ -53,11 +53,11 @@ final class SearchArgumentImpl implements SearchArgument {
       literalList = null;
     }
 
-    PredicateLeafImpl(Operator operator,
-                      Type type,
-                      String columnName,
-                      Object literal,
-                      List<Object> literalList) {
+    public PredicateLeafImpl(Operator operator,
+                             Type type,
+                             String columnName,
+                             Object literal,
+                             List<Object> literalList) {
       this.operator = operator;
       this.type = type;
       this.columnName = columnName;

@@ -27,8 +27,6 @@ import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
-import org.apache.hadoop.hive.ql.exec.vector.udf.VectorUDFAdaptor;
-import org.apache.hadoop.hive.ql.exec.vector.udf.VectorUDFArgDesc;
 import org.apache.hadoop.hive.ql.exec.vector.udf.generic.GenericUDFIsNull;
 import org.apache.hadoop.hive.ql.exec.vector.udf.legacy.ConcatTextLongDoubleUDF;
 import org.apache.hadoop.hive.ql.exec.vector.udf.legacy.LongUDF;

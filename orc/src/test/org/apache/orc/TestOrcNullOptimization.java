@@ -15,32 +15,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.io.orc;
+package org.apache.orc;
 
 import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.List;
 import java.util.Random;
 
+import junit.framework.Assert;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.io.BooleanWritable;
-import org.apache.hadoop.io.IntWritable;
-import org.apache.orc.ColumnStatistics;
-import org.apache.orc.CompressionKind;
-import org.apache.orc.IntegerColumnStatistics;
-import org.apache.orc.OrcProto;
+import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.ListColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 
-import org.apache.orc.StringColumnStatistics;
-import org.apache.orc.StripeInformation;
+import org.apache.orc.impl.RecordReaderImpl;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -50,25 +44,58 @@ import com.google.common.collect.Lists;
 
 public class TestOrcNullOptimization {
 
-  public static class MyStruct {
-    Integer a;
-    String b;
-    Boolean c;
-    List<InnerStruct> list = new ArrayList<InnerStruct>();
-
-    public MyStruct(Integer a, String b, Boolean c, List<InnerStruct> l) {
-      this.a = a;
-      this.b = b;
-      this.c = c;
-      this.list = l;
-    }
+  TypeDescription createMyStruct() {
+    return TypeDescription.createStruct()
+        .addField("a", TypeDescription.createInt())
+        .addField("b", TypeDescription.createString())
+        .addField("c", TypeDescription.createBoolean())
+        .addField("d", TypeDescription.createList(
+            TypeDescription.createStruct()
+                .addField("z", TypeDescription.createInt())));
   }
 
-  public static class InnerStruct {
-    Integer z;
-
-    public InnerStruct(int z) {
-      this.z = z;
+  void addRow(Writer writer, VectorizedRowBatch batch,
+              Integer a, String b, Boolean c,
+              Integer... d) throws IOException {
+    if (batch.size == batch.getMaxSize()) {
+      writer.addRowBatch(batch);
+      batch.reset();
+    }
+    int row = batch.size++;
+    LongColumnVector aColumn = (LongColumnVector) batch.cols[0];
+    BytesColumnVector bColumn = (BytesColumnVector) batch.cols[1];
+    LongColumnVector cColumn = (LongColumnVector) batch.cols[2];
+    ListColumnVector dColumn = (ListColumnVector) batch.cols[3];
+    StructColumnVector dStruct = (StructColumnVector) dColumn.child;
+    LongColumnVector dInt = (LongColumnVector) dStruct.fields[0];
+    if (a == null) {
+      aColumn.noNulls = false;
+      aColumn.isNull[row] = true;
+    } else {
+      aColumn.vector[row] = a;
+    }
+    if (b == null) {
+      bColumn.noNulls = false;
+      bColumn.isNull[row] = true;
+    } else {
+      bColumn.setVal(row, b.getBytes());
+    }
+    if (c == null) {
+      cColumn.noNulls = false;
+      cColumn.isNull[row] = true;
+    } else {
+      cColumn.vector[row] = c ? 1 : 0;
+    }
+    if (d == null) {
+      dColumn.noNulls = false;
+      dColumn.isNull[row] = true;
+    } else {
+      dColumn.offsets[row] = dColumn.childCount;
+      dColumn.lengths[row] = d.length;
+      dColumn.childCount += d.length;
+      for(int e=0; e < d.length; ++e) {
+        dInt.vector[(int) dColumn.offsets[row] + e] = d[e];
+      }
     }
   }
 
@@ -93,26 +120,21 @@ public class TestOrcNullOptimization {
 
   @Test
   public void testMultiStripeWithNull() throws Exception {
-    ObjectInspector inspector;
-    synchronized (TestOrcNullOptimization.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector
-          (MyStruct.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
+    TypeDescription schema = createMyStruct();
     Writer writer = OrcFile.createWriter(testFilePath,
                                          OrcFile.writerOptions(conf)
-                                         .inspector(inspector)
+                                         .setSchema(schema)
                                          .stripeSize(100000)
                                          .compress(CompressionKind.NONE)
                                          .bufferSize(10000));
     Random rand = new Random(100);
-    writer.addRow(new MyStruct(null, null, true,
-                               Lists.newArrayList(new InnerStruct(100))));
+    VectorizedRowBatch batch = schema.createRowBatch();
+    addRow(writer, batch, null, null, true, 100);
     for (int i = 2; i < 20000; i++) {
-      writer.addRow(new MyStruct(rand.nextInt(1), "a", true, Lists
-          .newArrayList(new InnerStruct(100))));
+      addRow(writer, batch, rand.nextInt(1), "a", true, 100);
     }
-    writer.addRow(new MyStruct(null, null, true,
-                               Lists.newArrayList(new InnerStruct(100))));
+    addRow(writer, batch, null, null, true, 100);
+    writer.addRowBatch(batch);
     writer.close();
 
     Reader reader = OrcFile.createReader(testFilePath,
@@ -136,12 +158,8 @@ public class TestOrcNullOptimization {
         stats[2].toString());
 
     // check the inspectors
-    StructObjectInspector readerInspector =
-        (StructObjectInspector) reader.getObjectInspector();
-    assertEquals(ObjectInspector.Category.STRUCT,
-        readerInspector.getCategory());
-    assertEquals("struct<a:int,b:string,c:boolean,list:array<struct<z:int>>>",
-        readerInspector.getTypeName());
+    assertEquals("struct<a:int,b:string,c:boolean,d:array<struct<z:int>>>",
+        reader.getSchema().toString());
 
     RecordReader rows = reader.rows();
 
@@ -163,60 +181,64 @@ public class TestOrcNullOptimization {
     }
     assertEquals(expected, got);
 
+    batch = reader.getSchema().createRowBatch();
+    LongColumnVector aColumn = (LongColumnVector) batch.cols[0];
+    BytesColumnVector bColumn = (BytesColumnVector) batch.cols[1];
+    LongColumnVector cColumn = (LongColumnVector) batch.cols[2];
+    ListColumnVector dColumn = (ListColumnVector) batch.cols[3];
+    LongColumnVector dElements =
+        (LongColumnVector)(((StructColumnVector) dColumn.child).fields[0]);
+    assertEquals(true , rows.nextBatch(batch));
+    assertEquals(1024, batch.size);
+
     // row 1
-    OrcStruct row = (OrcStruct) rows.next(null);
-    assertNotNull(row);
-    assertNull(row.getFieldValue(0));
-    assertNull(row.getFieldValue(1));
-    assertEquals(new BooleanWritable(true), row.getFieldValue(2));
-    assertEquals(new IntWritable(100),
-        ((OrcStruct) ((ArrayList<?>) row.getFieldValue(3)).get(0)).
-                 getFieldValue(0));
+    assertEquals(true, aColumn.isNull[0]);
+    assertEquals(true, bColumn.isNull[0]);
+    assertEquals(1, cColumn.vector[0]);
+    assertEquals(0, dColumn.offsets[0]);
+    assertEquals(1, dColumn.lengths[1]);
+    assertEquals(100, dElements.vector[0]);
 
     rows.seekToRow(19998);
+    rows.nextBatch(batch);
+    assertEquals(2, batch.size);
+
     // last-1 row
-    row = (OrcStruct) rows.next(null);
-    assertNotNull(row);
-    assertNotNull(row.getFieldValue(1));
-    assertEquals(new IntWritable(0), row.getFieldValue(0));
-    assertEquals(new BooleanWritable(true), row.getFieldValue(2));
-    assertEquals(new IntWritable(100),
-        ((OrcStruct) ((ArrayList<?>) row.getFieldValue(3)).get(0)).
-                 getFieldValue(0));
+    assertEquals(0, aColumn.vector[0]);
+    assertEquals("a", bColumn.toString(0));
+    assertEquals(1, cColumn.vector[0]);
+    assertEquals(0, dColumn.offsets[0]);
+    assertEquals(1, dColumn.lengths[0]);
+    assertEquals(100, dElements.vector[0]);
 
     // last row
-    row = (OrcStruct) rows.next(row);
-    assertNotNull(row);
-    assertNull(row.getFieldValue(0));
-    assertNull(row.getFieldValue(1));
-    assertEquals(new BooleanWritable(true), row.getFieldValue(2));
-    assertEquals(new IntWritable(100),
-        ((OrcStruct) ((ArrayList<?>) row.getFieldValue(3)).get(0)).
-                 getFieldValue(0));
+    assertEquals(true, aColumn.isNull[1]);
+    assertEquals(true, bColumn.isNull[1]);
+    assertEquals(1, cColumn.vector[1]);
+    assertEquals(1, dColumn.offsets[1]);
+    assertEquals(1, dColumn.lengths[1]);
+    assertEquals(100, dElements.vector[1]);
 
+    assertEquals(false, rows.nextBatch(batch));
     rows.close();
   }
 
   @Test
   public void testMultiStripeWithoutNull() throws Exception {
-    ObjectInspector inspector;
-    synchronized (TestOrcNullOptimization.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector
-          (MyStruct.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
+    TypeDescription schema = createMyStruct();
     Writer writer = OrcFile.createWriter(testFilePath,
                                          OrcFile.writerOptions(conf)
-                                         .inspector(inspector)
+                                         .setSchema(schema)
                                          .stripeSize(100000)
                                          .compress(CompressionKind.NONE)
                                          .bufferSize(10000));
     Random rand = new Random(100);
+    VectorizedRowBatch batch = schema.createRowBatch();
     for (int i = 1; i < 20000; i++) {
-      writer.addRow(new MyStruct(rand.nextInt(1), "a", true, Lists
-          .newArrayList(new InnerStruct(100))));
+      addRow(writer, batch, rand.nextInt(1), "a", true, 100);
     }
-    writer.addRow(new MyStruct(0, "b", true,
-                               Lists.newArrayList(new InnerStruct(100))));
+    addRow(writer, batch, 0, "b", true, 100);
+    writer.addRowBatch(batch);
     writer.close();
 
     Reader reader = OrcFile.createReader(testFilePath,
@@ -240,12 +262,8 @@ public class TestOrcNullOptimization {
         stats[2].toString());
 
     // check the inspectors
-    StructObjectInspector readerInspector =
-        (StructObjectInspector) reader.getObjectInspector();
-    assertEquals(ObjectInspector.Category.STRUCT,
-        readerInspector.getCategory());
-    assertEquals("struct<a:int,b:string,c:boolean,list:array<struct<z:int>>>",
-        readerInspector.getTypeName());
+    Assert.assertEquals("struct<a:int,b:string,c:boolean,d:array<struct<z:int>>>",
+        reader.getSchema().toString());
 
     RecordReader rows = reader.rows();
 
@@ -266,58 +284,54 @@ public class TestOrcNullOptimization {
     assertEquals(expected, got);
 
     rows.seekToRow(19998);
+
+    batch = reader.getSchema().createRowBatch();
+    LongColumnVector aColumn = (LongColumnVector) batch.cols[0];
+    BytesColumnVector bColumn = (BytesColumnVector) batch.cols[1];
+    LongColumnVector cColumn = (LongColumnVector) batch.cols[2];
+    ListColumnVector dColumn = (ListColumnVector) batch.cols[3];
+    LongColumnVector dElements =
+        (LongColumnVector)(((StructColumnVector) dColumn.child).fields[0]);
+
+    assertEquals(true, rows.nextBatch(batch));
+    assertEquals(2, batch.size);
+
     // last-1 row
-    OrcStruct row = (OrcStruct) rows.next(null);
-    assertNotNull(row);
-    assertNotNull(row.getFieldValue(1));
-    assertEquals(new IntWritable(0), row.getFieldValue(0));
-    assertEquals("a", row.getFieldValue(1).toString());
-    assertEquals(new BooleanWritable(true), row.getFieldValue(2));
-    assertEquals(new IntWritable(100),
-                 ((OrcStruct) ((ArrayList<?>) row.getFieldValue(3)).get(0)).
-                   getFieldValue(0));
+    assertEquals(0, aColumn.vector[0]);
+    assertEquals("a", bColumn.toString(0));
+    assertEquals(1, cColumn.vector[0]);
+    assertEquals(0, dColumn.offsets[0]);
+    assertEquals(1, dColumn.lengths[0]);
+    assertEquals(100, dElements.vector[0]);
 
     // last row
-    row = (OrcStruct) rows.next(row);
-    assertNotNull(row);
-    assertNotNull(row.getFieldValue(0));
-    assertNotNull(row.getFieldValue(1));
-    assertEquals("b", row.getFieldValue(1).toString());
-    assertEquals(new BooleanWritable(true), row.getFieldValue(2));
-    assertEquals(new IntWritable(100),
-                 ((OrcStruct) ((ArrayList<?>) row.getFieldValue(3)).get(0)).
-                   getFieldValue(0));
+    assertEquals(0, aColumn.vector[1]);
+    assertEquals("b", bColumn.toString(1));
+    assertEquals(1, cColumn.vector[1]);
+    assertEquals(1, dColumn.offsets[1]);
+    assertEquals(1, dColumn.lengths[1]);
+    assertEquals(100, dElements.vector[1]);
     rows.close();
   }
 
   @Test
   public void testColumnsWithNullAndCompression() throws Exception {
-    ObjectInspector inspector;
-    synchronized (TestOrcNullOptimization.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector
-          (MyStruct.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
+    TypeDescription schema = createMyStruct();
     Writer writer = OrcFile.createWriter(testFilePath,
                                          OrcFile.writerOptions(conf)
-                                         .inspector(inspector)
+                                         .setSchema(schema)
                                          .stripeSize(100000)
                                          .bufferSize(10000));
-    writer.addRow(new MyStruct(3, "a", true,
-                               Lists.newArrayList(new InnerStruct(100))));
-    writer.addRow(new MyStruct(null, "b", true,
-                               Lists.newArrayList(new InnerStruct(100))));
-    writer.addRow(new MyStruct(3, null, false,
-                               Lists.newArrayList(new InnerStruct(100))));
-    writer.addRow(new MyStruct(3, "d", true,
-                               Lists.newArrayList(new InnerStruct(100))));
-    writer.addRow(new MyStruct(2, "e", true,
-                               Lists.newArrayList(new InnerStruct(100))));
-    writer.addRow(new MyStruct(2, "f", true,
-                               Lists.newArrayList(new InnerStruct(100))));
-    writer.addRow(new MyStruct(2, "g", true,
-                               Lists.newArrayList(new InnerStruct(100))));
-    writer.addRow(new MyStruct(2, "h", true,
-                               Lists.newArrayList(new InnerStruct(100))));
+    VectorizedRowBatch batch = schema.createRowBatch();
+    addRow(writer, batch, 3, "a", true, 100);
+    addRow(writer, batch, null, "b", true, 100);
+    addRow(writer, batch, 3, null, false, 100);
+    addRow(writer, batch, 3, "d", true, 100);
+    addRow(writer, batch, 2, "e", true, 100);
+    addRow(writer, batch, 2, "f", true, 100);
+    addRow(writer, batch, 2, "g", true, 100);
+    addRow(writer, batch, 2, "h", true, 100);
+    writer.addRowBatch(batch);
     writer.close();
 
     Reader reader = OrcFile.createReader(testFilePath,
@@ -341,12 +355,15 @@ public class TestOrcNullOptimization {
         stats[2].toString());
 
     // check the inspectors
-    StructObjectInspector readerInspector =
-        (StructObjectInspector) reader.getObjectInspector();
-    assertEquals(ObjectInspector.Category.STRUCT,
-        readerInspector.getCategory());
-    assertEquals("struct<a:int,b:string,c:boolean,list:array<struct<z:int>>>",
-        readerInspector.getTypeName());
+    batch = reader.getSchema().createRowBatch();
+    LongColumnVector aColumn = (LongColumnVector) batch.cols[0];
+    BytesColumnVector bColumn = (BytesColumnVector) batch.cols[1];
+    LongColumnVector cColumn = (LongColumnVector) batch.cols[2];
+    ListColumnVector dColumn = (ListColumnVector) batch.cols[3];
+    LongColumnVector dElements =
+        (LongColumnVector)(((StructColumnVector) dColumn.child).fields[0]);
+    Assert.assertEquals("struct<a:int,b:string,c:boolean,d:array<struct<z:int>>>",
+        reader.getSchema().toString());
 
     RecordReader rows = reader.rows();
     // only the last strip will have PRESENT stream
@@ -366,35 +383,33 @@ public class TestOrcNullOptimization {
     }
     assertEquals(expected, got);
 
+    assertEquals(true, rows.nextBatch(batch));
+    assertEquals(8, batch.size);
+
     // row 1
-    OrcStruct row = (OrcStruct) rows.next(null);
-    assertNotNull(row);
-    assertEquals(new IntWritable(3), row.getFieldValue(0));
-    assertEquals("a", row.getFieldValue(1).toString());
-    assertEquals(new BooleanWritable(true), row.getFieldValue(2));
-    assertEquals(new IntWritable(100),
-        ((OrcStruct) ((ArrayList<?>) row.getFieldValue(3)).get(0)).
-                 getFieldValue(0));
+    assertEquals(3, aColumn.vector[0]);
+    assertEquals("a", bColumn.toString(0));
+    assertEquals(1, cColumn.vector[0]);
+    assertEquals(0, dColumn.offsets[0]);
+    assertEquals(1, dColumn.lengths[0]);
+    assertEquals(100, dElements.vector[0]);
 
     // row 2
-    row = (OrcStruct) rows.next(row);
-    assertNotNull(row);
-    assertNull(row.getFieldValue(0));
-    assertEquals("b", row.getFieldValue(1).toString());
-    assertEquals(new BooleanWritable(true), row.getFieldValue(2));
-    assertEquals(new IntWritable(100),
-        ((OrcStruct) ((ArrayList<?>) row.getFieldValue(3)).get(0)).
-                 getFieldValue(0));
+    assertEquals(true, aColumn.isNull[1]);
+    assertEquals("b", bColumn.toString(1));
+    assertEquals(1, cColumn.vector[1]);
+    assertEquals(1, dColumn.offsets[1]);
+    assertEquals(1, dColumn.lengths[1]);
+    assertEquals(100, dElements.vector[1]);
 
     // row 3
-    row = (OrcStruct) rows.next(row);
-    assertNotNull(row);
-    assertNull(row.getFieldValue(1));
-    assertEquals(new IntWritable(3), row.getFieldValue(0));
-    assertEquals(new BooleanWritable(false), row.getFieldValue(2));
-    assertEquals(new IntWritable(100),
-                 ((OrcStruct) ((ArrayList<?>) row.getFieldValue(3)).get(0)).
-                 getFieldValue(0));
+    assertEquals(3, aColumn.vector[2]);
+    assertEquals(true, bColumn.isNull[2]);
+    assertEquals(0, cColumn.vector[2]);
+    assertEquals(2, dColumn.offsets[2]);
+    assertEquals(1, dColumn.lengths[2]);
+    assertEquals(100, dElements.vector[2]);
+
     rows.close();
   }
 }

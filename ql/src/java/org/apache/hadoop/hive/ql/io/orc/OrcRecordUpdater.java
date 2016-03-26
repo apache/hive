@@ -25,6 +25,8 @@ import java.nio.charset.CharsetDecoder;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.orc.impl.AcidStats;
+import org.apache.orc.impl.OrcAcidUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -55,7 +57,6 @@ public class OrcRecordUpdater implements RecordUpdater {
 
   public static final String ACID_KEY_INDEX_NAME = "hive.acid.key.index";
   public static final String ACID_FORMAT = "_orc_acid_version";
-  public static final String ACID_STATS = "hive.acid.stats";
   public static final int ORC_ACID_VERSION = 0;
 
 
@@ -101,46 +102,6 @@ public class OrcRecordUpdater implements RecordUpdater {
   private LongObjectInspector rowIdInspector; // OI for the long row id inside the recordIdentifier
   private LongObjectInspector origTxnInspector; // OI for the original txn inside the record
   // identifer
-
-  static class AcidStats {
-    long inserts;
-    long updates;
-    long deletes;
-
-    AcidStats() {
-      // nothing
-    }
-
-    AcidStats(String serialized) {
-      String[] parts = serialized.split(",");
-      inserts = Long.parseLong(parts[0]);
-      updates = Long.parseLong(parts[1]);
-      deletes = Long.parseLong(parts[2]);
-    }
-
-    String serialize() {
-      StringBuilder builder = new StringBuilder();
-      builder.append(inserts);
-      builder.append(",");
-      builder.append(updates);
-      builder.append(",");
-      builder.append(deletes);
-      return builder.toString();
-    }
-
-    @Override
-    public String toString() {
-      StringBuilder builder = new StringBuilder();
-      builder.append(" inserts: ").append(inserts);
-      builder.append(" updates: ").append(updates);
-      builder.append(" deletes: ").append(deletes);
-      return builder.toString();
-    }
-  }
-
-  public static Path getSideFile(Path main) {
-    return new Path(main + AcidUtils.DELTA_SIDE_FILE_SUFFIX);
-  }
 
   static int getOperation(OrcStruct struct) {
     return ((IntWritable) struct.getFieldValue(OPERATION)).get();
@@ -237,7 +198,7 @@ public class OrcRecordUpdater implements RecordUpdater {
     }
     if (options.getMinimumTransactionId() != options.getMaximumTransactionId()
         && !options.isWritingBase()){
-      flushLengths = fs.create(getSideFile(this.path), true, 8,
+      flushLengths = fs.create(OrcAcidUtils.getSideFile(this.path), true, 8,
           options.getReporter());
     } else {
       flushLengths = null;
@@ -297,7 +258,7 @@ public class OrcRecordUpdater implements RecordUpdater {
       }
       Reader reader = OrcFile.createReader(matchingBucket, OrcFile.readerOptions(options.getConfiguration()));
       //no close() on Reader?!
-      AcidStats acidStats = parseAcidStats(reader);
+      AcidStats acidStats = OrcAcidUtils.parseAcidStats(reader);
       if(acidStats.inserts > 0) {
         return acidStats.inserts;
       }
@@ -412,7 +373,7 @@ public class OrcRecordUpdater implements RecordUpdater {
     }
     if (flushLengths != null) {
       flushLengths.close();
-      fs.delete(getSideFile(path), false);
+      fs.delete(OrcAcidUtils.getSideFile(path), false);
     }
     writer = null;
   }
@@ -456,26 +417,6 @@ public class OrcRecordUpdater implements RecordUpdater {
     }
     return result;
   }
-  /**
-   * {@link KeyIndexBuilder} creates these
-   */
-  static AcidStats parseAcidStats(Reader reader) {
-    if (reader.hasMetadataValue(OrcRecordUpdater.ACID_STATS)) {
-      String statsSerialized;
-      try {
-        ByteBuffer val =
-            reader.getMetadataValue(OrcRecordUpdater.ACID_STATS)
-                .duplicate();
-        statsSerialized = utf8Decoder.decode(val).toString();
-      } catch (CharacterCodingException e) {
-        throw new IllegalArgumentException("Bad string encoding for " +
-            OrcRecordUpdater.ACID_STATS, e);
-      }
-      return new AcidStats(statsSerialized);
-    } else {
-      return null;
-    }
-  }
 
   static class KeyIndexBuilder implements OrcFile.WriterCallback {
     StringBuilder lastKey = new StringBuilder();
@@ -500,7 +441,7 @@ public class OrcRecordUpdater implements RecordUpdater {
                                ) throws IOException {
       context.getWriter().addUserMetadata(ACID_KEY_INDEX_NAME,
           UTF8.encode(lastKey.toString()));
-      context.getWriter().addUserMetadata(ACID_STATS,
+      context.getWriter().addUserMetadata(OrcAcidUtils.ACID_STATS,
           UTF8.encode(acidStats.serialize()));
     }
 

@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.io.orc;
+package org.apache.orc;
 
 import static org.junit.Assert.assertEquals;
 
@@ -28,10 +28,8 @@ import java.util.List;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.io.LongWritable;
-import org.apache.orc.CompressionKind;
+import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -80,11 +78,7 @@ public class TestUnrolledBitPack {
 
   @Test
   public void testBitPacking() throws Exception {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector(Long.class,
-          ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
+    TypeDescription schema = TypeDescription.createLong();
 
     long[] inp = new long[] { val, 0, val, val, 0, val, 0, val, val, 0, val, 0, val, val, 0, 0,
         val, val, 0, val, 0, 0, val, 0, val, 0, val, 0, 0, val, 0, val, 0, val, 0, 0, val, 0, val,
@@ -95,19 +89,25 @@ public class TestUnrolledBitPack {
 
     Writer writer = OrcFile.createWriter(
         testFilePath,
-        OrcFile.writerOptions(conf).inspector(inspector).stripeSize(100000)
+        OrcFile.writerOptions(conf).setSchema(schema).stripeSize(100000)
             .compress(CompressionKind.NONE).bufferSize(10000));
+    VectorizedRowBatch batch = schema.createRowBatch();
     for (Long l : input) {
-      writer.addRow(l);
+      int row = batch.size++;
+      ((LongColumnVector) batch.cols[0]).vector[row] = l;
     }
+    writer.addRowBatch(batch);
     writer.close();
 
     Reader reader = OrcFile.createReader(testFilePath, OrcFile.readerOptions(conf).filesystem(fs));
     RecordReader rows = reader.rows();
+    batch = reader.getSchema().createRowBatch();
     int idx = 0;
-    while (rows.hasNext()) {
-      Object row = rows.next(null);
-      assertEquals(input.get(idx++).longValue(), ((LongWritable) row).get());
+    while (rows.nextBatch(batch)) {
+      for(int r=0; r < batch.size; ++r) {
+        assertEquals(input.get(idx++).longValue(),
+            ((LongColumnVector) batch.cols[0]).vector[r]);
+      }
     }
   }
 

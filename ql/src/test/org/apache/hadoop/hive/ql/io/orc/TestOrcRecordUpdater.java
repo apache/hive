@@ -40,6 +40,8 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.Reporter;
+import org.apache.orc.impl.OrcAcidUtils;
+import org.apache.orc.tools.FileDump;
 import org.junit.Test;
 
 public class TestOrcRecordUpdater {
@@ -115,7 +117,7 @@ public class TestOrcRecordUpdater {
     assertEquals(5L, updater.getStats().getRowCount());
 
     Path bucketPath = AcidUtils.createFilename(root, options);
-    Path sidePath = OrcRecordUpdater.getSideFile(bucketPath);
+    Path sidePath = OrcAcidUtils.getSideFile(bucketPath);
     DataInputStream side = fs.open(sidePath);
 
     // read the stopping point for the first flush and make sure we only see

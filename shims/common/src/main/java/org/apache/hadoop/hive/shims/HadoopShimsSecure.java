@@ -392,33 +392,4 @@ public abstract class HadoopShimsSecure implements HadoopShims {
 
   @Override
   abstract public void addDelegationTokens(FileSystem fs, Credentials cred, String uname) throws IOException;
-
-  private final class BasicTextReaderShim implements TextReaderShim {
-    private final InputStream in;
-
-    public BasicTextReaderShim(InputStream in) {
-      this.in = in;
-    }
-
-    @Override
-    public void read(Text txt, int len) throws IOException {
-      int offset = 0;
-      byte[] bytes = new byte[len];
-      while (len > 0) {
-        int written = in.read(bytes, offset, len);
-        if (written < 0) {
-          throw new EOFException("Can't finish read from " + in + " read "
-              + (offset) + " bytes out of " + bytes.length);
-        }
-        len -= written;
-        offset += written;
-      }
-      txt.set(bytes);
-    }
-  }
-
-  @Override
-  public TextReaderShim getTextReaderShim(InputStream in) throws IOException {
-    return new BasicTextReaderShim(in);
-  }
 }

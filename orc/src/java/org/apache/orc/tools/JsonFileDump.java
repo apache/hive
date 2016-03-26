@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.io.orc;
+package org.apache.orc.tools;
 
 import java.io.IOException;
 import java.util.List;
@@ -24,6 +24,11 @@ import java.util.Set;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.orc.CompressionKind;
+import org.apache.orc.Reader;
+import org.apache.orc.impl.AcidStats;
+import org.apache.orc.impl.OrcAcidUtils;
+import org.apache.orc.impl.RecordReaderImpl;
 import org.codehaus.jettison.json.JSONArray;
 import org.apache.orc.BloomFilterIO;
 import org.apache.orc.BinaryColumnStatistics;
@@ -80,11 +85,11 @@ public class JsonFileDump {
         writer.key("writerVersion").value(reader.getWriterVersion());
         RecordReaderImpl rows = (RecordReaderImpl) reader.rows();
         writer.key("numberOfRows").value(reader.getNumberOfRows());
-        writer.key("compression").value(reader.getCompression());
-        if (reader.getCompression() != CompressionKind.NONE) {
+        writer.key("compression").value(reader.getCompressionKind());
+        if (reader.getCompressionKind() != CompressionKind.NONE) {
           writer.key("compressionBufferSize").value(reader.getCompressionSize());
         }
-        writer.key("schemaString").value(reader.getObjectInspector().getTypeName());
+        writer.key("schemaString").value(reader.getSchema().toString());
         writer.key("schema").array();
         writeSchema(writer, reader.getTypes());
         writer.endArray();
@@ -191,7 +196,7 @@ public class JsonFileDump {
         writer.key("fileLength").value(fileLen);
         writer.key("paddingLength").value(paddedBytes);
         writer.key("paddingRatio").value(percentPadding);
-        OrcRecordUpdater.AcidStats acidStats = OrcRecordUpdater.parseAcidStats(reader);
+        AcidStats acidStats = OrcAcidUtils.parseAcidStats(reader);
         if (acidStats != null) {
           writer.key("numInserts").value(acidStats.inserts);
           writer.key("numDeletes").value(acidStats.deletes);

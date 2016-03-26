@@ -29,11 +29,11 @@ import org.apache.hadoop.hive.llap.cache.LlapCacheableBuffer;
 import org.apache.hadoop.hive.ql.io.SyntheticFileId;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.Reader;
-import org.apache.hadoop.hive.ql.io.orc.ReaderImpl.StripeInformationImpl;
 import org.apache.orc.CompressionKind;
 import org.apache.orc.FileMetadata;
 import org.apache.orc.OrcProto;
 import org.apache.orc.StripeInformation;
+import org.apache.orc.impl.ReaderImpl;
 
 /** ORC file metadata. Currently contains some duplicate info due to how different parts
  * of ORC use different info. Ideally we would get rid of protobuf structs in code beyond reading,
@@ -72,7 +72,7 @@ public final class OrcFileMetadata extends LlapCacheableBuffer implements FileMe
   @VisibleForTesting
   public static OrcFileMetadata createDummy(Object fileKey) {
     OrcFileMetadata ofm = new OrcFileMetadata(fileKey);
-    ofm.stripes.add(new StripeInformationImpl(
+    ofm.stripes.add(new ReaderImpl.StripeInformationImpl(
         OrcProto.StripeInformation.getDefaultInstance()));
     ofm.fileStats.add(OrcProto.ColumnStatistics.getDefaultInstance());
     ofm.stripeStats.add(OrcProto.StripeStatistics.newBuilder().addColStats(createStatsDummy()).build());

@@ -17,7 +17,7 @@ THISSERVICE=orcfiledump
 export SERVICE_LIST="${SERVICE_LIST}${THISSERVICE} "
 
 orcfiledump () {
-  CLASS=org.apache.hadoop.hive.ql.io.orc.FileDump
+  CLASS=org.apache.orc.tools.FileDump
   HIVE_OPTS=''
   execHiveCmd $CLASS "$@"
 }

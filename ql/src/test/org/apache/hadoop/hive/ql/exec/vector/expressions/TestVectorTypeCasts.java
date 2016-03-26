@@ -33,7 +33,6 @@ import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
 
-import org.apache.hadoop.hive.common.type.Decimal128;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.RandomTypeUtil;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
@@ -44,6 +43,7 @@ import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.*;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.*;
+import org.apache.hadoop.hive.ql.util.TimestampUtils;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
 import org.junit.Test;
@@ -91,8 +91,8 @@ public class TestVectorTypeCasts {
     b.cols[0].noNulls = true;
     VectorExpression expr = new CastDoubleToTimestamp(0, 1);
     expr.evaluate(b);
-    Assert.assertEquals(0.0, TimestampWritable.getDouble(resultV.asScratchTimestamp(3)));
-    Assert.assertEquals(0.5d, TimestampWritable.getDouble(resultV.asScratchTimestamp(4)));
+    Assert.assertEquals(0.0, TimestampUtils.getDouble(resultV.asScratchTimestamp(3)));
+    Assert.assertEquals(0.5d, TimestampUtils.getDouble(resultV.asScratchTimestamp(4)));
   }
 
   @Test
@@ -152,7 +152,7 @@ public class TestVectorTypeCasts {
     expr.evaluate(b);
     for (int i = 0; i < doubleValues.length; i++) {
       double actual = resultV.vector[i];
-      double doubleValue = TimestampWritable.getDouble(inV.asScratchTimestamp(i));
+      double doubleValue = TimestampUtils.getDouble(inV.asScratchTimestamp(i));
       assertEquals(actual, doubleValue, 0.000000001F);
     }
   }
@@ -382,7 +382,7 @@ public class TestVectorTypeCasts {
     TimestampColumnVector r = (TimestampColumnVector) b.cols[1];
     for (int i = 0; i < doubleValues.length; i++) {
       Timestamp timestamp = r.asScratchTimestamp(i);
-      double asDouble = TimestampWritable.getDouble(timestamp);
+      double asDouble = TimestampUtils.getDouble(timestamp);
       double expectedDouble = doubleValues[i];
       if (expectedDouble != asDouble) {
         assertTrue(false);

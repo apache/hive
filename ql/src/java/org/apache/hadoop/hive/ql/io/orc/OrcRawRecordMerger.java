@@ -18,10 +18,7 @@
 package org.apache.hadoop.hive.ql.io.orc;
 
 import java.io.IOException;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -29,22 +26,20 @@ import java.util.TreeMap;
 import org.apache.orc.OrcUtils;
 import org.apache.orc.StripeInformation;
 import org.apache.orc.TypeDescription;
+import org.apache.orc.impl.AcidStats;
+import org.apache.orc.impl.OrcAcidUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidTxnList;
-import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -494,7 +489,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
         Path deltaFile = AcidUtils.createBucketFile(delta, bucket);
         AcidUtils.ParsedDelta deltaDir = AcidUtils.parsedDelta(delta);
         FileSystem fs = deltaFile.getFileSystem(conf);
-        long length = getLastFlushLength(fs, deltaFile);
+        long length = OrcAcidUtils.getLastFlushLength(fs, deltaFile);
         if (length != -1 && fs.exists(deltaFile)) {
           Reader deltaReader = OrcFile.createReader(deltaFile,
               OrcFile.readerOptions(conf).maxLength(length));
@@ -504,7 +499,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
             // it can produce wrong results (if the latest valid version of the record is filtered out by
             // the sarg) or ArrayOutOfBounds errors (when the sarg is applied to a delete record)
             // unless the delta only has insert events
-            OrcRecordUpdater.AcidStats acidStats = OrcRecordUpdater.parseAcidStats(deltaReader);
+            AcidStats acidStats = OrcAcidUtils.parseAcidStats(deltaReader);
             if(acidStats.deletes > 0 || acidStats.updates > 0) {
               deltaEventOptions = eventOptions.clone().searchArgument(null, null);
             }
@@ -533,28 +528,6 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
       }
       // get the number of columns in the user's rows
       columns = primary.getColumns();
-    }
-  }
-
-  /**
-   * Read the side file to get the last flush length.
-   * @param fs the file system to use
-   * @param deltaFile the path of the delta file
-   * @return the maximum size of the file to use
-   * @throws IOException
-   */
-  static long getLastFlushLength(FileSystem fs,
-                                         Path deltaFile) throws IOException {
-    Path lengths = OrcRecordUpdater.getSideFile(deltaFile);
-    long result = Long.MAX_VALUE;
-    try (FSDataInputStream stream = fs.open(lengths)) {
-      result = -1;
-      while (stream.available() > 0) {
-        result = stream.readLong();
-      }
-      return result;
-    } catch (IOException ioe) {
-      return result;
     }
   }
 
