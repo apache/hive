@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.metastore.hbase;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -88,7 +90,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 /**
  * Utility functions
  */
-class HBaseUtils {
+public class HBaseUtils {
 
   final static Charset ENCODING = StandardCharsets.UTF_8;
   final static char KEY_SEPARATOR = '\u0001';
@@ -1420,5 +1422,9 @@ class HBaseUtils {
     b[6] = (byte)(v >>>  8);
     b[7] = (byte)(v >>>  0);
     return b;
+  }
+
+  public static double getDoubleValue(Decimal decimal) {
+    return new BigDecimal(new BigInteger(decimal.getUnscaled()), decimal.getScale()).doubleValue();
   }
 }

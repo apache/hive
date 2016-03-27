@@ -19,7 +19,6 @@
 
 package org.apache.hadoop.hive.metastore.hbase.stats;
 
-import org.apache.hadoop.hive.metastore.NumDistinctValueEstimator;
 import org.apache.hadoop.hive.metastore.api.BinaryColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
@@ -35,7 +34,7 @@ public class ColumnStatsAggregatorFactory {
   private ColumnStatsAggregatorFactory() {
   }
 
-  public static ColumnStatsAggregator getColumnStatsAggregator(_Fields type, int numBitVectors) {
+  public static ColumnStatsAggregator getColumnStatsAggregator(_Fields type, int numBitVectors, boolean useDensityFunctionForNDVEstimation) {
     ColumnStatsAggregator agg;
     switch (type) {
     case BOOLEAN_STATS:
@@ -59,9 +58,8 @@ public class ColumnStatsAggregatorFactory {
     default:
       throw new RuntimeException("Woh, bad.  Unknown stats type " + type.toString());
     }
-    if (numBitVectors > 0) {
-      agg.ndvEstimator = new NumDistinctValueEstimator(numBitVectors);
-    }
+    agg.numBitVectors = numBitVectors;
+    agg.useDensityFunctionForNDVEstimation = useDensityFunctionForNDVEstimation;
     return agg;
   }
 

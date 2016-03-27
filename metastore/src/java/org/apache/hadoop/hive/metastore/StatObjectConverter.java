@@ -650,7 +650,7 @@ public class StatObjectConverter {
     }
   }
 
-  private static Decimal createThriftDecimal(String s) {
+  public static Decimal createThriftDecimal(String s) {
     BigDecimal d = new BigDecimal(s);
     return new Decimal(ByteBuffer.wrap(d.unscaledValue().toByteArray()), (short)d.scale());
   }

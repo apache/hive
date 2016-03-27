@@ -156,10 +156,8 @@ public class TestHBaseAggregateStatsCacheWithBitVector {
         Assert.assertEquals(-20.12, dcsd.getLowValue(), 0.01);
         Assert.assertEquals(60, dcsd.getNumNulls());
         Assert.assertEquals(5, dcsd.getNumDVs());
-        Assert
-            .assertEquals(
-                "{0, 1, 4, 5, 7}{0, 1}{0, 1, 2, 4}{0, 1, 2, 4}{0, 1, 2}{0, 2}{0, 1, 3, 4}{0, 1, 2, 3, 4}{0, 1, 4}{0, 1, 3, 4, 6}{0, 2}{0, 1, 3, 8}{0, 2, 3}{0, 2}{0, 1, 9}{0, 1, 4}",
-                dcsd.getBitVectors());
+        // we do not store the bitvector for the aggrStats.
+        // we can store that if it is necessary in the future.
       }
     };
 

@@ -19,26 +19,87 @@
 
 package org.apache.hadoop.hive.metastore.hbase.stats;
 
+import java.util.List;
+
 import org.apache.hadoop.hive.metastore.NumDistinctValueEstimator;
+import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
 
 public class StringColumnStatsAggregator extends ColumnStatsAggregator {
 
   @Override
-  public void aggregate(ColumnStatisticsObj aggregateColStats, ColumnStatisticsObj newColStats) {
-    StringColumnStatsData aggregateData = aggregateColStats.getStatsData().getStringStats();
-    StringColumnStatsData newData = newColStats.getStatsData().getStringStats();
-    aggregateData.setMaxColLen(Math.max(aggregateData.getMaxColLen(), newData.getMaxColLen()));
-    aggregateData.setAvgColLen(Math.max(aggregateData.getAvgColLen(), newData.getAvgColLen()));
-    aggregateData.setNumNulls(aggregateData.getNumNulls() + newData.getNumNulls());
-    if (ndvEstimator == null || !newData.isSetBitVectors() || newData.getBitVectors().length() == 0) {
-      aggregateData.setNumDVs(Math.max(aggregateData.getNumDVs(), newData.getNumDVs()));
-    } else {
-      ndvEstimator.mergeEstimators(new NumDistinctValueEstimator(newData.getBitVectors(),
-          ndvEstimator.getnumBitVectors()));
-      aggregateData.setNumDVs(ndvEstimator.estimateNumDistinctValues());
-      aggregateData.setBitVectors(ndvEstimator.serialize().toString());
+  public ColumnStatisticsObj aggregate(String colName, List<String> partNames,
+      List<ColumnStatistics> css) throws MetaException {
+    ColumnStatisticsObj statsObj = null;
+
+    // check if all the ColumnStatisticsObjs contain stats and all the ndv are
+    // bitvectors. Only when both of the conditions are true, we merge bit
+    // vectors. Otherwise, just use the maximum function.
+    boolean doAllPartitionContainStats = partNames.size() == css.size();
+    boolean isNDVBitVectorSet = true;
+    String colType = null;
+    for (ColumnStatistics cs : css) {
+      if (cs.getStatsObjSize() != 1) {
+        throw new MetaException(
+            "The number of columns should be exactly one in aggrStats, but found "
+                + cs.getStatsObjSize());
+      }
+      ColumnStatisticsObj cso = cs.getStatsObjIterator().next();
+      if (statsObj == null) {
+        colType = cso.getColType();
+        statsObj = ColumnStatsAggregatorFactory.newColumnStaticsObj(colName, colType, cso
+            .getStatsData().getSetField());
+      }
+      if (numBitVectors <= 0 || !cso.getStatsData().getStringStats().isSetBitVectors()
+          || cso.getStatsData().getStringStats().getBitVectors().length() == 0) {
+        isNDVBitVectorSet = false;
+        break;
+      }
     }
+    ColumnStatisticsData columnStatisticsData = new ColumnStatisticsData();
+    if (doAllPartitionContainStats && isNDVBitVectorSet) {
+      StringColumnStatsData aggregateData = null;
+      NumDistinctValueEstimator ndvEstimator = new NumDistinctValueEstimator(numBitVectors);
+      for (ColumnStatistics cs : css) {
+        ColumnStatisticsObj cso = cs.getStatsObjIterator().next();
+        StringColumnStatsData newData = cso.getStatsData().getStringStats();
+        ndvEstimator.mergeEstimators(new NumDistinctValueEstimator(newData.getBitVectors(),
+            ndvEstimator.getnumBitVectors()));
+        if (aggregateData == null) {
+          aggregateData = newData.deepCopy();
+        } else {
+          aggregateData
+              .setMaxColLen(Math.max(aggregateData.getMaxColLen(), newData.getMaxColLen()));
+          aggregateData
+              .setAvgColLen(Math.max(aggregateData.getAvgColLen(), newData.getAvgColLen()));
+          aggregateData.setNumNulls(aggregateData.getNumNulls() + newData.getNumNulls());
+        }
+      }
+      aggregateData.setNumDVs(ndvEstimator.estimateNumDistinctValues());
+      columnStatisticsData.setStringStats(aggregateData);
+    } else {
+      StringColumnStatsData aggregateData = null;
+      for (ColumnStatistics cs : css) {
+        ColumnStatisticsObj cso = cs.getStatsObjIterator().next();
+        StringColumnStatsData newData = cso.getStatsData().getStringStats();
+        if (aggregateData == null) {
+          aggregateData = newData.deepCopy();
+        } else {
+          aggregateData
+              .setMaxColLen(Math.max(aggregateData.getMaxColLen(), newData.getMaxColLen()));
+          aggregateData
+              .setAvgColLen(Math.max(aggregateData.getAvgColLen(), newData.getAvgColLen()));
+          aggregateData.setNumNulls(aggregateData.getNumNulls() + newData.getNumNulls());
+          aggregateData.setNumDVs(Math.max(aggregateData.getNumDVs(), newData.getNumDVs()));
+        }
+      }
+      columnStatisticsData.setStringStats(aggregateData);
+    }
+    statsObj.setStatsData(columnStatisticsData);
+    return statsObj;
   }
+
 }
