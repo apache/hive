@@ -280,6 +280,24 @@ public abstract class TestHiveMetaStore extends TestCase {
       }
       assertTrue("Partitions are not same", part.equals(part_get));
 
+      // check null cols schemas for a partition
+      List<String> vals6 = makeVals("2016-02-22 00:00:00", "16");
+      Partition part6 = makePartitionObject(dbName, tblName, vals6, tbl, "/part5");
+      part6.getSd().setCols(null);
+      LOG.info("Creating partition will null field schema");
+      client.add_partition(part6);
+      LOG.info("Listing all partitions for table " + dbName + "." + tblName);
+      final List<Partition> partitions = client.listPartitions(dbName, tblName, (short) -1);
+      boolean foundPart = false;
+      for (Partition p : partitions) {
+        if (p.getValues().equals(vals6)) {
+          assertNull(p.getSd().getCols());
+          LOG.info("Found partition " + p + " having null field schema");
+          foundPart = true;
+        }
+      }
+      assertTrue(foundPart);
+
       String partName = "ds=" + FileUtils.escapePathName("2008-07-01 14:13:12") + "/hr=14";
       String part2Name = "ds=" + FileUtils.escapePathName("2008-07-01 14:13:12") + "/hr=15";
       String part3Name = "ds=" + FileUtils.escapePathName("2008-07-02 14:13:12") + "/hr=15";
@@ -313,7 +331,7 @@ public abstract class TestHiveMetaStore extends TestCase {
       partialVals.clear();
       partialVals.add("");
       partialNames = client.listPartitionNames(dbName, tblName, partialVals, (short) -1);
-      assertTrue("Should have returned 4 partition names", partialNames.size() == 4);
+      assertTrue("Should have returned 5 partition names", partialNames.size() == 5);
       assertTrue("Not all part names returned", partialNames.containsAll(partNames));
 
       // Test partition listing with a partial spec - hr is specified but ds is not
