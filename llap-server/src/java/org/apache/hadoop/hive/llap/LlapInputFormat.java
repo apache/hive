@@ -23,13 +23,18 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import com.google.common.collect.Lists;
 import com.google.protobuf.ByteString;
+
+import org.apache.commons.collections4.ListUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.llap.LlapRecordReader.ReaderEvent;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto;
 import org.apache.hadoop.hive.llap.ext.LlapTaskUmbilicalExternalClient;
+import org.apache.hadoop.hive.llap.ext.LlapTaskUmbilicalExternalClient.LlapTaskUmbilicalExternalResponder;
 import org.apache.hadoop.hive.llap.registry.ServiceInstance;
 import org.apache.hadoop.hive.llap.registry.ServiceInstanceSet;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
@@ -52,10 +57,18 @@ import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.ContainerId;
 import org.apache.tez.common.security.JobTokenIdentifier;
 import org.apache.tez.common.security.TokenCache;
+import org.apache.tez.runtime.api.events.TaskAttemptFailedEvent;
 import org.apache.tez.runtime.api.impl.TaskSpec;
 import org.apache.tez.runtime.api.impl.TezEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.apache.tez.dag.records.TezTaskAttemptID;
+import org.apache.tez.runtime.api.impl.EventType;
+import org.apache.tez.runtime.api.impl.TezEvent;
+import org.apache.tez.runtime.api.impl.TezHeartbeatRequest;
+import org.apache.tez.runtime.api.impl.TezHeartbeatResponse;
+
 
 public class LlapInputFormat<V extends WritableComparable> implements InputFormat<NullWritable, V> {
 
@@ -84,9 +97,11 @@ public class LlapInputFormat<V extends WritableComparable> implements InputForma
     LOG.info("Found service instance for host " + host + " with rpc port " + llapSubmitPort
         + " and outputformat port " + serviceInstance.getOutputFormatPort());
 
+    LlapRecordReaderTaskUmbilicalExternalResponder umbilicalResponder =
+        new LlapRecordReaderTaskUmbilicalExternalResponder();
     LlapTaskUmbilicalExternalClient llapClient =
       new LlapTaskUmbilicalExternalClient(job, submitWorkInfo.getTokenIdentifier(),
-          submitWorkInfo.getToken());
+          submitWorkInfo.getToken(), umbilicalResponder);
     llapClient.init(job);
     llapClient.start();
 
@@ -117,7 +132,9 @@ public class LlapInputFormat<V extends WritableComparable> implements InputForma
 
     LOG.info("Registered id: " + id);
 
-    return new LlapRecordReader(socket.getInputStream(), llapSplit.getSchema(), Text.class);
+    LlapRecordReader recordReader = new LlapRecordReader(socket.getInputStream(), llapSplit.getSchema(), Text.class);
+    umbilicalResponder.setRecordReader(recordReader);
+    return recordReader;
   }
 
   @Override
@@ -253,5 +270,121 @@ public class LlapInputFormat<V extends WritableComparable> implements InputForma
     DataOutputBuffer containerTokens_dob = new DataOutputBuffer();
     containerCredentials.writeTokenStorageToStream(containerTokens_dob);
     return ByteBuffer.wrap(containerTokens_dob.getData(), 0, containerTokens_dob.getLength());
+  }
+
+  private static class LlapRecordReaderTaskUmbilicalExternalResponder implements LlapTaskUmbilicalExternalResponder {
+    protected LlapRecordReader recordReader = null;
+    protected LinkedBlockingQueue<ReaderEvent> queuedEvents = new LinkedBlockingQueue<ReaderEvent>();
+
+    public LlapRecordReaderTaskUmbilicalExternalResponder() {
+    }
+
+    @Override
+    public void submissionFailed(String fragmentId, Throwable throwable) {
+      try {
+        sendOrQueueEvent(LlapRecordReader.ReaderEvent.errorEvent(
+            "Received submission failed event for fragment ID " + fragmentId));
+      } catch (Exception err) {
+        LOG.error("Error during heartbeat responder:", err);
+      }
+    }
+
+    @Override
+    public void heartbeat(TezHeartbeatRequest request) {
+      TezTaskAttemptID taskAttemptId = request.getCurrentTaskAttemptID();
+      List<TezEvent> inEvents = request.getEvents();
+      for (TezEvent tezEvent : ListUtils.emptyIfNull(inEvents)) {
+        EventType eventType = tezEvent.getEventType();
+        try {
+          switch (eventType) {
+            case TASK_ATTEMPT_COMPLETED_EVENT:
+              sendOrQueueEvent(LlapRecordReader.ReaderEvent.doneEvent());
+              break;
+            case TASK_ATTEMPT_FAILED_EVENT:
+              TaskAttemptFailedEvent taskFailedEvent = (TaskAttemptFailedEvent) tezEvent.getEvent();
+              sendOrQueueEvent(LlapRecordReader.ReaderEvent.errorEvent(taskFailedEvent.getDiagnostics()));
+              break;
+            case TASK_STATUS_UPDATE_EVENT:
+              // If we want to handle counters
+              break;
+            default:
+              LOG.warn("Unhandled event type " + eventType);
+              break;
+          }
+        } catch (Exception err) {
+          LOG.error("Error during heartbeat responder:", err);
+        }
+      }
+    }
+
+    @Override
+    public void taskKilled(TezTaskAttemptID taskAttemptId) {
+      try {
+        sendOrQueueEvent(LlapRecordReader.ReaderEvent.errorEvent(
+            "Received task killed event for task ID " + taskAttemptId));
+      } catch (Exception err) {
+        LOG.error("Error during heartbeat responder:", err);
+      }
+    }
+
+    @Override
+    public void heartbeatTimeout(String taskAttemptId) {
+      try {
+        sendOrQueueEvent(LlapRecordReader.ReaderEvent.errorEvent(
+            "Timed out waiting for heartbeat for task ID " + taskAttemptId));
+      } catch (Exception err) {
+        LOG.error("Error during heartbeat responder:", err);
+      }
+    }
+
+    public synchronized LlapRecordReader getRecordReader() {
+      return recordReader;
+    }
+
+    public synchronized void setRecordReader(LlapRecordReader recordReader) {
+      this.recordReader = recordReader;
+
+      if (recordReader == null) {
+        return;
+      }
+
+      // If any events were queued by the responder, give them to the record reader now.
+      while (!queuedEvents.isEmpty()) {
+        LlapRecordReader.ReaderEvent readerEvent = queuedEvents.poll();
+        LOG.debug("Sending queued event to record reader: " + readerEvent.getEventType());
+        recordReader.handleEvent(readerEvent);
+      }
+    }
+
+    /**
+     * Send the ReaderEvents to the record reader, if it is registered to this responder.
+     * If there is no registered record reader, add them to a list of pending reader events
+     * since we don't want to drop these events.
+     * @param readerEvent
+     */
+    protected synchronized void sendOrQueueEvent(LlapRecordReader.ReaderEvent readerEvent) {
+      LlapRecordReader recordReader = getRecordReader();
+      if (recordReader != null) {
+        recordReader.handleEvent(readerEvent);
+      } else {
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("No registered record reader, queueing event " + readerEvent.getEventType()
+              + " with message " + readerEvent.getMessage());
+        }
+
+        try {
+          queuedEvents.put(readerEvent);
+        } catch (Exception err) {
+          throw new RuntimeException("Unexpected exception while queueing reader event", err);
+        }
+      }
+    }
+
+    /**
+     * Clear the list of queued reader events if we are not interested in sending any pending events to any registering record reader.
+     */
+    public void clearQueuedEvents() {
+      queuedEvents.clear();
+    }
   }
 }

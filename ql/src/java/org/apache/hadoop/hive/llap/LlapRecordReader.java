@@ -18,9 +18,11 @@
 
 package org.apache.hadoop.hive.llap;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.DataInputStream;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.io.RCFile.Reader;
@@ -33,16 +35,25 @@ import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.hive.metastore.api.Schema;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class LlapRecordReader<V extends WritableComparable> implements RecordReader<NullWritable, V> {
+  private static final Logger LOG = LoggerFactory.getLogger(LlapRecordReader.class);
 
   DataInputStream din;
   Schema schema;
   Class<V> clazz;
 
+
+  protected Thread readerThread = null;
+  protected LinkedBlockingQueue<ReaderEvent> readerEvents = new LinkedBlockingQueue<ReaderEvent>();
+
   public LlapRecordReader(InputStream in, Schema schema, Class<V> clazz) {
     din = new DataInputStream(in);
     this.schema = schema;
     this.clazz = clazz;
+    this.readerThread = Thread.currentThread();
   }
 
   public Schema getSchema() {
@@ -75,12 +86,120 @@ public class LlapRecordReader<V extends WritableComparable> implements RecordRea
   }
 
   @Override
-  public boolean next(NullWritable key, V value) {
+  public boolean next(NullWritable key, V value) throws IOException {
     try {
+      // Need a way to know what thread to interrupt, since this is a blocking thread.
+      setReaderThread(Thread.currentThread());
+
       value.readFields(din);
       return true;
-    } catch (IOException io) {
+    } catch (EOFException eof) {
+      // End of input. There should be a reader event available, or coming soon, so okay to be blocking call.
+      ReaderEvent event = getReaderEvent();
+      switch (event.getEventType()) {
+        case DONE:
+          break;
+        default:
+          throw new IOException("Expected reader event with done status, but got "
+              + event.getEventType() + " with message " + event.getMessage());
+      }
       return false;
+    } catch (IOException io) {
+      if (Thread.interrupted()) {
+        // Either we were interrupted by one of:
+        // 1. handleEvent(), in which case there is a reader event waiting for us in the queue
+        // 2. Some other unrelated cause which interrupted us, in which case there may not be a reader event coming.
+        // Either way we should not try to block trying to read the reader events queue.
+        if (readerEvents.isEmpty()) {
+          // Case 2.
+          throw io;
+        } else {
+          // Case 1. Fail the reader, sending back the error we received from the reader event.
+          ReaderEvent event = getReaderEvent();
+          switch (event.getEventType()) {
+            case ERROR:
+              throw new IOException("Received reader event error: " + event.getMessage());
+            default:
+              throw new IOException("Got reader event type " + event.getEventType() + ", expected error event");
+          }
+        }
+      } else {
+        // If we weren't interrupted, just propagate the error
+        throw io;
+      }
     }
+  }
+
+  /**
+   * Define success/error events which are passed to the reader from a different thread.
+   * The reader will check for these events on end of input and interruption of the reader thread.
+   */
+  public static class ReaderEvent {
+    public enum EventType {
+      DONE,
+      ERROR
+    }
+
+    protected final EventType eventType;
+    protected final String message;
+
+    protected ReaderEvent(EventType type, String message) {
+      this.eventType = type;
+      this.message = message;
+    }
+
+    public static ReaderEvent doneEvent() {
+      return new ReaderEvent(EventType.DONE, "");
+    }
+
+    public static ReaderEvent errorEvent(String message) {
+      return new ReaderEvent(EventType.ERROR, message);
+    }
+
+    public EventType getEventType() {
+      return eventType;
+    }
+
+    public String getMessage() {
+      return message;
+    }
+  }
+
+  public void handleEvent(ReaderEvent event) {
+    switch (event.getEventType()) {
+      case DONE:
+        // Reader will check for the event queue upon the end of the input stream - no need to interrupt.
+        readerEvents.add(event);
+        break;
+      case ERROR:
+        readerEvents.add(event);
+        if (readerThread == null) {
+          throw new RuntimeException("Reader thread is unexpectedly null, during ReaderEvent error " + event.getMessage());
+        }
+        // Reader is using a blocking socket .. interrupt it.
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Interrupting reader thread due to reader event with error " + event.getMessage());
+        }
+        getReaderThread().interrupt();
+      default:
+        throw new RuntimeException("Unhandled ReaderEvent type " + event.getEventType() + " with message " + event.getMessage());
+    }
+  }
+
+  protected ReaderEvent getReaderEvent() {
+    try {
+      ReaderEvent event = readerEvents.take();
+      return event;
+    } catch (InterruptedException ie) {
+      throw new RuntimeException("Interrupted while getting readerEvents, not expected", ie);
+    }
+  }
+
+  protected synchronized void setReaderThread(Thread readerThread) {
+    this.readerThread = readerThread;
+  }
+
+  protected synchronized Thread getReaderThread() {
+    return readerThread;
   }
 }
