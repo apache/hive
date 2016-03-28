@@ -28,6 +28,7 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.NodeUtils.Function;
+import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.mapred.OutputCollector;
 
@@ -80,6 +81,11 @@ public class OperatorUtils {
     return found.size() == 1 ? found.iterator().next() : null;
   }
 
+  public static <T> T findSingleOperatorUpstreamJoinAccounted(Operator<?> start, Class<T> clazz) {
+    Set<T> found = findOperatorsUpstreamJoinAccounted(start, clazz, new HashSet<T>());
+    return found.size() == 1 ? found.iterator().next(): null;
+  }
+
   public static <T> Set<T> findOperatorsUpstream(Collection<Operator<?>> starts, Class<T> clazz) {
     Set<T> found = new HashSet<T>();
     for (Operator<?> start : starts) {
@@ -100,6 +106,34 @@ public class OperatorUtils {
     }
     return found;
   }
+
+  public static <T> Set<T> findOperatorsUpstreamJoinAccounted(Operator<?> start, Class<T> clazz,
+      Set<T> found) {
+    if (clazz.isInstance(start)) {
+      found.add((T) start);
+    }
+    int onlyIncludeIndex = -1;
+    if (start instanceof AbstractMapJoinOperator) {
+      AbstractMapJoinOperator mapJoinOp = (AbstractMapJoinOperator) start;
+      MapJoinDesc desc = (MapJoinDesc) mapJoinOp.getConf();
+      onlyIncludeIndex = desc.getPosBigTable();
+    }
+    if (start.getParentOperators() != null) {
+      int i = 0;
+      for (Operator<?> parent : start.getParentOperators()) {
+        if (onlyIncludeIndex >= 0) {
+          if (onlyIncludeIndex == i) {
+            findOperatorsUpstream(parent, clazz, found);
+          }
+        } else {
+          findOperatorsUpstream(parent, clazz, found);
+        }
+        i++;
+      }
+    }
+    return found;
+  }
+
 
   public static void setChildrenCollector(List<Operator<? extends OperatorDesc>> childOperators, OutputCollector out) {
     if (childOperators == null) {
@@ -203,7 +237,7 @@ public class OperatorUtils {
   }
 
   public static boolean sameRowSchema(Operator<?> operator1, Operator<?> operator2) {
-	return operator1.getSchema().equals(operator2.getSchema());
+    return operator1.getSchema().equals(operator2.getSchema());
   }
 
   /**
@@ -221,9 +255,9 @@ public class OperatorUtils {
    * them
    */
   public static Multimap<Class<? extends Operator<?>>, Operator<?>> classifyOperators(
-        Operator<?> start, Set<Class<? extends Operator<?>>> classes) {
+      Operator<?> start, Set<Class<? extends Operator<?>>> classes) {
     ImmutableMultimap.Builder<Class<? extends Operator<?>>, Operator<?>> resultMap =
-          new ImmutableMultimap.Builder<Class<? extends Operator<?>>, Operator<?>>();
+        new ImmutableMultimap.Builder<Class<? extends Operator<?>>, Operator<?>>();
     List<Operator<?>> ops = new ArrayList<Operator<?>>();
     ops.add(start);
     while (!ops.isEmpty()) {
@@ -256,9 +290,9 @@ public class OperatorUtils {
    * them
    */
   public static Multimap<Class<? extends Operator<?>>, Operator<?>> classifyOperatorsUpstream(
-        Operator<?> start, Set<Class<? extends Operator<?>>> classes) {
+      Operator<?> start, Set<Class<? extends Operator<?>>> classes) {
     ImmutableMultimap.Builder<Class<? extends Operator<?>>, Operator<?>> resultMap =
-          new ImmutableMultimap.Builder<Class<? extends Operator<?>>, Operator<?>>();
+        new ImmutableMultimap.Builder<Class<? extends Operator<?>>, Operator<?>>();
     List<Operator<?>> ops = new ArrayList<Operator<?>>();
     ops.add(start);
     while (!ops.isEmpty()) {
