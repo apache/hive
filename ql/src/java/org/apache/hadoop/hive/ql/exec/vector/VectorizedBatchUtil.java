@@ -144,9 +144,10 @@ public class VectorizedBatchUtil {
           case DATE:
           case INTERVAL_YEAR_MONTH:
             return new LongColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
-          case INTERVAL_DAY_TIME:
           case TIMESTAMP:
             return new TimestampColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
+          case INTERVAL_DAY_TIME:
+            return new IntervalDayTimeColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
           case FLOAT:
           case DOUBLE:
             return new DoubleColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
@@ -417,14 +418,14 @@ public class VectorizedBatchUtil {
     }
       break;
     case INTERVAL_DAY_TIME: {
-      LongColumnVector lcv = (LongColumnVector) batch.cols[offset + colIndex];
+      IntervalDayTimeColumnVector icv = (IntervalDayTimeColumnVector) batch.cols[offset + colIndex];
       if (writableCol != null) {
-        HiveIntervalDayTime i = ((HiveIntervalDayTimeWritable) writableCol).getHiveIntervalDayTime();
-        lcv.vector[rowIndex] = DateUtils.getIntervalDayTimeTotalNanos(i);
-        lcv.isNull[rowIndex] = false;
+        HiveIntervalDayTime idt = ((HiveIntervalDayTimeWritable) writableCol).getHiveIntervalDayTime();
+        icv.set(rowIndex, idt);
+        icv.isNull[rowIndex] = false;
       } else {
-        lcv.vector[rowIndex] = 1;
-        setNullColIsNullValue(lcv, rowIndex);
+        icv.setNullValue(rowIndex);
+        setNullColIsNullValue(icv, rowIndex);
       }
     }
       break;
@@ -585,6 +586,8 @@ public class VectorizedBatchUtil {
           decColVector.scale);
     } else if (source instanceof TimestampColumnVector) {
       return new TimestampColumnVector(((TimestampColumnVector) source).getLength());
+    } else if (source instanceof IntervalDayTimeColumnVector) {
+      return new IntervalDayTimeColumnVector(((IntervalDayTimeColumnVector) source).getLength());
     } else if (source instanceof ListColumnVector) {
       ListColumnVector src = (ListColumnVector) source;
       ColumnVector child = cloneColumnVector(src.child);
@@ -688,6 +691,9 @@ public class VectorizedBatchUtil {
             Timestamp timestamp = new Timestamp(0);
             ((TimestampColumnVector) colVector).timestampUpdate(timestamp, index);
             sb.append(timestamp.toString());
+          } else if (colVector instanceof IntervalDayTimeColumnVector) {
+            HiveIntervalDayTime intervalDayTime = ((IntervalDayTimeColumnVector) colVector).asScratchIntervalDayTime(index);
+            sb.append(intervalDayTime.toString());
           } else {
             sb.append("Unknown");
           }

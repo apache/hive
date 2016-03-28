@@ -288,7 +288,26 @@ public abstract class VectorAssignRow {
     }
   }
 
-  private class IntervalDayTimeAssigner extends AbstractTimestampAssigner {
+  private abstract class AbstractIntervalDayTimeAssigner extends Assigner {
+
+    protected IntervalDayTimeColumnVector colVector;
+
+    AbstractIntervalDayTimeAssigner(int columnIndex) {
+      super(columnIndex);
+    }
+
+    @Override
+    void setColumnVector(VectorizedRowBatch batch) {
+      colVector = (IntervalDayTimeColumnVector) batch.cols[columnIndex];
+    }
+
+    @Override
+    void forgetColumnVector() {
+      colVector = null;
+    }
+  }
+
+  private class IntervalDayTimeAssigner extends AbstractIntervalDayTimeAssigner {
 
     IntervalDayTimeAssigner(int columnIndex) {
       super(columnIndex);
@@ -301,7 +320,7 @@ public abstract class VectorAssignRow {
       } else {
         HiveIntervalDayTimeWritable idtw = (HiveIntervalDayTimeWritable) object;
         HiveIntervalDayTime idt = idtw.getHiveIntervalDayTime();
-        colVector.set(batchIndex, idt.pisaTimestampUpdate(colVector.useScratchPisaTimestamp()));
+        colVector.set(batchIndex, idt);
         colVector.isNull[batchIndex] = false;
       }
     }

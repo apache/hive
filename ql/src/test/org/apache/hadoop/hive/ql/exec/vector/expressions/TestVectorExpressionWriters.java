@@ -229,18 +229,19 @@ public class TestVectorExpressionWriters {
   }
 
   private void testWriterTimestamp(TypeInfo type) throws HiveException {
-    TimestampColumnVector tcv = VectorizedRowGroupGenUtil.generateTimestampColumnVector(true, false,
-        vectorSize, new Random(10));
+    Timestamp[] timestampValues = new Timestamp[vectorSize];
+    TimestampColumnVector tcv =
+        VectorizedRowGroupGenUtil.generateTimestampColumnVector(true, false,
+        vectorSize, new Random(10), timestampValues);
     tcv.isNull[3] = true;
     VectorExpressionWriter vew = getWriter(type);
     for (int i = 0; i < vectorSize; i++) {
       Writable w = (Writable) vew.writeValue(tcv, i);
       if (w != null) {
-        Writable expected = getWritableValue(type, tcv.asScratchTimestamp(i));
+        Writable expected = getWritableValue(type, timestampValues[i]);
         TimestampWritable t1 = (TimestampWritable) expected;
         TimestampWritable t2 = (TimestampWritable) w;
-        Assert.assertTrue(t1.getNanos() == t2.getNanos());
-        Assert.assertTrue(t1.getSeconds() == t2.getSeconds());
+        Assert.assertTrue(t1.equals(t2));
        } else {
         Assert.assertTrue(tcv.isNull[i]);
       }
@@ -248,8 +249,10 @@ public class TestVectorExpressionWriters {
   }
 
   private void testSetterTimestamp(TypeInfo type) throws HiveException {
-    TimestampColumnVector tcv = VectorizedRowGroupGenUtil.generateTimestampColumnVector(true, false,
-        vectorSize, new Random(10));
+    Timestamp[] timestampValues = new Timestamp[vectorSize];
+    TimestampColumnVector tcv =
+        VectorizedRowGroupGenUtil.generateTimestampColumnVector(true, false,
+        vectorSize, new Random(10), timestampValues);
     tcv.isNull[3] = true;
 
     Object[] values = new Object[this.vectorSize];
@@ -259,12 +262,10 @@ public class TestVectorExpressionWriters {
       values[i] = null;  // setValue() should be able to handle null input
       values[i] = vew.setValue(values[i], tcv, i);
       if (values[i] != null) {
-        Timestamp scratchTimestamp = tcv.asScratchTimestamp(i);
-        Writable expected = getWritableValue(type, scratchTimestamp);
+        Writable expected = getWritableValue(type, timestampValues[i]);
         TimestampWritable t1 = (TimestampWritable) expected;
         TimestampWritable t2 = (TimestampWritable) values[i];
-        Assert.assertTrue(t1.getNanos() == t2.getNanos());
-        Assert.assertTrue(t1.getSeconds() == t2.getSeconds());
+        Assert.assertTrue(t1.equals(t2));
       } else {
         Assert.assertTrue(tcv.isNull[i]);
       }

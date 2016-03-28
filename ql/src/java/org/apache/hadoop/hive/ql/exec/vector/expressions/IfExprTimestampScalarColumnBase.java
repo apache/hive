@@ -18,7 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.apache.hadoop.hive.common.type.PisaTimestamp;
+import java.sql.Timestamp;
+
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
@@ -36,10 +37,10 @@ public abstract class IfExprTimestampScalarColumnBase extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
   private int arg1Column, arg3Column;
-  private PisaTimestamp arg2Scalar;
+  private Timestamp arg2Scalar;
   private int outputColumn;
 
-  public IfExprTimestampScalarColumnBase(int arg1Column, PisaTimestamp arg2Scalar, int arg3Column,
+  public IfExprTimestampScalarColumnBase(int arg1Column, Timestamp arg2Scalar, int arg3Column,
       int outputColumn) {
     this.arg1Column = arg1Column;
     this.arg2Scalar = arg2Scalar;
@@ -91,11 +92,11 @@ public abstract class IfExprTimestampScalarColumnBase extends VectorExpression {
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          outputColVector.set(i, vector1[i] == 1 ? arg2Scalar : arg3ColVector.asScratchPisaTimestamp(i));
+          outputColVector.set(i, vector1[i] == 1 ? arg2Scalar : arg3ColVector.asScratchTimestamp(i));
         }
       } else {
         for(int i = 0; i != n; i++) {
-          outputColVector.set(i, vector1[i] == 1 ? arg2Scalar : arg3ColVector.asScratchPisaTimestamp(i));
+          outputColVector.set(i, vector1[i] == 1 ? arg2Scalar : arg3ColVector.asScratchTimestamp(i));
         }
       }
     } else /* there are nulls */ {
@@ -103,14 +104,14 @@ public abstract class IfExprTimestampScalarColumnBase extends VectorExpression {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
           outputColVector.set(i, !arg1ColVector.isNull[i] && vector1[i] == 1 ?
-              arg2Scalar : arg3ColVector.asScratchPisaTimestamp(i));
+              arg2Scalar : arg3ColVector.asScratchTimestamp(i));
           outputIsNull[i] = (!arg1ColVector.isNull[i] && vector1[i] == 1 ?
               false : arg3ColVector.isNull[i]);
         }
       } else {
         for(int i = 0; i != n; i++) {
           outputColVector.set(i, !arg1ColVector.isNull[i] && vector1[i] == 1 ?
-              arg2Scalar : arg3ColVector.asScratchPisaTimestamp(i));
+              arg2Scalar : arg3ColVector.asScratchTimestamp(i));
           outputIsNull[i] = (!arg1ColVector.isNull[i] && vector1[i] == 1 ?
               false : arg3ColVector.isNull[i]);
         }

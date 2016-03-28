@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
 
 import java.sql.Timestamp;
-import org.apache.hadoop.hive.common.type.PisaTimestamp;
 
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.NullUtil;

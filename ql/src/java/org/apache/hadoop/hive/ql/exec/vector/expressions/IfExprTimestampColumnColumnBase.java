@@ -89,13 +89,13 @@ public abstract class IfExprTimestampColumnColumnBase extends VectorExpression {
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          outputColVector.set(i, vector1[i] == 1 ? arg2ColVector.asScratchPisaTimestamp(i) : arg3ColVector.asScratchPisaTimestamp(i));
+          outputColVector.set(i, vector1[i] == 1 ? arg2ColVector.asScratchTimestamp(i) : arg3ColVector.asScratchTimestamp(i));
           outputIsNull[i] = (vector1[i] == 1 ?
               arg2ColVector.isNull[i] : arg3ColVector.isNull[i]);
         }
       } else {
         for(int i = 0; i != n; i++) {
-          outputColVector.set(i, vector1[i] == 1 ? arg2ColVector.asScratchPisaTimestamp(i) : arg3ColVector.asScratchPisaTimestamp(i));
+          outputColVector.set(i, vector1[i] == 1 ? arg2ColVector.asScratchTimestamp(i) : arg3ColVector.asScratchTimestamp(i));
           outputIsNull[i] = (vector1[i] == 1 ?
               arg2ColVector.isNull[i] : arg3ColVector.isNull[i]);
         }
@@ -105,14 +105,14 @@ public abstract class IfExprTimestampColumnColumnBase extends VectorExpression {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
           outputColVector.set(i, !arg1ColVector.isNull[i] && vector1[i] == 1 ?
-              arg2ColVector.asScratchPisaTimestamp(i) : arg3ColVector.asScratchPisaTimestamp(i));
+              arg2ColVector.asScratchTimestamp(i) : arg3ColVector.asScratchTimestamp(i));
           outputIsNull[i] = (!arg1ColVector.isNull[i] && vector1[i] == 1 ?
               arg2ColVector.isNull[i] : arg3ColVector.isNull[i]);
         }
       } else {
         for(int i = 0; i != n; i++) {
           outputColVector.set(i, !arg1ColVector.isNull[i] && vector1[i] == 1 ?
-              arg2ColVector.asScratchPisaTimestamp(i) : arg3ColVector.asScratchPisaTimestamp(i));
+              arg2ColVector.asScratchTimestamp(i) : arg3ColVector.asScratchTimestamp(i));
           outputIsNull[i] = (!arg1ColVector.isNull[i] && vector1[i] == 1 ?
               arg2ColVector.isNull[i] : arg3ColVector.isNull[i]);
         }

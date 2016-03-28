@@ -20,8 +20,7 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.*;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 
 public class CastMillisecondsLongToTimestamp extends VectorExpression {
   private static final long serialVersionUID = 1L;
@@ -37,6 +36,13 @@ public class CastMillisecondsLongToTimestamp extends VectorExpression {
 
   public CastMillisecondsLongToTimestamp() {
     super();
+  }
+
+  private void setMilliseconds(TimestampColumnVector timestampColVector, long[] vector, int elementNum) {
+    TimestampWritable.setTimestampFromLong(
+        timestampColVector.getScratchTimestamp(), vector[elementNum],
+        /* intToTimestampInSeconds */ false);
+    timestampColVector.setFromScratchTimestamp(elementNum);
   }
 
   @Override
@@ -63,19 +69,19 @@ public class CastMillisecondsLongToTimestamp extends VectorExpression {
     if (inputColVector.isRepeating) {
       //All must be selected otherwise size would be zero
       //Repeating property will not change.
-      outputColVector.setTimestampMilliseconds(0, vector[0]);
+      setMilliseconds(outputColVector, vector, 0);
       // Even if there are no nulls, we always copy over entry 0. Simplifies code.
-      outputIsNull[0] = inputIsNull[0]; 
+      outputIsNull[0] = inputIsNull[0];
       outputColVector.isRepeating = true;
     } else if (inputColVector.noNulls) {
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          outputColVector.setTimestampMilliseconds(i, vector[i]);
+          setMilliseconds(outputColVector, vector, i);
         }
       } else {
         for(int i = 0; i != n; i++) {
-          outputColVector.setTimestampMilliseconds(i, vector[i]);
+          setMilliseconds(outputColVector, vector, i);
         }
       }
       outputColVector.isRepeating = false;
@@ -83,12 +89,12 @@ public class CastMillisecondsLongToTimestamp extends VectorExpression {
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          outputColVector.setTimestampMilliseconds(i, vector[i]);
+          setMilliseconds(outputColVector, vector, i);
           outputIsNull[i] = inputIsNull[i];
         }
       } else {
         for(int i = 0; i != n; i++) {
-          outputColVector.setTimestampMilliseconds(i, vector[i]);
+          setMilliseconds(outputColVector, vector, i);
         }
         System.arraycopy(inputIsNull, 0, outputIsNull, 0, n);
       }

@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
 
 import java.sql.Timestamp;
 
-import org.apache.hadoop.hive.common.type.PisaTimestamp;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -39,14 +38,14 @@ public class <ClassName> extends VectorExpression {
   private int colNum;
 
   // The comparison is of the form "column BETWEEN leftValue AND rightValue"
-  private PisaTimestamp leftValue;
-  private PisaTimestamp rightValue;
-  private PisaTimestamp scratchValue;
+  private Timestamp leftValue;
+  private Timestamp rightValue;
+  private Timestamp scratchValue;
 
   public <ClassName>(int colNum, Timestamp leftValue, Timestamp rightValue) {
     this.colNum = colNum;
-    this.leftValue = new PisaTimestamp(leftValue);
-    this.rightValue = new PisaTimestamp(rightValue);
+    this.leftValue = leftValue;
+    this.rightValue = rightValue;
   }
 
   public <ClassName>() {

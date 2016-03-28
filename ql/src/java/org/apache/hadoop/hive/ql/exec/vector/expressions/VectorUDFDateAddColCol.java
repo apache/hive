@@ -166,7 +166,7 @@ public class VectorUDFDateAddColCol extends VectorExpression {
 
   protected byte[] evaluateTimestamp(ColumnVector columnVector, int index, long numDays) {
     TimestampColumnVector tcv = (TimestampColumnVector) columnVector;
-    calendar.setTimeInMillis(tcv.getTimestampMilliseconds(index));
+    calendar.setTimeInMillis(tcv.getTime(index));
     if (isPositive) {
       calendar.add(Calendar.DATE, (int) numDays);
     } else {
