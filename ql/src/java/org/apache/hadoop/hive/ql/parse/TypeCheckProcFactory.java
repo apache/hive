@@ -28,10 +28,10 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Stack;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
@@ -68,6 +68,7 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
@@ -991,75 +992,34 @@ public class TypeCheckProcFactory {
           int constIdx =
               children.get(0) instanceof ExprNodeConstantDesc ? 0 : 1;
 
-          Set<String> inferTypes = new HashSet<String>(Arrays.asList(
-              serdeConstants.TINYINT_TYPE_NAME.toLowerCase(),
-              serdeConstants.SMALLINT_TYPE_NAME.toLowerCase(),
-              serdeConstants.INT_TYPE_NAME.toLowerCase(),
-              serdeConstants.BIGINT_TYPE_NAME.toLowerCase(),
-              serdeConstants.FLOAT_TYPE_NAME.toLowerCase(),
-              serdeConstants.DOUBLE_TYPE_NAME.toLowerCase(),
-              serdeConstants.STRING_TYPE_NAME.toLowerCase()
-              ));
-
           String constType = children.get(constIdx).getTypeString().toLowerCase();
           String columnType = children.get(1 - constIdx).getTypeString().toLowerCase();
-
-          if (inferTypes.contains(constType) && inferTypes.contains(columnType)
-              && !columnType.equalsIgnoreCase(constType)) {
-            Object originalValue =  ((ExprNodeConstantDesc) children.get(constIdx)).getValue();
-            String constValue = originalValue.toString();
-            boolean triedDouble = false;
-            Number value = null;
-            try {
-              if (columnType.equalsIgnoreCase(serdeConstants.TINYINT_TYPE_NAME)) {
-                value = new Byte(constValue);
-              } else if (columnType.equalsIgnoreCase(serdeConstants.SMALLINT_TYPE_NAME)) {
-                value = new Short(constValue);
-              } else if (columnType.equalsIgnoreCase(serdeConstants.INT_TYPE_NAME)) {
-                value = new Integer(constValue);
-              } else if (columnType.equalsIgnoreCase(serdeConstants.BIGINT_TYPE_NAME)) {
-                value = new Long(constValue);
-              } else if (columnType.equalsIgnoreCase(serdeConstants.FLOAT_TYPE_NAME)) {
-                value = new Float(constValue);
-              } else if (columnType.equalsIgnoreCase(serdeConstants.DOUBLE_TYPE_NAME)) {
-                triedDouble = true;
-                value = new Double(constValue);
-              } else if (columnType.equalsIgnoreCase(serdeConstants.STRING_TYPE_NAME)) {
-                // Don't scramble the const type information if comparing to a string column,
-                // It's not useful to do so; as of now, there is also a hack in
-                // SemanticAnalyzer#genTablePlan that causes every column to look like a string
-                // a string down here, so number type information is always lost otherwise.
-                boolean isNumber = (originalValue instanceof Number);
-                triedDouble = !isNumber;
-                value = isNumber ? (Number)originalValue : new Double(constValue);
-              }
-            } catch (NumberFormatException nfe) {
-              // this exception suggests the precise type inference did not succeed
-              // we'll try again to convert it to double
-              // however, if we already tried this, or the column is NUMBER type and
-              // the operator is EQUAL, return false due to the type mismatch
-              if (triedDouble &&
-                  (genericUDF instanceof GenericUDFOPEqual
-                  && !columnType.equals(serdeConstants.STRING_TYPE_NAME))) {
-                return new ExprNodeConstantDesc(false);
-              }
-
-              try {
-                value = new Double(constValue);
-              } catch (NumberFormatException ex) {
-                return new ExprNodeConstantDesc(false);
-              }
+          final PrimitiveTypeInfo colTypeInfo = TypeInfoFactory.getPrimitiveTypeInfo(columnType);
+          // Try to narrow type of constant
+          Object constVal = ((ExprNodeConstantDesc) children.get(constIdx)).getValue();
+          try {
+            if (PrimitiveObjectInspectorUtils.intTypeEntry.equals(colTypeInfo.getPrimitiveTypeEntry()) && (constVal instanceof Number || constVal instanceof String)) {
+              children.set(constIdx, new ExprNodeConstantDesc(new Integer(constVal.toString())));
+            } else if (PrimitiveObjectInspectorUtils.longTypeEntry.equals(colTypeInfo.getPrimitiveTypeEntry()) && (constVal instanceof Number || constVal instanceof String)) {
+              children.set(constIdx, new ExprNodeConstantDesc(new Long(constVal.toString())));
+            }else if (PrimitiveObjectInspectorUtils.doubleTypeEntry.equals(colTypeInfo.getPrimitiveTypeEntry()) && (constVal instanceof Number || constVal instanceof String)) {
+              children.set(constIdx, new ExprNodeConstantDesc(new Double(constVal.toString())));
+            } else if (PrimitiveObjectInspectorUtils.floatTypeEntry.equals(colTypeInfo.getPrimitiveTypeEntry()) && (constVal instanceof Number || constVal instanceof String)) {
+              children.set(constIdx, new ExprNodeConstantDesc(new Float(constVal.toString())));
+            } else if (PrimitiveObjectInspectorUtils.byteTypeEntry.equals(colTypeInfo.getPrimitiveTypeEntry()) && (constVal instanceof Number || constVal instanceof String)) {
+              children.set(constIdx, new ExprNodeConstantDesc(new Byte(constVal.toString())));
+            } else if (PrimitiveObjectInspectorUtils.shortTypeEntry.equals(colTypeInfo.getPrimitiveTypeEntry()) && (constVal instanceof Number || constVal instanceof String)) {
+              children.set(constIdx, new ExprNodeConstantDesc(new Short(constVal.toString())));
             }
-
-            if (value != null) {
-              children.set(constIdx, new ExprNodeConstantDesc(value));
+          } catch (NumberFormatException nfe) {
+            LOG.trace("Failed to narrow type of constant", nfe);
+            if ((genericUDF instanceof GenericUDFOPEqual && !NumberUtils.isNumber(constVal.toString()))) {
+              return new ExprNodeConstantDesc(false);
             }
           }
 
           // if column type is char and constant type is string, then convert the constant to char
           // type with padded spaces.
-          final PrimitiveTypeInfo colTypeInfo = TypeInfoFactory
-              .getPrimitiveTypeInfo(columnType);
           if (constType.equalsIgnoreCase(serdeConstants.STRING_TYPE_NAME) &&
               colTypeInfo instanceof CharTypeInfo) {
             final Object originalValue = ((ExprNodeConstantDesc) children.get(constIdx)).getValue();

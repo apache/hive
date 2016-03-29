@@ -102,7 +102,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@infertypes
 #### A masked pattern was here ####
 127	32767	12345	-12345	906.0	-307.0	1234
-WARNING: Comparing a bigint and a double may result in a loss of precision.
+WARNING: Comparing a bigint and a string may result in a loss of precision.
 PREHOOK: query: -- all should return false as all numbers exceeed the largest number 
 -- which could be represented by the corresponding type
 -- and string_col = long_const should return false
@@ -137,7 +137,7 @@ STAGE PLANS:
             alias: infertypes
             Statistics: Num rows: 1 Data size: 117 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((UDFToDouble(ti) = 128.0) or (UDFToDouble(si) = 32768.0) or (UDFToDouble(i) = 2.147483648E9) or (UDFToDouble(bi) = 9.223372036854776E18)) (type: boolean)
+              predicate: ((UDFToDouble(ti) = 128.0) or (UDFToInteger(si) = 32768) or (UDFToDouble(i) = 2.147483648E9) or (UDFToDouble(bi) = 9.223372036854776E18)) (type: boolean)
               Statistics: Num rows: 1 Data size: 117 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ti (type: tinyint), si (type: smallint), i (type: int), bi (type: bigint), fl (type: float), db (type: double), str (type: string)
@@ -157,7 +157,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-WARNING: Comparing a bigint and a double may result in a loss of precision.
+WARNING: Comparing a bigint and a string may result in a loss of precision.
 PREHOOK: query: SELECT * FROM infertypes WHERE
   ti  = '128' OR
   si  = 32768 OR

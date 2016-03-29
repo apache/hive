@@ -1204,7 +1204,7 @@ STAGE PLANS:
                   alias: alltypesorc
                   Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((197.0 > UDFToDouble(ctinyint)) and (UDFToLong(cint) = cbigint)) or (cbigint = 359) or (cboolean1 < 0) or ((cstring1 like '%ss') and (cfloat <= UDFToFloat(ctinyint)))) (type: boolean)
+                    predicate: (((197 > UDFToInteger(ctinyint)) and (UDFToLong(cint) = cbigint)) or (cbigint = 359) or (cboolean1 < 0) or ((cstring1 like '%ss') and (cfloat <= UDFToFloat(ctinyint)))) (type: boolean)
                     Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cint (type: int), cbigint (type: bigint), cstring1 (type: string), cboolean1 (type: boolean), cfloat (type: float), cdouble (type: double), ctimestamp2 (type: timestamp), csmallint (type: smallint), cstring2 (type: string), cboolean2 (type: boolean), (UDFToDouble(cint) / UDFToDouble(cbigint)) (type: double), (UDFToDouble(cbigint) % 79.553) (type: double), (- (UDFToDouble(cint) / UDFToDouble(cbigint))) (type: double), (10.175 % UDFToDouble(cfloat)) (type: double), (- cfloat) (type: float), (cfloat - (- cfloat)) (type: float), ((cfloat - (- cfloat)) % -6432.0) (type: float), (cdouble * UDFToDouble(csmallint)) (type: double), (- cdouble) (type: double), (- cbigint) (type: bigint), (UDFToDouble(cfloat) - (UDFToDouble(cint) / UDFToDouble(cbigint))) (type: double), (- csmallint) (type: smallint), (3569 % cbigint) (type: bigint), (359.0 - cdouble) (type: double), (- csmallint) (type: smallint)
