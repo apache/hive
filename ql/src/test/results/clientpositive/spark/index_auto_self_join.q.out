@@ -25,7 +25,7 @@ STAGE PLANS:
                   alias: a
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((UDFToDouble(key) > 80.0) and (UDFToDouble(key) < 100.0)) and value is not null) (type: boolean)
+                    predicate: ((UDFToDouble(key) > 80.0) and (UDFToDouble(key) < 100.0) and value is not null) (type: boolean)
                     Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -43,7 +43,7 @@ STAGE PLANS:
                   alias: a
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((UDFToDouble(key) > 70.0) and (UDFToDouble(key) < 90.0)) and value is not null) (type: boolean)
+                    predicate: ((UDFToDouble(key) > 70.0) and (UDFToDouble(key) < 90.0) and value is not null) (type: boolean)
                     Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -141,10 +141,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: (((UDFToDouble(key) > 80.0) and (UDFToDouble(key) < 100.0)) and value is not null) (type: boolean)
+                  filterExpr: ((UDFToDouble(key) > 80.0) and (UDFToDouble(key) < 100.0) and value is not null) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((UDFToDouble(key) > 80.0) and (UDFToDouble(key) < 100.0)) and value is not null) (type: boolean)
+                    predicate: ((UDFToDouble(key) > 80.0) and (UDFToDouble(key) < 100.0) and value is not null) (type: boolean)
                     Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -160,10 +160,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: (((UDFToDouble(key) > 70.0) and (UDFToDouble(key) < 90.0)) and value is not null) (type: boolean)
+                  filterExpr: ((UDFToDouble(key) > 70.0) and (UDFToDouble(key) < 90.0) and value is not null) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((UDFToDouble(key) > 70.0) and (UDFToDouble(key) < 90.0)) and value is not null) (type: boolean)
+                    predicate: ((UDFToDouble(key) > 70.0) and (UDFToDouble(key) < 90.0) and value is not null) (type: boolean)
                     Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), value (type: string)

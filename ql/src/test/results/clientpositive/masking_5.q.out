@@ -153,7 +153,7 @@ STAGE PLANS:
             alias: masking_test
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((((hash(key) & 2147483647) % 2) = 0) and ((key % 2) = 0)) and (key < 10)) (type: boolean)
+              predicate: ((((hash(key) & 2147483647) % 2) = 0) and ((key % 2) = 0) and (key < 10)) (type: boolean)
               Statistics: Num rows: 41 Data size: 435 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), reverse(value) (type: string)

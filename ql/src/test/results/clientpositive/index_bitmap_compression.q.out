@@ -39,9 +39,9 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: default__src_src_index__
-            filterExpr: (((UDFToDouble(key) > 80.0) and (UDFToDouble(key) < 100.0)) and (not EWAH_BITMAP_EMPTY(_bitmaps))) (type: boolean)
+            filterExpr: ((UDFToDouble(key) > 80.0) and (UDFToDouble(key) < 100.0) and (not EWAH_BITMAP_EMPTY(_bitmaps))) (type: boolean)
             Filter Operator
-              predicate: (((UDFToDouble(key) > 80.0) and (UDFToDouble(key) < 100.0)) and (not EWAH_BITMAP_EMPTY(_bitmaps))) (type: boolean)
+              predicate: ((UDFToDouble(key) > 80.0) and (UDFToDouble(key) < 100.0) and (not EWAH_BITMAP_EMPTY(_bitmaps))) (type: boolean)
               Select Operator
                 expressions: _bucketname (type: string), _offset (type: bigint)
                 outputColumnNames: _bucketname, _offset

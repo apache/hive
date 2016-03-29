@@ -59,7 +59,7 @@ STAGE PLANS:
             alias: infertypes
             Statistics: Num rows: 1 Data size: 117 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((((((ti = 127) and (si = 32767)) and (i = 12345)) and (bi = -12345)) and (fl = 906.0)) and (db = -307.0)) and (UDFToDouble(str) = 1234.0)) (type: boolean)
+              predicate: ((ti = 127) and (si = 32767) and (i = 12345) and (bi = -12345) and (fl = 906.0) and (db = -307.0) and (UDFToDouble(str) = 1234.0)) (type: boolean)
               Statistics: Num rows: 1 Data size: 117 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: 127 (type: tinyint), 32767 (type: smallint), 12345 (type: int), -12345 (type: bigint), 906.0 (type: float), -307.0 (type: double), str (type: string)
@@ -259,7 +259,7 @@ STAGE PLANS:
             alias: infertypes
             Statistics: Num rows: 1 Data size: 117 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((UDFToDouble(ti) < 127.0) and (UDFToDouble(i) > 100.0)) and (UDFToDouble(str) = 1.57)) (type: boolean)
+              predicate: ((UDFToDouble(ti) < 127.0) and (UDFToDouble(i) > 100.0) and (UDFToDouble(str) = 1.57)) (type: boolean)
               Statistics: Num rows: 1 Data size: 117 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ti (type: tinyint), si (type: smallint), i (type: int), bi (type: bigint), fl (type: float), db (type: double), str (type: string)

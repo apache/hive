@@ -55,7 +55,7 @@ STAGE PLANS:
             alias: src1
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((((UDFToDouble(key) > 15.0) and (UDFToDouble(key) < 25.0)) and (UDFToDouble(key) > 10.0)) and (UDFToDouble(key) < 20.0)) (type: boolean)
+              predicate: ((UDFToDouble(key) > 15.0) and (UDFToDouble(key) < 25.0) and (UDFToDouble(key) > 10.0) and (UDFToDouble(key) < 20.0)) (type: boolean)
               Statistics: Num rows: 6 Data size: 63 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)

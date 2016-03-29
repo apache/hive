@@ -768,7 +768,7 @@ STAGE PLANS:
             alias: t2
             Statistics: Num rows: 11 Data size: 84 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((key > 5) and (value <= 'val_20')) and key is not null) (type: boolean)
+              predicate: ((key > 5) and (value <= 'val_20')) (type: boolean)
               Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), value (type: string)

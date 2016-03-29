@@ -53,7 +53,7 @@ Stage-0
                               Select Operator [SEL_2] (rows=18262 width=1119)
                                 Output:["_col0"]
                                 Filter Operator [FIL_30] (rows=18262 width=1119)
-                                  predicate:(((d_moy = 12) and (d_year = 2001)) and d_date_sk is not null)
+                                  predicate:((d_moy = 12) and (d_year = 2001) and d_date_sk is not null)
                                   TableScan [TS_0] (rows=73049 width=1119)
                                     default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year","d_moy"]
                           <-Map 6 [SIMPLE_EDGE]

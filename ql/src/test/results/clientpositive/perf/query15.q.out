@@ -40,7 +40,7 @@ Stage-0
                           Select Operator [SEL_19] (rows=18262 width=1119)
                             Output:["_col0"]
                             Filter Operator [FIL_44] (rows=18262 width=1119)
-                              predicate:(((d_qoy = 2) and (d_year = 2000)) and d_date_sk is not null)
+                              predicate:((d_qoy = 2) and (d_year = 2000) and d_date_sk is not null)
                               TableScan [TS_17] (rows=73049 width=1119)
                                 default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year","d_qoy"]
                       <-Reducer 3 [SIMPLE_EDGE]

@@ -62,7 +62,7 @@ STAGE PLANS:
             alias: t1
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (((bigint_col_22 is not null and decimal1709_col_26 is not null) and tinyint_col_8 is not null) and timestamp_col_10 is not null) (type: boolean)
+              predicate: (bigint_col_22 is not null and decimal1709_col_26 is not null and tinyint_col_8 is not null and timestamp_col_10 is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Reduce Output Operator
                 key expressions: bigint_col_22 (type: bigint), decimal1709_col_26 (type: decimal(38,23)), tinyint_col_8 (type: tinyint)
@@ -74,7 +74,7 @@ STAGE PLANS:
             alias: t2
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (((UDFToLong(tinyint_col_6) is not null and decimal0504_col_37 is not null) and tinyint_col_33 is not null) and UDFToInteger(smallint_col_38) is not null) (type: boolean)
+              predicate: (UDFToLong(tinyint_col_6) is not null and decimal0504_col_37 is not null and tinyint_col_33 is not null and UDFToInteger(smallint_col_38) is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Reduce Output Operator
                 key expressions: UDFToLong(tinyint_col_6) (type: bigint), decimal0504_col_37 (type: decimal(38,23)), tinyint_col_33 (type: tinyint)

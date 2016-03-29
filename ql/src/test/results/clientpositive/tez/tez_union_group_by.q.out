@@ -247,7 +247,7 @@ STAGE PLANS:
                   alias: x
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
-                    predicate: (((t is not null and (date >= '2014-03-04')) and (date < '2014-09-03')) and (u <> 0)) (type: boolean)
+                    predicate: (t is not null and (date >= '2014-03-04') and (date < '2014-09-03') and (u <> 0)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Reduce Output Operator
                       key expressions: t (type: string), st (type: string)

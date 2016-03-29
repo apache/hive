@@ -76,8 +76,8 @@ STAGE PLANS:
                   alias: b
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key is not null and value is not null) and (key < 10)) (type: boolean)
-                    Statistics: Num rows: 41 Data size: 435 Basic stats: COMPLETE Column stats: NONE
+                    predicate: (value is not null and (key < 10)) (type: boolean)
+                    Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
                       keys:
                         0 key (type: string), value (type: string)
@@ -97,8 +97,8 @@ STAGE PLANS:
                   alias: a
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key is not null and value is not null) and (key < 10)) (type: boolean)
-                    Statistics: Num rows: 41 Data size: 435 Basic stats: COMPLETE Column stats: NONE
+                    predicate: (value is not null and (key < 10)) (type: boolean)
+                    Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
@@ -107,7 +107,7 @@ STAGE PLANS:
                         1 key (type: string), value (type: string)
                       input vertices:
                         1 Map 3
-                      Statistics: Num rows: 45 Data size: 478 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
                         mode: hash
@@ -126,17 +126,13 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col0 (type: bigint)
-                  outputColumnNames: _col0
+                File Output Operator
+                  compressed: false
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                  File Output Operator
-                    compressed: false
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator

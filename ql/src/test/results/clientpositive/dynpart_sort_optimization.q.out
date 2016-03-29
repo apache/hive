@@ -2656,7 +2656,7 @@ STAGE PLANS:
             alias: over1k
             Statistics: Num rows: 3949 Data size: 106636 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((i = 100) and (t = 27)) and (s = 'foo')) (type: boolean)
+              predicate: ((i = 100) and (t = 27) and (s = 'foo')) (type: boolean)
               Statistics: Num rows: 493 Data size: 13312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: si (type: smallint), b (type: bigint), f (type: float), 'foo' (type: string), 27 (type: tinyint), 100 (type: int)

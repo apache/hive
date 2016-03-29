@@ -88,7 +88,7 @@ STAGE PLANS:
             alias: masking_test
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((((key % 2) = 0) and (key < 10)) and (key = 5)) (type: boolean)
+              predicate: (((key % 2) = 0) and (key < 10) and (key = 5)) (type: boolean)
               Statistics: Num rows: 41 Data size: 435 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: 5 (type: int), reverse(value) (type: string)
@@ -132,7 +132,7 @@ STAGE PLANS:
             alias: masking_test
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((((key % 2) = 0) and (key < 10)) and (key = 5)) (type: boolean)
+              predicate: (((key % 2) = 0) and (key < 10) and (key = 5)) (type: boolean)
               Statistics: Num rows: 41 Data size: 435 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: 5 (type: int), reverse(value) (type: string)

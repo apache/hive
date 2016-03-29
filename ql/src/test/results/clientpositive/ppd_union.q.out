@@ -28,7 +28,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((key < '100') and (key > '4')) and (value > 'val_4')) (type: boolean)
+              predicate: ((key < '100') and (key > '4') and (value > 'val_4')) (type: boolean)
               Statistics: Num rows: 18 Data size: 191 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
@@ -47,7 +47,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((key > '150') and (key > '4')) and (value > 'val_4')) (type: boolean)
+              predicate: ((key > '150') and (key > '4') and (value > 'val_4')) (type: boolean)
               Statistics: Num rows: 18 Data size: 191 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
@@ -290,7 +290,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((key < '100') and (key > '4')) and (value > 'val_4')) (type: boolean)
+              predicate: ((key < '100') and (key > '4') and (value > 'val_4')) (type: boolean)
               Statistics: Num rows: 18 Data size: 191 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
@@ -309,7 +309,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((key > '150') and (key > '4')) and (value > 'val_4')) (type: boolean)
+              predicate: ((key > '150') and (key > '4') and (value > 'val_4')) (type: boolean)
               Statistics: Num rows: 18 Data size: 191 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)

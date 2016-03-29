@@ -200,29 +200,30 @@ public class IndexPredicateAnalyzer {
     }
     return expr;
   }
-  
+
   private ExprNodeDesc analyzeExpr(
     ExprNodeGenericFuncDesc expr,
     List<IndexSearchCondition> searchConditions,
     Object... nodeOutputs) throws SemanticException {
 
     if (FunctionRegistry.isOpAnd(expr)) {
-      assert(nodeOutputs.length == 2);
-      ExprNodeDesc residual1 = (ExprNodeDesc) nodeOutputs[0];
-      ExprNodeDesc residual2 = (ExprNodeDesc) nodeOutputs[1];
-      if (residual1 == null) {
-        return residual2;
-      }
-      if (residual2 == null) {
-        return residual1;
-      }
+      assert(nodeOutputs.length >= 2);
       List<ExprNodeDesc> residuals = new ArrayList<ExprNodeDesc>();
-      residuals.add(residual1);
-      residuals.add(residual2);
-      return new ExprNodeGenericFuncDesc(
-        TypeInfoFactory.booleanTypeInfo,
-        FunctionRegistry.getGenericUDFForAnd(),
-        residuals);
+      for (Object residual : nodeOutputs) {
+        if (null != residual) {
+          residuals.add((ExprNodeDesc)residual);
+        }
+      }
+      if (residuals.size() == 0) {
+        return null;
+      } else if (residuals.size() == 1) {
+        return residuals.get(0);
+      } else if (residuals.size() > 1) {
+        return new ExprNodeGenericFuncDesc(
+            TypeInfoFactory.booleanTypeInfo,
+            FunctionRegistry.getGenericUDFForAnd(),
+            residuals);
+      }
     }
 
     GenericUDF genericUDF = expr.getGenericUDF();
@@ -236,12 +237,12 @@ public class IndexPredicateAnalyzer {
       expr1 = getColumnExpr(expr1);
       expr2 = getColumnExpr(expr2);
     }
-    
+
     ExprNodeDesc[] extracted = ExprNodeDescUtils.extractComparePair(expr1, expr2);
     if (extracted == null || (extracted.length > 2 && !acceptsFields)) {
       return expr;
     }
-    
+
     ExprNodeColumnDesc columnDesc;
     ExprNodeConstantDesc constantDesc;
     if (extracted[0] instanceof ExprNodeConstantDesc) {

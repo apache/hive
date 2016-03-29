@@ -62,7 +62,7 @@ STAGE PLANS:
             alias: alltypesorc
             Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((cbigint > -23) and ((cdouble <> 988888.0) or (UDFToDouble(cint) > -863.257))) and ((ctinyint >= 33) or (UDFToLong(csmallint) >= cbigint) or (UDFToDouble(cfloat) = cdouble))) (type: boolean)
+              predicate: ((cbigint > -23) and ((cdouble <> 988888.0) or (UDFToDouble(cint) > -863.257)) and ((ctinyint >= 33) or (UDFToLong(csmallint) >= cbigint) or (UDFToDouble(cfloat) = cdouble))) (type: boolean)
               Statistics: Num rows: 4778 Data size: 1027287 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: cfloat (type: float), cstring1 (type: string), cint (type: int), ctimestamp1 (type: timestamp), cdouble (type: double), cbigint (type: bigint), (UDFToDouble(cfloat) / UDFToDouble(ctinyint)) (type: double), (UDFToLong(cint) % cbigint) (type: bigint), (- cdouble) (type: double), (cdouble + (UDFToDouble(cfloat) / UDFToDouble(ctinyint))) (type: double), (cdouble / UDFToDouble(cint)) (type: double), (- (- cdouble)) (type: double), (9763215.5639 % UDFToDouble(cbigint)) (type: double), (2563.58 + (- (- cdouble))) (type: double)

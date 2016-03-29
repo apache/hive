@@ -123,7 +123,7 @@ Stage-0
                                                       Select Operator [SEL_41] (rows=1 width=0)
                                                         Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"]
                                                         Filter Operator [FIL_192] (rows=1 width=0)
-                                                          predicate:(((cs_sold_date_sk is not null and cs_catalog_page_sk is not null) and cs_item_sk is not null) and cs_promo_sk is not null)
+                                                          predicate:(cs_sold_date_sk is not null and cs_catalog_page_sk is not null and cs_item_sk is not null and cs_promo_sk is not null)
                                                           TableScan [TS_39] (rows=1 width=0)
                                                             default@catalog_sales,catalog_sales,Tbl:PARTIAL,Col:NONE,Output:["cs_sold_date_sk","cs_catalog_page_sk","cs_item_sk","cs_promo_sk","cs_order_number","cs_ext_sales_price","cs_net_profit"]
                                                   <-Map 23 [SIMPLE_EDGE]
@@ -215,7 +215,7 @@ Stage-0
                                                       Select Operator [SEL_82] (rows=1 width=0)
                                                         Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"]
                                                         Filter Operator [FIL_198] (rows=1 width=0)
-                                                          predicate:(((ws_sold_date_sk is not null and ws_web_site_sk is not null) and ws_item_sk is not null) and ws_promo_sk is not null)
+                                                          predicate:(ws_sold_date_sk is not null and ws_web_site_sk is not null and ws_item_sk is not null and ws_promo_sk is not null)
                                                           TableScan [TS_80] (rows=1 width=0)
                                                             default@web_sales,web_sales,Tbl:PARTIAL,Col:NONE,Output:["ws_sold_date_sk","ws_item_sk","ws_web_site_sk","ws_promo_sk","ws_order_number","ws_ext_sales_price","ws_net_profit"]
                                                   <-Map 35 [SIMPLE_EDGE]
@@ -307,7 +307,7 @@ Stage-0
                                                       Select Operator [SEL_2] (rows=1 width=0)
                                                         Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"]
                                                         Filter Operator [FIL_186] (rows=1 width=0)
-                                                          predicate:(((ss_sold_date_sk is not null and ss_store_sk is not null) and ss_item_sk is not null) and ss_promo_sk is not null)
+                                                          predicate:(ss_sold_date_sk is not null and ss_store_sk is not null and ss_item_sk is not null and ss_promo_sk is not null)
                                                           TableScan [TS_0] (rows=1 width=0)
                                                             default@store_sales,store_sales,Tbl:PARTIAL,Col:NONE,Output:["ss_sold_date_sk","ss_item_sk","ss_store_sk","ss_promo_sk","ss_ticket_number","ss_ext_sales_price","ss_net_profit"]
                                                   <-Map 11 [SIMPLE_EDGE]
