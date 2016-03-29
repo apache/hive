@@ -7432,7 +7432,7 @@ public class ObjectStore implements RawStore, Configurable {
       query.declareParameters("java.lang.Integer tooOld");
       Collection<MNotificationLog> toBeRemoved = (Collection) query.execute(tooOld);
       if (toBeRemoved != null && toBeRemoved.size() > 0) {
-        pm.deletePersistent(toBeRemoved);
+        pm.deletePersistentAll(toBeRemoved);
       }
       commited = commitTransaction();
     } finally {
