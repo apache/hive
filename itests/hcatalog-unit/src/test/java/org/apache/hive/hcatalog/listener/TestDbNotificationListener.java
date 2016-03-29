@@ -57,6 +57,7 @@ import java.util.Map;
 public class TestDbNotificationListener {
 
   private static final Log LOG = LogFactory.getLog(TestDbNotificationListener.class.getName());
+  private static final int EVENTS_TTL = 30;
   private static Map<String, String> emptyParameters = new HashMap<String, String>();
   private static IMetaStoreClient msClient;
   private static Driver driver;
@@ -68,6 +69,7 @@ public class TestDbNotificationListener {
     HiveConf conf = new HiveConf();
     conf.setVar(HiveConf.ConfVars.METASTORE_EVENT_LISTENERS,
         DbNotificationListener.class.getName());
+    conf.setVar(HiveConf.ConfVars.METASTORE_EVENT_DB_LISTENER_TTL, String.valueOf(EVENTS_TTL)+"s");
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     conf.setBoolVar(HiveConf.ConfVars.FIRE_EVENTS_FOR_DML, true);
     conf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
@@ -564,5 +566,21 @@ public class TestDbNotificationListener {
     event = rsp.getEvents().get(18);
     assertEquals(firstEventId + 19, event.getEventId());
     assertEquals(HCatConstants.HCAT_DROP_PARTITION_EVENT, event.getEventType());
+  }
+
+  @Test
+  public void cleanupNotifs() throws Exception {
+    Database db = new Database("cleanup1","no description","file:/tmp", emptyParameters);
+    msClient.createDatabase(db);
+    msClient.dropDatabase("cleanup1");
+
+    NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
+    assertEquals(2, rsp.getEventsSize());
+
+    // sleep for expiry time, and then fetch again
+    Thread.sleep(EVENTS_TTL * 2 * 1000); // sleep twice the TTL interval - things should have been cleaned by then.
+
+    NotificationEventResponse rsp2 = msClient.getNextNotification(firstEventId, 0, null);
+    assertEquals(0, rsp2.getEventsSize());
   }
 }
