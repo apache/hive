@@ -2017,6 +2017,8 @@ public class HiveConf extends Configuration {
         "hive.zookeeper.quorum in their connection string."),
     HIVE_SERVER2_ZOOKEEPER_NAMESPACE("hive.server2.zookeeper.namespace", "hiveserver2",
         "The parent node in ZooKeeper used by HiveServer2 when supporting dynamic service discovery."),
+    HIVE_SERVER2_ZOOKEEPER_PUBLISH_CONFIGS("hive.server2.zookeeper.publish.configs", true,
+        "Whether we should publish HiveServer2's configs to ZooKeeper."),
 
     // HiveServer2 global init file location
     HIVE_SERVER2_GLOBAL_INIT_FILE_LOCATION("hive.server2.global.init.file.location", "${env:HIVE_CONF_DIR}",
