@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.udf;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
-import org.joda.time.MutableDateTime;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
@@ -53,7 +53,7 @@ import org.apache.hadoop.io.Text;
 @NDV(maxNdv = 31)
 public class UDFMonth extends UDF {
   private final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-  private transient final MutableDateTime mdt = new MutableDateTime();
+  private final Calendar calendar = Calendar.getInstance();
 
   private final IntWritable result = new IntWritable();
 
@@ -75,8 +75,8 @@ public class UDFMonth extends UDF {
     }
     try {
       Date date = formatter.parse(dateString.toString());
-      mdt.setMillis(date.getTime());
-      result.set(mdt.getMonthOfYear());
+      calendar.setTime(date);
+      result.set(1 + calendar.get(Calendar.MONTH));
       return result;
     } catch (ParseException e) {
       return null;
@@ -88,8 +88,8 @@ public class UDFMonth extends UDF {
       return null;
     }
 
-    mdt.setMillis(d.get().getTime());
-    result.set(mdt.getMonthOfYear());
+    calendar.setTime(d.get());
+    result.set(1 + calendar.get(Calendar.MONTH));
     return result;
   }
 
@@ -98,8 +98,8 @@ public class UDFMonth extends UDF {
       return null;
     }
 
-    mdt.setMillis(t.getTimestamp().getTime());
-    result.set(mdt.getMonthOfYear());
+    calendar.setTime(t.getTimestamp());
+    result.set(1 + calendar.get(Calendar.MONTH));
     return result;
   }
 
