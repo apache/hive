@@ -157,8 +157,13 @@ public class TestVectorizer {
       expr.add(new ExprNodeColumnDesc(Integer.class, "col1", "T", false));
       Map<Byte, List<ExprNodeDesc>> keyMap = new HashMap<Byte, List<ExprNodeDesc>>();
       keyMap.put((byte)0, expr);
+      List<ExprNodeDesc> smallTableExpr = new ArrayList<ExprNodeDesc>();
+      smallTableExpr.add(new ExprNodeColumnDesc(Integer.class, "col2", "T1", false));
+      keyMap.put((byte)1, smallTableExpr);
       mjdesc.setKeys(keyMap);
       mjdesc.setExprs(keyMap);
+      Byte[] order = new Byte[] {(byte) 0, (byte) 1};
+      mjdesc.setTagOrder(order);
 
       //Set filter expression
       GenericUDFOPEqual udf = new GenericUDFOPEqual();
