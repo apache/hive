@@ -24,6 +24,7 @@ public class TestHashPartition {
 
   @Test
   public void testHashPartition() throws Exception {
-    HashPartition hashPartition = new HashPartition(1024, (float) 0.75, 524288, 1, true);
+    // TODO: wtf?
+    HashPartition hashPartition = new HashPartition(1024, (float) 0.75, 524288, 1, true, null);
   }
 }
