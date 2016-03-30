@@ -180,8 +180,12 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     buildIndex = rowIndexStride > 0;
     codec = createCodec(compress);
     int numColumns = schema.getMaximumId() + 1;
-    this.bufferSize = getEstimatedBufferSize(defaultStripeSize,
-        numColumns, opts.getBufferSize());
+    if (opts.isEnforceBufferSize()) {
+      this.bufferSize = opts.getBufferSize();
+    } else {
+      this.bufferSize = getEstimatedBufferSize(defaultStripeSize,
+          numColumns, opts.getBufferSize());
+    }
     if (version == OrcFile.Version.V_0_11) {
       /* do not write bloom filters for ORC v11 */
       this.bloomFilterColumns = new boolean[schema.getMaximumId() + 1];
@@ -199,7 +203,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     // ensure that we are able to handle callbacks before we register ourselves
     memoryManager.addWriter(path, opts.getStripeSize(), this);
     LOG.info("ORC writer created for path: {} with stripeSize: {} blockSize: {}" +
-        " compression: {} estimatedBufferSize: {}", path, defaultStripeSize, blockSize,
+        " compression: {} bufferSize: {}", path, defaultStripeSize, blockSize,
         compress, bufferSize);
   }
 
@@ -212,13 +216,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     // sizes.
     int estBufferSize = (int) (stripeSize / (20 * numColumns));
     estBufferSize = getClosestBufferSize(estBufferSize);
-    if (estBufferSize > bs) {
-      estBufferSize = bs;
-    } else {
-      LOG.info("WIDE TABLE - Number of columns: " + numColumns +
-          " Chosen compression buffer size: " + estBufferSize);
-    }
-    return estBufferSize;
+    return estBufferSize > bs ? bs : estBufferSize;
   }
 
   private static int getClosestBufferSize(int estBufferSize) {
