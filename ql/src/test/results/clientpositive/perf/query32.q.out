@@ -60,7 +60,7 @@ Stage-0
               Select Operator [SEL_32] (rows=169400 width=1436)
                 Output:["_col1"]
                 Filter Operator [FIL_31] (rows=169400 width=1436)
-                  predicate:(_col1 > CAST( _col5 AS decimal(20,15)))
+                  predicate:(UDFToDouble(_col1) > _col5)
                   Merge Join Operator [MERGEJOIN_59] (rows=508200 width=1436)
                     Conds:RS_27._col0=RS_28._col0(Inner),RS_28._col0=RS_29._col0(Inner),Output:["_col1","_col5"]
                   <-Map 6 [SIMPLE_EDGE]
