@@ -30,3 +30,11 @@ select
   date '2015-09-07' c11,
   cast(date '2015-09-07' as timestamp) c12
 from src;
+
+create table if not exists src_empty (
+  c1 string)
+;
+
+create table if not exists src_insert (
+  c1 string)
+;

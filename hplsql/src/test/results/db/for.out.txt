@@ -1,0 +1,44 @@
+Ln:1 FOR CURSOR - ENTERED
+Ln:1 select code from sample_07 LIMIT 10
+Ln:1 SELECT completed successfully
+Ln:1 COLUMN: code, string
+Ln:1 SET code = 00-0000
+Ln:1 PRINT
+00-0000 aa
+Ln:1 COLUMN: code, string
+Ln:1 SET code = 11-0000
+Ln:1 PRINT
+11-0000 aa
+Ln:1 COLUMN: code, string
+Ln:1 SET code = 11-1011
+Ln:1 PRINT
+11-1011 aa
+Ln:1 COLUMN: code, string
+Ln:1 SET code = 11-1021
+Ln:1 PRINT
+11-1021 aa
+Ln:1 COLUMN: code, string
+Ln:1 SET code = 11-1031
+Ln:1 PRINT
+11-1031 aa
+Ln:1 COLUMN: code, string
+Ln:1 SET code = 11-2011
+Ln:1 PRINT
+11-2011 aa
+Ln:1 COLUMN: code, string
+Ln:1 SET code = 11-2021
+Ln:1 PRINT
+11-2021 aa
+Ln:1 COLUMN: code, string
+Ln:1 SET code = 11-2022
+Ln:1 PRINT
+11-2022 aa
+Ln:1 COLUMN: code, string
+Ln:1 SET code = 11-2031
+Ln:1 PRINT
+11-2031 aa
+Ln:1 COLUMN: code, string
+Ln:1 SET code = 11-3011
+Ln:1 PRINT
+11-3011 aa
+Ln:1 FOR CURSOR - LEFT

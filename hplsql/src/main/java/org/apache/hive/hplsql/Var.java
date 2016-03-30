@@ -311,11 +311,12 @@ public class Var {
     else if (type.equalsIgnoreCase("INT") || type.equalsIgnoreCase("INTEGER") || type.equalsIgnoreCase("BIGINT") ||
              type.equalsIgnoreCase("SMALLINT") || type.equalsIgnoreCase("TINYINT") ||
              type.equalsIgnoreCase("BINARY_INTEGER") || type.equalsIgnoreCase("PLS_INTEGER") ||
-             type.equalsIgnoreCase("SIMPLE_INTEGER")) {
+             type.equalsIgnoreCase("SIMPLE_INTEGER") || type.equalsIgnoreCase("INT2") ||
+             type.equalsIgnoreCase("INT4") || type.equalsIgnoreCase("INT8")) {
       return Type.BIGINT;
     }
-    else if (type.equalsIgnoreCase("CHAR") || type.equalsIgnoreCase("VARCHAR") || type.equalsIgnoreCase("STRING") ||
-             type.equalsIgnoreCase("XML")) {
+    else if (type.equalsIgnoreCase("CHAR") || type.equalsIgnoreCase("VARCHAR") || type.equalsIgnoreCase("VARCHAR2") || 
+             type.equalsIgnoreCase("STRING") || type.equalsIgnoreCase("XML")) {
       return Type.STRING;
     }
     else if (type.equalsIgnoreCase("DEC") || type.equalsIgnoreCase("DECIMAL") || type.equalsIgnoreCase("NUMERIC") ||
@@ -487,7 +488,10 @@ public class Var {
 	  if (type == Type.BIGINT) {
 	    return ((Long)value).intValue();
 	  }
-	  return -1;
+	  else if (type == Type.STRING) {
+	    return Integer.parseInt((String)value);
+	  }
+	  throw new NumberFormatException();
 	}
 	
 	/**
@@ -497,7 +501,7 @@ public class Var {
     if (type == Type.BIGINT) {
       return ((Long)value).longValue();
     }
-    return -1;
+    throw new NumberFormatException();
   }
   
   /**
@@ -507,7 +511,7 @@ public class Var {
     if (type == Type.DECIMAL) {
       return (BigDecimal)value;
     }
-    return null;
+    throw new NumberFormatException();
   }
   
   /**
@@ -523,7 +527,7 @@ public class Var {
     else if (type == Type.DECIMAL) {
       return ((BigDecimal)value).doubleValue();
     }
-    return -1;
+    throw new NumberFormatException();
   }
 	
 	/**

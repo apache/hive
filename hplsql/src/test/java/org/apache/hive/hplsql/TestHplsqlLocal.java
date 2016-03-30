@@ -92,6 +92,16 @@ public class TestHplsqlLocal {
   public void testCreateFunction2() throws Exception {
     run("create_function2");
   }
+  
+  @Test
+  public void testCreateFunction3() throws Exception {
+    run("create_function3");
+  }
+  
+  @Test
+  public void testCreateFunction4() throws Exception {
+    run("create_function4");
+  }
 
   @Test
   public void testCreatePackage() throws Exception {
@@ -112,6 +122,12 @@ public class TestHplsqlLocal {
   public void testCreateProcedure2() throws Exception {
     run("create_procedure2");
   }
+  
+  @Test
+  public void testCreateProcedure3() throws Exception {
+    run("create_procedure3");
+  }
+  
   @Test
   public void testCreateProcedureNoParams() throws Exception {
     run("create_procedure_no_params");
@@ -140,6 +156,11 @@ public class TestHplsqlLocal {
   @Test
   public void testDeclare2() throws Exception {
     run("declare2");
+  }
+  
+  @Test
+  public void testDeclare3() throws Exception {
+    run("declare3");
   }
   
   @Test
@@ -186,7 +207,7 @@ public class TestHplsqlLocal {
   public void testFloat() throws Exception {
     run("float");
   }
-
+  
   @Test
   public void testForRange() throws Exception {
     run("for_range");
@@ -261,6 +282,11 @@ public class TestHplsqlLocal {
     run("print");
   }
 
+  @Test
+  public void testReplace() throws Exception {
+    run("replace");
+  }
+  
   @Test
   public void testReturn() throws Exception {
     run("return");

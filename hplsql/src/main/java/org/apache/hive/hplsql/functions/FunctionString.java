@@ -36,6 +36,7 @@ public class FunctionString extends Function {
     f.map.put("LEN", new FuncCommand() { public void run(HplsqlParser.Expr_func_paramsContext ctx) { len(ctx); }});
     f.map.put("LENGTH", new FuncCommand() { public void run(HplsqlParser.Expr_func_paramsContext ctx) { length(ctx); }});
     f.map.put("LOWER", new FuncCommand() { public void run(HplsqlParser.Expr_func_paramsContext ctx) { lower(ctx); }});
+    f.map.put("REPLACE", new FuncCommand() { public void run(HplsqlParser.Expr_func_paramsContext ctx) { replace(ctx); }}); 
     f.map.put("SUBSTR", new FuncCommand() { public void run(HplsqlParser.Expr_func_paramsContext ctx) { substr(ctx); }});    
     f.map.put("SUBSTRING", new FuncCommand() { public void run(HplsqlParser.Expr_func_paramsContext ctx) { substr(ctx); }});
     f.map.put("TO_CHAR", new FuncCommand() { public void run(HplsqlParser.Expr_func_paramsContext ctx) { toChar(ctx); }});
@@ -50,7 +51,7 @@ public class FunctionString extends Function {
    */
   void concat(HplsqlParser.Expr_func_paramsContext ctx) {
     StringBuilder val = new StringBuilder();
-    int cnt = ctx.func_param().size();
+    int cnt = getParamCount(ctx);
     boolean nulls = true;
     for (int i = 0; i < cnt; i++) {
       Var c = evalPop(ctx.func_param(i).expr());
@@ -71,7 +72,7 @@ public class FunctionString extends Function {
    * CHAR function
    */
   void char_(HplsqlParser.Expr_func_paramsContext ctx) {
-    int cnt = ctx.func_param().size();
+    int cnt = getParamCount(ctx);
     if (cnt != 1) {
       evalNull();
       return;
@@ -84,7 +85,7 @@ public class FunctionString extends Function {
    * INSTR function
    */
   void instr(HplsqlParser.Expr_func_paramsContext ctx) {
-    int cnt = ctx.func_param().size();
+    int cnt = getParamCount(ctx);
     if (cnt < 2) {
       evalNull();
       return;
@@ -178,10 +179,25 @@ public class FunctionString extends Function {
   }
   
   /**
+   * REPLACE function
+   */
+  void replace(HplsqlParser.Expr_func_paramsContext ctx) {
+    int cnt = getParamCount(ctx);
+    if (cnt < 3) {
+      evalNull();
+      return;
+    }
+    String str = evalPop(ctx.func_param(0).expr()).toString(); 
+    String what = evalPop(ctx.func_param(1).expr()).toString();
+    String with = evalPop(ctx.func_param(2).expr()).toString();
+    evalString(str.replaceAll(what, with));
+  }
+  
+  /**
    * SUBSTR and SUBSTRING function
    */
   void substr(HplsqlParser.Expr_func_paramsContext ctx) {
-    int cnt = ctx.func_param().size();
+    int cnt = getParamCount(ctx);
     if (cnt < 2) {
       evalNull();
       return;
@@ -253,7 +269,7 @@ public class FunctionString extends Function {
    * TO_CHAR function
    */
   void toChar(HplsqlParser.Expr_func_paramsContext ctx) {
-    int cnt = ctx.func_param().size();
+    int cnt = getParamCount(ctx);
     if (cnt != 1) {
       evalNull();
       return;

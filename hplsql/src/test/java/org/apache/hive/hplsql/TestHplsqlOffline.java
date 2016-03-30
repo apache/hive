@@ -37,10 +37,30 @@ public class TestHplsqlOffline {
   public void testCreateTableMssql() throws Exception {
     run("create_table_mssql");
   }
+  
+  @Test
+  public void testCreateTableMssql2() throws Exception {
+    run("create_table_mssql2");
+  }
+  
+  @Test
+  public void testCreateTableMysql() throws Exception {
+    run("create_table_mysql");
+  }
 
   @Test
   public void testCreateTableOra() throws Exception {
     run("create_table_ora");
+  }
+  
+  @Test
+  public void testCreateTableOra2() throws Exception {
+    run("create_table_ora2");
+  }
+  
+  @Test
+  public void testCreateTablePg() throws Exception {
+    run("create_table_pg");
   }
   
   @Test
@@ -51,6 +71,11 @@ public class TestHplsqlOffline {
   @Test
   public void testSelectDb2() throws Exception {
     run("select_db2");
+  }
+  
+  @Test
+  public void testUpdate() throws Exception {
+    run("update");
   }
 
   /**

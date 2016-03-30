@@ -2,6 +2,10 @@ Ln:1 DECLARE state VARCHAR
 Ln:2 DECLARE count INT
 Ln:4 SET state = 'CA'
 Ln:5 SET count = 1
+Ln:7 IF
+Ln:7 IF TRUE executed
+Ln:8 PRINT
+True block - Correct
 Ln:11 IF
 Ln:11 IF TRUE executed
 Ln:12 PRINT

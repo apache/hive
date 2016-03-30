@@ -1,0 +1,9 @@
+Ln:1 DECLARE i2 int2 = 1
+Ln:2 DECLARE i4 int4 = 1
+Ln:3 DECLARE i8 int8 = 1
+Ln:5 PRINT
+2
+Ln:6 PRINT
+2
+Ln:7 PRINT
+2

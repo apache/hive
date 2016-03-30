@@ -77,6 +77,16 @@ public class Expression {
       sql.append(evalPop(ctx.expr(0)).toString());
       sql.append(")");      
     }
+    else if (ctx.T_MUL() != null) {
+      sql.append(evalPop(ctx.expr(0)).toString());
+      sql.append(" * ");
+      sql.append(evalPop(ctx.expr(1)).toString());
+    }
+    else if (ctx.T_DIV() != null) {
+      sql.append(evalPop(ctx.expr(0)).toString());
+      sql.append(" / ");
+      sql.append(evalPop(ctx.expr(1)).toString());
+    }
     else if (ctx.T_ADD() != null) {
       sql.append(evalPop(ctx.expr(0)).toString());
       sql.append(" + ");
@@ -324,6 +334,9 @@ public class Expression {
     }
     else if (v1.type == Type.DATE && v2.type == Type.BIGINT) {
       exec.stackPush(changeDateByInt((Date)v1.value, (Long)v2.value, true /*add*/));
+    }
+    else if (v1.type == Type.STRING && v2.type == Type.STRING) {
+      exec.stackPush(((String)v1.value) + ((String)v2.value));
     }
     else if (v1.type == Type.DATE && v2.type == Type.INTERVAL) {
       exec.stackPush(new Var(((Interval)v2.value).dateChange((Date)v1.value, true /*add*/)));
