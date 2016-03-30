@@ -399,7 +399,7 @@ public abstract class TaskCompiler {
         pCtx.getLoadTableWork(), pCtx.getLoadFileWork(), pCtx.getContext(),
         pCtx.getIdToTableNameMap(), pCtx.getDestTableId(), pCtx.getUCtx(),
         pCtx.getListMapJoinOpsNoReducer(),
-        pCtx.getPrunedPartitions(), pCtx.getOpToSamplePruner(), pCtx.getGlobalLimitCtx(),
+        pCtx.getPrunedPartitions(), pCtx.getTabNameToTabObject(), pCtx.getOpToSamplePruner(), pCtx.getGlobalLimitCtx(),
         pCtx.getNameToSplitSample(), pCtx.getSemanticInputs(), rootTasks,
         pCtx.getOpToPartToSkewedPruner(), pCtx.getViewAliasToInput(),
         pCtx.getReduceSinkOperatorsAddedByEnforceBucketingSorting(),

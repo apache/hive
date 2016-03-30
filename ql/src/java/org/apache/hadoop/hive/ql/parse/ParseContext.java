@@ -87,6 +87,7 @@ public class ParseContext {
   // reducer
   private Map<String, PrunedPartitionList> prunedPartitions;
   private Map<String, ReadEntity> viewAliasToInput;
+  private Map<String, Table> tabNameToTabObject;
 
   /**
    * The lineage information.
@@ -162,6 +163,7 @@ public class ParseContext {
       Context ctx, HashMap<String, String> idToTableNameMap, int destTableId,
       UnionProcContext uCtx, List<AbstractMapJoinOperator<? extends MapJoinDesc>> listMapJoinOpsNoReducer,
       Map<String, PrunedPartitionList> prunedPartitions,
+      Map<String, Table> tabNameToTabObject,
       HashMap<TableScanOperator, SampleDesc> opToSamplePruner,
       GlobalLimitCtx globalLimitCtx,
       HashMap<String, SplitSample> nameToSplitSample,
@@ -185,6 +187,7 @@ public class ParseContext {
     this.uCtx = uCtx;
     this.listMapJoinOpsNoReducer = listMapJoinOpsNoReducer;
     this.prunedPartitions = prunedPartitions;
+    this.tabNameToTabObject = tabNameToTabObject;
     this.opToSamplePruner = opToSamplePruner;
     this.nameToSplitSample = nameToSplitSample;
     this.globalLimitCtx = globalLimitCtx;
@@ -576,5 +579,9 @@ public class ParseContext {
 
   public void setNeedViewColumnAuthorization(boolean needViewColumnAuthorization) {
     this.needViewColumnAuthorization = needViewColumnAuthorization;
+  }
+
+  public Map<String, Table> getTabNameToTabObject() {
+    return tabNameToTabObject;
   }
 }

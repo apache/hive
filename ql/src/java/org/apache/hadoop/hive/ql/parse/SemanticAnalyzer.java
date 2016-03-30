@@ -324,7 +324,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   protected AnalyzeRewriteContext analyzeRewrite;
 
   // A mapping from a tableName to a table object in metastore.
-  Map<String, Table> tableNameToMetaDataTableObject;
+  Map<String, Table> tabNameToTabObject;
 
   // The tokens we should ignore when we are trying to do table masking.
   private final Set<Integer> ignoredTokens = Sets.newHashSet(HiveParser.TOK_GROUPBY,
@@ -359,6 +359,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     listMapJoinOpsNoReducer = new ArrayList<AbstractMapJoinOperator<? extends MapJoinDesc>>();
     groupOpToInputTables = new HashMap<GroupByOperator, Set<String>>();
     prunedPartitions = new HashMap<String, PrunedPartitionList>();
+    tabNameToTabObject = new HashMap<String, Table>();
     unparseTranslator = new UnparseTranslator(conf);
     autogenColAliasPrfxLbl = HiveConf.getVar(conf,
         HiveConf.ConfVars.HIVE_AUTOGEN_COLUMNALIAS_PREFIX_LABEL);
@@ -371,7 +372,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     viewAliasToInput = new HashMap<String, ReadEntity>();
     noscan = partialscan = false;
     tableMask = new TableMask(this, conf);
-    tableNameToMetaDataTableObject = new HashMap<>();
+    tabNameToTabObject = new HashMap<>();
   }
 
   @Override
@@ -380,6 +381,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if(clearPartsCache) {
       prunedPartitions.clear();
     }
+    tabNameToTabObject.clear();
     loadTableWork.clear();
     loadFileWork.clear();
     topOps.clear();
@@ -429,6 +431,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     uCtx = pctx.getUCtx();
     listMapJoinOpsNoReducer = pctx.getListMapJoinOpsNoReducer();
     prunedPartitions = pctx.getPrunedPartitions();
+    tabNameToTabObject = pctx.getTabNameToTabObject();
     fetchTask = pctx.getFetchTask();
     setLineageInfo(pctx.getLineageInfo());
   }
@@ -440,7 +443,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         new HashSet<JoinOperator>(joinContext.keySet()),
         new HashSet<SMBMapJoinOperator>(smbMapJoinContext.keySet()),
         loadTableWork, loadFileWork, ctx, idToTableNameMap, destTableId, uCtx,
-        listMapJoinOpsNoReducer, prunedPartitions,
+        listMapJoinOpsNoReducer, prunedPartitions, tabNameToTabObject,
         opToSamplePruner, globalLimitCtx, nameToSplitSample, inputs, rootTasks,
         opToPartToSkewedPruner, viewAliasToInput, reduceSinkOperatorsAddedByEnforceBucketingSorting,
         analyzeRewrite, tableDesc, queryProperties, viewProjectToTableSchema);
@@ -1606,7 +1609,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           }
           Table table = null;
           try {
-            table = db.getTable(tableName);
+            table = this.getTableObjectByName(tableName);
           } catch (HiveException ex) {
             throw new SemanticException(ex);
           }
@@ -10344,13 +10347,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private Table getMetaDataTableObjectByName(String tableName) throws HiveException {
-    if (!tableNameToMetaDataTableObject.containsKey(tableName)) {
+  private Table getTableObjectByName(String tableName) throws HiveException {
+    if (!tabNameToTabObject.containsKey(tableName)) {
       Table table = db.getTable(tableName);
-      tableNameToMetaDataTableObject.put(tableName, table);
+      tabNameToTabObject.put(tableName, table);
       return table;
     } else {
-      return tableNameToMetaDataTableObject.get(tableName);
+      return tabNameToTabObject.get(tableName);
     }
   }
 
@@ -10400,7 +10403,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         String replacementText = null;
         Table table = null;
         try {
-          table = getMetaDataTableObjectByName(tabIdName);
+          table = getTableObjectByName(tabIdName);
         } catch (HiveException e) {
           throw new SemanticException("Table " + tabIdName + " is not found.");
         }
@@ -10636,7 +10639,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         new HashSet<JoinOperator>(joinContext.keySet()),
         new HashSet<SMBMapJoinOperator>(smbMapJoinContext.keySet()),
         loadTableWork, loadFileWork, ctx, idToTableNameMap, destTableId, uCtx,
-        listMapJoinOpsNoReducer, prunedPartitions, opToSamplePruner,
+        listMapJoinOpsNoReducer, prunedPartitions, tabNameToTabObject, opToSamplePruner,
         globalLimitCtx, nameToSplitSample, inputs, rootTasks, opToPartToSkewedPruner,
         viewAliasToInput, reduceSinkOperatorsAddedByEnforceBucketingSorting,
         analyzeRewrite, tableDesc, queryProperties, viewProjectToTableSchema);
@@ -11671,7 +11674,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       Set<String> tableAliases = qb.getTabAliases();
       for (String alias : tableAliases) {
         try {
-          Table table = db.getTable(qb.getTabNameForAlias(alias));
+          Table table = this.getTableObjectByName(qb.getTabNameForAlias(alias));
           if (table.isTemporary()) {
             throw new SemanticException("View definition references temporary table " + alias);
           }
@@ -11874,7 +11877,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     String tableName = getUnescapedName((ASTNode) tree.getChild(0).getChild(0));
     Table tbl;
     try {
-      tbl = db.getTable(tableName);
+      tbl = this.getTableObjectByName(tableName);
     } catch (InvalidTableException e) {
       throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tableName), e);
     }
@@ -11903,7 +11906,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     String tableName = getUnescapedName((ASTNode) tree.getChild(0).getChild(0));
     Table tbl;
     try {
-      tbl = db.getTable(tableName);
+      tbl = this.getTableObjectByName(tableName);
     } catch (InvalidTableException e) {
       throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tableName), e);
     } catch (HiveException e) {
