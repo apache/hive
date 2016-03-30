@@ -735,7 +735,14 @@ public final class FunctionRegistry {
       return getTypeInfoForPrimitiveCategory(
           (PrimitiveTypeInfo)a, (PrimitiveTypeInfo)b,PrimitiveCategory.STRING);
     }
-
+    // timestamp/date is higher precedence than String_GROUP
+    if (pgA == PrimitiveGrouping.STRING_GROUP && pgB == PrimitiveGrouping.DATE_GROUP) {
+      return b;
+    }
+    // date/timestamp is higher precedence than String_GROUP
+    if (pgB == PrimitiveGrouping.STRING_GROUP && pgA == PrimitiveGrouping.DATE_GROUP) {
+      return a;
+    }
     // Another special case, because timestamp is not implicitly convertible to numeric types.
     if ((pgA == PrimitiveGrouping.NUMERIC_GROUP || pgB == PrimitiveGrouping.NUMERIC_GROUP)
         && (pcA == PrimitiveCategory.TIMESTAMP || pcB == PrimitiveCategory.TIMESTAMP)) {
