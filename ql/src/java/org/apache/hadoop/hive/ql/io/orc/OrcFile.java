@@ -271,6 +271,7 @@ public final class OrcFile {
     private float paddingTolerance;
     private String bloomFilterColumns;
     private double bloomFilterFpp;
+    private boolean enforceBufferSize = false;
 
     WriterOptions(Properties tableProperties, Configuration conf) {
       configuration = conf;
@@ -389,6 +390,17 @@ public final class OrcFile {
      */
     public WriterOptions bufferSize(int value) {
       bufferSizeValue = value;
+      return this;
+    }
+
+    /**
+     * Enforce writer to use requested buffer size instead of estimating
+     * buffer size based on stripe size and number of columns.
+     * See bufferSize() method for more info.
+     * Default: false
+     */
+    public WriterOptions enforceBufferSize() {
+      enforceBufferSize = true;
       return this;
     }
 
@@ -521,7 +533,8 @@ public final class OrcFile {
                           opts.versionValue, opts.callback,
                           opts.encodingStrategy, opts.compressionStrategy,
                           opts.paddingTolerance, opts.blockSizeValue,
-                          opts.bloomFilterColumns, opts.bloomFilterFpp);
+                          opts.bloomFilterColumns, opts.bloomFilterFpp,
+                          opts.enforceBufferSize);
   }
 
   /**

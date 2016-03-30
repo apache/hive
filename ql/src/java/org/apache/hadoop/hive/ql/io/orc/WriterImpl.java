@@ -175,7 +175,8 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       float paddingTolerance,
       long blockSizeValue,
       String bloomFilterColumnNames,
-      double bloomFilterFpp) throws IOException {
+      double bloomFilterFpp,
+      boolean enforceBufferSize) throws IOException {
     this.fs = fs;
     this.path = path;
     this.conf = conf;
@@ -208,8 +209,12 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     if (allColumns == null) {
       allColumns = getColumnNamesFromInspector(inspector);
     }
-    this.bufferSize = getEstimatedBufferSize(defaultStripeSize,
-        countColumns(inspector), bufferSize);
+    if (enforceBufferSize) {
+      this.bufferSize = bufferSize;
+    } else {
+      this.bufferSize = getEstimatedBufferSize(defaultStripeSize,
+              countColumns(inspector), bufferSize);
+    }
     if (version == OrcFile.Version.V_0_11) {
       /* do not write bloom filters for ORC v11 */
       this.bloomFilterColumns =
@@ -229,7 +234,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     memoryManager.addWriter(path, stripeSize, this);
 
     LOG.info("ORC writer created for path: " + path + " with stripeSize: " + defaultStripeSize + " blockSize: " +
-            blockSize + " compression: " + compress + " estimatedBufferSize: " + bufferSize);
+            blockSize + " compression: " + compress + " bufferSize: " + bufferSize);
   }
 
   private String getColumnNamesFromInspector(ObjectInspector inspector) {

@@ -111,7 +111,9 @@ public class OrcFileMergeOperator extends
             .inspector(reader.getObjectInspector());
         // compression buffer size should only be set if compression is enabled
         if (compression != CompressionKind.NONE) {
-          options.bufferSize(compressBuffSize);
+          // enforce is required to retain the buffer sizes of old files instead of orc writer
+          // inferring the optimal buffer size
+          options.bufferSize(compressBuffSize).enforceBufferSize();
         }
 
         outWriter = OrcFile.createWriter(outPath, options);
