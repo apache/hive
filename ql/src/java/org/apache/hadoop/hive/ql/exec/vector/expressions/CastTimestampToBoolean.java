@@ -41,8 +41,8 @@ public class CastTimestampToBoolean extends VectorExpression {
   }
 
   private int toBool(TimestampColumnVector timestampColVector, int index) {
-    return (timestampColVector.getEpochDay(index) != 0 ||
-            timestampColVector.getNanoOfDay(index) != 0) ? 1 : 0;
+    return (timestampColVector.getTime(index) != 0 ||
+            timestampColVector.getNanos(index) != 0) ? 1 : 0;
   }
 
   @Override

@@ -223,6 +223,34 @@ public class VectorCopyRow {
       }
     }
   }
+
+  private class IntervalDayTimeCopyRow extends CopyRow {
+
+    IntervalDayTimeCopyRow(int inColumnIndex, int outColumnIndex) {
+      super(inColumnIndex, outColumnIndex);
+    }
+
+    @Override
+    void copy(VectorizedRowBatch inBatch, int inBatchIndex, VectorizedRowBatch outBatch, int outBatchIndex) {
+      IntervalDayTimeColumnVector inColVector = (IntervalDayTimeColumnVector) inBatch.cols[inColumnIndex];
+      IntervalDayTimeColumnVector outColVector = (IntervalDayTimeColumnVector) outBatch.cols[outColumnIndex];
+
+      if (inColVector.isRepeating) {
+        if (inColVector.noNulls || !inColVector.isNull[0]) {
+          outColVector.setElement(outBatchIndex, 0, inColVector);
+        } else {
+          VectorizedBatchUtil.setNullColIsNullValue(outColVector, outBatchIndex);
+        }
+      } else {
+        if (inColVector.noNulls || !inColVector.isNull[inBatchIndex]) {
+          outColVector.setElement(outBatchIndex, inBatchIndex, inColVector);
+        } else {
+          VectorizedBatchUtil.setNullColIsNullValue(outColVector, outBatchIndex);
+        }
+      }
+    }
+  }
+
   private CopyRow[] subRowToBatchCopiersByValue;
   private CopyRow[] subRowToBatchCopiersByReference;
 
@@ -248,6 +276,10 @@ public class VectorCopyRow {
 
       case TIMESTAMP:
         copyRowByValue = new TimestampCopyRow(inputColumn, outputColumn);
+        break;
+
+      case INTERVAL_DAY_TIME:
+        copyRowByValue = new IntervalDayTimeCopyRow(inputColumn, outputColumn);
         break;
 
       case DOUBLE:

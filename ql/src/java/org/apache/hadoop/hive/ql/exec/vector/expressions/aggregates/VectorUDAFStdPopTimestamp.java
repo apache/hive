@@ -152,7 +152,7 @@ public class VectorUDAFStdPopTimestamp extends VectorAggregateExpression {
       if (inputColVector.isRepeating) {
         if (inputColVector.noNulls || !inputColVector.isNull[0]) {
           iterateRepeatingNoNullsWithAggregationSelection(
-            aggregationBufferSets, aggregateIndex, inputColVector.getTimestampSecondsWithFractionalNanos(0), batchSize);
+            aggregationBufferSets, aggregateIndex, inputColVector.getDouble(0), batchSize);
         }
       }
       else if (!batch.selectedInUse && inputColVector.noNulls) {
@@ -213,7 +213,7 @@ public class VectorUDAFStdPopTimestamp extends VectorAggregateExpression {
           j);
         int i = selected[j];
         if (!isNull[i]) {
-          double value = inputColVector.getTimestampSecondsWithFractionalNanos(i);
+          double value = inputColVector.getDouble(i);
           if (myagg.isNull) {
             myagg.init ();
           }
@@ -239,7 +239,7 @@ public class VectorUDAFStdPopTimestamp extends VectorAggregateExpression {
           aggregationBufferSets,
           aggregateIndex,
           i);
-        double value = inputColVector.getTimestampSecondsWithFractionalNanos(selected[i]);
+        double value = inputColVector.getDouble(selected[i]);
         if (myagg.isNull) {
           myagg.init ();
         }
@@ -265,7 +265,7 @@ public class VectorUDAFStdPopTimestamp extends VectorAggregateExpression {
             aggregationBufferSets,
             aggregateIndex,
           i);
-          double value = inputColVector.getTimestampSecondsWithFractionalNanos(i);
+          double value = inputColVector.getDouble(i);
           if (myagg.isNull) {
             myagg.init ();
           }
@@ -293,7 +293,7 @@ public class VectorUDAFStdPopTimestamp extends VectorAggregateExpression {
         if (myagg.isNull) {
           myagg.init ();
         }
-        double value = inputColVector.getTimestampSecondsWithFractionalNanos(i);
+        double value = inputColVector.getDouble(i);
         myagg.sum += value;
         myagg.count += 1;
         if(myagg.count > 1) {
@@ -322,7 +322,7 @@ public class VectorUDAFStdPopTimestamp extends VectorAggregateExpression {
 
       if (inputColVector.isRepeating) {
         if (inputColVector.noNulls) {
-          iterateRepeatingNoNulls(myagg, inputColVector.getTimestampSecondsWithFractionalNanos(0), batchSize);
+          iterateRepeatingNoNulls(myagg, inputColVector.getDouble(0), batchSize);
         }
       }
       else if (!batch.selectedInUse && inputColVector.noNulls) {
@@ -377,7 +377,7 @@ public class VectorUDAFStdPopTimestamp extends VectorAggregateExpression {
       for (int j=0; j< batchSize; ++j) {
         int i = selected[j];
         if (!isNull[i]) {
-          double value = inputColVector.getTimestampSecondsWithFractionalNanos(i);
+          double value = inputColVector.getDouble(i);
           if (myagg.isNull) {
             myagg.init ();
           }
@@ -401,7 +401,7 @@ public class VectorUDAFStdPopTimestamp extends VectorAggregateExpression {
         myagg.init ();
       }
 
-      double value = inputColVector.getTimestampSecondsWithFractionalNanos(selected[0]);
+      double value = inputColVector.getDouble(selected[0]);
       myagg.sum += value;
       myagg.count += 1;
       if(myagg.count > 1) {
@@ -412,7 +412,7 @@ public class VectorUDAFStdPopTimestamp extends VectorAggregateExpression {
       // i=0 was pulled out to remove the count > 1 check in the loop
       //
       for (int i=1; i< batchSize; ++i) {
-        value = inputColVector.getTimestampSecondsWithFractionalNanos(selected[i]);
+        value = inputColVector.getDouble(selected[i]);
         myagg.sum += value;
         myagg.count += 1;
         double t = myagg.count*value - myagg.sum;
@@ -428,7 +428,7 @@ public class VectorUDAFStdPopTimestamp extends VectorAggregateExpression {
 
       for(int i=0;i<batchSize;++i) {
         if (!isNull[i]) {
-          double value = inputColVector.getTimestampSecondsWithFractionalNanos(i);
+          double value = inputColVector.getDouble(i);
           if (myagg.isNull) {
             myagg.init ();
           }
@@ -451,7 +451,7 @@ public class VectorUDAFStdPopTimestamp extends VectorAggregateExpression {
         myagg.init ();
       }
 
-      double value = inputColVector.getTimestampSecondsWithFractionalNanos(0);
+      double value = inputColVector.getDouble(0);
       myagg.sum += value;
       myagg.count += 1;
 
@@ -462,7 +462,7 @@ public class VectorUDAFStdPopTimestamp extends VectorAggregateExpression {
 
       // i=0 was pulled out to remove count > 1 check
       for (int i=1; i<batchSize; ++i) {
-        value = inputColVector.getTimestampSecondsWithFractionalNanos(i);
+        value = inputColVector.getDouble(i);
         myagg.sum += value;
         myagg.count += 1;
         double t = myagg.count*value - myagg.sum;

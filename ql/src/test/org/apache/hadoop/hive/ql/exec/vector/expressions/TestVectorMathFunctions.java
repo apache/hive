@@ -19,11 +19,13 @@
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import java.io.UnsupportedEncodingException;
+import java.sql.Timestamp;
 import java.util.Arrays;
+import java.util.Random;
 
 import junit.framework.Assert;
 
-import org.apache.hadoop.hive.common.type.PisaTimestamp;
+import org.apache.hadoop.hive.common.type.RandomTypeUtil;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
@@ -52,6 +54,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncSignLongToDoubl
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncSinDoubleToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncSqrtDoubleToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncTanDoubleToDouble;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.junit.Test;
 
 
@@ -194,22 +197,22 @@ public class TestVectorMathFunctions {
     return batch;
   }
 
-  public static VectorizedRowBatch getVectorizedRowBatchTimestampInDoubleOut() {
+  public static VectorizedRowBatch getVectorizedRowBatchTimestampInDoubleOut(double[] doubleValues) {
+    Random r = new Random(45993);
     VectorizedRowBatch batch = new VectorizedRowBatch(2);
     TimestampColumnVector tcv;
     DoubleColumnVector dcv;
-    tcv = new TimestampColumnVector();
-    dcv = new DoubleColumnVector();
-    tcv.set(0, new PisaTimestamp(0, -2));
-    tcv.set(1, new PisaTimestamp(0, -1));
-    tcv.set(2, new PisaTimestamp(0, 0));
-    tcv.set(3, new PisaTimestamp(0, 1));
-    tcv.set(4, new PisaTimestamp(0, 2));
+    tcv = new TimestampColumnVector(doubleValues.length);
+    dcv = new DoubleColumnVector(doubleValues.length);
+    for (int i = 0; i < doubleValues.length; i++) {
+      doubleValues[i] = r.nextDouble() % (double) SECONDS_LIMIT;
+      dcv.vector[i] = doubleValues[i];
+    }
 
     batch.cols[0] = tcv;
     batch.cols[1] = dcv;
 
-    batch.size = 5;
+    batch.size = doubleValues.length;
     return batch;
   }
 
@@ -228,35 +231,45 @@ public class TestVectorMathFunctions {
     return batch;
   }
 
-  public static VectorizedRowBatch getVectorizedRowBatchTimestampInLongOut() {
+  public static VectorizedRowBatch getVectorizedRowBatchTimestampInLongOut(long[] longValues) {
+    Random r = new Random(345);
     VectorizedRowBatch batch = new VectorizedRowBatch(2);
     TimestampColumnVector inV;
     LongColumnVector outV;
-    inV = new TimestampColumnVector();
-    outV = new LongColumnVector();
-    inV.setTimestampSeconds(0, 2);
-    inV.setTimestampSeconds(1, 2);
+    inV = new TimestampColumnVector(longValues.length);
+    outV = new LongColumnVector(longValues.length);
+    for (int i = 0; i < longValues.length; i++) {
+      Timestamp randTimestamp = RandomTypeUtil.getRandTimestamp(r);
+      longValues[i] = TimestampWritable.getLong(randTimestamp);
+      inV.set(0, randTimestamp);
+    }
 
     batch.cols[0] = inV;
     batch.cols[1] = outV;
 
-    batch.size = 2;
+    batch.size = longValues.length;
     return batch;
   }
 
-  public static VectorizedRowBatch getVectorizedRowBatchLongInTimestampOut() {
+  static long SECONDS_LIMIT = 60L * 24L * 365L * 9999L;
+
+  public static VectorizedRowBatch getVectorizedRowBatchLongInTimestampOut(long[] longValues) {
+    Random r = new Random(12099);
     VectorizedRowBatch batch = new VectorizedRowBatch(2);
     LongColumnVector inV;
     TimestampColumnVector outV;
     inV = new LongColumnVector();
     outV = new TimestampColumnVector();
-    inV.vector[0] = -2;
-    inV.vector[1] = 2;
+
+    for (int i = 0; i < longValues.length; i++) {
+      longValues[i] = r.nextLong() % SECONDS_LIMIT;
+      inV.vector[i] = longValues[i];
+    }
 
     batch.cols[0] = inV;
     batch.cols[1] = outV;
 
-    batch.size = 2;
+    batch.size = longValues.length;
     return batch;
   }
 

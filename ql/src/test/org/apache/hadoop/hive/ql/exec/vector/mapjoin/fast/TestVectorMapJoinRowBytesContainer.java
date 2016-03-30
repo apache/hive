@@ -31,7 +31,8 @@ public class TestVectorMapJoinRowBytesContainer  {
   public void doFillReplay(Random random, int maxCount) throws Exception {
 
     RandomByteArrayStream randomByteArrayStream = new RandomByteArrayStream(random);
-    VectorMapJoinRowBytesContainer vectorMapJoinRowBytesContainer = new VectorMapJoinRowBytesContainer();
+    VectorMapJoinRowBytesContainer vectorMapJoinRowBytesContainer =
+        new VectorMapJoinRowBytesContainer(null);
 
     int count = Math.min(maxCount, random.nextInt(500));
     for (int i = 0; i < count; i++) {

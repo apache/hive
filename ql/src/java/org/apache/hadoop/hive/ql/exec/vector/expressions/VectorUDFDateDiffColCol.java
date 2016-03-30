@@ -275,7 +275,7 @@ public class VectorUDFDateDiffColCol extends VectorExpression {
       output.isRepeating = true;
 
       if (!input.isNull[0]) {
-        date.setTime(input.getTimestampMilliseconds(0));
+        date.setTime(input.getTime(0));
         output.vector[0] = DateWritable.dateToDays(date);
       }
       return;
@@ -288,12 +288,12 @@ public class VectorUDFDateDiffColCol extends VectorExpression {
       if (selectedInUse) {
         for (int j = 0; j < size; j++) {
           int i = sel[j];
-          date.setTime(input.getTimestampMilliseconds(i));
+          date.setTime(input.getTime(i));
           output.vector[i] = DateWritable.dateToDays(date);
         }
       } else {
         for (int i = 0; i < size; i++) {
-          date.setTime(input.getTimestampMilliseconds(i));
+          date.setTime(input.getTime(i));
           output.vector[i] = DateWritable.dateToDays(date);
         }
       }
@@ -312,14 +312,14 @@ public class VectorUDFDateDiffColCol extends VectorExpression {
         for (int j = 0; j < size; j++) {
           int i = sel[j];
           if (!input.isNull[i]) {
-            date.setTime(input.getTimestampMilliseconds(i));
+            date.setTime(input.getTime(i));
             output.vector[i] = DateWritable.dateToDays(date);
           }
         }
       } else {
         for (int i = 0; i < size; i++) {
           if (!input.isNull[i]) {
-            date.setTime(input.getTimestampMilliseconds(i));
+            date.setTime(input.getTime(i));
             output.vector[i] = DateWritable.dateToDays(date);
           }
         }

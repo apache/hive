@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 import java.sql.Timestamp;
 import java.util.HashSet;
 
-import org.apache.hadoop.hive.common.type.PisaTimestamp;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor.Descriptor;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
@@ -36,11 +35,8 @@ public class TimestampColumnInList extends VectorExpression implements ITimestam
   private Timestamp[] inListValues;
   private int outputColumn;
 
-  private transient PisaTimestamp scratchTimestamp;
-
-
   // The set object containing the IN list.
-  private transient HashSet<PisaTimestamp> inSet;
+  private transient HashSet<Timestamp> inSet;
 
   public TimestampColumnInList() {
     super();
@@ -64,11 +60,10 @@ public class TimestampColumnInList extends VectorExpression implements ITimestam
     }
 
     if (inSet == null) {
-      inSet = new HashSet<PisaTimestamp>(inListValues.length);
+      inSet = new HashSet<Timestamp>(inListValues.length);
       for (Timestamp val : inListValues) {
-        inSet.add(new PisaTimestamp(val));
+        inSet.add(val);
       }
-      scratchTimestamp = new PisaTimestamp();
     }
 
     TimestampColumnVector inputColVector = (TimestampColumnVector) batch.cols[inputCol];
@@ -91,19 +86,16 @@ public class TimestampColumnInList extends VectorExpression implements ITimestam
 
         // All must be selected otherwise size would be zero
         // Repeating property will not change.
-        inputColVector.pisaTimestampUpdate(scratchTimestamp, 0);
-        outputVector[0] = inSet.contains(scratchTimestamp) ? 1 : 0;
+        outputVector[0] = inSet.contains(inputColVector.asScratchTimestamp(0)) ? 1 : 0;
         outputColVector.isRepeating = true;
       } else if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          inputColVector.pisaTimestampUpdate(scratchTimestamp, i);
-          outputVector[i] = inSet.contains(scratchTimestamp) ? 1 : 0;
+          outputVector[i] = inSet.contains(inputColVector.asScratchTimestamp(i)) ? 1 : 0;
         }
       } else {
         for(int i = 0; i != n; i++) {
-          inputColVector.pisaTimestampUpdate(scratchTimestamp, i);
-          outputVector[i] = inSet.contains(scratchTimestamp) ? 1 : 0;
+          outputVector[i] = inSet.contains(inputColVector.asScratchTimestamp(i)) ? 1 : 0;
         }
       }
     } else {
@@ -112,8 +104,7 @@ public class TimestampColumnInList extends VectorExpression implements ITimestam
         //All must be selected otherwise size would be zero
         //Repeating property will not change.
         if (!nullPos[0]) {
-          inputColVector.pisaTimestampUpdate(scratchTimestamp, 0);
-          outputVector[0] = inSet.contains(scratchTimestamp) ? 1 : 0;
+          outputVector[0] = inSet.contains(inputColVector.asScratchTimestamp(0)) ? 1 : 0;
           outNulls[0] = false;
         } else {
           outNulls[0] = true;
@@ -124,16 +115,14 @@ public class TimestampColumnInList extends VectorExpression implements ITimestam
           int i = sel[j];
           outNulls[i] = nullPos[i];
           if (!nullPos[i]) {
-            inputColVector.pisaTimestampUpdate(scratchTimestamp, i);
-            outputVector[i] = inSet.contains(scratchTimestamp) ? 1 : 0;
+            outputVector[i] = inSet.contains(inputColVector.asScratchTimestamp(i)) ? 1 : 0;
           }
         }
       } else {
         System.arraycopy(nullPos, 0, outNulls, 0, n);
         for(int i = 0; i != n; i++) {
           if (!nullPos[i]) {
-            inputColVector.pisaTimestampUpdate(scratchTimestamp, i);
-            outputVector[i] = inSet.contains(scratchTimestamp) ? 1 : 0;
+            outputVector[i] = inSet.contains(inputColVector.asScratchTimestamp(i)) ? 1 : 0;
           }
         }
       }

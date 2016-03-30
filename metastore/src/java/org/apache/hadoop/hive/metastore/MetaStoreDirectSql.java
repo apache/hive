@@ -557,14 +557,14 @@ class MetaStoreDirectSql {
       Long sdId = extractSqlLong(fields[1]);
       Long colId = extractSqlLong(fields[2]);
       Long serdeId = extractSqlLong(fields[3]);
-      // A partition must have either everything set, or nothing set if it's a view.
-      if (sdId == null || colId == null || serdeId == null) {
+      // A partition must have at least sdId and serdeId set, or nothing set if it's a view.
+      if (sdId == null || serdeId == null) {
         if (isView == null) {
           isView = isViewTable(dbName, tblName);
         }
         if ((sdId != null || colId != null || serdeId != null) || !isView) {
-          throw new MetaException("Unexpected null for one of the IDs, SD " + sdId + ", column "
-              + colId + ", serde " + serdeId + " for a " + (isView ? "" : "non-") + " view");
+          throw new MetaException("Unexpected null for one of the IDs, SD " + sdId +
+                  ", serde " + serdeId + " for a " + (isView ? "" : "non-") + " view");
         }
       }
 
@@ -580,7 +580,7 @@ class MetaStoreDirectSql {
       partitions.put(partitionId, part);
 
       if (sdId == null) continue; // Probably a view.
-      assert colId != null && serdeId != null;
+      assert serdeId != null;
 
       // We assume each partition has an unique SD.
       StorageDescriptor sd = new StorageDescriptor();
@@ -605,14 +605,16 @@ class MetaStoreDirectSql {
       sdSb.append(sdId).append(",");
       part.setSd(sd);
 
-      List<FieldSchema> cols = colss.get(colId);
-      // We expect that colId will be the same for all (or many) SDs.
-      if (cols == null) {
-        cols = new ArrayList<FieldSchema>();
-        colss.put(colId, cols);
-        colsSb.append(colId).append(",");
+      if (colId != null) {
+        List<FieldSchema> cols = colss.get(colId);
+        // We expect that colId will be the same for all (or many) SDs.
+        if (cols == null) {
+          cols = new ArrayList<FieldSchema>();
+          colss.put(colId, cols);
+          colsSb.append(colId).append(",");
+        }
+        sd.setCols(cols);
       }
-      sd.setCols(cols);
 
       // We assume each SD has an unique serde.
       SerDeInfo serde = new SerDeInfo();
@@ -658,8 +660,10 @@ class MetaStoreDirectSql {
       assert serdeSb.length() == 0 && colsSb.length() == 0;
       return orderedResult; // No SDs, probably a view.
     }
-    String sdIds = trimCommaList(sdSb), serdeIds = trimCommaList(serdeSb),
-        colIds = trimCommaList(colsSb);
+
+    String sdIds = trimCommaList(sdSb);
+    String serdeIds = trimCommaList(serdeSb);
+    String colIds = trimCommaList(colsSb);
 
     // Get all the stuff for SD. Don't do empty-list check - we expect partitions do have SDs.
     queryText = "select \"SD_ID\", \"PARAM_KEY\", \"PARAM_VALUE\" from \"SD_PARAMS\""

@@ -25,8 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
@@ -49,13 +47,12 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicListDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFStruct;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Expression processor factory for partition condition removing. Each processor tries to
@@ -368,50 +365,66 @@ public final class PcrExprProcFactory {
           return getResultWrapFromResults(results, fd, newNodeOutputs);
         }
         return new NodeInfoWrapper(WalkState.UNKNOWN, null, getOutExpr(fd, newNodeOutputs));
-      } else if (fd.getGenericUDF() instanceof GenericUDFIn) {
-          List<ExprNodeDesc> children = fd.getChildren();
-          boolean removePredElem = false;
-          ExprNodeDesc lhs = children.get(0);
+      } else if (FunctionRegistry.isIn(fd)) {
+        List<ExprNodeDesc> children = fd.getChildren();
+        boolean removePredElem = false;
+        ExprNodeDesc lhs = children.get(0);
 
-          if (lhs instanceof ExprNodeGenericFuncDesc) {
-              // Make sure that the generic udf is deterministic
-              if (FunctionRegistry.isDeterministic(((ExprNodeGenericFuncDesc) lhs)
-                  .getGenericUDF())) {
-                boolean hasOnlyPartCols = true;
-                boolean hasDynamicListDesc = false;
-
-                for (ExprNodeDesc ed : ((ExprNodeGenericFuncDesc) lhs).getChildren()) {
-                  // Check if the current field expression contains only
-                  // partition column or a virtual column or constants.
-                  // If yes, this filter predicate is a candidate for this optimization.
-                  if (!(ed instanceof ExprNodeColumnDesc &&
-                       ((ExprNodeColumnDesc)ed).getIsPartitionColOrVirtualCol())) {
-                    hasOnlyPartCols = false;
-                    break;
-                  }
-                }
-
-                // If we have non-partition columns, we cannot remove the predicate.
-                if (hasOnlyPartCols) {
-                  // We should not remove the dynamic partition pruner generated synthetic predicates.
-                  for (int i = 1; i < children.size(); i++) {
-                    if (children.get(i) instanceof ExprNodeDynamicListDesc) {
-                      hasDynamicListDesc = true;
-                      break;
-                    }
-                  }
-                }
-
-                removePredElem = hasOnlyPartCols && !hasDynamicListDesc;
-              }
+        if (lhs instanceof ExprNodeColumnDesc) {
+          // It is an IN clause on a column
+          if (((ExprNodeColumnDesc)lhs).getIsPartitionColOrVirtualCol()) {
+            // It is a partition column, we can proceed
+            removePredElem = true;
           }
+          if (removePredElem) {
+            // We should not remove the dynamic partition pruner generated synthetic predicates.
+            for (int i = 1; i < children.size(); i++) {
+              if (children.get(i) instanceof ExprNodeDynamicListDesc) {
+                removePredElem = false;
+                break;
+              }
+            }
+          }
+        } else if (lhs instanceof ExprNodeGenericFuncDesc) {
+          // It is an IN clause on a struct
+          // Make sure that the generic udf is deterministic
+          if (FunctionRegistry.isDeterministic(((ExprNodeGenericFuncDesc) lhs)
+              .getGenericUDF())) {
+            boolean hasOnlyPartCols = true;
+            boolean hasDynamicListDesc = false;
 
-          // If removePredElem is set to true, return true as this is a potential candidate
-          //  for partition condition remover. Else, set the WalkState for this node to unknown.
-          return removePredElem ?
-            new NodeInfoWrapper(WalkState.TRUE, null,
-            new ExprNodeConstantDesc(fd.getTypeInfo(), Boolean.TRUE)) :
-            new NodeInfoWrapper(WalkState.UNKNOWN, null, getOutExpr(fd, nodeOutputs)) ;
+            for (ExprNodeDesc ed : ((ExprNodeGenericFuncDesc) lhs).getChildren()) {
+              // Check if the current field expression contains only
+              // partition column or a virtual column or constants.
+              // If yes, this filter predicate is a candidate for this optimization.
+              if (!(ed instanceof ExprNodeColumnDesc &&
+                   ((ExprNodeColumnDesc)ed).getIsPartitionColOrVirtualCol())) {
+                hasOnlyPartCols = false;
+                break;
+              }
+            }
+
+            // If we have non-partition columns, we cannot remove the predicate.
+            if (hasOnlyPartCols) {
+              // We should not remove the dynamic partition pruner generated synthetic predicates.
+              for (int i = 1; i < children.size(); i++) {
+                if (children.get(i) instanceof ExprNodeDynamicListDesc) {
+                  hasDynamicListDesc = true;
+                  break;
+                }
+              }
+            }
+
+            removePredElem = hasOnlyPartCols && !hasDynamicListDesc;
+          }
+        }
+
+        // If removePredElem is set to true, return true as this is a potential candidate
+        // for partition condition remover. Else, set the WalkState for this node to unknown.
+        return removePredElem ?
+          new NodeInfoWrapper(WalkState.TRUE, null,
+          new ExprNodeConstantDesc(fd.getTypeInfo(), Boolean.TRUE)) :
+          new NodeInfoWrapper(WalkState.UNKNOWN, null, getOutExpr(fd, nodeOutputs)) ;
       } else if (!FunctionRegistry.isDeterministic(fd.getGenericUDF())) {
         // If it's a non-deterministic UDF, set unknown to true
         return new NodeInfoWrapper(WalkState.UNKNOWN, null,

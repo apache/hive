@@ -18,7 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen;
 
-import org.apache.hadoop.hive.common.type.PisaTimestamp;
+import java.sql.Timestamp;
+
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
@@ -49,7 +50,7 @@ public class <ClassName> extends VectorAggregateExpression {
 
       private static final long serialVersionUID = 1L;
 
-      transient private final PisaTimestamp value;
+      transient private final Timestamp value;
 
       /**
       * Value is explicitly (re)initialized in reset()
@@ -57,15 +58,15 @@ public class <ClassName> extends VectorAggregateExpression {
       transient private boolean isNull = true;
 
       public Aggregation() {
-        value = new PisaTimestamp();
+        value = new Timestamp(0);
       }
 
       public void checkValue(TimestampColumnVector colVector, int index) {
         if (isNull) {
           isNull = false;
-          colVector.pisaTimestampUpdate(this.value, index);
+          colVector.timestampUpdate(this.value, index);
         } else if (colVector.compareTo(this.value, index) <OperatorSymbol> 0) {
-          colVector.pisaTimestampUpdate(this.value, index);
+          colVector.timestampUpdate(this.value, index);
         }
       }
 
@@ -77,7 +78,7 @@ public class <ClassName> extends VectorAggregateExpression {
       @Override
       public void reset () {
         isNull = true;
-        this.value.reset();
+        this.value.setTime(0);
       }
     }
 
@@ -311,7 +312,7 @@ public class <ClassName> extends VectorAggregateExpression {
           if (inputColVector.noNulls &&
             (myagg.isNull || (inputColVector.compareTo(myagg.value, 0) <OperatorSymbol> 0))) {
             myagg.isNull = false;
-            inputColVector.pisaTimestampUpdate(myagg.value, 0);
+            inputColVector.timestampUpdate(myagg.value, 0);
           }
           return;
         }
@@ -344,10 +345,10 @@ public class <ClassName> extends VectorAggregateExpression {
         if (!isNull[i]) {
           if (myagg.isNull) {
             myagg.isNull = false;
-            inputColVector.pisaTimestampUpdate(myagg.value, i);
+            inputColVector.timestampUpdate(myagg.value, i);
           }
           else if (inputColVector.compareTo(myagg.value, i) <OperatorSymbol> 0) {
-            inputColVector.pisaTimestampUpdate(myagg.value, i);
+            inputColVector.timestampUpdate(myagg.value, i);
           }
         }
       }
@@ -360,14 +361,14 @@ public class <ClassName> extends VectorAggregateExpression {
         int[] selected) {
 
       if (myagg.isNull) {
-        inputColVector.pisaTimestampUpdate(myagg.value, selected[0]);
+        inputColVector.timestampUpdate(myagg.value, selected[0]);
         myagg.isNull = false;
       }
 
       for (int i=0; i< batchSize; ++i) {
         int sel = selected[i];
         if (inputColVector.compareTo(myagg.value, sel) <OperatorSymbol> 0) {
-          inputColVector.pisaTimestampUpdate(myagg.value, sel);
+          inputColVector.timestampUpdate(myagg.value, sel);
         }
       }
     }
@@ -381,11 +382,11 @@ public class <ClassName> extends VectorAggregateExpression {
       for(int i=0;i<batchSize;++i) {
         if (!isNull[i]) {
           if (myagg.isNull) {
-            inputColVector.pisaTimestampUpdate(myagg.value, i);
+            inputColVector.timestampUpdate(myagg.value, i);
             myagg.isNull = false;
           }
           else if (inputColVector.compareTo(myagg.value, i) <OperatorSymbol> 0) {
-            inputColVector.pisaTimestampUpdate(myagg.value, i);
+            inputColVector.timestampUpdate(myagg.value, i);
           }
         }
       }
@@ -396,13 +397,13 @@ public class <ClassName> extends VectorAggregateExpression {
         TimestampColumnVector inputColVector,
         int batchSize) {
       if (myagg.isNull) {
-        inputColVector.pisaTimestampUpdate(myagg.value, 0);
+        inputColVector.timestampUpdate(myagg.value, 0);
         myagg.isNull = false;
       }
 
       for (int i=0;i<batchSize;++i) {
         if (inputColVector.compareTo(myagg.value, i) <OperatorSymbol> 0) {
-          inputColVector.pisaTimestampUpdate(myagg.value, i);
+          inputColVector.timestampUpdate(myagg.value, i);
         }
       }
     }

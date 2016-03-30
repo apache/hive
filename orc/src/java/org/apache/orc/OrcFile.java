@@ -232,6 +232,7 @@ public class OrcFile {
     private long blockSizeValue;
     private int rowIndexStrideValue;
     private int bufferSizeValue;
+    private boolean enforceBufferSize = false;
     private boolean blockPaddingValue;
     private CompressionKind compressValue;
     private MemoryManager memoryManagerValue;
@@ -317,10 +318,24 @@ public class OrcFile {
 
     /**
      * The size of the memory buffers used for compressing and storing the
-     * stripe in memory.
+     * stripe in memory. NOTE: ORC writer may choose to use smaller buffer
+     * size based on stripe size and number of columns for efficient stripe
+     * writing and memory utilization. To enforce writer to use the requested
+     * buffer size use enforceBufferSize().
      */
     public WriterOptions bufferSize(int value) {
       bufferSizeValue = value;
+      return this;
+    }
+
+    /**
+     * Enforce writer to use requested buffer size instead of estimating
+     * buffer size based on stripe size and number of columns.
+     * See bufferSize() method for more info.
+     * Default: false
+     */
+    public WriterOptions enforceBufferSize() {
+      enforceBufferSize = true;
       return this;
     }
 
@@ -458,6 +473,10 @@ public class OrcFile {
 
     public int getBufferSize() {
       return bufferSizeValue;
+    }
+
+    public boolean isEnforceBufferSize() {
+      return enforceBufferSize;
     }
 
     public int getRowIndexStride() {

@@ -269,7 +269,7 @@ STAGE PLANS:
             alias: store
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: ((s_state) IN ('KS', 'AL', 'MN', 'AL', 'SC', 'VT') and s_store_sk is not null) (type: boolean)
+              predicate: ((s_state) IN ('KS', 'AL', 'MN', 'SC', 'VT') and s_store_sk is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: s_store_sk (type: int), s_state (type: string)

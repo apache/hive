@@ -24,6 +24,7 @@ import com.google.common.base.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileUtil;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -52,36 +53,34 @@ public class KeyValueContainer {
   private int readCursor = 0;             // cursor during reading
   private int rowsOnDisk = 0;             // total number of pairs in output
 
-  private File parentFile;
+  private File parentDir;
   private File tmpFile;
 
   private Input input;
   private Output output;
 
-  public KeyValueContainer() {
+  public KeyValueContainer(String spillLocalDirs) {
     readBuffer = new ObjectPair[IN_MEMORY_NUM_ROWS];
     for (int i = 0; i < IN_MEMORY_NUM_ROWS; i++) {
       readBuffer[i] = new ObjectPair<HiveKey, BytesWritable>();
     }
     try {
-      setupOutput();
+      setupOutput(spillLocalDirs);
     } catch (IOException | HiveException e) {
       throw new RuntimeException("Failed to create temporary output file on disk", e);
     }
   }
 
-  private void setupOutput() throws IOException, HiveException {
+  private void setupOutput(String spillLocalDirs) throws IOException, HiveException {
     FileOutputStream fos = null;
     try {
-      if (parentFile == null) {
-        parentFile = File.createTempFile("key-value-container", "");
-        if (parentFile.delete() && parentFile.mkdir()) {
-          parentFile.deleteOnExit();
-        }
+      if (parentDir == null) {
+        parentDir = FileUtils.createLocalDirsTempFile(spillLocalDirs, "key-value-container", "", true);
+        parentDir.deleteOnExit();
       }
 
       if (tmpFile == null || input != null) {
-        tmpFile = File.createTempFile("KeyValueContainer", ".tmp", parentFile);
+        tmpFile = File.createTempFile("KeyValueContainer", ".tmp", parentDir);
         LOG.info("KeyValueContainer created temp file " + tmpFile.getAbsolutePath());
         tmpFile.deleteOnExit();
       }
@@ -131,7 +130,7 @@ public class KeyValueContainer {
     readCursor = rowsInReadBuffer = rowsOnDisk = 0;
     readBufferUsed = false;
 
-    if (parentFile != null) {
+    if (parentDir != null) {
       if (input != null) {
         try {
           input.close();
@@ -147,10 +146,10 @@ public class KeyValueContainer {
         output = null;
       }
       try {
-        FileUtil.fullyDelete(parentFile);
+        FileUtil.fullyDelete(parentDir);
       } catch (Throwable ignored) {
       }
-      parentFile = null;
+      parentDir = null;
       tmpFile = null;
     }
   }

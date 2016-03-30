@@ -59,6 +59,9 @@ public class VectorExpressionDescriptor {
   // TimestampColumnVector -->
   //    TIMESTAMP
   //
+  // IntervalDayTimeColumnVector -->
+  //    INTERVAL_DAY_TIME
+  //
   public enum ArgumentType {
     NONE                    (0x000),
     INT_FAMILY              (0x001),
@@ -76,7 +79,6 @@ public class VectorExpressionDescriptor {
     INTERVAL_FAMILY         (INTERVAL_YEAR_MONTH.value | INTERVAL_DAY_TIME.value),
     INT_INTERVAL_YEAR_MONTH     (INT_FAMILY.value | INTERVAL_YEAR_MONTH.value),
     INT_DATE_INTERVAL_YEAR_MONTH  (INT_FAMILY.value | DATE.value | INTERVAL_YEAR_MONTH.value),
-    TIMESTAMP_INTERVAL_DAY_TIME (TIMESTAMP.value | INTERVAL_DAY_TIME.value),
     STRING_DATETIME_FAMILY  (STRING_FAMILY.value | DATETIME_FAMILY.value),
     ALL_FAMILY              (0xFFF);
 
@@ -346,7 +348,7 @@ public class VectorExpressionDescriptor {
           return ve;
         }
       } catch (Exception ex) {
-        throw new HiveException(ex);
+        throw new HiveException("Could not instantiate VectorExpression class " + ve.getSimpleName(), ex);
       }
     }
     if (LOG.isDebugEnabled()) {

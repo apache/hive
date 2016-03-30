@@ -19,10 +19,16 @@
 
 package org.apache.hadoop.hive.metastore.hbase.stats;
 
-import org.apache.hadoop.hive.metastore.NumDistinctValueEstimator;
+import java.util.List;
+
+import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 
 public abstract class ColumnStatsAggregator {
-  NumDistinctValueEstimator ndvEstimator = null;
-  public abstract void aggregate(ColumnStatisticsObj aggregateColStats, ColumnStatisticsObj newColStats);
+  public int numBitVectors;
+  public boolean useDensityFunctionForNDVEstimation;
+
+  public abstract ColumnStatisticsObj aggregate(String colName, List<String> partNames,
+      List<ColumnStatistics> css) throws MetaException;
 }

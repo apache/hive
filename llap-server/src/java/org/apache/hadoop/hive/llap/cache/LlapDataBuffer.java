@@ -83,8 +83,8 @@ public final class LlapDataBuffer extends LlapCacheableBuffer implements MemoryB
       newRefCount = oldRefCount + 1;
       if (refCount.compareAndSet(oldRefCount, newRefCount)) break;
     }
-    if (DebugUtils.isTraceLockingEnabled()) {
-      LlapIoImpl.LOG.info("Locked " + this + "; new ref count " + newRefCount);
+    if (LlapIoImpl.LOCKING_LOGGER.isTraceEnabled()) {
+      LlapIoImpl.LOCKING_LOGGER.trace("Locked {}; new ref count {}", this, newRefCount);
     }
     return newRefCount;
   }
@@ -109,8 +109,8 @@ public final class LlapDataBuffer extends LlapCacheableBuffer implements MemoryB
 
   int decRef() {
     int newRefCount = refCount.decrementAndGet();
-    if (DebugUtils.isTraceLockingEnabled()) {
-      LlapIoImpl.LOG.info("Unlocked " + this + "; refcount " + newRefCount);
+    if (LlapIoImpl.LOCKING_LOGGER.isTraceEnabled()) {
+      LlapIoImpl.LOCKING_LOGGER.trace("Unlocked {}; refcount {}", this, newRefCount);
     }
     if (newRefCount < 0) {
       throw new AssertionError("Unexpected refCount " + newRefCount + ": " + this);
@@ -128,8 +128,8 @@ public final class LlapDataBuffer extends LlapCacheableBuffer implements MemoryB
       if (value != 0) return false;
       if (refCount.compareAndSet(value, EVICTED_REFCOUNT)) break;
     }
-    if (DebugUtils.isTraceLockingEnabled()) {
-      LlapIoImpl.LOG.info("Invalidated " + this + " due to eviction");
+    if (LlapIoImpl.LOCKING_LOGGER.isTraceEnabled()) {
+      LlapIoImpl.LOCKING_LOGGER.trace("Invalidated {} due to eviction", this);
     }
     return true;
   }

@@ -815,7 +815,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
         aggregationBatchInfo = new VectorAggregationBufferBatch();
         aggregationBatchInfo.compileAggregationBatchInfo(aggregators);
       }
-      LOG.warn("VectorGroupByOperator is vector output " + isVectorOutput);
+      LOG.info("VectorGroupByOperator is vector output {}", isVectorOutput);
       outputObjInspector = ObjectInspectorFactory.getStandardStructObjectInspector(
           outputFieldNames, objectInspectors);
       if (isVectorOutput) {

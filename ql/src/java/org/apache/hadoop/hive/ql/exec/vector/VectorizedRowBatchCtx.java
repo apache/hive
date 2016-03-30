@@ -400,14 +400,14 @@ public class VectorizedRowBatchCtx {
         }
 
         case INTERVAL_DAY_TIME: {
-          TimestampColumnVector tcv = (TimestampColumnVector) batch.cols[colIndex];
+          IntervalDayTimeColumnVector icv = (IntervalDayTimeColumnVector) batch.cols[colIndex];
           if (value == null) {
-            tcv.noNulls = false;
-            tcv.isNull[0] = true;
-            tcv.isRepeating = true;
+            icv.noNulls = false;
+            icv.isNull[0] = true;
+            icv.isRepeating = true;
           } else {
-            tcv.fill(((HiveIntervalDayTime) value).pisaTimestampUpdate(tcv.useScratchPisaTimestamp()));
-            tcv.isNull[0] = false;
+            icv.fill(((HiveIntervalDayTime) value));
+            icv.isNull[0] = false;
           }
         }
 

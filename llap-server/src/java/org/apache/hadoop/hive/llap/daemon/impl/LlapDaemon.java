@@ -30,6 +30,7 @@ import javax.management.ObjectName;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.llap.configuration.LlapDaemonConfiguration;
 import org.apache.hadoop.hive.llap.daemon.ContainerRunner;
 import org.apache.hadoop.hive.llap.daemon.QueryFailedHandler;
@@ -333,10 +334,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
       LlapDaemonConfiguration daemonConf = new LlapDaemonConfiguration();
       int numExecutors = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_DAEMON_NUM_EXECUTORS);
 
-      String localDirList = HiveConf.getVar(daemonConf, ConfVars.LLAP_DAEMON_WORK_DIRS);
-      if (localDirList == null || localDirList.isEmpty()) {
-        localDirList = daemonConf.get("yarn.nodemanager.local-dirs");
-      }
+      String localDirList = LlapUtil.getDaemonLocalDirList(daemonConf);
       String[] localDirs = (localDirList == null || localDirList.isEmpty()) ?
           new String[0] : StringUtils.getTrimmedStrings(localDirList);
       int rpcPort = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_DAEMON_RPC_PORT);

@@ -2444,8 +2444,12 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     String dbName = unescapeIdentifier(ast.getChild(0).getText());
     String mode  = unescapeIdentifier(ast.getChild(1).getText().toUpperCase());
 
-    //inputs.add(new ReadEntity(dbName));
-    //outputs.add(new WriteEntity(dbName));
+    inputs.add(new ReadEntity(getDatabase(dbName)));
+    // Lock database operation is to acquire the lock explicitly, the operation
+    // itself doesn't need to be locked. Set the WriteEntity as WriteType:
+    // DDL_NO_LOCK here, otherwise it will conflict with Hive's transaction.
+    outputs.add(new WriteEntity(getDatabase(dbName), WriteType.DDL_NO_LOCK));
+
     LockDatabaseDesc lockDatabaseDesc = new LockDatabaseDesc(dbName, mode,
                         HiveConf.getVar(conf, ConfVars.HIVEQUERYID));
     lockDatabaseDesc.setQueryStr(ctx.getCmd());
@@ -2456,6 +2460,13 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private void analyzeUnlockDatabase(ASTNode ast) throws SemanticException {
     String dbName = unescapeIdentifier(ast.getChild(0).getText());
+
+    inputs.add(new ReadEntity(getDatabase(dbName)));
+    // Unlock database operation is to release the lock explicitly, the
+    // operation itself don't need to be locked. Set the WriteEntity as
+    // WriteType: DDL_NO_LOCK here, otherwise it will conflict with
+    // Hive's transaction.
+    outputs.add(new WriteEntity(getDatabase(dbName), WriteType.DDL_NO_LOCK));
 
     UnlockDatabaseDesc unlockDatabaseDesc = new UnlockDatabaseDesc(dbName);
     DDLWork work = new DDLWork(getInputs(), getOutputs(), unlockDatabaseDesc);

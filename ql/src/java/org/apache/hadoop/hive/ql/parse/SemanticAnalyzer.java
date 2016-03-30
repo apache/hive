@@ -10776,10 +10776,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // check whether any of them break the limit
         for (Operator<?> topOp : topOps.values()) {
           if (topOp instanceof TableScanOperator) {
-            if (((TableScanDesc)topOp.getConf()).getIsMetadataOnly()) {
+            TableScanOperator tsOp = (TableScanOperator) topOp;
+            if (tsOp.getConf().getIsMetadataOnly()) {
               continue;
             }
-            PrunedPartitionList parts = pCtx.getOpToPartList().get(topOp);
+            PrunedPartitionList parts = pCtx.getPrunedPartitions(tsOp);
+            if (!parts.getSourceTable().isPartitioned()) {
+              continue;
+            }
             if (parts.getPartitions().size() > scanLimit) {
               throw new SemanticException(ErrorMsg.PARTITION_SCAN_LIMIT_EXCEEDED, ""
                   + parts.getPartitions().size(), "" + parts.getSourceTable().getTableName(), ""

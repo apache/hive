@@ -186,9 +186,7 @@ public class IncrementalObjectSizeEstimator {
       fieldCol = (Collection<?>)fieldObj;
       if (fieldCol.size() == 0) {
         fieldCol = null;
-        if (DebugUtils.isTraceEnabled()) {
-          LlapIoImpl.LOG.info("Empty collection " + field);
-        }
+        LlapIoImpl.LOG.trace("Empty collection {}", field);
       }
     }
     if (fieldCol != null) {
@@ -219,9 +217,7 @@ public class IncrementalObjectSizeEstimator {
       fieldCol = (Map<?, ?>)fieldObj;
       if (fieldCol.size() == 0) {
         fieldCol = null;
-        if (DebugUtils.isTraceEnabled()) {
-          LlapIoImpl.LOG.info("Empty map " + field);
-        }
+        LlapIoImpl.LOG.trace("Empty map {}", field);
       }
     }
     if (fieldCol != null) {
@@ -257,15 +253,11 @@ public class IncrementalObjectSizeEstimator {
         return new Class<?>[] { (Class<?>)types[0], (Class<?>)types[1] };
       } else {
         // TODO: we could try to get the declaring object and infer argument... stupid Java.
-        if (DebugUtils.isTraceEnabled()) {
-          LlapIoImpl.LOG.info("Cannot determine map type: " + field);
-        }
+        LlapIoImpl.LOG.trace("Cannot determine map type: {}", field);
       }
     } else {
       // TODO: we could try to get superclass or generic interfaces.
-      if (DebugUtils.isTraceEnabled()) {
-        LlapIoImpl.LOG.info("Non-parametrized map type: " + field);
-      }
+      LlapIoImpl.LOG.trace("Non-parametrized map type: {}", field);
     }
     return null;
   }
@@ -279,15 +271,11 @@ public class IncrementalObjectSizeEstimator {
         return (Class<?>)type;
       } else {
         // TODO: we could try to get the declaring object and infer argument... stupid Java.
-        if (DebugUtils.isTraceEnabled()) {
-          LlapIoImpl.LOG.info("Cannot determine collection type: " + field);
-        }
+        LlapIoImpl.LOG.trace("Cannot determine collection type: {}", field);
       }
     } else {
       // TODO: we could try to get superclass or generic interfaces.
-      if (DebugUtils.isTraceEnabled()) {
-        LlapIoImpl.LOG.info("Non-parametrized collection type: " + field);
-      }
+      LlapIoImpl.LOG.trace("Non-parametrized collection type: {}", field);
     }
     return null;
   }
@@ -297,11 +285,7 @@ public class IncrementalObjectSizeEstimator {
       Field field, Object fieldObj) {
     if (fieldObj == null) return;
     int arrayLen = Array.getLength(fieldObj);
-    if (arrayLen == 0) {
-      if (DebugUtils.isTraceEnabled()) {
-        LlapIoImpl.LOG.info("Empty array " + field);
-      }
-    }
+    LlapIoImpl.LOG.trace("Empty array {}", field);
     for (int i = 0; i < arrayLen; ++i) {
       Object element = Array.get(fieldObj, i);
       if (element != null) {
@@ -416,10 +400,8 @@ public class IncrementalObjectSizeEstimator {
           ObjectEstimator collEstimator = parent.get(fieldObj.getClass());
           if (collEstimator == null) {
             // We have no estimator for this type... assume low overhead and hope for the best.
-            if (DebugUtils.isTraceEnabled()) {
-              LlapIoImpl.LOG.info("Approximate estimation for collection "
-                  + fieldObj.getClass().getName() + " from " + e.field);
-            }
+            LlapIoImpl.LOG.trace("Approximate estimation for collection {} from {}", e.field,
+                fieldObj.getClass().getName());
             referencedSize += memoryModel.object();
             referencedSize += estimateCollectionElements(parent, c, e.field, uniqueObjects);
             referencedSize += memoryModel.array() + c.size() * memoryModel.ref();
@@ -429,10 +411,8 @@ public class IncrementalObjectSizeEstimator {
             referencedSize += ((CollectionEstimator)collEstimator).estimateOverhead(c.size());
           } else {
             // We decided to treat this collection as regular object.
-            if (DebugUtils.isTraceEnabled()) {
-              LlapIoImpl.LOG.info("Verbose estimation for collection "
-                  + fieldObj.getClass().getName() + " from " + e.field);
-            }
+            LlapIoImpl.LOG.trace("Verbose estimation for collection {} from {}",
+                fieldObj.getClass().getName(), e.field);
             referencedSize += collEstimator.estimate(c, parent, uniqueObjects);
           }
           break;
@@ -442,10 +422,8 @@ public class IncrementalObjectSizeEstimator {
           ObjectEstimator collEstimator = parent.get(fieldObj.getClass());
           if (collEstimator == null) {
             // We have no estimator for this type... assume low overhead and hope for the best.
-            if (DebugUtils.isTraceEnabled()) {
-              LlapIoImpl.LOG.info("Approximate estimation for map "
-                  + fieldObj.getClass().getName() + " from " + e.field);
-            }
+            LlapIoImpl.LOG.trace("Approximate estimation for map {} from {}",
+                fieldObj.getClass().getName(), e.field);
             referencedSize += memoryModel.object();
             referencedSize += estimateMapElements(parent, m, e.field, uniqueObjects);
             referencedSize += memoryModel.array() + m.size()
@@ -456,10 +434,8 @@ public class IncrementalObjectSizeEstimator {
             referencedSize += ((CollectionEstimator)collEstimator).estimateOverhead(m.size());
           } else {
             // We decided to treat this map as regular object.
-            if (DebugUtils.isTraceEnabled()) {
-              LlapIoImpl.LOG.info("Verbose estimation for map "
-                  + fieldObj.getClass().getName() + " from " + e.field);
-            }
+            LlapIoImpl.LOG.trace("Verbose estimation for map {} from {}",
+                fieldObj.getClass().getName(), e.field);
             referencedSize += collEstimator.estimate(m, parent, uniqueObjects);
           }
           break;

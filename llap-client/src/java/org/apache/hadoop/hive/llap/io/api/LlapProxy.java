@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.security.LlapTokenProvider;
 
 

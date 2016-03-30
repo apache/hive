@@ -30,9 +30,7 @@ public class SimpleBufferManager implements BufferUsageManager {
   private final LlapDaemonCacheMetrics metrics;
 
   public SimpleBufferManager(Allocator allocator, LlapDaemonCacheMetrics metrics) {
-    if (LlapIoImpl.LOGL.isInfoEnabled()) {
-      LlapIoImpl.LOG.info("Simple buffer manager");
-    }
+    LlapIoImpl.LOG.info("Simple buffer manager");
     this.allocator = allocator;
     this.metrics = metrics;
   }
@@ -46,8 +44,8 @@ public class SimpleBufferManager implements BufferUsageManager {
 
   private void unlockBuffer(LlapDataBuffer buffer) {
     if (buffer.decRef() == 0) {
-      if (DebugUtils.isTraceCachingEnabled()) {
-        LlapIoImpl.LOG.info("Deallocating " + buffer + " that was not cached");
+      if (LlapIoImpl.CACHE_LOGGER.isTraceEnabled()) {
+        LlapIoImpl.CACHE_LOGGER.trace("Deallocating {} that was not cached", buffer);
       }
       allocator.deallocate(buffer);
     }

@@ -44,6 +44,6 @@ public class CastTimestampToDate extends FuncTimestampToLong {
   @Override
   protected void func(LongColumnVector outV, TimestampColumnVector inV, int i) {
 
-    outV.vector[i] = DateWritable.millisToDays(inV.getTimestampMilliseconds(i));
+    outV.vector[i] = DateWritable.millisToDays(inV.getTime(i));
   }
 }

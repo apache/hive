@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.io.orc;
 
 import static junit.framework.Assert.assertEquals;
+import static org.junit.Assume.assumeTrue;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -343,7 +344,9 @@ public class TestColumnStatistics {
     FileDump.main(new String[]{testFilePath.toString(), "--rowindex=2"});
     System.out.flush();
     System.setOut(origOut);
-
+    // If called with an expression evaluating to false, the test will halt
+    // and be ignored.
+    assumeTrue(!System.getProperty("os.name").startsWith("Windows"));
     TestFileDump.checkOutput(outputFilename, workDir + File.separator + outputFilename);
   }
 }

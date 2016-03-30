@@ -233,7 +233,7 @@ POSTHOOK: query: SELECT * FROM arrays_of_struct_to_map
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@arrays_of_struct_to_map
 #### A masked pattern was here ####
-[{"c1":1}]	[{"f2":77}]
+[{"c1":1}]	[{"f2":88}]
 PREHOOK: query: -- Testing schema evolution of adding columns into array<struct<>>
 ALTER TABLE arrays_of_struct_to_map REPLACE COLUMNS (locations1 array<struct<c1:int,c2:int,c3:int>>, locations2
 array<struct<f1:int,f2:int,f3:int>>)

@@ -20,8 +20,7 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.*;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 
 public class CastTimestampToDouble extends VectorExpression {
   private static final long serialVersionUID = 1L;
@@ -63,7 +62,7 @@ public class CastTimestampToDouble extends VectorExpression {
     if (inputColVector.isRepeating) {
       //All must be selected otherwise size would be zero
       //Repeating property will not change.
-      outputVector[0] =  inputColVector.getTimestampSecondsWithFractionalNanos(0);
+      outputVector[0] = inputColVector.getDouble(0);
       // Even if there are no nulls, we always copy over entry 0. Simplifies code.
       outputIsNull[0] = inputIsNull[0];
       outputColVector.isRepeating = true;
@@ -71,11 +70,11 @@ public class CastTimestampToDouble extends VectorExpression {
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          outputVector[i] =  inputColVector.getTimestampSecondsWithFractionalNanos(i);
+          outputVector[i] =  inputColVector.getDouble(i);
         }
       } else {
         for(int i = 0; i != n; i++) {
-          outputVector[i] =  inputColVector.getTimestampSecondsWithFractionalNanos(i);
+          outputVector[i] =  inputColVector.getDouble(i);
         }
       }
       outputColVector.isRepeating = false;
@@ -83,12 +82,12 @@ public class CastTimestampToDouble extends VectorExpression {
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          outputVector[i] =  inputColVector.getTimestampSecondsWithFractionalNanos(i);
+          outputVector[i] = inputColVector.getDouble(i);
           outputIsNull[i] = inputIsNull[i];
         }
       } else {
         for(int i = 0; i != n; i++) {
-          outputVector[i] =  inputColVector.getTimestampSecondsWithFractionalNanos(i);
+          outputVector[i] = inputColVector.getDouble(i);
         }
         System.arraycopy(inputIsNull, 0, outputIsNull, 0, n);
       }

@@ -45,6 +45,7 @@ import org.codehaus.jackson.type.TypeReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 import org.junit.After;
@@ -676,6 +677,7 @@ public abstract class CLIServiceTest {
       switch (taskDisplay.taskState) {
         case INITIALIZED:
         case QUEUED:
+          assertNull(taskDisplay.getExternalHandle());
           assertNull(taskDisplay.getBeginTime());
           assertNull(taskDisplay.getEndTime());
           assertNull(taskDisplay.getElapsedTime());
@@ -683,6 +685,9 @@ public abstract class CLIServiceTest {
           assertNull(taskDisplay.getReturnValue());
           break;
         case RUNNING:
+          if (taskDisplay.getTaskType() == StageType.MAPRED || taskDisplay.getTaskType() == StageType.MAPREDLOCAL) {
+            assertNotNull(taskDisplay.getExternalHandle());
+          }
           assertNotNull(taskDisplay.getBeginTime());
           assertNull(taskDisplay.getEndTime());
           assertNotNull(taskDisplay.getElapsedTime());
@@ -690,6 +695,9 @@ public abstract class CLIServiceTest {
           assertNull(taskDisplay.getReturnValue());
           break;
         case FINISHED:
+          if (taskDisplay.getTaskType() == StageType.MAPRED || taskDisplay.getTaskType() == StageType.MAPREDLOCAL) {
+            assertNotNull(taskDisplay.getExternalHandle());
+          }
           assertNotNull(taskDisplay.getBeginTime());
           assertNotNull(taskDisplay.getEndTime());
           assertNotNull(taskDisplay.getElapsedTime());

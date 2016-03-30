@@ -264,7 +264,14 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
     }
   }
 
-  private class IntervalDayTimeReader extends AbstractTimestampReader {
+  private abstract class AbstractIntervalDayTimeReader extends Reader<T> {
+
+    AbstractIntervalDayTimeReader(int columnIndex) {
+      super(columnIndex);
+    }
+  }
+
+  private class IntervalDayTimeReader extends AbstractIntervalDayTimeReader {
 
     DeserializeRead.ReadIntervalDayTimeResults readIntervalDayTimeResults;
 
@@ -275,14 +282,14 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
 
     @Override
     void apply(VectorizedRowBatch batch, int batchIndex) throws IOException {
-      TimestampColumnVector colVector = (TimestampColumnVector) batch.cols[columnIndex];
+      IntervalDayTimeColumnVector colVector = (IntervalDayTimeColumnVector) batch.cols[columnIndex];
 
       if (deserializeRead.readCheckNull()) {
         VectorizedBatchUtil.setNullColIsNullValue(colVector, batchIndex);
       } else {
         deserializeRead.readIntervalDayTime(readIntervalDayTimeResults);
         HiveIntervalDayTime idt = readIntervalDayTimeResults.getHiveIntervalDayTime();
-        colVector.set(batchIndex, idt.pisaTimestampUpdate(colVector.useScratchPisaTimestamp()));
+        colVector.set(batchIndex, idt);
         colVector.isNull[batchIndex] = false;
       }
     }

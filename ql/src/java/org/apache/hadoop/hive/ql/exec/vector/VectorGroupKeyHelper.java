@@ -131,5 +131,17 @@ public class VectorGroupKeyHelper extends VectorColumnSetInfo {
         outputColumnVector.isNull[outputBatch.size] = true;
       }
     }
+    for(int i=0;i<intervalDayTimeIndices.length; ++i) {
+      int keyIndex = intervalDayTimeIndices[i];
+      IntervalDayTimeColumnVector inputColumnVector = (IntervalDayTimeColumnVector) inputBatch.cols[keyIndex];
+      IntervalDayTimeColumnVector outputColumnVector = (IntervalDayTimeColumnVector) outputBatch.cols[keyIndex];
+      if (inputColumnVector.noNulls || !inputColumnVector.isNull[0]) {
+
+        outputColumnVector.setElement(outputBatch.size, 0, inputColumnVector);
+      } else {
+        outputColumnVector.noNulls = false;
+        outputColumnVector.isNull[outputBatch.size] = true;
+      }
+    }
   }
 }

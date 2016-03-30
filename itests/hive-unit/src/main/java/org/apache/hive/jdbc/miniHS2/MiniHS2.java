@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.WindowsPathUtil;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.util.ZooKeeperHiveHelper;
 import org.apache.hadoop.hive.shims.HadoopShims.MiniDFSShim;
 import org.apache.hadoop.hive.shims.HadoopShims.MiniMrShim;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -303,6 +304,13 @@ public class MiniHS2 extends AbstractHiveService {
     return getServiceClientInternal();
   }
 
+  public HiveConf getServerConf() {
+    if (hiveServer2 != null) {
+      return hiveServer2.getHiveConf();
+    }
+    return null;
+  }
+
   public CLIServiceClient getServiceClientInternal() {
     for (Service service : hiveServer2.getServices()) {
       if (service instanceof ThriftBinaryCLIService) {
@@ -318,8 +326,9 @@ public class MiniHS2 extends AbstractHiveService {
   /**
    * return connection URL for this server instance
    * @return
+   * @throws Exception
    */
-  public String getJdbcURL() {
+  public String getJdbcURL() throws Exception {
     return getJdbcURL("default");
   }
 
@@ -327,8 +336,9 @@ public class MiniHS2 extends AbstractHiveService {
    * return connection URL for this server instance
    * @param dbName - DB name to be included in the URL
    * @return
+   * @throws Exception
    */
-  public String getJdbcURL(String dbName) {
+  public String getJdbcURL(String dbName) throws Exception {
     return getJdbcURL(dbName, "");
   }
 
@@ -337,8 +347,9 @@ public class MiniHS2 extends AbstractHiveService {
    * @param dbName - DB name to be included in the URL
    * @param sessionConfExt - Addional string to be appended to sessionConf part of url
    * @return
+   * @throws Exception
    */
-  public String getJdbcURL(String dbName, String sessionConfExt) {
+  public String getJdbcURL(String dbName, String sessionConfExt) throws Exception {
     return getJdbcURL(dbName, sessionConfExt, "");
   }
 
@@ -348,8 +359,9 @@ public class MiniHS2 extends AbstractHiveService {
    * @param sessionConfExt - Addional string to be appended to sessionConf part of url
    * @param hiveConfExt - Additional string to be appended to HiveConf part of url (excluding the ?)
    * @return
+   * @throws Exception
    */
-  public String getJdbcURL(String dbName, String sessionConfExt, String hiveConfExt) {
+  public String getJdbcURL(String dbName, String sessionConfExt, String hiveConfExt) throws Exception {
     sessionConfExt = (sessionConfExt == null ? "" : sessionConfExt);
     hiveConfExt = (hiveConfExt == null ? "" : hiveConfExt);
     String krbConfig = "";
@@ -359,7 +371,17 @@ public class MiniHS2 extends AbstractHiveService {
     if (isHttpTransportMode()) {
       sessionConfExt = "transportMode=http;httpPath=cliservice;" + sessionConfExt;
     }
-    String baseJdbcURL = getBaseJdbcURL() + dbName + ";" + krbConfig + ";" + sessionConfExt;
+    String baseJdbcURL;
+    if (isDynamicServiceDiscovery()) {
+      String serviceDiscoveryConfig =
+          "serviceDiscoveryMode=zooKeeper;zooKeeperNamespace="
+              + getServerConf().getVar(HiveConf.ConfVars.HIVE_SERVER2_ZOOKEEPER_NAMESPACE) + ";";
+      baseJdbcURL = getZKBaseJdbcURL() + dbName + ";" + serviceDiscoveryConfig;
+    }
+    else {
+      baseJdbcURL = getBaseJdbcURL() + dbName + ";";
+    }
+    baseJdbcURL = baseJdbcURL + krbConfig + ";" + sessionConfExt;
     if (!hiveConfExt.trim().equals("")) {
       baseJdbcURL = "?" + hiveConfExt;
     }
@@ -379,9 +401,33 @@ public class MiniHS2 extends AbstractHiveService {
     }
   }
 
+  /**
+   * Build zk base JDBC URL
+   * @return
+   */
+  private String getZKBaseJdbcURL() throws Exception {
+    HiveConf hiveConf = getServerConf();
+    if (hiveConf != null) {
+      String zkEnsemble =  ZooKeeperHiveHelper.getQuorumServers(hiveConf);
+      return "jdbc:hive2://" + zkEnsemble + "/";
+    }
+    throw new Exception("Server's HiveConf is null. Unable to read ZooKeeper configs.");
+  }
+
   private boolean isHttpTransportMode() {
     String transportMode = getConfProperty(ConfVars.HIVE_SERVER2_TRANSPORT_MODE.varname);
     return transportMode != null && (transportMode.equalsIgnoreCase(HS2_HTTP_MODE));
+  }
+
+  private boolean isDynamicServiceDiscovery() throws Exception {
+    HiveConf hiveConf = getServerConf();
+    if (hiveConf == null) {
+      throw new Exception("Server's HiveConf is null. Unable to read ZooKeeper configs.");
+    }
+    if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_SUPPORT_DYNAMIC_SERVICE_DISCOVERY)) {
+      return true;
+    }
+    return false;
   }
 
   public static String getJdbcDriverName() {

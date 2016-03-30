@@ -2017,6 +2017,8 @@ public class HiveConf extends Configuration {
         "hive.zookeeper.quorum in their connection string."),
     HIVE_SERVER2_ZOOKEEPER_NAMESPACE("hive.server2.zookeeper.namespace", "hiveserver2",
         "The parent node in ZooKeeper used by HiveServer2 when supporting dynamic service discovery."),
+    HIVE_SERVER2_ZOOKEEPER_PUBLISH_CONFIGS("hive.server2.zookeeper.publish.configs", true,
+        "Whether we should publish HiveServer2's configs to ZooKeeper."),
 
     // HiveServer2 global init file location
     HIVE_SERVER2_GLOBAL_INIT_FILE_LOCATION("hive.server2.global.init.file.location", "${env:HIVE_CONF_DIR}",
@@ -2237,6 +2239,15 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_PLAIN_LDAP_USERFILTER("hive.server2.authentication.ldap.userFilter", null,
         "COMMA-separated list of LDAP usernames (just short names, not full DNs).\n" +
         "For example: hiveuser,impalauser,hiveadmin,hadoopadmin"),
+    HIVE_SERVER2_PLAIN_LDAP_GUIDKEY("hive.server2.authentication.ldap.guidKey", "uid",
+        "LDAP attribute name whose values are unique in this LDAP server.\n" +
+        "For example: uid or CN."),
+    HIVE_SERVER2_PLAIN_LDAP_GROUPMEMBERSHIP_KEY("hive.server2.authentication.ldap.groupMembershipKey", "member",
+        "LDAP attribute name on the user entry that references a group, the user belongs to.\n" +
+        "For example: member, uniqueMember or memberUid"),
+    HIVE_SERVER2_PLAIN_LDAP_GROUPCLASS_KEY("hive.server2.authentication.ldap.groupClassKey", "groupOfNames",
+        "LDAP attribute name on the group entry that is to be used in LDAP group searches.\n" +
+        "For example: group, groupOfNames or groupOfUniqueNames."),
     HIVE_SERVER2_PLAIN_LDAP_CUSTOMLDAPQUERY("hive.server2.authentication.ldap.customLDAPQuery", null,
         "A full LDAP query that LDAP Atn provider uses to execute against LDAP Server.\n" +
         "If this query returns a null resultset, the LDAP Provider fails the Authentication\n" +
@@ -2317,6 +2328,8 @@ public class HiveConf extends Configuration {
     HIVE_SECURITY_COMMAND_WHITELIST("hive.security.command.whitelist", "set,reset,dfs,add,list,delete,reload,compile",
         "Comma separated list of non-SQL Hive commands users are authorized to execute"),
 
+     HIVE_MOVE_FILES_THREAD_COUNT("hive.mv.files.thread", 25, new  SizeValidator(1L, true, 1024L, true), "Number of threads"
+         + " used to move files in move task"),
     // If this is set all move tasks at the end of a multi-insert query will only begin once all
     // outputs are ready
     HIVE_MULTI_INSERT_MOVE_TASKS_SHARE_DEPENDENCIES(
@@ -2762,7 +2775,7 @@ public class HiveConf extends Configuration {
     SPARK_RPC_SASL_MECHANISM("hive.spark.client.rpc.sasl.mechanisms", "DIGEST-MD5",
       "Name of the SASL mechanism to use for authentication."),
     SPARK_RPC_SERVER_ADDRESS("hive.spark.client.rpc.server.address", "",
-      "The server address of HiverServer2 host to be used for communication between Hive client and remote Spark driver. " + 
+      "The server address of HiverServer2 host to be used for communication between Hive client and remote Spark driver. " +
       "Default is empty, which means the address will be determined in the same way as for hive.server2.thrift.bind.host." +
       "This is only necessary if the host has mutiple network addresses and if a different network address other than " +
       "hive.server2.thrift.bind.host is to be used."),

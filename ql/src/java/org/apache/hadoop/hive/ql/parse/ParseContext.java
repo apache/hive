@@ -466,6 +466,11 @@ public class ParseContext {
     this.fetchTask = fetchTask;
   }
 
+  public PrunedPartitionList getPrunedPartitions(TableScanOperator ts)
+      throws SemanticException {
+    return getPrunedPartitions(ts.getConf().getAlias(), ts);
+  }
+
   public PrunedPartitionList getPrunedPartitions(String alias, TableScanOperator ts)
       throws SemanticException {
     PrunedPartitionList partsList = opToPartList.get(ts);

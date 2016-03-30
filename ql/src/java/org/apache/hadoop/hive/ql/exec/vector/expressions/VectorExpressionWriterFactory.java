@@ -31,7 +31,6 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
-import org.apache.hadoop.hive.common.type.PisaTimestamp;
 import org.apache.hadoop.hive.ql.exec.vector.*;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -188,17 +187,39 @@ public final class VectorExpressionWriterFactory {
     }
 
     /**
-     * The base implementation must be overridden by the PisaTimestamp specialization
+     * The base implementation must be overridden by the Timestamp specialization
      */
-    @Override
-    public Object writeValue(PisaTimestamp value) throws HiveException {
+    public Object setValue(Object field, Timestamp value) throws HiveException {
       throw new HiveException("Internal error: should not reach here");
     }
 
     /**
-     * The base implementation must be overridden by the Timestamp specialization
+     * The base implementation must be overridden by the HiveIntervalDayTime specialization
      */
-    public Object setValue(Object field, Timestamp value) throws HiveException {
+    @Override
+    public Object writeValue(HiveIntervalDayTimeWritable value) throws HiveException {
+      throw new HiveException("Internal error: should not reach here");
+    }
+
+    /**
+     * The base implementation must be overridden by the HiveIntervalDayTime specialization
+     */
+    @Override
+    public Object writeValue(HiveIntervalDayTime value) throws HiveException {
+      throw new HiveException("Internal error: should not reach here");
+    }
+
+    /**
+     * The base implementation must be overridden by the HiveIntervalDayTime specialization
+     */
+    public Object setValue(Object field, HiveIntervalDayTimeWritable value) throws HiveException {
+      throw new HiveException("Internal error: should not reach here");
+    }
+
+    /**
+     * The base implementation must be overridden by the HiveIntervalDayTime specialization
+     */
+    public Object setValue(Object field, HiveIntervalDayTime value) throws HiveException {
       throw new HiveException("Internal error: should not reach here");
     }
   }
@@ -465,6 +486,66 @@ public final class VectorExpressionWriterFactory {
     }
   }
 
+  /**
+   * Specialized writer for IntervalDayTimeColumnVector. Will throw cast exception
+   * if the wrong vector column is used.
+   */
+  private static abstract class VectorExpressionWriterIntervalDayTime extends VectorExpressionWriterBase {
+    @Override
+    public Object writeValue(ColumnVector column, int row) throws HiveException {
+      IntervalDayTimeColumnVector dcv = (IntervalDayTimeColumnVector) column;
+      HiveIntervalDayTimeWritable intervalDayTimeWritable = (HiveIntervalDayTimeWritable) dcv.getScratchWritable();
+      if (intervalDayTimeWritable == null) {
+        intervalDayTimeWritable = new HiveIntervalDayTimeWritable();
+        dcv.setScratchWritable(intervalDayTimeWritable);
+      }
+      if (dcv.noNulls && !dcv.isRepeating) {
+        return writeValue(TimestampUtils.intervalDayTimeColumnVectorWritable(dcv, row, intervalDayTimeWritable));
+      } else if (dcv.noNulls && dcv.isRepeating) {
+        return writeValue(TimestampUtils.intervalDayTimeColumnVectorWritable(dcv, 0, intervalDayTimeWritable));
+      } else if (!dcv.noNulls && !dcv.isRepeating && !dcv.isNull[row]) {
+        return writeValue(TimestampUtils.intervalDayTimeColumnVectorWritable(dcv, row, intervalDayTimeWritable));
+      } else if (!dcv.noNulls && dcv.isRepeating && !dcv.isNull[0]) {
+        return writeValue(TimestampUtils.intervalDayTimeColumnVectorWritable(dcv, 0, intervalDayTimeWritable));
+      } else if (!dcv.noNulls && dcv.isRepeating && dcv.isNull[0]) {
+        return null;
+      } else if (!dcv.noNulls && !dcv.isRepeating && dcv.isNull[row]) {
+        return null;
+      }
+      throw new HiveException(
+          String.format(
+              "Incorrect null/repeating: row:%d noNulls:%b isRepeating:%b isNull[row]:%b isNull[0]:%b",
+              row, dcv.noNulls, dcv.isRepeating, dcv.isNull[row], dcv.isNull[0]));
+    }
+
+    @Override
+    public Object setValue(Object field, ColumnVector column, int row) throws HiveException {
+      IntervalDayTimeColumnVector dcv = (IntervalDayTimeColumnVector) column;
+      HiveIntervalDayTimeWritable intervalDayTimeWritable = (HiveIntervalDayTimeWritable) dcv.getScratchWritable();
+      if (intervalDayTimeWritable == null) {
+        intervalDayTimeWritable = new HiveIntervalDayTimeWritable();
+        dcv.setScratchWritable(intervalDayTimeWritable);
+      }
+      if (dcv.noNulls && !dcv.isRepeating) {
+        return setValue(field, TimestampUtils.intervalDayTimeColumnVectorWritable(dcv, row, intervalDayTimeWritable));
+      } else if (dcv.noNulls && dcv.isRepeating) {
+        return setValue(field, TimestampUtils.intervalDayTimeColumnVectorWritable(dcv, 0, intervalDayTimeWritable));
+      } else if (!dcv.noNulls && !dcv.isRepeating && !dcv.isNull[row]) {
+        return setValue(field, TimestampUtils.intervalDayTimeColumnVectorWritable(dcv, row, intervalDayTimeWritable));
+      } else if (!dcv.noNulls && !dcv.isRepeating && dcv.isNull[row]) {
+        return null;
+      } else if (!dcv.noNulls && dcv.isRepeating && !dcv.isNull[0]) {
+        return setValue(field, TimestampUtils.intervalDayTimeColumnVectorWritable(dcv, 0, intervalDayTimeWritable));
+      } else if (!dcv.noNulls && dcv.isRepeating && dcv.isNull[0]) {
+        return null;
+      }
+      throw new HiveException(
+          String.format(
+              "Incorrect null/repeating: row:%d noNulls:%b isRepeating:%b isNull[row]:%b isNull[0]:%b",
+              row, dcv.noNulls, dcv.isRepeating, dcv.isNull[row], dcv.isNull[0]));
+    }
+  }
+
     /**
      * Compiles the appropriate vector expression writer based on an expression info (ExprNodeDesc)
      */
@@ -697,8 +778,13 @@ public final class VectorExpressionWriterFactory {
       }
 
       @Override
-      public Object writeValue(PisaTimestamp value) throws HiveException {
-        return ((SettableTimestampObjectInspector) this.objectInspector).set(obj, value.asScratchTimestamp());
+      public Object writeValue(HiveIntervalDayTimeWritable value) throws HiveException {
+        return ((SettableHiveIntervalDayTimeObjectInspector) this.objectInspector).set(obj, value);
+      }
+
+      @Override
+      public Object writeValue(HiveIntervalDayTime value) throws HiveException {
+        return ((SettableHiveIntervalDayTimeObjectInspector) this.objectInspector).set(obj, value);
       }
 
       @Override
@@ -766,53 +852,45 @@ public final class VectorExpressionWriterFactory {
   private static VectorExpressionWriter genVectorExpressionWritableIntervalDayTime(
       SettableHiveIntervalDayTimeObjectInspector fieldObjInspector) throws HiveException {
 
-    return new VectorExpressionWriterTimestamp() {
+    return new VectorExpressionWriterIntervalDayTime() {
       private Object obj;
       private HiveIntervalDayTime interval;
-      private PisaTimestamp pisaTimestamp;
 
       public VectorExpressionWriter init(SettableHiveIntervalDayTimeObjectInspector objInspector)
           throws HiveException {
         super.init(objInspector);
         interval = new HiveIntervalDayTime();
         obj = initValue(null);
-        pisaTimestamp = new PisaTimestamp();
         return this;
       }
 
       @Override
-      public Object writeValue(TimestampWritable value) throws HiveException {
-        interval.set(pisaTimestamp.updateFromTimestamp(value.getTimestamp()));
+      public Object writeValue(HiveIntervalDayTimeWritable value) throws HiveException {
+        interval.set(value.getHiveIntervalDayTime());
         return ((SettableHiveIntervalDayTimeObjectInspector) this.objectInspector).set(obj, interval);
       }
 
       @Override
-      public Object writeValue(Timestamp value) throws HiveException {
-        interval.set(pisaTimestamp.updateFromTimestamp(value));
-        return ((SettableHiveIntervalDayTimeObjectInspector) this.objectInspector).set(obj, interval);
-      }
-
-      @Override
-      public Object writeValue(PisaTimestamp value) throws HiveException {
+      public Object writeValue(HiveIntervalDayTime value) throws HiveException {
         interval.set(value);
         return ((SettableHiveIntervalDayTimeObjectInspector) this.objectInspector).set(obj, interval);
       }
 
       @Override
-      public Object setValue(Object field, TimestampWritable value) {
+      public Object setValue(Object field, HiveIntervalDayTimeWritable value) {
         if (null == field) {
           field = initValue(null);
         }
-        interval.set(pisaTimestamp.updateFromTimestamp(value.getTimestamp()));
+        interval.set(value.getHiveIntervalDayTime());
         return ((SettableHiveIntervalDayTimeObjectInspector) this.objectInspector).set(field, interval);
       }
 
       @Override
-      public Object setValue(Object field, Timestamp value) {
+      public Object setValue(Object field, HiveIntervalDayTime value) {
         if (null == field) {
           field = initValue(null);
         }
-        interval.set(pisaTimestamp.updateFromTimestamp(value));
+        interval.set(value);
         return ((SettableHiveIntervalDayTimeObjectInspector) this.objectInspector).set(field, interval);
       }
 
