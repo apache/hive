@@ -869,8 +869,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    */
   private static class LockInfoExt extends LockInfo {
     private final ShowLocksResponseElement e;
-    LockInfoExt(ShowLocksResponseElement e, long intLockId) {
-      super(e, intLockId);
+    LockInfoExt(ShowLocksResponseElement e) {
+      super(e);
       this.e = e;
     }
   }
@@ -886,7 +886,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         stmt = dbConn.createStatement();
 
         String s = "select hl_lock_ext_id, hl_txnid, hl_db, hl_table, hl_partition, hl_lock_state, " +
-          "hl_lock_type, hl_last_heartbeat, hl_acquired_at, hl_user, hl_host, hl_lock_int_id from HIVE_LOCKS";
+          "hl_lock_type, hl_last_heartbeat, hl_acquired_at, hl_user, hl_host, hl_lock_int_id," +
+          "hl_blockedby_ext_id, hl_blockedby_int_id from HIVE_LOCKS";
         LOG.debug("Doing to execute query <" + s + ">");
         ResultSet rs = stmt.executeQuery(s);
         while (rs.next()) {
@@ -914,7 +915,16 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           if (!rs.wasNull()) e.setAcquiredat(acquiredAt);
           e.setUser(rs.getString(10));
           e.setHostname(rs.getString(11));
-          sortedList.add(new LockInfoExt(e, rs.getLong(12)));
+          e.setLockIdInternal(rs.getLong(12));
+          long id = rs.getLong(13);
+          if(!rs.wasNull()) {
+            e.setBlockedByExtId(id);
+          }
+          id = rs.getLong(14);
+          if(!rs.wasNull()) {
+            e.setBlockedByIntId(id);
+          }
+          sortedList.add(new LockInfoExt(e));
         }
         LOG.debug("Going to rollback");
         dbConn.rollback();
@@ -1163,6 +1173,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
   private static void shouldNeverHappen(long txnid) {
     throw new RuntimeException("This should never happen: " + JavaUtils.txnIdToString(txnid));
+  }
+  private static void shouldNeverHappen(long txnid, long extLockId, long intLockId) {
+    throw new RuntimeException("This should never happen: " + JavaUtils.txnIdToString(txnid) + " "
+      + JavaUtils.lockIdToString(extLockId) + " " + intLockId);
   }
   public void addDynamicPartitions(AddDynamicPartitions rqst)
       throws NoSuchTxnException,  TxnAbortedException, MetaException {
@@ -1711,15 +1725,15 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       }
       txnId = rs.getLong("hl_txnid");//returns 0 if value is NULL
     }
-    LockInfo(ShowLocksResponseElement e, long intLockId) {
+    LockInfo(ShowLocksResponseElement e) {
       extLockId = e.getLockid();
-      this.intLockId = intLockId;
+      intLockId = e.getLockIdInternal();
+      txnId = e.getTxnid();
       db = e.getDbname();
       table = e.getTablename();
       partition = e.getPartname();
       state = e.getState();
       type = e.getType();
-      txnId = e.getTxnid();
     }
 
     public boolean equals(Object other) {
@@ -2018,9 +2032,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
     LOG.debug("Going to execute query <" + query.toString() + ">");
     Statement stmt = null;
+    ResultSet rs = null;
     try {
       stmt = dbConn.createStatement();
-      ResultSet rs = stmt.executeQuery(query.toString());
+      rs = stmt.executeQuery(query.toString());
       SortedSet<LockInfo> lockSet = new TreeSet<LockInfo>(new LockInfoComparator());
       while (rs.next()) {
         lockSet.add(new LockInfo(rs));
@@ -2091,7 +2106,20 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           switch (lockAction) {
             case WAIT:
               if(!ignoreConflict(info, locks[i])) {
+                /*we acquire all locks for a given query atomically; if 1 blocks, all go into (remain) in
+                * Waiting state.  wait() will undo any 'acquire()' which may have happened as part of
+                * this (metastore db) transaction and then we record which lock blocked the lock
+                * we were testing ('info').*/
                 wait(dbConn, save);
+                String sqlText = "update HIVE_LOCKS" +
+                  " set HL_BLOCKEDBY_EXT_ID=" + locks[i].extLockId +
+                  ", HL_BLOCKEDBY_INT_ID=" + locks[i].intLockId +
+                  " where HL_LOCK_EXT_ID=" + info.extLockId + " and HL_LOCK_INT_ID=" + info.intLockId;
+                LOG.debug("Executing sql: " + sqlText);
+                int updCnt = stmt.executeUpdate(sqlText);
+                if(updCnt != 1) {
+                  shouldNeverHappen(info.txnId, info.extLockId, info.intLockId);
+                }
                 LOG.debug("Going to commit");
                 dbConn.commit();
                 response.setState(LockState.WAITING);
@@ -2120,7 +2148,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       dbConn.commit();
       response.setState(LockState.ACQUIRED);
     } finally {
-      closeStmt(stmt);
+      close(rs, stmt, null);
     }
     return response;
   }
