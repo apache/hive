@@ -155,7 +155,7 @@ public class VectorizationContext {
 
   VectorExpressionDescriptor vMap;
 
-  private List<String> initialColumnNames;
+  private final List<String> initialColumnNames;
 
   private List<Integer> projectedColumns;
   private List<String> projectionColumnNames;
@@ -712,7 +712,7 @@ public class VectorizationContext {
         genericUdf = new GenericUDFToDate();
         break;
       case TIMESTAMP:
-        genericUdf = new GenericUDFToUnixTimeStamp();
+        genericUdf = new GenericUDFTimestamp();
         break;
       case INTERVAL_YEAR_MONTH:
         genericUdf = new GenericUDFToIntervalYearMonth();
@@ -1329,7 +1329,7 @@ public class VectorizationContext {
     case INT:
     case LONG:
       return InConstantType.INT_FAMILY;
-  
+
     case DATE:
       return InConstantType.TIMESTAMP;
 
@@ -1339,16 +1339,16 @@ public class VectorizationContext {
     case FLOAT:
     case DOUBLE:
       return InConstantType.FLOAT_FAMILY;
-  
+
     case STRING:
     case CHAR:
     case VARCHAR:
     case BINARY:
       return InConstantType.STRING_FAMILY;
-  
+
     case DECIMAL:
       return InConstantType.DECIMAL;
-  
+
 
     case INTERVAL_YEAR_MONTH:
     case INTERVAL_DAY_TIME:
