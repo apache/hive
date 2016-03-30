@@ -176,7 +176,7 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
     // worker does not respond due to communication interruptions it will retain the same sequence
     // number when it returns back. If session timeout expires, the node will be deleted and new
     // addition of the same node (restart) will get next sequence number
-    this.pathPrefix = "/" + RegistryUtils.currentUser() + "/" + instanceName + "/workers/worker-";
+    this.pathPrefix = "/" + getZkPathUser(this.conf) + "/" + instanceName + "/workers/worker-";
     this.instancesCache = null;
     this.instances = null;
     this.stateChangeListeners = new HashSet<>();
@@ -208,6 +208,13 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
     }
 
     return quorum.toString();
+  }
+
+  private String getZkPathUser(Configuration conf) {
+    // External LLAP clients would need to set LLAP_ZK_REGISTRY_USER to the LLAP daemon user (hive),
+    // rather than relying on RegistryUtils.currentUser().
+    String user = HiveConf.getVar(conf, ConfVars.LLAP_ZK_REGISTRY_USER, RegistryUtils.currentUser());
+    return user;
   }
 
   public Endpoint getRpcEndpoint() {

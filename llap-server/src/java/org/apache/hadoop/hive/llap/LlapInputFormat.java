@@ -88,6 +88,9 @@ public class LlapInputFormat<V extends WritableComparable> implements InputForma
       Reporter reporter) throws IOException {
 
     LlapInputSplit llapSplit = (LlapInputSplit) split;
+
+    // Set conf to use LLAP user rather than current user for LLAP Zk registry.
+    HiveConf.setVar(job, HiveConf.ConfVars.LLAP_ZK_REGISTRY_USER, llapSplit.getLlapUser());
     SubmitWorkInfo submitWorkInfo = SubmitWorkInfo.fromBytes(llapSplit.getPlanBytes());
 
     ServiceInstance serviceInstance = getServiceInstance(job, llapSplit);

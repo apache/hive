@@ -46,7 +46,8 @@ public class TestLlapInputSplit {
         planBytes,
         fragmentBytes,
         locations,
-        schema);
+        schema,
+        "hive");
     ByteArrayOutputStream byteOutStream = new ByteArrayOutputStream();
     DataOutputStream dataOut = new DataOutputStream(byteOutStream);
     split1.write(dataOut);
@@ -94,6 +95,7 @@ public class TestLlapInputSplit {
     }
     assertArrayEquals(split1.getLocations(), split2.getLocations());
     assertEquals(split1.getSchema(), split2.getSchema());
+    assertEquals(split1.getLlapUser(), split2.getLlapUser());
   }
 
 }

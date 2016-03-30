@@ -75,6 +75,7 @@ import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.SplitLocationInfo;
+import org.apache.hadoop.registry.client.binding.RegistryUtils;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.hadoop.yarn.api.records.LocalResourceType;
@@ -319,6 +320,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
       ApplicationId fakeApplicationId
         = ApplicationId.newInstance(Math.abs(new Random().nextInt()), 0);
 
+      String llapUser = RegistryUtils.currentUser();
       LOG.info("Number of splits: " + (eventList.size() - 1));
       for (int i = 0; i < eventList.size() - 1; i++) {
 
@@ -355,7 +357,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
 
         byte[] submitWorkBytes = SubmitWorkInfo.toBytes(submitWorkInfo);
 
-        result[i] = new LlapInputSplit(i, submitWorkBytes, dob.getData(), locations, schema);
+        result[i] = new LlapInputSplit(i, submitWorkBytes, dob.getData(), locations, schema, llapUser);
       }
       return result;
     } catch (Exception e) {

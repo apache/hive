@@ -33,16 +33,18 @@ public class LlapInputSplit implements InputSplitWithLocationInfo {
   byte[] fragmentBytes;
   SplitLocationInfo[] locations;
   Schema schema;
+  String llapUser;
 
   public LlapInputSplit() {
   }
 
-  public LlapInputSplit(int splitNum, byte[] planBytes, byte[] fragmentBytes, SplitLocationInfo[] locations, Schema schema) {
+  public LlapInputSplit(int splitNum, byte[] planBytes, byte[] fragmentBytes, SplitLocationInfo[] locations, Schema schema, String llapUser) {
     this.planBytes = planBytes;
     this.fragmentBytes = fragmentBytes;
     this.locations = locations;
     this.schema = schema;
     this.splitNum = splitNum;
+    this.llapUser = llapUser;
   }
 
   public Schema getSchema() {
@@ -102,7 +104,7 @@ public class LlapInputSplit implements InputSplitWithLocationInfo {
       throw new IOException(e);
     }
 
-
+    out.writeUTF(llapUser);
   }
 
   @Override
@@ -134,10 +136,15 @@ public class LlapInputSplit implements InputSplitWithLocationInfo {
     } catch (Exception e) {
       throw new IOException(e);
     }
+    llapUser = in.readUTF();
   }
 
   @Override
   public SplitLocationInfo[] getLocationInfo() throws IOException {
     return locations;
+  }
+
+  public String getLlapUser() {
+    return llapUser;
   }
 }

@@ -2591,6 +2591,9 @@ public class HiveConf extends Configuration {
         "ZooKeeper for ZooKeeper SecretManager."),
     LLAP_ZKSM_ZK_CONNECTION_STRING("hive.llap.zk.sm.connectionString", "",
         "ZooKeeper connection string for ZooKeeper SecretManager."),
+    LLAP_ZK_REGISTRY_USER("hive.llap.zk.registry.user", "",
+        "In the LLAP ZooKeeper-based registry, specifies the username in the Zookeeper path.\n" +
+        "This should be the hive user or whichever user is running the LLAP daemon."),
     // Note: do not rename to ..service.acl; Hadoop generates .hosts setting name from this,
     // resulting in a collision with existing hive.llap.daemon.service.hosts and bizarre errors.
     LLAP_SECURITY_ACL("hive.llap.daemon.acl", "*", "The ACL for LLAP daemon."),
