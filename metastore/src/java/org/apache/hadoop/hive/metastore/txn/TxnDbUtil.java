@@ -103,7 +103,11 @@ public final class TxnDbUtil {
           " HL_ACQUIRED_AT bigint," +
           " HL_USER varchar(128) NOT NULL," +
           " HL_HOST varchar(128) NOT NULL," +
-          " PRIMARY KEY(HL_LOCK_EXT_ID, HL_LOCK_INT_ID))");
+          " HL_HEARTBEAT_COUNT integer," +
+          " HL_AGENT_INFO varchar(128)," +
+          " HL_BLOCKEDBY_EXT_ID bigint," +
+          " HL_BLOCKEDBY_INT_ID bigint," +
+        " PRIMARY KEY(HL_LOCK_EXT_ID, HL_LOCK_INT_ID))");
       stmt.execute("CREATE INDEX HL_TXNID_INDEX ON HIVE_LOCKS (HL_TXNID)");
 
       stmt.execute("CREATE TABLE NEXT_LOCK_ID (" + " NL_NEXT bigint NOT NULL)");

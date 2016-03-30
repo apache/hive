@@ -240,6 +240,34 @@ public class TestDbTxnManager2 {
     otherTxnMgr.closeTxnManager();
   }
 
+  /**
+   * check that locks in Waiting state show what they are waiting on
+   * This test is somewhat abusive in that it make DbLockManager retain locks for 2
+   * different queries (which are not part of the same transaction) which can never
+   * happen in real use cases... but it makes testing convenient.
+   * @throws Exception
+   */
+  @Test
+  public void testLockBlockedBy() throws Exception {
+    CommandProcessorResponse cpr = driver.run("create table TAB_BLOCKED (a int, b int) clustered by (a) into 2  buckets stored as orc TBLPROPERTIES ('transactional'='true')");
+    checkCmdOnDriver(cpr);
+    cpr = driver.compileAndRespond("select * from TAB_BLOCKED");
+    checkCmdOnDriver(cpr);
+    txnMgr.acquireLocks(driver.getPlan(), ctx, "I AM SAM");
+    List<ShowLocksResponseElement> locks = getLocks(txnMgr);
+    Assert.assertEquals("Unexpected lock count", 1, locks.size());
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "TAB_BLOCKED", null, locks.get(0));
+    cpr = driver.compileAndRespond("drop table TAB_BLOCKED");
+    checkCmdOnDriver(cpr);
+    ((DbTxnManager)txnMgr).acquireLocks(driver.getPlan(), ctx, "SAM I AM", false);//make non-blocking
+    locks = getLocks(txnMgr);
+    Assert.assertEquals("Unexpected lock count", 2, locks.size());
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "TAB_BLOCKED", null, locks.get(0));
+    checkLock(LockType.EXCLUSIVE, LockState.WAITING, "default", "TAB_BLOCKED", null, locks.get(1));
+    Assert.assertEquals("BlockedByExtId doesn't match", locks.get(0).getLockid(), locks.get(1).getBlockedByExtId());
+    Assert.assertEquals("BlockedByIntId doesn't match", locks.get(0).getLockIdInternal(), locks.get(1).getBlockedByIntId());
+  }
+
   @Test
   public void testDummyTxnManagerOnAcidTable() throws Exception {
     // Create an ACID table with DbTxnManager

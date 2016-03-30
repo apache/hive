@@ -2,17 +2,17 @@ PREHOOK: query: show locks
 PREHOOK: type: SHOWLOCKS
 POSTHOOK: query: show locks
 POSTHOOK: type: SHOWLOCKS
-Lock ID	Database	Table	Partition	State	Type	Transaction ID	Last Hearbeat	Acquired At	User	Hostname
+Lock ID	Database	Table	Partition	State	Blocked By	Type	Transaction ID	Last Hearbeat	Acquired At	User
 PREHOOK: query: show locks extended
 PREHOOK: type: SHOWLOCKS
 POSTHOOK: query: show locks extended
 POSTHOOK: type: SHOWLOCKS
-Lock ID	Database	Table	Partition	State	Type	Transaction ID	Last Hearbeat	Acquired At	User	Hostname
+Lock ID	Database	Table	Partition	State	Blocked By	Type	Transaction ID	Last Hearbeat	Acquired At	User
 PREHOOK: query: show locks default
 PREHOOK: type: SHOWLOCKS
 POSTHOOK: query: show locks default
 POSTHOOK: type: SHOWLOCKS
-Lock ID	Database	Table	Partition	State	Type	Transaction ID	Last Hearbeat	Acquired At	User	Hostname
+Lock ID	Database	Table	Partition	State	Blocked By	Type	Transaction ID	Last Hearbeat	Acquired At	User
 PREHOOK: query: show transactions
 PREHOOK: type: SHOW TRANSACTIONS
 POSTHOOK: query: show transactions

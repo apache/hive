@@ -1153,7 +1153,7 @@ public class TestTxnHandler {
   }
 
   @Test
-  @Ignore
+  @Ignore("Wedges Derby")
   public void deadlockDetected() throws Exception {
     LOG.debug("Starting deadlock test");
     if (txnHandler instanceof TxnHandler) {
