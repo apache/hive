@@ -287,7 +287,10 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
     }
 
     if (genericUDF instanceof GenericUDFMacro) {
-      if (funcText != null && !funcText.equals(dest.funcText)) {
+      // if getMacroName is null, we always treat it different from others.
+      if (((GenericUDFMacro) genericUDF).getMacroName() == null
+          || !(((GenericUDFMacro) genericUDF).getMacroName()
+              .equals(((GenericUDFMacro) dest.genericUDF).getMacroName()))) {
         return false;
       }
     }
