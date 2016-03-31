@@ -146,15 +146,17 @@ public class MiniLlapCluster extends AbstractService {
     int rpcPort = 0;
     int mngPort = 0;
     int shufflePort = 0;
+    int webPort = 0;
     boolean usePortsFromConf = conf.getBoolean("minillap.usePortsFromConf", false);
     if (usePortsFromConf) {
       rpcPort = HiveConf.getIntVar(conf, HiveConf.ConfVars.LLAP_DAEMON_RPC_PORT);
       mngPort = HiveConf.getIntVar(conf, HiveConf.ConfVars.LLAP_MANAGEMENT_RPC_PORT);
       shufflePort = conf.getInt(ShuffleHandler.SHUFFLE_PORT_CONFIG_KEY, ShuffleHandler.DEFAULT_SHUFFLE_PORT);
+      webPort = HiveConf.getIntVar(conf, ConfVars.LLAP_DAEMON_WEB_PORT);
     }
 
     llapDaemon = new LlapDaemon(conf, numExecutorsPerService, execBytesPerService, llapIoEnabled,
-        ioIsDirect, ioBytesPerService, localDirs, rpcPort, mngPort, shufflePort);
+        ioIsDirect, ioBytesPerService, localDirs, rpcPort, mngPort, shufflePort, webPort);
     llapDaemon.init(conf);
   }
 

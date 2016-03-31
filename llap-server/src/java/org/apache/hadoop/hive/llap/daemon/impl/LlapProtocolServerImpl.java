@@ -19,7 +19,6 @@ import java.net.InetSocketAddress;
 import java.security.PrivilegedAction;
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import com.google.protobuf.BlockingService;
@@ -189,9 +188,13 @@ public class LlapProtocolServerImpl extends AbstractService
   }
 
   @InterfaceAudience.Private
-  @VisibleForTesting
   InetSocketAddress getBindAddress() {
     return srvAddress.get();
+  }
+
+  @InterfaceAudience.Private
+  InetSocketAddress getManagementBindAddress() {
+    return mngAddress.get();
   }
 
   private RPC.Server createServer(Class<?> pbProtocol, InetSocketAddress addr, Configuration conf,
