@@ -36,6 +36,12 @@ import org.apache.hadoop.util.StringUtils;
 
 public class LlapOptionsProcessor {
 
+  public static final String OPTION_SLIDER_KEYTAB_DIR = "slider-keytab-dir";
+  public static final String OPTION_SLIDER_KEYTAB = "slider-keytab";
+  public static final String OPTION_SLIDER_PRINCIPAL = "slider-principal";
+  public static final String OPTION_SLIDER_DEFAULT_KEYTAB = "slider-default-keytab";
+
+
   public class LlapOptions {
     private final int instances;
     private final String directory;
@@ -137,6 +143,18 @@ public class LlapOptionsProcessor {
 
     options.addOption(OptionBuilder.hasArg().withArgName("executors").withLongOpt("executors")
         .withDescription("executor per instance").create('e'));
+
+    options.addOption(OptionBuilder.hasArg(false).withArgName(OPTION_SLIDER_DEFAULT_KEYTAB).withLongOpt(OPTION_SLIDER_DEFAULT_KEYTAB)
+        .withDescription("try to set default settings for Slider AM keytab; mostly for dev testing").create());
+
+    options.addOption(OptionBuilder.hasArg().withArgName(OPTION_SLIDER_KEYTAB_DIR).withLongOpt(OPTION_SLIDER_KEYTAB_DIR)
+        .withDescription("Slider AM keytab directory on HDFS (where the headless user keytab is stored by Slider keytab installation, e.g. .slider/keytabs/llap)").create());
+
+    options.addOption(OptionBuilder.hasArg().withArgName(OPTION_SLIDER_KEYTAB).withLongOpt(OPTION_SLIDER_KEYTAB)
+        .withDescription("Slider AM keytab file name inside " + OPTION_SLIDER_KEYTAB_DIR).create());
+
+    options.addOption(OptionBuilder.hasArg().withArgName(OPTION_SLIDER_PRINCIPAL).withLongOpt(OPTION_SLIDER_PRINCIPAL)
+        .withDescription("Slider AM principal; should be the user running the cluster, e.g. hive@EXAMPLE.COM").create());
 
     options.addOption(OptionBuilder.hasArg().withArgName("cache").withLongOpt("cache")
         .withDescription("cache size per instance").create('c'));
