@@ -99,7 +99,7 @@ public class RunLengthIntegerReader implements IntegerReader {
   }
 
   @Override
-  public void nextVector(LongColumnVector previous, long previousLen) throws IOException {
+  public void nextVector(LongColumnVector previous, final int previousLen) throws IOException {
     previous.isRepeating = true;
     for (int i = 0; i < previousLen; i++) {
       if (!previous.isNull[i]) {
@@ -119,11 +119,6 @@ public class RunLengthIntegerReader implements IntegerReader {
         previous.isRepeating = false;
       }
     }
-  }
-
-  @Override
-  public void setInStream(InStream data) {
-    input = data;
   }
 
   @Override

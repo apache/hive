@@ -25,6 +25,9 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 import org.junit.Test;
 
@@ -156,9 +159,43 @@ public class TestSerializationUtils {
     assertEquals(Long.MIN_VALUE, LongMath.checkedSubtract(Long.MIN_VALUE, 0));
   }
 
-  public static void main(String[] args) throws Exception {
-    TestSerializationUtils test = new TestSerializationUtils();
-    test.testDoubles();
-    test.testBigIntegers();
+  @Test
+  public void testRandomFloats() throws Exception {
+    float tolerance = 0.0000000000000001f;
+    ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+    SerializationUtils utils = new SerializationUtils();
+    Random rand = new Random();
+    int n = 100_000;
+    float[] expected = new float[n];
+    for (int i = 0; i < n; i++) {
+      float f = rand.nextFloat();
+      expected[i] = f;
+      utils.writeFloat(buffer, f);
+    }
+    InputStream newBuffer = fromBuffer(buffer);
+    for (int i = 0; i < n; i++) {
+      float got = utils.readFloat(newBuffer);
+      assertEquals(expected[i], got, tolerance);
+    }
+  }
+
+  @Test
+  public void testRandomDoubles() throws Exception {
+    double tolerance = 0.0000000000000001;
+    ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+    SerializationUtils utils = new SerializationUtils();
+    Random rand = new Random();
+    int n = 100_000;
+    double[] expected = new double[n];
+    for (int i = 0; i < n; i++) {
+      double d = rand.nextDouble();
+      expected[i] = d;
+      utils.writeDouble(buffer, d);
+    }
+    InputStream newBuffer = fromBuffer(buffer);
+    for (int i = 0; i < n; i++) {
+      double got = utils.readDouble(newBuffer);
+      assertEquals(expected[i], got, tolerance);
+    }
   }
 }

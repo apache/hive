@@ -18,8 +18,6 @@
 
 package org.apache.orc.impl;
 
-import org.apache.orc.impl.InStream;
-
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -77,18 +75,22 @@ public final class SerializationUtils {
   }
 
   public float readFloat(InputStream in) throws IOException {
-    int ser = in.read() | (in.read() << 8) | (in.read() << 16) |
-      (in.read() << 24);
-    return Float.intBitsToFloat(ser);
+    readFully(in, readBuffer, 0, 4);
+    int val = (((readBuffer[0] & 0xff) << 0)
+        + ((readBuffer[1] & 0xff) << 8)
+        + ((readBuffer[2] & 0xff) << 16)
+        + ((readBuffer[3] & 0xff) << 24));
+    return Float.intBitsToFloat(val);
   }
 
   public void writeFloat(OutputStream output,
                          float value) throws IOException {
     int ser = Float.floatToIntBits(value);
-    output.write(ser & 0xff);
-    output.write((ser >> 8) & 0xff);
-    output.write((ser >> 16) & 0xff);
-    output.write((ser >> 24) & 0xff);
+    writeBuffer[0] = (byte) ((ser >> 0)  & 0xff);
+    writeBuffer[1] = (byte) ((ser >> 8)  & 0xff);
+    writeBuffer[2] = (byte) ((ser >> 16) & 0xff);
+    writeBuffer[3] = (byte) ((ser >> 24) & 0xff);
+    output.write(writeBuffer, 0, 4);
   }
 
   public double readDouble(InputStream in) throws IOException {
@@ -96,7 +98,7 @@ public final class SerializationUtils {
   }
 
   public long readLongLE(InputStream in) throws IOException {
-    in.read(readBuffer, 0, 8);
+    readFully(in, readBuffer, 0, 8);
     return (((readBuffer[0] & 0xff) << 0)
         + ((readBuffer[1] & 0xff) << 8)
         + ((readBuffer[2] & 0xff) << 16)
@@ -105,6 +107,18 @@ public final class SerializationUtils {
         + ((long) (readBuffer[5] & 0xff) << 40)
         + ((long) (readBuffer[6] & 0xff) << 48)
         + ((long) (readBuffer[7] & 0xff) << 56));
+  }
+
+  private void readFully(final InputStream in, final byte[] buffer, final int off, final int len)
+      throws IOException {
+    int n = 0;
+    while (n < len) {
+      int count = in.read(buffer, off + n, len - n);
+      if (count < 0) {
+        throw new EOFException("Read past EOF for " + in);
+      }
+      n += count;
+    }
   }
 
   public void writeDouble(OutputStream output,
