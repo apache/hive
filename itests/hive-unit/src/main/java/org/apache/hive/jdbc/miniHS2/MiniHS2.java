@@ -31,6 +31,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.llap.LlapItUtils;
+import org.apache.hadoop.hive.llap.daemon.MiniLlapCluster;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.WindowsPathUtil;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -60,6 +62,7 @@ public class MiniHS2 extends AbstractHiveService {
   private static final AtomicLong hs2Counter = new AtomicLong();
   private MiniMrShim mr;
   private MiniDFSShim dfs;
+  private MiniLlapCluster llapCluster = null;
   private final FileSystem localFS;
   private boolean useMiniKdc = false;
   private final String serverPrincipal;
@@ -187,13 +190,15 @@ public class MiniHS2 extends AbstractHiveService {
       // Initialize the execution engine based on cluster type
       switch (miniClusterType) {
       case TEZ:
-        mr = ShimLoader.getHadoopShims().getMiniTezCluster(hiveConf, 4, uriString, false);
+        mr = ShimLoader.getHadoopShims().getMiniTezCluster(hiveConf, 4, uriString);
         break;
       case LLAP:
         if (usePortsFromConf) {
           hiveConf.setBoolean("minillap.usePortsFromConf", true);
         }
-        mr = ShimLoader.getHadoopShims().getMiniTezCluster(hiveConf, 4, uriString, true);
+        llapCluster = LlapItUtils.startAndGetMiniLlapCluster(hiveConf, null);
+
+        mr = ShimLoader.getHadoopShims().getMiniTezCluster(hiveConf, 4, uriString);
         break;
       case MR:
         mr = ShimLoader.getHadoopShims().getMiniMrCluster(hiveConf, 4, uriString, 1);
@@ -285,6 +290,9 @@ public class MiniHS2 extends AbstractHiveService {
     hiveServer2.stop();
     setStarted(false);
     try {
+      if (llapCluster != null) {
+        llapCluster.stop();
+      }
       if (mr != null) {
         mr.shutdown();
         mr = null;

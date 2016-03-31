@@ -370,8 +370,8 @@ public class Hadoop23Shims extends HadoopShimsSecure {
    */
   @Override
   public MiniMrShim getMiniTezCluster(Configuration conf, int numberOfTaskTrackers,
-      String nameNode, boolean isLlap) throws IOException {
-    return new MiniTezShim(conf, numberOfTaskTrackers, nameNode, isLlap);
+      String nameNode) throws IOException {
+    return new MiniTezShim(conf, numberOfTaskTrackers, nameNode);
   }
 
   /**
@@ -381,11 +381,8 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
     private final MiniTezCluster mr;
     private final Configuration conf;
-    private Class<?> miniLlapKlass;
-    private Object miniLlapCluster;
 
-    public MiniTezShim(Configuration conf, int numberOfTaskTrackers, String nameNode,
-        boolean isLlap) throws IOException {
+    public MiniTezShim(Configuration conf, int numberOfTaskTrackers, String nameNode) throws IOException {
       mr = new MiniTezCluster("hive", numberOfTaskTrackers);
       conf.set("fs.defaultFS", nameNode);
       conf.set("tez.am.log.level", "DEBUG");
@@ -393,54 +390,6 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       mr.init(conf);
       mr.start();
       this.conf = mr.getConfig();
-      if (isLlap) {
-        createAndLaunchLlapDaemon(this.conf);
-      } else {
-        miniLlapCluster = null;
-      }
-    }
-
-    private void createAndLaunchLlapDaemon(final Configuration conf)
-        throws IOException {
-      try {
-        final String clusterName = "llap";
-        Class<?> llapDaemonKlass =
-            Class.forName("org.apache.hadoop.hive.llap.daemon.impl.LlapDaemon",
-                false, ShimLoader.class.getClassLoader());
-        Method totalMemMethod = llapDaemonKlass.getMethod("getTotalHeapSize");
-        final long maxMemory = (long) totalMemMethod.invoke(null);
-        // 15% for io cache
-        final long memoryForCache = (long) (0.15f * maxMemory);
-        // 75% for executors
-        final long totalExecutorMemory = (long) (0.75f * maxMemory);
-        final int numExecutors = conf.getInt("llap.daemon.num.executors", 4);
-        final boolean asyncIOEnabled = true;
-        // enabling this will cause test failures in Mac OS X
-        final boolean directMemoryEnabled = false;
-        final int numLocalDirs = 1;
-        LOG.info("MiniLlap Configs - maxMemory: " + maxMemory + " memoryForCache: " + memoryForCache
-            + " totalExecutorMemory: " + totalExecutorMemory + " numExecutors: " + numExecutors
-            + " asyncIOEnabled: " + asyncIOEnabled + " directMemoryEnabled: " + directMemoryEnabled
-            + " numLocalDirs: " + numLocalDirs);
-
-        miniLlapKlass = Class.forName("org.apache.hadoop.hive.llap.daemon.MiniLlapCluster",
-            false, ShimLoader.class.getClassLoader());
-        Method create = miniLlapKlass.getMethod("createAndLaunch", new Class[]{Configuration.class,
-            String.class, Integer.TYPE, Long.TYPE, Boolean.TYPE, Boolean.TYPE,
-            Long.TYPE, Integer.TYPE});
-        miniLlapCluster = create.invoke(null,
-            conf,
-            clusterName,
-            numExecutors,
-            totalExecutorMemory,
-            asyncIOEnabled,
-            directMemoryEnabled,
-            memoryForCache,
-            numLocalDirs);
-      } catch (Exception e) {
-        LOG.error("Unable to create MiniLlapCluster. Exception: " + e.getMessage());
-        throw new IOException(e);
-      }
     }
 
     @Override
@@ -458,15 +407,6 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     @Override
     public void shutdown() throws IOException {
       mr.stop();
-
-      if (miniLlapKlass != null && miniLlapCluster != null) {
-        try {
-          Method stop = miniLlapKlass.getMethod("stop", new Class[]{});
-          stop.invoke(miniLlapCluster);
-        } catch (Exception e) {
-          LOG.error("Unable to stop llap daemon. Exception: " + e.getMessage());
-        }
-      }
     }
 
     @Override
