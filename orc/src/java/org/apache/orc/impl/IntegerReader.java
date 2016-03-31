@@ -60,8 +60,6 @@ public interface IntegerReader {
    * @return
    * @throws IOException
    */
-   void nextVector(LongColumnVector previous, long previousLen)
+   void nextVector(LongColumnVector previous, final int previousLen)
       throws IOException;
-
-  void setInStream(InStream data);
 }

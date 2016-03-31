@@ -1047,7 +1047,7 @@ public class RecordReaderImpl implements RecordReader {
         readStripe();
       }
 
-      long batchSize = computeBatchSize(VectorizedRowBatch.DEFAULT_SIZE);
+      final int batchSize = computeBatchSize(VectorizedRowBatch.DEFAULT_SIZE);
 
       rowInStripe += batchSize;
       if (previous == null) {
@@ -1055,13 +1055,13 @@ public class RecordReaderImpl implements RecordReader {
         result = new VectorizedRowBatch(cols.length);
         result.cols = cols;
       } else {
-        result = (VectorizedRowBatch) previous;
+        result = previous;
         result.selectedInUse = false;
         reader.setVectorColumnCount(result.getDataColumnCount());
-        reader.nextVector(result.cols, (int) batchSize);
+        reader.nextVector(result.cols, batchSize);
       }
 
-      result.size = (int) batchSize;
+      result.size = batchSize;
       advanceToNextRow(reader, rowInStripe + rowBaseInStripe, true);
       return result;
     } catch (IOException e) {
@@ -1070,8 +1070,8 @@ public class RecordReaderImpl implements RecordReader {
     }
   }
 
-  private long computeBatchSize(long targetBatchSize) {
-    long batchSize = 0;
+  private int computeBatchSize(long targetBatchSize) {
+    final int batchSize;
     // In case of PPD, batch size should be aware of row group boundaries. If only a subset of row
     // groups are selected then marker position is set to the end of range (subset of row groups
     // within strip). Batch size computed out of marker position makes sure that batch size is
@@ -1093,13 +1093,13 @@ public class RecordReaderImpl implements RecordReader {
       final long markerPosition =
           (endRowGroup * rowIndexStride) < rowCountInStripe ? (endRowGroup * rowIndexStride)
               : rowCountInStripe;
-      batchSize = Math.min(targetBatchSize, (markerPosition - rowInStripe));
+      batchSize = (int) Math.min(targetBatchSize, (markerPosition - rowInStripe));
 
       if (isLogDebugEnabled && batchSize < targetBatchSize) {
         LOG.debug("markerPosition: " + markerPosition + " batchSize: " + batchSize);
       }
     } else {
-      batchSize = Math.min(targetBatchSize, (rowCountInStripe - rowInStripe));
+      batchSize = (int) Math.min(targetBatchSize, (rowCountInStripe - rowInStripe));
     }
     return batchSize;
   }
