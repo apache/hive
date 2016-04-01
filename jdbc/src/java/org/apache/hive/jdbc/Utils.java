@@ -543,19 +543,25 @@ class Utils {
    * explored. Also update the host, port, jdbcUriString and other configs published by the server.
    *
    * @param connParams
-   * @throws ZooKeeperHiveClientException
+   * @return true if new server info is retrieved successfully
    */
-  static void updateConnParamsFromZooKeeper(JdbcConnectionParams connParams)
-      throws ZooKeeperHiveClientException {
+  static boolean updateConnParamsFromZooKeeper(JdbcConnectionParams connParams) {
     // Add current host to the rejected list
     connParams.getRejectedHostZnodePaths().add(connParams.getCurrentHostZnodePath());
     String oldServerHost = connParams.getHost();
     int oldServerPort = connParams.getPort();
     // Update connection params (including host, port) from ZooKeeper
-    ZooKeeperHiveClientHelper.configureConnParams(connParams);
-    connParams.setJdbcUriString(connParams.getJdbcUriString().replace(
-        oldServerHost + ":" + oldServerPort, connParams.getHost() + ":" + connParams.getPort()));
-    LOG.info("Selected HiveServer2 instance with uri: " + connParams.getJdbcUriString());
+    try {
+      ZooKeeperHiveClientHelper.configureConnParams(connParams);
+      connParams.setJdbcUriString(connParams.getJdbcUriString().replace(
+          oldServerHost + ":" + oldServerPort, connParams.getHost() + ":" + connParams.getPort()));
+      LOG.info("Selected HiveServer2 instance with uri: " + connParams.getJdbcUriString());
+    } catch(ZooKeeperHiveClientException e) {
+      LOG.error(e.getMessage());
+      return false;
+    }
+
+    return true;
   }
 
   private static String joinStringArray(String[] stringArray, String seperator) {
