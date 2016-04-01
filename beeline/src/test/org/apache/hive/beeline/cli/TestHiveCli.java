@@ -38,6 +38,7 @@ public class TestHiveCli {
   private static final Logger LOG = LoggerFactory.getLogger(TestHiveCli.class.getName());
   private static final int ERRNO_OK = 0;
   private static final int ERRNO_ARGS = 1;
+  private static final int ERRNO_OTHER = 2;
 
   private final static String SOURCE_CONTEXT =
       "create table if not exists test.testSrcTbl(sc1 string);";
@@ -101,7 +102,7 @@ public class TestHiveCli {
 
   @Test
   public void testInValidCmd() {
-    verifyCMD("!lss\n", "Failed to execute lss", errS, null, ERRNO_OK, true);
+    verifyCMD("!lss\n", "Failed to execute lss", errS, null, ERRNO_OTHER, true);
   }
 
   @Test
@@ -159,7 +160,7 @@ public class TestHiveCli {
   public void testSourceCmd3() {
     File f = generateTmpFile(SOURCE_CONTEXT4);
     verifyCMD("source " + f.getPath() + ";" + "desc testSrcTbl4;\nquit;\n", "src", os,
-        new String[] { "--database", "test" }, ERRNO_OK, true);
+        new String[] { "--database", "test" }, ERRNO_OTHER, true);
     f.delete();
   }
 
@@ -205,34 +206,34 @@ public class TestHiveCli {
   @Test
   public void testErrOutput() {
     verifyCMD("show tables;set system:xxx=5;set system:yyy=${system:xxx};\nlss;",
-        "cannot recognize input near 'lss' '<EOF>' '<EOF>'", errS, null, ERRNO_OK, true);
+        "cannot recognize input near 'lss' '<EOF>' '<EOF>'", errS, null, ERRNO_OTHER, true);
   }
 
   @Test
   public void testUseCurrentDB1() {
     verifyCMD(
         "create database if not exists testDB; set hive.cli.print.current.db=true;use testDB;\n"
-            + "use default;drop if exists testDB;", "hive (testDB)>", os, null, ERRNO_OK, true);
+            + "use default;drop if exists testDB;", "hive (testDB)>", os, null, ERRNO_OTHER, true);
   }
 
   @Test
   public void testUseCurrentDB2() {
     verifyCMD(
         "create database if not exists testDB; set hive.cli.print.current.db=true;use\ntestDB;\nuse default;drop if exists testDB;",
-        "hive (testDB)>", os, null, ERRNO_OK, true);
+        "hive (testDB)>", os, null, ERRNO_OTHER, true);
   }
 
   @Test
   public void testUseCurrentDB3() {
     verifyCMD(
         "create database if not exists testDB; set hive.cli.print.current.db=true;use  testDB;\n"
-            + "use default;drop if exists testDB;", "hive (testDB)>", os, null, ERRNO_OK, true);
+            + "use default;drop if exists testDB;", "hive (testDB)>", os, null, ERRNO_OTHER, true);
   }
 
   @Test
   public void testUseInvalidDB() {
     verifyCMD("set hive.cli.print.current.db=true;use invalidDB;",
-        "hive (invalidDB)>", os, null, ERRNO_OK, false);
+        "hive (invalidDB)>", os, null, ERRNO_OTHER, false);
   }
 
   @Test
