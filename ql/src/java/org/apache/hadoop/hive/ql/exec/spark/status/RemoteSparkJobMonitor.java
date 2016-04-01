@@ -66,7 +66,10 @@ public class RemoteSparkJobMonitor extends SparkJobMonitor {
         case QUEUED:
           long timeCount = (System.currentTimeMillis() - startTime) / 1000;
           if ((timeCount > monitorTimeoutInteval)) {
-            LOG.info("Job hasn't been submitted after " + timeCount + "s. Aborting it.");
+            console.printError("Job hasn't been submitted after " + timeCount + "s." +
+                " Aborting it.\nPossible reasons include network issues, " +
+                "errors in remote driver or the cluster has no available resources, etc.\n" +
+                "Please check YARN or Spark driver's logs for further information.");
             console.printError("Status: " + state);
             running = false;
             done = true;

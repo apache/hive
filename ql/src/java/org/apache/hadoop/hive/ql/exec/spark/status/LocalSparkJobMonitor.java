@@ -59,7 +59,7 @@ public class LocalSparkJobMonitor extends SparkJobMonitor {
         if (state == null) {
           long timeCount = (System.currentTimeMillis() - startTime)/1000;
           if (timeCount > monitorTimeoutInteval) {
-            LOG.info("Job hasn't been submitted after " + timeCount + "s. Aborting it.");
+            console.printError("Job hasn't been submitted after " + timeCount + "s. Aborting it.");
             console.printError("Status: " + state);
             running = false;
             done = true;

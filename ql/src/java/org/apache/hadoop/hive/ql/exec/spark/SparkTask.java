@@ -105,6 +105,9 @@ public class SparkTask extends Task<SparkWork> {
         }
         LOG.info("Execution completed successfully");
       } else if (rc == 2) { // Cancel job if the monitor found job submission timeout.
+        // TODO: If the timeout is because of lack of resources in the cluster, we should
+        // ideally also cancel the app request here. But w/o facilities from Spark or YARN,
+        // it's difficult to do it on hive side alone. See HIVE-12650.
         jobRef.cancelJob();
       }
       sparkJobStatus.cleanup();
