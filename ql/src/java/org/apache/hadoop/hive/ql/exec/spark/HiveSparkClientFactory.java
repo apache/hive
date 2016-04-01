@@ -51,6 +51,7 @@ public class HiveSparkClientFactory {
   private static final String SPARK_DEFAULT_APP_NAME = "Hive on Spark";
   private static final String SPARK_DEFAULT_SERIALIZER = "org.apache.spark.serializer.KryoSerializer";
   private static final String SPARK_DEFAULT_REFERENCE_TRACKING = "false";
+  private static final String SPARK_YARN_REPORT_INTERVAL = "spark.yarn.report.interval";
 
   public static HiveSparkClient createHiveSparkClient(HiveConf hiveconf) throws Exception {
     Map<String, String> sparkConf = initiateSparkConf(hiveconf);
@@ -183,6 +184,14 @@ public class HiveSparkClientFactory {
       if (queueName != null) {
         sparkConf.put(sparkQueueNameKey, queueName);
       }
+    }
+
+    //The application reports tend to spam the hive logs.  This is controlled by spark, and the default seems to be 1s.
+    //If it is not specified, set it to a much higher number.  It can always be overriden by user.
+    String sparkYarnReportInterval = sparkConf.get(SPARK_YARN_REPORT_INTERVAL);
+    if (sparkMaster.startsWith("yarn") && sparkYarnReportInterval == null) {
+      //the new version of spark also takes time-units, but old versions do not.
+      sparkConf.put(SPARK_YARN_REPORT_INTERVAL, "60000");
     }
 
     return sparkConf;
