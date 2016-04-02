@@ -139,10 +139,8 @@ public class LlapProtocolClientProxy extends AbstractService {
     requestManager.queueRequest(new SubmitWorkCallable(nodeId, request, callback));
   }
 
-  public void sendSourceStateUpdate(final SourceStateUpdatedRequestProto request, final String host,
-                                    final int port,
+  public void sendSourceStateUpdate(final SourceStateUpdatedRequestProto request, final LlapNodeId nodeId,
                                     final ExecuteRequestCallback<SourceStateUpdatedResponseProto> callback) {
-    LlapNodeId nodeId = LlapNodeId.getInstance(host, port);
     requestManager.queueRequest(
         new SendSourceStateUpdateCallable(nodeId, request, callback));
   }
