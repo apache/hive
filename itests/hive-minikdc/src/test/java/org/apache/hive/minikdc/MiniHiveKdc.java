@@ -50,6 +50,7 @@ public class MiniHiveKdc {
   public static String HIVE_TEST_USER_1 = "user1";
   public static String HIVE_TEST_USER_2 = "user2";
   public static String HIVE_TEST_SUPER_USER = "superuser";
+  public static String AUTHENTICATION_TYPE = "KERBEROS";
 
   private final MiniKdc miniKdc;
   private final File workDir;
@@ -170,14 +171,27 @@ public class MiniHiveKdc {
    * @throws Exception
    */
   public static MiniHS2 getMiniHS2WithKerb(MiniHiveKdc miniHiveKdc, HiveConf hiveConf) throws Exception {
-    String hivePrincipal =
-        miniHiveKdc.getFullyQualifiedServicePrincipal(MiniHiveKdc.HIVE_SERVICE_PRINCIPAL);
-    String hiveKeytab = miniHiveKdc.getKeyTabFile(
-        miniHiveKdc.getServicePrincipalForUser(MiniHiveKdc.HIVE_SERVICE_PRINCIPAL));
-
-    return new MiniHS2.Builder().withConf(hiveConf).
-        withMiniKdc(hivePrincipal, hiveKeytab).build();
+    return getMiniHS2WithKerb(miniHiveKdc, hiveConf, AUTHENTICATION_TYPE);
   }
+
+  /**
+  * Create a MiniHS2 with the hive service principal and keytab in MiniHiveKdc
+  * @param miniHiveKdc
+  * @param hiveConf
+  * @param authType
+  * @return new MiniHS2 instance
+  * @throws Exception
+  */
+ public static MiniHS2 getMiniHS2WithKerb(MiniHiveKdc miniHiveKdc, HiveConf hiveConf,
+     String authType) throws Exception {
+   String hivePrincipal =
+       miniHiveKdc.getFullyQualifiedServicePrincipal(MiniHiveKdc.HIVE_SERVICE_PRINCIPAL);
+   String hiveKeytab = miniHiveKdc.getKeyTabFile(
+       miniHiveKdc.getServicePrincipalForUser(MiniHiveKdc.HIVE_SERVICE_PRINCIPAL));
+
+   return new MiniHS2.Builder().withConf(hiveConf).withMiniKdc(hivePrincipal, hiveKeytab).
+       withAuthenticationType(authType).build();
+ }
 
   /**
    * Create a MiniHS2 with the hive service principal and keytab in MiniHiveKdc
@@ -187,12 +201,26 @@ public class MiniHiveKdc {
    * @throws Exception
    */
   public static MiniHS2 getMiniHS2WithKerbWithRemoteHMS(MiniHiveKdc miniHiveKdc, HiveConf hiveConf) throws Exception {
+    return getMiniHS2WithKerbWithRemoteHMS(miniHiveKdc, hiveConf, AUTHENTICATION_TYPE);
+  }
+
+  /**
+   * Create a MiniHS2 with the hive service principal and keytab in MiniHiveKdc. It uses remote HMS
+   * and can support a different Sasl authType
+   * @param miniHiveKdc
+   * @param hiveConf
+   * @param authType
+   * @return new MiniHS2 instance
+   * @throws Exception
+   */
+  public static MiniHS2 getMiniHS2WithKerbWithRemoteHMS(MiniHiveKdc miniHiveKdc, HiveConf hiveConf,
+      String authType) throws Exception {
     String hivePrincipal =
         miniHiveKdc.getFullyQualifiedServicePrincipal(MiniHiveKdc.HIVE_SERVICE_PRINCIPAL);
     String hiveKeytab = miniHiveKdc.getKeyTabFile(
         miniHiveKdc.getServicePrincipalForUser(MiniHiveKdc.HIVE_SERVICE_PRINCIPAL));
 
     return new MiniHS2.Builder().withConf(hiveConf).withRemoteMetastore().
-        withMiniKdc(hivePrincipal, hiveKeytab).build();
+        withMiniKdc(hivePrincipal, hiveKeytab).withAuthenticationType(authType).build();
   }
 }
