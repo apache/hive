@@ -202,7 +202,7 @@ public class MiniHS2 extends AbstractHiveService {
         if (usePortsFromConf) {
           hiveConf.setBoolean("minillap.usePortsFromConf", true);
         }
-        llapCluster = LlapItUtils.startAndGetMiniLlapCluster(hiveConf, null);
+        llapCluster = LlapItUtils.startAndGetMiniLlapCluster(hiveConf, null, null);
 
         mr = ShimLoader.getHadoopShims().getMiniTezCluster(hiveConf, 4, uriString);
         break;

@@ -14,12 +14,11 @@
 
 package org.apache.hadoop.hive.llap.daemon;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.util.Iterator;
-import java.util.Map;
 
+import org.apache.hadoop.hbase.zookeeper.MiniZooKeeperCluster;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -41,47 +40,57 @@ public class MiniLlapCluster extends AbstractService {
   private static final Logger LOG = LoggerFactory.getLogger(MiniLlapCluster.class);
 
   private final File testWorkDir;
+  private final String clusterNameTrimmed;
+  private final long numInstances;
   private final long execBytesPerService;
   private final boolean llapIoEnabled;
   private final boolean ioIsDirect;
   private final long ioBytesPerService;
   private final int numExecutorsPerService;
+  private final File zkWorkDir;
   private final String[] localDirs;
   private final Configuration clusterSpecificConfiguration = new Configuration(false);
 
-  private LlapDaemon llapDaemon;
+  private final LlapDaemon [] llapDaemons;
+  private MiniZooKeeperCluster miniZooKeeperCluster;
+  private final boolean ownZkCluster;
 
-  public static MiniLlapCluster create(String clusterName, int numExecutorsPerService,
-      long execBytePerService, boolean llapIoEnabled, boolean ioIsDirect, long ioBytesPerService,
-      int numLocalDirs) {
-    return new MiniLlapCluster(clusterName, numExecutorsPerService, execBytePerService,
+
+  public static MiniLlapCluster create(String clusterName,
+                                       @Nullable MiniZooKeeperCluster miniZkCluster,
+                                       int numInstances,
+                                       int numExecutorsPerService,
+                                       long execBytePerService, boolean llapIoEnabled,
+                                       boolean ioIsDirect, long ioBytesPerService,
+                                       int numLocalDirs) {
+    return new MiniLlapCluster(clusterName, miniZkCluster, numInstances, numExecutorsPerService,
+        execBytePerService,
         llapIoEnabled, ioIsDirect, ioBytesPerService, numLocalDirs);
   }
 
-  public static MiniLlapCluster createAndLaunch(Configuration conf, String clusterName,
-      int numExecutorsPerService, long execBytePerService, boolean llapIoEnabled,
-      boolean ioIsDirect, long ioBytesPerService, int numLocalDirs) {
-    MiniLlapCluster miniLlapCluster = create(clusterName, numExecutorsPerService,
-        execBytePerService, llapIoEnabled, ioIsDirect, ioBytesPerService, numLocalDirs);
-    miniLlapCluster.init(conf);
-    miniLlapCluster.start();
-    Configuration llapConf = miniLlapCluster.getClusterSpecificConfiguration();
-    Iterator<Map.Entry<String, String>> confIter = llapConf.iterator();
-    while (confIter.hasNext()) {
-      Map.Entry<String, String> entry = confIter.next();
-      conf.set(entry.getKey(), entry.getValue());
-    }
-    return miniLlapCluster;
+  public static MiniLlapCluster create(String clusterName,
+                                       @Nullable MiniZooKeeperCluster miniZkCluster,
+                                       int numExecutorsPerService,
+                                       long execBytePerService, boolean llapIoEnabled,
+                                       boolean ioIsDirect, long ioBytesPerService,
+                                       int numLocalDirs) {
+    return create(clusterName, miniZkCluster, 1, numExecutorsPerService, execBytePerService,
+        llapIoEnabled,
+        ioIsDirect, ioBytesPerService, numLocalDirs);
   }
 
-  // TODO Add support for multiple instances
-  private MiniLlapCluster(String clusterName, int numExecutorsPerService, long execMemoryPerService,
-                          boolean llapIoEnabled, boolean ioIsDirect, long ioBytesPerService, int numLocalDirs) {
+  private MiniLlapCluster(String clusterName, @Nullable MiniZooKeeperCluster miniZkCluster,
+                          int numInstances, int numExecutorsPerService, long execMemoryPerService,
+                          boolean llapIoEnabled, boolean ioIsDirect, long ioBytesPerService,
+                          int numLocalDirs) {
     super(clusterName + "_" + MiniLlapCluster.class.getSimpleName());
     Preconditions.checkArgument(numExecutorsPerService > 0);
     Preconditions.checkArgument(execMemoryPerService > 0);
     Preconditions.checkArgument(numLocalDirs > 0);
-    String clusterNameTrimmed = clusterName.replace("$", "") + "_" + MiniLlapCluster.class.getSimpleName();
+    this.numInstances = numInstances;
+
+    this.clusterNameTrimmed = clusterName.replace("$", "") + "_" + MiniLlapCluster.class.getSimpleName();
+    this.llapDaemons = new LlapDaemon[numInstances];
     File targetWorkDir = new File("target", clusterNameTrimmed);
     try {
       FileContext.getLocalFSFileContext().delete(
@@ -123,7 +132,17 @@ public class MiniLlapCluster extends AbstractService {
 
       this.testWorkDir = link;
     } else {
+      targetWorkDir.mkdir();
       this.testWorkDir = targetWorkDir;
+    }
+    if (miniZkCluster == null) {
+      ownZkCluster = true;
+      this.zkWorkDir = new File(testWorkDir, "mini-zk-cluster");
+      zkWorkDir.mkdir();
+    } else {
+      miniZooKeeperCluster = miniZkCluster;
+      ownZkCluster = false;
+      this.zkWorkDir = null;
     }
     this.numExecutorsPerService = numExecutorsPerService;
     this.execBytesPerService = execMemoryPerService;
@@ -142,12 +161,13 @@ public class MiniLlapCluster extends AbstractService {
   }
 
   @Override
-  public void serviceInit(Configuration conf) {
+  public void serviceInit(Configuration conf) throws IOException, InterruptedException {
     int rpcPort = 0;
     int mngPort = 0;
     int shufflePort = 0;
     int webPort = 0;
     boolean usePortsFromConf = conf.getBoolean("minillap.usePortsFromConf", false);
+    LOG.info("MiniLlap configured to use ports from conf: {}", usePortsFromConf);
     if (usePortsFromConf) {
       rpcPort = HiveConf.getIntVar(conf, HiveConf.ConfVars.LLAP_DAEMON_RPC_PORT);
       mngPort = HiveConf.getIntVar(conf, HiveConf.ConfVars.LLAP_MANAGEMENT_RPC_PORT);
@@ -155,43 +175,61 @@ public class MiniLlapCluster extends AbstractService {
       webPort = HiveConf.getIntVar(conf, ConfVars.LLAP_DAEMON_WEB_PORT);
     }
 
-    llapDaemon = new LlapDaemon(conf, numExecutorsPerService, execBytesPerService, llapIoEnabled,
-        ioIsDirect, ioBytesPerService, localDirs, rpcPort, mngPort, shufflePort, webPort);
-    llapDaemon.init(conf);
+    if (ownZkCluster) {
+      miniZooKeeperCluster = new MiniZooKeeperCluster();
+      miniZooKeeperCluster.startup(zkWorkDir);
+    } else {
+      // Already setup in the create method
+    } 
+
+    conf.set(ConfVars.LLAP_DAEMON_SERVICE_HOSTS.varname, "@" + clusterNameTrimmed);
+    conf.set(ConfVars.HIVE_ZOOKEEPER_QUORUM.varname, "localhost");
+    conf.setInt(ConfVars.HIVE_ZOOKEEPER_CLIENT_PORT.varname, miniZooKeeperCluster.getClientPort());
+  
+    LOG.info("Initializing {} llap instances for MiniLlapCluster with name={}", numInstances, clusterNameTrimmed);
+    for (int i = 0 ;i < numInstances ; i++) {
+      llapDaemons[i] = new LlapDaemon(conf, numExecutorsPerService, execBytesPerService, llapIoEnabled,
+          ioIsDirect, ioBytesPerService, localDirs, rpcPort, mngPort, shufflePort, webPort);
+      llapDaemons[i].init(new Configuration(conf));
+    }
+    LOG.info("Initialized {} llap instances for MiniLlapCluster with name={}", numInstances, clusterNameTrimmed);
   }
 
   @Override
   public void serviceStart() {
-    llapDaemon.start();
+    LOG.info("Starting {} llap instances for MiniLlapCluster with name={}", numInstances, clusterNameTrimmed);
+    for (int i = 0 ;i < numInstances ; i++) {
+      llapDaemons[i].start();
+    }
+    LOG.info("Started {} llap instances for MiniLlapCluster with name={}", numInstances, clusterNameTrimmed);
 
-    clusterSpecificConfiguration.set(ConfVars.LLAP_DAEMON_SERVICE_HOSTS.varname,
-        getServiceAddress().getHostName());
-    clusterSpecificConfiguration.setInt(ConfVars.LLAP_DAEMON_RPC_PORT.varname,
-        getServiceAddress().getPort());
-
-    clusterSpecificConfiguration.setInt(
-        ConfVars.LLAP_DAEMON_NUM_EXECUTORS.varname,
-        numExecutorsPerService);
-    clusterSpecificConfiguration.setLong(
-        ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB.varname, execBytesPerService);
     // Optimize local fetch does not work with LLAP due to different local directories
     // used by containers and LLAP
     clusterSpecificConfiguration
         .setBoolean(TezRuntimeConfiguration.TEZ_RUNTIME_OPTIMIZE_LOCAL_FETCH, false);
+    clusterSpecificConfiguration.set(ConfVars.LLAP_DAEMON_SERVICE_HOSTS.varname, "@" + clusterNameTrimmed);
   }
 
   @Override
-  public void serviceStop() {
-    if (llapDaemon != null) {
-      llapDaemon.stop();
-      llapDaemon = null;
+  public void serviceStop() throws IOException {
+    for (int i = 0 ; i < numInstances ; i++) {
+      if (llapDaemons[i] != null) {
+        llapDaemons[i].stop();
+        llapDaemons[i] = null;
+      }
+    }
+    if (ownZkCluster) {
+      if (miniZooKeeperCluster != null) {
+        LOG.info("Stopping MiniZooKeeper cluster");
+        miniZooKeeperCluster.shutdown();
+        miniZooKeeperCluster = null;
+        LOG.info("Stopped MiniZooKeeper cluster");
+      }
+    } else {
+      LOG.info("Not stopping MiniZK cluster since it is now owned by us"); 
     }
   }
 
-  private InetSocketAddress getServiceAddress() {
-    Preconditions.checkState(getServiceState() == Service.STATE.STARTED);
-    return llapDaemon.getListenerAddress();
-  }
 
   public Configuration getClusterSpecificConfiguration() {
     Preconditions.checkState(getServiceState() == Service.STATE.STARTED);
@@ -200,7 +238,10 @@ public class MiniLlapCluster extends AbstractService {
 
   // Mainly for verification
   public long getNumSubmissions() {
-    return llapDaemon.getNumSubmissions();
+    int numSubmissions = 0;
+    for (int i = 0 ; i < numInstances ; i++) {
+      numSubmissions += llapDaemons[i].getNumSubmissions();
+    }
+    return numSubmissions;
   }
-
 }

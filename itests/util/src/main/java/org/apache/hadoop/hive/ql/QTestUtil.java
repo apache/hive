@@ -429,6 +429,9 @@ public class QTestUtil {
         fs = dfs.getFileSystem();
       }
 
+      setup = new QTestSetup();
+      setup.preTest(conf);
+
       String uriString = WindowsPathUtil.getHdfsUriString(fs.getUri().toString());
       if (clusterType == MiniClusterType.tez) {
         if (confDir != null && !confDir.isEmpty()) {
@@ -437,13 +440,16 @@ public class QTestUtil {
         }
         mr = shims.getMiniTezCluster(conf, 4, uriString);
       } else if (clusterType == MiniClusterType.llap) {
-        llapCluster = LlapItUtils.startAndGetMiniLlapCluster(conf, confDir);
+        llapCluster = LlapItUtils.startAndGetMiniLlapCluster(conf, setup.zooKeeperCluster, confDir);
         mr = shims.getMiniTezCluster(conf, 2, uriString);
       } else if (clusterType == MiniClusterType.miniSparkOnYarn) {
         mr = shims.getMiniSparkCluster(conf, 4, uriString, 1);
       } else {
         mr = shims.getMiniMrCluster(conf, 4, uriString, 1);
       }
+    } else {
+      setup = new QTestSetup();
+      setup.preTest(conf);
     }
 
     initConf();
@@ -471,8 +477,6 @@ public class QTestUtil {
 
     overWrite = "true".equalsIgnoreCase(System.getProperty("test.output.overwrite"));
 
-    setup = new QTestSetup();
-    setup.preTest(conf);
     init();
   }
 

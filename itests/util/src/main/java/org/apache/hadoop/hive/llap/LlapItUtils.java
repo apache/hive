@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.zookeeper.MiniZooKeeperCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.configuration.LlapDaemonConfiguration;
 import org.apache.hadoop.hive.llap.daemon.MiniLlapCluster;
@@ -36,7 +37,9 @@ public class LlapItUtils {
 
   private static final Logger LOG = LoggerFactory.getLogger(LlapItUtils.class);
 
-  public static MiniLlapCluster startAndGetMiniLlapCluster(Configuration conf, String confDir) throws
+  public static MiniLlapCluster startAndGetMiniLlapCluster(Configuration conf,
+                                                           MiniZooKeeperCluster miniZkCluster,
+                                                           String confDir) throws
       IOException {
     MiniLlapCluster llapCluster;
     LOG.info("Using conf dir: {}", confDir);
@@ -57,11 +60,14 @@ public class LlapItUtils {
     // enabling this will cause test failures in Mac OS X
     final boolean directMemoryEnabled = false;
     final int numLocalDirs = 1;
-    LOG.info("MiniLlap Configs - maxMemory: " + maxMemory + " memoryForCache: " + memoryForCache
+    LOG.info("MiniLlap Configs -  maxMemory: " + maxMemory +
+        " memoryForCache: " + memoryForCache
         + " totalExecutorMemory: " + totalExecutorMemory + " numExecutors: " + numExecutors
         + " asyncIOEnabled: " + asyncIOEnabled + " directMemoryEnabled: " + directMemoryEnabled
         + " numLocalDirs: " + numLocalDirs);
     llapCluster = MiniLlapCluster.create(clusterName,
+        miniZkCluster,
+        1,
         numExecutors,
         totalExecutorMemory,
         asyncIOEnabled,
