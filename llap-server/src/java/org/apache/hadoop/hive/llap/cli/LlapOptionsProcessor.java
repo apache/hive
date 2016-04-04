@@ -39,9 +39,6 @@ public class LlapOptionsProcessor {
   public static final String OPTION_INSTANCES = "instances"; //forward as arg
   public static final String OPTION_NAME = "name"; // forward as arg
   public static final String OPTION_DIRECTORY = "directory"; // work-dir
-  public static final String OPTION_ARGS = "args"; // forward as arg
-  public static final String OPTION_LOGLEVEL = "loglevel"; // forward as arg
-  public static final String OPTION_CHAOS_MONKEY = "chaosmonkey"; // forward as arg
   public static final String OPTION_EXECUTORS = "executors"; // llap-daemon-site
   public static final String OPTION_CACHE = "cache"; // llap-daemon-site
   public static final String OPTION_SIZE = "size"; // forward via config.json
@@ -53,6 +50,16 @@ public class LlapOptionsProcessor {
   public static final String OPTION_SLIDER_AM_CONTAINER_MB = "slider-am-container-mb"; // forward as arg
   public static final String OPTION_LLAP_QUEUE = "queue"; // forward via config.json
   public static final String OPTION_IO_THREADS = "iothreads"; // llap-daemon-site
+
+  // Options for the pythin script that are here because our option parser cannot ignore the unknown ones
+  public static final String OPTION_ARGS = "args"; // forward as arg
+  public static final String OPTION_LOGLEVEL = "loglevel"; // forward as arg
+  public static final String OPTION_CHAOS_MONKEY = "chaosmonkey"; // forward as arg
+  public static final String OPTION_SLIDER_KEYTAB_DIR = "slider-keytab-dir";
+  public static final String OPTION_SLIDER_KEYTAB = "slider-keytab";
+  public static final String OPTION_SLIDER_PRINCIPAL = "slider-principal";
+  public static final String OPTION_SLIDER_DEFAULT_KEYTAB = "slider-default-keytab";
+
 
   public class LlapOptions {
     private final int instances;
@@ -170,6 +177,18 @@ public class LlapOptionsProcessor {
 
     options.addOption(OptionBuilder.hasArg().withArgName(OPTION_CHAOS_MONKEY).withLongOpt(OPTION_CHAOS_MONKEY)
         .withDescription("chaosmonkey interval").create('m'));
+
+    options.addOption(OptionBuilder.hasArg(false).withArgName(OPTION_SLIDER_DEFAULT_KEYTAB).withLongOpt(OPTION_SLIDER_DEFAULT_KEYTAB)
+        .withDescription("try to set default settings for Slider AM keytab; mostly for dev testing").create());
+
+    options.addOption(OptionBuilder.hasArg().withArgName(OPTION_SLIDER_KEYTAB_DIR).withLongOpt(OPTION_SLIDER_KEYTAB_DIR)
+        .withDescription("Slider AM keytab directory on HDFS (where the headless user keytab is stored by Slider keytab installation, e.g. .slider/keytabs/llap)").create());
+
+    options.addOption(OptionBuilder.hasArg().withArgName(OPTION_SLIDER_KEYTAB).withLongOpt(OPTION_SLIDER_KEYTAB)
+        .withDescription("Slider AM keytab file name inside " + OPTION_SLIDER_KEYTAB_DIR).create());
+
+    options.addOption(OptionBuilder.hasArg().withArgName(OPTION_SLIDER_PRINCIPAL).withLongOpt(OPTION_SLIDER_PRINCIPAL)
+        .withDescription("Slider AM principal; should be the user running the cluster, e.g. hive@EXAMPLE.COM").create());
 
     options.addOption(OptionBuilder.hasArg().withArgName(OPTION_EXECUTORS).withLongOpt(OPTION_EXECUTORS)
         .withDescription("executor per instance").create('e'));

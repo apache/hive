@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -110,7 +111,12 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
       int curExecutors = 0;
       long ts = System.currentTimeMillis();
       do {
-        curExecutors = getExecutorCount();
+        try {
+          curExecutors = getExecutorCount(MAX_PREWARM_TIME, TimeUnit.MILLISECONDS);
+        } catch (TimeoutException e) {
+          // let's don't fail on future timeout since we have a timeout for pre-warm
+          LOG.warn("Timed out getting executor count.", e);
+        }
         if (curExecutors >= minExecutors) {
           LOG.info("Finished prewarming Spark executors. The current number of executors is " + curExecutors);
           return;
@@ -118,8 +124,8 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
         Thread.sleep(500); // sleep half a second
       } while (System.currentTimeMillis() - ts < MAX_PREWARM_TIME);
 
-      LOG.info("Timeout (" + MAX_PREWARM_TIME + 
-          "s) occurred while prewarming executors. The current number of executors is " + curExecutors);
+      LOG.info("Timeout (" + MAX_PREWARM_TIME / 1000 + "s) occurred while prewarming executors. " +
+          "The current number of executors is " + curExecutors);
     }
   }
 
@@ -143,6 +149,11 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
     return minExecutors;
   }
 
+  private int getExecutorCount(long timeout, TimeUnit unit) throws Exception {
+    Future<Integer> handler = remoteClient.getExecutorCount();
+    return handler.get(timeout, unit);
+  }
+
   @Override
   public SparkConf getSparkConf() {
     return sparkConf;
@@ -150,8 +161,7 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
 
   @Override
   public int getExecutorCount() throws Exception {
-    Future<Integer> handler = remoteClient.getExecutorCount();
-    return handler.get(sparkClientTimtout, TimeUnit.SECONDS).intValue();
+    return getExecutorCount(sparkClientTimtout, TimeUnit.SECONDS);
   }
 
   @Override

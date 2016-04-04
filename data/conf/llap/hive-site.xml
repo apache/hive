@@ -273,4 +273,48 @@
   <value>false</value>
 </property>
 
+<!-- llap properties -->
+
+<property>
+  <name>hive.llap.daemon.service.hosts</name>
+  <value>localhost</value>
+</property>
+
+<property>
+  <name>hive.llap.daemon.service.port</name>
+  <value>0</value>
+</property>
+
+<property>
+  <name>hive.llap.daemon.num.executors</name>
+  <value>4</value>
+</property>
+
+<property>
+  <name>hive.llap.daemon.task.scheduler.wait.queue.size</name>
+  <value>4</value>
+</property>
+
+<property>
+  <name>hive.llap.cache.allow.synthetic.fileid</name>
+  <value>true</value>
+</property>
+
+<!-- hadoop IPC options -->
+<property>
+  <name>ipc.client.low-latency</name>
+  <value>true</value>
+  <description> </description>
+</property>
+<property>
+  <name>ipc.client.tcpnodelay</name>
+  <value>true</value>
+  <description> </description>
+</property>
+<property>
+  <name>ipc.clients-per-factory</name>
+  <value>4</value>
+  <description> </description>
+</property>
+
 </configuration>

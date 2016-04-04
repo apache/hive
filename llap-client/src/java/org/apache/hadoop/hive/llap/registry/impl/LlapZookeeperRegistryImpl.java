@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -68,8 +67,6 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authentication.util.KerberosUtil;
 import org.apache.hadoop.yarn.api.records.Resource;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
-import org.apache.zookeeper.WatchedEvent;
-import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooDefs;
 import org.apache.zookeeper.client.ZooKeeperSaslClient;
 import org.apache.zookeeper.data.ACL;
@@ -298,8 +295,10 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
         // No node exists, throw exception
         throw new Exception("Unable to create znode for this LLAP instance on ZooKeeper.");
       }
-      LOG.info("Created a znode on ZooKeeper for LLAP instance: {} znodePath: {}", rpcEndpoint,
-          znodePath);
+      LOG.info(
+          "Registered node. Created a znode on ZooKeeper for LLAP instance: rpc: {}, shuffle: {}," +
+              " webui: {}, mgmt: {}, znodePath: {} ",
+          rpcEndpoint, getShuffleEndpoint(), getServicesEndpoint(), getMngEndpoint(), znodePath);
     } catch (Exception e) {
       LOG.error("Unable to create a znode for this server instance", e);
       CloseableUtils.closeQuietly(znode);

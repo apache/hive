@@ -101,7 +101,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
 
   public LlapDaemon(Configuration daemonConf, int numExecutors, long executorMemoryBytes,
       boolean ioEnabled, boolean isDirectCache, long ioMemoryBytes, String[] localDirs, int srvPort,
-      int mngPort, int shufflePort) {
+      int mngPort, int shufflePort, int webPort) {
     super("LlapDaemon");
 
     initializeLogging();
@@ -141,6 +141,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
         "numExecutors=" + numExecutors +
         ", rpcListenerPort=" + srvPort +
         ", mngListenerPort=" + mngPort +
+        ", webPort=" + webPort +
         ", workDirs=" + Arrays.toString(localDirs) +
         ", shufflePort=" + shufflePort +
         ", executorMemory=" + executorMemoryBytes +
@@ -207,12 +208,11 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
         amReporter, executorClassLoader);
     addIfService(containerRunner);
 
-    this.registry = new LlapRegistryService(true);
-    addIfService(registry);
+
     if (HiveConf.getBoolVar(daemonConf, HiveConf.ConfVars.HIVE_IN_TEST)) {
       this.webServices = null;
     } else {
-      this.webServices = new LlapWebServices();
+      this.webServices = new LlapWebServices(webPort);
       addIfService(webServices);
     }
     // Bring up the server only after all other components have started.
@@ -220,6 +220,9 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     // AMReporter after the server so that it gets the correct address. It knows how to deal with
     // requests before it is started.
     addIfService(amReporter);
+
+    // Not adding the registry as a service, since we need to control when it is initialized - conf used to pickup properties.
+    this.registry = new LlapRegistryService(true);
   }
 
   private void initializeLogging() {
@@ -290,12 +293,30 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     ShuffleHandler.initializeAndStart(shuffleHandlerConf);
     LOG.info("Setting shuffle port to: " + ShuffleHandler.get().getPort());
     this.shufflePort.set(ShuffleHandler.get().getPort());
+    getConfig()
+        .setInt(ConfVars.LLAP_DAEMON_YARN_SHUFFLE_PORT.varname, ShuffleHandler.get().getPort());
     super.serviceStart();
+
+    // Setup the actual ports in the configuration.
+    getConfig().setInt(ConfVars.LLAP_DAEMON_RPC_PORT.varname, server.getBindAddress().getPort());
+    getConfig().setInt(ConfVars.LLAP_MANAGEMENT_RPC_PORT.varname, server.getManagementBindAddress().getPort());
+    if (webServices != null) {
+      getConfig().setInt(ConfVars.LLAP_DAEMON_WEB_PORT.varname, webServices.getPort());
+    }
     LlapOutputFormatService.get();
-    LOG.info("LlapDaemon serviceStart complete");
+
+    this.registry.init(getConfig());
+    this.registry.start();
+    LOG.info(
+        "LlapDaemon serviceStart complete. RPC Port={}, ManagementPort={}, ShuflePort={}, WebPort={}",
+        server.getBindAddress().getPort(), server.getManagementBindAddress().getPort(),
+        ShuffleHandler.get().getPort(), (webServices == null ? "" : webServices.getPort()));
   }
 
   public void serviceStop() throws Exception {
+    if (registry != null) {
+      this.registry.stop();
+    }
     super.serviceStop();
     ShuffleHandler.shutdown();
     shutdown();
@@ -344,6 +365,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
       int mngPort = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_MANAGEMENT_RPC_PORT);
       int shufflePort = daemonConf
           .getInt(ShuffleHandler.SHUFFLE_PORT_CONFIG_KEY, ShuffleHandler.DEFAULT_SHUFFLE_PORT);
+      int webPort = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_DAEMON_WEB_PORT);
       long executorMemoryBytes = HiveConf.getIntVar(
           daemonConf, ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB) * 1024l * 1024l;
 
@@ -351,7 +373,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
       boolean isDirectCache = HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_ALLOCATOR_DIRECT);
       boolean isLlapIo = HiveConf.getBoolVar(daemonConf, HiveConf.ConfVars.LLAP_IO_ENABLED, true);
       llapDaemon = new LlapDaemon(daemonConf, numExecutors, executorMemoryBytes, isLlapIo,
-              isDirectCache, ioMemoryBytes, localDirs, rpcPort, mngPort, shufflePort);
+              isDirectCache, ioMemoryBytes, localDirs, rpcPort, mngPort, shufflePort, webPort);
 
       LOG.info("Adding shutdown hook for LlapDaemon");
       ShutdownHookManager.addShutdownHook(new CompositeServiceShutdownHook(llapDaemon), 1);

@@ -14,6 +14,7 @@
 
 package org.apache.hadoop.hive.llap.configuration;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -21,6 +22,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 /**
  * Configuration for LLAP daemon processes only. This should not be used by any clients.
  */
+@InterfaceAudience.Private
 public class LlapDaemonConfiguration extends Configuration {
 
   @InterfaceAudience.Private
@@ -45,5 +47,11 @@ public class LlapDaemonConfiguration extends Configuration {
       }
     }
     addResource(LLAP_DAEMON_SITE);
+  }
+
+  @VisibleForTesting
+  public LlapDaemonConfiguration(Configuration conf) {
+    this();
+    addResource(conf);
   }
 }

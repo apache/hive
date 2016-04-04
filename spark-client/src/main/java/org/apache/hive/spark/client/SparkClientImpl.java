@@ -47,6 +47,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -100,7 +101,13 @@ class SparkClientImpl implements SparkClient {
       // The RPC server will take care of timeouts here.
       this.driverRpc = rpcServer.registerClient(clientId, secret, protocol).get();
     } catch (Throwable e) {
-      LOG.warn("Error while waiting for client to connect.", e);
+      if (e.getCause() instanceof TimeoutException) {
+        LOG.error("Timed out waiting for client to connect.\nPossible reasons include network " +
+            "issues, errors in remote driver or the cluster has no available resources, etc." +
+            "\nPlease check YARN or Spark driver's logs for further information.", e);
+      } else {
+        LOG.error("Error while waiting for client to connect.", e);
+      }
       driverThread.interrupt();
       try {
         driverThread.join();

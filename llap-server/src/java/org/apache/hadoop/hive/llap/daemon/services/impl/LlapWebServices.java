@@ -20,9 +20,9 @@ package org.apache.hadoop.hive.llap.daemon.services.impl;
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.llap.configuration.LlapDaemonConfiguration;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.service.AbstractService;
 import org.apache.hive.http.HttpServer;
@@ -38,13 +38,14 @@ public class LlapWebServices extends AbstractService {
   private boolean useSSL = false;
   private boolean useSPNEGO = false;
 
-  public LlapWebServices() {
+  public LlapWebServices(int port) {
     super("LlapWebServices");
+    this.port = port;
   }
 
   @Override
   public void serviceInit(Configuration conf) {
-    this.port = HiveConf.getIntVar(conf, ConfVars.LLAP_DAEMON_WEB_PORT);
+
     this.useSSL = HiveConf.getBoolVar(conf, ConfVars.LLAP_DAEMON_WEB_SSL);
     this.useSPNEGO = HiveConf.getBoolVar(conf, ConfVars.LLAP_WEB_AUTO_AUTH);
     String bindAddress = "0.0.0.0";
@@ -69,6 +70,11 @@ public class LlapWebServices extends AbstractService {
     }
   }
 
+  @InterfaceAudience.Private
+  public int getPort() {
+    return this.http.getPort();
+  }
+
   @Override
   public void serviceStart() throws Exception {
     if (this.http != null) {
@@ -76,6 +82,7 @@ public class LlapWebServices extends AbstractService {
     }
   }
 
+  @Override
   public void serviceStop() throws Exception {
     if (this.http != null) {
       this.http.stop();

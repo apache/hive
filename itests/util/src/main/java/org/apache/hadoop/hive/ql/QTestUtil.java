@@ -51,6 +51,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -82,6 +83,10 @@ import org.apache.hadoop.hive.common.io.SortAndDigestPrintStream;
 import org.apache.hadoop.hive.common.io.SortPrintStream;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.llap.LlapItUtils;
+import org.apache.hadoop.hive.llap.configuration.LlapDaemonConfiguration;
+import org.apache.hadoop.hive.llap.daemon.MiniLlapCluster;
+import org.apache.hadoop.hive.llap.daemon.impl.LlapDaemon;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.Index;
@@ -166,6 +171,7 @@ public class QTestUtil {
   private HadoopShims.MiniMrShim mr = null;
   private HadoopShims.MiniDFSShim dfs = null;
   private HadoopShims.HdfsEncryptionShim hes = null;
+  private MiniLlapCluster llapCluster = null;
   private String hadoopVer = null;
   private QTestSetup setup = null;
   private TezSessionState tezSessionState = null;
@@ -423,26 +429,27 @@ public class QTestUtil {
         fs = dfs.getFileSystem();
       }
 
+      setup = new QTestSetup();
+      setup.preTest(conf);
+
       String uriString = WindowsPathUtil.getHdfsUriString(fs.getUri().toString());
       if (clusterType == MiniClusterType.tez) {
         if (confDir != null && !confDir.isEmpty()) {
           conf.addResource(new URL("file://" + new File(confDir).toURI().getPath()
               + "/tez-site.xml"));
         }
-        mr = shims.getMiniTezCluster(conf, 4, uriString, false);
+        mr = shims.getMiniTezCluster(conf, 4, uriString);
       } else if (clusterType == MiniClusterType.llap) {
-        if (confDir != null && !confDir.isEmpty()) {
-          conf.addResource(new URL("file://" + new File(confDir).toURI().getPath()
-              + "/tez-site.xml"));
-          conf.addResource(new URL("file://" + new File(confDir).toURI().getPath()
-              + "/llap-daemon-site.xml"));
-        }
-        mr = shims.getMiniTezCluster(conf, 2, uriString, true);
+        llapCluster = LlapItUtils.startAndGetMiniLlapCluster(conf, setup.zooKeeperCluster, confDir);
+        mr = shims.getMiniTezCluster(conf, 2, uriString);
       } else if (clusterType == MiniClusterType.miniSparkOnYarn) {
         mr = shims.getMiniSparkCluster(conf, 4, uriString, 1);
       } else {
         mr = shims.getMiniMrCluster(conf, 4, uriString, 1);
       }
+    } else {
+      setup = new QTestSetup();
+      setup.preTest(conf);
     }
 
     initConf();
@@ -470,8 +477,6 @@ public class QTestUtil {
 
     overWrite = "true".equalsIgnoreCase(System.getProperty("test.output.overwrite"));
 
-    setup = new QTestSetup();
-    setup.preTest(conf);
     init();
   }
 

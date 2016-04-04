@@ -516,6 +516,13 @@ public class LlapTaskSchedulerService extends TaskScheduler {
               dagStats.registerTaskRejected(taskInfo.assignedInstance.getHost());
             }
           }
+          if (endReason != null && endReason == TaskAttemptEndReason.NODE_FAILED) {
+            LOG.info(
+                "Task {} ended on {} nodeInfo.toString() with a NODE_FAILED message." +
+                    " An message should come in from the registry to disable this node unless" +
+                    " this was a temporary communication failure",
+                task, assignedInstance);
+          }
           boolean commFailure =
               endReason != null && endReason == TaskAttemptEndReason.COMMUNICATION_ERROR;
           disableInstance(assignedInstance, commFailure);

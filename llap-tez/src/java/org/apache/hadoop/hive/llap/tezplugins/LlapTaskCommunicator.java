@@ -150,7 +150,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     super.initialize();
     Configuration conf = getConf();
     int numThreads = HiveConf.getIntVar(conf, ConfVars.LLAP_DAEMON_COMMUNICATOR_NUM_THREADS);
-    this.communicator = new LlapProtocolClientProxy(numThreads, conf, token);
+    this.communicator = createLlapProtocolClientProxy(numThreads, conf);
     this.deleteDelayOnDagComplete = HiveConf.getTimeVar(
         conf, ConfVars.LLAP_FILE_CLEANUP_DELAY_SECONDS, TimeUnit.SECONDS);
     LOG.info("Running LlapTaskCommunicator with "
@@ -203,6 +203,10 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     } catch (IOException e) {
       throw new TezUncheckedException(e);
     }
+  }
+
+  protected LlapProtocolClientProxy createLlapProtocolClientProxy(int numThreads, Configuration conf) {
+    return new LlapProtocolClientProxy(numThreads, conf, token);
   }
 
   @Override
@@ -413,9 +417,9 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
         .sourceStateUpdated(vertexStateUpdate.getVertexName(), vertexStateUpdate.getVertexState());
   }
 
-  public void sendStateUpdate(final String host, final int port,
+  public void sendStateUpdate(final LlapNodeId nodeId,
                               final SourceStateUpdatedRequestProto request) {
-    communicator.sendSourceStateUpdate(request, host, port,
+    communicator.sendSourceStateUpdate(request, nodeId,
         new LlapProtocolClientProxy.ExecuteRequestCallback<SourceStateUpdatedResponseProto>() {
           @Override
           public void setResponse(SourceStateUpdatedResponseProto response) {
@@ -423,12 +427,29 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
 
           @Override
           public void indicateError(Throwable t) {
-            // TODO HIVE-10280.
-            // Ideally, this should be retried for a while, after which the node should be marked as failed.
-            // Considering tasks are supposed to run fast. Failing the task immediately may be a good option.
+
+            // Re-attempts are left upto the RPC layer. If there's a failure reported after this,
+            // mark all attempts running on this node as KILLED. The node itself cannot be killed from
+            // here, that's only possible via the scheduler.
+            // The assumption is that if there's a failure to communicate with the node - it will
+            // eventually timeout - and no more tasks will be allocated on it.
+
             LOG.error(
-                "Failed to send state update to node: " + host + ":" + port + ", StateUpdate=" +
-                    request, t);
+                "Failed to send state update to node: {}, Killing all attempts running on node. Attempted StateUpdate={}",
+                nodeId, request, t);
+            BiMap<ContainerId, TezTaskAttemptID> biMap =
+                entityTracker.getContainerAttemptMapForNode(nodeId);
+            if (biMap != null) {
+              synchronized (biMap) {
+                for (Map.Entry<ContainerId, TezTaskAttemptID> entry : biMap.entrySet()) {
+                  LOG.info(
+                      "Sending a kill for attempt {}, due to a communication failure while sending a finishable state update",
+                      entry.getValue());
+                  getContext().taskKilled(entry.getValue(), TaskAttemptEndReason.NODE_FAILED,
+                      "Failed to send finishable state update to node " + nodeId);
+                }
+              }
+            }
           }
         });
   }

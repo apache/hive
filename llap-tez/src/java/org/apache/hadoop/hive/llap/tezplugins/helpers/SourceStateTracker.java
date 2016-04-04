@@ -280,7 +280,7 @@ public class SourceStateTracker {
 
 
   void sendStateUpdateToNode(LlapNodeId nodeId, String sourceName, VertexState state) {
-    taskCommunicator.sendStateUpdate(nodeId.getHostname(), nodeId.getPort(),
+    taskCommunicator.sendStateUpdate(nodeId,
         SourceStateUpdatedRequestProto.newBuilder().setQueryIdentifier(currentQueryIdentifier)
             .setSrcName(sourceName).setState(Converters.fromVertexState(state)).build());
   }

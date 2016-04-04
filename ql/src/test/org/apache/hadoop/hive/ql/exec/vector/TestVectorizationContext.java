@@ -23,14 +23,9 @@ import static org.junit.Assert.assertTrue;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import junit.framework.Assert;
 
 import org.apache.hadoop.hive.common.type.HiveChar;
-import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.BRoundWithNumDigitsDoubleToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.ColAndCol;
@@ -73,11 +68,12 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.StringUpper;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFUnixTimeStampDate;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFUnixTimeStampTimestamp;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFYearDate;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterStringColumnInList;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterLongColumnInList;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterDoubleColumnInList;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFYearTimestamp;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterTimestampColumnBetween;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterTimestampColumnNotBetween;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprLongColumnLongScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprLongScalarLongScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprLongScalarLongColumn;
@@ -144,13 +140,12 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFPower;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFRound;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPPlus;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToDecimal;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToUnixTimeStamp;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFTimestamp;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class TestVectorizationContext {
@@ -1215,12 +1210,12 @@ public class TestVectorizationContext {
     children1.set(2, new ExprNodeConstantDesc("2013-11-05 00:00:00.000"));
     children1.set(3, new ExprNodeConstantDesc("2013-11-06 00:00:00.000"));
     ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.FILTER);
-    assertEquals(FilterStringColumnBetween.class, ve.getClass());
+    assertEquals(FilterTimestampColumnBetween.class, ve.getClass());
 
     // timestamp NOT BETWEEN
     children1.set(0, new ExprNodeConstantDesc(new Boolean(true)));
     ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.FILTER);
-    assertEquals(FilterStringColumnNotBetween.class, ve.getClass());
+    assertEquals(FilterTimestampColumnNotBetween.class, ve.getClass());
   }
 
   // Test translation of both IN filters and boolean-valued IN expressions (non-filters).
@@ -1468,7 +1463,7 @@ public class TestVectorizationContext {
     children1.set(2,  col3Expr);
     ve = vc.getVectorExpression(exprDesc);
     assertTrue(ve instanceof IfExprCharScalarStringGroupColumn);
- 
+
     // test for VARCHAR type
     VarcharTypeInfo varcharTypeInfo = new VarcharTypeInfo(10);
     constDesc2 = new ExprNodeConstantDesc(varcharTypeInfo, new HiveVarchar("Alpha", 10));
