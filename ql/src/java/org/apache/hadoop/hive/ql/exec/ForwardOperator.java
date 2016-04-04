@@ -19,8 +19,6 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
@@ -55,7 +53,7 @@ public class ForwardOperator extends Operator<ForwardDesc> implements
    */
   @Override
   public String getName() {
-    return getOperatorName();
+    return ForwardOperator.getOperatorName();
   }
 
   static public String getOperatorName() {

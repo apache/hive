@@ -21,13 +21,9 @@ import java.io.BufferedOutputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.Set;
-import java.util.concurrent.Future;
 
 import org.apache.commons.io.FileExistsException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -44,6 +40,8 @@ import org.apache.hadoop.hive.ql.plan.SparkHashTableSinkDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SparkHashTableSinkOperator
     extends TerminalOperator<SparkHashTableSinkDesc> implements Serializable {
@@ -195,6 +193,10 @@ public class SparkHashTableSinkOperator
    */
   @Override
   public String getName() {
+    return SparkHashTableSinkOperator.getOperatorName();
+  }
+
+  public static String getOperatorName() {
     return HashTableSinkOperator.getOperatorName();
   }
 

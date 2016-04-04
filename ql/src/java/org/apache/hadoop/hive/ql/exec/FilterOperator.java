@@ -19,8 +19,6 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -134,7 +132,7 @@ public class FilterOperator extends Operator<FilterDesc> implements
    */
   @Override
   public String getName() {
-    return getOperatorName();
+    return FilterOperator.getOperatorName();
   }
 
   static public String getOperatorName() {

@@ -281,4 +281,13 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
       return null;
     }
   }
+
+  @Override
+  public String getName() {
+    return AbstractFileMergeOperator.getOperatorName();
+  }
+
+  public static String getOperatorName() {
+    return "MERGE";
+  }
 }

@@ -18,9 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
-import java.util.Collection;
-import java.util.concurrent.Future;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -30,6 +27,8 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.Writable;
+
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  * Vectorized version for SparkPartitionPruningSinkOperator.
@@ -55,7 +54,8 @@ public class VectorSparkPartitionPruningSinkOperator extends SparkPartitionPruni
   }
 
   /** Kryo ctor. */
-  protected VectorSparkPartitionPruningSinkOperator() {
+  @VisibleForTesting
+  public VectorSparkPartitionPruningSinkOperator() {
     super();
   }
 

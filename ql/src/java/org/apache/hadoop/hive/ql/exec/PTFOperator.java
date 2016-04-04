@@ -19,11 +19,9 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
-import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
@@ -184,7 +182,7 @@ public class PTFOperator extends Operator<PTFDesc> implements Serializable {
    */
   @Override
   public String getName() {
-    return getOperatorName();
+    return PTFOperator.getOperatorName();
   }
 
   static public String getOperatorName() {

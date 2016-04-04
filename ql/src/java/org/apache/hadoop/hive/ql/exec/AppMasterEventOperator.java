@@ -20,9 +20,7 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -151,7 +149,7 @@ public class AppMasterEventOperator extends Operator<AppMasterEventDesc> {
    */
   @Override
   public String getName() {
-    return getOperatorName();
+    return AppMasterEventOperator.getOperatorName();
   }
 
   static public String getOperatorName() {

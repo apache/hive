@@ -18,9 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
-import java.util.Collection;
-import java.util.concurrent.Future;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
@@ -31,6 +28,8 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  * Filter operator implementation.
@@ -57,7 +56,8 @@ public class VectorFilterOperator extends FilterOperator {
   }
 
   /** Kryo ctor. */
-  protected VectorFilterOperator() {
+  @VisibleForTesting
+  public VectorFilterOperator() {
     super();
   }
 

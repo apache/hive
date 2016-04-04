@@ -24,6 +24,8 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.LimitDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
+import com.google.common.annotations.VisibleForTesting;
+
 /**
  * Limit operator implementation Limits the number of rows to be passed on.
  **/
@@ -32,7 +34,8 @@ public class VectorLimitOperator extends LimitOperator  {
   private static final long serialVersionUID = 1L;
 
   /** Kryo ctor. */
-  protected VectorLimitOperator() {
+  @VisibleForTesting
+  public VectorLimitOperator() {
     super();
   }
 

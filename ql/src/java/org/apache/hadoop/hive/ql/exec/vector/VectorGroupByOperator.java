@@ -22,15 +22,11 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.ref.SoftReference;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Future;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
@@ -51,6 +47,10 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.DataOutputBuffer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  * Vectorized GROUP BY operator implementation. Consumes the vectorized input and
@@ -771,7 +771,8 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
   }
 
   /** Kryo ctor. */
-  protected VectorGroupByOperator() {
+  @VisibleForTesting
+  public VectorGroupByOperator() {
     super();
   }
 
@@ -959,10 +960,6 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
     }
   }
 
-  static public String getOperatorName() {
-    return "GBY";
-  }
-
   public VectorExpression[] getKeyExpressions() {
     return keyExpressions;
   }
@@ -988,4 +985,14 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
   public OperatorType getType() {
     return OperatorType.GROUPBY;
   }
+
+  @Override
+  public String getName() {
+    return getOperatorName();
+  }
+
+  static public String getOperatorName() {
+    return "GBY";
+  }
+
 }

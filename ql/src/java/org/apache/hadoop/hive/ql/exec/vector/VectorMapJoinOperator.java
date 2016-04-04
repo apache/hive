@@ -19,13 +19,9 @@
 package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Future;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
@@ -41,6 +37,10 @@ import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  * The vectorized version of the MapJoinOperator.
@@ -76,7 +76,8 @@ public class VectorMapJoinOperator extends VectorMapJoinBaseOperator {
   protected transient Object[] singleRow;
 
   /** Kryo ctor. */
-  protected VectorMapJoinOperator() {
+  @VisibleForTesting
+  public VectorMapJoinOperator() {
     super();
   }
 

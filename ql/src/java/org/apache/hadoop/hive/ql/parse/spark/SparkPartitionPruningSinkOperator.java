@@ -21,11 +21,7 @@ package org.apache.hadoop.hive.ql.parse.spark;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.util.Collection;
-import java.util.concurrent.Future;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
@@ -36,11 +32,15 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.spark.SparkPartitionPruningSinkDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
+import org.apache.hadoop.hive.serde2.Serializer;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.util.ReflectionUtils;
-import org.apache.hadoop.hive.serde2.Serializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  * This operator gets partition info from the upstream operators, and write them
@@ -55,7 +55,8 @@ public class SparkPartitionPruningSinkOperator extends Operator<SparkPartitionPr
   protected static final Logger LOG = LoggerFactory.getLogger(SparkPartitionPruningSinkOperator.class);
 
   /** Kryo ctor. */
-  protected SparkPartitionPruningSinkOperator() {
+  @VisibleForTesting
+  public SparkPartitionPruningSinkOperator() {
     super();
   }
 
@@ -63,6 +64,7 @@ public class SparkPartitionPruningSinkOperator extends Operator<SparkPartitionPr
     super(ctx);
   }
 
+  @Override
   @SuppressWarnings("deprecation")
   public void initializeOp(Configuration hconf) throws HiveException {
     super.initializeOp(hconf);
@@ -141,7 +143,7 @@ public class SparkPartitionPruningSinkOperator extends Operator<SparkPartitionPr
 
   @Override
   public String getName() {
-    return getOperatorName();
+    return SparkPartitionPruningSinkOperator.getOperatorName();
   }
 
   public static String getOperatorName() {

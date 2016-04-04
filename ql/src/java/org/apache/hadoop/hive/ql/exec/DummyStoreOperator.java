@@ -19,8 +19,6 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
@@ -117,5 +115,14 @@ public class DummyStoreOperator extends Operator<DummyStoreDesc> implements Seri
   @Override
   public OperatorType getType() {
     return OperatorType.FORWARD;
+  }
+
+  @Override
+  public String getName() {
+    return DummyStoreOperator.getOperatorName();
+  }
+
+  public static String getOperatorName() {
+    return "DUMMY_STORE";
   }
 }

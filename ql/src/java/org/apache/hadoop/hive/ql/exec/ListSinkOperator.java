@@ -18,10 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
@@ -106,5 +104,14 @@ public class ListSinkOperator extends Operator<ListSinkDesc> {
   @Override
   public OperatorType getType() {
     return OperatorType.FORWARD;
+  }
+
+  @Override
+  public String getName() {
+    return ListSinkOperator.getOperatorName();
+  }
+
+  public static String getOperatorName() {
+    return "LIST_SINK";
   }
 }

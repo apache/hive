@@ -26,8 +26,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.SparkHashTableSinkDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
-import java.util.Collection;
-import java.util.concurrent.Future;
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  * Vectorized version of SparkHashTableSinkOperator
@@ -52,7 +51,8 @@ public class VectorSparkHashTableSinkOperator extends SparkHashTableSinkOperator
   protected transient Object[] singleRow;
 
   /** Kryo ctor. */
-  protected VectorSparkHashTableSinkOperator() {
+  @VisibleForTesting
+  public VectorSparkHashTableSinkOperator() {
     super();
   }
 
