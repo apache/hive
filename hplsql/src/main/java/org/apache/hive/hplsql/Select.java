@@ -202,7 +202,7 @@ public class Select {
     sql.append(" " + evalPop(ctx.select_list()));
     if (ctx.from_clause() != null) {
       sql.append(" " + evalPop(ctx.from_clause()));
-    } else {
+    } else if (conf.dualTable != null) {
       sql.append(" FROM " + conf.dualTable);
     }
     if (ctx.where_clause() != null) {
@@ -342,7 +342,9 @@ public class Select {
           sql.append(", ");
         }
       }
-      sql.append(" FROM " + conf.dualTable);
+      if (conf.dualTable != null) {
+        sql.append(" FROM " + conf.dualTable);
+      }
       if (i + 1 < rows) {
         sql.append("\nUNION ALL\n");
       }

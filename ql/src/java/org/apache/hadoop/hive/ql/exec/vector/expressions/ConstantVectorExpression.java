@@ -24,13 +24,9 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
-import org.apache.hadoop.hive.common.type.PisaTimestamp;
 import org.apache.hadoop.hive.ql.exec.vector.*;
-import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hive.common.util.DateUtils;
 
 /**
  * Constant is represented as a vector with repeating values.
@@ -44,7 +40,8 @@ public class ConstantVectorExpression extends VectorExpression {
   private double doubleValue = 0;
   private byte[] bytesValue = null;
   private HiveDecimal decimalValue = null;
-  private PisaTimestamp timestampValue = null;
+  private Timestamp timestampValue = null;
+  private HiveIntervalDayTime intervalDayTimeValue = null;
   private boolean isNullValue = false;
 
   private ColumnVector.Type type;
@@ -97,7 +94,7 @@ public class ConstantVectorExpression extends VectorExpression {
   }
 
   public ConstantVectorExpression(int outputColumn, HiveIntervalDayTime value) {
-    this(outputColumn, "timestamp");
+    this(outputColumn, "interval_day_time");
     setIntervalDayTimeValue(value);
   }
 
@@ -165,6 +162,17 @@ public class ConstantVectorExpression extends VectorExpression {
     }
   }
 
+  private void evaluateIntervalDayTime(VectorizedRowBatch vrg) {
+    IntervalDayTimeColumnVector dcv = (IntervalDayTimeColumnVector) vrg.cols[outputColumn];
+    dcv.isRepeating = true;
+    dcv.noNulls = !isNullValue;
+    if (!isNullValue) {
+      dcv.set(0, intervalDayTimeValue);
+    } else {
+      dcv.isNull[0] = true;
+    }
+  }
+
   @Override
   public void evaluate(VectorizedRowBatch vrg) {
     switch (type) {
@@ -182,6 +190,9 @@ public class ConstantVectorExpression extends VectorExpression {
       break;
     case TIMESTAMP:
       evaluateTimestamp(vrg);
+      break;
+    case INTERVAL_DAY_TIME:
+      evaluateIntervalDayTime(vrg);
       break;
     }
   }
@@ -225,16 +236,19 @@ public class ConstantVectorExpression extends VectorExpression {
   }
 
   public void setTimestampValue(Timestamp timestampValue) {
-    this.timestampValue = new PisaTimestamp(timestampValue);
+    this.timestampValue = timestampValue;
+  }
+
+  public Timestamp getTimestampValue() {
+    return timestampValue;
   }
 
   public void setIntervalDayTimeValue(HiveIntervalDayTime intervalDayTimeValue) {
-    this.timestampValue = intervalDayTimeValue.pisaTimestampUpdate(new PisaTimestamp());
+    this.intervalDayTimeValue = intervalDayTimeValue;
   }
 
-
-  public PisaTimestamp getTimestampValue() {
-    return timestampValue;
+  public HiveIntervalDayTime getIntervalDayTimeValue() {
+    return intervalDayTimeValue;
   }
 
   public String getTypeString() {

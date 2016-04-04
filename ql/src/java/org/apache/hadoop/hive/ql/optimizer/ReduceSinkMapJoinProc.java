@@ -220,8 +220,8 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
       tableSize = 1;
     }
     LOG.info("Mapjoin " + mapJoinOp + "(bucket map join = )" + joinConf.isBucketMapJoin()
-        + ", pos: " + pos + " --> " + parentWork.getName() + " (" + keyCount
-        + " keys estimated from " + rowCount + " rows, " + bucketCount + " buckets)");
+    + ", pos: " + pos + " --> " + parentWork.getName() + " (" + keyCount
+    + " keys estimated from " + rowCount + " rows, " + bucketCount + " buckets)");
     joinConf.getParentToInput().put(pos, parentWork.getName());
     if (keyCount != Long.MAX_VALUE) {
       joinConf.getParentKeyCounts().put(pos, keyCount);
@@ -247,10 +247,9 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
        * 4. If we don't find a table scan operator, it has to be a reduce side operation.
        */
       if (mapJoinWork == null) {
-        Operator<?> rootOp =
-          OperatorUtils.findSingleOperatorUpstream(
-              mapJoinOp.getParentOperators().get(joinConf.getPosBigTable()),
-              ReduceSinkOperator.class);
+        Operator<?> rootOp = OperatorUtils.findSingleOperatorUpstreamJoinAccounted(
+            mapJoinOp.getParentOperators().get(joinConf.getPosBigTable()),
+            ReduceSinkOperator.class);
         if (rootOp == null) {
           // likely we found a table scan operator
           edgeType = EdgeType.CUSTOM_EDGE;
@@ -259,10 +258,9 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
           edgeType = EdgeType.CUSTOM_SIMPLE_EDGE;
         }
       } else {
-        Operator<?> rootOp =
-            OperatorUtils.findSingleOperatorUpstream(
-                mapJoinOp.getParentOperators().get(joinConf.getPosBigTable()),
-                TableScanOperator.class);
+        Operator<?> rootOp = OperatorUtils.findSingleOperatorUpstreamJoinAccounted(
+            mapJoinOp.getParentOperators().get(joinConf.getPosBigTable()),
+            TableScanOperator.class);
         if (rootOp != null) {
           // likely we found a table scan operator
           edgeType = EdgeType.CUSTOM_EDGE;
@@ -320,7 +318,7 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
     context.linkOpWithWorkMap.put(mapJoinOp, linkWorkMap);
 
     List<ReduceSinkOperator> reduceSinks
-      = context.linkWorkWithReduceSinkMap.get(parentWork);
+    = context.linkWorkWithReduceSinkMap.get(parentWork);
     if (reduceSinks == null) {
       reduceSinks = new ArrayList<ReduceSinkOperator>();
     }
@@ -358,7 +356,7 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
     // let the dummy op be the parent of mapjoin op
     mapJoinOp.replaceParent(parentRS, dummyOp);
     List<Operator<? extends OperatorDesc>> dummyChildren =
-      new ArrayList<Operator<? extends OperatorDesc>>();
+        new ArrayList<Operator<? extends OperatorDesc>>();
     dummyChildren.add(mapJoinOp);
     dummyOp.setChildOperators(dummyChildren);
     dummyOperators.add(dummyOp);

@@ -32,7 +32,6 @@ import java.util.Random;
 import junit.framework.Assert;
 
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.hadoop.hive.common.type.PisaTimestamp;
 import org.apache.hadoop.hive.common.type.RandomTypeUtil;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
@@ -84,7 +83,7 @@ public class TestVectorTimestampExpressions {
   }
 
   private Timestamp[] getAllBoundaries() {
-    return getAllBoundaries(0000, 9999);
+    return getAllBoundaries(RandomTypeUtil.MIN_YEAR, RandomTypeUtil.MAX_YEAR);
   }
 
   private VectorizedRowBatch getVectorizedRandomRowBatchTimestampLong(int seed, int size) {
@@ -742,25 +741,12 @@ public class TestVectorTimestampExpressions {
     testVectorUDFSecond(TestType.STRING_LONG);
   }
 
-  private LongWritable getLongWritable(TimestampWritable i) {
-    LongWritable result = new LongWritable();
-    if (i == null) {
-      return null;
-    } else {
-      result.set(i.getSeconds());
-      return result;
+  private void compareToUDFUnixTimeStampLong(Timestamp ts, long y) {
+    long seconds = ts.getTime() / 1000;
+    if(seconds != y) {
+      System.out.printf("%d vs %d for %s\n", seconds, y, ts.toString());
+      Assert.assertTrue(false);
     }
-  }
-
-  private void compareToUDFUnixTimeStampLong(Timestamp t, long y) {
-    TimestampWritable tsw = new TimestampWritable(t);
-    LongWritable res = getLongWritable(tsw);
-    if(res.get() != y) {
-      System.out.printf("%d vs %d for %s, %d\n", res.get(), y, t.toString(),
-          tsw.getTimestamp().getTime()/1000);
-    }
-
-    Assert.assertEquals(res.get(), y);
   }
 
   private void verifyUDFUnixTimeStamp(VectorizedRowBatch batch, TestType testType) {

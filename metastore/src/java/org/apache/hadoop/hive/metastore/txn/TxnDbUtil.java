@@ -103,7 +103,11 @@ public final class TxnDbUtil {
           " HL_ACQUIRED_AT bigint," +
           " HL_USER varchar(128) NOT NULL," +
           " HL_HOST varchar(128) NOT NULL," +
-          " PRIMARY KEY(HL_LOCK_EXT_ID, HL_LOCK_INT_ID))");
+          " HL_HEARTBEAT_COUNT integer," +
+          " HL_AGENT_INFO varchar(128)," +
+          " HL_BLOCKEDBY_EXT_ID bigint," +
+          " HL_BLOCKEDBY_INT_ID bigint," +
+        " PRIMARY KEY(HL_LOCK_EXT_ID, HL_LOCK_INT_ID))");
       stmt.execute("CREATE INDEX HL_TXNID_INDEX ON HIVE_LOCKS (HL_TXNID)");
 
       stmt.execute("CREATE TABLE NEXT_LOCK_ID (" + " NL_NEXT bigint NOT NULL)");
@@ -140,6 +144,13 @@ public final class TxnDbUtil {
         " CC_HIGHEST_TXN_ID bigint," +
         " CC_META_INFO varchar(2048) for bit data," +
         " CC_HADOOP_JOB_ID varchar(32))");
+      
+      stmt.execute("CREATE TABLE AUX_TABLE (" +
+        "  MT_KEY1 varchar(128) NOT NULL," +
+        "  MT_KEY2 bigint NOT NULL," +
+        "  MT_COMMENT varchar(255)," +
+        "  PRIMARY KEY(MT_KEY1, MT_KEY2)" +
+        ")");
 
       conn.commit();
     } catch (SQLException e) {
@@ -185,6 +196,7 @@ public final class TxnDbUtil {
       dropTable(stmt, "COMPACTION_QUEUE");
       dropTable(stmt, "NEXT_COMPACTION_QUEUE_ID");
       dropTable(stmt, "COMPLETED_COMPACTIONS");
+      dropTable(stmt, "AUX_TABLE");
       conn.commit();
     } finally {
       closeResources(conn, stmt, null);
@@ -248,7 +260,7 @@ public final class TxnDbUtil {
     }
   }
 
-  private static Connection getConnection() throws Exception {
+  static Connection getConnection() throws Exception {
     HiveConf conf = new HiveConf();
     String jdbcDriver = HiveConf.getVar(conf, HiveConf.ConfVars.METASTORE_CONNECTION_DRIVER);
     Driver driver = (Driver) Class.forName(jdbcDriver).newInstance();
@@ -264,7 +276,7 @@ public final class TxnDbUtil {
     return conn;
   }
 
-  private static void closeResources(Connection conn, Statement stmt, ResultSet rs) {
+  static void closeResources(Connection conn, Statement stmt, ResultSet rs) {
     if (rs != null) {
       try {
         rs.close();

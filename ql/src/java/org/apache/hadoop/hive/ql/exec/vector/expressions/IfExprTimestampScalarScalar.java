@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.apache.hadoop.hive.common.type.PisaTimestamp;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 
 import java.sql.Timestamp;
@@ -35,7 +34,7 @@ public class IfExprTimestampScalarScalar extends IfExprTimestampScalarScalarBase
 
   public IfExprTimestampScalarScalar(int arg1Column, Timestamp arg2Scalar, Timestamp arg3Scalar,
       int outputColumn) {
-    super(arg1Column, new PisaTimestamp(arg2Scalar), new PisaTimestamp(arg3Scalar), outputColumn);
+    super(arg1Column, arg2Scalar, arg3Scalar, outputColumn);
   }
 
   public IfExprTimestampScalarScalar() {

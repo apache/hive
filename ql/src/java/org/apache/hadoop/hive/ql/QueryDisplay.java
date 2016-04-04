@@ -72,7 +72,7 @@ public class QueryDisplay {
     private Long endTime;
 
     private String taskId;
-    private String taskExternalHandle;
+    private String externalHandle;
 
     public Task.TaskState taskState;
     private StageType taskType;
@@ -85,7 +85,7 @@ public class QueryDisplay {
     }
     public TaskDisplay(Task task) {
       taskId = task.getId();
-      taskExternalHandle = task.getExternalHandle();
+      externalHandle = task.getExternalHandle();
       taskType = task.getType();
       name = task.getName();
       requireLock = task.requireLock();
@@ -150,12 +150,15 @@ public class QueryDisplay {
     }
 
     public synchronized String getExternalHandle() {
-      return taskExternalHandle;
+      return externalHandle;
     }
 
     public synchronized <T extends Serializable> void updateStatus(Task<T> tTask) {
       this.taskState = tTask.getTaskState();
-      switch(taskState) {
+      if (externalHandle == null && tTask.getExternalHandle() != null) {
+        this.externalHandle = tTask.getExternalHandle();
+      }
+      switch (taskState) {
         case RUNNING:
           beginTime = System.currentTimeMillis();
           break;

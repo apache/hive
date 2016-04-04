@@ -110,6 +110,7 @@ public class Conn {
       if (stmt.execute(sql)) {
         rs = stmt.getResultSet();        
       } 
+      timer.stop();
       query.set(conn, stmt, rs);
       if (info) {
         exec.info(null, "SQL statement executed successfully (" + timer.format() + ")");
@@ -205,7 +206,7 @@ public class Conn {
     }
     Class.forName(driver);
     timer.start();
-    Connection conn = DriverManager.getConnection(url.toString(), usr, pwd);
+    Connection conn = DriverManager.getConnection(url.toString().trim(), usr, pwd);
     timer.stop();
     if (info) {
       exec.info(null, "Open connection: " + url + " (" + timer.format() + ")");

@@ -119,7 +119,8 @@ public class GenTezUtils {
 
       // max we allow tez to pick
       int maxPartition = (int) (reduceSink.getConf().getNumReducers() * maxPartitionFactor);
-      maxPartition = (maxPartition > maxReducers) ? maxReducers : maxPartition;
+      maxPartition = Math.max(1, (maxPartition > maxReducers) ? maxReducers :
+          maxPartition);
 
       reduceWork.setMinReduceTasks(minPartition);
       reduceWork.setMaxReduceTasks(maxPartition);

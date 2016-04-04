@@ -20,14 +20,25 @@ package org.apache.hadoop.hive.llap.cli;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Collection;
+import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.hadoop.hive.llap.configuration.LlapDaemonConfiguration;
 import org.apache.hadoop.hive.llap.daemon.impl.LlapDaemon;
+import org.apache.hadoop.hive.llap.daemon.impl.StaticPermanentFunctionChecker;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.tezplugins.LlapTezUtils;
 import org.apache.tez.dag.api.TezConfiguration;
@@ -43,9 +54,18 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.cli.LlapOptionsProcessor.LlapOptions;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapInputFormat;
+import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.ResourceUri;
+import org.apache.hadoop.hive.ql.exec.FunctionTask;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.FunctionInfo.FunctionResource;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.session.SessionState.ResourceType;
+import org.apache.hadoop.hive.ql.util.ResourceDownloader;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.Job;
@@ -256,6 +276,7 @@ public class LlapServiceDriver {
 
     Path libDir = new Path(tmpDir, "lib");
     Path tezDir = new Path(libDir, "tez");
+    Path udfDir = new Path(libDir, "udfs");
 
     String tezLibs = conf.get(TezConfiguration.TEZ_LIB_URIS);
     if (tezLibs == null) {
@@ -329,6 +350,15 @@ public class LlapServiceDriver {
       }
     }
 
+    // UDFs
+    final Set<String> allowedUdfs;
+    
+    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_ALLOW_PERMANENT_FNS)) {
+      allowedUdfs = downloadPermanentFunctions(conf, udfDir);
+    } else {
+      allowedUdfs = Collections.emptySet();
+    }
+
     String java_home;
     if (options.getJavaPath() == null || options.getJavaPath().isEmpty()) {
       java_home = System.getenv("JAVA_HOME");
@@ -368,6 +398,14 @@ public class LlapServiceDriver {
     InputStream loggerContent = logger.openStream();
     IOUtils.copyBytes(loggerContent,
         lfs.create(new Path(confPath, "llap-daemon-log4j2.properties"), true), conf, true);
+
+    PrintWriter udfStream =
+        new PrintWriter(lfs.create(new Path(confPath, StaticPermanentFunctionChecker.PERMANENT_FUNCTIONS_LIST)));
+    for (String udfClass : allowedUdfs) {
+      udfStream.println(udfClass);
+    }
+    
+    udfStream.close();
 
     // extract configs for processing by the python fragments in Slider
     JSONObject configs = new JSONObject();
@@ -417,6 +455,39 @@ public class LlapServiceDriver {
     if (LOG.isDebugEnabled()) {
       LOG.debug("Exiting successfully");
     }
+  }
+
+  private Set<String> downloadPermanentFunctions(Configuration conf, Path udfDir) throws HiveException,
+      URISyntaxException, IOException {
+    Map<String,String> udfs = new HashMap<String, String>();
+    Hive hive = Hive.get(false);
+    ResourceDownloader resourceDownloader =
+        new ResourceDownloader(conf, udfDir.toUri().normalize().getPath());
+    List<Function> fns = hive.getAllFunctions();
+    Set<URI> srcUris = new HashSet<>();
+    for (Function fn : fns) {
+      String fqfn = fn.getDbName() + "." + fn.getFunctionName();
+      if (udfs.containsKey(fn.getClassName())) {
+        LOG.warn("Duplicate function names found for " + fn.getClassName() + " with " + fqfn
+            + " and " + udfs.get(fn.getClassName()));
+      }
+      udfs.put(fn.getClassName(), fqfn);
+      List<ResourceUri> resources = fn.getResourceUris();
+      if (resources == null || resources.isEmpty()) {
+        LOG.warn("Missing resources for " + fqfn);
+        continue;
+      }
+      for (ResourceUri resource : resources) {
+        srcUris.add(ResourceDownloader.createURI(resource.getUri()));
+      }
+    }
+    for (URI srcUri : srcUris) {
+      List<URI> localUris = resourceDownloader.downloadExternal(srcUri, null, false);
+      for(URI dst : localUris) {
+        LOG.warn("Downloaded " + dst + " from " + srcUri);
+      }
+    }
+    return udfs.keySet();
   }
 
   private void localizeJarForClass(FileSystem lfs, Path libDir, String className, boolean doThrow)

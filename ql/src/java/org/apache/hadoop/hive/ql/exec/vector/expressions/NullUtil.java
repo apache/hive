@@ -22,6 +22,7 @@ import java.util.Arrays;
 
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.IntervalDayTimeColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
@@ -87,6 +88,31 @@ public class NullUtil {
    */
   public static void setNullDataEntriesTimestamp(
       TimestampColumnVector v, boolean selectedInUse, int[] sel, int n) {
+    if (v.noNulls) {
+      return;
+    } else if (v.isRepeating && v.isNull[0]) {
+      v.setNullValue(0);
+    } else if (selectedInUse) {
+      for (int j = 0; j != n; j++) {
+        int i = sel[j];
+        if(v.isNull[i]) {
+          v.setNullValue(i);
+        }
+      }
+    } else {
+      for (int i = 0; i != n; i++) {
+        if(v.isNull[i]) {
+          v.setNullValue(i);
+        }
+      }
+    }
+  }
+
+  /**
+   * Set the data value for all NULL entries to the designated NULL_VALUE.
+   */
+  public static void setNullDataEntriesIntervalDayTime(
+      IntervalDayTimeColumnVector v, boolean selectedInUse, int[] sel, int n) {
     if (v.noNulls) {
       return;
     } else if (v.isRepeating && v.isNull[0]) {

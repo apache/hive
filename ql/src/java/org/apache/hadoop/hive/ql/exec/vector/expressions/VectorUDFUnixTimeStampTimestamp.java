@@ -18,10 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import java.sql.Timestamp;
-
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
 
 /**
  * Return Unix Timestamp.
@@ -33,7 +30,7 @@ public final class VectorUDFUnixTimeStampTimestamp extends VectorUDFTimestampFie
 
   @Override
   protected long getTimestampField(TimestampColumnVector timestampColVector, int elementNum) {
-    return timestampColVector.getTimestampSeconds(elementNum);
+    return timestampColVector.asScratchTimestamp(elementNum).getTime() / 1000;
   }
 
   public VectorUDFUnixTimeStampTimestamp(int colNum, int outputColumn) {

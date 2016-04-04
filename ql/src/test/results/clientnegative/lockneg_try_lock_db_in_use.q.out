@@ -34,13 +34,19 @@ POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpar
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: lock database lockneg2 shared
 PREHOOK: type: LOCKDATABASE
+PREHOOK: Input: database:lockneg2
+PREHOOK: Output: database:lockneg2
 POSTHOOK: query: lock database lockneg2 shared
 POSTHOOK: type: LOCKDATABASE
+POSTHOOK: Input: database:lockneg2
+POSTHOOK: Output: database:lockneg2
 PREHOOK: query: show locks
 PREHOOK: type: SHOWLOCKS
 POSTHOOK: query: show locks
 POSTHOOK: type: SHOWLOCKS
 PREHOOK: query: lock database lockneg2 exclusive
 PREHOOK: type: LOCKDATABASE
+PREHOOK: Input: database:lockneg2
+PREHOOK: Output: database:lockneg2
 Unable to acquire EXPLICIT, EXCLUSIVE lock lockneg2 after 1 attempts.
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask

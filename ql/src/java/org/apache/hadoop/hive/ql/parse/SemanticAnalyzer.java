@@ -32,8 +32,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
@@ -67,6 +69,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
@@ -311,12 +314,22 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    */
   boolean rootTasksResolved;
 
+  private final TableMask tableMask;
+
   CreateTableDesc tableDesc;
 
   /** Not thread-safe. */
   final ASTSearcher astSearcher = new ASTSearcher();
 
   protected AnalyzeRewriteContext analyzeRewrite;
+
+  // A mapping from a tableName to a table object in metastore.
+  Map<String, Table> tableNameToMetaDataTableObject;
+
+  // The tokens we should ignore when we are trying to do table masking.
+  private final Set<Integer> ignoredTokens = Sets.newHashSet(HiveParser.TOK_GROUPBY,
+      HiveParser.TOK_ORDERBY, HiveParser.TOK_WINDOWSPEC, HiveParser.TOK_CLUSTERBY,
+      HiveParser.TOK_DISTRIBUTEBY, HiveParser.TOK_SORTBY);
 
   static class Phase1Ctx {
     String dest;
@@ -357,6 +370,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     globalLimitCtx = new GlobalLimitCtx();
     viewAliasToInput = new HashMap<String, ReadEntity>();
     noscan = partialscan = false;
+    tableMask = new TableMask(this, conf);
+    tableNameToMetaDataTableObject = new HashMap<>();
   }
 
   @Override
@@ -3756,7 +3771,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * automatically translates SELECT DISTINCT a,b,c to SELECT a,b,c GROUP BY
    * a,b,c.
    */
-  static List<ASTNode> getGroupByForClause(QBParseInfo parseInfo, String dest) {
+  List<ASTNode> getGroupByForClause(QBParseInfo parseInfo, String dest) throws SemanticException {
     if (parseInfo.getSelForClause(dest).getToken().getType() == HiveParser.TOK_SELECTDI) {
       ASTNode selectExprs = parseInfo.getSelForClause(dest);
       List<ASTNode> result = new ArrayList<ASTNode>(selectExprs == null ? 0
@@ -3774,6 +3789,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
            * If this is handled by Windowing then ignore it.
            */
           if (windowingExprs != null && windowingExprs.containsKey(grpbyExpr.toStringTree())) {
+            if (!isCBOExecuted()) {
+              throw new SemanticException("SELECT DISTINCT not allowed in the presence of windowing"
+                      + " functions when CBO is off");
+            }
             continue;
           }
           result.add(grpbyExpr);
@@ -4161,6 +4180,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       output = genUDTFPlan(genericUDTF, udtfTableAlias, udtfColAliases, qb,
           output, outerLV);
     }
+
     if (LOG.isDebugEnabled()) {
       LOG.debug("Created Select Plan row schema: " + out_rwsch.toString());
     }
@@ -5852,7 +5872,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return groupByOperatorInfo2;
   }
 
-  private boolean optimizeMapAggrGroupBy(String dest, QB qb) {
+  private boolean optimizeMapAggrGroupBy(String dest, QB qb) throws SemanticException {
     List<ASTNode> grpByExprs = getGroupByForClause(qb.getParseInfo(), dest);
     if ((grpByExprs != null) && !grpByExprs.isEmpty()) {
       return false;
@@ -8359,6 +8379,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     QBJoinTree joinTree = new QBJoinTree();
     JoinCond[] condn = new JoinCond[1];
 
+    int joinType = joinParseTree.getToken().getType();
     switch (joinParseTree.getToken().getType()) {
     case HiveParser.TOK_LEFTOUTERJOIN:
       joinTree.setNoOuterJoin(false);
@@ -8386,10 +8407,27 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     ASTNode left = (ASTNode) joinParseTree.getChild(0);
     ASTNode right = (ASTNode) joinParseTree.getChild(1);
+    boolean isValidLeftToken = isValidJoinSide(left);
+    boolean isJoinLeftToken = !isValidLeftToken && isJoinToken(left);
+    boolean isValidRightToken = isValidJoinSide(right);
+    boolean isJoinRightToken = !isValidRightToken && isJoinToken(right);
+    // TODO: if we didn't care about the column order, we could switch join sides here
+    //       for TOK_JOIN and TOK_FULLOUTERJOIN.
+    if (!isValidLeftToken && !isJoinLeftToken) {
+      throw new SemanticException("Invalid token on the left side of the join: "
+          + left.getToken().getText() + "; please rewrite your query");
+    } else if (!isValidRightToken) {
+      String advice= "";
+      if (isJoinRightToken && !isJoinLeftToken) {
+        advice = "; for example, put the nested join on the left side, or nest joins differently";
+      } else if (isJoinRightToken) {
+        advice = "; for example, nest joins differently";
+      }
+      throw new SemanticException("Invalid token on the right side of the join: "
+      + right.getToken().getText() + "; please rewrite your query" + advice);
+    }
 
-    if ((left.getToken().getType() == HiveParser.TOK_TABREF)
-        || (left.getToken().getType() == HiveParser.TOK_SUBQUERY)
-        || (left.getToken().getType() == HiveParser.TOK_PTBLFUNCTION)) {
+    if (isValidLeftToken) {
       String tableName = getUnescapedUnqualifiedTableName((ASTNode) left.getChild(0))
           .toLowerCase();
       String alias = extractJoinAlias(left, tableName);
@@ -8403,7 +8441,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       joinTree.setId(qb.getId());
       joinTree.getAliasToOpInfo().put(
           getModifiedAlias(qb, alias), aliasToOpInfo.get(alias));
-    } else if (isJoinToken(left)) {
+    } else if (isJoinLeftToken) {
       QBJoinTree leftTree = genJoinTree(qb, left, aliasToOpInfo);
       joinTree.setJoinSrc(leftTree);
       String[] leftChildAliases = leftTree.getLeftAliases();
@@ -8417,9 +8455,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       assert (false);
     }
 
-    if ((right.getToken().getType() == HiveParser.TOK_TABREF)
-        || (right.getToken().getType() == HiveParser.TOK_SUBQUERY)
-        || (right.getToken().getType() == HiveParser.TOK_PTBLFUNCTION)) {
+    if (isValidRightToken) {
       String tableName = getUnescapedUnqualifiedTableName((ASTNode) right.getChild(0))
           .toLowerCase();
       String alias = extractJoinAlias(right, tableName);
@@ -8507,6 +8543,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     return joinTree;
+  }
+
+  private static boolean isValidJoinSide(ASTNode right) {
+    return (right.getToken().getType() == HiveParser.TOK_TABREF)
+        || (right.getToken().getType() == HiveParser.TOK_SUBQUERY)
+        || (right.getToken().getType() == HiveParser.TOK_PTBLFUNCTION);
   }
 
   private String extractJoinAlias(ASTNode node, String tableName) {
@@ -10302,6 +10344,145 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
+  private Table getMetaDataTableObjectByName(String tableName) throws HiveException {
+    if (!tableNameToMetaDataTableObject.containsKey(tableName)) {
+      Table table = db.getTable(tableName);
+      tableNameToMetaDataTableObject.put(tableName, table);
+      return table;
+    } else {
+      return tableNameToMetaDataTableObject.get(tableName);
+    }
+  }
+
+  private void walkASTMarkTABREF(ASTNode ast, Set<String> cteAlias)
+      throws SemanticException {
+    Queue<Node> queue = new LinkedList<>();
+    queue.add(ast);
+    while (!queue.isEmpty()) {
+      ASTNode astNode = (ASTNode) queue.poll();
+      if (astNode.getToken().getType() == HiveParser.TOK_TABREF) {
+        int aliasIndex = 0;
+        StringBuffer additionalTabInfo = new StringBuffer();
+        for (int index = 1; index < astNode.getChildCount(); index++) {
+          ASTNode ct = (ASTNode) astNode.getChild(index);
+          // TODO: support TOK_TABLEBUCKETSAMPLE, TOK_TABLESPLITSAMPLE, and
+          // TOK_TABLEPROPERTIES
+          if (ct.getToken().getType() == HiveParser.TOK_TABLEBUCKETSAMPLE
+              || ct.getToken().getType() == HiveParser.TOK_TABLESPLITSAMPLE
+              || ct.getToken().getType() == HiveParser.TOK_TABLEPROPERTIES) {
+            additionalTabInfo.append(ctx.getTokenRewriteStream().toString(ct.getTokenStartIndex(),
+                ct.getTokenStopIndex()));
+          } else {
+            aliasIndex = index;
+          }
+        }
+
+        ASTNode tableTree = (ASTNode) (astNode.getChild(0));
+
+        String tabIdName = getUnescapedName(tableTree);
+
+        String alias;
+        if (aliasIndex != 0) {
+          alias = unescapeIdentifier(astNode.getChild(aliasIndex).getText());
+        } else {
+          alias = getUnescapedUnqualifiedTableName(tableTree);
+        }
+
+        // We need to know if it is CTE or not.
+        // A CTE may have the same name as a table.
+        // For example,
+        // with select TAB1 [masking] as TAB2
+        // select * from TAB2 [no masking]
+        if (cteAlias.contains(tabIdName)) {
+          continue;
+        }
+
+        String replacementText = null;
+        Table table = null;
+        try {
+          table = getMetaDataTableObjectByName(tabIdName);
+        } catch (HiveException e) {
+          throw new SemanticException("Table " + tabIdName + " is not found.");
+        }
+
+        if (tableMask.needTransform(table.getDbName(), table.getTableName())) {
+          replacementText = tableMask.create(table, additionalTabInfo.toString(), alias);
+        }
+        if (replacementText != null) {
+          tableMask.setNeedsRewrite(true);
+          // we replace the tabref with replacementText here.
+          tableMask.addTableMasking(astNode, replacementText);
+        }
+      }
+      if (astNode.getChildCount() > 0 && !ignoredTokens.contains(astNode.getToken().getType())) {
+        for (Node child : astNode.getChildren()) {
+          queue.offer(child);
+        }
+      }
+    }
+  }
+
+  // We walk through the AST.
+  // We replace all the TOK_TABREF by adding additional masking and filter if
+  // the table needs to be masked or filtered.
+  // For the replacement, we leverage the methods that are used for
+  // unparseTranslator.
+  public ASTNode rewriteASTWithMaskAndFilter(ASTNode ast) throws SemanticException {
+    // 1. collect information about CTE if there is any.
+    // The base table of CTE should be masked.
+    // The CTE itself should not be masked in the references in the following main query.
+    Set<String> cteAlias = new HashSet<>();
+    if (ast.getChildCount() > 0
+        && HiveParser.TOK_CTE == ((ASTNode) ast.getChild(0)).getToken().getType()) {
+      // the structure inside CTE is like this
+      // TOK_CTE
+      // TOK_SUBQUERY
+      // sq1 (may refer to sq2)
+      // ...
+      // TOK_SUBQUERY
+      // sq2
+      ASTNode cte = (ASTNode) ast.getChild(0);
+      // we start from sq2, end up with sq1.
+      for (int index = cte.getChildCount() - 1; index >= 0; index--) {
+        ASTNode subq = (ASTNode) cte.getChild(index);
+        String alias = unescapeIdentifier(subq.getChild(1).getText());
+        if (cteAlias.contains(alias)) {
+          throw new SemanticException("Duplicate definition of " + alias);
+        } else {
+          cteAlias.add(alias);
+          walkASTMarkTABREF(subq, cteAlias);
+        }
+      }
+      // walk the other part of ast
+      for (int index = 1; index < ast.getChildCount(); index++) {
+        walkASTMarkTABREF((ASTNode) ast.getChild(index), cteAlias);
+      }
+    }
+    // there is no CTE, walk the whole AST
+    else {
+      walkASTMarkTABREF(ast, cteAlias);
+    }
+    // 2. rewrite the AST, replace TABREF with masking/filtering
+    if (tableMask.needsRewrite()) {
+      tableMask.applyTableMasking(ctx.getTokenRewriteStream());
+      String rewrittenQuery = ctx.getTokenRewriteStream().toString(ast.getTokenStartIndex(),
+          ast.getTokenStopIndex());
+      ASTNode rewrittenTree;
+      // Parse the rewritten query string
+      // check if we need to ctx.setCmd(rewrittenQuery);
+      ParseDriver pd = new ParseDriver();
+      try {
+        rewrittenTree = pd.parse(rewrittenQuery);
+      } catch (ParseException e) {
+        throw new SemanticException(e);
+      }
+      rewrittenTree = ParseUtils.findRootNonNullToken(rewrittenTree);
+      return rewrittenTree;
+    } else {
+      return ast;
+    }
+  }
+
   boolean genResolvedParseTree(ASTNode ast, PlannerContext plannerCtx) throws SemanticException {
     ASTNode child = ast;
     this.ast = ast;
@@ -10357,6 +10538,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         SessionState.get().setCommandType(SemanticAnalyzerFactory.getOperation(ast.getToken().getType()));
         return false;
     }
+
+    // masking and filtering should be done here
+    // the basic idea is similar to unparseTranslator.
+    if (!unparseTranslator.isEnabled() && tableMask.isEnabled()) {
+      child = rewriteASTWithMaskAndFilter(ast);
+    }
+
     // 4. continue analyzing from the child ASTNode.
     Phase1Ctx ctx_1 = initPhase1Ctx();
     preProcessForInsert(child, qb);
@@ -10588,10 +10776,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // check whether any of them break the limit
         for (Operator<?> topOp : topOps.values()) {
           if (topOp instanceof TableScanOperator) {
-            if (((TableScanDesc)topOp.getConf()).getIsMetadataOnly()) {
+            TableScanOperator tsOp = (TableScanOperator) topOp;
+            if (tsOp.getConf().getIsMetadataOnly()) {
               continue;
             }
-            PrunedPartitionList parts = pCtx.getOpToPartList().get(topOp);
+            PrunedPartitionList parts = pCtx.getPrunedPartitions(tsOp);
+            if (!parts.getSourceTable().isPartitioned()) {
+              continue;
+            }
             if (parts.getPartitions().size() > scanLimit) {
               throw new SemanticException(ErrorMsg.PARTITION_SCAN_LIMIT_EXCEEDED, ""
                   + parts.getPartitions().size(), "" + parts.getSourceTable().getTableName(), ""

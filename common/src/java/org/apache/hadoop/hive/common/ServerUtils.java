@@ -65,5 +65,16 @@ public class ServerUtils {
     }
     return serverIPAddress;
   }
+  /**
+   * @return name of current host
+   */
+  public static String hostname() {
+    try {
+      return InetAddress.getLocalHost().getHostName();
+    } catch (UnknownHostException e) {
+      LOG.error("Unable to resolve my host name " + e.getMessage());
+      throw new RuntimeException(e);
+    }
+  }
 
 }

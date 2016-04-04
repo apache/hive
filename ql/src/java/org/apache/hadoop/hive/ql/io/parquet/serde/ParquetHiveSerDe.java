@@ -28,7 +28,6 @@ import org.apache.hadoop.hive.serde2.io.ParquetHiveRecord;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -37,7 +36,6 @@ import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.parquet.hadoop.ParquetOutputFormat;
-import org.apache.parquet.hadoop.ParquetWriter;
 
 /**
  *
@@ -51,10 +49,7 @@ public class ParquetHiveSerDe extends AbstractSerDe {
   public static final Text MAP_VALUE = new Text("value");
   public static final Text MAP = new Text("map");
   public static final Text ARRAY = new Text("bag");
-
-  // default compression type for parquet output format
-  private static final String DEFAULTCOMPRESSION =
-          ParquetWriter.DEFAULT_COMPRESSION_CODEC_NAME.name();
+  public static final Text LIST = new Text("list");
 
   // Map precision to the number bytes needed for binary conversion.
   public static final int PRECISION_TO_BYTE_COUNT[] = new int[38];
@@ -78,7 +73,6 @@ public class ParquetHiveSerDe extends AbstractSerDe {
   private LAST_OPERATION status;
   private long serializedSize;
   private long deserializedSize;
-  private String compressionType;
 
   private ParquetHiveRecord parquetRow;
 
@@ -96,9 +90,6 @@ public class ParquetHiveSerDe extends AbstractSerDe {
     // Get column names and sort order
     final String columnNameProperty = tbl.getProperty(serdeConstants.LIST_COLUMNS);
     final String columnTypeProperty = tbl.getProperty(serdeConstants.LIST_COLUMN_TYPES);
-
-    // Get compression properties
-    compressionType = tbl.getProperty(ParquetOutputFormat.COMPRESSION, DEFAULTCOMPRESSION);
 
     if (columnNameProperty.length() == 0) {
       columnNames = new ArrayList<String>();

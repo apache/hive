@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
 
+import java.sql.Date;
+import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -25,6 +27,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.NullUtil;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.*;
 import org.apache.hadoop.hive.ql.util.DateTimeMath;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 
 /**
  * Generated from template DateColumnArithmeticIntervalYearMonthScalar.txt, which covers binary arithmetic
@@ -35,14 +38,18 @@ public class <ClassName> extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
   private int colNum;
-  private long value;
+  private Date value;
   private int outputColumn;
+  private HiveIntervalYearMonth scratchIntervalYearMonth1;
+  private Date outputDate;
   private DateTimeMath dtm = new DateTimeMath();
 
   public <ClassName>(int colNum, long value, int outputColumn) {
     this.colNum = colNum;
-    this.value = value;
+    this.value = new Date(DateWritable.daysToMillis((int) value));
     this.outputColumn = outputColumn;
+    scratchIntervalYearMonth1 = new HiveIntervalYearMonth();
+    outputDate = new Date(0);
   }
 
   public <ClassName>() {
@@ -56,18 +63,18 @@ public class <ClassName> extends VectorExpression {
     }
 
     // Input #1 is type interval_year_mont (epochMonths).
-    LongColumnVector inputColVector = (LongColumnVector) batch.cols[colNum];
+    LongColumnVector inputColVector1 = (LongColumnVector) batch.cols[colNum];
 
     // Output is type date.
     LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumn];
 
     int[] sel = batch.selected;
-    boolean[] inputIsNull = inputColVector.isNull;
+    boolean[] inputIsNull = inputColVector1.isNull;
     boolean[] outputIsNull = outputColVector.isNull;
-    outputColVector.noNulls = inputColVector.noNulls;
-    outputColVector.isRepeating = inputColVector.isRepeating;
+    outputColVector.noNulls = inputColVector1.noNulls;
+    outputColVector.isRepeating = inputColVector1.isRepeating;
     int n = batch.size;
-    long[] vector = inputColVector.vector;
+    long[] vector1 = inputColVector1.vector;
     long[] outputVector = outputColVector.vector;
 
     // return immediately if batch is empty
@@ -75,32 +82,46 @@ public class <ClassName> extends VectorExpression {
       return;
     }
 
-    if (inputColVector.isRepeating) {
-      outputVector[0] = dtm.addMonthsToDays(value, <OperatorSymbol> (int) vector[0]);
-
+    if (inputColVector1.isRepeating) {
+      scratchIntervalYearMonth1.set((int) vector1[0]);
+      dtm.<OperatorMethod>(
+          scratchIntervalYearMonth1, value, outputDate);
+      outputVector[0] = DateWritable.dateToDays(outputDate);
       // Even if there are no nulls, we always copy over entry 0. Simplifies code.
       outputIsNull[0] = inputIsNull[0];
-    } else if (inputColVector.noNulls) {
+    } else if (inputColVector1.noNulls) {
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          outputVector[i] = dtm.addMonthsToDays(value, <OperatorSymbol> (int) vector[i]);
+          scratchIntervalYearMonth1.set((int) vector1[i]);
+          dtm.<OperatorMethod>(
+              scratchIntervalYearMonth1, value, outputDate);
+          outputVector[i] = DateWritable.dateToDays(outputDate);
         }
       } else {
         for(int i = 0; i != n; i++) {
-          outputVector[i] = dtm.addMonthsToDays(value, <OperatorSymbol> (int) vector[i]);
+          scratchIntervalYearMonth1.set((int) vector1[i]);
+          dtm.<OperatorMethod>(
+              scratchIntervalYearMonth1, value, outputDate);
+          outputVector[i] = DateWritable.dateToDays(outputDate);
         }
       }
     } else /* there are nulls */ {
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          outputVector[i] = dtm.addMonthsToDays(value, <OperatorSymbol> (int) vector[i]);
+          scratchIntervalYearMonth1.set((int) vector1[i]);
+          dtm.<OperatorMethod>(
+              scratchIntervalYearMonth1, value, outputDate);
+          outputVector[i] = DateWritable.dateToDays(outputDate);
           outputIsNull[i] = inputIsNull[i];
         }
       } else {
         for(int i = 0; i != n; i++) {
-          outputVector[i] = dtm.addMonthsToDays(value, <OperatorSymbol> (int) vector[i]);
+          scratchIntervalYearMonth1.set((int) vector1[i]);
+          dtm.<OperatorMethod>(
+              scratchIntervalYearMonth1, value, outputDate);
+          outputVector[i] = DateWritable.dateToDays(outputDate);
         }
         System.arraycopy(inputIsNull, 0, outputIsNull, 0, n);
       }

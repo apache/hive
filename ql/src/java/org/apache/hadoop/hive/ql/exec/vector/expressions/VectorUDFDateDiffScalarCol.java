@@ -237,7 +237,7 @@ public class VectorUDFDateDiffScalarCol extends VectorExpression {
 
   protected int evaluateTimestamp(ColumnVector columnVector, int index) {
     TimestampColumnVector tcv = (TimestampColumnVector) columnVector;
-    date.setTime(tcv.getTimestampMilliseconds(index));
+    date.setTime(tcv.getTime(index));
     return baseDate - DateWritable.dateToDays(date);
   }
 

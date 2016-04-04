@@ -30,7 +30,7 @@ Ln:15 SET key = A
 Ln:15 COLUMN: value, string
 Ln:15 SET value = B
 Ln:17 PRINT
-null
+AB
 Ln:15 FOR CURSOR - LEFT
 Ln:20 EXECUTE
 Ln:20 SQL statement: SELECT 'A' AS key, 'B' AS value FROM src LIMIT 1

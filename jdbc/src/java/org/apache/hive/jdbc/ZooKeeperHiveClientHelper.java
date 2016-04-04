@@ -71,12 +71,27 @@ class ZooKeeperHiveClientHelper {
       // Now pick a server node randomly
       serverNode = serverHosts.get(randomizer.nextInt(serverHosts.size()));
       connParams.setCurrentHostZnodePath(serverNode);
-      // Read config string from the znode for this server node
-      String serverConfStr =
+      // Read data from the znode for this server node
+      // This data could be either config string (new releases) or server end
+      // point (old releases)
+      String dataStr =
           new String(
               zooKeeperClient.getData().forPath("/" + zooKeeperNamespace + "/" + serverNode),
               Charset.forName("UTF-8"));
-      applyConfs(serverConfStr, connParams);
+      Matcher matcher = kvPattern.matcher(dataStr);
+      // If dataStr is not null and dataStr is not a KV pattern,
+      // it must be the server uri added by an older version HS2
+      if ((dataStr != null) && (!matcher.find())) {
+        String[] split = dataStr.split(":");
+        if (split.length != 2) {
+          throw new ZooKeeperHiveClientException("Unable to read HiveServer2 uri from ZooKeeper: "
+              + dataStr);
+        }
+        connParams.setHost(split[0]);
+        connParams.setPort(Integer.parseInt(split[1]));
+      } else {
+        applyConfs(dataStr, connParams);
+      }
     } catch (Exception e) {
       throw new ZooKeeperHiveClientException("Unable to read HiveServer2 configs from ZooKeeper", e);
     } finally {

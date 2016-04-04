@@ -174,6 +174,11 @@ abstract class CompactorThread extends Thread implements MetaStoreThread {
           return null;
         }
       });
+      try {
+        FileSystem.closeAllForUGI(ugi);
+      } catch (IOException exception) {
+        LOG.error("Could not clean up file-system handles for UGI: " + ugi, exception);
+      }
 
       if (wrapper.size() == 1) {
         LOG.debug("Running job as " + wrapper.get(0));

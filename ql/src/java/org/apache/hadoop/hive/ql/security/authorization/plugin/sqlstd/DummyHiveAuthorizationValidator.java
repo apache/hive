@@ -21,6 +21,8 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizationValidator;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
@@ -46,6 +48,27 @@ public class DummyHiveAuthorizationValidator implements HiveAuthorizationValidat
   public List<HivePrivilegeObject> filterListCmdObjects(List<HivePrivilegeObject> listObjs,
       HiveAuthzContext context) {
     return listObjs;
+  }
+
+  @Override
+  public String getRowFilterExpression(String database, String table) throws SemanticException {
+    return null;
+  }
+
+  @Override
+  public String getCellValueTransformer(String database, String table, String columnName)
+      throws SemanticException {
+    return null;
+  }
+
+  @Override
+  public boolean needTransform() {
+    return false;
+  }
+
+  @Override
+  public boolean needTransform(String database, String table) {
+    return false;
   }
 
 }

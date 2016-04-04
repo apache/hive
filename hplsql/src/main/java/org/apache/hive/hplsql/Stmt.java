@@ -191,6 +191,17 @@ public class Stmt {
     evalString(sql);
     return 0; 
   }
+  
+  /**
+   * CREATE TABLE options for MySQL
+   */
+  public Integer createTableMysqlOptions(HplsqlParser.Create_table_options_mysql_itemContext ctx) {
+    StringBuilder sql = new StringBuilder();
+    if (ctx.T_COMMENT() != null) {
+      evalString(ctx.T_COMMENT().getText() + " " + evalPop(ctx.expr()).toSqlString());
+    }
+    return 0; 
+  }
     
   /**
    * DECLARE TEMPORARY TABLE statement 
@@ -201,6 +212,44 @@ public class Stmt {
       trace(ctx, "DECLARE TEMPORARY TABLE " + name);
     }
     return createTemporaryTable(ctx, ctx.create_table_columns(), name);
+  }
+  
+  /**
+   * CREATE DATABASE | SCHEMA statement
+   */
+  public Integer createDatabase(HplsqlParser.Create_database_stmtContext ctx) {
+    trace(ctx, "CREATE DATABASE");
+    StringBuilder sql = new StringBuilder();
+    sql.append(ctx.T_CREATE().getText() + " ");
+    if (ctx.T_DATABASE() != null) {
+      sql.append(ctx.T_DATABASE().getText() + " "); 
+    }
+    else {
+      sql.append(ctx.T_SCHEMA().getText() + " "); 
+    }
+    if (ctx.T_IF() != null) {
+      sql.append(exec.getText(ctx, ctx.T_IF().getSymbol(), ctx.T_EXISTS().getSymbol()) + " "); 
+    }    
+    sql.append(evalPop(ctx.expr()).toString());
+    int cnt = ctx.create_database_option().size();
+    for (int i = 0; i < cnt; i++) {
+      HplsqlParser.Create_database_optionContext option = ctx.create_database_option(i);
+      if (option.T_COMMENT() != null) {
+        sql.append(" " + option.T_COMMENT().getText() + " " + evalPop(option.expr()).toSqlString()); 
+      }
+      else if (option.T_LOCATION() != null) {
+        sql.append(" " + option.T_LOCATION().getText() + " " + evalPop(option.expr()).toSqlString()); 
+      }
+    }
+    trace(ctx, sql.toString());
+    Query query = exec.executeSql(ctx, sql.toString(), exec.conf.defaultConnection);
+    if (query.error()) {
+      exec.signal(query);
+      return 1;
+    }
+    exec.setSqlSuccess();
+    exec.closeQuery(query, exec.conf.defaultConnection);
+    return 0;
   }
   
   /**
@@ -252,6 +301,45 @@ public class Stmt {
   }
   
   /**
+   * DESCRIBE statement
+   */
+  public Integer describe(HplsqlParser.Describe_stmtContext ctx) {
+    trace(ctx, "DESCRIBE");
+    String sql = "DESCRIBE " + evalPop(ctx.table_name()).toString();   
+    trace(ctx, sql);
+    Query query = exec.executeSql(ctx, sql, exec.conf.defaultConnection);
+    if (query.error()) {
+      exec.signal(query);
+      return 1;
+    }
+    try {
+      ResultSet rs = query.getResultSet();
+      ResultSetMetaData rm = null;
+      if (rs != null) {
+        rm = rs.getMetaData();
+        int cols = rm.getColumnCount();
+        while (rs.next()) {
+          for (int i = 1; i <= cols; i++) {
+            if (i > 1) {
+              System.out.print("\t");
+            }
+            System.out.print(rs.getString(i));
+          }
+          System.out.println("");
+        }
+      }
+    }    
+    catch (SQLException e) {
+      exec.signal(query);
+      exec.closeQuery(query, exec.conf.defaultConnection);
+      return 1;
+    }
+    exec.setSqlSuccess();
+    exec.closeQuery(query, exec.conf.defaultConnection);
+    return 0;
+  }
+  
+  /**
    * DROP statement
    */
   public Integer drop(HplsqlParser.Drop_stmtContext ctx) { 
@@ -260,9 +348,16 @@ public class Stmt {
     if (ctx.T_TABLE() != null) {
       sql = "DROP TABLE ";
       if (ctx.T_EXISTS() != null) {
-        sql += "IF NOT EXISTS ";
+        sql += "IF EXISTS ";
       }
       sql += evalPop(ctx.table_name()).toString();
+    }
+    else if (ctx.T_DATABASE() != null || ctx.T_SCHEMA() != null) {
+      sql = "DROP DATABASE ";
+      if (ctx.T_EXISTS() != null) {
+        sql += "IF EXISTS ";
+      }
+      sql += evalPop(ctx.expr()).toString();
     }
     if (sql != null) {
       trace(ctx, sql);
@@ -274,6 +369,23 @@ public class Stmt {
       exec.setSqlSuccess();
       exec.closeQuery(query, exec.conf.defaultConnection);
     }
+    return 0; 
+  }
+  
+  /**
+   * TRUNCATE statement
+   */
+  public Integer truncate(HplsqlParser.Truncate_stmtContext ctx) { 
+    trace(ctx, "TRUNCATE");
+    String sql = "TRUNCATE TABLE " + evalPop(ctx.table_name()).toString();    
+    trace(ctx, sql);
+    Query query = exec.executeSql(ctx, sql, exec.conf.defaultConnection);
+    if (query.error()) {
+      exec.signal(query);
+      return 1;
+    }
+    exec.setSqlSuccess();
+    exec.closeQuery(query, exec.conf.defaultConnection);
     return 0; 
   }
   
@@ -563,11 +675,21 @@ public class Stmt {
    */
   public Integer insertSelect(HplsqlParser.Insert_stmtContext ctx) { 
     trace(ctx, "INSERT SELECT");
-    String table = evalPop(ctx.table_name()).toString();
-    String select = evalPop(ctx.select_stmt()).toString();
-    String sql = "INSERT INTO TABLE " + table + " " + select;    
-    trace(ctx, sql);
-    Query query = exec.executeSql(ctx, sql, exec.conf.defaultConnection);
+    StringBuilder sql = new StringBuilder();
+    sql.append(ctx.T_INSERT().getText() + " ");
+    if (ctx.T_OVERWRITE() != null) {
+      sql.append(ctx.T_OVERWRITE().getText() + " " + ctx.T_TABLE().getText() + " ");
+    }
+    else {
+      sql.append(ctx.T_INTO().getText() + " ");
+      if (ctx.T_TABLE() != null) {
+        sql.append(ctx.T_TABLE().getText() + " ");
+      }
+    }
+    sql.append(evalPop(ctx.table_name()).toString() + " ");
+    sql.append(evalPop(ctx.select_stmt()).toString());
+    trace(ctx, sql.toString());
+    Query query = exec.executeSql(ctx, sql.toString(), exec.conf.defaultConnection);
     if (query.error()) {
       exec.signal(query);
       return 1;
@@ -621,7 +743,9 @@ public class Stmt {
         } 
       }
       else if (type == Conn.Type.HIVE && conf.insertValues == Conf.InsertValues.SELECT) {
-        sql.append(" FROM " + conf.dualTable); 
+        if (conf.dualTable != null) {
+          sql.append(" FROM " + conf.dualTable);
+        }
         if (i + 1 < rows) {
           sql.append("\nUNION ALL\n");
         }
@@ -637,6 +761,30 @@ public class Stmt {
     }
     exec.setSqlSuccess();
     exec.closeQuery(query, exec.conf.defaultConnection);
+    return 0; 
+  }
+  
+  /**
+   * INSERT DIRECTORY statement
+   */
+  public Integer insertDirectory(HplsqlParser.Insert_directory_stmtContext ctx) { 
+    trace(ctx, "INSERT DIRECTORY");
+    StringBuilder sql = new StringBuilder();
+    sql.append(ctx.T_INSERT().getText() + " " + ctx.T_OVERWRITE().getText() + " ");
+    if (ctx.T_LOCAL() != null) {
+      sql.append(ctx.T_LOCAL().getText() + " ");
+    }
+    sql.append(ctx.T_DIRECTORY().getText() + " " + evalPop(ctx.expr_file()).toSqlString() + " ");
+    sql.append(evalPop(ctx.expr_select()).toString());
+    String conn = exec.getStatementConnection();
+    trace(ctx, sql.toString());
+    Query query = exec.executeSql(ctx, sql.toString(), conn);
+    if (query.error()) {
+      exec.signal(query);
+      return 1;
+    }
+    exec.setSqlSuccess();
+    exec.closeQuery(query, conn);
     return 0; 
   }
   
@@ -876,7 +1024,7 @@ public class Stmt {
   public Boolean execProc(HplsqlParser.Exec_stmtContext ctx) { 
     String name = evalPop(ctx.expr()).toString();
     if (exec.function.isProc(name)) {
-      if (exec.function.execProc(name, ctx.expr_func_params())) {
+      if (exec.function.execProc(name, ctx.expr_func_params(), ctx)) {
         return true;
       }
     }
@@ -997,8 +1145,7 @@ public class Stmt {
   public Integer print(HplsqlParser.Print_stmtContext ctx) { 
     trace(ctx, "PRINT");
     if (ctx.expr() != null) {
-      visit(ctx.expr());
-      System.out.println(stack.pop().toString());
+      System.out.println(evalPop(ctx.expr()).toString());
     }
 	  return 0; 
   }

@@ -50,11 +50,13 @@ import org.apache.hadoop.hive.metastore.api.TxnInfo;
 import org.apache.hadoop.hive.metastore.api.TxnOpenException;
 import org.apache.hadoop.hive.metastore.api.TxnState;
 import org.apache.hadoop.hive.metastore.api.UnlockRequest;
+import org.apache.hadoop.util.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -68,6 +70,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
@@ -1150,7 +1153,7 @@ public class TestTxnHandler {
   }
 
   @Test
-  @Ignore
+  @Ignore("Wedges Derby")
   public void deadlockDetected() throws Exception {
     LOG.debug("Starting deadlock test");
     if (txnHandler instanceof TxnHandler) {
@@ -1252,6 +1255,97 @@ public class TestTxnHandler {
     }
   }
 
+  /**
+   * This cannnot be run against Derby (thus in UT) but it can run againt MySQL.
+   * 1. add to metastore/pom.xml
+   *     <dependency>
+   *      <groupId>mysql</groupId>
+   *      <artifactId>mysql-connector-java</artifactId>
+   *      <version>5.1.30</version>
+   *     </dependency>
+   * 2. Hack in the c'tor of this class
+   *     conf.setVar(HiveConf.ConfVars.METASTORECONNECTURLKEY, "jdbc:mysql://localhost/metastore");
+   *      conf.setVar(HiveConf.ConfVars.METASTORE_CONNECTION_USER_NAME, "hive");
+   *      conf.setVar(HiveConf.ConfVars.METASTOREPWD, "hive");
+   *      conf.setVar(HiveConf.ConfVars.METASTORE_CONNECTION_DRIVER, "com.mysql.jdbc.Driver");
+   * 3. Remove TxnDbUtil.prepDb(); in TxnHandler.checkQFileTestHack()
+   *      
+   */
+  @Ignore("multiple threads wedge Derby")
+  @Test
+  public void testMutexAPI() throws Exception {
+    final TxnStore.MutexAPI api =  txnHandler.getMutexAPI();
+    final AtomicInteger stepTracker = new AtomicInteger(0);
+    /**
+     * counter = 0;
+     * Thread1 counter=1, lock, wait 3s, check counter(should be 2), counter=3, unlock 
+     * Thread2 counter=2, lock (and block), inc counter, should be 4
+     */
+    Thread t1 = new Thread("MutexTest1") {
+      public void run() {
+        try {
+          stepTracker.incrementAndGet();//now 1
+          TxnStore.MutexAPI.LockHandle handle = api.acquireLock(TxnHandler.MUTEX_KEY.HouseKeeper.name());
+          Thread.sleep(4000);
+          //stepTracker should now be 2 which indicates t2 has started
+          Assert.assertEquals("Thread2 should have started by now but not done work", 2, stepTracker.get());
+          stepTracker.incrementAndGet();//now 3
+          handle.releaseLocks();
+        }
+        catch(Exception ex) {
+          throw new RuntimeException(ex.getMessage(), ex);
+        }
+      }
+    };
+    t1.setDaemon(true);
+    ErrorHandle ueh1 = new ErrorHandle();
+    t1.setUncaughtExceptionHandler(ueh1);
+    Thread t2 = new Thread("MutexTest2") {
+      public void run() {
+        try {
+          stepTracker.incrementAndGet();//now 2
+          //this should block until t1 unlocks
+          TxnStore.MutexAPI.LockHandle handle = api.acquireLock(TxnHandler.MUTEX_KEY.HouseKeeper.name());
+          stepTracker.incrementAndGet();//now 4
+          Assert.assertEquals(4, stepTracker.get());
+          handle.releaseLocks();
+          stepTracker.incrementAndGet();//now 5
+        }
+        catch(Exception ex) {
+          throw new RuntimeException(ex.getMessage(), ex);
+        }
+      }
+    };
+    t2.setDaemon(true);
+    ErrorHandle ueh2 = new ErrorHandle();
+    t2.setUncaughtExceptionHandler(ueh2);
+    t1.start();
+    try {
+      Thread.sleep(1000);
+    }
+    catch(InterruptedException ex) {
+      LOG.info("Sleep was interrupted");
+    }
+    t2.start();
+    t1.join(6000);//so that test doesn't block
+    t2.join(6000);
+
+    if(ueh1.error != null) {
+      Assert.assertTrue("Unexpected error from t1: " + StringUtils.stringifyException(ueh1.error), false);
+    }
+    if (ueh2.error != null) {
+      Assert.assertTrue("Unexpected error from t2: " + StringUtils.stringifyException(ueh2.error), false);
+    }
+    Assert.assertEquals("5 means both threads have completed", 5, stepTracker.get());
+  }
+  private final static class ErrorHandle implements Thread.UncaughtExceptionHandler {
+    Throwable error = null;
+    @Override
+    public void uncaughtException(Thread t, Throwable e) {
+      LOG.error("Uncaught exception from " + t.getName() + ": " + e.getMessage());
+      error = e;
+    }
+  }
   private void updateTxns(Connection conn) throws SQLException {
     Statement stmt = conn.createStatement();
     stmt.executeUpdate("update TXNS set txn_last_heartbeat = txn_last_heartbeat + 1");

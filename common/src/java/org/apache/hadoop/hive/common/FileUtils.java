@@ -27,6 +27,7 @@ import java.security.AccessControlException;
 import java.security.PrivilegedExceptionAction;
 import java.util.BitSet;
 import java.util.List;
+import java.util.Random;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -43,6 +44,7 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Shell;
+import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.ShutdownHookManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,6 +55,7 @@ import org.slf4j.LoggerFactory;
  */
 public final class FileUtils {
   private static final Logger LOG = LoggerFactory.getLogger(FileUtils.class.getName());
+  private static final Random random = new Random();
 
   public static final PathFilter HIDDEN_FILES_PATH_FILTER = new PathFilter() {
     @Override
@@ -825,6 +828,57 @@ public final class FileUtils {
     File tmpFile = File.createTempFile(prefix, suffix, tmpDir);
     ShutdownHookManager.deleteOnExit(tmpFile);
     return tmpFile;
+  }
+
+  public static File createLocalDirsTempFile(String localDirList, String prefix, String suffix,
+      boolean isDirectory) throws IOException {
+    if (localDirList == null || localDirList.isEmpty()) {
+      return createFileInTmp(prefix, suffix, "Local directories not specified", isDirectory);
+    }
+    String[] localDirs = StringUtils.getTrimmedStrings(localDirList);
+    if (localDirs.length == 0) {
+      return createFileInTmp(prefix, suffix, "Local directories not specified", isDirectory);
+    }
+    // TODO: we could stagger these to threads by ID, but that can also lead to bad effects.
+    String path = localDirs[random.nextInt(localDirs.length)];
+    if (path == null || path.isEmpty()) {
+      return createFileInTmp(prefix, suffix, "Empty path for one of the local dirs", isDirectory);
+    }
+    File targetDir = new File(path);
+    if (!targetDir.exists() && !targetDir.mkdirs()) {
+      return createFileInTmp(prefix, suffix, "Cannot access or create " + targetDir, isDirectory);
+    }
+    try {
+      File file = File.createTempFile(prefix, suffix, targetDir);
+      if (isDirectory && (!file.delete() || !file.mkdirs())) {
+        // TODO: or we could just generate a name ourselves and not do this?
+        return createFileInTmp(prefix, suffix,
+            "Cannot recreate " + file + " as directory", isDirectory);
+      }
+      file.deleteOnExit();
+      return file;
+    } catch (IOException ex) {
+      LOG.error("Error creating a file in " + targetDir, ex);
+      return createFileInTmp(prefix, suffix, "Cannot create a file in " + targetDir, isDirectory);
+    }
+  }
+
+  private static File createFileInTmp(String prefix, String suffix,
+      String reason, boolean isDirectory) throws IOException {
+    File file = File.createTempFile(prefix, suffix);
+    if (isDirectory && (!file.delete() || !file.mkdirs())) {
+      // TODO: or we could just generate a name ourselves and not do this?
+      throw new IOException("Cannot recreate " + file + " as directory");
+    }
+    file.deleteOnExit();
+    LOG.info(reason + "; created a tmp file: " + file.getAbsolutePath());
+    return file;
+  }
+
+  public static File createLocalDirsTempFile(Configuration conf, String prefix, String suffix,
+      boolean isDirectory) throws IOException {
+    return createLocalDirsTempFile(
+        conf.get("yarn.nodemanager.local-dirs"), prefix, suffix, isDirectory);
   }
 
   /**

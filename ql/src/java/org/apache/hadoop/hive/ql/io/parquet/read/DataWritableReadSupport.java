@@ -23,24 +23,28 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.parquet.convert.DataWritableRecordConverter;
+import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.ArrayWritable;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.util.StringUtils;
-
 import org.apache.parquet.hadoop.api.InitContext;
 import org.apache.parquet.hadoop.api.ReadSupport;
 import org.apache.parquet.io.api.RecordMaterializer;
 import org.apache.parquet.schema.GroupType;
 import org.apache.parquet.schema.MessageType;
-import org.apache.parquet.schema.Type;
-import org.apache.parquet.schema.Types;
+import org.apache.parquet.schema.OriginalType;
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName;
+import org.apache.parquet.schema.Type;
+import org.apache.parquet.schema.Type.Repetition;
+import org.apache.parquet.schema.Types;
 
 /**
  *
@@ -107,41 +111,56 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
   private static List<Type> getProjectedGroupFields(GroupType schema, List<String> colNames, List<TypeInfo> colTypes) {
     List<Type> schemaTypes = new ArrayList<Type>();
 
-    ListIterator columnIterator = colNames.listIterator();
+    ListIterator<String> columnIterator = colNames.listIterator();
     while (columnIterator.hasNext()) {
       TypeInfo colType = colTypes.get(columnIterator.nextIndex());
-      String colName = (String) columnIterator.next();
+      String colName = columnIterator.next();
 
       Type fieldType = getFieldTypeIgnoreCase(schema, colName);
-      if (fieldType != null) {
-        if (colType.getCategory() == ObjectInspector.Category.STRUCT) {
-          if (fieldType.isPrimitive()) {
-            throw new IllegalStateException("Invalid schema data type, found: PRIMITIVE, expected: STRUCT");
-          }
-
-          GroupType groupFieldType = fieldType.asGroupType();
-
-          List<Type> groupFields = getProjectedGroupFields(
-              groupFieldType,
-              ((StructTypeInfo) colType).getAllStructFieldNames(),
-              ((StructTypeInfo) colType).getAllStructFieldTypeInfos()
-          );
-
-          Type[] typesArray = groupFields.toArray(new Type[0]);
-          schemaTypes.add(Types.buildGroup(groupFieldType.getRepetition())
-              .addFields(typesArray)
-              .named(fieldType.getName())
-          );
-        } else {
-          schemaTypes.add(fieldType);
-        }
-      } else {
-        // Add type for schema evolution
+      if (fieldType == null) {
         schemaTypes.add(Types.optional(PrimitiveTypeName.BINARY).named(colName));
+      } else {
+        schemaTypes.add(getProjectedType(colType, fieldType));
       }
     }
 
     return schemaTypes;
+  }
+
+  private static Type getProjectedType(TypeInfo colType, Type fieldType) {
+    switch (colType.getCategory()) {
+      case STRUCT:
+        List<Type> groupFields = getProjectedGroupFields(
+          fieldType.asGroupType(),
+          ((StructTypeInfo) colType).getAllStructFieldNames(),
+          ((StructTypeInfo) colType).getAllStructFieldTypeInfos()
+        );
+  
+        Type[] typesArray = groupFields.toArray(new Type[0]);
+        return Types.buildGroup(fieldType.getRepetition())
+          .addFields(typesArray)
+          .named(fieldType.getName());
+      case LIST:
+        TypeInfo elemType = ((ListTypeInfo) colType).getListElementTypeInfo();
+        if (elemType.getCategory() == ObjectInspector.Category.STRUCT) {
+          Type subFieldType = fieldType.asGroupType().getType(0);
+          if (!subFieldType.isPrimitive()) {
+            String subFieldName = subFieldType.getName();
+            Text name = new Text(subFieldName);
+            if (name.equals(ParquetHiveSerDe.ARRAY) || name.equals(ParquetHiveSerDe.LIST)) {
+              subFieldType = new GroupType(Repetition.REPEATED, subFieldName,
+                getProjectedType(elemType, subFieldType.asGroupType().getType(0)));
+            } else {
+              subFieldType = getProjectedType(elemType, subFieldType);
+            }
+            return Types.buildGroup(Repetition.OPTIONAL).as(OriginalType.LIST).addFields(
+              subFieldType).named(fieldType.getName());
+          }
+        }
+        break;
+      default:
+    }
+    return fieldType;
   }
 
   /**

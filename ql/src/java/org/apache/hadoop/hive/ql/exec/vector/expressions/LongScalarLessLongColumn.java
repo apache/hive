@@ -91,10 +91,10 @@ public class LongScalarLessLongColumn extends VectorExpression {
         }
         outputColVector.isRepeating = true;
       } else if (batch.selectedInUse) {
-        System.arraycopy(nullPos, 0, outNulls, 0, n);
         for(int j=0; j != n; j++) {
           int i = sel[j];
           outputVector[i] = value < vector[i] ? 1 : 0;
+          outNulls[i] = nullPos[i];
         }
       } else {
         System.arraycopy(nullPos, 0, outNulls, 0, n);

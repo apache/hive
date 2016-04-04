@@ -150,6 +150,9 @@ public class Package {
     HashMap<String, Var> out = new HashMap<String, Var>();
     exec.enterScope(Scope.Type.ROUTINE, this);
     exec.callStackPush(name);
+    if (p.declare_block_inplace() != null) {
+      visit(p.declare_block_inplace());
+    }
     if (p.create_routine_params() != null) {
       function.setCallParameters(ctx, actualParams, p.create_routine_params(), out);
     }

@@ -139,15 +139,26 @@ public class Meta {
   }
   
   /**
-   * Normalize identifier name (convert "" [] to `` i.e.)
+   * Normalize identifier for a database object (convert "" [] to `` i.e.)
    */
-  public String normalizeIdentifier(String name) {
+  public String normalizeObjectIdentifier(String name) {
     ArrayList<String> parts = splitIdentifier(name);
-    if (parts != null) {
+    if (parts != null) {  // more then one part exist
       StringBuilder norm = new StringBuilder();
-      for (int i = 0; i < parts.size(); i++) {
-        norm.append(normalizeIdentifierPart(parts.get(i)));
-        if (i + 1 < parts.size()) {
+      int size = parts.size();
+      boolean appended = false;
+      for (int i = 0; i < size; i++) {
+        if (i == size - 2) {   // schema name
+          String schema = getTargetSchemaName(parts.get(i));
+          if (schema != null) {
+            norm.append(schema);
+            appended = true;
+          }          
+        } else {
+          norm.append(normalizeIdentifierPart(parts.get(i)));
+          appended = true;
+        }
+        if (i + 1 < parts.size() && appended) {
           norm.append(".");
         }
       }
@@ -157,7 +168,17 @@ public class Meta {
   }
   
   /**
-   * Normalize identifier (single part)
+   * Get the schema name to be used in the final executed SQL
+   */
+  String getTargetSchemaName(String name) {
+    if (name.equalsIgnoreCase("dbo") || name.equalsIgnoreCase("[dbo]")) {
+      return null;
+    }
+    return normalizeIdentifierPart(name);
+  }  
+  
+  /**
+   * Normalize identifier (single part) - convert "" [] to `` i.e.
    */
   public String normalizeIdentifierPart(String name) {
     char start = name.charAt(0);

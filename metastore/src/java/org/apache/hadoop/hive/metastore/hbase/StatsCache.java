@@ -85,12 +85,12 @@ class StatsCache {
           @Override
           public AggrStats load(StatsCacheKey key) throws Exception {
             int numBitVectors = HiveStatsUtils.getNumBitVectorsForNDVEstimation(conf);
+            boolean useDensityFunctionForNDVEstimation = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_METASTORE_STATS_NDV_DENSITY_FUNCTION);
             HBaseReadWrite hrw = HBaseReadWrite.getInstance();
             AggrStats aggrStats = hrw.getAggregatedStats(key.hashed);
             if (aggrStats == null) {
               misses.incr();
               ColumnStatsAggregator aggregator = null;
-              ColumnStatisticsObj statsObj = null;
               aggrStats = new AggrStats();
               LOG.debug("Unable to find aggregated stats for " + key.colName + ", aggregating");
               List<ColumnStatistics> css = hrw.getPartitionStatistics(key.dbName, key.tableName,
@@ -98,19 +98,13 @@ class StatsCache {
                   Collections.singletonList(key.colName));
               if (css != null && css.size() > 0) {
                 aggrStats.setPartsFound(css.size());
-                for (ColumnStatistics cs : css) {
-                  for (ColumnStatisticsObj cso : cs.getStatsObj()) {
-                    if (statsObj == null) {
-                      statsObj = ColumnStatsAggregatorFactory.newColumnStaticsObj(key.colName,
-                          cso.getColType(), cso.getStatsData().getSetField());
-                    }
-                    if (aggregator == null) {
-                      aggregator = ColumnStatsAggregatorFactory.getColumnStatsAggregator(
-                          cso.getStatsData().getSetField(), numBitVectors);
-                    }
-                    aggregator.aggregate(statsObj, cso);
-                  }
+                if (aggregator == null) {
+                  aggregator = ColumnStatsAggregatorFactory.getColumnStatsAggregator(css.iterator()
+                      .next().getStatsObj().iterator().next().getStatsData().getSetField(),
+                      numBitVectors, useDensityFunctionForNDVEstimation);
                 }
+                ColumnStatisticsObj statsObj = aggregator
+                    .aggregate(key.colName, key.partNames, css);
                 aggrStats.addToColStats(statsObj);
                 me.put(key, aggrStats);
               }

@@ -403,13 +403,7 @@ public class Driver implements CommandProcessor {
     }
     saveSession(queryState);
 
-    // Generate new query id if it's not set for CLI case. If it's session based,
-    // query id is passed in from the client or initialized when the session starts.
     String queryId = conf.getVar(HiveConf.ConfVars.HIVEQUERYID);
-    if (queryId == null || queryId.isEmpty()) {
-      queryId = QueryPlan.makeQueryId();
-      conf.setVar(HiveConf.ConfVars.HIVEQUERYID, queryId);
-    }
 
     //save some info for webUI for use after plan is freed
     this.queryDisplay.setQueryStr(queryStr);
@@ -1422,6 +1416,10 @@ public class Driver implements CommandProcessor {
     if (!checkConcurrency()) {
       return false;
     }
+    // Lock operations themselves don't require the lock.
+    if (isExplicitLockOperation()){
+      return false;
+    }
     if (!HiveConf.getBoolVar(conf, ConfVars.HIVE_LOCK_MAPRED_ONLY)) {
       return true;
     }
@@ -1440,6 +1438,22 @@ public class Driver implements CommandProcessor {
       }
       // does not add back up task here, because back up task should be the same
       // type of the original task.
+    }
+    return false;
+  }
+
+  private boolean isExplicitLockOperation() {
+    HiveOperation currentOpt = plan.getOperation();
+    if (currentOpt != null) {
+      switch (currentOpt) {
+      case LOCKDB:
+      case UNLOCKDB:
+      case LOCKTABLE:
+      case UNLOCKTABLE:
+        return true;
+      default:
+        return false;
+      }
     }
     return false;
   }

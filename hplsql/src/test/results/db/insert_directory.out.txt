@@ -1,0 +1,9 @@
+Ln:1 INSERT DIRECTORY
+Ln:1 insert overwrite directory '/tmp/src1' select * from src
+Ln:4 INSERT DIRECTORY
+Ln:4 insert overwrite local directory '/tmp/src2' select * from src
+Ln:7 INSERT DIRECTORY
+Ln:7 insert overwrite local directory '/tmp/src3' select * from src
+Ln:10 DECLARE tabname string = 'src'
+Ln:11 INSERT DIRECTORY
+Ln:11 insert overwrite local directory '/tmp/src_2016-03-28' select * from src

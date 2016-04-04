@@ -68,6 +68,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 750 Data size: 7968 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
+            LLAP IO: no inputs
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -88,6 +89,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
+            LLAP IO: no inputs
         Map 7 
             Map Operator Tree:
                 TableScan
@@ -108,6 +110,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
+            LLAP IO: no inputs
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:

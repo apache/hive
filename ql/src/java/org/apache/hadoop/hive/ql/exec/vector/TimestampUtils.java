@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.vector;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 
 public final class TimestampUtils {
@@ -37,5 +38,12 @@ public final class TimestampUtils {
       TimestampWritable timestampWritable) {
     timestampWritable.set(timestampColVector.asScratchTimestamp(elementNum));
     return timestampWritable;
+  }
+
+  public static HiveIntervalDayTimeWritable intervalDayTimeColumnVectorWritable(
+      IntervalDayTimeColumnVector intervalDayTimeColVector, int elementNum,
+      HiveIntervalDayTimeWritable intervalDayTimeWritable) {
+    intervalDayTimeWritable.set(intervalDayTimeColVector.asScratchIntervalDayTime(elementNum));
+    return intervalDayTimeWritable;
   }
 }

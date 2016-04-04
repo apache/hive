@@ -82,10 +82,8 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
       int lrfuThreshold = (int)((Math.log(1 - Math.pow(0.5, lambda)) / Math.log(0.5)) / lambda);
       maxHeapSize = Math.min(lrfuThreshold, maxBuffers);
     }
-    if (LlapIoImpl.LOGL.isInfoEnabled()) {
-      LlapIoImpl.LOG.info("LRFU cache policy with min buffer size " + minBufferSize
-          + " and lambda " + lambda + " (heap size " + maxHeapSize + ")");
-    }
+    LlapIoImpl.LOG.info("LRFU cache policy with min buffer size {} and lambda {} (heap size {})",
+        minBufferSize, lambda, maxHeapSize);
 
     heap = new LlapCacheableBuffer[maxHeapSize];
     listHead = listTail = null;
@@ -123,8 +121,8 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
   @Override
   public void notifyUnlock(LlapCacheableBuffer buffer) {
     long time = timer.incrementAndGet();
-    if (DebugUtils.isTraceCachingEnabled()) {
-      LlapIoImpl.LOG.info("Touching " + buffer + " at " + time);
+    if (LlapIoImpl.CACHE_LOGGER.isTraceEnabled()) {
+      LlapIoImpl.CACHE_LOGGER.trace("Touching {} at {}", buffer, time);
     }
     synchronized (heap) {
       // First, update buffer priority - we have just been using it.
@@ -263,8 +261,8 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
     while (true) {
       if (heapSize == 0) return null;
       LlapCacheableBuffer result = heap[0];
-      if (DebugUtils.isTraceCachingEnabled()) {
-        LlapIoImpl.LOG.info("Evicting " + result + " at " + time);
+      if (LlapIoImpl.CACHE_LOGGER.isTraceEnabled()) {
+        LlapIoImpl.CACHE_LOGGER.info("Evicting {} at {}", result, time);
       }
       result.indexInHeap = LlapCacheableBuffer.NOT_IN_CACHE;
       --heapSize;

@@ -6,8 +6,12 @@ POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:lockneg9
 PREHOOK: query: lock database lockneg9 shared
 PREHOOK: type: LOCKDATABASE
+PREHOOK: Input: database:lockneg9
+PREHOOK: Output: database:lockneg9
 POSTHOOK: query: lock database lockneg9 shared
 POSTHOOK: type: LOCKDATABASE
+POSTHOOK: Input: database:lockneg9
+POSTHOOK: Output: database:lockneg9
 PREHOOK: query: show locks database lockneg9
 PREHOOK: type: SHOWLOCKS
 POSTHOOK: query: show locks database lockneg9

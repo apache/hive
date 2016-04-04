@@ -184,9 +184,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
 
   @Override
   public void stop() {
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Encoded reader is being stopped");
-    }
+    LOG.debug("Encoded reader is being stopped");
     isStopped = true;
   }
 
@@ -214,9 +212,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
 
   protected Void performDataRead() throws IOException {
     long startTime = counters.startTimeCounter();
-    if (LlapIoImpl.LOGL.isInfoEnabled()) {
-      LlapIoImpl.LOG.info("Processing data for " + split.getPath());
-    }
+    LlapIoImpl.LOG.info("Processing data for {}", split.getPath());
     if (processStop()) {
       recordReaderTime(startTime);
       return null;
@@ -310,7 +306,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       // Reader creating updates HDFS counters, don't do it here.
       DataWrapperForOrc dw = new DataWrapperForOrc();
       stripeReader = orcReader.encodedReader(fileKey, dw, dw, POOL_FACTORY);
-      stripeReader.setDebugTracing(DebugUtils.isTraceOrcEnabled());
+      stripeReader.setTracing(LlapIoImpl.ORC_LOGGER.isTraceEnabled());
     } catch (Throwable t) {
       consumer.setError(t);
       recordReaderTime(startTime);
@@ -338,10 +334,8 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
         if (cols != null && cols.isEmpty()) continue; // No need to read this stripe.
         stripe = fileMetadata.getStripes().get(stripeIx);
 
-        if (DebugUtils.isTraceOrcEnabled()) {
-          LlapIoImpl.LOG.info("Reading stripe " + stripeIx + ": "
-              + stripe.getOffset() + ", " + stripe.getLength());
-        }
+        LlapIoImpl.ORC_LOGGER.trace("Reading stripe {}: {}, {}", stripeIx, stripe.getOffset(),
+            stripe.getLength());
         colRgs = readState[stripeIxMod];
         // We assume that NO_RGS value is only set from SARG filter and for all columns;
         // intermediate changes for individual columns will unset values in the array.
@@ -379,18 +373,18 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
             counters.incrTimeCounter(LlapIOCounters.HDFS_TIME_NS, startTimeHdfs);
             if (hasFileId && metadataCache != null) {
               stripeMetadata = metadataCache.putStripeMetadata(stripeMetadata);
-              if (DebugUtils.isTraceOrcEnabled()) {
-                LlapIoImpl.LOG.info("Caching stripe " + stripeKey.stripeIx
-                    + " metadata with includes: " + DebugUtils.toString(stripeIncludes));
+              if (LlapIoImpl.ORC_LOGGER.isTraceEnabled()) {
+                LlapIoImpl.ORC_LOGGER.trace("Caching stripe {} metadata with includes: {}",
+                    stripeKey.stripeIx, DebugUtils.toString(stripeIncludes));
               }
             }
           }
           consumer.setStripeMetadata(stripeMetadata);
         }
         if (!stripeMetadata.hasAllIndexes(stripeIncludes)) {
-          if (DebugUtils.isTraceOrcEnabled()) {
-            LlapIoImpl.LOG.info("Updating indexes in stripe " + stripeKey.stripeIx
-                + " metadata for includes: " + DebugUtils.toString(stripeIncludes));
+          if (LlapIoImpl.ORC_LOGGER.isTraceEnabled()) {
+            LlapIoImpl.ORC_LOGGER.trace("Updating indexes in stripe {} metadata for includes: {}",
+                stripeKey.stripeIx, DebugUtils.toString(stripeIncludes));
           }
           assert isFoundInCache;
           counters.incrCounter(LlapIOCounters.METADATA_CACHE_MISS);
@@ -432,9 +426,8 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     // Done with all the things.
     recordReaderTime(startTime);
     consumer.setDone();
-    if (DebugUtils.isTraceMttEnabled()) {
-      LlapIoImpl.LOG.info("done processing " + split);
-    }
+
+    LlapIoImpl.LOG.trace("done processing {}", split);
 
     // Close the stripe reader, we are done reading.
     cleanupReaders();
@@ -584,9 +577,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     if (fileKey instanceof Long && HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_USE_FILEID_PATH)) {
       path = HdfsUtils.getFileIdPath(fs, path, (long)fileKey);
     }
-    if (DebugUtils.isTraceOrcEnabled()) {
-      LOG.info("Creating reader for " + path + " (" + split.getPath() + ")");
-    }
+    LlapIoImpl.ORC_LOGGER.trace("Creating reader for {} ({})", path, split.getPath());
     long startTime = counters.startTimeCounter();
     ReaderOptions opts = OrcFile.readerOptions(conf).filesystem(fs).fileMetadata(fileMetadata);
     orcReader = EncodedOrcFile.createReader(path, opts);
@@ -640,17 +631,17 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
           counters.incrTimeCounter(LlapIOCounters.HDFS_TIME_NS, startTime);
           if (hasFileId && metadataCache != null) {
             value = metadataCache.putStripeMetadata(value);
-            if (DebugUtils.isTraceOrcEnabled()) {
-              LlapIoImpl.LOG.info("Caching stripe " + stripeKey.stripeIx
-                  + " metadata with includes: " + DebugUtils.toString(globalInc));
+            if (LlapIoImpl.ORC_LOGGER.isTraceEnabled()) {
+              LlapIoImpl.ORC_LOGGER.trace("Caching stripe {} metadata with includes: {}",
+                  stripeKey.stripeIx, DebugUtils.toString(globalInc));
             }
           }
         }
         // We might have got an old value from cache; recheck it has indexes.
         if (!value.hasAllIndexes(globalInc)) {
-          if (DebugUtils.isTraceOrcEnabled()) {
-            LlapIoImpl.LOG.info("Updating indexes in stripe " + stripeKey.stripeIx
-                + " metadata for includes: " + DebugUtils.toString(globalInc));
+          if (LlapIoImpl.ORC_LOGGER.isTraceEnabled()) {
+            LlapIoImpl.ORC_LOGGER.trace("Updating indexes in stripe {} metadata for includes: {}",
+                stripeKey.stripeIx, DebugUtils.toString(globalInc));
           }
           updateLoadedIndexes(value, si, globalInc, sargColumns);
         }
@@ -677,9 +668,9 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       if (datas == null) continue;
       for (ColumnStreamData data : datas) {
         if (data == null || data.decRef() != 0) continue;
-        if (DebugUtils.isTraceLockingEnabled()) {
+        if (LlapIoImpl.LOCKING_LOGGER.isTraceEnabled()) {
           for (MemoryBuffer buf : data.getCacheBuffers()) {
-            LlapIoImpl.LOG.info("Unlocking " + buf + " at the end of processing");
+            LlapIoImpl.LOCKING_LOGGER.trace("Unlocking {} at the end of processing", buf);
           }
         }
         bufferManager.decRefBuffers(data.getCacheBuffers());
@@ -718,14 +709,14 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       boolean isNone = rgsToRead == SargApplier.READ_NO_RGS,
           isAll = rgsToRead == SargApplier.READ_ALL_RGS;
       hasAnyData = hasAnyData || !isNone;
-      if (DebugUtils.isTraceOrcEnabled()) {
+      if (LlapIoImpl.ORC_LOGGER.isTraceEnabled()) {
         if (isNone) {
-          LlapIoImpl.LOG.info("SARG eliminated all RGs for stripe " + stripeIx);
+          LlapIoImpl.ORC_LOGGER.trace("SARG eliminated all RGs for stripe {}", stripeIx);
         } else if (!isAll) {
-          LlapIoImpl.LOG.info("SARG picked RGs for stripe " + stripeIx + ": "
-              + DebugUtils.toString(rgsToRead));
+          LlapIoImpl.ORC_LOGGER.trace("SARG picked RGs for stripe {}: {}",
+              stripeIx, DebugUtils.toString(rgsToRead));
         } else {
-          LlapIoImpl.LOG.info("Will read all " + rgCount + " RGs for stripe " + stripeIx);
+          LlapIoImpl.ORC_LOGGER.trace("Will read all {} RGs for stripe {}", rgCount, stripeIx);
         }
       }
       assert isAll || isNone || rgsToRead.length == rgCount;
@@ -768,12 +759,12 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     long offset = split.getStart(), maxOffset = offset + split.getLength();
     stripeIxFrom = -1;
     int stripeIxTo = -1;
-    if (LlapIoImpl.LOGL.isDebugEnabled()) {
+    if (LlapIoImpl.ORC_LOGGER.isDebugEnabled()) {
       String tmp = "FileSplit {" + split.getStart() + ", " + split.getLength() + "}; stripes ";
       for (StripeInformation stripe : stripes) {
         tmp += "{" + stripe.getOffset() + ", " + stripe.getLength() + "}, ";
       }
-      LlapIoImpl.LOG.debug(tmp);
+      LlapIoImpl.ORC_LOGGER.debug(tmp);
     }
 
     int stripeIx = 0;
@@ -785,33 +776,25 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
         continue;
       }
       if (stripeIxFrom == -1) {
-        if (DebugUtils.isTraceOrcEnabled()) {
-          LlapIoImpl.LOG.info("Including stripes from " + stripeIx
-              + " (" + stripeStart + " >= " + offset + ")");
-        }
+        LlapIoImpl.ORC_LOGGER.trace("Including stripes from {} ({} >= {})",
+            stripeIx, stripeStart, offset);
         stripeIxFrom = stripeIx;
       }
       if (stripeStart >= maxOffset) {
         stripeIxTo = stripeIx;
-        if (DebugUtils.isTraceOrcEnabled()) {
-          LlapIoImpl.LOG.info("Including stripes until " + stripeIxTo + " (" + stripeStart
-              + " >= " + maxOffset + "); " + (stripeIxTo - stripeIxFrom) + " stripes");
-        }
+        LlapIoImpl.ORC_LOGGER.trace("Including stripes until {} ({} >= {}); {} stripes",
+            stripeIxTo, stripeStart, maxOffset, (stripeIxTo - stripeIxFrom));
         break;
       }
       ++stripeIx;
     }
     if (stripeIxFrom == -1) {
-      if (LlapIoImpl.LOG.isInfoEnabled()) {
-        LlapIoImpl.LOG.info("Not including any stripes - empty split");
-      }
+      LlapIoImpl.LOG.info("Not including any stripes - empty split");
     }
     if (stripeIxTo == -1 && stripeIxFrom != -1) {
       stripeIxTo = stripeIx;
-      if (DebugUtils.isTraceOrcEnabled()) {
-        LlapIoImpl.LOG.info("Including stripes until " + stripeIx + " (end of file); "
-            + (stripeIxTo - stripeIxFrom) + " stripes");
-      }
+      LlapIoImpl.ORC_LOGGER.trace("Including stripes until {} (end of file); {} stripes",
+          stripeIx, (stripeIxTo - stripeIxFrom));
     }
     readState = new boolean[stripeIxTo - stripeIxFrom][][];
   }
@@ -869,9 +852,9 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       long startTime = counters.startTimeCounter();
       DiskRangeList result = orcDataReader.readFileData(range, baseOffset, doForceDirect);
       counters.recordHdfsTime(startTime);
-      if (DebugUtils.isTraceOrcEnabled() && LOG.isInfoEnabled()) {
-        LOG.info("Disk ranges after disk read (file " + fileKey + ", base offset " + baseOffset
-              + "): " + RecordReaderUtils.stringifyDiskRanges(result));
+      if (LlapIoImpl.ORC_LOGGER.isTraceEnabled()) {
+        LlapIoImpl.ORC_LOGGER.trace("Disk ranges after disk read (file {}, base offset {}): {}",
+            fileKey, baseOffset, RecordReaderUtils.stringifyDiskRanges(result));
       }
       return result;
     }

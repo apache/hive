@@ -49,9 +49,7 @@ public class OrcColumnVectorProducer implements ColumnVectorProducer {
   public OrcColumnVectorProducer(OrcMetadataCache metadataCache,
       LowLevelCacheImpl lowLevelCache, BufferUsageManager bufferManager,
       Configuration conf, LlapDaemonCacheMetrics metrics, LlapDaemonQueueMetrics queueMetrics) {
-    if (LlapIoImpl.LOGL.isInfoEnabled()) {
-      LlapIoImpl.LOG.info("Initializing ORC column vector producer");
-    }
+    LlapIoImpl.LOG.info("Initializing ORC column vector producer");
 
     this.metadataCache = metadataCache;
     this.lowLevelCache = lowLevelCache;

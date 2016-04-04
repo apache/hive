@@ -235,7 +235,6 @@ public class LlapOptionsProcessor {
     String name = commandLine.getOptionValue(OPTION_NAME, null);
 
     final int executors = Integer.parseInt(commandLine.getOptionValue(OPTION_EXECUTORS, "-1"));
-    // TODO# here
     final int ioThreads = Integer.parseInt(
         commandLine.getOptionValue(OPTION_IO_THREADS, Integer.toString(executors)));
     final long cache = parseSuffixed(commandLine.getOptionValue(OPTION_CACHE, "-1"));

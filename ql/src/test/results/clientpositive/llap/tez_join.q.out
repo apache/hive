@@ -69,6 +69,7 @@ STAGE PLANS:
                         sort order: ++
                         Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Execution mode: llap
+            LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -86,6 +87,7 @@ STAGE PLANS:
                         sort order: ++
                         Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Execution mode: llap
+            LLAP IO: no inputs
         Reducer 2 
             Reduce Operator Tree:
               Select Operator

@@ -1,0 +1,5 @@
+Ln:1 SELECT
+Ln:1 select 0.12 * 0.14, 0.13 / 0.11, 1 + 2, 1 - 2, (1 - 2) + 3, 3 * (2 - 1) from src LIMIT 1
+Ln:1 SELECT completed successfully
+Ln:1 Standalone SELECT executed: 6 columns in the result set
+0.016800000000000002	1.1818181818181819	3	-1	2	3

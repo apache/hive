@@ -82,6 +82,7 @@ public class ProxyFileSystem extends FilterFileSystem {
    * @return
    * @throws IOException
    */
+  @Override
   public Path resolvePath(final Path p) throws IOException {
     // Return the fully-qualified path of path f resolving the path
     // through any symlinks or mount point
@@ -174,7 +175,9 @@ public class ProxyFileSystem extends FilterFileSystem {
 
   @Override
   public boolean rename(Path src, Path dst) throws IOException {
-    return super.rename(swizzleParamPath(src), swizzleParamPath(dst));
+    Path dest = swizzleParamPath(dst);
+    // Make sure for existing destination we return false as per FileSystem api contract
+    return super.isFile(dest) ? false : super.rename(swizzleParamPath(src), dest);
   }
 
   @Override

@@ -1,0 +1,14 @@
+Ln:1 DECLARE cnt INT
+Ln:2 EXECUTE
+Ln:2 SQL statement: SELECT COUNT(*) FROM src
+Ln:2 COLUMN: _c0, bigint
+Ln:2 SET cnt = 500
+Ln:3 PRINT
+500
+Ln:5 DECLARE sql STRING = 'SELECT COUNT(*) FROM src'
+Ln:6 EXECUTE
+Ln:6 SQL statement: SELECT COUNT(*) FROM src
+Ln:6 COLUMN: _c0, bigint
+Ln:6 SET cnt = 500
+Ln:7 PRINT
+500

@@ -85,6 +85,7 @@ public class Converters {
     FragmentSpecProto.Builder builder = FragmentSpecProto.newBuilder();
     builder.setFragmentIdentifierString(taskSpec.getTaskAttemptID().toString());
     builder.setDagName(taskSpec.getDAGName());
+    builder.setDagId(taskSpec.getDagIdentifier());
     builder.setVertexName(taskSpec.getVertexName());
     builder.setVertexParallelism(taskSpec.getVertexParallelism());
     builder.setFragmentNumber(taskSpec.getTaskAttemptID().getTaskID().getId());

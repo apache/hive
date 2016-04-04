@@ -134,7 +134,7 @@ public class AvroSerdeUtils {
       Schema s = getSchemaFromFS(schemaString, conf);
       if (s == null) {
         //in case schema is not a file system
-        return AvroSerdeUtils.getSchemaFor(new URL(schemaString).openStream());
+        return AvroSerdeUtils.getSchemaFor(new URL(schemaString));
       }
       return s;
     } catch (IOException ioe) {
@@ -259,5 +259,23 @@ public class AvroSerdeUtils {
       throw new RuntimeException("Failed to parse Avro schema", e);
     }
     return schema;
+  }
+
+  public static Schema getSchemaFor(URL url) {
+    InputStream in = null;
+    try {
+      in = url.openStream();
+      return getSchemaFor(in);
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to parse Avro schema", e);
+    } finally {
+      if (in != null) {
+        try {
+          in.close();
+        } catch (IOException e) {
+          // Ignore
+        }
+      }
+    }
   }
 }

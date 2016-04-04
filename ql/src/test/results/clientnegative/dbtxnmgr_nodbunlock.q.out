@@ -10,4 +10,6 @@ POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:drop_nodbunlock
 PREHOOK: query: unlock database drop_nodbunlock
 PREHOOK: type: UNLOCKDATABASE
+PREHOOK: Input: database:drop_nodbunlock
+PREHOOK: Output: database:drop_nodbunlock
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Current transaction manager does not support explicit lock requests.  Transaction manager:   org.apache.hadoop.hive.ql.lockmgr.DbTxnManager

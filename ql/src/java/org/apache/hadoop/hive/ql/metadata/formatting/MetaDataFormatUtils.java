@@ -150,7 +150,13 @@ public final class MetaDataFormatUtils {
     if (val == null) {
       return "";
     }
-    return HiveDecimal.create(new BigInteger(val.getUnscaled()), val.getScale()).toString();
+
+    HiveDecimal result = HiveDecimal.create(new BigInteger(val.getUnscaled()), val.getScale());
+    if (result != null) {
+      return result.toString();
+    } else {
+      return "";
+    }
   }
 
   private static String convertToString(org.apache.hadoop.hive.metastore.api.Date val) {

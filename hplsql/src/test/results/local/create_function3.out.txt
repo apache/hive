@@ -1,0 +1,22 @@
+Ln:1 CREATE FUNCTION gettype
+Ln:57 EXEC FUNCTION gettype
+Ln:57 SET PARAM tag1 = YHHPD
+Ln:57 SET PARAM srcvalue = a
+Ln:5 IF
+Ln:9 IF
+Ln:13 IF
+Ln:17 IF
+Ln:21 IF
+Ln:25 IF
+Ln:29 IF
+Ln:33 IF
+Ln:33 IF TRUE executed
+Ln:34 RETURN
+002_foreign
+Ln:58 EXEC FUNCTION gettype
+Ln:58 SET PARAM tag1 = YHHPD
+Ln:58 SET PARAM srcvalue = @I
+Ln:5 IF
+Ln:5 IF TRUE executed
+Ln:6 RETURN
+@I

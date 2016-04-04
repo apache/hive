@@ -1,0 +1,31 @@
+Ln:1 CREATE PROCEDURE proc1
+Ln:13 CREATE PROCEDURE proc2
+Ln:25 DECLARE str string
+Ln:26 EXEC PROCEDURE proc1
+Ln:26 SET PARAM v_msg = null
+Ln:3 DECLARE num1 int = 0
+Ln:4 DECLARE num2 int = 10
+Ln:5 DECLARE num3 int = 30
+Ln:7 PRINT
+0
+Ln:8 PRINT
+10
+Ln:9 PRINT
+30
+Ln:10 SET v_msg = 'Completed'
+Ln:27 PRINT
+Completed
+Ln:28 EXEC PROCEDURE proc2
+Ln:15 DECLARE num1 int = 0
+Ln:16 DECLARE num2 int = 10
+Ln:17 DECLARE num3 int = 30
+Ln:28 SET PARAM v_msg = Completed
+Ln:19 PRINT
+0
+Ln:20 PRINT
+10
+Ln:21 PRINT
+30
+Ln:22 SET v_msg = 'Completed'
+Ln:29 PRINT
+Completed

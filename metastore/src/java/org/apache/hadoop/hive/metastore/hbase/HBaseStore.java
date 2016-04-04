@@ -298,8 +298,8 @@ public class HBaseStore implements RawStore {
   private List<FieldSchema> normalizeFieldSchemaList(List<FieldSchema> fieldschemas) {
     List<FieldSchema> ret = new ArrayList<>();
     for (FieldSchema fieldSchema : fieldschemas) {
-      ret.add(new FieldSchema(HiveStringUtils.normalizeIdentifier(fieldSchema.getName()),
-          fieldSchema.getType(), fieldSchema.getComment()));
+      ret.add(new FieldSchema(fieldSchema.getName().toLowerCase(), fieldSchema.getType(),
+          fieldSchema.getComment()));
     }
     return ret;
   }

@@ -3,7 +3,7 @@ set hive.explain.user=false;
 set hive.execution.mode=llap;
 set hive.llap.execution.mode=all;
 set hive.fetch.task.conversion=none;
-set hive.llap.daemon.allow.permanent.fns=true;
+set hive.llap.allow.permanent.fns=true;
 
 drop table if exists src_orc;
 create table src_orc stored as orc as select * from src;
@@ -37,7 +37,7 @@ DROP FUNCTION test_udf4;
 EXPLAIN
 SELECT test_udf0(cast(key as string)) from src_orc;
 
-set hive.llap.daemon.allow.permanent.fns=false;
+set hive.llap.allow.permanent.fns=false;
 
 EXPLAIN
 SELECT test_udf3(cast(key as string)) from src_orc;

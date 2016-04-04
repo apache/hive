@@ -202,13 +202,14 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
 
   public static InputFormat<WritableComparable, Writable> wrapForLlap(
       InputFormat<WritableComparable, Writable> inputFormat, Configuration conf) {
-    if (!HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_ENABLED)) {
+    if (!HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_ENABLED, LlapProxy.isDaemon())) {
       return inputFormat; // LLAP not enabled, no-op.
     }
     boolean isSupported = inputFormat instanceof LlapWrappableInputFormatInterface,
-        isVector = Utilities.isVectorMode(conf);
-    if (!isSupported || !isVector) {
-      LOG.info("Not using llap for " + inputFormat + ": " + isSupported + ", " + isVector);
+        isVectorized = Utilities.isVectorMode(conf);
+    if (!isSupported || !isVectorized) {
+      LOG.info("Not using llap for " + inputFormat + ": supported = " + isSupported
+          + ", vectorized = " + isVectorized);
       return inputFormat;
     }
     if (LOG.isDebugEnabled()) {
@@ -221,11 +222,6 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       return inputFormat;
     }
     return castInputFormat(llapIo.getInputFormat(inputFormat));
-  }
-
-  public static boolean isLlapEnabled(Configuration conf) {
-    // Don't check IO - it needn't be initialized on client.
-    return HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_ENABLED);
   }
 
   public static boolean canWrapAnyForLlap(Configuration conf, MapWork mapWork) {
@@ -271,7 +267,6 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
   public RecordReader getRecordReader(InputSplit split, JobConf job,
       Reporter reporter) throws IOException {
     HiveInputSplit hsplit = (HiveInputSplit) split;
-
     InputSplit inputSplit = hsplit.getInputSplit();
     String inputFormatClassName = null;
     Class inputFormatClass = null;

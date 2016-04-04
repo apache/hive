@@ -45,7 +45,7 @@ public class VectorUDFDateTimestamp extends TimestampToStringUnaryUDF {
   protected void func(BytesColumnVector outV, TimestampColumnVector inV, int i) {
     switch (inputTypes[0]) {
       case TIMESTAMP:
-        date.setTime(inV.getTimestampMilliseconds(i));
+        date.setTime(inV.getTime(i));
         break;
 
       default:

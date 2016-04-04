@@ -68,11 +68,13 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUD
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMaxLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMaxString;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMaxTimestamp;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMaxIntervalDayTime;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMinDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMinDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMinLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMinString;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMinTimestamp;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMinIntervalDayTime;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFStdPopDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFStdPopDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFStdPopLong;
@@ -340,7 +342,7 @@ public class VectorizationContext {
 
     private final Set<Integer> usedOutputColumns = new HashSet<Integer>();
 
-    int allocateOutputColumn(String hiveTypeName) {
+    int allocateOutputColumn(String hiveTypeName) throws HiveException {
         if (initialOutputCol < 0) {
           // This is a test
           return 0;
@@ -401,7 +403,7 @@ public class VectorizationContext {
     }
   }
 
-  public int allocateScratchColumn(String hiveTypeName) {
+  public int allocateScratchColumn(String hiveTypeName) throws HiveException {
     return ocm.allocateOutputColumn(hiveTypeName);
   }
 
@@ -2241,7 +2243,7 @@ public class VectorizationContext {
     }
   }
 
-  static String getNormalizedName(String hiveTypeName) {
+  static String getNormalizedName(String hiveTypeName) throws HiveException {
     VectorExpressionDescriptor.ArgumentType argType = VectorExpressionDescriptor.ArgumentType.fromHiveTypeName(hiveTypeName);
     switch (argType) {
     case INT_FAMILY:
@@ -2267,11 +2269,11 @@ public class VectorizationContext {
     case INTERVAL_DAY_TIME:
       return hiveTypeName;
     default:
-      return "None";
+      throw new HiveException("Unexpected hive type name " + hiveTypeName);
     }
   }
 
-  static String getUndecoratedName(String hiveTypeName) {
+  static String getUndecoratedName(String hiveTypeName) throws HiveException {
     VectorExpressionDescriptor.ArgumentType argType = VectorExpressionDescriptor.ArgumentType.fromHiveTypeName(hiveTypeName);
     switch (argType) {
     case INT_FAMILY:
@@ -2294,7 +2296,7 @@ public class VectorizationContext {
     case INTERVAL_DAY_TIME:
       return hiveTypeName;
     default:
-      return "None";
+      throw new HiveException("Unexpected hive type name " + hiveTypeName);
     }
   }
 
@@ -2333,9 +2335,11 @@ public class VectorizationContext {
           case INTERVAL_YEAR_MONTH:
             return ColumnVector.Type.LONG;
 
-          case INTERVAL_DAY_TIME:
           case TIMESTAMP:
             return ColumnVector.Type.TIMESTAMP;
+
+          case INTERVAL_DAY_TIME:
+            return ColumnVector.Type.INTERVAL_DAY_TIME;
 
           case FLOAT:
           case DOUBLE:
@@ -2369,19 +2373,20 @@ public class VectorizationContext {
     add(new AggregateDefinition("min",         VectorExpressionDescriptor.ArgumentType.FLOAT_FAMILY,           null,                          VectorUDAFMinDouble.class));
     add(new AggregateDefinition("min",         VectorExpressionDescriptor.ArgumentType.STRING_FAMILY,          null,                          VectorUDAFMinString.class));
     add(new AggregateDefinition("min",         VectorExpressionDescriptor.ArgumentType.DECIMAL,                null,                          VectorUDAFMinDecimal.class));
-    add(new AggregateDefinition("min",         VectorExpressionDescriptor.ArgumentType.TIMESTAMP_INTERVAL_DAY_TIME,     null,                          VectorUDAFMinTimestamp.class));
+    add(new AggregateDefinition("min",         VectorExpressionDescriptor.ArgumentType.TIMESTAMP,              null,                          VectorUDAFMinTimestamp.class));
     add(new AggregateDefinition("max",         VectorExpressionDescriptor.ArgumentType.INT_DATE_INTERVAL_YEAR_MONTH,    null,                          VectorUDAFMaxLong.class));
     add(new AggregateDefinition("max",         VectorExpressionDescriptor.ArgumentType.FLOAT_FAMILY,           null,                          VectorUDAFMaxDouble.class));
     add(new AggregateDefinition("max",         VectorExpressionDescriptor.ArgumentType.STRING_FAMILY,          null,                          VectorUDAFMaxString.class));
     add(new AggregateDefinition("max",         VectorExpressionDescriptor.ArgumentType.DECIMAL,                null,                          VectorUDAFMaxDecimal.class));
-    add(new AggregateDefinition("max",         VectorExpressionDescriptor.ArgumentType.TIMESTAMP_INTERVAL_DAY_TIME,     null,                          VectorUDAFMaxTimestamp.class));
+    add(new AggregateDefinition("max",         VectorExpressionDescriptor.ArgumentType.TIMESTAMP,              null,                          VectorUDAFMaxTimestamp.class));
     add(new AggregateDefinition("count",       VectorExpressionDescriptor.ArgumentType.NONE,                   GroupByDesc.Mode.HASH,         VectorUDAFCountStar.class));
     add(new AggregateDefinition("count",       VectorExpressionDescriptor.ArgumentType.INT_DATE_INTERVAL_YEAR_MONTH,    GroupByDesc.Mode.HASH,         VectorUDAFCount.class));
     add(new AggregateDefinition("count",       VectorExpressionDescriptor.ArgumentType.INT_FAMILY,             GroupByDesc.Mode.MERGEPARTIAL, VectorUDAFCountMerge.class));
     add(new AggregateDefinition("count",       VectorExpressionDescriptor.ArgumentType.FLOAT_FAMILY,           GroupByDesc.Mode.HASH,         VectorUDAFCount.class));
     add(new AggregateDefinition("count",       VectorExpressionDescriptor.ArgumentType.STRING_FAMILY,          GroupByDesc.Mode.HASH,         VectorUDAFCount.class));
     add(new AggregateDefinition("count",       VectorExpressionDescriptor.ArgumentType.DECIMAL,                GroupByDesc.Mode.HASH,         VectorUDAFCount.class));
-    add(new AggregateDefinition("count",       VectorExpressionDescriptor.ArgumentType.TIMESTAMP_INTERVAL_DAY_TIME,     GroupByDesc.Mode.HASH,         VectorUDAFCount.class));
+    add(new AggregateDefinition("count",       VectorExpressionDescriptor.ArgumentType.TIMESTAMP,              GroupByDesc.Mode.HASH,         VectorUDAFCount.class));
+    add(new AggregateDefinition("count",       VectorExpressionDescriptor.ArgumentType.INTERVAL_DAY_TIME,      GroupByDesc.Mode.HASH,         VectorUDAFCount.class));
     add(new AggregateDefinition("sum",         VectorExpressionDescriptor.ArgumentType.INT_FAMILY,             null,                          VectorUDAFSumLong.class));
     add(new AggregateDefinition("sum",         VectorExpressionDescriptor.ArgumentType.FLOAT_FAMILY,           null,                          VectorUDAFSumDouble.class));
     add(new AggregateDefinition("sum",         VectorExpressionDescriptor.ArgumentType.DECIMAL,                null,                          VectorUDAFSumDecimal.class));
@@ -2506,7 +2511,7 @@ public class VectorizationContext {
     }
     sb.append("sorted projectionColumnMap ").append(sortedColumnMap).append(", ");
 
-    sb.append("scratchColumnTypeNames ").append(getScratchColumnTypeNames().toString());
+    sb.append("scratchColumnTypeNames ").append(Arrays.toString(getScratchColumnTypeNames()));
 
     return sb.toString();
   }

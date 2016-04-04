@@ -28,6 +28,7 @@ import java.util.Set;
 
 import org.apache.commons.compress.utils.CharsetNames;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hbase.HBaseConfiguration;
@@ -120,6 +121,9 @@ public class HiveSparkClientFactory {
       sparkMaster = sparkConf.get("spark.master");
       hiveConf.set("spark.master", sparkMaster);
     }
+    if (SessionState.get() != null && SessionState.get().getConf() != null) {
+      SessionState.get().getConf().set("spark.master", sparkMaster);
+    }
     if (sparkMaster.equals("yarn-cluster")) {
       sparkConf.put("spark.yarn.maxAppAttempts", "1");
     }
@@ -146,7 +150,7 @@ public class HiveSparkClientFactory {
         if (value != null && !value.isEmpty()) {
           sparkConf.put("spark.hadoop." + propertyName, value);
         }
-      } else if (propertyName.startsWith("hbase")) {
+      } else if (propertyName.startsWith("hbase") || propertyName.startsWith("zookeeper.znode")) {
         // Add HBase related configuration to Spark because in security mode, Spark needs it
         // to generate hbase delegation token for Spark. This is a temp solution to deal with
         // Spark problem.

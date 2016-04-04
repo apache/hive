@@ -64,19 +64,19 @@ public class CastTimestampToLong extends VectorExpression {
     if (inputColVector.isRepeating) {
       //All must be selected otherwise size would be zero
       //Repeating property will not change.
-      outputVector[0] =  inputColVector.getEpochSeconds(0);
+      outputVector[0] =  inputColVector.getTimestampAsLong(0);
       // Even if there are no nulls, we always copy over entry 0. Simplifies code.
-      outputIsNull[0] = inputIsNull[0]; 
+      outputIsNull[0] = inputIsNull[0];
       outputColVector.isRepeating = true;
     } else if (inputColVector.noNulls) {
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          outputVector[i] =  inputColVector.getEpochSeconds(i);
+          outputVector[i] =  inputColVector.getTimestampAsLong(i);
         }
       } else {
         for(int i = 0; i != n; i++) {
-          outputVector[i] =  inputColVector.getEpochSeconds(i);
+          outputVector[i] =  inputColVector.getTimestampAsLong(i);
         }
       }
       outputColVector.isRepeating = false;
@@ -84,12 +84,12 @@ public class CastTimestampToLong extends VectorExpression {
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          outputVector[i] =  inputColVector.getEpochSeconds(i);
+          outputVector[i] =  inputColVector.getTimestampAsLong(i);
           outputIsNull[i] = inputIsNull[i];
         }
       } else {
         for(int i = 0; i != n; i++) {
-          outputVector[i] =  inputColVector.getEpochSeconds(i);
+          outputVector[i] =  inputColVector.getTimestampAsLong(i);
         }
         System.arraycopy(inputIsNull, 0, outputIsNull, 0, n);
       }

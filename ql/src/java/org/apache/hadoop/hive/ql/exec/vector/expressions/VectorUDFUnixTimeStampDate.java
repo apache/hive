@@ -28,15 +28,18 @@ public final class VectorUDFUnixTimeStampDate extends VectorUDFTimestampFieldDat
 
   private static final long serialVersionUID = 1L;
 
+  private DateWritable dateWritable;
+
   @Override
   protected long getDateField(long days) {
-    long ms = DateWritable.daysToMillis((int) days);
-    return ms / 1000;
+    dateWritable.set((int) days);
+    return dateWritable.getTimeInSeconds();
   }
 
   public VectorUDFUnixTimeStampDate(int colNum, int outputColumn) {
     /* not a real field */
     super(-1, colNum, outputColumn);
+    dateWritable = new DateWritable();
   }
 
   public VectorUDFUnixTimeStampDate() {

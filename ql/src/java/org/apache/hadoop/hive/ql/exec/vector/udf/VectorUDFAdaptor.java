@@ -297,23 +297,14 @@ public class VectorUDFAdaptor extends VectorExpression {
         lv.vector[i] = ((WritableByteObjectInspector) outputOI).get(value);
       }
     } else if (outputOI instanceof WritableTimestampObjectInspector) {
-      LongColumnVector lv = (LongColumnVector) colVec;
+      TimestampColumnVector tv = (TimestampColumnVector) colVec;
       Timestamp ts;
       if (value instanceof Timestamp) {
         ts = (Timestamp) value;
       } else {
         ts = ((WritableTimestampObjectInspector) outputOI).getPrimitiveJavaObject(value);
       }
-      /* Calculate the number of nanoseconds since the epoch as a long integer. By convention
-       * that is how Timestamp values are operated on in a vector.
-       */
-      long l = ts.getTime() * 1000000  // Shift the milliseconds value over by 6 digits
-                                       // to scale for nanosecond precision.
-                                       // The milliseconds digits will by convention be all 0s.
-            + ts.getNanos() % 1000000; // Add on the remaining nanos.
-                                       // The % 1000000 operation removes the ms values
-                                       // so that the milliseconds are not counted twice.
-      lv.vector[i] = l;
+      tv.set(i, ts);
     } else if (outputOI instanceof WritableDateObjectInspector) {
       LongColumnVector lv = (LongColumnVector) colVec;
       Date ts;

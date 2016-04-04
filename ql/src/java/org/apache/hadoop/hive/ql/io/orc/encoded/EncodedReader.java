@@ -54,5 +54,5 @@ public interface EncodedReader {
    * checks are entirely eliminated because this method is called with constant value, similar
    * to just checking the constant in the first place.
    */
-  void setDebugTracing(boolean isEnabled);
+  void setTracing(boolean isEnabled);
 }

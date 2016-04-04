@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.vector.mapjoin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileUtil;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 
 import java.io.File;
@@ -34,7 +35,7 @@ public class VectorMapJoinRowBytesContainer {
 
   private static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinRowBytesContainer.class);
 
-  private File parentFile;
+  private File parentDir;
   private File tmpFile;
 
   // We buffer in a org.apache.hadoop.hive.serde2.ByteStream.Output since that is what
@@ -72,7 +73,9 @@ public class VectorMapJoinRowBytesContainer {
 
   private FileInputStream fileInputStream;
 
-  public VectorMapJoinRowBytesContainer() {
+  private final String spillLocalDirs;
+
+  public VectorMapJoinRowBytesContainer(String spillLocalDirs) {
     output = new Output();
     readBuffer = new byte[INPUT_SIZE];
     readNextBytes = new byte[MAX_READS][];
@@ -81,16 +84,13 @@ public class VectorMapJoinRowBytesContainer {
     isOpen = false;
     totalWriteLength = 0;
     totalReadLength = 0;
+    this.spillLocalDirs = spillLocalDirs;
   }
 
   private void setupOutputFileStreams() throws IOException {
-
-    parentFile = File.createTempFile("bytes-container", "");
-    if (parentFile.delete() && parentFile.mkdir()) {
-      parentFile.deleteOnExit();
-    }
-
-    tmpFile = File.createTempFile("BytesContainer", ".tmp", parentFile);
+    parentDir = FileUtils.createLocalDirsTempFile(spillLocalDirs, "bytes-container", "", true);
+    parentDir.deleteOnExit();
+    tmpFile = File.createTempFile("BytesContainer", ".tmp", parentDir);
     LOG.debug("BytesContainer created temp file " + tmpFile.getAbsolutePath());
     tmpFile.deleteOnExit();
 
@@ -306,13 +306,13 @@ public class VectorMapJoinRowBytesContainer {
       fileOutputStream = null;
     }
 
-    if (parentFile != null) {
+    if (parentDir != null) {
       try {
-        FileUtil.fullyDelete(parentFile);
+        FileUtil.fullyDelete(parentDir);
       } catch (Throwable ignored) {
       }
     }
-    parentFile = null;
+    parentDir = null;
     tmpFile = null;
     isOpen = false;
     totalWriteLength = 0;

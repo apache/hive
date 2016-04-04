@@ -20,37 +20,35 @@ package org.apache.hadoop.hive.ql.exec.vector;
 import java.sql.Timestamp;
 import java.util.Arrays;
 
-import org.apache.hadoop.hive.common.type.PisaTimestamp;
-import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.io.Writable;
-
-import com.google.common.base.Preconditions;
 
 /**
  * This class represents a nullable timestamp column vector capable of handing a wide range of
  * timestamp values.
  *
- * We use the PisaTimestamp which is designed to be mutable and avoid the heavy memory allocation
- * and CPU data cache miss costs.
+ * We store the 2 (value) fields of a Timestamp class in primitive arrays.
+ *
+ * We do this to avoid an array of Java Timestamp objects which would have poor storage
+ * and memory access characteristics.
+ *
+ * Generally, the caller will fill in a scratch timestamp object with values from a row, work
+ * using the scratch timestamp, and then perhaps update the column vector row with a result.
  */
 public class TimestampColumnVector extends ColumnVector {
 
   /*
-   * The storage arrays for this column vector corresponds to the storage of a PisaTimestamp:
+   * The storage arrays for this column vector corresponds to the storage of a Timestamp:
    */
-  private long[] epochDay;
-      // An array of the number of days since 1970-01-01 (similar to Java 8 LocalDate).
+  public long[] time;
+      // The values from Timestamp.getTime().
 
-  private long[] nanoOfDay;
-      // An array of the number of nanoseconds within the day, with the range of
-      // 0 to 24 * 60 * 60 * 1,000,000,000 - 1 (similar to Java 8 LocalTime).
+  public int[] nanos;
+      // The values from Timestamp.getNanos().
 
   /*
    * Scratch objects.
    */
-  private PisaTimestamp scratchPisaTimestamp;
-      // Convenience scratch Pisa timestamp object.
+  private final Timestamp scratchTimestamp;
 
   private Writable scratchWritable;
       // Supports keeping a TimestampWritable object without having to import that definition...
@@ -71,10 +69,10 @@ public class TimestampColumnVector extends ColumnVector {
   public TimestampColumnVector(int len) {
     super(len);
 
-    epochDay = new long[len];
-    nanoOfDay = new long[len];
+    time = new long[len];
+    nanos = new int[len];
 
-    scratchPisaTimestamp = new PisaTimestamp();
+    scratchTimestamp = new Timestamp(0);
 
     scratchWritable = null;     // Allocated by caller.
   }
@@ -84,48 +82,27 @@ public class TimestampColumnVector extends ColumnVector {
    * @return
    */
   public int getLength() {
-    return epochDay.length;
+    return time.length;
   }
 
   /**
-   * Returnt a row's epoch day.
+   * Return a row's Timestamp.getTime() value.
    * We assume the entry has already been NULL checked and isRepeated adjusted.
    * @param elementNum
    * @return
    */
-  public long getEpochDay(int elementNum) {
-    return epochDay[elementNum];
+  public long getTime(int elementNum) {
+    return time[elementNum];
   }
 
   /**
-   * Return a row's nano of day.
+   * Return a row's Timestamp.getNanos() value.
    * We assume the entry has already been NULL checked and isRepeated adjusted.
    * @param elementNum
    * @return
    */
-  public long getNanoOfDay(int elementNum) {
-    return nanoOfDay[elementNum];
-  }
-
-  /**
-   * Get a scratch PisaTimestamp object from a row of the column.
-   * We assume the entry has already been NULL checked and isRepeated adjusted.
-   * @param elementNum
-   * @return scratch
-   */
-  public PisaTimestamp asScratchPisaTimestamp(int elementNum) {
-    scratchPisaTimestamp.update(epochDay[elementNum], nanoOfDay[elementNum]);
-    return scratchPisaTimestamp;
-  }
-
-  /**
-   * Set a PisaTimestamp object from a row of the column.
-   * We assume the entry has already been NULL checked and isRepeated adjusted.
-   * @param pisaTimestamp
-   * @param elementNum
-   */
-  public void pisaTimestampUpdate(PisaTimestamp pisaTimestamp, int elementNum) {
-    pisaTimestamp.update(epochDay[elementNum], nanoOfDay[elementNum]);
+  public int getNanos(int elementNum) {
+    return nanos[elementNum];
   }
 
   /**
@@ -135,30 +112,107 @@ public class TimestampColumnVector extends ColumnVector {
    * @param elementNum
    */
   public void timestampUpdate(Timestamp timestamp, int elementNum) {
-    scratchPisaTimestamp.update(epochDay[elementNum], nanoOfDay[elementNum]);
-    scratchPisaTimestamp.timestampUpdate(timestamp);
+    timestamp.setTime(time[elementNum]);
+    timestamp.setNanos(nanos[elementNum]);
   }
 
   /**
-   * Compare row to PisaTimestamp.
+   * Return the scratch Timestamp object set from a row.
    * We assume the entry has already been NULL checked and isRepeated adjusted.
    * @param elementNum
-   * @param pisaTimestamp
-   * @return -1, 0, 1 standard compareTo values.
+   * @return
    */
-  public int compareTo(int elementNum, PisaTimestamp pisaTimestamp) {
-    return PisaTimestamp.compareTo(epochDay[elementNum], nanoOfDay[elementNum], pisaTimestamp);
+  public Timestamp asScratchTimestamp(int elementNum) {
+    scratchTimestamp.setTime(time[elementNum]);
+    scratchTimestamp.setNanos(nanos[elementNum]);
+    return scratchTimestamp;
   }
 
   /**
-   * Compare PisaTimestamp to row.
+   * Return the scratch timestamp (contents undefined).
+   * @return
+   */
+  public Timestamp getScratchTimestamp() {
+    return scratchTimestamp;
+  }
+
+  /**
+   * Return a long representation of a Timestamp.
+   * @param elementNum
+   * @return
+   */
+  public long getTimestampAsLong(int elementNum) {
+    scratchTimestamp.setTime(time[elementNum]);
+    scratchTimestamp.setNanos(nanos[elementNum]);
+    return getTimestampAsLong(scratchTimestamp);
+  }
+
+  /**
+   * Return a long representation of a Timestamp.
+   * @param timestamp
+   * @return
+   */
+  public static long getTimestampAsLong(Timestamp timestamp) {
+    return millisToSeconds(timestamp.getTime());
+  }
+
+  // Copy of TimestampWritable.millisToSeconds
+  /**
+   * Rounds the number of milliseconds relative to the epoch down to the nearest whole number of
+   * seconds. 500 would round to 0, -500 would round to -1.
+   */
+  private static long millisToSeconds(long millis) {
+    if (millis >= 0) {
+      return millis / 1000;
+    } else {
+      return (millis - 999) / 1000;
+    }
+  }
+
+  /**
+   * Return a double representation of a Timestamp.
+   * @param elementNum
+   * @return
+   */
+  public double getDouble(int elementNum) {
+    scratchTimestamp.setTime(time[elementNum]);
+    scratchTimestamp.setNanos(nanos[elementNum]);
+    return getDouble(scratchTimestamp);
+  }
+
+  /**
+   * Return a double representation of a Timestamp.
+   * @param elementNum
+   * @return
+   */
+  public static double getDouble(Timestamp timestamp) {
+    // Same algorithm as TimestampWritable (not currently import-able here).
+    double seconds, nanos;
+    seconds = millisToSeconds(timestamp.getTime());
+    nanos = timestamp.getNanos();
+    return seconds + nanos / 1000000000;
+  }
+
+  /**
+   * Compare row to Timestamp.
    * We assume the entry has already been NULL checked and isRepeated adjusted.
-   * @param pisaTimestamp
+   * @param elementNum
+   * @param timestamp
+   * @return -1, 0, 1 standard compareTo values.
+   */
+  public int compareTo(int elementNum, Timestamp timestamp) {
+    return asScratchTimestamp(elementNum).compareTo(timestamp);
+  }
+
+  /**
+   * Compare Timestamp to row.
+   * We assume the entry has already been NULL checked and isRepeated adjusted.
+   * @param timestamp
    * @param elementNum
    * @return -1, 0, 1 standard compareTo values.
    */
-  public int compareTo(PisaTimestamp pisaTimestamp, int elementNum) {
-    return PisaTimestamp.compareTo(pisaTimestamp, epochDay[elementNum], nanoOfDay[elementNum]);
+  public int compareTo(Timestamp timestamp, int elementNum) {
+    return timestamp.compareTo(asScratchTimestamp(elementNum));
   }
 
   /**
@@ -170,9 +224,8 @@ public class TimestampColumnVector extends ColumnVector {
    */
   public int compareTo(int elementNum1, TimestampColumnVector timestampColVector2,
       int elementNum2) {
-    return PisaTimestamp.compareTo(
-        epochDay[elementNum1], nanoOfDay[elementNum1],
-        timestampColVector2.epochDay[elementNum2], timestampColVector2.nanoOfDay[elementNum2]);
+    return asScratchTimestamp(elementNum1).compareTo(
+        timestampColVector2.asScratchTimestamp(elementNum2));
   }
 
   /**
@@ -184,105 +237,8 @@ public class TimestampColumnVector extends ColumnVector {
    */
   public int compareTo(TimestampColumnVector timestampColVector1, int elementNum1,
       int elementNum2) {
-    return PisaTimestamp.compareTo(
-        timestampColVector1.epochDay[elementNum1], timestampColVector1.nanoOfDay[elementNum1],
-        epochDay[elementNum2], nanoOfDay[elementNum2]);
-  }
-
-  public void add(PisaTimestamp timestamp1, PisaTimestamp timestamp2, int resultElementNum) {
-    PisaTimestamp.add(timestamp1, timestamp2, scratchPisaTimestamp);
-    epochDay[resultElementNum] = scratchPisaTimestamp.getEpochDay();
-    nanoOfDay[resultElementNum] = scratchPisaTimestamp.getNanoOfDay();
-  }
-
-  public void subtract(PisaTimestamp timestamp1, PisaTimestamp timestamp2, int resultElementNum) {
-    PisaTimestamp.subtract(timestamp1, timestamp2, scratchPisaTimestamp);
-    epochDay[resultElementNum] = scratchPisaTimestamp.getEpochDay();
-    nanoOfDay[resultElementNum] = scratchPisaTimestamp.getNanoOfDay();
-  }
-
-  /**
-   * Return row as a double with the integer part as the seconds and the fractional part as
-   * the nanoseconds the way the Timestamp class does it.
-   * We assume the entry has already been NULL checked and isRepeated adjusted.
-   * @param elementNum
-   * @return seconds.nanoseconds
-   */
-  public double getTimestampSecondsWithFractionalNanos(int elementNum) {
-    scratchPisaTimestamp.update(epochDay[elementNum], nanoOfDay[elementNum]);
-    return scratchPisaTimestamp.getTimestampSecondsWithFractionalNanos();
-  }
-
-  /**
-   * Return row as integer as the seconds the way the Timestamp class does it.
-   * We assume the entry has already been NULL checked and isRepeated adjusted.
-   * @param elementNum
-   * @return seconds
-   */
-  public long getTimestampSeconds(int elementNum) {
-    scratchPisaTimestamp.update(epochDay[elementNum], nanoOfDay[elementNum]);
-    return scratchPisaTimestamp.getTimestampSeconds();
-  }
-
-
-  /**
-   * Return row as milliseconds the way the Timestamp class does it.
-   * We assume the entry has already been NULL checked and isRepeated adjusted.
-   * @param elementNum
-   * @return
-   */
-  public long getTimestampMilliseconds(int elementNum) {
-    scratchPisaTimestamp.update(epochDay[elementNum], nanoOfDay[elementNum]);
-    return scratchPisaTimestamp.getTimestampMilliseconds();
-  }
-
-  /**
-   * Return row as epoch seconds.
-   * We assume the entry has already been NULL checked and isRepeated adjusted.
-   * @param elementNum
-   * @return
-   */
-  public long getEpochSeconds(int elementNum) {
-    return PisaTimestamp.getEpochSecondsFromEpochDayAndNanoOfDay(epochDay[elementNum], nanoOfDay[elementNum]);
-  }
-
-  /**
-   * Return row as epoch milliseconds.
-   * We assume the entry has already been NULL checked and isRepeated adjusted.
-   * @param elementNum
-   * @return
-   */
-  public long getEpochMilliseconds(int elementNum) {
-    return PisaTimestamp.getEpochMillisecondsFromEpochDayAndNanoOfDay(epochDay[elementNum], nanoOfDay[elementNum]);
-  }
-
-  /**
-   * Return row as signed nanos (-999999999 to 999999999).
-   * NOTE: This is not the same as the Timestamp class nanos (which is always positive).
-   * We assume the entry has already been NULL checked and isRepeated adjusted.
-   * @param elementNum
-   * @return
-   */
-  public int getSignedNanos(int elementNum) {
-    return PisaTimestamp.getSignedNanos(nanoOfDay[elementNum]);
-  }
-
-  /**
-   * Get scratch timestamp with value of a row.
-   * @param elementNum
-   * @return
-   */
-  public Timestamp asScratchTimestamp(int elementNum) {
-    scratchPisaTimestamp.update(epochDay[elementNum], nanoOfDay[elementNum]);
-    return scratchPisaTimestamp.asScratchTimestamp();
-  }
-
-  /**
-   * Get scratch Pisa timestamp for use by the caller.
-   * @return
-   */
-  public PisaTimestamp useScratchPisaTimestamp() {
-    return scratchPisaTimestamp;
+    return timestampColVector1.asScratchTimestamp(elementNum1).compareTo(
+        asScratchTimestamp(elementNum2));
   }
 
   @Override
@@ -290,8 +246,8 @@ public class TimestampColumnVector extends ColumnVector {
 
     TimestampColumnVector timestampColVector = (TimestampColumnVector) inputVector;
 
-    epochDay[outElementNum] = timestampColVector.epochDay[inputElementNum];
-    nanoOfDay[outElementNum] = timestampColVector.nanoOfDay[inputElementNum];
+    time[outElementNum] = timestampColVector.time[inputElementNum];
+    nanos[outElementNum] = timestampColVector.nanos[inputElementNum];
   }
 
   // Simplify vector by brute-force flattening noNulls and isRepeating
@@ -301,32 +257,21 @@ public class TimestampColumnVector extends ColumnVector {
     flattenPush();
     if (isRepeating) {
       isRepeating = false;
-      long repeatEpochDay = epochDay[0];
-      long repeatNanoOfDay = nanoOfDay[0];
+      long repeatFastTime = time[0];
+      int repeatNanos = nanos[0];
       if (selectedInUse) {
         for (int j = 0; j < size; j++) {
           int i = sel[j];
-          epochDay[i] = repeatEpochDay;
-          nanoOfDay[i] = repeatNanoOfDay;
+          time[i] = repeatFastTime;
+          nanos[i] = repeatNanos;
         }
       } else {
-        Arrays.fill(epochDay, 0, size, repeatEpochDay);
-        Arrays.fill(nanoOfDay, 0, size, repeatNanoOfDay);
+        Arrays.fill(time, 0, size, repeatFastTime);
+        Arrays.fill(nanos, 0, size, repeatNanos);
       }
       flattenRepeatingNulls(selectedInUse, sel, size);
     }
     flattenNoNulls(selectedInUse, sel, size);
-  }
-
-  /**
-   * Set a row from a PisaTimestamp.
-   * We assume the entry has already been isRepeated adjusted.
-   * @param elementNum
-   * @param pisaTimestamp
-   */
-  public void set(int elementNum, PisaTimestamp pisaTimestamp) {
-    this.epochDay[elementNum] = pisaTimestamp.getEpochDay();
-    this.nanoOfDay[elementNum] = pisaTimestamp.getNanoOfDay();
   }
 
   /**
@@ -336,54 +281,17 @@ public class TimestampColumnVector extends ColumnVector {
    * @param timestamp
    */
   public void set(int elementNum, Timestamp timestamp) {
-    scratchPisaTimestamp.updateFromTimestamp(timestamp);
-    this.epochDay[elementNum] = scratchPisaTimestamp.getEpochDay();
-    this.nanoOfDay[elementNum] = scratchPisaTimestamp.getNanoOfDay();
+    this.time[elementNum] = timestamp.getTime();
+    this.nanos[elementNum] = timestamp.getNanos();
   }
 
   /**
-   * Set a row from a epoch seconds and signed nanos (-999999999 to 999999999).
+   * Set a row from the current value in the scratch timestamp.
    * @param elementNum
-   * @param epochSeconds
-   * @param signedNanos
    */
-  public void setEpochSecondsAndSignedNanos(int elementNum, long epochSeconds, int signedNanos) {
-    scratchPisaTimestamp.updateFromEpochSecondsAndSignedNanos(epochSeconds, signedNanos);
-    set(elementNum, scratchPisaTimestamp);
-  }
-
-  /**
-   * Set a row from timestamp milliseconds.
-   * We assume the entry has already been isRepeated adjusted.
-   * @param elementNum
-   * @param timestampMilliseconds
-   */
-  public void setTimestampMilliseconds(int elementNum, long timestampMilliseconds) {
-    scratchPisaTimestamp.updateFromTimestampMilliseconds(timestampMilliseconds);
-    set(elementNum, scratchPisaTimestamp.useScratchTimestamp());
-  }
-
-  /**
-   * Set a row from timestamp seconds.
-   * We assume the entry has already been isRepeated adjusted.
-   * @param elementNum
-   * @param timestamp
-   */
-  public void setTimestampSeconds(int elementNum, long timestampSeconds) {
-    scratchPisaTimestamp.updateFromTimestampSeconds(timestampSeconds);
-    set(elementNum, scratchPisaTimestamp);
-  }
-
-  /**
-   * Set a row from a double timestamp seconds with fractional nanoseconds.
-   * We assume the entry has already been isRepeated adjusted.
-   * @param elementNum
-   * @param timestamp
-   */
-  public void setTimestampSecondsWithFractionalNanoseconds(int elementNum,
-      double secondsWithFractionalNanoseconds) {
-    scratchPisaTimestamp.updateFromTimestampSecondsWithFractionalNanoseconds(secondsWithFractionalNanoseconds);
-    set(elementNum, scratchPisaTimestamp);
+  public void setFromScratchTimestamp(int elementNum) {
+    this.time[elementNum] = scratchTimestamp.getTime();
+    this.nanos[elementNum] = scratchTimestamp.getNanos();
   }
 
   /**
@@ -392,8 +300,8 @@ public class TimestampColumnVector extends ColumnVector {
    * @param elementNum
    */
   public void setNullValue(int elementNum) {
-    epochDay[elementNum] = 0;
-    nanoOfDay[elementNum] = 1;
+    time[elementNum] = 0;
+    nanos[elementNum] = 1;
   }
 
   // Copy the current object contents into the output. Only copy selected entries,
@@ -407,8 +315,8 @@ public class TimestampColumnVector extends ColumnVector {
 
     // Handle repeating case
     if (isRepeating) {
-      output.epochDay[0] = epochDay[0];
-      output.nanoOfDay[0] = nanoOfDay[0];
+      output.time[0] = time[0];
+      output.nanos[0] = nanos[0];
       output.isNull[0] = isNull[0];
       output.isRepeating = true;
       return;
@@ -420,13 +328,13 @@ public class TimestampColumnVector extends ColumnVector {
     if (selectedInUse) {
       for (int j = 0; j < size; j++) {
         int i = sel[j];
-        output.epochDay[i] = epochDay[i];
-        output.nanoOfDay[i] = nanoOfDay[i];
+        output.time[i] = time[i];
+        output.nanos[i] = nanos[i];
       }
     }
     else {
-      System.arraycopy(epochDay, 0, output.epochDay, 0, size);
-      System.arraycopy(nanoOfDay, 0, output.nanoOfDay, 0, size);
+      System.arraycopy(time, 0, output.time, 0, size);
+      System.arraycopy(nanos, 0, output.nanos, 0, size);
     }
 
     // Copy nulls over if needed
@@ -444,26 +352,14 @@ public class TimestampColumnVector extends ColumnVector {
   }
 
   /**
-   * Fill all the vector entries with a PisaTimestamp.
-   * @param pisaTimestamp
-   */
-  public void fill(PisaTimestamp pisaTimestamp) {
-    noNulls = true;
-    isRepeating = true;
-    epochDay[0] = pisaTimestamp.getEpochDay();
-    nanoOfDay[0] = pisaTimestamp.getNanoOfDay();
-  }
-
-  /**
    * Fill all the vector entries with a timestamp.
    * @param timestamp
    */
   public void fill(Timestamp timestamp) {
     noNulls = true;
     isRepeating = true;
-    scratchPisaTimestamp.updateFromTimestamp(timestamp);
-    epochDay[0] = scratchPisaTimestamp.getEpochDay();
-    nanoOfDay[0] = scratchPisaTimestamp.getNanoOfDay();
+    time[0] = timestamp.getTime();
+    nanos[0] = timestamp.getNanos();
   }
 
   /**
@@ -489,8 +385,9 @@ public class TimestampColumnVector extends ColumnVector {
       row = 0;
     }
     if (noNulls || !isNull[row]) {
-      scratchPisaTimestamp.update(epochDay[row], nanoOfDay[row]);
-      buffer.append(scratchPisaTimestamp.toString());
+      scratchTimestamp.setTime(time[row]);
+      scratchTimestamp.setNanos(nanos[row]);
+      buffer.append(scratchTimestamp.toString());
     } else {
       buffer.append("null");
     }

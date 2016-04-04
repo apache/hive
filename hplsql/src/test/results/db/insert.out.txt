@@ -1,0 +1,4 @@
+Ln:1 INSERT SELECT
+Ln:1 insert overwrite table src_insert select value from src
+Ln:3 INSERT SELECT
+Ln:3 insert into table src_insert select value from src

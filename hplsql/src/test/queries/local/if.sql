@@ -4,9 +4,9 @@ DECLARE count INT;
 SET state = 'CA';
 SET count = 1;
 
-/*IF count = 1 THEN
+IF count = 1 THEN
   PRINT 'True block - Correct';
-END IF;*/
+END IF;
 
 IF state = 'CA' THEN
   PRINT 'True block - Correct';
@@ -54,7 +54,7 @@ IF state = 'CA'
 ELSE 
   PRINT 'False block - Incorrect'; 
 
-PRINT 'Transact-SQL - BEGIN-END block';
+PRINT 'Transact-SQL - BEGIN-END block'; 
   
 IF state = 'CA'
 BEGIN

@@ -51,10 +51,13 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -229,7 +232,6 @@ public class TestTxnCommands2 {
     }
     Assert.assertFalse("PPD '" + ppd + "' wasn't pushed", true);
   }
-  @Ignore("alter table")
   @Test
   public void testAlterTable() throws Exception {
     int[][] tableData = {{1,2}};
@@ -547,6 +549,50 @@ public class TestTxnCommands2 {
     Assert.assertEquals("Unexpected num succeeded", 1, cbs.succeeded);
     Assert.assertEquals("Unexpected num total5", hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED) + 1, cbs.total);
   }
+
+  /**
+   * Make sure there's no FileSystem$Cache$Key leak due to UGI use
+   * @throws Exception
+   */
+  @Test
+  public void testFileSystemUnCaching() throws Exception {
+    int cacheSizeBefore;
+    int cacheSizeAfter;
+
+    // get the size of cache BEFORE
+    cacheSizeBefore = getFileSystemCacheSize();
+
+    // Insert a row to ACID table
+    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) values(1,2)");
+
+    // Perform a major compaction
+    runStatementOnDriver("alter table " + Table.ACIDTBL + " compact 'major'");
+    runWorker(hiveConf);
+    runCleaner(hiveConf);
+
+    // get the size of cache AFTER
+    cacheSizeAfter = getFileSystemCacheSize();
+
+    Assert.assertEquals(cacheSizeBefore, cacheSizeAfter);
+  }
+
+  private int getFileSystemCacheSize() throws Exception {
+    try {
+      Field cache = FileSystem.class.getDeclaredField("CACHE");
+      cache.setAccessible(true);
+      Object o = cache.get(null); // FileSystem.CACHE
+
+      Field mapField = o.getClass().getDeclaredField("map");
+      mapField.setAccessible(true);
+      Map map = (HashMap)mapField.get(o); // FileSystem.CACHE.map
+
+      return map.size();
+    } catch (NoSuchFieldException e) {
+      System.out.println(e);
+    }
+    return 0;
+  }
+
   private static class CompactionsByState {
     private int attempted;
     private int failed;
@@ -604,7 +650,13 @@ public class TestTxnCommands2 {
   private static void runHouseKeeperService(HouseKeeperService houseKeeperService, HiveConf conf) throws Exception {
     int lastCount = houseKeeperService.getIsAliveCounter();
     houseKeeperService.start(conf);
+    int maxIter = 10;
+    int iterCount = 0;
     while(houseKeeperService.getIsAliveCounter() <= lastCount) {
+      if(iterCount++ >= maxIter) {
+        //prevent test hangs
+        throw new IllegalStateException("HouseKeeper didn't run after " + iterCount + " waits");
+      }
       try {
         Thread.sleep(100);//make sure it has run at least once
       }

@@ -50,9 +50,9 @@ public class LowLevelCacheMemoryManager implements MemoryManager {
     this.usedMemory = new AtomicLong(0);
     this.metrics = metrics;
     metrics.setCacheCapacityTotal(maxSize);
-    if (LlapIoImpl.LOGL.isInfoEnabled()) {
-      LlapIoImpl.LOG.info("Memory manager initialized with max size " + maxSize + " and "
-          + ((evictor == null) ? "no " : "") + "ability to evict blocks");
+    if (LlapIoImpl.LOG.isInfoEnabled()) {
+      LlapIoImpl.LOG.info("Memory manager initialized with max size {} and" +
+          " {} ability to evict blocks", maxSize, ((evictor == null) ? "no " : ""));
     }
   }
 

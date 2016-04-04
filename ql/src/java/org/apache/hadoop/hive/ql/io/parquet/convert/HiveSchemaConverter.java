@@ -24,12 +24,10 @@ import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
-
 import org.apache.parquet.schema.ConversionPatterns;
 import org.apache.parquet.schema.GroupType;
 import org.apache.parquet.schema.MessageType;
 import org.apache.parquet.schema.OriginalType;
-import org.apache.parquet.schema.PrimitiveType;
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName;
 import org.apache.parquet.schema.Type;
 import org.apache.parquet.schema.Type.Repetition;
@@ -120,9 +118,10 @@ public class HiveSchemaConverter {
 
   // An optional group containing a repeated anonymous group "bag", containing
   // 1 anonymous element "array_element"
+  @SuppressWarnings("deprecation")
   private static GroupType convertArrayType(final String name, final ListTypeInfo typeInfo) {
     final TypeInfo subType = typeInfo.getListElementTypeInfo();
-    return listWrapper(name, OriginalType.LIST, new GroupType(Repetition.REPEATED,
+    return new GroupType(Repetition.OPTIONAL, name, OriginalType.LIST, new GroupType(Repetition.REPEATED,
         ParquetHiveSerDe.ARRAY.toString(), convertType("array_element", subType)));
   }
 
@@ -142,10 +141,5 @@ public class HiveSchemaConverter {
     final Type valueType = convertType(ParquetHiveSerDe.MAP_VALUE.toString(),
         typeInfo.getMapValueTypeInfo());
     return ConversionPatterns.mapType(Repetition.OPTIONAL, name, keyType, valueType);
-  }
-
-  private static GroupType listWrapper(final String name, final OriginalType originalType,
-      final GroupType groupType) {
-    return new GroupType(Repetition.OPTIONAL, name, originalType, groupType);
   }
 }

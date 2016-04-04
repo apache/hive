@@ -180,8 +180,12 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     buildIndex = rowIndexStride > 0;
     codec = createCodec(compress);
     int numColumns = schema.getMaximumId() + 1;
-    this.bufferSize = getEstimatedBufferSize(defaultStripeSize,
-        numColumns, opts.getBufferSize());
+    if (opts.isEnforceBufferSize()) {
+      this.bufferSize = opts.getBufferSize();
+    } else {
+      this.bufferSize = getEstimatedBufferSize(defaultStripeSize,
+          numColumns, opts.getBufferSize());
+    }
     if (version == OrcFile.Version.V_0_11) {
       /* do not write bloom filters for ORC v11 */
       this.bloomFilterColumns = new boolean[schema.getMaximumId() + 1];
@@ -198,6 +202,9 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
 
     // ensure that we are able to handle callbacks before we register ourselves
     memoryManager.addWriter(path, opts.getStripeSize(), this);
+    LOG.info("ORC writer created for path: {} with stripeSize: {} blockSize: {}" +
+        " compression: {} bufferSize: {}", path, defaultStripeSize, blockSize,
+        compress, bufferSize);
   }
 
   @VisibleForTesting
@@ -209,13 +216,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     // sizes.
     int estBufferSize = (int) (stripeSize / (20 * numColumns));
     estBufferSize = getClosestBufferSize(estBufferSize);
-    if (estBufferSize > bs) {
-      estBufferSize = bs;
-    } else {
-      LOG.info("WIDE TABLE - Number of columns: " + numColumns +
-          " Chosen compression buffer size: " + estBufferSize);
-    }
-    return estBufferSize;
+    return estBufferSize > bs ? bs : estBufferSize;
   }
 
   private static int getClosestBufferSize(int estBufferSize) {
@@ -1734,19 +1735,17 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
                     int length) throws IOException {
       super.writeBatch(vector, offset, length);
       TimestampColumnVector vec = (TimestampColumnVector) vector;
+      Timestamp val;
       if (vector.isRepeating) {
         if (vector.noNulls || !vector.isNull[0]) {
-          long millis = vec.getEpochMilliseconds(0);
-          int adjustedNanos = vec.getSignedNanos(0);
-          if (adjustedNanos < 0) {
-            adjustedNanos += NANOS_PER_SECOND;
-          }
+          val = vec.asScratchTimestamp(0);
+          long millis = val.getTime();
           indexStatistics.updateTimestamp(millis);
           if (createBloomFilter) {
             bloomFilter.addLong(millis);
           }
-          final long secs = vec.getEpochSeconds(0) - base_timestamp;
-          final long nano = formatNanos(adjustedNanos);
+          final long secs = millis / MILLIS_PER_SECOND - base_timestamp;
+          final long nano = formatNanos(val.getNanos());
           for(int i=0; i < length; ++i) {
             seconds.write(secs);
             nanos.write(nano);
@@ -1755,14 +1754,11 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       } else {
         for(int i=0; i < length; ++i) {
           if (vec.noNulls || !vec.isNull[i + offset]) {
-            long secs = vec.getEpochSeconds(i + offset) - base_timestamp;
-            long millis = vec.getEpochMilliseconds(i + offset);
-            int adjustedNanos = vec.getSignedNanos(i + offset);
-            if (adjustedNanos < 0) {
-              adjustedNanos += NANOS_PER_SECOND;
-            }
+            val = vec.asScratchTimestamp(i + offset);
+            long millis = val.getTime();
+            long secs = millis / MILLIS_PER_SECOND - base_timestamp;
             seconds.write(secs);
-            nanos.write(formatNanos(adjustedNanos));
+            nanos.write(formatNanos(val.getNanos()));
             indexStatistics.updateTimestamp(millis);
             if (createBloomFilter) {
               bloomFilter.addLong(millis);

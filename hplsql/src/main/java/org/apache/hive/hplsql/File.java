@@ -83,6 +83,17 @@ public class File {
      e.printStackTrace();
    }
  }
+ 
+ /**
+  * Check if the directory or file exists
+  * @throws IOException
+  */
+ boolean exists(String name) throws IOException {
+   if (fs == null) {
+     fs = createFs();
+   }
+   return fs.exists(new Path(name));
+ }
   
  /**
   * Read a character from input

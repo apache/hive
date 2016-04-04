@@ -82,6 +82,7 @@ STAGE PLANS:
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.partunion1
             Execution mode: llap
+            LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -104,6 +105,7 @@ STAGE PLANS:
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.partunion1
             Execution mode: llap
+            LLAP IO: no inputs
         Union 2 
             Vertex: Union 2
 

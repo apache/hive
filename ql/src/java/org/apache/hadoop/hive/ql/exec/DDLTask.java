@@ -2541,6 +2541,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     os.write(separator);
     os.writeBytes("State");
     os.write(separator);
+    os.writeBytes("Blocked By");
+    os.write(separator);
     os.writeBytes("Type");
     os.write(separator);
     os.writeBytes("Transaction ID");
@@ -2557,7 +2559,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     List<ShowLocksResponseElement> locks = rsp.getLocks();
     if (locks != null) {
       for (ShowLocksResponseElement lock : locks) {
-        os.writeBytes(Long.toString(lock.getLockid()));
+        if(lock.isSetLockIdInternal()) {
+          os.writeBytes(Long.toString(lock.getLockid()) + "." + Long.toString(lock.getLockIdInternal()));
+        }
+        else {
+          os.writeBytes(Long.toString(lock.getLockid()));
+        }
         os.write(separator);
         os.writeBytes(lock.getDbname());
         os.write(separator);
@@ -2566,6 +2573,13 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         os.writeBytes((lock.getPartname() == null) ? "NULL" : lock.getPartname());
         os.write(separator);
         os.writeBytes(lock.getState().toString());
+        os.write(separator);
+        if(lock.isSetBlockedByExtId()) {//both "blockedby" are either there or not
+          os.writeBytes(Long.toString(lock.getBlockedByExtId()) + "." + Long.toString(lock.getBlockedByIntId()));
+        }
+        else {
+          os.writeBytes("            ");//12 chars - try to keep cols aligned
+        }
         os.write(separator);
         os.writeBytes(lock.getType().toString());
         os.write(separator);

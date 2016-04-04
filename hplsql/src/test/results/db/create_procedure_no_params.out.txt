@@ -1,0 +1,10 @@
+Ln:1 CREATE PROCEDURE show_the_date
+Ln:9 CREATE PROCEDURE show_the_date2
+Ln:17 EXEC PROCEDURE show_the_date
+Ln:3 DECLARE today DATE = 2016-03-10
+Today is 2016-03-10
+Ln:18 EXEC PROCEDURE show_the_date2
+Ln:11 DECLARE today DATE = 2016-03-10
+Today is 2016-03-10
+Ln:21 DECLARE today DATE = 2016-03-10
+Today is 2016-03-10

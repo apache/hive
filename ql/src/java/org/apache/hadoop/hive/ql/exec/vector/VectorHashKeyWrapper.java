@@ -18,16 +18,16 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
+import java.sql.Timestamp;
 import java.util.Arrays;
 
-import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
-import org.apache.hadoop.hive.common.type.PisaTimestamp;
+import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.ql.exec.KeyWrapper;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
 /**
@@ -44,7 +44,8 @@ public class VectorHashKeyWrapper extends KeyWrapper {
   private static final double[] EMPTY_DOUBLE_ARRAY = new double[0];
   private static final byte[][] EMPTY_BYTES_ARRAY = new byte[0][];
   private static final HiveDecimalWritable[] EMPTY_DECIMAL_ARRAY = new HiveDecimalWritable[0];
-  private static final PisaTimestamp[] EMPTY_TIMESTAMP_ARRAY = new PisaTimestamp[0];
+  private static final Timestamp[] EMPTY_TIMESTAMP_ARRAY = new Timestamp[0];
+  private static final HiveIntervalDayTime[] EMPTY_INTERVAL_DAY_TIME_ARRAY = new HiveIntervalDayTime[0];
 
   private long[] longValues;
   private double[] doubleValues;
@@ -55,17 +56,21 @@ public class VectorHashKeyWrapper extends KeyWrapper {
 
   private HiveDecimalWritable[] decimalValues;
 
-  private PisaTimestamp[] timestampValues;
+  private Timestamp[] timestampValues;
+
+  private HiveIntervalDayTime[] intervalDayTimeValues;
 
   private boolean[] isNull;
   private int hashcode;
 
   public VectorHashKeyWrapper(int longValuesCount, int doubleValuesCount,
-          int byteValuesCount, int decimalValuesCount, int timestampValuesCount) {
+          int byteValuesCount, int decimalValuesCount, int timestampValuesCount,
+          int intervalDayTimeValuesCount) {
     longValues = longValuesCount > 0 ? new long[longValuesCount] : EMPTY_LONG_ARRAY;
     doubleValues = doubleValuesCount > 0 ? new double[doubleValuesCount] : EMPTY_DOUBLE_ARRAY;
     decimalValues = decimalValuesCount > 0 ? new HiveDecimalWritable[decimalValuesCount] : EMPTY_DECIMAL_ARRAY;
-    timestampValues = timestampValuesCount > 0 ? new PisaTimestamp[timestampValuesCount] : EMPTY_TIMESTAMP_ARRAY;
+    timestampValues = timestampValuesCount > 0 ? new Timestamp[timestampValuesCount] : EMPTY_TIMESTAMP_ARRAY;
+    intervalDayTimeValues = intervalDayTimeValuesCount > 0 ? new HiveIntervalDayTime[intervalDayTimeValuesCount] : EMPTY_INTERVAL_DAY_TIME_ARRAY;
     for(int i = 0; i < decimalValuesCount; ++i) {
       decimalValues[i] = new HiveDecimalWritable(HiveDecimal.ZERO);
     }
@@ -79,10 +84,13 @@ public class VectorHashKeyWrapper extends KeyWrapper {
       byteLengths = EMPTY_INT_ARRAY;
     }
     for(int i = 0; i < timestampValuesCount; ++i) {
-      timestampValues[i] = new PisaTimestamp();
+      timestampValues[i] = new Timestamp(0);
+    }
+    for(int i = 0; i < intervalDayTimeValuesCount; ++i) {
+      intervalDayTimeValues[i] = new HiveIntervalDayTime();
     }
     isNull = new boolean[longValuesCount + doubleValuesCount + byteValuesCount +
-                         decimalValuesCount + timestampValuesCount];
+                         decimalValuesCount + timestampValuesCount + intervalDayTimeValuesCount];
     hashcode = 0;
   }
 
@@ -106,6 +114,10 @@ public class VectorHashKeyWrapper extends KeyWrapper {
 
     for (int i = 0; i < timestampValues.length; i++) {
       hashcode ^= timestampValues[i].hashCode();
+    }
+
+    for (int i = 0; i < intervalDayTimeValues.length; i++) {
+      hashcode ^= intervalDayTimeValues[i].hashCode();
     }
 
     // This code, with branches and all, is not executed if there are no string keys
@@ -146,6 +158,7 @@ public class VectorHashKeyWrapper extends KeyWrapper {
           Arrays.equals(doubleValues, keyThat.doubleValues) &&
           Arrays.equals(decimalValues,  keyThat.decimalValues) &&
           Arrays.equals(timestampValues,  keyThat.timestampValues) &&
+          Arrays.equals(intervalDayTimeValues,  keyThat.intervalDayTimeValues) &&
           Arrays.equals(isNull, keyThat.isNull) &&
           byteValues.length == keyThat.byteValues.length &&
           (0 == byteValues.length || bytesEquals(keyThat));
@@ -212,13 +225,20 @@ public class VectorHashKeyWrapper extends KeyWrapper {
       clone.byteLengths = EMPTY_INT_ARRAY;
     }
     if (timestampValues.length > 0) {
-      clone.timestampValues = new PisaTimestamp[timestampValues.length];
+      clone.timestampValues = new Timestamp[timestampValues.length];
       for(int i = 0; i < timestampValues.length; ++i) {
-        clone.timestampValues[i] = new PisaTimestamp();
-        clone.timestampValues[i].update(timestampValues[i]);
+        clone.timestampValues[i] = (Timestamp) timestampValues[i].clone();
       }
     } else {
       clone.timestampValues = EMPTY_TIMESTAMP_ARRAY;
+    }
+    if (intervalDayTimeValues.length > 0) {
+      clone.intervalDayTimeValues = new HiveIntervalDayTime[intervalDayTimeValues.length];
+      for(int i = 0; i < intervalDayTimeValues.length; ++i) {
+        clone.intervalDayTimeValues[i] = (HiveIntervalDayTime) intervalDayTimeValues[i].clone();
+      }
+    } else {
+      clone.intervalDayTimeValues = EMPTY_INTERVAL_DAY_TIME_ARRAY;
     }
 
     clone.hashcode = hashcode;
@@ -281,14 +301,14 @@ public class VectorHashKeyWrapper extends KeyWrapper {
       isNull[longValues.length + doubleValues.length + byteValues.length + index] = true;
   }
 
-  public void assignTimestamp(int index, PisaTimestamp value) {
-    timestampValues[index].update(value);
+  public void assignTimestamp(int index, Timestamp value) {
+    timestampValues[index] = value;
     isNull[longValues.length + doubleValues.length + byteValues.length +
            decimalValues.length + index] = false;
   }
 
   public void assignTimestamp(int index, TimestampColumnVector colVector, int elementNum) {
-    colVector.pisaTimestampUpdate(timestampValues[index], elementNum);
+    colVector.timestampUpdate(timestampValues[index], elementNum);
     isNull[longValues.length + doubleValues.length + byteValues.length +
            decimalValues.length + index] = false;
   }
@@ -298,15 +318,33 @@ public class VectorHashKeyWrapper extends KeyWrapper {
              decimalValues.length + index] = true;
   }
 
+  public void assignIntervalDayTime(int index, HiveIntervalDayTime value) {
+    intervalDayTimeValues[index].set(value);
+    isNull[longValues.length + doubleValues.length + byteValues.length +
+           decimalValues.length + timestampValues.length + index] = false;
+  }
+
+  public void assignIntervalDayTime(int index, IntervalDayTimeColumnVector colVector, int elementNum) {
+    intervalDayTimeValues[index].set(colVector.asScratchIntervalDayTime(elementNum));
+    isNull[longValues.length + doubleValues.length + byteValues.length +
+           decimalValues.length + timestampValues.length + index] = false;
+  }
+
+  public void assignNullIntervalDayTime(int index) {
+      isNull[longValues.length + doubleValues.length + byteValues.length +
+             decimalValues.length + timestampValues.length + index] = true;
+  }
+
   @Override
   public String toString()
   {
-    return String.format("%d[%s] %d[%s] %d[%s] %d[%s] %d[%s]",
+    return String.format("%d[%s] %d[%s] %d[%s] %d[%s] %d[%s] %d[%s]",
         longValues.length, Arrays.toString(longValues),
         doubleValues.length, Arrays.toString(doubleValues),
         byteValues.length, Arrays.toString(byteValues),
         decimalValues.length, Arrays.toString(decimalValues),
-        timestampValues.length, Arrays.toString(timestampValues));
+        timestampValues.length, Arrays.toString(timestampValues),
+        intervalDayTimeValues.length, Arrays.toString(intervalDayTimeValues));
   }
 
   public boolean getIsLongNull(int i) {
@@ -364,9 +402,17 @@ public class VectorHashKeyWrapper extends KeyWrapper {
                   decimalValues.length + i];
   }
 
-  public PisaTimestamp getTimestamp(int i) {
+  public Timestamp getTimestamp(int i) {
     return timestampValues[i];
   }
 
+  public boolean getIsIntervalDayTimeNull(int i) {
+    return isNull[longValues.length + doubleValues.length + byteValues.length +
+                  decimalValues.length + timestampValues.length + i];
+  }
+
+  public HiveIntervalDayTime getIntervalDayTime(int i) {
+    return intervalDayTimeValues[i];
+  }
 }
 

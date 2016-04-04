@@ -50,7 +50,7 @@ import org.apache.hive.hplsql.functions.*;
  */
 public class Exec extends HplsqlBaseVisitor<Integer> {
   
-  public static final String VERSION = "HPL/SQL 0.3.13";
+  public static final String VERSION = "HPL/SQL 0.3.17";
   public static final String SQLCODE = "SQLCODE";
   public static final String SQLSTATE = "SQLSTATE";
   public static final String HOSTCODE = "HOSTCODE";
@@ -783,11 +783,9 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
     new FunctionMisc(this).register(function);
     new FunctionString(this).register(function);
     new FunctionOra(this).register(function);
-    
     addVariable(new Var(SQLCODE, Var.Type.BIGINT, 0L));
     addVariable(new Var(SQLSTATE, Var.Type.STRING, "00000"));
     addVariable(new Var(HOSTCODE, Var.Type.BIGINT, 0L)); 
-    
     for (Map.Entry<String, String> v : arguments.getVars().entrySet()) {
       addVariable(new Var(v.getKey(), Var.Type.STRING, v.getValue()));
     }    
@@ -826,7 +824,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
     }    
     execString = arguments.getExecString();
     execFile = arguments.getFileName();
-    execMain = arguments.getMain();
+    execMain = arguments.getMain();    
     if (arguments.hasTraceOption()) {
       trace = true;
     }
@@ -1066,7 +1064,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   public Integer visitTable_name(HplsqlParser.Table_nameContext ctx) {
     String name = ctx.getText();
     String nameUp = name.toUpperCase();
-    String nameNorm = meta.normalizeIdentifier(name);
+    String nameNorm = meta.normalizeObjectIdentifier(name);
     String actualName = exec.managedTables.get(nameUp);
     String conn = exec.objectConnMap.get(nameUp);
     if (conn == null) {
@@ -1092,6 +1090,14 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   @Override 
   public Integer visitInsert_stmt(HplsqlParser.Insert_stmtContext ctx) { 
     return exec.stmt.insert(ctx); 
+  }
+  
+  /**
+   * INSERT DIRECTORY statement
+   */
+  @Override 
+  public Integer visitInsert_directory_stmt(HplsqlParser.Insert_directory_stmtContext ctx) { 
+    return exec.stmt.insertDirectory(ctx); 
   }
     
   /**
@@ -1214,6 +1220,14 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   }
   
   /**
+   * DESCRIBE statement
+   */
+  @Override 
+  public Integer visitDescribe_stmt(HplsqlParser.Describe_stmtContext ctx) {
+    return exec.stmt.describe(ctx);
+  }
+  
+  /**
    * DROP statement
    */
   @Override 
@@ -1259,6 +1273,14 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   @Override 
   public Integer visitCopy_stmt(HplsqlParser.Copy_stmtContext ctx) { 
     return new Copy(exec).run(ctx); 
+  }
+  
+  /**
+   * COPY FROM FTP statement
+   */
+  @Override 
+  public Integer visitCopy_from_ftp_stmt(HplsqlParser.Copy_from_ftp_stmtContext ctx) { 
+    return new Ftp(exec).run(ctx); 
   }
   
   /**
@@ -1331,12 +1353,33 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
     return 0; 
   }
   
+  @Override 
+  public Integer visitCreate_table_options_mysql_item(HplsqlParser.Create_table_options_mysql_itemContext ctx) { 
+    return exec.stmt.createTableMysqlOptions(ctx); 
+  }
+  
   /**
    * CREATE LOCAL TEMPORARY | VOLATILE TABLE statement 
    */
   @Override 
   public Integer visitCreate_local_temp_table_stmt(HplsqlParser.Create_local_temp_table_stmtContext ctx) { 
     return exec.stmt.createLocalTemporaryTable(ctx); 
+  }
+  
+  /**
+   * ALTER TABLE statement
+   */
+  @Override 
+  public Integer visitAlter_table_stmt(HplsqlParser.Alter_table_stmtContext ctx) { 
+    return 0; 
+  } 
+  
+  /**
+   * CREATE DATABASE | SCHEMA statement
+   */
+  @Override 
+  public Integer visitCreate_database_stmt(HplsqlParser.Create_database_stmtContext ctx) {
+    return exec.stmt.createDatabase(ctx);
   }
   
   /**
@@ -1520,6 +1563,34 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
     }
     return 0; 
   }
+   
+  /**
+   * Static SELECT statement (i.e. unquoted) or expression
+   */
+  @Override 
+  public Integer visitExpr_select(HplsqlParser.Expr_selectContext ctx) {
+    if (ctx.select_stmt() != null) {
+      stackPush(new Var(evalPop(ctx.select_stmt())));
+    }
+    else {
+      visit(ctx.expr());
+    }
+    return 0; 
+  }
+  
+  /**
+   * File path (unquoted) or expression
+   */
+  @Override 
+  public Integer visitExpr_file(HplsqlParser.Expr_fileContext ctx) {
+    if (ctx.file_name() != null) {
+      stackPush(new Var(ctx.file_name().getText()));
+    }
+    else {
+      visit(ctx.expr());
+    }
+    return 0; 
+  }
   
   /**
    * Cursor attribute %ISOPEN, %FOUND and %NOTFOUND
@@ -1677,7 +1748,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
       executed = packCallContext.execProc(name, ctx.expr_func_params(), false /*trace error if not exists*/);
     }
     if (!executed) {        
-      exec.function.execProc(name, ctx.expr_func_params());
+      exec.function.execProc(name, ctx.expr_func_params(), ctx);
     }
     exec.inCallStmt = false;
     return 0;
@@ -1745,6 +1816,14 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   @Override 
   public Integer visitSet_current_schema_option(HplsqlParser.Set_current_schema_optionContext ctx) { 
     return exec.stmt.setCurrentSchema(ctx); 
+  }
+  
+  /**
+   * TRUNCATE statement
+   */
+  @Override 
+  public Integer visitTruncate_stmt(HplsqlParser.Truncate_stmtContext ctx) { 
+    return exec.stmt.truncate(ctx); 
   }
   
   /**
@@ -1845,15 +1924,16 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   public Integer visitHive_item(HplsqlParser.Hive_itemContext ctx) { 
     Var params = stackPeek();
     ArrayList<String> a = (ArrayList<String>)params.value;
-    if(ctx.P_e() != null) {
+    String param = ctx.getChild(1).getText();
+    if (param.equals("e")) {
       a.add("-e");
       a.add(evalPop(ctx.expr()).toString());
     }   
-    else if(ctx.P_f() != null) {
+    else if (param.equals("f")) {
       a.add("-f");
       a.add(evalPop(ctx.expr()).toString());
     }
-    else if(ctx.P_hiveconf() != null) {
+    else if (param.equals("hiveconf")) {
       a.add("-hiveconf");
       a.add(ctx.L_ID().toString() + "=" + evalPop(ctx.expr()).toString());
     }
@@ -2007,7 +2087,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
       }
     }
     else {
-      if (!exec.buildSql && !exec.inCallStmt && exec.function.isProc(ident) && exec.function.execProc(ident, null)) {
+      if (!exec.buildSql && !exec.inCallStmt && exec.function.isProc(ident) && exec.function.execProc(ident, null, ctx)) {
         return 0;
       }
       else {
@@ -2041,11 +2121,11 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   }
  
   /**
-   * Interval number (1 DAYS i.e)
+   * Interval expression (INTERVAL '1' DAY i.e)
    */
   @Override 
-  public Integer visitInterval_number(HplsqlParser.Interval_numberContext ctx) {
-    int num = evalPop(ctx.int_number()).intValue();
+  public Integer visitExpr_interval(HplsqlParser.Expr_intervalContext ctx) {
+    int num = evalPop(ctx.expr()).intValue();
     Interval interval = new Interval().set(num, ctx.interval_item().getText());
     stackPush(new Var(interval));
     return 0; 

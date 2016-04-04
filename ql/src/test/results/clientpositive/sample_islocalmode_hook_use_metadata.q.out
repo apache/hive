@@ -1,0 +1,230 @@
+PREHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS( 0.20S)
+
+-- create file inputs
+create table sih_i_part (key int, value string) partitioned by (p string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@sih_i_part
+POSTHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS( 0.20S)
+
+-- create file inputs
+create table sih_i_part (key int, value string) partitioned by (p string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@sih_i_part
+PREHOOK: query: insert overwrite table sih_i_part partition (p='1') select key, value from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@sih_i_part@p=1
+POSTHOOK: query: insert overwrite table sih_i_part partition (p='1') select key, value from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@sih_i_part@p=1
+POSTHOOK: Lineage: sih_i_part PARTITION(p=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: sih_i_part PARTITION(p=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table sih_i_part partition (p='2') select key+10000, value from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@sih_i_part@p=2
+POSTHOOK: query: insert overwrite table sih_i_part partition (p='2') select key+10000, value from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@sih_i_part@p=2
+POSTHOOK: Lineage: sih_i_part PARTITION(p=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: sih_i_part PARTITION(p=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table sih_i_part partition (p='3') select key+20000, value from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@sih_i_part@p=3
+POSTHOOK: query: insert overwrite table sih_i_part partition (p='3') select key+20000, value from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@sih_i_part@p=3
+POSTHOOK: Lineage: sih_i_part PARTITION(p=3).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: sih_i_part PARTITION(p=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: create table sih_src as select key, value from sih_i_part order by key, value
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@sih_i_part
+PREHOOK: Input: default@sih_i_part@p=1
+PREHOOK: Input: default@sih_i_part@p=2
+PREHOOK: Input: default@sih_i_part@p=3
+PREHOOK: Output: database:default
+PREHOOK: Output: default@sih_src
+POSTHOOK: query: create table sih_src as select key, value from sih_i_part order by key, value
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@sih_i_part
+POSTHOOK: Input: default@sih_i_part@p=1
+POSTHOOK: Input: default@sih_i_part@p=2
+POSTHOOK: Input: default@sih_i_part@p=3
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@sih_src
+POSTHOOK: Lineage: sih_src.key SIMPLE [(sih_i_part)sih_i_part.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: sih_src.value SIMPLE [(sih_i_part)sih_i_part.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: create table sih_src2 as select key, value from sih_src order by key, value
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@sih_src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@sih_src2
+POSTHOOK: query: create table sih_src2 as select key, value from sih_src order by key, value
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@sih_src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@sih_src2
+POSTHOOK: Lineage: sih_src2.key SIMPLE [(sih_src)sih_src.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: sih_src2.value SIMPLE [(sih_src)sih_src.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: -- Relaxing hive.exec.mode.local.auto.input.files.max=1.
+-- Hadoop20 will not generate more splits than there are files (one).
+-- Hadoop23 generate splits correctly (four), hence the max needs to be adjusted to ensure running in local mode.
+-- Default value is hive.exec.mode.local.auto.input.files.max=4 which produces expected behavior on Hadoop23.
+-- hive.sample.seednumber is required because Hadoop23 generates multiple splits and tablesample is non-repeatable without it.
+
+-- sample split, running locally limited by num tasks
+
+desc formatted sih_src
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@sih_src
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	1                   
+	numRows             	1500                
+	rawDataSize         	18124               
+	totalSize           	19624               
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: explain select count(1) from sih_src
+PREHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(1) from sih_src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sih_src
+#### A masked pattern was here ####
+1500
+PREHOOK: query: explain select count(1) from sih_src tablesample(1 percent)
+PREHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: sih_src
+            Statistics: Num rows: 1500 Data size: 18124 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              Statistics: Num rows: 1500 Data size: 18124 Basic stats: COMPLETE Column stats: COMPLETE
+              Group By Operator
+                aggregations: count(1)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(1) from sih_src tablesample(1 percent)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sih_src
+#### A masked pattern was here ####
+25
+PREHOOK: query: explain select count(1) from sih_src tablesample(10 rows)
+PREHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: sih_src
+            Row Limit Per Split: 10
+            Statistics: Num rows: 1500 Data size: 18124 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              Statistics: Num rows: 1500 Data size: 18124 Basic stats: COMPLETE Column stats: COMPLETE
+              Group By Operator
+                aggregations: count(1)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(1) from sih_src tablesample(10 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sih_src
+#### A masked pattern was here ####
+650

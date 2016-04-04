@@ -19,32 +19,123 @@
 package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
 
 import java.sql.Timestamp;
-import org.apache.hadoop.hive.common.type.PisaTimestamp;
-import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
-import org.apache.hive.common.util.DateUtils;
 
+import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
-import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.NullUtil;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.*;
 import org.apache.hadoop.hive.ql.util.DateTimeMath;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 
 /**
- * Generated from template DateColumnArithmeticTimestampScalar.txt, which covers binary arithmetic
- * expressions between a date column and a timestamp scalar.
+ * Generated from template DateColumnArithmeticTimestampScalarBase.txt, a base class
+ * which covers binary arithmetic expressions between a date column and a timestamp scalar.
  */
-public class <ClassName> extends <BaseClassName> {
+public class <ClassName> extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  public <ClassName>(int colNum, <ScalarHiveTimestampType2> value, int outputColumn) {
-    super(colNum, <PisaTimestampConversion2>, outputColumn);
+  private int colNum;
+  private <HiveOperandType2> value;
+  private int outputColumn;
+  private Timestamp scratchTimestamp1;
+  private DateTimeMath dtm = new DateTimeMath();
+
+  public <ClassName>(int colNum, <HiveOperandType2> value, int outputColumn) {
+    this.colNum = colNum;
+    this.value = value;
+    this.outputColumn = outputColumn;
+    scratchTimestamp1 = new Timestamp(0);
   }
 
   public <ClassName>() {
-    super();
+  }
+
+  @Override
+  public void evaluate(VectorizedRowBatch batch) {
+
+    if (childExpressions != null) {
+      super.evaluateChildren(batch);
+    }
+
+    // Input #1 is type date (days).  For the math we convert it to a timestamp.
+    LongColumnVector inputColVector1 = (LongColumnVector) batch.cols[colNum];
+
+    // Output is type <ReturnType>.
+    <OutputColumnVectorType> outputColVector = (<OutputColumnVectorType>) batch.cols[outputColumn];
+
+    int[] sel = batch.selected;
+    boolean[] inputIsNull = inputColVector1.isNull;
+    boolean[] outputIsNull = outputColVector.isNull;
+    outputColVector.noNulls = inputColVector1.noNulls;
+    outputColVector.isRepeating = inputColVector1.isRepeating;
+    int n = batch.size;
+    long[] vector1 = inputColVector1.vector;
+
+    // return immediately if batch is empty
+    if (n == 0) {
+      return;
+    }
+
+    if (inputColVector1.isRepeating) {
+      scratchTimestamp1.setTime(DateWritable.daysToMillis((int) vector1[0]));
+      dtm.<OperatorMethod>(
+          scratchTimestamp1, value, outputColVector.getScratch<CamelReturnType>());
+      outputColVector.setFromScratch<CamelReturnType>(0);
+      // Even if there are no nulls, we always copy over entry 0. Simplifies code.
+      outputIsNull[0] = inputIsNull[0];
+    } else if (inputColVector1.noNulls) {
+      if (batch.selectedInUse) {
+        for(int j = 0; j != n; j++) {
+          int i = sel[j];
+          scratchTimestamp1.setTime(DateWritable.daysToMillis((int) vector1[i]));
+          dtm.<OperatorMethod>(
+             scratchTimestamp1, value, outputColVector.getScratch<CamelReturnType>());
+          outputColVector.setFromScratch<CamelReturnType>(i);
+        }
+      } else {
+        for(int i = 0; i != n; i++) {
+          scratchTimestamp1.setTime(DateWritable.daysToMillis((int) vector1[i]));
+          dtm.<OperatorMethod>(
+             scratchTimestamp1, value, outputColVector.getScratch<CamelReturnType>());
+          outputColVector.setFromScratch<CamelReturnType>(i);
+        }
+      }
+    } else /* there are nulls */ {
+      if (batch.selectedInUse) {
+        for(int j = 0; j != n; j++) {
+          int i = sel[j];
+          scratchTimestamp1.setTime(DateWritable.daysToMillis((int) vector1[i]));
+          dtm.<OperatorMethod>(
+             scratchTimestamp1, value, outputColVector.getScratch<CamelReturnType>());
+          outputColVector.setFromScratch<CamelReturnType>(i);
+          outputIsNull[i] = inputIsNull[i];
+        }
+      } else {
+        for(int i = 0; i != n; i++) {
+          scratchTimestamp1.setTime(DateWritable.daysToMillis((int) vector1[i]));
+          dtm.<OperatorMethod>(
+             scratchTimestamp1, value, outputColVector.getScratch<CamelReturnType>());
+          outputColVector.setFromScratch<CamelReturnType>(i);
+        }
+        System.arraycopy(inputIsNull, 0, outputIsNull, 0, n);
+      }
+    }
+
+    NullUtil.setNullOutputEntriesColScalar(outputColVector, batch.selectedInUse, sel, n);
+  }
+
+  @Override
+  public int getOutputColumn() {
+    return outputColumn;
+  }
+
+  @Override
+  public String getOutputType() {
+    return "<ReturnType>";
   }
 
   @Override
@@ -54,7 +145,7 @@ public class <ClassName> extends <BaseClassName> {
             VectorExpressionDescriptor.Mode.PROJECTION)
         .setNumArguments(2)
         .setArgumentTypes(
-            VectorExpressionDescriptor.ArgumentType.getType("<OperandType1>"),
+            VectorExpressionDescriptor.ArgumentType.getType("date"),
             VectorExpressionDescriptor.ArgumentType.getType("<OperandType2>"))
         .setInputExpressionTypes(
             VectorExpressionDescriptor.InputExpressionType.COLUMN,

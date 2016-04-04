@@ -20,8 +20,7 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.*;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 
 public class CastLongToTimestamp extends VectorExpression {
   private static final long serialVersionUID = 1L;
@@ -40,7 +39,10 @@ public class CastLongToTimestamp extends VectorExpression {
   }
 
   private void setSeconds(TimestampColumnVector timestampColVector, long[] vector, int elementNum) {
-    timestampColVector.setTimestampSeconds(elementNum, vector[elementNum]);
+    TimestampWritable.setTimestampFromLong(
+        timestampColVector.getScratchTimestamp(), vector[elementNum],
+        /* intToTimestampInSeconds */ true);
+    timestampColVector.setFromScratchTimestamp(elementNum);
   }
 
   @Override

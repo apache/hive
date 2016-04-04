@@ -43,6 +43,7 @@ STAGE PLANS:
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.q1
             Execution mode: llap
+            LLAP IO: no inputs
 
   Stage: Stage-2
     Dependency Collection
@@ -72,6 +73,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Execution mode: llap
+            LLAP IO: no inputs
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -90,6 +92,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Execution mode: llap
+            LLAP IO: no inputs
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:

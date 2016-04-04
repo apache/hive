@@ -44,13 +44,26 @@ public class Converter {
     if (t.equalsIgnoreCase("BIT")) {
       t = "TINYINT";
     }
+    else if (t.equalsIgnoreCase("INT") || t.equalsIgnoreCase("INTEGER")) {
+      // MySQL can use INT(n) 
+    }
+    else if (t.equalsIgnoreCase("INT2")) {
+      t = "SMALLINT";
+    }
+    else if (t.equalsIgnoreCase("INT4")) {
+      t = "INT";
+    }
+    else if (t.equalsIgnoreCase("INT8")) {
+      t = "BIGINT";
+    }
     else if (t.equalsIgnoreCase("DATETIME") || t.equalsIgnoreCase("SMALLDATETIME")) {
       t = "TIMESTAMP";
     }
     else if ((t.equalsIgnoreCase("VARCHAR") || t.equalsIgnoreCase("NVARCHAR")) && len.T_MAX() != null) {
       t = "STRING";
     }
-    else if (t.equalsIgnoreCase("VARCHAR2") || t.equalsIgnoreCase("NCHAR") || t.equalsIgnoreCase("NVARCHAR")) {
+    else if (t.equalsIgnoreCase("VARCHAR2") || t.equalsIgnoreCase("NCHAR") || t.equalsIgnoreCase("NVARCHAR") ||
+        t.equalsIgnoreCase("TEXT")) {
       t = "STRING";
     }
     else if (t.equalsIgnoreCase("NUMBER") || t.equalsIgnoreCase("NUMERIC")) {

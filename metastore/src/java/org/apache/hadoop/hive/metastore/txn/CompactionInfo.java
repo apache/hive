@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.metastore.txn;
 
 import org.apache.hadoop.hive.metastore.api.CompactionType;
+import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -39,6 +40,9 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
   public boolean tooManyAborts = false;
   /**
    * {@code 0} means it wasn't set (e.g. in case of upgrades, since ResultSet.getLong() will return 0 if field is NULL) 
+   * See {@link TxnStore#setCompactionHighestTxnId(CompactionInfo, long)} for precise definition.
+   * See also {@link TxnUtils#createValidCompactTxnList(GetOpenTxnsInfoResponse)} and
+   * {@link ValidCompactorTxnList#highWatermark}
    */
   public long highestTxnId;
   byte[] metaInfo;

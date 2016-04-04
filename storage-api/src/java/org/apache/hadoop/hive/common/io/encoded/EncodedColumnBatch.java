@@ -110,7 +110,7 @@ public class EncodedColumnBatch<BatchKey> {
   }
 
   public BatchKey getBatchKey() {
-    return batchKey; // TODO#: who uses this? can we remove fileId?
+    return batchKey;
   }
 
   public ColumnStreamData[][] getColumnData() {

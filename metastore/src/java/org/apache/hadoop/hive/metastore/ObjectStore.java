@@ -1339,7 +1339,7 @@ public class ObjectStore implements RawStore, Configurable {
     if (keys != null) {
       mkeys = new ArrayList<MFieldSchema>(keys.size());
       for (FieldSchema part : keys) {
-        mkeys.add(new MFieldSchema(HiveStringUtils.normalizeIdentifier(part.getName()),
+        mkeys.add(new MFieldSchema(part.getName().toLowerCase(),
             part.getType(), part.getComment()));
       }
     }
@@ -6482,16 +6482,14 @@ public class ObjectStore implements RawStore, Configurable {
     boolean foundCol = false;
     List<FieldSchema> colList = partition.getSd().getCols();
     for (FieldSchema col : colList) {
-      if (col.getName().equals(mStatsObj.getColName().trim())) {
+      if (col.getName().equals(mStatsObj.getColName())) {
         foundCol = true;
         break;
       }
     }
 
     if (!foundCol) {
-      throw new
-        NoSuchObjectException("Column " + colName +
-        " for which stats gathering is requested doesn't exist.");
+      LOG.warn("Column " + colName + " for which stats gathering is requested doesn't exist.");
     }
 
     QueryWrapper queryWrapper = new QueryWrapper();
@@ -7829,7 +7827,7 @@ public class ObjectStore implements RawStore, Configurable {
       query.declareParameters("java.lang.Integer tooOld");
       Collection<MNotificationLog> toBeRemoved = (Collection) query.execute(tooOld);
       if (toBeRemoved != null && toBeRemoved.size() > 0) {
-        pm.deletePersistent(toBeRemoved);
+        pm.deletePersistentAll(toBeRemoved);
       }
       commited = commitTransaction();
     } finally {

@@ -41,7 +41,6 @@ import org.slf4j.LoggerFactory;
 public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvider {
 
   private static final Logger LOG     = LoggerFactory.getLogger(LdapAuthenticationProviderImpl.class);
-  private static final String DN_ATTR = "distinguishedName";
 
   private String ldapURL;
   private String baseDN;
@@ -51,6 +50,9 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
   private static List<String> userFilter;
   private static List<String> groupFilter;
   private String customQuery;
+  private static String guid_attr;
+  private static String groupMembership_attr;
+  private static String groupClass_attr;
 
   LdapAuthenticationProviderImpl(HiveConf conf) {
     init(conf);
@@ -61,65 +63,66 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
     baseDN      = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_BASEDN);
     ldapDomain  = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_DOMAIN);
     customQuery = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_CUSTOMLDAPQUERY);
+    guid_attr   = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GUIDKEY);
+    groupBases  = new ArrayList<String>();
+    userBases   = new ArrayList<String>();
+    userFilter  = new ArrayList<String>();
+    groupFilter = new ArrayList<String>();
 
-    if (customQuery == null) {
-      groupBases             = new ArrayList<String>();
-      userBases              = new ArrayList<String>();
-      String groupDNPatterns = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPDNPATTERN);
-      String groupFilterVal  = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPFILTER);
-      String userDNPatterns  = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_USERDNPATTERN);
-      String userFilterVal   = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_USERFILTER);
+    String groupDNPatterns = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPDNPATTERN);
+    String groupFilterVal  = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPFILTER);
+    String userDNPatterns  = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_USERDNPATTERN);
+    String userFilterVal   = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_USERFILTER);
+    groupMembership_attr   = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPMEMBERSHIP_KEY);
+    groupClass_attr        = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPCLASS_KEY);
 
-      // parse COLON delimited root DNs for users/groups that may or may not be under BaseDN.
-      // Expect the root DNs be fully qualified including the baseDN
-      if (groupDNPatterns != null && groupDNPatterns.trim().length() > 0) {
-        String[] groupTokens = groupDNPatterns.split(":");
-        for (int i = 0; i < groupTokens.length; i++) {
-          if (groupTokens[i].contains(",") && groupTokens[i].contains("=")) {
-            groupBases.add(groupTokens[i]);
-          } else {
-            LOG.warn("Unexpected format for " + HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPDNPATTERN
-                         + "..ignoring " + groupTokens[i]);
-          }
-        }
-      } else if (baseDN != null) {
-        groupBases.add("uid=%s," + baseDN);
-      }
-
-      if (groupFilterVal != null && groupFilterVal.trim().length() > 0) {
-        groupFilter     = new ArrayList<String>();
-        String[] groups = groupFilterVal.split(",");
-        for (int i = 0; i < groups.length; i++) {
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("Filtered group: " + groups[i]);
-          }
-          groupFilter.add(groups[i]);
+    // parse COLON delimited root DNs for users/groups that may or may not be under BaseDN.
+    // Expect the root DNs be fully qualified including the baseDN
+    if (groupDNPatterns != null && groupDNPatterns.trim().length() > 0) {
+      String[] groupTokens = groupDNPatterns.split(":");
+      for (int i = 0; i < groupTokens.length; i++) {
+        if (groupTokens[i].contains(",") && groupTokens[i].contains("=")) {
+          groupBases.add(groupTokens[i]);
+        } else {
+          LOG.warn("Unexpected format for " + HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPDNPATTERN
+                       + "..ignoring " + groupTokens[i]);
         }
       }
+    } else if (baseDN != null) {
+      groupBases.add(guid_attr + "=%s," + baseDN);
+    }
 
-      if (userDNPatterns != null && userDNPatterns.trim().length() > 0) {
-        String[] userTokens = userDNPatterns.split(":");
-        for (int i = 0; i < userTokens.length; i++) {
-          if (userTokens[i].contains(",") && userTokens[i].contains("=")) {
-            userBases.add(userTokens[i]);
-          } else {
-            LOG.warn("Unexpected format for " + HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_USERDNPATTERN
-                         + "..ignoring " + userTokens[i]);
-          }
+    if (groupFilterVal != null && groupFilterVal.trim().length() > 0) {
+      String[] groups = groupFilterVal.split(",");
+      for (int i = 0; i < groups.length; i++) {
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Filtered group: " + groups[i]);
         }
-      } else if (baseDN != null) {
-        userBases.add("uid=%s," + baseDN);
+        groupFilter.add(groups[i]);
       }
+    }
 
-      if (userFilterVal != null && userFilterVal.trim().length() > 0) {
-        userFilter     = new ArrayList<String>();
-        String[] users = userFilterVal.split(",");
-        for (int i = 0; i < users.length; i++) {
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("Filtered user: " + users[i]);
-          }
-          userFilter.add(users[i]);
+    if (userDNPatterns != null && userDNPatterns.trim().length() > 0) {
+      String[] userTokens = userDNPatterns.split(":");
+      for (int i = 0; i < userTokens.length; i++) {
+        if (userTokens[i].contains(",") && userTokens[i].contains("=")) {
+          userBases.add(userTokens[i]);
+        } else {
+          LOG.warn("Unexpected format for " + HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_USERDNPATTERN
+                       + "..ignoring " + userTokens[i]);
         }
+      }
+    } else if (baseDN != null) {
+      userBases.add(guid_attr + "=%s," + baseDN);
+    }
+
+    if (userFilterVal != null && userFilterVal.trim().length() > 0) {
+      String[] users = userFilterVal.split(",");
+      for (int i = 0; i < users.length; i++) {
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Filtered user: " + users[i]);
+        }
+        userFilter.add(users[i]);
       }
     }
   }
@@ -159,7 +162,7 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
         try {
           bindDN = listIter.next().replaceAll("%s", user);
           env.put(Context.SECURITY_PRINCIPAL, bindDN);
-          LOG.debug("Connecting using principal=" + user + " at url=" + ldapURL);
+          LOG.debug("Connecting using DN " + bindDN + " at url " + ldapURL);
           ctx = new InitialDirContext(env);
           break;
         } catch (NamingException e) {
@@ -168,7 +171,7 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
       }
     } else {
       env.put(Context.SECURITY_PRINCIPAL, user);
-      LOG.debug("Connecting using principal=" + user + " at url=" + ldapURL);
+      LOG.debug("Connecting using principal " + user + " at url " + ldapURL);
       try {
         ctx = new InitialDirContext(env);
       } catch (NamingException e) {
@@ -177,9 +180,11 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
     }
 
     if (ctx == null) {
+      LOG.debug("Could not connect to the LDAP Server:Authentication failed for " + user);
       throw new AuthenticationException("LDAP Authentication failed for user", ex);
     }
 
+    LOG.debug("Connected using principal=" + user + " at url=" + ldapURL);
     try {
       if (isDN(user) || hasDomain(user)) {
         userName = extractName(user);
@@ -187,7 +192,24 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
         userName = user;
       }
 
-      if (userFilter == null && groupFilter == null && customQuery == null && userBases.size() > 0) {
+      // if a custom LDAP query is specified, it takes precedence over other configuration properties.
+      // if the user being authenticated is part of the resultset from the custom query, it succeeds.
+      if (customQuery != null) {
+        List<String> resultList = executeLDAPQuery(ctx, customQuery, baseDN);
+        if (resultList != null) {
+          for (String matchedDN : resultList) {
+            LOG.info("<queried user=" + matchedDN.split(",",2)[0].split("=",2)[1] + ",user=" + user + ">");
+            if (matchedDN.split(",",2)[0].split("=",2)[1].equalsIgnoreCase(user) ||
+                matchedDN.equalsIgnoreCase(user)) {
+              LOG.info("Authentication succeeded based on result set from LDAP query");
+              return;
+            }
+          }
+        }
+        LOG.info("Authentication failed based on result set from custom LDAP query");
+        throw new AuthenticationException("Authentication failed: LDAP query " +
+            "from property returned no data");
+      } else if (userBases.size() > 0) {
         if (isDN(user)) {
           userDN = findUserDNByDN(ctx, user);
         } else {
@@ -196,7 +218,7 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
           }
 
           if (userDN == null) {
-            userDN = findUserDNByName(ctx, baseDN, userName);
+            userDN = findUserDNByName(ctx, userName);
           }
         }
 
@@ -205,86 +227,60 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
         if (userDN == null) {
           throw new AuthenticationException("Authentication failed: User search failed");
         }
+
+        // This section checks if the user satisfies the specified user filter.
+        if (userFilter.size() > 0) {
+          LOG.info("Authenticating user " + user + " using user filter");
+
+          if (userDN != null) {
+            LOG.info("User filter partially satisfied");
+          }
+
+          boolean success = false;
+          for (String filteredUser : userFilter) {
+            if (filteredUser.equalsIgnoreCase(userName)) {
+              LOG.debug("User filter entirely satisfied");
+              success = true;
+              break;
+            }
+          }
+
+          if (!success) {
+            LOG.info("Authentication failed based on user membership");
+            throw new AuthenticationException("Authentication failed: User not a member " +
+                "of specified list");
+          }
+        }
+
+        // This section checks if the user satisfies the specified user filter.
+        if (groupFilter.size() > 0) {
+          LOG.debug("Authenticating user " + user + " using group membership");
+          List<String> userGroups = getGroupsForUser(ctx, userDN);
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("User member of :");
+            prettyPrint(userGroups);
+          }
+
+          if (userGroups != null) {
+            for (String elem : userGroups) {
+              String shortName = ((elem.split(","))[0].split("="))[1];
+              if (groupFilter.contains(shortName)) {
+                LOG.info("Authentication succeeded based on group membership");
+                return;
+              }
+            }
+          }
+
+          LOG.debug("Authentication failed: User is not a member of configured groups");
+          throw new AuthenticationException("Authentication failed: User not a member of " +
+              "listed groups");
+        }
+        LOG.info("Authentication succeeded using ldap user search");
         return;
       }
-
-      if (customQuery != null) {
-        List<String> resultList = executeLDAPQuery(ctx, customQuery, baseDN);
-        if (resultList != null) {
-          for (String matchedDN : resultList) {
-            if (matchedDN.split(",",2)[0].split("=",2)[1].equalsIgnoreCase(user)) {
-              LOG.info("Authentication succeeded based on result set from LDAP query");
-              return;
-            }
-          }
-        }
-        throw new AuthenticationException("Authentication failed: LDAP query " +
-            "from property returned no data");
-      }
-
-      // This section checks if the user satisfies the specified user filter.
-      if (userFilter != null && userFilter.size() > 0) {
-        LOG.info("Authenticating user " + user + " using user filter");
-
-        boolean success = false;
-        for (String filteredUser : userFilter) {
-          if (filteredUser.equalsIgnoreCase(userName)) {
-            LOG.debug("User filter partially satisfied");
-            success = true;
-            break;
-          }
-        }
-
-        if (!success) {
-          LOG.info("Authentication failed based on user membership");
-          throw new AuthenticationException("Authentication failed: User not a member " +
-              "of specified list");
-        }
-
-        userDN = findUserDNByPattern(ctx, userName);
-        if (userDN != null) {
-          LOG.info("User filter entirely satisfied");
-        } else {
-          LOG.info("User " + user + " could not be found in the configured UserBaseDN," +
-              "authentication failed");
-          throw new AuthenticationException("Authentication failed: UserDN could not be " +
-              "found in specified User base(s)");
-        }
-      }
-
-      if (groupFilter != null && groupFilter.size() > 0) {
-        LOG.debug("Authenticating user " + user + " using group membership:");
-
-        // if only groupFilter is configured.
-        if (userDN == null) {
-          userDN = findUserDNByName(ctx, baseDN, userName);
-        }
-
-        List<String> userGroups = getGroupsForUser(ctx, userDN);
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("User member of :");
-          prettyPrint(userGroups);
-        }
-
-        if (userGroups != null) {
-          for (String elem : userGroups) {
-            String shortName = ((elem.split(","))[0].split("="))[1];
-            String groupDN   = elem.split(",", 2)[1];
-            LOG.debug("Checking group:DN=" + elem + ",shortName=" + shortName +
-                ",groupDN=" + groupDN);
-            if (groupFilter.contains(shortName)) {
-              LOG.info("Authentication succeeded based on group membership");
-              return;
-            }
-          }
-        }
-
-        throw new AuthenticationException("Authentication failed: User not a member of " +
-            "listed groups");
-      }
-
+      // Ideally we should not be here. Indicates partially configured LDAP Service.
+      // We allow it for now for backward compatibility.
       LOG.info("Simple password authentication succeeded");
-
     } catch (NamingException e) {
       throw new AuthenticationException("LDAP Authentication failed for user", e);
     } finally {
@@ -337,7 +333,7 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
    */
   public static String findGroupDNByName(DirContext ctx, String baseDN, String groupName)
     throws NamingException {
-    String searchFilter  = "(&(objectClass=group)(CN=" + groupName + "))";
+    String searchFilter  = "(&(objectClass=" + groupClass_attr + ")(" + guid_attr + "=" + groupName + "))";
     List<String> results = null;
 
     results = findDNByName(ctx, baseDN, searchFilter, 2);
@@ -410,9 +406,9 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
    * @param userName A unique userid that is to be located in the LDAP.
    * @return LDAP DN if the user is found in LDAP, null otherwise.
    */
-  public static String findUserDNByName(DirContext ctx, String baseDN, String userName)
+  public static String findUserDNByName(DirContext ctx, String userName)
       throws NamingException {
-    if (baseDN == null) {
+    if (userBases.size() == 0) {
       return null;
     }
 
@@ -421,23 +417,28 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
                              "(|(uid=" + userName + ")(sAMAccountName=" + userName + ")))",
                              "(|(cn=*" + userName + "*)))"
                            };
-    String searchFilter  = null;
-    List<String> results = null;
+
+    String searchFilter           = null;
+    List<String> results          = null;
+    ListIterator<String> listIter = userBases.listIterator();
 
     for (int i = 0; i < suffix.length; i++) {
       searchFilter = baseFilter + suffix[i];
-      results      = findDNByName(ctx, baseDN, searchFilter, 2);
 
-      if(results == null) {
-        continue;
-      }
+      while (listIter.hasNext()) {
+        results = findDNByName(ctx, listIter.next().split(",",2)[1], searchFilter, 2);
 
-      if(results != null && results.size() > 1) {
-        //make sure there is not another item available, there should be only 1 match
-        LOG.info("Matched multiple users for the user: " + userName + ",returning null");
-        return null;
+        if(results == null) {
+          continue;
+        }
+
+        if(results != null && results.size() > 1) {
+          //make sure there is not another item available, there should be only 1 match
+          LOG.info("Matched multiple users for the user: " + userName + ",returning null");
+          return null;
+        }
+        return results.get(0);
       }
-      return results.get(0);
     }
     return null;
   }
@@ -525,37 +526,47 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
 
   /**
    * This helper method finds all the groups a given user belongs to.
-   * This method relies on the "memberOf" attribute being set on the user that references
-   * the group the group. The returned list ONLY includes direct groups the user belongs to.
-   * Parent groups of these direct groups are NOT included.
+   * This method relies on the attribute,configurable via HIVE_SERVER2_PLAIN_LDAP_GROUPMEMBERSHIP_KEY,
+   * being set on the user entry that references the group. The returned list ONLY includes direct
+   * groups the user belongs to. Parent groups of these direct groups are NOT included.
    * @param ctx DirContext for the LDAP Connection.
-   * @param userName A unique userid that is to be located in the LDAP.
+   * @param userDN A unique userDN that is to be located in the LDAP.
    * @return List of Group DNs the user belongs to, emptylist otherwise.
    */
   public static List<String> getGroupsForUser(DirContext ctx, String userDN)
       throws NamingException {
     List<String> groupList        = new ArrayList<String>();
-    String searchFilter           = "(" + DN_ATTR + "=" + userDN + ")";
+    String user                   = extractName(userDN);
+    String searchFilter           = "(&(objectClass=" + groupClass_attr + ")(|(" +
+                                      groupMembership_attr + "=" + userDN + ")(" +
+                                      groupMembership_attr + "=" + user + ")))";
     SearchControls searchControls = new SearchControls();
+    NamingEnumeration<SearchResult> results = null;
+    SearchResult result = null;
+    String groupBase = null;
 
     LOG.debug("getGroupsForUser:searchFilter=" + searchFilter);
-    String[] attrIDs = { "memberOf" };
+    String[] attrIDs = new String[0];
     searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
     searchControls.setReturningAttributes(attrIDs);
 
-    // treat everything after the first COMMA as a baseDN for the search to find this user
-    NamingEnumeration<SearchResult> results = ctx.search(userDN.split(",",2)[1], searchFilter,
-        searchControls);
-    while(results.hasMoreElements()) {
-      NamingEnumeration<? extends Attribute> groups = results.next().getAttributes().getAll();
-      while (groups.hasMore()) {
-        Attribute attr = groups.next();
-        NamingEnumeration<?> list = attr.getAll();
-        while (list.hasMore()) {
-          groupList.add((String)list.next());
+    ListIterator<String> listIter = groupBases.listIterator();
+    while (listIter.hasNext()) {
+      try {
+        groupBase = listIter.next().split(",", 2)[1];
+        LOG.debug("Searching for groups under " + groupBase);
+        results   = ctx.search(groupBase, searchFilter, searchControls);
+
+        while(results.hasMoreElements()) {
+          result = results.nextElement();
+          LOG.debug("Found Group:" + result.getNameInNamespace());
+          groupList.add(result.getNameInNamespace());
         }
+      } catch (NamingException e) {
+        LOG.warn("Exception searching for user groups", e);
       }
     }
+
     return groupList;
   }
 
@@ -577,6 +588,10 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
    */
   public static List<String> executeLDAPQuery(DirContext ctx, String query, String rootDN)
       throws NamingException {
+    if (rootDN == null) {
+      return null;
+    }
+
     SearchControls searchControls = new SearchControls();
     List<String> list             = new ArrayList<String>();
     String[] returnAttributes     = new String[0]; //empty set

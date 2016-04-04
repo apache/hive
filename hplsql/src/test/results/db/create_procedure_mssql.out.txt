@@ -37,7 +37,7 @@ Ln:38 SELECT 'Correct' FROM src LIMIT 1
 Ln:38 SELECT completed successfully
 Ln:38 Standalone SELECT executed: 1 columns in the result set
 Correct
-Ln:52 EXEC PROCEDURE spTest3
+Ln:51 EXEC PROCEDURE spTest3
 Ln:44 SELECT
 Ln:44 SELECT 'Correct' FROM src LIMIT 1
 Ln:44 SELECT completed successfully

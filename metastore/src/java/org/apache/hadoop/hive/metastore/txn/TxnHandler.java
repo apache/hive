@@ -23,6 +23,8 @@ import com.jolbox.bonecp.BoneCPDataSource;
 import org.apache.commons.dbcp.ConnectionFactory;
 import org.apache.commons.dbcp.DriverManagerConnectionFactory;
 import org.apache.commons.dbcp.PoolableConnectionFactory;
+import org.apache.commons.lang.NotImplementedException;
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -43,6 +45,8 @@ import javax.sql.DataSource;
 import java.io.IOException;
 import java.sql.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -85,7 +89,7 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 @InterfaceAudience.Private
 @InterfaceStability.Evolving
-abstract class TxnHandler implements TxnStore {
+abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
   static final protected char INITIATED_STATE = 'i';
   static final protected char WORKING_STATE = 'w';
@@ -136,6 +140,12 @@ abstract class TxnHandler implements TxnStore {
    * Derby specific concurrency control
    */
   private static final ReentrantLock derbyLock = new ReentrantLock(true);
+  /**
+   * must be static since even in UT there may be > 1 instance of TxnHandler
+   * (e.g. via Compactor services)
+   */
+  private final static ConcurrentHashMap<String, Semaphore> derbyKey2Lock = new ConcurrentHashMap<>();
+  private static final String hostname = ServerUtils.hostname();
 
   // Private methods should never catch SQLException and then throw MetaException.  The public
   // methods depend on SQLException coming back so they can detect and handle deadlocks.  Private
@@ -349,19 +359,46 @@ abstract class TxnHandler implements TxnStore {
         s = "update NEXT_TXN_ID set ntxn_next = " + (first + numTxns);
         LOG.debug("Going to execute update <" + s + ">");
         stmt.executeUpdate(s);
+
         long now = getDbTime(dbConn);
-        s = "insert into TXNS (txn_id, txn_state, txn_started, " +
-          "txn_last_heartbeat, txn_user, txn_host) values (?, 'o', " + now + ", " +
-          now + ", '" + rqst.getUser() + "', '" + rqst.getHostname() + "')";
-        LOG.debug("Going to prepare statement <" + s + ">");
-        PreparedStatement ps = dbConn.prepareStatement(s);
         List<Long> txnIds = new ArrayList<Long>(numTxns);
+        ArrayList<String> queries = new ArrayList<String>();
+        String query;
+        String insertClause = "insert into TXNS (txn_id, txn_state, txn_started, txn_last_heartbeat, txn_user, txn_host) values ";
+        StringBuilder valuesClause = new StringBuilder();
+
         for (long i = first; i < first + numTxns; i++) {
-          ps.setLong(1, i);
-          //todo: this would be more efficient with a single insert with multiple rows in values()
-          //need add a safeguard to not exceed the DB capabilities.
-          ps.executeUpdate();
           txnIds.add(i);
+
+          if (i > first &&
+              (i - first) % conf.getIntVar(HiveConf.ConfVars.METASTORE_DIRECT_SQL_MAX_ELEMENTS_VALUES_CLAUSE) == 0) {
+            // wrap up the current query, and start a new one
+            query = insertClause + valuesClause.toString();
+            queries.add(query);
+
+            valuesClause.setLength(0);
+            valuesClause.append("(").append(i).append(", 'o', ").append(now).append(", ").append(now)
+                .append(", '").append(rqst.getUser()).append("', '").append(rqst.getHostname())
+                .append("')");
+
+            continue;
+          }
+
+          if (i > first) {
+            valuesClause.append(", ");
+          }
+
+          valuesClause.append("(").append(i).append(", 'o', ").append(now).append(", ").append(now)
+              .append(", '").append(rqst.getUser()).append("', '").append(rqst.getHostname())
+              .append("')");
+        }
+
+        query = insertClause + valuesClause.toString();
+        queries.add(query);
+
+        for (String q : queries) {
+          LOG.debug("Going to execute update <" + q + ">");
+          stmt.execute(q);
         }
         LOG.debug("Going to commit");
         dbConn.commit();
@@ -514,7 +551,7 @@ abstract class TxnHandler implements TxnStore {
    * @throws MetaException
    */
   private ResultSet lockTransactionRecord(Statement stmt, long txnId, Character txnState) throws SQLException, MetaException {
-    String query = "select TXN_STATE from TXNS where TXN_ID = " + txnId + (txnState != null ? "AND TXN_STATE=" + quoteChar(txnState) : "");
+    String query = "select TXN_STATE from TXNS where TXN_ID = " + txnId + (txnState != null ? " AND TXN_STATE=" + quoteChar(txnState) : "");
     ResultSet rs = stmt.executeQuery(addForUpdateClause(query));
     if(rs.next()) {
       return rs;
@@ -810,8 +847,8 @@ abstract class TxnHandler implements TxnStore {
    */
   private static class LockInfoExt extends LockInfo {
     private final ShowLocksResponseElement e;
-    LockInfoExt(ShowLocksResponseElement e, long intLockId) {
-      super(e, intLockId);
+    LockInfoExt(ShowLocksResponseElement e) {
+      super(e);
       this.e = e;
     }
   }
@@ -827,7 +864,8 @@ abstract class TxnHandler implements TxnStore {
         stmt = dbConn.createStatement();
 
         String s = "select hl_lock_ext_id, hl_txnid, hl_db, hl_table, hl_partition, hl_lock_state, " +
-          "hl_lock_type, hl_last_heartbeat, hl_acquired_at, hl_user, hl_host, hl_lock_int_id from HIVE_LOCKS";
+          "hl_lock_type, hl_last_heartbeat, hl_acquired_at, hl_user, hl_host, hl_lock_int_id," +
+          "hl_blockedby_ext_id, hl_blockedby_int_id from HIVE_LOCKS";
         LOG.debug("Doing to execute query <" + s + ">");
         ResultSet rs = stmt.executeQuery(s);
         while (rs.next()) {
@@ -855,7 +893,16 @@ abstract class TxnHandler implements TxnStore {
           if (!rs.wasNull()) e.setAcquiredat(acquiredAt);
           e.setUser(rs.getString(10));
           e.setHostname(rs.getString(11));
-          sortedList.add(new LockInfoExt(e, rs.getLong(12)));
+          e.setLockIdInternal(rs.getLong(12));
+          long id = rs.getLong(13);
+          if(!rs.wasNull()) {
+            e.setBlockedByExtId(id);
+          }
+          id = rs.getLong(14);
+          if(!rs.wasNull()) {
+            e.setBlockedByIntId(id);
+          }
+          sortedList.add(new LockInfoExt(e));
         }
         LOG.debug("Going to rollback");
         dbConn.rollback();
@@ -1104,6 +1151,10 @@ abstract class TxnHandler implements TxnStore {
 
   private static void shouldNeverHappen(long txnid) {
     throw new RuntimeException("This should never happen: " + JavaUtils.txnIdToString(txnid));
+  }
+  private static void shouldNeverHappen(long txnid, long extLockId, long intLockId) {
+    throw new RuntimeException("This should never happen: " + JavaUtils.txnIdToString(txnid) + " "
+      + JavaUtils.lockIdToString(extLockId) + " " + intLockId);
   }
   public void addDynamicPartitions(AddDynamicPartitions rqst)
       throws NoSuchTxnException,  TxnAbortedException, MetaException {
@@ -1372,14 +1423,14 @@ abstract class TxnHandler implements TxnStore {
     }
   }
 
-  void rollbackDBConn(Connection dbConn) {
+  static void rollbackDBConn(Connection dbConn) {
     try {
       if (dbConn != null && !dbConn.isClosed()) dbConn.rollback();
     } catch (SQLException e) {
       LOG.warn("Failed to rollback db connection " + getMessage(e));
     }
   }
-  protected void closeDbConn(Connection dbConn) {
+  protected static void closeDbConn(Connection dbConn) {
     try {
       if (dbConn != null && !dbConn.isClosed()) {
         dbConn.close();
@@ -1393,7 +1444,7 @@ abstract class TxnHandler implements TxnStore {
    * Close statement instance.
    * @param stmt statement instance.
    */
-  protected void closeStmt(Statement stmt) {
+  protected static void closeStmt(Statement stmt) {
     try {
       if (stmt != null && !stmt.isClosed()) stmt.close();
     } catch (SQLException e) {
@@ -1405,7 +1456,7 @@ abstract class TxnHandler implements TxnStore {
    * Close the ResultSet.
    * @param rs may be {@code null}
    */
-  void close(ResultSet rs) {
+  static void close(ResultSet rs) {
     try {
       if (rs != null && !rs.isClosed()) {
         rs.close();
@@ -1419,7 +1470,7 @@ abstract class TxnHandler implements TxnStore {
   /**
    * Close all 3 JDBC artifacts in order: {@code rs stmt dbConn}
    */
-  void close(ResultSet rs, Statement stmt, Connection dbConn) {
+  static void close(ResultSet rs, Statement stmt, Connection dbConn) {
     close(rs);
     closeStmt(stmt);
     closeDbConn(dbConn);
@@ -1636,15 +1687,15 @@ abstract class TxnHandler implements TxnStore {
       }
       txnId = rs.getLong("hl_txnid");//returns 0 if value is NULL
     }
-    LockInfo(ShowLocksResponseElement e, long intLockId) {
+    LockInfo(ShowLocksResponseElement e) {
       extLockId = e.getLockid();
-      this.intLockId = intLockId;
+      intLockId = e.getLockIdInternal();
+      txnId = e.getTxnid();
       db = e.getDbname();
       table = e.getTablename();
       partition = e.getPartname();
       state = e.getState();
       type = e.getType();
-      txnId = e.getTxnid();
     }
 
     public boolean equals(Object other) {
@@ -1798,40 +1849,49 @@ abstract class TxnHandler implements TxnStore {
       stmt = dbConn.createStatement();
       //This is an update statement, thus at any Isolation level will take Write locks so will block
       //all other ops using S4U on TXNS row.
-      StringBuilder buf = new StringBuilder("update TXNS set txn_state = '" + TXN_ABORTED +
-        "' where txn_state = '" + TXN_OPEN + "' and txn_id in (");
-      boolean first = true;
-      for (Long id : txnids) {
-        if (first) first = false;
-        else buf.append(',');
-        buf.append(id);
-      }
-      buf.append(')');
+      List<String> queries = new ArrayList<String>();
+
+      StringBuilder prefix = new StringBuilder();
+      StringBuilder suffix = new StringBuilder();
+
+      prefix.append("update TXNS set txn_state = " + quoteChar(TXN_ABORTED) +
+        " where txn_state = " + quoteChar(TXN_OPEN) + " and ");
       if(max_heartbeat > 0) {
-        buf.append(" and txn_last_heartbeat < ").append(max_heartbeat);
-      }
-      LOG.debug("Going to execute update <" + buf.toString() + ">");
-      updateCnt = stmt.executeUpdate(buf.toString());
-      if(updateCnt < txnids.size()) {
-        /**
-         * have to bail in this case since we don't know which transactions were not Aborted and
-         * thus don't know which locks to delete
-         * This may happen due to a race between {@link #heartbeat(HeartbeatRequest)}  operation and
-         * {@link #performTimeOuts()}
-         */
-        return updateCnt;
+        suffix.append(" and txn_last_heartbeat < ").append(max_heartbeat);
+      } else {
+        suffix.append("");
       }
 
-      buf = new StringBuilder("delete from HIVE_LOCKS where hl_txnid in (");
-      first = true;
-      for (Long id : txnids) {
-        if (first) first = false;
-        else buf.append(',');
-        buf.append(id);
+      TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, txnids, "txn_id", true, false);
+
+      for (String query : queries) {
+        LOG.debug("Going to execute update <" + query + ">");
+        updateCnt = stmt.executeUpdate(query);
+        if (updateCnt < txnids.size()) {
+          /**
+           * have to bail in this case since we don't know which transactions were not Aborted and
+           * thus don't know which locks to delete
+           * This may happen due to a race between {@link #heartbeat(HeartbeatRequest)}  operation and
+           * {@link #performTimeOuts()}
+           */
+          return updateCnt;
+        }
       }
-      buf.append(')');
-      LOG.debug("Going to execute update <" + buf.toString() + ">");
-      stmt.executeUpdate(buf.toString());
+
+      queries.clear();
+      prefix.setLength(0);
+      suffix.setLength(0);
+
+      prefix.append("delete from HIVE_LOCKS where ");
+      suffix.append("");
+
+      TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, txnids, "hl_txnid", false, false);
+
+      for (String query : queries) {
+        LOG.debug("Going to execute update <" + query + ">");
+        int rc = stmt.executeUpdate(query);
+        LOG.debug("Removed " + rc + " records from HIVE_LOCKS");
+      }
     } finally {
       closeStmt(stmt);
     }
@@ -1934,9 +1994,10 @@ abstract class TxnHandler implements TxnStore {
 
     LOG.debug("Going to execute query <" + query.toString() + ">");
     Statement stmt = null;
+    ResultSet rs = null;
     try {
       stmt = dbConn.createStatement();
-      ResultSet rs = stmt.executeQuery(query.toString());
+      rs = stmt.executeQuery(query.toString());
       SortedSet<LockInfo> lockSet = new TreeSet<LockInfo>(new LockInfoComparator());
       while (rs.next()) {
         lockSet.add(new LockInfo(rs));
@@ -2007,7 +2068,20 @@ abstract class TxnHandler implements TxnStore {
           switch (lockAction) {
             case WAIT:
               if(!ignoreConflict(info, locks[i])) {
+                /*we acquire all locks for a given query atomically; if 1 blocks, all go into (remain) in
+                * Waiting state.  wait() will undo any 'acquire()' which may have happened as part of
+                * this (metastore db) transaction and then we record which lock blocked the lock
+                * we were testing ('info').*/
                 wait(dbConn, save);
+                String sqlText = "update HIVE_LOCKS" +
+                  " set HL_BLOCKEDBY_EXT_ID=" + locks[i].extLockId +
+                  ", HL_BLOCKEDBY_INT_ID=" + locks[i].intLockId +
+                  " where HL_LOCK_EXT_ID=" + info.extLockId + " and HL_LOCK_INT_ID=" + info.intLockId;
+                LOG.debug("Executing sql: " + sqlText);
+                int updCnt = stmt.executeUpdate(sqlText);
+                if(updCnt != 1) {
+                  shouldNeverHappen(info.txnId, info.extLockId, info.intLockId);
+                }
                 LOG.debug("Going to commit");
                 dbConn.commit();
                 response.setState(LockState.WAITING);
@@ -2036,7 +2110,7 @@ abstract class TxnHandler implements TxnStore {
       dbConn.commit();
       response.setState(LockState.ACQUIRED);
     } finally {
-      closeStmt(stmt);
+      close(rs, stmt, null);
     }
     return response;
   }
@@ -2250,31 +2324,28 @@ abstract class TxnHandler implements TxnStore {
       if(extLockIDs.size() <= 0) {
         return;
       }
-      int deletedLocks = 0;
+
+      List<String> queries = new ArrayList<String>();
+
+      StringBuilder prefix = new StringBuilder();
+      StringBuilder suffix = new StringBuilder();
+
       //include same hl_last_heartbeat condition in case someone heartbeated since the select
-      s = "delete from HIVE_LOCKS where hl_last_heartbeat < " + maxHeartbeatTime + " and hl_txnid = 0" +
-        " and hl_lock_ext_id IN (";
-      int numWholeBatches = extLockIDs.size() / TIMED_OUT_TXN_ABORT_BATCH_SIZE;
-      for(int i = 0; i < numWholeBatches; i++) {
-        StringBuilder sb = new StringBuilder(s);
-        for(int j = i * TIMED_OUT_TXN_ABORT_BATCH_SIZE; j < (i + 1) * TIMED_OUT_TXN_ABORT_BATCH_SIZE; j++) {
-          sb.append(extLockIDs.get(j)).append(",");
-        }
-        sb.setCharAt(sb.length() - 1, ')');
-        LOG.debug("Removing expired locks via: " + sb.toString());
-        deletedLocks += stmt.executeUpdate(sb.toString());
-        dbConn.commit();
+      prefix.append("delete from HIVE_LOCKS where hl_last_heartbeat < ");
+      prefix.append(maxHeartbeatTime);
+      prefix.append(" and hl_txnid = 0 and ");
+      suffix.append("");
+
+      TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, extLockIDs, "hl_lock_ext_id", true, false);
+
+      int deletedLocks = 0;
+      for (String query : queries) {
+        LOG.debug("Removing expired locks via: " + query);
+        deletedLocks += stmt.executeUpdate(query);
       }
-      StringBuilder sb = new StringBuilder(s);
-      for(int i = numWholeBatches * TIMED_OUT_TXN_ABORT_BATCH_SIZE; i < extLockIDs.size(); i++) {
-        sb.append(extLockIDs.get(i)).append(",");
-      }
-      sb.setCharAt(sb.length() - 1, ')');
-      LOG.debug("Removing expired locks via: " + sb.toString());
-      deletedLocks += stmt.executeUpdate(sb.toString());
       if(deletedLocks > 0) {
         LOG.info("Deleted " + deletedLocks + " ext locks from HIVE_LOCKS due to timeout (vs. " +
-          extLockIDs.size() + " found. List: " + extLockIDs + ") maxHeartbeatTime=" + maxHeartbeatTime);
+            extLockIDs.size() + " found. List: " + extLockIDs + ") maxHeartbeatTime=" + maxHeartbeatTime);
       }
       LOG.debug("Going to commit");
       dbConn.commit();
@@ -2564,6 +2635,40 @@ abstract class TxnHandler implements TxnStore {
     }
     return false;
   }
+  private boolean isDuplicateKeyError(SQLException ex) {
+    switch (dbProduct) {
+      case DERBY:
+        if("23505".equals(ex.getSQLState())) {
+          return true;
+        }
+        break;
+      case MYSQL:
+        if(ex.getErrorCode() == 1022 && "23000".equals(ex.getSQLState())) {
+          return true;
+        }
+        break;
+      case SQLSERVER:
+        //2627 is unique constaint violation incl PK, 2601 - unique key
+        if(ex.getErrorCode() == 2627 && "23000".equals(ex.getSQLState())) {
+          return true;
+        }
+        break;
+      case ORACLE:
+        if(ex.getErrorCode() == 1 && "23000".equals(ex.getSQLState())) {
+          return true;
+        }
+        break;
+      case POSTGRES:
+        //http://www.postgresql.org/docs/8.1/static/errcodes-appendix.html
+        if("23505".equals(ex.getSQLState())) {
+          return true;
+        }
+        break;
+      default:
+        throw new IllegalArgumentException("Unexpected DB type: " + dbProduct + "; " + getMessage(ex));
+    }
+    return false;
+  }
   private static String getMessage(SQLException ex) {
     return ex.getMessage() + "(SQLState=" + ex.getSQLState() + ",ErrorCode=" + ex.getErrorCode() + ")";
   }
@@ -2636,6 +2741,117 @@ abstract class TxnHandler implements TxnStore {
   private void unlockInternal() {
     if(dbProduct == DatabaseProduct.DERBY) {
       derbyLock.unlock();
+    }
+  }
+  @Override
+  public MutexAPI getMutexAPI() {
+    return this;
+  }
+
+  @Override
+  public LockHandle acquireLock(String key) throws MetaException {
+    /**
+     * The implementation here is a bit kludgey but done so that code exercised by unit tests
+     * (which run against Derby which has no support for select for update) is as similar to
+     * production code as possible.
+     * In particular, with Derby we always run in a single process with a single metastore and
+     * the absence of For Update is handled via a Semaphore.  The later would strictly speaking
+     * make the SQL statments below unnecessary (for Derby), but then they would not be tested.
+     */
+    Connection dbConn = null;
+    Statement stmt = null;
+    ResultSet rs = null;
+    try {
+      try {
+        String sqlStmt = addForUpdateClause("select MT_COMMENT from AUX_TABLE where MT_KEY1=" + quoteString(key) + " and MT_KEY2=0");
+        lockInternal();
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        stmt = dbConn.createStatement();
+        if(LOG.isDebugEnabled()) {
+          LOG.debug("About to execute SQL: " + sqlStmt);
+        }
+        rs = stmt.executeQuery(sqlStmt);
+        if (!rs.next()) {
+          close(rs);
+          try {
+            stmt.executeUpdate("insert into AUX_TABLE(MT_KEY1,MT_KEY2) values(" + quoteString(key) + ", 0)");
+            dbConn.commit();
+          } catch (SQLException ex) {
+            if (!isDuplicateKeyError(ex)) {
+              throw new RuntimeException("Unable to lock " + quoteString(key) + " due to: " + getMessage(ex), ex);
+            }
+          }
+          rs = stmt.executeQuery(sqlStmt);
+          if (!rs.next()) {
+            throw new IllegalStateException("Unable to lock " + quoteString(key) + ".  Expected row in AUX_TABLE is missing.");
+          }
+        }
+        Semaphore derbySemaphore = null;
+        if(dbProduct == DatabaseProduct.DERBY) {
+          derbyKey2Lock.putIfAbsent(key, new Semaphore(1));
+          derbySemaphore =  derbyKey2Lock.get(key);
+          derbySemaphore.acquire();
+        }
+        LOG.info(quoteString(key) + " locked by " + quoteString(TxnHandler.hostname));
+        //OK, so now we have a lock
+        return new LockHandleImpl(dbConn, stmt, rs, key, derbySemaphore);
+      } catch (SQLException ex) {
+        rollbackDBConn(dbConn);
+        close(rs, stmt, dbConn);
+        checkRetryable(dbConn, ex, "acquireLock(" + key + ")");
+        throw new MetaException("Unable to lock " + quoteString(key) + " due to: " + getMessage(ex) + "; " + StringUtils.stringifyException(ex));
+      }
+      catch(InterruptedException ex) {
+        rollbackDBConn(dbConn);
+        close(rs, stmt, dbConn);
+        throw new MetaException("Unable to lock " + quoteString(key) + " due to: " + ex.getMessage() + StringUtils.stringifyException(ex));
+      }
+      finally {
+        unlockInternal();
+      }
+    }
+    catch(RetryException ex) {
+      acquireLock(key);
+    }
+    throw new MetaException("This can't happen because checkRetryable() has a retry limit");
+  }
+  public void acquireLock(String key, LockHandle handle) {
+    //the idea is that this will use LockHandle.dbConn
+    throw new NotImplementedException();
+  }
+  private static final class LockHandleImpl implements LockHandle {
+    private final Connection dbConn;
+    private final Statement stmt;
+    private final ResultSet rs;
+    private final Semaphore derbySemaphore;
+    private final List<String> keys = new ArrayList<>();
+    LockHandleImpl(Connection conn, Statement stmt, ResultSet rs, String key, Semaphore derbySemaphore) {
+      this.dbConn = conn;
+      this.stmt = stmt;
+      this.rs = rs;
+      this.derbySemaphore = derbySemaphore;
+      if(derbySemaphore != null) {
+        //oterwise it may later release permit acquired by someone else
+        assert derbySemaphore.availablePermits() == 0 : "Expected locked Semaphore";
+      }
+      keys.add(key);
+    }
+    void addKey(String key) {
+      //keys.add(key);
+      //would need a list of (stmt,rs) pairs - 1 for each key
+      throw new NotImplementedException();
+    }
+    
+    @Override
+    public void releaseLocks() {
+      rollbackDBConn(dbConn);
+      close(rs, stmt, dbConn);
+      if(derbySemaphore != null) {
+        derbySemaphore.release();
+      }
+      for(String key : keys) {
+        LOG.info(quoteString(key) + " unlocked by " + quoteString(TxnHandler.hostname));
+      }
     }
   }
 }

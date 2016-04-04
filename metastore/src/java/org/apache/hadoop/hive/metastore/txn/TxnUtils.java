@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
+import java.util.List;
 import java.util.Set;
 
 public class TxnUtils {
@@ -74,8 +75,8 @@ public class TxnUtils {
     int i = 0;
     for (TxnInfo txn : txns.getOpen_txns()) {
       if (txn.getState() == TxnState.OPEN) minOpenTxn = Math.min(minOpenTxn, txn.getId());
-      exceptions[i++] = txn.getId();
-    }
+      exceptions[i++] = txn.getId();//todo: only add Aborted
+    }//remove all exceptions < minOpenTxn
     highWater = minOpenTxn == Long.MAX_VALUE ? highWater : minOpenTxn - 1;
     return new ValidCompactorTxnList(exceptions, -1, highWater);
   }
@@ -111,5 +112,99 @@ public class TxnUtils {
     Map<String, String> parameters = table.getParameters();
     String tableIsTransactional = parameters.get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
     return tableIsTransactional != null && tableIsTransactional.equalsIgnoreCase("true");
+  }
+
+  /**
+   * Build a query (or queries if one query is too big) with specified "prefix" and "suffix",
+   * while populating the IN list into multiple OR clauses, e.g. id in (1,2,3) OR id in (4,5,6)
+   * For NOT IN case, NOT IN list is broken into multiple AND clauses.
+   * @param queries array of complete query strings
+   * @param prefix part of the query that comes before IN list
+   * @param suffix part of the query that comes after IN list
+   * @param inList the list containing IN list values
+   * @param inColumn column name of IN list operator
+   * @param addParens add a pair of parenthesis outside the IN lists
+   *                  e.g. ( id in (1,2,3) OR id in (4,5,6) )
+   * @param notIn clause to be broken up is NOT IN
+   */
+  public static void buildQueryWithINClause(HiveConf conf, List<String> queries, StringBuilder prefix,
+                                            StringBuilder suffix, List<Long> inList,
+                                            String inColumn, boolean addParens, boolean notIn) {
+    int batchSize = conf.getIntVar(HiveConf.ConfVars.METASTORE_DIRECT_SQL_MAX_ELEMENTS_IN_CLAUSE);
+    int numWholeBatches = inList.size() / batchSize;
+    StringBuilder buf = new StringBuilder();
+    buf.append(prefix);
+    if (addParens) {
+      buf.append("(");
+    }
+    buf.append(inColumn);
+    if (notIn) {
+      buf.append(" not in (");
+    } else {
+      buf.append(" in (");
+    }
+
+    for (int i = 0; i <= numWholeBatches; i++) {
+      if (needNewQuery(conf, buf)) {
+        // Wrap up current query string
+        if (addParens) {
+          buf.append(")");
+        }
+        buf.append(suffix);
+        queries.add(buf.toString());
+
+        // Prepare a new query string
+        buf.setLength(0);
+      }
+
+      if (i > 0) {
+        if (notIn) {
+          if (buf.length() == 0) {
+            buf.append(prefix);
+            if (addParens) {
+              buf.append("(");
+            }
+          } else {
+            buf.append(" and ");
+          }
+          buf.append(inColumn);
+          buf.append(" not in (");
+        } else {
+          if (buf.length() == 0) {
+            buf.append(prefix);
+            if (addParens) {
+              buf.append("(");
+            }
+          } else {
+            buf.append(" or ");
+          }
+          buf.append(inColumn);
+          buf.append(" in (");
+        }
+      }
+
+      if (i * batchSize == inList.size()) {
+        // At this point we just realized we don't need another query
+        return;
+      }
+      for (int j = i * batchSize; j < (i + 1) * batchSize && j < inList.size(); j++) {
+        buf.append(inList.get(j)).append(",");
+      }
+      buf.setCharAt(buf.length() - 1, ')');
+    }
+
+    if (addParens) {
+      buf.append(")");
+    }
+    buf.append(suffix);
+    queries.add(buf.toString());
+  }
+
+  /** Estimate if the size of a string will exceed certain limit */
+  private static boolean needNewQuery(HiveConf conf, StringBuilder sb) {
+    int queryMemoryLimit = conf.getIntVar(HiveConf.ConfVars.METASTORE_DIRECT_SQL_MAX_QUERY_LENGTH);
+    // http://www.javamex.com/tutorials/memory/string_memory_usage.shtml
+    long sizeInBytes = 8 * (((sb.length() * 2) + 45) / 8);
+    return sizeInBytes / 1024 > queryMemoryLimit;
   }
 }

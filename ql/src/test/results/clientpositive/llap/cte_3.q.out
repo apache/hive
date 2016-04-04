@@ -40,6 +40,7 @@ STAGE PLANS:
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.q1
             Execution mode: llap
+            LLAP IO: no inputs
 
   Stage: Stage-2
     Dependency Collection
@@ -124,6 +125,7 @@ STAGE PLANS:
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.q1
             Execution mode: llap
+            LLAP IO: no inputs
 
   Stage: Stage-2
     Dependency Collection
@@ -211,6 +213,7 @@ STAGE PLANS:
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.q2
             Execution mode: llap
+            LLAP IO: no inputs
 
   Stage: Stage-2
     Dependency Collection
@@ -240,6 +243,7 @@ STAGE PLANS:
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.q1
             Execution mode: llap
+            LLAP IO: no inputs
 
   Stage: Stage-5
     Dependency Collection

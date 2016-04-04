@@ -46,14 +46,14 @@ public class Row {
   void addColumn(String name, String type) {
     Column column = new Column(name, type);
     columns.add(column);
-    columnMap.put(name, column);
+    columnMap.put(name.toUpperCase(), column);
   }
   
   /**
    * Get the data type by column name
    */
   String getType(String name) {
-    Column column = columnMap.get(name);
+    Column column = columnMap.get(name.toUpperCase());
     if (column != null) {
       return column.getType();
     }

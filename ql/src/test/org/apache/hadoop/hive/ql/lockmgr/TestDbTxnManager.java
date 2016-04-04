@@ -189,7 +189,13 @@ public class TestDbTxnManager {
   private void runReaper() throws Exception {
     int lastCount = houseKeeperService.getIsAliveCounter();
     houseKeeperService.start(conf);
+    int maxIter = 10;
+    int iterCount = 0;
     while(houseKeeperService.getIsAliveCounter() <= lastCount) {
+      if(iterCount++ >= maxIter) {
+        //prevent test hangs
+        throw new IllegalStateException("Reaper didn't run after " + iterCount + " waits");
+      }
       try {
         Thread.sleep(100);//make sure it has run at least once
       }

@@ -27,6 +27,7 @@ import org.apache.hive.service.rpc.thrift.TProtocolVersion;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
+import static org.mockito.Matchers.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -68,8 +69,8 @@ public class TestHiveSessionImpl {
     Mockito.when(operation.getHandle()).thenReturn(opHandle);
     Map<String, String> confOverlay = new HashMap<String, String>();
     String hql = "drop table if exists table_not_exists";
-    Mockito.when(operationManager.newExecuteStatementOperation(session, hql, confOverlay,
-            true)).thenReturn(operation);
+    Mockito.when(operationManager.newExecuteStatementOperation(same(session), eq(hql),
+        (Map<String, String>)Mockito.any(), eq(true))).thenReturn(operation);
 
     try {
 

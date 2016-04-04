@@ -34,6 +34,7 @@ import java.util.Set;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
@@ -207,7 +208,8 @@ public class MapWork extends BaseWork {
 
   public void deriveLlap(Configuration conf) {
     boolean hasLlap = false, hasNonLlap = false, hasAcid = false;
-    boolean isLlapOn = HiveInputFormat.isLlapEnabled(conf),
+    // Assume the IO is enabled on the daemon by default. We cannot reasonably check it here.
+    boolean isLlapOn = HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_ENABLED, llapMode),
         canWrapAny = isLlapOn && HiveInputFormat.canWrapAnyForLlap(conf, this);
     boolean hasPathToPartInfo = (pathToPartitionInfo != null && !pathToPartitionInfo.isEmpty());
     if (canWrapAny && hasPathToPartInfo) {

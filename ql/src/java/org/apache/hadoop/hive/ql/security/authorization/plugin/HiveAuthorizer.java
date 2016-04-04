@@ -23,6 +23,8 @@ import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPri
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 
 /**
@@ -234,5 +236,72 @@ public interface HiveAuthorizer {
    */
   Object getHiveAuthorizationTranslator() throws HiveAuthzPluginException;
 
+  /**
+   * TableMaskingPolicy defines how users can access base tables. It defines a
+   * policy on what columns and rows are hidden, masked or redacted based on
+   * user, role or location.
+   */
+  /**
+   * getRowFilterExpression is called once for each table in a query. It expects
+   * a valid filter condition to be returned. Null indicates no filtering is
+   * required.
+   *
+   * Example: table foo(c int) -> "c > 0 && c % 2 = 0"
+   *
+   * @param database
+   *          the name of the database in which the table lives
+   * @param table
+   *          the name of the table in question
+   * @return
+   * @throws SemanticException
+   */
+  public String getRowFilterExpression(String database, String table) throws SemanticException;
+
+  /**
+   * needTransform() is called once per user in a query. If the function returns
+   * true a call to needTransform(String database, String table) will happen.
+   * Returning false short-circuits the generation of row/column transforms.
+   *
+   * @return
+   * @throws SemanticException
+   */
+  public boolean needTransform();
+
+  /**
+   * needTransform(String database, String table) is called once per table in a
+   * query. If the function returns true a call to getRowFilterExpression and
+   * getCellValueTransformer will happen. Returning false short-circuits the
+   * generation of row/column transforms.
+   *
+   * @param database
+   *          the name of the database in which the table lives
+   * @param table
+   *          the name of the table in question
+   * @return
+   * @throws SemanticException
+   */
+  public boolean needTransform(String database, String table);
+
+  /**
+   * getCellValueTransformer is called once per column in each table accessed by
+   * the query. It expects a valid expression as used in a select clause. Null
+   * is not a valid option. If no transformation is needed simply return the
+   * column name.
+   *
+   * Example: column a -> "a" (no transform)
+   *
+   * Example: column a -> "reverse(a)" (call the reverse function on a)
+   *
+   * Example: column a -> "5" (replace column a with the constant 5)
+   *
+   * @param database
+   * @param table
+   * @param columnName
+   * @return
+   * @throws SemanticException
+   */
+  public String getCellValueTransformer(String database, String table, String columnName)
+      throws SemanticException;
+  
 }
 

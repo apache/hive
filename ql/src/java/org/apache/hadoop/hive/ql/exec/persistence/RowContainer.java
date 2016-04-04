@@ -31,6 +31,9 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.llap.LlapUtil;
+import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
@@ -91,7 +94,7 @@ public class RowContainer<ROW extends List<Object>>
   private long size;    // total # of elements in the RowContainer
   private File tmpFile; // temporary file holding the spilled blocks
   Path tempOutPath = null;
-  private File parentFile;
+  private File parentDir;
   private int itrCursor; // iterator cursor in the currBlock
   private int readBlockSize; // size of current read block
   private int addCursor; // append cursor in the lastBlock
@@ -112,6 +115,8 @@ public class RowContainer<ROW extends List<Object>>
   InputSplit[] inputSplits = null;
   private ROW dummyRow = null;
   private final Reporter reporter;
+  private final String spillFileDirs;
+
 
   Writable val = null; // cached to use serialize data
 
@@ -130,6 +135,7 @@ public class RowContainer<ROW extends List<Object>>
     this.size = 0;
     this.itrCursor = 0;
     this.addCursor = 0;
+    this.spillFileDirs = getLocalDirsForSpillFiles(jc);
     this.numFlushedBlocks = 0;
     this.tmpFile = null;
     this.currentWriteBlock = (ROW[]) new ArrayList[blockSize];
@@ -143,6 +149,11 @@ public class RowContainer<ROW extends List<Object>>
     } else {
       this.reporter = reporter;
     }
+  }
+
+  public static String getLocalDirsForSpillFiles(Configuration conf) {
+    return LlapProxy.isDaemon()
+        ? LlapUtil.getDaemonLocalDirList(conf) : conf.get("yarn.nodemanager.local-dirs");
   }
 
   private JobConf getLocalFSJobConfClone(Configuration jc) {
@@ -220,7 +231,7 @@ public class RowContainer<ROW extends List<Object>>
           }
 
           localJc.set(FileInputFormat.INPUT_DIR,
-              org.apache.hadoop.util.StringUtils.escapeString(parentFile.getAbsolutePath()));
+              org.apache.hadoop.util.StringUtils.escapeString(parentDir.getAbsolutePath()));
           inputSplits = inputFormat.getSplits(localJc, 1);
           actualSplitNum = inputSplits.length;
         }
@@ -289,7 +300,7 @@ public class RowContainer<ROW extends List<Object>>
   }
 
   private final ArrayList<Object> row = new ArrayList<Object>(2);
-
+  
   private void spillBlock(ROW[] block, int length) throws HiveException {
     try {
       if (tmpFile == null) {
@@ -445,8 +456,8 @@ public class RowContainer<ROW extends List<Object>>
       rw = null;
       rr = null;
       tmpFile = null;
-      deleteLocalFile(parentFile, true);
-      parentFile = null;
+      deleteLocalFile(parentDir, true);
+      parentDir = null;
     }
   }
 
@@ -518,21 +529,14 @@ public class RowContainer<ROW extends List<Object>>
         suffix = "." + this.keyObject.toString() + suffix;
       }
 
-      while (true) {
-        parentFile = File.createTempFile("hive-rowcontainer", "");
-        boolean success = parentFile.delete() && parentFile.mkdir();
-        if (success) {
-          break;
-        }
-        LOG.debug("retry creating tmp row-container directory...");
-      }
+      parentDir = FileUtils.createLocalDirsTempFile(spillFileDirs, "hive-rowcontainer", "", true);
 
-      tmpFile = File.createTempFile("RowContainer", suffix, parentFile);
+      tmpFile = File.createTempFile("RowContainer", suffix, parentDir);
       LOG.info("RowContainer created temp file " + tmpFile.getAbsolutePath());
       // Delete the temp file if the JVM terminate normally through Hadoop job
       // kill command.
       // Caveat: it won't be deleted if JVM is killed by 'kill -9'.
-      parentFile.deleteOnExit();
+      parentDir.deleteOnExit();
       tmpFile.deleteOnExit();
 
       // rFile = new RandomAccessFile(tmpFile, "rw");

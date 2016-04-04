@@ -60,6 +60,11 @@ public class VectorColumnSetInfo {
   protected int[] timestampIndices;
 
   /**
+   * indices of INTERVAL_DAY_TIME primitive keys.
+   */
+  protected int[] intervalDayTimeIndices;
+
+  /**
    * Helper class for looking up a key value based on key index.
    */
   public class KeyLookupHelper {
@@ -68,12 +73,13 @@ public class VectorColumnSetInfo {
     public int stringIndex;
     public int decimalIndex;
     public int timestampIndex;
+    public int intervalDayTimeIndex;
 
     private static final int INDEX_UNUSED = -1;
 
     private void resetIndices() {
         this.longIndex = this.doubleIndex = this.stringIndex = this.decimalIndex =
-            timestampIndex = INDEX_UNUSED;
+            timestampIndex = intervalDayTimeIndex = INDEX_UNUSED;
     }
     public void setLong(int index) {
       resetIndices();
@@ -99,6 +105,11 @@ public class VectorColumnSetInfo {
       resetIndices();
       this.timestampIndex= index;
     }
+
+    public void setIntervalDayTime(int index) {
+      resetIndices();
+      this.intervalDayTimeIndex= index;
+    }
   }
 
   /**
@@ -114,6 +125,7 @@ public class VectorColumnSetInfo {
   protected int stringIndicesIndex;
   protected int decimalIndicesIndex;
   protected int timestampIndicesIndex;
+  protected int intervalDayTimeIndicesIndex;
 
   protected VectorColumnSetInfo(int keyCount) {
     this.keyCount = keyCount;
@@ -130,6 +142,8 @@ public class VectorColumnSetInfo {
     decimalIndicesIndex = 0;
     timestampIndices = new int[this.keyCount];
     timestampIndicesIndex = 0;
+    intervalDayTimeIndices = new int[this.keyCount];
+    intervalDayTimeIndicesIndex = 0;
     indexLookup = new KeyLookupHelper[this.keyCount];
   }
 
@@ -172,6 +186,12 @@ public class VectorColumnSetInfo {
       ++timestampIndicesIndex;
       break;
 
+    case INTERVAL_DAY_TIME:
+      intervalDayTimeIndices[intervalDayTimeIndicesIndex] = addIndex;
+      indexLookup[addIndex].setIntervalDayTime(intervalDayTimeIndicesIndex);
+      ++intervalDayTimeIndicesIndex;
+      break;
+
     default:
       throw new HiveException("Unexpected column vector type " + columnVectorType);
     }
@@ -185,5 +205,6 @@ public class VectorColumnSetInfo {
     stringIndices = Arrays.copyOf(stringIndices, stringIndicesIndex);
     decimalIndices = Arrays.copyOf(decimalIndices, decimalIndicesIndex);
     timestampIndices = Arrays.copyOf(timestampIndices, timestampIndicesIndex);
+    intervalDayTimeIndices = Arrays.copyOf(intervalDayTimeIndices, intervalDayTimeIndicesIndex);
   }
 }
