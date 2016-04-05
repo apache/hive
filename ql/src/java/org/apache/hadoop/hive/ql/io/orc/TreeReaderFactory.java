@@ -1683,6 +1683,7 @@ public class TreeReaderFactory {
    * stripe.
    */
   public static class StringDictionaryTreeReader extends TreeReader {
+    private static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
     private DynamicByteArray dictionaryBuffer;
     private int[] dictionaryOffsets;
     protected IntegerReader reader;
@@ -1862,11 +1863,20 @@ public class TreeReaderFactory {
         }
         result.isRepeating = scratchlcv.isRepeating;
       } else {
-        // Entire stripe contains null strings.
-        result.isRepeating = true;
-        result.noNulls = false;
-        result.isNull[0] = true;
-        result.setRef(0, "".getBytes(), 0, 0);
+        if (dictionaryOffsets == null) {
+          // Entire stripe contains null strings.
+          result.isRepeating = true;
+          result.noNulls = false;
+          result.isNull[0] = true;
+          result.setRef(0, EMPTY_BYTE_ARRAY, 0, 0);
+        } else {
+          // stripe contains nulls and empty strings
+          for (int i = 0; i < batchSize; i++) {
+            if (!result.isNull[i]) {
+              result.setRef(i, EMPTY_BYTE_ARRAY, 0, 0);
+            }
+          }
+        }
       }
       return result;
     }
