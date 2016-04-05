@@ -18,6 +18,11 @@
 
 package org.apache.hadoop.hive.ql.util;
 
+import com.google.common.annotations.VisibleForTesting;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Estimation of memory footprint of object
  */
@@ -229,6 +234,8 @@ public enum JavaDataModel {
     return (value + align - 1) & ~(align - 1);
   }
 
+  private static final Logger LOG = LoggerFactory.getLogger(JavaDataModel.class);
+
   public static final int JAVA32_META = 12;
   public static final int JAVA32_ARRAY_META = 16;
   public static final int JAVA32_REF = 4;
@@ -246,22 +253,27 @@ public enum JavaDataModel {
 
   public static final int PRIMITIVE_BYTE = 1;    // byte
 
-  private static JavaDataModel current;
+  private static final class LazyHolder {
+    private static final JavaDataModel MODEL_FOR_SYSTEM = getModelForSystem();
+  }
 
-  public static JavaDataModel get() {
-    if (current != null) {
-      return current;
-    }
+  @VisibleForTesting
+  static JavaDataModel getModelForSystem() {
+    String props = null;
     try {
-      String props = System.getProperty("sun.arch.data.model");
-      if ("32".equals(props)) {
-        return current = JAVA32;
-      }
+      props = System.getProperty("sun.arch.data.model");
     } catch (Exception e) {
-      // ignore
+      LOG.warn("Failed to determine java data model, defaulting to 64", e);
+    }
+    if ("32".equals(props)) {
+      return JAVA32;
     }
     // TODO: separate model is needed for compressedOops, which can be guessed from memory size.
-    return current = JAVA64;
+    return JAVA64;
+  }
+
+  public static JavaDataModel get() {
+    return LazyHolder.MODEL_FOR_SYSTEM;
   }
 
   public static int round(int size) {
