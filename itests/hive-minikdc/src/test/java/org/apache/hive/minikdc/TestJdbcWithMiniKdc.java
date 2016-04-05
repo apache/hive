@@ -59,10 +59,10 @@ public class TestJdbcWithMiniKdc {
     }
   }
 
-  private static MiniHS2 miniHS2 = null;
-  private static MiniHiveKdc miniHiveKdc = null;
-  private static Map<String, String> confOverlay = new HashMap<String, String>();
-  private Connection hs2Conn;
+  protected static MiniHS2 miniHS2 = null;
+  protected static MiniHiveKdc miniHiveKdc = null;
+  protected static Map<String, String> confOverlay = new HashMap<String, String>();
+  protected Connection hs2Conn;
 
   @BeforeClass
   public static void beforeTest() throws Exception {
@@ -219,7 +219,7 @@ public class TestJdbcWithMiniKdc {
    * @param expectedValue
    * @throws Exception
    */
-  private void verifyProperty(String propertyName, String expectedValue) throws Exception {
+  protected void verifyProperty(String propertyName, String expectedValue) throws Exception {
     Statement stmt = hs2Conn .createStatement();
     ResultSet res = stmt.executeQuery("set " + propertyName);
     assertTrue(res.next());
@@ -229,7 +229,7 @@ public class TestJdbcWithMiniKdc {
   }
 
   // Store the given token in the UGI
-  private void storeToken(String tokenStr, UserGroupInformation ugi)
+  protected void storeToken(String tokenStr, UserGroupInformation ugi)
       throws Exception {
     Utils.setTokenStr(ugi,
         tokenStr, HiveAuthFactory.HS2_CLIENT_TOKEN);
