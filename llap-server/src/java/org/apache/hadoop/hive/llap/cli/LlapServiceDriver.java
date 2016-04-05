@@ -304,13 +304,18 @@ public class LlapServiceDriver {
     IOUtils.copyBytes(loggerContent,
         lfs.create(new Path(confPath, "llap-daemon-log4j2.properties"), true), conf, true);
 
-    String java_home = System.getenv("JAVA_HOME");
-    String jre_home = System.getProperty("java.home");
-    if (java_home == null) {
-      java_home = jre_home;
-    } else if (!java_home.equals(jre_home)) {
-      LOG.warn("Java versions might not match : JAVA_HOME=%s,process jre=%s", 
-          java_home, jre_home);
+    URL metrics2 = conf.getResource(LlapDaemon.HADOOP_METRICS2_PROPERTIES_FILE);
+    if (metrics2 != null) {
+      InputStream metrics2FileStream = metrics2.openStream();
+      IOUtils.copyBytes(metrics2FileStream,
+          lfs.create(new Path(confPath, LlapDaemon.HADOOP_METRICS2_PROPERTIES_FILE), true),
+          conf, true);
+    }
+
+    PrintWriter udfStream =
+        new PrintWriter(lfs.create(new Path(confPath, StaticPermanentFunctionChecker.PERMANENT_FUNCTIONS_LIST)));
+    for (String udfClass : allowedUdfs) {
+      udfStream.println(udfClass);
     }
 
     // extract configs for processing by the python fragments in Slider
