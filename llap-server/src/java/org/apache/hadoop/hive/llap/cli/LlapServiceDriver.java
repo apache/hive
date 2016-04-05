@@ -304,6 +304,14 @@ public class LlapServiceDriver {
     IOUtils.copyBytes(loggerContent,
         lfs.create(new Path(confPath, "llap-daemon-log4j2.properties"), true), conf, true);
 
+    URL metrics2 = conf.getResource(LlapDaemon.HADOOP_METRICS2_PROPERTIES_FILE);
+    if (metrics2 != null) {
+      InputStream metrics2FileStream = metrics2.openStream();
+      IOUtils.copyBytes(metrics2FileStream,
+              lfs.create(new Path(confPath, LlapDaemon.HADOOP_METRICS2_PROPERTIES_FILE), true),
+              conf, true);
+    }
+
     String java_home = System.getenv("JAVA_HOME");
     String jre_home = System.getProperty("java.home");
     if (java_home == null) {
