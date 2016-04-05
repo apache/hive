@@ -26,7 +26,6 @@ import java.util.UUID;
  */
 public class MetricsUtils {
   private static final String LOCALHOST = "localhost";
-  public static final String METRICS_CONTEXT = "llap";
   public static final String METRICS_PROCESS_NAME = "LlapDaemon";
 
 
