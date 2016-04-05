@@ -52,7 +52,7 @@ import org.apache.hadoop.metrics2.source.JvmMetrics;
 /**
  * Metrics about the llap daemon executors.
  */
-@Metrics(about = "LlapDaemon Executor Metrics", context = "executors")
+@Metrics(about = "LlapDaemon Executor Metrics", context = MetricsUtils.METRICS_CONTEXT)
 public class LlapDaemonExecutorMetrics implements MetricsSource {
 
   private final String name;
@@ -117,7 +117,7 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
   @Override
   public void getMetrics(MetricsCollector collector, boolean b) {
     MetricsRecordBuilder rb = collector.addRecord(ExecutorMetrics)
-        .setContext("executors")
+        .setContext(MetricsUtils.METRICS_CONTEXT)
         .tag(ProcessName, MetricsUtils.METRICS_PROCESS_NAME)
         .tag(SessionId, sessionId);
     getExecutorStats(rb);

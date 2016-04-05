@@ -45,7 +45,7 @@ import com.google.common.annotations.VisibleForTesting;
 /**
  * Llap daemon cache metrics source.
  */
-@Metrics(about = "LlapDaemon Cache Metrics", context = "cache")
+@Metrics(about = "LlapDaemon Cache Metrics", context = MetricsUtils.METRICS_CONTEXT)
 public class LlapDaemonCacheMetrics implements MetricsSource {
   final String name;
   private String sessionId;
@@ -127,7 +127,7 @@ public class LlapDaemonCacheMetrics implements MetricsSource {
   @Override
   public void getMetrics(MetricsCollector collector, boolean b) {
     MetricsRecordBuilder rb = collector.addRecord(CacheMetrics)
-        .setContext("cache")
+        .setContext(MetricsUtils.METRICS_CONTEXT)
         .tag(ProcessName, MetricsUtils.METRICS_PROCESS_NAME)
         .tag(SessionId, sessionId);
     getCacheStats(rb);

@@ -38,7 +38,7 @@ import org.apache.hadoop.metrics2.lib.MutableRate;
 /**
  *
  */
-@Metrics(about = "LlapDaemon Queue Metrics", context = "queue")
+@Metrics(about = "LlapDaemon Queue Metrics", context = MetricsUtils.METRICS_CONTEXT)
 public class LlapDaemonQueueMetrics implements MetricsSource {
   private final String name;
   private final String sessionId;
@@ -78,7 +78,7 @@ public class LlapDaemonQueueMetrics implements MetricsSource {
   @Override
   public void getMetrics(MetricsCollector collector, boolean b) {
     MetricsRecordBuilder rb = collector.addRecord(QueueMetrics)
-        .setContext("queue")
+        .setContext(MetricsUtils.METRICS_CONTEXT)
         .tag(ProcessName, MetricsUtils.METRICS_PROCESS_NAME)
         .tag(SessionId, sessionId);
     getQueueStats(rb);
