@@ -438,8 +438,6 @@ public abstract class BaseSemanticAnalyzer {
     }
   }
 
-  private static final int[] multiplier = new int[] {1000, 100, 10, 1};
-
   @SuppressWarnings("nls")
   public static String unescapeSQLString(String b) {
     Character enclosure = null;
@@ -469,7 +467,7 @@ public abstract class BaseSemanticAnalyzer {
         int base = i + 2;
         for (int j = 0; j < 4; j++) {
           int digit = Character.digit(b.charAt(j + base), 16);
-          code += digit * multiplier[j];
+          code = (code << 4) + digit;
         }
         sb.append((char)code);
         i += 5;
