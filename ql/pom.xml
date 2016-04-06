@@ -694,6 +694,7 @@
                   <include>org.spark-project.hive.shims:hive-shims-0.23</include>
                   <include>org.spark-project.hive.shims:hive-shims-0.23</include>
                   <include>org.spark-project.hive.shims:hive-shims-common</include>
+                  <include>com.esotericsoftware.kryo:kryo</include>
                   <include>com.google.protobuf:protobuf-java</include>
                 </includes>
               </artifactSet>
@@ -732,12 +733,10 @@
               </artifactSet>
 -->
               <relocations>
-<!--
                 <relocation>
                   <pattern>com.esotericsoftware</pattern>
-                  <shadedPattern>org.spark-project.hive.com.esotericsoftware</shadedPattern>
+                  <shadedPattern>org.spark-project.hive.shaded.com.esotericsoftware</shadedPattern>
                 </relocation>
--->
                 <relocation>
                   <pattern>com.google.protobuf</pattern>
                   <shadedPattern>org.apache.hive.shaded.com.google.protobuf</shadedPattern>
