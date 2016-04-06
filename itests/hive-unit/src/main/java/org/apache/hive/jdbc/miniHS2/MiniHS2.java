@@ -79,8 +79,6 @@ public class MiniHS2 extends AbstractHiveService {
     private String serverKeytab;
     private boolean isHTTPTransMode = false;
     private boolean isMetastoreRemote;
-    private boolean usePortsFromConf = false;
-    private String authType = "KERBEROS";
 
     public Builder() {
     }
@@ -94,11 +92,6 @@ public class MiniHS2 extends AbstractHiveService {
       this.useMiniKdc = true;
       this.serverPrincipal = serverPrincipal;
       this.serverKeytab = serverKeytab;
-      return this;
-    }
-
-    public Builder withAuthenticationType(String authType) {
-      this.authType = authType;
       return this;
     }
 
@@ -132,7 +125,7 @@ public class MiniHS2 extends AbstractHiveService {
         hiveConf.setVar(ConfVars.HIVE_SERVER2_TRANSPORT_MODE, HS2_BINARY_MODE);
       }
       return new MiniHS2(hiveConf, miniClusterType, useMiniKdc, serverPrincipal, serverKeytab,
-          isMetastoreRemote, authType);
+          isMetastoreRemote);
     }
   }
 
@@ -169,7 +162,7 @@ public class MiniHS2 extends AbstractHiveService {
   }
 
   private MiniHS2(HiveConf hiveConf, MiniClusterType miniClusterType, boolean useMiniKdc,
-      String serverPrincipal, String serverKeytab, boolean isMetastoreRemote, String authType) throws Exception {
+      String serverPrincipal, String serverKeytab, boolean isMetastoreRemote) throws Exception {
     super(hiveConf, "localhost", MetaStoreUtils.findFreePort(), MetaStoreUtils.findFreePort());
     this.miniClusterType = miniClusterType;
     this.useMiniKdc = useMiniKdc;
@@ -207,7 +200,7 @@ public class MiniHS2 extends AbstractHiveService {
     if (useMiniKdc) {
       hiveConf.setVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL, serverPrincipal);
       hiveConf.setVar(ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB, serverKeytab);
-      hiveConf.setVar(ConfVars.HIVE_SERVER2_AUTHENTICATION, authType);
+      hiveConf.setVar(ConfVars.HIVE_SERVER2_AUTHENTICATION, "KERBEROS");
     }
     String metaStoreURL =  "jdbc:derby:" + baseDir.getAbsolutePath() + File.separator + "test_metastore-" +
         hs2Counter.incrementAndGet() + ";create=true";
@@ -243,7 +236,7 @@ public class MiniHS2 extends AbstractHiveService {
   }
 
   public MiniHS2(HiveConf hiveConf, MiniClusterType clusterType) throws Exception {
-    this(hiveConf, clusterType, false, null, null, false, "KERBEROS");
+    this(hiveConf, clusterType, false, null, null, false);
   }
 
   public void start(Map<String, String> confOverlay) throws Exception {

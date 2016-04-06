@@ -102,7 +102,7 @@ public class HiveAuthFactory {
     transportMode = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_TRANSPORT_MODE);
     authTypeStr = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_AUTHENTICATION);
 
-    // ShimLoader.getHadoopShims().isSecurityEnabled() will only check that
+    // ShimLoader.getHadoopShims().isSecurityEnabled() will only check that·
     // hadoopAuth is not simple, it does not guarantee it is kerberos
     hadoopAuth = conf.get(HADOOP_SECURITY_AUTHENTICATION, "simple");
 
@@ -114,7 +114,8 @@ public class HiveAuthFactory {
         authTypeStr = AuthTypes.NONE.getAuthName();
       }
     }
-    if (isSASLWithKerberizedHadoop()) {
+    if (hadoopAuth.equalsIgnoreCase(AuthTypes.KERBEROS.getAuthName())
+          && !authTypeStr.equalsIgnoreCase(AuthTypes.NOSASL.getAuthName())) {
       saslServer = ShimLoader.getHadoopThriftAuthBridge().createServer(
           conf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB),
           conf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL));
@@ -148,7 +149,8 @@ public class HiveAuthFactory {
     TTransportFactory transportFactory;
     TSaslServerTransport.Factory serverTransportFactory;
 
-    if (isSASLWithKerberizedHadoop()) {
+    if (hadoopAuth.equalsIgnoreCase("kerberos") && !authTypeStr.equalsIgnoreCase(
+          AuthTypes.NOSASL.getAuthName())) {
       try {
         serverTransportFactory = saslServer.createSaslServerTransportFactory(
             getSaslProperties());
@@ -192,7 +194,7 @@ public class HiveAuthFactory {
    * @throws LoginException
    */
   public TProcessorFactory getAuthProcFactory(ThriftCLIService service) throws LoginException {
-    if (isSASLWithKerberizedHadoop()) {
+    if (authTypeStr.equalsIgnoreCase(AuthTypes.KERBEROS.getAuthName())) {
       return KerberosSaslHelper.getKerberosProcessorFactory(saslServer, service);
     } else {
       return PlainSaslHelper.getPlainProcessorFactory(service);
@@ -209,11 +211,6 @@ public class HiveAuthFactory {
     } else {
       return saslServer.getRemoteAddress().getHostAddress();
     }
-  }
-
-  public boolean isSASLWithKerberizedHadoop() {
-    return "kerberos".equalsIgnoreCase(hadoopAuth)
-        && !authTypeStr.equalsIgnoreCase(AuthTypes.NOSASL.getAuthName());
   }
 
   // Perform kerberos login using the hadoop shim API if the configuration is available
