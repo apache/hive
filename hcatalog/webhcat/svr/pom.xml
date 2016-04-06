@@ -23,7 +23,7 @@
 
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.apache.hive.hcatalog</groupId>
+    <groupId>org.spark-project.hive.hcatalog</groupId>
     <artifactId>hive-hcatalog</artifactId>
     <version>1.2.1.spark2</version>
     <relativePath>../../pom.xml</relativePath>
@@ -41,7 +41,7 @@
     <!-- dependencies are always listed in sorted order by groupId, artifactId -->
     <!-- intra-project -->
     <dependency>
-      <groupId>org.apache.hive.hcatalog</groupId>
+      <groupId>org.spark-project.hive.hcatalog</groupId>
       <artifactId>hive-hcatalog-core</artifactId>
       <version>${project.version}</version>
       <scope>provided</scope>

@@ -20,12 +20,12 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.apache.hive</groupId>
+    <groupId>org.spark-project.hive</groupId>
     <artifactId>hive</artifactId>
     <version>1.2.1.spark2</version>
   </parent>
 
-  <groupId>org.apache.hive</groupId>
+  <groupId>org.spark-project.hive</groupId>
   <artifactId>spark-client</artifactId>
   <packaging>jar</packaging>
   <name>Spark Remote Client</name>
@@ -51,7 +51,7 @@
       <artifactId>netty-all</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.apache.hive</groupId>
+      <groupId>org.spark-project.hive</groupId>
       <artifactId>hive-common</artifactId>
       <version>${project.version}</version>
     </dependency>

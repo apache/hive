@@ -17,7 +17,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.apache.hive</groupId>
+    <groupId>org.spark-project.hive</groupId>
     <artifactId>hive-it</artifactId>
     <version>1.2.1</version>
     <relativePath>../pom.xml</relativePath>
@@ -36,82 +36,82 @@
     <!-- dependencies are always listed in sorted order by groupId, artifectId -->
     <!-- test intra-project -->
     <dependency>
-      <groupId>org.apache.hive</groupId>
+      <groupId>org.spark-project.hive</groupId>
       <artifactId>hive-common</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.hive</groupId>
+      <groupId>org.spark-project.hive</groupId>
       <artifactId>hive-beeline</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.hive</groupId>
+      <groupId>org.spark-project.hive</groupId>
       <artifactId>hive-cli</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.hive</groupId>
+      <groupId>org.spark-project.hive</groupId>
       <artifactId>hive-it-unit</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.hive</groupId>
+      <groupId>org.spark-project.hive</groupId>
       <artifactId>hive-it-unit</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
       <classifier>tests</classifier>
     </dependency>
     <dependency>
-      <groupId>org.apache.hive</groupId>
+      <groupId>org.spark-project.hive</groupId>
       <artifactId>hive-jdbc</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.hive</groupId>
+      <groupId>org.spark-project.hive</groupId>
       <artifactId>hive-metastore</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.hive</groupId>
+      <groupId>org.spark-project.hive</groupId>
       <artifactId>hive-metastore</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
       <classifier>tests</classifier>
     </dependency>
     <dependency>
-      <groupId>org.apache.hive</groupId>
+      <groupId>org.spark-project.hive</groupId>
       <artifactId>hive-serde</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.hive</groupId>
+      <groupId>org.spark-project.hive</groupId>
       <artifactId>hive-service</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.hive</groupId>
+      <groupId>org.spark-project.hive</groupId>
       <artifactId>hive-service</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
       <classifier>tests</classifier>
     </dependency>
     <dependency>
-      <groupId>org.apache.hive</groupId>
+      <groupId>org.spark-project.hive</groupId>
       <artifactId>hive-exec</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.hive</groupId>
+      <groupId>org.spark-project.hive</groupId>
       <artifactId>hive-exec</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>

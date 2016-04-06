@@ -22,13 +22,13 @@
      xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.apache.hive</groupId>
+    <groupId>org.spark-project.hive</groupId>
     <artifactId>hive</artifactId>
     <version>1.2.1.spark2</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <groupId>org.apache.hive.hcatalog</groupId>
+  <groupId>org.spark-project.hive.hcatalog</groupId>
   <artifactId>hive-hcatalog</artifactId>
   <packaging>pom</packaging>
   <name>Hive HCatalog</name>

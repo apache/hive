@@ -18,7 +18,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.apache.hive</groupId>
+    <groupId>org.spark-project.hive</groupId>
     <artifactId>hive-it</artifactId>
     <version>1.2.1</version>
     <relativePath>../pom.xml</relativePath>
@@ -42,56 +42,56 @@
     <!-- dependencies are always listed in sorted order by groupId, artifectId -->
     <!-- test intra-project -->
     <dependency>
-      <groupId>org.apache.hive</groupId>
+      <groupId>org.spark-project.hive</groupId>
       <artifactId>hive-ant</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.hive</groupId>
+      <groupId>org.spark-project.hive</groupId>
       <artifactId>hive-common</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.hive</groupId>
+      <groupId>org.spark-project.hive</groupId>
       <artifactId>hive-contrib</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.hive</groupId>
+      <groupId>org.spark-project.hive</groupId>
       <artifactId>hive-metastore</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.hive</groupId>
+      <groupId>org.spark-project.hive</groupId>
       <artifactId>hive-metastore</artifactId>
       <version>${project.version}</version>
       <classifier>tests</classifier>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.hive</groupId>
+      <groupId>org.spark-project.hive</groupId>
       <artifactId>hive-it-custom-serde</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.hive</groupId>
+      <groupId>org.spark-project.hive</groupId>
       <artifactId>hive-it-util</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.hive</groupId>
+      <groupId>org.spark-project.hive</groupId>
       <artifactId>hive-serde</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.hive</groupId>
+      <groupId>org.spark-project.hive</groupId>
       <artifactId>hive-exec</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
@@ -597,7 +597,7 @@
                   <equals arg1="${execute.beeline.tests}" arg2="true" />
                     <then>
                       <qtestgen hiveRootDirectory="${basedir}/${hive.path.to.root}/"
-                        outputDirectory="${project.build.directory}/generated-test-sources/java/org/apache/hive/beeline/util/"
+                        outputDirectory="${project.build.directory}/generated-test-sources/java/org.spark-project.hive/beeline/util/"
                         templatePath="${ql.test.template.dir}" template="TestBeeLineDriver.vm"
                         queryDirectory="${basedir}/${hive.path.to.root}/ql/src/test/queries/clientpositive/"
                         queryFile="${qfile}"

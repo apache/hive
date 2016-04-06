@@ -17,13 +17,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.apache.hive</groupId>
+    <groupId>org.spark-project.hive</groupId>
     <artifactId>hive-it</artifactId>
     <version>1.2.1</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <groupId>org.apache.hive</groupId>
+  <groupId>org.spark-project.hive</groupId>
   <artifactId>hive-jmh</artifactId>
   <packaging>jar</packaging>
 
@@ -49,12 +49,12 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.hive</groupId>
+      <groupId>org.spark-project.hive</groupId>
       <artifactId>hive-serde</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.apache.hive</groupId>
+      <groupId>org.spark-project.hive</groupId>
       <artifactId>hive-exec</artifactId>
       <version>${project.version}</version>
     </dependency>
