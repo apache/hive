@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.llap.cli;
 
+import jline.TerminalFactory;
+
 import java.io.IOException;
 import java.util.Properties;
 
@@ -224,9 +226,9 @@ public class LlapOptionsProcessor {
         .withDescription("Use value for given property. Overridden by explicit parameters")
         .create());
 
-    options.addOption(OptionBuilder.hasArg().withArgName(OPTION_SLIDER_AM_CONTAINER_MB)
+    options.addOption(OptionBuilder.hasArg().withArgName("b")
         .withLongOpt(OPTION_SLIDER_AM_CONTAINER_MB)
-        .withDescription("The size of the slider AppMaster container in MB").create());
+        .withDescription("The size of the slider AppMaster container in MB").create('b'));
 
     options.addOption(OptionBuilder.hasArg().withArgName(OPTION_IO_THREADS)
         .withLongOpt(OPTION_IO_THREADS).withDescription("executor per instance").create('t'));
@@ -284,6 +286,14 @@ public class LlapOptionsProcessor {
   }
 
   private void printUsage() {
-    new HelpFormatter().printHelp("llap", options);
+    HelpFormatter hf = new HelpFormatter();
+    try {
+      int width = hf.getWidth();
+      int jlineWidth = TerminalFactory.get().getWidth();
+      width = Math.min(160, Math.max(jlineWidth, width)); // Ignore potentially incorrect values
+      hf.setWidth(width);
+    } catch (Throwable t) { // Ignore
+    }
+    hf.printHelp("llap", options);
   }
 }
