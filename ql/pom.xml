@@ -739,7 +739,7 @@
                 </relocation>
                 <relocation>
                   <pattern>com.google.protobuf</pattern>
-                  <shadedPattern>org.spark-project.hive.shaded.com.google.protobuf</shadedPattern>
+                  <shadedPattern>org.apache.hive.com.google.protobuf</shadedPattern>
                 </relocation>
               </relocations>
             </configuration>
