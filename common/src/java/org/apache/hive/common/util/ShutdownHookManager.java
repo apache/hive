@@ -172,9 +172,12 @@ public class ShutdownHookManager {
    *
    * @param shutdownHook shutdownHook to remove.
    * @return TRUE if the shutdownHook was registered and removed,
-   * FALSE otherwise.
+   * FALSE otherwise (including when shutdownHook == null)
    */
   public static boolean removeShutdownHook(Runnable shutdownHook) {
+    if (shutdownHook == null) {
+      return false;
+    }
     return MGR.removeShutdownHookInternal(shutdownHook);
   }
 
