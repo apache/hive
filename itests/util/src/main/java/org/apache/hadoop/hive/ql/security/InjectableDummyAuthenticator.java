@@ -105,4 +105,9 @@ public class InjectableDummyAuthenticator implements HiveMetastoreAuthentication
     //no-op
   }
 
+  @Override
+  public String getUserIpAddress() {
+    return null;
+  }
+
 }

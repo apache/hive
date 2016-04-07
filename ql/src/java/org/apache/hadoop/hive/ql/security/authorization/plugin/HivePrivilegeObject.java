@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.security.authorization.plugin;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -107,6 +108,16 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
   private final List<String> partKeys;
   private final List<String> columns;
   private final HivePrivObjectActionType actionType;
+  // cellValueTransformers is corresponding to the columns.
+  // Its size should be the same as columns.
+  // For example, if a table has two columns, "key" and "value"
+  // we may mask "value" as "reverse(value)". Then cellValueTransformers
+  // should be "key" and "reverse(value)"
+  private List<String> cellValueTransformers;
+  // rowFilterExpression is applied to the whole table, i.e., dbname.objectName
+  // For example, rowFilterExpression can be "key % 2 = 0 and key < 10" and it
+  // is applied to the table.
+  private String rowFilterExpression;
 
   public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName) {
     this(type, dbname, objectName, HivePrivObjectActionType.OTHER);
@@ -137,6 +148,10 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
   public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName,
     List<String> partKeys, List<String> columns, List<String> commandParams) {
     this(type, dbname, objectName, partKeys, columns, HivePrivObjectActionType.OTHER, commandParams);
+  }
+
+  public HivePrivilegeObject(String dbname, String objectName, List<String> columns) {
+    this(null, dbname, objectName, null, columns, null);
   }
 
   public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName,
@@ -241,5 +256,21 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
 
   private String getDbObjectName(String dbname2, String objectName2) {
     return (dbname == null ? "" : dbname + ".") + objectName;
+  }
+
+  public List<String> getCellValueTransformers() {
+    return cellValueTransformers;
+  }
+
+  public void setCellValueTransformers(List<String> cellValueTransformers) {
+    this.cellValueTransformers = cellValueTransformers;
+  }
+
+  public String getRowFilterExpression() {
+    return rowFilterExpression;
+  }
+
+  public void setRowFilterExpression(String rowFilterExpression) {
+    this.rowFilterExpression = rowFilterExpression;
   }
 }

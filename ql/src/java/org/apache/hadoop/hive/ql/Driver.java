@@ -104,7 +104,7 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationUtils;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.QueryContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivObjectActionType;
@@ -847,8 +847,7 @@ public class Driver implements CommandProcessor {
     since the insert will get passed the columns from the select.
      */
 
-    HiveAuthzContext.Builder authzContextBuilder = new HiveAuthzContext.Builder();
-    authzContextBuilder.setUserIpAddress(ss.getUserIpAddress());
+    QueryContext.Builder authzContextBuilder = new QueryContext.Builder();
     authzContextBuilder.setCommandString(command);
 
     HiveOperationType hiveOpType = getHiveOperationType(op);

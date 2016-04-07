@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.antlr.runtime.TokenRewriteStream;
@@ -24,6 +25,9 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.QueryContext;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,10 +45,15 @@ public class TableMask {
   private UnparseTranslator translator;
   private boolean enable;
   private boolean needsRewrite;
+  private QueryContext queryContext;
 
   public TableMask(SemanticAnalyzer analyzer, HiveConf conf) throws SemanticException {
     try {
       authorizer = SessionState.get().getAuthorizerV2();
+      String cmdString = analyzer.ctx.getCmd();
+      QueryContext.Builder ctxBuilder = new QueryContext.Builder();
+      ctxBuilder.setCommandString(cmdString);
+      queryContext = ctxBuilder.build();
       if (authorizer != null && needTransform()) {
         enable = true;
         translator = new UnparseTranslator(conf);
@@ -56,12 +65,9 @@ public class TableMask {
     }
   }
 
-  private String createRowMask(String db, String name) throws SemanticException {
-    return authorizer.getRowFilterExpression(db, name);
-  }
-
-  private String createExpressions(String db, String tbl, String colName) throws SemanticException {
-    return authorizer.getCellValueTransformer(db, tbl, colName);
+  public List<HivePrivilegeObject> applyRowFilterAndColumnMasking(List<HivePrivilegeObject> privObjs)
+      throws SemanticException {
+    return authorizer.applyRowFilterAndColumnMasking(queryContext, privObjs);
   }
 
   public boolean isEnabled() throws SemanticException {
@@ -72,48 +78,58 @@ public class TableMask {
     return authorizer.needTransform();
   }
 
-  public boolean needTransform(String database, String table) throws SemanticException {
-    return authorizer.needTransform(database, table);
-  }
-
-  public String create(Table table, String additionalTabInfo, String alias) throws SemanticException {
-    String db = table.getDbName();
-    String tbl = table.getTableName();
+  public String create(HivePrivilegeObject privObject, MaskAndFilterInfo maskAndFilterInfo)
+      throws SemanticException {
     StringBuilder sb = new StringBuilder();
     sb.append("(SELECT ");
-    List<FieldSchema> cols = table.getAllCols();
     boolean firstOne = true;
-    for (FieldSchema fs : cols) {
-      if (!firstOne) {
-        sb.append(", ");
-      } else {
-        firstOne = false;
+    List<String> exprs = privObject.getCellValueTransformers();
+    if (exprs != null) {
+      if (exprs.size() != privObject.getColumns().size()) {
+        throw new SemanticException("Expect " + privObject.getColumns().size() + " columns in "
+            + privObject.getObjectName() + ", but only find " + exprs.size());
       }
-      String colName = fs.getName();
-      String expr = createExpressions(db, tbl, colName);
-      if (expr == null) {
-        sb.append(colName);
-      } else {
-        sb.append(expr + " AS " + colName);
+      for (int index = 0; index < exprs.size(); index++) {
+        String expr = exprs.get(index);
+        if (expr == null) {
+          throw new SemanticException("Expect string type CellValueTransformer in "
+              + privObject.getObjectName() + ", but only find null");
+        }
+        if (!firstOne) {
+          sb.append(", ");
+        } else {
+          firstOne = false;
+        }
+        sb.append(expr + " AS " + privObject.getColumns().get(index));
+      }
+    } else {
+      for (int index = 0; index < privObject.getColumns().size(); index++) {
+        String expr = privObject.getColumns().get(index);
+        if (!firstOne) {
+          sb.append(", ");
+        } else {
+          firstOne = false;
+        }
+        sb.append(expr);
       }
     }
-    sb.append(" FROM " + tbl);
-    sb.append(" " + additionalTabInfo);
-    String filter = createRowMask(db, tbl);
+    sb.append(" FROM " + privObject.getObjectName());
+    sb.append(" " + maskAndFilterInfo.additionalTabInfo);
+    String filter = privObject.getRowFilterExpression();
     if (filter != null) {
       sb.append(" WHERE " + filter);
     }
-    sb.append(")" + alias);
+    sb.append(")" + maskAndFilterInfo.alias);
     LOG.debug("TableMask creates `" + sb.toString() + "`");
     return sb.toString();
   }
 
   void addTableMasking(ASTNode node, String replacementText) throws SemanticException {
-	  translator.addTranslation(node, replacementText);
+    translator.addTranslation(node, replacementText);
   }
 
   void applyTableMasking(TokenRewriteStream tokenRewriteStream) throws SemanticException {
-	  translator.applyTranslations(tokenRewriteStream);
+    translator.applyTranslations(tokenRewriteStream);
   }
 
   public boolean needsRewrite() {

@@ -66,7 +66,7 @@ public class HiveV1Authorizer extends AbstractHiveAuthorizer {
 
   @Override
   public void checkPrivileges(HiveOperationType hiveOpType, List<HivePrivilegeObject> inputsHObjs,
-      List<HivePrivilegeObject> outputHObjs, HiveAuthzContext context)
+      List<HivePrivilegeObject> outputHObjs, QueryContext context)
       throws HiveAuthzPluginException, HiveAccessControlException {
     throw new UnsupportedOperationException("Should not be called for v1 authorizer");
   }
@@ -391,17 +391,10 @@ public class HiveV1Authorizer extends AbstractHiveAuthorizer {
 
   @Override
   public List<HivePrivilegeObject> filterListCmdObjects(List<HivePrivilegeObject> listObjs,
-      HiveAuthzContext context) throws HiveAuthzPluginException, HiveAccessControlException {
+      QueryContext context) throws HiveAuthzPluginException, HiveAccessControlException {
     // do no filtering in old authorizer
     return listObjs;
   }
-
-
-  @Override
-  public String getRowFilterExpression(String database, String table) throws SemanticException {
-    return null;
-  }
-
 
   @Override
   public boolean needTransform() {
@@ -409,13 +402,8 @@ public class HiveV1Authorizer extends AbstractHiveAuthorizer {
   }
 
   @Override
-  public boolean needTransform(String database, String table) {
-    return false;
-  }
-
-  @Override
-  public String getCellValueTransformer(String database, String table, String columnName)
-      throws SemanticException {
+  public List<HivePrivilegeObject> applyRowFilterAndColumnMasking(QueryContext context,
+      List<HivePrivilegeObject> privObjs) throws SemanticException {
     return null;
   }
 

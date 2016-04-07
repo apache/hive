@@ -39,7 +39,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControl
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizerFactory;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizerImpl;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.QueryContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzSessionContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveMetastoreClientFactory;
@@ -76,7 +76,7 @@ public class TestJdbcMetadataApiAuth {
 
     @Override
     public void checkPrivileges(HiveOperationType hiveOpType, List<HivePrivilegeObject> inputHObjs,
-        List<HivePrivilegeObject> outputHObjs, HiveAuthzContext context)
+        List<HivePrivilegeObject> outputHObjs, QueryContext context)
         throws HiveAuthzPluginException, HiveAccessControlException {
       if (!allowActions) {
         throw new HiveAccessControlException(DENIED_ERR);

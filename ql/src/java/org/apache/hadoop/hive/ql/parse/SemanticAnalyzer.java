@@ -190,6 +190,8 @@ import org.apache.hadoop.hive.ql.plan.UnionDesc;
 import org.apache.hadoop.hive.ql.plan.ptf.OrderExpressionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.PTFExpressionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.PartitionedTableFunctionDef;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.ResourceType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
@@ -314,7 +316,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    */
   boolean rootTasksResolved;
 
-  private final TableMask tableMask;
+  private TableMask tableMask;
 
   CreateTableDesc tableDesc;
 
@@ -371,7 +373,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     globalLimitCtx = new GlobalLimitCtx();
     viewAliasToInput = new HashMap<String, ReadEntity>();
     noscan = partialscan = false;
-    tableMask = new TableMask(this, conf);
     tabNameToTabObject = new HashMap<>();
   }
 
@@ -10361,6 +10362,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throws SemanticException {
     Queue<Node> queue = new LinkedList<>();
     queue.add(ast);
+    Map<HivePrivilegeObject, MaskAndFilterInfo> basicInfos = new LinkedHashMap<>();
     while (!queue.isEmpty()) {
       ASTNode astNode = (ASTNode) queue.poll();
       if (astNode.getToken().getType() == HiveParser.TOK_TABREF) {
@@ -10368,8 +10370,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         StringBuffer additionalTabInfo = new StringBuffer();
         for (int index = 1; index < astNode.getChildCount(); index++) {
           ASTNode ct = (ASTNode) astNode.getChild(index);
-          // TODO: support TOK_TABLEBUCKETSAMPLE, TOK_TABLESPLITSAMPLE, and
-          // TOK_TABLEPROPERTIES
           if (ct.getToken().getType() == HiveParser.TOK_TABLEBUCKETSAMPLE
               || ct.getToken().getType() == HiveParser.TOK_TABLESPLITSAMPLE
               || ct.getToken().getType() == HiveParser.TOK_TABLEPROPERTIES) {
@@ -10408,14 +10408,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           throw new SemanticException("Table " + tabIdName + " is not found.");
         }
 
-        if (tableMask.needTransform(table.getDbName(), table.getTableName())) {
-          replacementText = tableMask.create(table, additionalTabInfo.toString(), alias);
+        List<String> columns = new ArrayList<>();
+        for (FieldSchema col : table.getAllCols()) {
+          columns.add(col.getName());
         }
-        if (replacementText != null) {
-          tableMask.setNeedsRewrite(true);
-          // we replace the tabref with replacementText here.
-          tableMask.addTableMasking(astNode, replacementText);
-        }
+        
+        basicInfos.put(new HivePrivilegeObject(table.getDbName(), table.getTableName(), columns),
+            new MaskAndFilterInfo(additionalTabInfo.toString(), alias, astNode));
       }
       if (astNode.getChildCount() > 0 && !ignoredTokens.contains(astNode.getToken().getType())) {
         for (Node child : astNode.getChildren()) {
@@ -10423,8 +10422,20 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
     }
+    List<HivePrivilegeObject> basicPrivObjs = new ArrayList<>();
+    basicPrivObjs.addAll(basicInfos.keySet());
+    List<HivePrivilegeObject> needRewritePrivObjs = tableMask
+        .applyRowFilterAndColumnMasking(basicPrivObjs);
+    if (needRewritePrivObjs != null && !needRewritePrivObjs.isEmpty()) {
+      tableMask.setNeedsRewrite(true);
+      for (HivePrivilegeObject privObj : needRewritePrivObjs) {
+        MaskAndFilterInfo info = basicInfos.get(privObj);
+        String replacementText = tableMask.create(privObj, info);
+        tableMask.addTableMasking(info.astNode, replacementText);
+      }
+    }
   }
-
+  
   // We walk through the AST.
   // We replace all the TOK_TABREF by adding additional masking and filter if
   // the table needs to be masked or filtered.
@@ -10544,6 +10555,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // masking and filtering should be done here
     // the basic idea is similar to unparseTranslator.
+    tableMask = new TableMask(this, conf);
     if (!unparseTranslator.isEnabled() && tableMask.isEnabled()) {
       child = rewriteASTWithMaskAndFilter(ast);
     }

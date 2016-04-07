@@ -82,7 +82,7 @@ public class HiveAuthorizerImpl extends AbstractHiveAuthorizer {
 
   @Override
   public void checkPrivileges(HiveOperationType hiveOpType, List<HivePrivilegeObject> inputHObjs,
-      List<HivePrivilegeObject> outputHObjs, HiveAuthzContext context)
+      List<HivePrivilegeObject> outputHObjs, QueryContext context)
       throws HiveAuthzPluginException, HiveAccessControlException {
     authValidator.checkPrivileges(hiveOpType, inputHObjs, outputHObjs, context);
   }
@@ -90,7 +90,7 @@ public class HiveAuthorizerImpl extends AbstractHiveAuthorizer {
 
   @Override
   public List<HivePrivilegeObject> filterListCmdObjects(List<HivePrivilegeObject> listObjs,
-      HiveAuthzContext context) throws HiveAuthzPluginException, HiveAccessControlException {
+      QueryContext context) throws HiveAuthzPluginException, HiveAccessControlException {
     return authValidator.filterListCmdObjects(listObjs, context);
   }
 
@@ -138,24 +138,14 @@ public class HiveAuthorizerImpl extends AbstractHiveAuthorizer {
   }
 
   @Override
-  public String getRowFilterExpression(String database, String table) throws SemanticException {
-    return authValidator.getRowFilterExpression(table, table);
-  }
-
-  @Override
-  public String getCellValueTransformer(String database, String table, String columnName)
-      throws SemanticException {
-    return authValidator.getCellValueTransformer(database, table, columnName);
-  }
-
-  @Override
   public boolean needTransform() {
     return authValidator.needTransform();
   }
 
   @Override
-  public boolean needTransform(String database, String table) {
-    return authValidator.needTransform(database, table);
+  public List<HivePrivilegeObject> applyRowFilterAndColumnMasking(QueryContext context,
+      List<HivePrivilegeObject> privObjs) throws SemanticException {
+    return authValidator.applyRowFilterAndColumnMasking(context, privObjs);
   }
 
 }
