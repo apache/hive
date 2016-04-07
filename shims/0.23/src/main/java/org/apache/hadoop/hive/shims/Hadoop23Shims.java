@@ -64,6 +64,7 @@ import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.DFSClient;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
+import org.apache.hadoop.hdfs.MiniDFSNNTopology;
 import org.apache.hadoop.hdfs.client.HdfsAdmin;
 import org.apache.hadoop.hdfs.protocol.DirectoryListing;
 import org.apache.hadoop.hdfs.protocol.EncryptionZone;
@@ -514,6 +515,13 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     }
   }
 
+  @Override
+  public HadoopShims.MiniDFSShim getMiniDfs(Configuration conf,
+      int numDataNodes,
+      boolean format,
+      String[] racks) throws IOException{
+    return getMiniDfs(conf, numDataNodes, format, racks, false);
+  }
   // Don't move this code to the parent class. There's a binary
   // incompatibility between hadoop 1 and 2 wrt MiniDFSCluster and we
   // need to have two different shim classes even though they are
@@ -522,16 +530,32 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   public HadoopShims.MiniDFSShim getMiniDfs(Configuration conf,
       int numDataNodes,
       boolean format,
-      String[] racks) throws IOException {
+      String[] racks,
+      boolean isHA) throws IOException {
     configureImpersonation(conf);
-    MiniDFSCluster miniDFSCluster = new MiniDFSCluster(conf, numDataNodes, format, racks);
+    MiniDFSCluster miniDFSCluster;
+    if (isHA) {
+      MiniDFSNNTopology topo = new MiniDFSNNTopology()
+        .addNameservice(new MiniDFSNNTopology.NSConf("minidfs").addNN(
+          new MiniDFSNNTopology.NNConf("nn1")).addNN(
+          new MiniDFSNNTopology.NNConf("nn2")));
+      miniDFSCluster = new MiniDFSCluster.Builder(conf)
+        .numDataNodes(numDataNodes).format(format)
+        .racks(racks).nnTopology(topo).build();
+      miniDFSCluster.waitActive();
+      miniDFSCluster.transitionToActive(0);
+    } else {
+      miniDFSCluster = new MiniDFSCluster.Builder(conf)
+        .numDataNodes(numDataNodes).format(format)
+        .racks(racks).build();
+    }
 
     // Need to set the client's KeyProvider to the NN's for JKS,
     // else the updates do not get flushed properly
-    KeyProviderCryptoExtension keyProvider =  miniDFSCluster.getNameNode().getNamesystem().getProvider();
+    KeyProviderCryptoExtension keyProvider =  miniDFSCluster.getNameNode(0).getNamesystem().getProvider();
     if (keyProvider != null) {
       try {
-        setKeyProvider(miniDFSCluster.getFileSystem().getClient(), keyProvider);
+        setKeyProvider(miniDFSCluster.getFileSystem(0).getClient(), keyProvider);
       } catch (Exception err) {
         throw new IOException(err);
       }
@@ -571,7 +595,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
     @Override
     public FileSystem getFileSystem() throws IOException {
-      return cluster.getFileSystem();
+      return cluster.getFileSystem(0);
     }
 
     @Override
