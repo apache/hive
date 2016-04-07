@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.lazy.LazyInteger;
+import org.apache.hadoop.hive.serde2.lazy.LazyUtils;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
@@ -167,6 +168,9 @@ public class UDFToInteger extends UDF {
     if (i == null) {
       return null;
     } else {
+      if (!LazyUtils.isNumberMaybe(i.getBytes(), 0, i.getLength())) {
+        return null;
+      }
       try {
         intWritable.set(LazyInteger
             .parseInt(i.getBytes(), 0, i.getLength(), 10));
