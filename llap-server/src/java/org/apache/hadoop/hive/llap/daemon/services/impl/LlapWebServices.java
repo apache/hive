@@ -80,7 +80,7 @@ public class LlapWebServices extends AbstractService {
     this.useSPNEGO = HiveConf.getBoolVar(conf, ConfVars.LLAP_WEB_AUTO_AUTH);
     String bindAddress = "0.0.0.0";
     HttpServer.Builder builder =
-        new HttpServer.Builder().setName("llap").setPort(this.port).setHost(bindAddress);
+        new HttpServer.Builder("llap").setPort(this.port).setHost(bindAddress);
     builder.setConf(new HiveConf(conf, HiveConf.class));
     if (UserGroupInformation.isSecurityEnabled()) {
       LOG.info("LLAP UI useSSL=" + this.useSSL + ", auto-auth/SPNEGO="

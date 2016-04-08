@@ -30,6 +30,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.google.common.base.Preconditions;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeys;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -66,16 +67,20 @@ import org.eclipse.jetty.webapp.WebAppContext;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
+import org.slf4j.LoggerFactory;
 
 /**
  * A simple embedded Jetty server to serve as HS2/HMS web UI.
  */
 public class HttpServer {
+
+  private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(HttpServer.class);
+
   public static final String CONF_CONTEXT_ATTRIBUTE = "hive.conf";
   public static final String ADMINS_ACL = "admins.acl";
 
+  private final String name;
   private final String appDir;
-  private final int port;
   private final WebAppContext webAppContext;
   private final Server webServer;
 
@@ -83,7 +88,7 @@ public class HttpServer {
    * Create a status server on the given port.
    */
   private HttpServer(final Builder b) throws IOException {
-    this.port = b.port;
+    this.name = b.name;
 
     webServer = new Server();
     appDir = getWebAppsPath(b.name);
@@ -98,7 +103,7 @@ public class HttpServer {
   }
 
   public static class Builder {
-    private String name;
+    private final String name;
     private String host;
     private int port;
     private int maxThreads;
@@ -111,6 +116,11 @@ public class HttpServer {
     private boolean useSPNEGO;
     private boolean useSSL;
 
+    public Builder(String name) {
+      Preconditions.checkArgument(name != null && !name.isEmpty(), "Name must be specified");
+      this.name = name;
+    }
+
     public HttpServer build() throws IOException {
       return new HttpServer(this);
     }
@@ -121,10 +131,6 @@ public class HttpServer {
       return this;
     }
 
-    public Builder setName(String name) {
-      this.name = name;
-      return this;
-    }
 
     public Builder setHost(String host) {
       this.host = host;
@@ -186,6 +192,7 @@ public class HttpServer {
 
   public void start() throws Exception {
     webServer.start();
+    LOG.info("Started HttpServer[{}] on port {}", name, getPort());
   }
 
   public void stop() throws Exception {
@@ -193,7 +200,7 @@ public class HttpServer {
   }
 
   public int getPort() {
-    return port;
+    return webServer.getConnectors()[0].getLocalPort();
   }
 
   /**
@@ -364,7 +371,7 @@ public class HttpServer {
     // Create the channel connector for the web server
     Connector connector = createChannelConnector(threadPool.getMaxThreads(), b);
     connector.setHost(b.host);
-    connector.setPort(port);
+    connector.setPort(b.port);
     webServer.addConnector(connector);
 
     // Configure web application contexts for the web server
