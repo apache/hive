@@ -259,6 +259,7 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
     srv.addInternalEndpoint(getMngEndpoint());
     srv.addInternalEndpoint(getShuffleEndpoint());
     srv.addExternalEndpoint(getServicesEndpoint());
+    srv.addInternalEndpoint(getOutputFormatEndpoint());
 
     for (Map.Entry<String, String> kv : this.conf) {
       if (kv.getKey().startsWith(HiveConf.PREFIX_LLAP)

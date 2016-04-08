@@ -181,6 +181,7 @@ public class LlapRecordReader<V extends WritableComparable> implements RecordRea
           LOG.debug("Interrupting reader thread due to reader event with error " + event.getMessage());
         }
         getReaderThread().interrupt();
+        break;
       default:
         throw new RuntimeException("Unhandled ReaderEvent type " + event.getEventType() + " with message " + event.getMessage());
     }
