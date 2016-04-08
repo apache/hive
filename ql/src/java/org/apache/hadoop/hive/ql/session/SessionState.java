@@ -269,6 +269,8 @@ public class SessionState {
 
   private final ResourceDownloader resourceDownloader;
 
+  private List<String> forwardedAddresses;
+
   /**
    * Get the lineage state stored in this session.
    *
@@ -1659,6 +1661,14 @@ public class SessionState {
 
   public ResourceDownloader getResourceDownloader() {
     return resourceDownloader;
+  }
+
+  public void setForwardedAddresses(List<String> forwardedAddresses) {
+    this.forwardedAddresses = forwardedAddresses;
+  }
+
+  public List<String> getForwardedAddresses() {
+    return forwardedAddresses;
   }
 }
 
