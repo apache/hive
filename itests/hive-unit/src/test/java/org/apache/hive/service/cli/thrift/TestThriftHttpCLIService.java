@@ -23,6 +23,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,10 +33,14 @@ import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.auth.HiveAuthFactory.AuthTypes;
 import org.apache.hive.service.rpc.thrift.TCLIService;
 import org.apache.hive.service.rpc.thrift.TOpenSessionReq;
+import org.apache.http.Header;
 import org.apache.http.HttpException;
 import org.apache.http.HttpRequest;
+import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.client.CookieStore;
+import org.apache.http.client.protocol.RequestDefaultHeaders;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicHeader;
 import org.apache.http.protocol.HttpContext;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
@@ -91,6 +96,7 @@ public class TestThriftHttpCLIService extends ThriftCLIServiceTest {
       return requestHeaders;
     }
   }
+
 
   /**
    * @throws java.lang.Exception
@@ -238,4 +244,37 @@ public class TestThriftHttpCLIService extends ThriftCLIServiceTest {
       assertTrue(h.contains("key2:value2"));
     }
   }
+  
+  /**
+   * Test if addresses in X-Forwarded-For are passed to HiveAuthorizer calls
+   * @throws Exception
+   */
+  @Test
+  public void testAdditionalHttpHeaders2() throws Exception {
+    
+    TTransport transport;
+    DefaultHttpClient hClient = new DefaultHttpClient();
+    String httpUrl = transportMode + "://" + host + ":" + port +
+        "/" + thriftHttpPath + "/";
+
+    Header xForwardHeader = new BasicHeader("X-Forwarded-For", "127.0.0.1");
+    RequestDefaultHeaders headerInterceptor = new RequestDefaultHeaders(Arrays.asList(xForwardHeader));    
+    hClient.addRequestInterceptor(headerInterceptor);
+    
+    HttpBasicAuthInterceptor authInt = new HttpBasicAuthInterceptor(USERNAME, PASSWORD, null, null,
+        false, null);
+    hClient.addRequestInterceptor(authInt);
+    
+    transport = new THttpClient(httpUrl, hClient);
+    TCLIService.Client httpClient = getClient(transport);
+
+    // Create a new open session request object
+    TOpenSessionReq openReq = new TOpenSessionReq();
+    httpClient.OpenSession(openReq).getSessionHandle();
+  
+    
+    
+  }
+  
+  
 }
