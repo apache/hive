@@ -18,6 +18,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.security.PrivilegedAction;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -81,6 +82,14 @@ public class SecretManager extends ZKDelegationTokenSecretManager<LlapTokenIdent
     return id;
   }
 
+  private final static Pattern hostsRe = Pattern.compile("[^A-Za-z0-9_-]");
+  private static String deriveZkPath(Configuration conf) throws IOException {
+    String hosts = HiveConf.getTrimmedVar(conf, ConfVars.LLAP_DAEMON_SERVICE_HOSTS);
+    String clusterName = hosts.startsWith("@") ? hosts.substring(1) : hosts;
+    String userName = UserGroupInformation.getCurrentUser().getShortUserName();
+    return hostsRe.matcher(userName + "_" + clusterName).replaceAll("_") ;
+  }
+
   public static SecretManager createSecretManager(
       final Configuration conf, String llapPrincipal, String llapKeytab) {
     // Create ZK connection under a separate ugi (if specified) - ZK works in mysterious ways.
@@ -101,7 +110,14 @@ public class SecretManager extends ZKDelegationTokenSecretManager<LlapTokenIdent
     zkConf.setLong(DelegationTokenManager.RENEW_INTERVAL, tokenLifetime);
     zkConf.set(SecretManager.ZK_DTSM_ZK_KERBEROS_PRINCIPAL, principal);
     zkConf.set(SecretManager.ZK_DTSM_ZK_KERBEROS_KEYTAB, keyTab);
-    setZkConfIfNotSet(zkConf, SecretManager.ZK_DTSM_ZNODE_WORKING_PATH, "llapzkdtsm");
+    String zkPath;
+    try {
+      zkPath = deriveZkPath(conf);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    LOG.info("Using {} as ZK secret manager path", zkPath);
+    zkConf.set(SecretManager.ZK_DTSM_ZNODE_WORKING_PATH, "zkdtsm_" + zkPath);
     setZkConfIfNotSet(zkConf, SecretManager.ZK_DTSM_ZK_AUTH_TYPE, "sasl");
     setZkConfIfNotSet(zkConf, SecretManager.ZK_DTSM_ZK_CONNECTION_STRING,
         HiveConf.getVar(zkConf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_STRING));
