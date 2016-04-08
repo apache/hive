@@ -61,6 +61,7 @@ public class LlapOptionsProcessor {
   public static final String OPTION_SLIDER_KEYTAB = "slider-keytab";
   public static final String OPTION_SLIDER_PRINCIPAL = "slider-principal";
   public static final String OPTION_SLIDER_DEFAULT_KEYTAB = "slider-default-keytab";
+  public static final String OPTION_OUTPUT_DIR = "output";
 
 
   public class LlapOptions {
@@ -207,6 +208,10 @@ public class LlapOptionsProcessor {
     options.addOption(OptionBuilder.hasArg().withArgName(OPTION_LLAP_QUEUE)
         .withLongOpt(OPTION_LLAP_QUEUE)
         .withDescription("The queue within which LLAP will be started").create('q'));
+
+    options.addOption(OptionBuilder.hasArg().withArgName(OPTION_OUTPUT_DIR)
+        .withLongOpt(OPTION_OUTPUT_DIR)
+        .withDescription("Output directory for the generated scripts").create());
 
     options.addOption(OptionBuilder.hasArg().withArgName(OPTION_AUXJARS).withLongOpt(OPTION_AUXJARS)
         .withDescription("additional jars to package (by default, JSON SerDe jar is packaged"
