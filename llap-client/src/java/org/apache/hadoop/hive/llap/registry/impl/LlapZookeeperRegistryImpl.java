@@ -239,7 +239,7 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
   }
 
   @Override
-  public void register() throws IOException {
+  public String register() throws IOException {
     ServiceRecord srv = new ServiceRecord();
     Endpoint rpcEndpoint = getRpcEndpoint();
     srv.addInternalEndpoint(rpcEndpoint);
@@ -294,6 +294,7 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
     if (LOG.isDebugEnabled()) {
       LOG.debug("Created zknode with path: {} service record: {}", znodePath, srv);
     }
+    return uniq.toString();
   }
 
   @Override

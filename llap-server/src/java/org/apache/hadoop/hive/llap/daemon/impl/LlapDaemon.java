@@ -208,11 +208,13 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
         amReporter, executorClassLoader);
     addIfService(containerRunner);
 
+    // Not adding the registry as a service, since we need to control when it is initialized - conf used to pickup properties.
+    this.registry = new LlapRegistryService(true);
 
     if (HiveConf.getBoolVar(daemonConf, HiveConf.ConfVars.HIVE_IN_TEST)) {
       this.webServices = null;
     } else {
-      this.webServices = new LlapWebServices(webPort);
+      this.webServices = new LlapWebServices(webPort, this, registry);
       addIfService(webServices);
     }
     // Bring up the server only after all other components have started.
@@ -220,9 +222,6 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     // AMReporter after the server so that it gets the correct address. It knows how to deal with
     // requests before it is started.
     addIfService(amReporter);
-
-    // Not adding the registry as a service, since we need to control when it is initialized - conf used to pickup properties.
-    this.registry = new LlapRegistryService(true);
   }
 
   private void initializeLogging() {

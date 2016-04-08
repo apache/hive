@@ -39,6 +39,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authentication.server.AuthenticationFilter;
 import org.apache.hadoop.security.authorize.AccessControlList;
 import org.apache.hadoop.util.Shell;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.Logger;
@@ -210,7 +211,8 @@ public class HttpServer {
    * @param response the servlet response.
    * @return TRUE/FALSE based on the logic described above.
    */
-  static boolean isInstrumentationAccessAllowed(
+  @InterfaceAudience.LimitedPrivate("hive")
+  public static boolean isInstrumentationAccessAllowed(
     ServletContext servletContext, HttpServletRequest request,
     HttpServletResponse response) throws IOException {
     Configuration conf =

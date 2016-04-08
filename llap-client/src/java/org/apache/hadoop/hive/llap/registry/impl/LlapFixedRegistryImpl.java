@@ -89,8 +89,9 @@ public class LlapFixedRegistryImpl implements ServiceRegistry {
   }
 
   @Override
-  public void register() throws IOException {
-    // nothing to register
+  public String register() throws IOException {
+    // nothing to register (return host-<hostname>)
+    return getWorkerIdentity(InetAddress.getLocalHost().getCanonicalHostName());
   }
 
   @Override

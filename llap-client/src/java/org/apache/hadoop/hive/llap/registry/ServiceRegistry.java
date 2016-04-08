@@ -37,9 +37,11 @@ public interface ServiceRegistry {
   /**
    * Register the current instance - the implementation takes care of the endpoints to register.
    *
+   * @return self identifying name
+   * 
    * @throws IOException
    */
-  public void register() throws IOException;
+  public String register() throws IOException;
 
   /**
    * Remove the current registration cleanly (implementation defined cleanup)

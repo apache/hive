@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.google.common.base.Preconditions;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -34,6 +35,8 @@ public class LlapRegistryService extends AbstractService {
 
   private ServiceRegistry registry = null;
   private final boolean isDaemon;
+  private boolean isDynamic = false;
+  private String identity = "(pending)";
 
   private static final Map<String, LlapRegistryService> yarnRegistries = new HashMap<>();
 
@@ -79,8 +82,10 @@ public class LlapRegistryService extends AbstractService {
     String hosts = HiveConf.getTrimmedVar(conf, ConfVars.LLAP_DAEMON_SERVICE_HOSTS);
     if (hosts.startsWith("@")) {
       registry = new LlapZookeeperRegistryImpl(hosts.substring(1), conf);
+      this.isDynamic=true;
     } else {
       registry = new LlapFixedRegistryImpl(hosts, conf);
+      this.isDynamic=false;
     }
     LOG.info("Using LLAP registry type " + registry);
   }
@@ -110,7 +115,7 @@ public class LlapRegistryService extends AbstractService {
 
   private void registerWorker() throws IOException {
     if (this.registry != null) {
-      this.registry.register();
+      this.identity = this.registry.register();
     }
   }
 
@@ -127,5 +132,15 @@ public class LlapRegistryService extends AbstractService {
   public void registerStateChangeListener(ServiceInstanceStateChangeListener listener)
       throws IOException {
     this.registry.registerStateChangeListener(listener);
+  }
+
+  // is the registry dynamic (i.e refreshes?)
+  public boolean isDynamic() {
+    return isDynamic;
+  }
+
+  // this is only useful for the daemons to know themselves
+  public String getWorkerIdentity() {
+    return identity;
   }
 }
