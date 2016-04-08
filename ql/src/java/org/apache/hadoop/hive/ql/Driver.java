@@ -848,6 +848,7 @@ public class Driver implements CommandProcessor {
      */
 
     QueryContext.Builder authzContextBuilder = new QueryContext.Builder();
+    authzContextBuilder.setForwardedAddresses(ss.getForwardedAddresses());
     authzContextBuilder.setCommandString(command);
 
     HiveOperationType hiveOpType = getHiveOperationType(op);
