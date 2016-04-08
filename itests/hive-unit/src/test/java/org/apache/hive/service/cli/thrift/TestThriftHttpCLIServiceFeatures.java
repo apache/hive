@@ -52,12 +52,11 @@ import org.junit.Test;
 
 /**
  *
- * TestThriftHttpCLIService.
- * This tests ThriftCLIService started in http mode.
- *
+ * Tests that are specific to HTTP transport mode, that need use of underlying
+ * classes instead of jdbc.
  */
 
-public class TestThriftHttpCLIServiceHeaders  {
+public class TestThriftHttpCLIServiceFeatures  {
 
   private static String transportMode = "http";
   private static String thriftHttpPath = "cliservice";
