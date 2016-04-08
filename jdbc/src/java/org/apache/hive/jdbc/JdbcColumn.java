@@ -156,6 +156,8 @@ public class JdbcColumn {
       return Type.ARRAY_TYPE;
     } else if ("struct".equalsIgnoreCase(type)) {
       return Type.STRUCT_TYPE;
+    } else if ("void".equalsIgnoreCase(type) || "null".equalsIgnoreCase(type)) {
+      return Type.NULL_TYPE;
     }
     throw new SQLException("Unrecognized column type: " + type);
   }
@@ -165,11 +167,7 @@ public class JdbcColumn {
   }
 
   public static int hiveTypeToSqlType(String type) throws SQLException {
-    if ("void".equalsIgnoreCase(type) || "null".equalsIgnoreCase(type)) {
-      return Types.NULL;
-    } else {
-      return hiveTypeToSqlType(typeStringToHiveType(type));
-    }
+    return hiveTypeToSqlType(typeStringToHiveType(type));
   }
 
   static String getColumnTypeName(String type) throws SQLException {
@@ -225,6 +223,8 @@ public class JdbcColumn {
     // according to hiveTypeToSqlType possible options are:
     int columnType = hiveTypeToSqlType(hiveType);
     switch(columnType) {
+    case Types.NULL:
+      return 4; // "NULL"
     case Types.BOOLEAN:
       return columnPrecision(hiveType, columnAttributes);
     case Types.CHAR:
@@ -266,6 +266,8 @@ public class JdbcColumn {
     int columnType = hiveTypeToSqlType(hiveType);
     // according to hiveTypeToSqlType possible options are:
     switch(columnType) {
+    case Types.NULL:
+      return 0;
     case Types.BOOLEAN:
       return 1;
     case Types.CHAR:
@@ -320,6 +322,7 @@ public class JdbcColumn {
     int columnType = hiveTypeToSqlType(hiveType);
     // according to hiveTypeToSqlType possible options are:
     switch(columnType) {
+    case Types.NULL:
     case Types.BOOLEAN:
     case Types.CHAR:
     case Types.VARCHAR:
