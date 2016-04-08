@@ -1540,14 +1540,14 @@ public class TestJdbcDriver2 {
 
     ResultSet res = stmt.executeQuery(
         "select c1, c2, c3, c4, c5 as a, c6, c7, c8, c9, c10, c11, c12, " +
-            "c1*2, sentences(null, null, null) as b, c17, c18, c20, c21, c22, c23 from " + dataTypeTableName +
+            "c1*2, sentences(null, null, null) as b, c17, c18, c20, c21, c22, c23, null as null_val from " + dataTypeTableName +
         " limit 1");
     ResultSetMetaData meta = res.getMetaData();
 
     ResultSet colRS = con.getMetaData().getColumns(null, null,
         dataTypeTableName.toLowerCase(), null);
 
-    assertEquals(20, meta.getColumnCount());
+    assertEquals(21, meta.getColumnCount());
 
     assertTrue(colRS.next());
 
@@ -1811,6 +1811,14 @@ public class TestJdbcDriver2 {
     assertEquals(15, meta.getPrecision(19));
     assertEquals(0, meta.getScale(19));
 
+    assertEquals("c22", colRS.getString("COLUMN_NAME"));
+    assertEquals(Types.CHAR, colRS.getInt("DATA_TYPE"));
+    assertEquals("char", colRS.getString("TYPE_NAME").toLowerCase());
+    assertEquals(meta.getPrecision(19), colRS.getInt("COLUMN_SIZE"));
+    assertEquals(meta.getScale(19), colRS.getInt("DECIMAL_DIGITS"));
+
+    assertTrue(colRS.next());
+
     assertEquals("c23", meta.getColumnName(20));
     assertEquals(Types.BINARY, meta.getColumnType(20));
     assertEquals("binary", meta.getColumnTypeName(20));
@@ -1818,11 +1826,14 @@ public class TestJdbcDriver2 {
     assertEquals(Integer.MAX_VALUE, meta.getPrecision(20));
     assertEquals(0, meta.getScale(20));
 
-    assertEquals("c22", colRS.getString("COLUMN_NAME"));
-    assertEquals(Types.CHAR, colRS.getInt("DATA_TYPE"));
-    assertEquals("char", colRS.getString("TYPE_NAME").toLowerCase());
-    assertEquals(meta.getPrecision(19), colRS.getInt("COLUMN_SIZE"));
-    assertEquals(meta.getScale(19), colRS.getInt("DECIMAL_DIGITS"));
+    assertTrue(colRS.next());
+
+    assertEquals("null_val", meta.getColumnName(21));
+    assertEquals(Types.NULL, meta.getColumnType(21));
+    assertEquals("void", meta.getColumnTypeName(21));
+    assertEquals(4, meta.getColumnDisplaySize(21));
+    assertEquals(0, meta.getPrecision(21));
+    assertEquals(0, meta.getScale(21));
 
     for (int i = 1; i <= meta.getColumnCount(); i++) {
       assertFalse(meta.isAutoIncrement(i));
