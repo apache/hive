@@ -73,7 +73,7 @@ public abstract class ThriftCLIServiceTest {
     stopHiveServer2();
   }
 
-  protected static void startHiveServer2WithConf(HiveConf hiveConf) throws Exception {
+   static void startHiveServer2WithConf(HiveConf hiveConf) throws Exception {
     hiveServer2.init(hiveConf);
     // Start HiveServer2 with given config
     // Fail if server doesn't start
@@ -94,7 +94,7 @@ public abstract class ThriftCLIServiceTest {
     }
   }
 
-  protected static ThriftCLIServiceClient getServiceClientInternal() {
+  static ThriftCLIServiceClient getServiceClientInternal() {
     for (Service service : hiveServer2.getServices()) {
       if (service instanceof ThriftBinaryCLIService) {
         return new ThriftCLIServiceClient((ThriftBinaryCLIService) service);

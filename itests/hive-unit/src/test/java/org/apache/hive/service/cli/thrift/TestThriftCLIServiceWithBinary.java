@@ -35,7 +35,7 @@ import org.junit.BeforeClass;
  *
  */
 
-public class TestThriftBinaryCLIService extends ThriftCLIServiceTest {
+public class TestThriftCLIServiceWithBinary extends ThriftCLIServiceTest {
 
   private static String transportMode = "binary";
 
@@ -69,24 +69,5 @@ public class TestThriftBinaryCLIService extends ThriftCLIServiceTest {
   public static void tearDownAfterClass() throws Exception {
     ThriftCLIServiceTest.tearDownAfterClass();
   }
-
-  /**
-   * @throws java.lang.Exception
-   */
-  @Override
-  @Before
-  public void setUp() throws Exception {
-
-  }
-
-  /**
-   * @throws java.lang.Exception
-   */
-  @Override
-  @After
-  public void tearDown() throws Exception {
-
-  }
-
 
 }
