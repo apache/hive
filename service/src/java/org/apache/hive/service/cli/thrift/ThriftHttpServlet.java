@@ -23,6 +23,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.security.PrivilegedExceptionAction;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -177,6 +178,8 @@ public class ThriftHttpServlet extends TServlet {
         LOG.debug("{}:{}", X_FORWARDED_FOR, forwarded_for);
         List<String> forwardedAddresses = Arrays.asList(forwarded_for.split(","));
         SessionManager.setForwardedAddresses(forwardedAddresses);
+      } else {
+        SessionManager.setForwardedAddresses(Collections.<String>emptyList());
       }
 
       // Generate new cookie and add it to the response
