@@ -37,11 +37,11 @@ import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.SessionStateUserAuthenticator;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizerFactory;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzSessionContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveMetastoreClientFactory;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.QueryContext;
 import org.apache.hive.jdbc.HttpBasicAuthInterceptor;
 import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.auth.HiveAuthFactory.AuthTypes;
@@ -313,14 +313,14 @@ public class TestThriftHttpCLIServiceFeatures  {
     httpClient.ExecuteStatement(execReq);
 
     // capture arguments to authorizer impl call and verify ip addresses passed
-    ArgumentCaptor<HiveAuthzContext> contextCapturer = ArgumentCaptor
-        .forClass(HiveAuthzContext.class);
+    ArgumentCaptor<QueryContext> contextCapturer = ArgumentCaptor
+        .forClass(QueryContext.class);
 
     verify(mockedAuthorizer).checkPrivileges(any(HiveOperationType.class),
         Matchers.anyListOf(HivePrivilegeObject.class),
         Matchers.anyListOf(HivePrivilegeObject.class), contextCapturer.capture());
 
-    HiveAuthzContext context = contextCapturer.getValue();
+    QueryContext context = contextCapturer.getValue();
     System.err.println("Forwarded IP Addresses " + context.getForwardedAddresses());
 
     List<String> auditIPAddresses = new ArrayList<String>(context.getForwardedAddresses());
