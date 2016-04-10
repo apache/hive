@@ -1735,19 +1735,17 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
                     int length) throws IOException {
       super.writeBatch(vector, offset, length);
       TimestampColumnVector vec = (TimestampColumnVector) vector;
+      Timestamp val;
       if (vector.isRepeating) {
         if (vector.noNulls || !vector.isNull[0]) {
-          long millis = vec.getEpochMilliseconds(0);
-          int adjustedNanos = vec.getSignedNanos(0);
-          if (adjustedNanos < 0) {
-            adjustedNanos += NANOS_PER_SECOND;
-          }
+          val = vec.asScratchTimestamp(0);
+          long millis = val.getTime();
           indexStatistics.updateTimestamp(millis);
           if (createBloomFilter) {
             bloomFilter.addLong(millis);
           }
-          final long secs = vec.getEpochSeconds(0) - base_timestamp;
-          final long nano = formatNanos(adjustedNanos);
+          final long secs = millis / MILLIS_PER_SECOND - base_timestamp;
+          final long nano = formatNanos(val.getNanos());
           for(int i=0; i < length; ++i) {
             seconds.write(secs);
             nanos.write(nano);
@@ -1756,14 +1754,11 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       } else {
         for(int i=0; i < length; ++i) {
           if (vec.noNulls || !vec.isNull[i + offset]) {
-            long secs = vec.getEpochSeconds(i + offset) - base_timestamp;
-            long millis = vec.getEpochMilliseconds(i + offset);
-            int adjustedNanos = vec.getSignedNanos(i + offset);
-            if (adjustedNanos < 0) {
-              adjustedNanos += NANOS_PER_SECOND;
-            }
+            val = vec.asScratchTimestamp(i + offset);
+            long millis = val.getTime();
+            long secs = millis / MILLIS_PER_SECOND - base_timestamp;
             seconds.write(secs);
-            nanos.write(formatNanos(adjustedNanos));
+            nanos.write(formatNanos(val.getNanos()));
             indexStatistics.updateTimestamp(millis);
             if (createBloomFilter) {
               bloomFilter.addLong(millis);

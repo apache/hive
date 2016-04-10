@@ -32,7 +32,6 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
-import org.apache.hadoop.hive.common.type.PisaTimestamp;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -323,7 +322,26 @@ public abstract class VectorExtractRow {
     }
   }
 
-  private class IntervalDayTimeExtractor extends AbstractTimestampExtractor {
+  private abstract class AbstractIntervalDayTimeExtractor extends Extractor {
+
+    protected IntervalDayTimeColumnVector colVector;
+
+    AbstractIntervalDayTimeExtractor(int columnIndex) {
+      super(columnIndex);
+    }
+
+    @Override
+    void setColumnVector(VectorizedRowBatch batch) {
+      colVector = (IntervalDayTimeColumnVector) batch.cols[columnIndex];
+    }
+
+    @Override
+    void forgetColumnVector() {
+      colVector = null;
+    }
+  }
+
+  private class IntervalDayTimeExtractor extends AbstractIntervalDayTimeExtractor {
 
     private HiveIntervalDayTime hiveIntervalDayTime;
 
@@ -337,7 +355,7 @@ public abstract class VectorExtractRow {
     Object extract(int batchIndex) {
       int adjustedIndex = (colVector.isRepeating ? 0 : batchIndex);
       if (colVector.noNulls || !colVector.isNull[adjustedIndex]) {
-        hiveIntervalDayTime.set(colVector.asScratchPisaTimestamp(adjustedIndex));
+        hiveIntervalDayTime.set(colVector.asScratchIntervalDayTime(adjustedIndex));
         PrimitiveObjectInspectorFactory.writableHiveIntervalDayTimeObjectInspector.set(object, hiveIntervalDayTime);
         return object;
       } else {

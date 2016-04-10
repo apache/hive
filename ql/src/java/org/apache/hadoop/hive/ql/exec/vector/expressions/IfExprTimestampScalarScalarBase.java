@@ -18,11 +18,12 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.apache.hadoop.hive.common.type.PisaTimestamp;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+
+import java.sql.Timestamp;
 import java.util.Arrays;
 
 /**
@@ -36,11 +37,11 @@ public abstract class IfExprTimestampScalarScalarBase extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
   private int arg1Column;
-  private PisaTimestamp arg2Scalar;
-  private PisaTimestamp arg3Scalar;
+  private Timestamp arg2Scalar;
+  private Timestamp arg3Scalar;
   private int outputColumn;
 
-  public IfExprTimestampScalarScalarBase(int arg1Column, PisaTimestamp arg2Scalar, PisaTimestamp arg3Scalar,
+  public IfExprTimestampScalarScalarBase(int arg1Column, Timestamp arg2Scalar, Timestamp arg3Scalar,
       int outputColumn) {
     this.arg1Column = arg1Column;
     this.arg2Scalar = arg2Scalar;
@@ -115,9 +116,5 @@ public abstract class IfExprTimestampScalarScalarBase extends VectorExpression {
   @Override
   public String getOutputType() {
     return "timestamp";
-  }
-
-  public int getArg1Column() {
-    return arg1Column;
   }
 }

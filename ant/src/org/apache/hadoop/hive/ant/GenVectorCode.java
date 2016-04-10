@@ -77,15 +77,6 @@ public class GenVectorCode extends Task {
       {"DTIScalarArithmeticDTIColumnNoConvert", "Subtract", "interval_year_month", "interval_year_month", "-"},
       {"DTIColumnArithmeticDTIColumnNoConvert", "Subtract", "interval_year_month", "interval_year_month", "-"},
 
-      // Arithmetic on two TimestampColumnVector base classes.
-      {"TimestampArithmeticTimestampBase", "Add", "Col", "Column"},
-      {"TimestampArithmeticTimestampBase", "Add", "Scalar", "Column"},
-      {"TimestampArithmeticTimestampBase", "Add", "Col", "Scalar"},
-
-      {"TimestampArithmeticTimestampBase", "Subtract", "Col", "Column"},
-      {"TimestampArithmeticTimestampBase", "Subtract", "Scalar", "Column"},
-      {"TimestampArithmeticTimestampBase", "Subtract", "Col", "Scalar"},
-
       // Arithmetic on two type interval_day_time (TimestampColumnVector storing nanosecond interval
       // in 2 longs) produces a interval_day_time.
       {"TimestampArithmeticTimestamp", "Add", "interval_day_time", "Col", "interval_day_time", "Scalar"},
@@ -111,30 +102,13 @@ public class GenVectorCode extends Task {
       {"TimestampArithmeticTimestamp", "Subtract", "timestamp", "Col", "interval_day_time", "Column"},
 
       // A type timestamp (TimestampColumnVector) minus a type timestamp produces a
-      // type interval_day_time (TimestampColumnVector storing nanosecond interval in 2 longs).
+      // type interval_day_time (IntervalDayTimeColumnVector storing nanosecond interval in 2 primitives).
       {"TimestampArithmeticTimestamp", "Subtract", "timestamp", "Col", "timestamp", "Scalar"},
       {"TimestampArithmeticTimestamp", "Subtract", "timestamp", "Scalar", "timestamp", "Column"},
       {"TimestampArithmeticTimestamp", "Subtract", "timestamp", "Col", "timestamp", "Column"},
 
-      // Arithmetic on a TimestampColumnVector and date base classes.
-      {"DateArithmeticTimestampBase", "Add", "Col", "Column"},
-      {"DateArithmeticTimestampBase", "Add", "Scalar", "Column"},
-      {"DateArithmeticTimestampBase", "Add", "Col", "Scalar"},
-
-      {"DateArithmeticTimestampBase", "Subtract", "Col", "Column"},
-      {"DateArithmeticTimestampBase", "Subtract", "Scalar", "Column"},
-      {"DateArithmeticTimestampBase", "Subtract", "Col", "Scalar"},
-
-      {"TimestampArithmeticDateBase", "Add", "Col", "Column"},
-      {"TimestampArithmeticDateBase", "Add", "Scalar", "Column"},
-      {"TimestampArithmeticDateBase", "Add", "Col", "Scalar"},
-
-      {"TimestampArithmeticDateBase", "Subtract", "Col", "Column"},
-      {"TimestampArithmeticDateBase", "Subtract", "Scalar", "Column"},
-      {"TimestampArithmeticDateBase", "Subtract", "Col", "Scalar"},
-
-      // Arithmetic with a type date (LongColumnVector storing epoch days) and type interval_day_time (TimestampColumnVector storing
-      // nanosecond interval in 2 longs) produces a type timestamp (TimestampColumnVector).
+      // Arithmetic with a type date (LongColumnVector storing epoch days) and type interval_day_time (IntervalDayTimeColumnVector storing
+      // nanosecond interval in 2 primitives) produces a type timestamp (TimestampColumnVector).
       {"DateArithmeticTimestamp", "Add", "date", "Col", "interval_day_time", "Column"},
       {"DateArithmeticTimestamp", "Add", "date", "Scalar", "interval_day_time", "Column"},
       {"DateArithmeticTimestamp", "Add", "date", "Col", "interval_day_time", "Scalar"},
@@ -147,7 +121,8 @@ public class GenVectorCode extends Task {
       {"TimestampArithmeticDate", "Add", "interval_day_time", "Scalar", "date", "Column"},
       {"TimestampArithmeticDate", "Add", "interval_day_time", "Col", "date", "Scalar"},
 
-      // Subtraction with a type date (LongColumnVector storing epoch days) and type timestamp produces a type timestamp (TimestampColumnVector).
+      // Subtraction with a type date (LongColumnVector storing days) and type timestamp produces a
+      // type interval_day_time (IntervalDayTimeColumnVector).
       {"DateArithmeticTimestamp", "Subtract", "date", "Col", "timestamp", "Column"},
       {"DateArithmeticTimestamp", "Subtract", "date", "Scalar", "timestamp", "Column"},
       {"DateArithmeticTimestamp", "Subtract", "date", "Col", "timestamp", "Scalar"},
@@ -318,70 +293,48 @@ public class GenVectorCode extends Task {
       {"ScalarCompareColumn", "Greater", "double", "long", ">"},
       {"ScalarCompareColumn", "GreaterEqual", "double", "long", ">="},
 
-      // Base compare timestamp to timestamp used by Timestamp and IntervalDayTime.
-      {"TimestampCompareTimestampBase", "Equal", "==", "Col", "Column"},
-      {"TimestampCompareTimestampBase", "NotEqual", "!=", "Col", "Column"},
-      {"TimestampCompareTimestampBase", "Less", "<", "Col", "Column"},
-      {"TimestampCompareTimestampBase", "LessEqual", "<=", "Col", "Column"},
-      {"TimestampCompareTimestampBase", "Greater", ">", "Col", "Column"},
-      {"TimestampCompareTimestampBase", "GreaterEqual", ">=", "Col", "Column"},
-
-      {"TimestampCompareTimestampBase", "Equal", "==", "Col", "Scalar"},
-      {"TimestampCompareTimestampBase", "NotEqual", "!=", "Col", "Scalar"},
-      {"TimestampCompareTimestampBase", "Less", "<", "Col", "Scalar"},
-      {"TimestampCompareTimestampBase", "LessEqual", "<=", "Col", "Scalar"},
-      {"TimestampCompareTimestampBase", "Greater", ">", "Col", "Scalar"},
-      {"TimestampCompareTimestampBase", "GreaterEqual", ">=", "Col", "Scalar"},
-
-      {"TimestampCompareTimestampBase", "Equal", "==", "Scalar", "Column"},
-      {"TimestampCompareTimestampBase", "NotEqual", "!=", "Scalar", "Column"},
-      {"TimestampCompareTimestampBase", "Less", "<", "Scalar", "Column"},
-      {"TimestampCompareTimestampBase", "LessEqual", "<=", "Scalar", "Column"},
-      {"TimestampCompareTimestampBase", "Greater", ">", "Scalar", "Column"},
-      {"TimestampCompareTimestampBase", "GreaterEqual", ">=", "Scalar", "Column"},
-
       // Compare timestamp to timestamp.
-      {"TimestampCompareTimestamp", "Equal", "timestamp", "Col", "Column"},
-      {"TimestampCompareTimestamp", "NotEqual", "timestamp", "Col", "Column"},
-      {"TimestampCompareTimestamp", "Less", "timestamp", "Col", "Column"},
-      {"TimestampCompareTimestamp", "LessEqual", "timestamp", "Col", "Column"},
-      {"TimestampCompareTimestamp", "Greater", "timestamp", "Col", "Column"},
-      {"TimestampCompareTimestamp", "GreaterEqual", "timestamp", "Col", "Column"},
+      {"TimestampCompareTimestamp", "Equal", "==", "timestamp", "Col", "Column"},
+      {"TimestampCompareTimestamp", "NotEqual", "!=", "timestamp", "Col", "Column"},
+      {"TimestampCompareTimestamp", "Less", "<", "timestamp", "Col", "Column"},
+      {"TimestampCompareTimestamp", "LessEqual", "<=", "timestamp", "Col", "Column"},
+      {"TimestampCompareTimestamp", "Greater", ">", "timestamp", "Col", "Column"},
+      {"TimestampCompareTimestamp", "GreaterEqual", ">=", "timestamp", "Col", "Column"},
 
-      {"TimestampCompareTimestamp", "Equal", "timestamp", "Col", "Scalar"},
-      {"TimestampCompareTimestamp", "NotEqual", "timestamp", "Col", "Scalar"},
-      {"TimestampCompareTimestamp", "Less", "timestamp", "Col", "Scalar"},
-      {"TimestampCompareTimestamp", "LessEqual", "timestamp", "Col", "Scalar"},
-      {"TimestampCompareTimestamp", "Greater", "timestamp", "Col", "Scalar"},
-      {"TimestampCompareTimestamp", "GreaterEqual", "timestamp", "Col", "Scalar"},
+      {"TimestampCompareTimestamp", "Equal", "==", "timestamp", "Col", "Scalar"},
+      {"TimestampCompareTimestamp", "NotEqual", "!=", "timestamp", "Col", "Scalar"},
+      {"TimestampCompareTimestamp", "Less", "<", "timestamp", "Col", "Scalar"},
+      {"TimestampCompareTimestamp", "LessEqual", "<=", "timestamp", "Col", "Scalar"},
+      {"TimestampCompareTimestamp", "Greater", ">", "timestamp", "Col", "Scalar"},
+      {"TimestampCompareTimestamp", "GreaterEqual", ">=", "timestamp", "Col", "Scalar"},
 
-      {"TimestampCompareTimestamp", "Equal", "timestamp", "Scalar", "Column"},
-      {"TimestampCompareTimestamp", "NotEqual", "timestamp", "Scalar", "Column"},
-      {"TimestampCompareTimestamp", "Less", "timestamp", "Scalar", "Column"},
-      {"TimestampCompareTimestamp", "LessEqual", "timestamp", "Scalar", "Column"},
-      {"TimestampCompareTimestamp", "Greater", "timestamp", "Scalar", "Column"},
-      {"TimestampCompareTimestamp", "GreaterEqual", "timestamp", "Scalar", "Column"},
+      {"TimestampCompareTimestamp", "Equal", "==", "timestamp", "Scalar", "Column"},
+      {"TimestampCompareTimestamp", "NotEqual", "!=", "timestamp", "Scalar", "Column"},
+      {"TimestampCompareTimestamp", "Less", "<", "timestamp", "Scalar", "Column"},
+      {"TimestampCompareTimestamp", "LessEqual", "<=", "timestamp", "Scalar", "Column"},
+      {"TimestampCompareTimestamp", "Greater", ">", "timestamp", "Scalar", "Column"},
+      {"TimestampCompareTimestamp", "GreaterEqual", ">=", "timestamp", "Scalar", "Column"},
 
-      {"TimestampCompareTimestamp", "Equal", "interval_day_time", "Col", "Column"},
-      {"TimestampCompareTimestamp", "NotEqual", "interval_day_time", "Col", "Column"},
-      {"TimestampCompareTimestamp", "Less", "interval_day_time", "Col", "Column"},
-      {"TimestampCompareTimestamp", "LessEqual", "interval_day_time", "Col", "Column"},
-      {"TimestampCompareTimestamp", "Greater", "interval_day_time", "Col", "Column"},
-      {"TimestampCompareTimestamp", "GreaterEqual", "interval_day_time", "Col", "Column"},
+      {"TimestampCompareTimestamp", "Equal", "==", "interval_day_time", "Col", "Column"},
+      {"TimestampCompareTimestamp", "NotEqual", "!=", "interval_day_time", "Col", "Column"},
+      {"TimestampCompareTimestamp", "Less", "<", "interval_day_time", "Col", "Column"},
+      {"TimestampCompareTimestamp", "LessEqual", "<=", "interval_day_time", "Col", "Column"},
+      {"TimestampCompareTimestamp", "Greater", ">", "interval_day_time", "Col", "Column"},
+      {"TimestampCompareTimestamp", "GreaterEqual", ">=", "interval_day_time", "Col", "Column"},
 
-      {"TimestampCompareTimestamp", "Equal", "interval_day_time", "Col", "Scalar"},
-      {"TimestampCompareTimestamp", "NotEqual", "interval_day_time", "Col", "Scalar"},
-      {"TimestampCompareTimestamp", "Less", "interval_day_time", "Col", "Scalar"},
-      {"TimestampCompareTimestamp", "LessEqual", "interval_day_time", "Col", "Scalar"},
-      {"TimestampCompareTimestamp", "Greater", "interval_day_time", "Col", "Scalar"},
-      {"TimestampCompareTimestamp", "GreaterEqual", "interval_day_time", "Col", "Scalar"},
+      {"TimestampCompareTimestamp", "Equal", "==", "interval_day_time", "Col", "Scalar"},
+      {"TimestampCompareTimestamp", "NotEqual", "!=", "interval_day_time", "Col", "Scalar"},
+      {"TimestampCompareTimestamp", "Less", "<", "interval_day_time", "Col", "Scalar"},
+      {"TimestampCompareTimestamp", "LessEqual", "<=", "interval_day_time", "Col", "Scalar"},
+      {"TimestampCompareTimestamp", "Greater", ">", "interval_day_time", "Col", "Scalar"},
+      {"TimestampCompareTimestamp", "GreaterEqual", ">=", "interval_day_time", "Col", "Scalar"},
 
-      {"TimestampCompareTimestamp", "Equal", "interval_day_time", "Scalar", "Column"},
-      {"TimestampCompareTimestamp", "NotEqual", "interval_day_time", "Scalar", "Column"},
-      {"TimestampCompareTimestamp", "Less", "interval_day_time", "Scalar", "Column"},
-      {"TimestampCompareTimestamp", "LessEqual", "interval_day_time", "Scalar", "Column"},
-      {"TimestampCompareTimestamp", "Greater", "interval_day_time", "Scalar", "Column"},
-      {"TimestampCompareTimestamp", "GreaterEqual", "interval_day_time", "Scalar", "Column"},
+      {"TimestampCompareTimestamp", "Equal", "==", "interval_day_time", "Scalar", "Column"},
+      {"TimestampCompareTimestamp", "NotEqual", "!=", "interval_day_time", "Scalar", "Column"},
+      {"TimestampCompareTimestamp", "Less", "<", "interval_day_time", "Scalar", "Column"},
+      {"TimestampCompareTimestamp", "LessEqual", "<=", "interval_day_time", "Scalar", "Column"},
+      {"TimestampCompareTimestamp", "Greater", ">", "interval_day_time", "Scalar", "Column"},
+      {"TimestampCompareTimestamp", "GreaterEqual", ">=", "interval_day_time", "Scalar", "Column"},
 
       // Compare timestamp to integer seconds or double seconds with fractional nanoseonds.
       {"TimestampCompareLongDouble", "Equal", "long", "==", "Col", "Column"},
@@ -515,71 +468,49 @@ public class GenVectorCode extends Task {
       {"FilterScalarCompareColumn", "GreaterEqual", "long", "long", ">="},
       {"FilterScalarCompareColumn", "GreaterEqual", "double", "long", ">="},
 
-      // Base filter timestamp against timestamp used by Timestamp and IntervalDayTime.
-      {"FilterTimestampCompareTimestampBase", "Equal", "==", "Col", "Column"},
-      {"FilterTimestampCompareTimestampBase", "NotEqual", "!=", "Col", "Column"},
-      {"FilterTimestampCompareTimestampBase", "Less", "<", "Col", "Column"},
-      {"FilterTimestampCompareTimestampBase", "LessEqual", "<=", "Col", "Column"},
-      {"FilterTimestampCompareTimestampBase", "Greater", ">", "Col", "Column"},
-      {"FilterTimestampCompareTimestampBase", "GreaterEqual", ">=", "Col", "Column"},
-
-      {"FilterTimestampCompareTimestampBase", "Equal", "==", "Col", "Scalar"},
-      {"FilterTimestampCompareTimestampBase", "NotEqual", "!=", "Col", "Scalar"},
-      {"FilterTimestampCompareTimestampBase", "Less", "<", "Col", "Scalar"},
-      {"FilterTimestampCompareTimestampBase", "LessEqual", "<=", "Col", "Scalar"},
-      {"FilterTimestampCompareTimestampBase", "Greater", ">", "Col", "Scalar"},
-      {"FilterTimestampCompareTimestampBase", "GreaterEqual", ">=", "Col", "Scalar"},
-
-      {"FilterTimestampCompareTimestampBase", "Equal", "==", "Scalar", "Column"},
-      {"FilterTimestampCompareTimestampBase", "NotEqual", "!=", "Scalar", "Column"},
-      {"FilterTimestampCompareTimestampBase", "Less", "<", "Scalar", "Column"},
-      {"FilterTimestampCompareTimestampBase", "LessEqual", "<=", "Scalar", "Column"},
-      {"FilterTimestampCompareTimestampBase", "Greater", ">", "Scalar", "Column"},
-      {"FilterTimestampCompareTimestampBase", "GreaterEqual", ">=", "Scalar", "Column"},
-
       // Filter timestamp against timestamp, or interval day time against interval day time.
 
-      {"FilterTimestampCompareTimestamp", "Equal", "timestamp", "Col", "Column"},
-      {"FilterTimestampCompareTimestamp", "NotEqual", "timestamp", "Col", "Column"},
-      {"FilterTimestampCompareTimestamp", "Less", "timestamp", "Col", "Column"},
-      {"FilterTimestampCompareTimestamp", "LessEqual", "timestamp", "Col", "Column"},
-      {"FilterTimestampCompareTimestamp", "Greater", "timestamp", "Col", "Column"},
-      {"FilterTimestampCompareTimestamp", "GreaterEqual", "timestamp", "Col", "Column"},
+      {"FilterTimestampCompareTimestamp", "Equal", "==", "timestamp", "Col", "Column"},
+      {"FilterTimestampCompareTimestamp", "NotEqual", "!=", "timestamp", "Col", "Column"},
+      {"FilterTimestampCompareTimestamp", "Less", "<", "timestamp", "Col", "Column"},
+      {"FilterTimestampCompareTimestamp", "LessEqual", "<=", "timestamp", "Col", "Column"},
+      {"FilterTimestampCompareTimestamp", "Greater", ">", "timestamp", "Col", "Column"},
+      {"FilterTimestampCompareTimestamp", "GreaterEqual", ">=", "timestamp", "Col", "Column"},
 
-      {"FilterTimestampCompareTimestamp", "Equal", "timestamp", "Col", "Scalar"},
-      {"FilterTimestampCompareTimestamp", "NotEqual", "timestamp", "Col", "Scalar"},
-      {"FilterTimestampCompareTimestamp", "Less", "timestamp", "Col", "Scalar"},
-      {"FilterTimestampCompareTimestamp", "LessEqual", "timestamp", "Col", "Scalar"},
-      {"FilterTimestampCompareTimestamp", "Greater", "timestamp", "Col", "Scalar"},
-      {"FilterTimestampCompareTimestamp", "GreaterEqual", "timestamp", "Col", "Scalar"},
+      {"FilterTimestampCompareTimestamp", "Equal", "==", "timestamp", "Col", "Scalar"},
+      {"FilterTimestampCompareTimestamp", "NotEqual", "!=", "timestamp", "Col", "Scalar"},
+      {"FilterTimestampCompareTimestamp", "Less", "<", "timestamp", "Col", "Scalar"},
+      {"FilterTimestampCompareTimestamp", "LessEqual", "<=", "timestamp", "Col", "Scalar"},
+      {"FilterTimestampCompareTimestamp", "Greater", ">", "timestamp", "Col", "Scalar"},
+      {"FilterTimestampCompareTimestamp", "GreaterEqual", ">=", "timestamp", "Col", "Scalar"},
 
-      {"FilterTimestampCompareTimestamp", "Equal", "timestamp", "Scalar", "Column"},
-      {"FilterTimestampCompareTimestamp", "NotEqual", "timestamp", "Scalar", "Column"},
-      {"FilterTimestampCompareTimestamp", "Less", "timestamp", "Scalar", "Column"},
-      {"FilterTimestampCompareTimestamp", "LessEqual", "timestamp", "Scalar", "Column"},
-      {"FilterTimestampCompareTimestamp", "Greater", "timestamp", "Scalar", "Column"},
-      {"FilterTimestampCompareTimestamp", "GreaterEqual", "timestamp", "Scalar", "Column"},
+      {"FilterTimestampCompareTimestamp", "Equal", "==", "timestamp", "Scalar", "Column"},
+      {"FilterTimestampCompareTimestamp", "NotEqual", "!=", "timestamp", "Scalar", "Column"},
+      {"FilterTimestampCompareTimestamp", "Less", "<", "timestamp", "Scalar", "Column"},
+      {"FilterTimestampCompareTimestamp", "LessEqual", "<=", "timestamp", "Scalar", "Column"},
+      {"FilterTimestampCompareTimestamp", "Greater", ">", "timestamp", "Scalar", "Column"},
+      {"FilterTimestampCompareTimestamp", "GreaterEqual", ">=", "timestamp", "Scalar", "Column"},
 
-      {"FilterTimestampCompareTimestamp", "Equal", "interval_day_time", "Col", "Column"},
-      {"FilterTimestampCompareTimestamp", "NotEqual", "interval_day_time", "Col", "Column"},
-      {"FilterTimestampCompareTimestamp", "Less", "interval_day_time", "Col", "Column"},
-      {"FilterTimestampCompareTimestamp", "LessEqual", "interval_day_time", "Col", "Column"},
-      {"FilterTimestampCompareTimestamp", "Greater", "interval_day_time", "Col", "Column"},
-      {"FilterTimestampCompareTimestamp", "GreaterEqual", "interval_day_time", "Col", "Column"},
+      {"FilterTimestampCompareTimestamp", "Equal", "==", "interval_day_time", "Col", "Column"},
+      {"FilterTimestampCompareTimestamp", "NotEqual", "!=", "interval_day_time", "Col", "Column"},
+      {"FilterTimestampCompareTimestamp", "Less", "<", "interval_day_time", "Col", "Column"},
+      {"FilterTimestampCompareTimestamp", "LessEqual", "<=", "interval_day_time", "Col", "Column"},
+      {"FilterTimestampCompareTimestamp", "Greater", ">", "interval_day_time", "Col", "Column"},
+      {"FilterTimestampCompareTimestamp", "GreaterEqual", ">=", "interval_day_time", "Col", "Column"},
 
-      {"FilterTimestampCompareTimestamp", "Equal", "interval_day_time", "Col", "Scalar"},
-      {"FilterTimestampCompareTimestamp", "NotEqual", "interval_day_time", "Col", "Scalar"},
-      {"FilterTimestampCompareTimestamp", "Less", "interval_day_time", "Col", "Scalar"},
-      {"FilterTimestampCompareTimestamp", "LessEqual", "interval_day_time", "Col", "Scalar"},
-      {"FilterTimestampCompareTimestamp", "Greater", "interval_day_time", "Col", "Scalar"},
-      {"FilterTimestampCompareTimestamp", "GreaterEqual", "interval_day_time", "Col", "Scalar"},
+      {"FilterTimestampCompareTimestamp", "Equal", "==", "interval_day_time", "Col", "Scalar"},
+      {"FilterTimestampCompareTimestamp", "NotEqual", "!=", "interval_day_time", "Col", "Scalar"},
+      {"FilterTimestampCompareTimestamp", "Less", "<", "interval_day_time", "Col", "Scalar"},
+      {"FilterTimestampCompareTimestamp", "LessEqual", "<=", "interval_day_time", "Col", "Scalar"},
+      {"FilterTimestampCompareTimestamp", "Greater", ">", "interval_day_time", "Col", "Scalar"},
+      {"FilterTimestampCompareTimestamp", "GreaterEqual", ">=", "interval_day_time", "Col", "Scalar"},
 
-      {"FilterTimestampCompareTimestamp", "Equal", "interval_day_time", "Scalar", "Column"},
-      {"FilterTimestampCompareTimestamp", "NotEqual", "interval_day_time", "Scalar", "Column"},
-      {"FilterTimestampCompareTimestamp", "Less", "interval_day_time", "Scalar", "Column"},
-      {"FilterTimestampCompareTimestamp", "LessEqual", "interval_day_time", "Scalar", "Column"},
-      {"FilterTimestampCompareTimestamp", "Greater", "interval_day_time", "Scalar", "Column"},
-      {"FilterTimestampCompareTimestamp", "GreaterEqual", "interval_day_time", "Scalar", "Column"},
+      {"FilterTimestampCompareTimestamp", "Equal", "==", "interval_day_time", "Scalar", "Column"},
+      {"FilterTimestampCompareTimestamp", "NotEqual", "!=", "interval_day_time", "Scalar", "Column"},
+      {"FilterTimestampCompareTimestamp", "Less", "<", "interval_day_time", "Scalar", "Column"},
+      {"FilterTimestampCompareTimestamp", "LessEqual", "<=", "interval_day_time", "Scalar", "Column"},
+      {"FilterTimestampCompareTimestamp", "Greater", ">", "interval_day_time", "Scalar", "Column"},
+      {"FilterTimestampCompareTimestamp", "GreaterEqual", ">=", "interval_day_time", "Scalar", "Column"},
 
       // Filter timestamp against long (seconds) or double (seconds with fractional
       // nanoseconds).
@@ -1057,6 +988,11 @@ public class GenVectorCode extends Task {
       {"VectorUDAFMinMaxTimestamp", "VectorUDAFMinTimestamp", ">", "min",
           "_FUNC_(expr) - Returns the minimum value of expr (vectorized, type: timestamp)"},
 
+      {"VectorUDAFMinMaxIntervalDayTime", "VectorUDAFMaxIntervalDayTime", "<", "max",
+          "_FUNC_(expr) - Returns the maximum value of expr (vectorized, type: interval_day_time)"},
+      {"VectorUDAFMinMaxIntervalDayTime", "VectorUDAFMinIntervalDayTime", ">", "min",
+          "_FUNC_(expr) - Returns the minimum value of expr (vectorized, type: interval_day_time)"},
+
         //template, <ClassName>, <ValueType>
         {"VectorUDAFSum", "VectorUDAFSumLong", "long"},
         {"VectorUDAFSum", "VectorUDAFSumDouble", "double"},
@@ -1202,9 +1138,6 @@ public class GenVectorCode extends Task {
       } else if (tdesc[0].equals("ScalarCompareColumn")) {
         generateScalarCompareColumn(tdesc);
 
-      } else if (tdesc[0].equals("TimestampCompareTimestampBase")) {
-        generateTimestampCompareTimestampBase(tdesc);
-
       } else if (tdesc[0].equals("TimestampCompareTimestamp")) {
         generateTimestampCompareTimestamp(tdesc);
 
@@ -1218,9 +1151,6 @@ public class GenVectorCode extends Task {
         generateFilterColumnCompareScalar(tdesc);
       } else if (tdesc[0].equals("FilterScalarCompareColumn")) {
         generateFilterScalarCompareColumn(tdesc);
-
-      } else if (tdesc[0].equals("FilterTimestampCompareTimestampBase")) {
-        generateFilterTimestampCompareTimestampBase(tdesc);
 
       } else if (tdesc[0].equals("FilterTimestampCompareTimestamp")) {
         generateFilterTimestampCompareTimestamp(tdesc);
@@ -1254,6 +1184,8 @@ public class GenVectorCode extends Task {
       } else if (tdesc[0].equals("VectorUDAFMinMaxDecimal")) {
         generateVectorUDAFMinMaxObject(tdesc);
       } else if (tdesc[0].equals("VectorUDAFMinMaxTimestamp")) {
+        generateVectorUDAFMinMaxObject(tdesc);
+      } else if (tdesc[0].equals("VectorUDAFMinMaxIntervalDayTime")) {
         generateVectorUDAFMinMaxObject(tdesc);
       } else if (tdesc[0].equals("VectorUDAFSum")) {
         generateVectorUDAFSum(tdesc);
@@ -1338,20 +1270,11 @@ public class GenVectorCode extends Task {
       } else if (tdesc[0].equals("IntervalYearMonthArithmeticTimestamp")) {
         generateDateTimeArithmeticIntervalYearMonth(tdesc);
 
-      } else if (tdesc[0].equals("TimestampArithmeticTimestampBase")) {
-        generateTimestampArithmeticTimestampBase(tdesc);
-
       } else if (tdesc[0].equals("TimestampArithmeticTimestamp")) {
         generateTimestampArithmeticTimestamp(tdesc);
 
-      } else if (tdesc[0].equals("DateArithmeticTimestampBase")) {
-        generateDateArithmeticTimestampBase(tdesc);
-
       } else if (tdesc[0].equals("DateArithmeticTimestamp")) {
         generateDateArithmeticTimestamp(tdesc);
-
-      } else if (tdesc[0].equals("TimestampArithmeticDateBase")) {
-        generateTimestampArithmeticDateBase(tdesc);
 
       } else if (tdesc[0].equals("TimestampArithmeticDate")) {
         generateTimestampArithmeticDate(tdesc);
@@ -2182,35 +2105,28 @@ public class GenVectorCode extends Task {
   //
   // -----------------------------------------------------------------------------------------------
 
-  private void generateFilterTimestampCompareTimestampBase(String[] tdesc) throws Exception {
+  private void generateFilterTimestampCompareTimestamp(String[] tdesc) throws Exception {
     String operatorName = tdesc[1];
     String operatorSymbol = tdesc[2];
-    String className = "FilterTimestamp" + tdesc[3] + operatorName + "Timestamp" + tdesc[4] + "Base";
+    String operandType = tdesc[3];
+    String camelOperandType = getCamelCaseType(operandType);
 
+    String className = "Filter" + camelOperandType + tdesc[4] + operatorName + camelOperandType + tdesc[5];
+    String baseClassName = "FilterTimestamp" + tdesc[4] + operatorName + "Timestamp" + tdesc[5] + "Base";
     //Read the template into a string;
-    String fileName = "FilterTimestamp" + (tdesc[3].equals("Col") ? "Column" : tdesc[3]) + "CompareTimestamp" +
-        tdesc[4] + "Base";
+    String fileName = "FilterTimestamp" + (tdesc[4].equals("Col") ? "Column" : tdesc[4]) + "CompareTimestamp" +
+        tdesc[5];
     File templateFile = new File(joinPath(this.expressionTemplateDirectory, fileName + ".txt"));
     String templateString = readFile(templateFile);
     templateString = templateString.replaceAll("<ClassName>", className);
     templateString = templateString.replaceAll("<OperatorSymbol>", operatorSymbol);
-    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
-        className, templateString);
-  }
+    templateString = templateString.replaceAll("<OperandType>", operandType);
+    templateString = templateString.replaceAll("<CamelOperandType>", camelOperandType);
+    templateString = templateString.replaceAll("<HiveOperandType>", getTimestampHiveType(operandType));
 
-  private void generateFilterTimestampCompareTimestamp(String[] tdesc) throws Exception {
-    String operatorName = tdesc[1];
-    String operandType = tdesc[2];
-    String camelCaseOperandType = getCamelCaseType(operandType);
-    String className = "Filter" + camelCaseOperandType + tdesc[3] + operatorName + camelCaseOperandType + tdesc[4];
-    String baseClassName = "FilterTimestamp" + tdesc[3] + operatorName + "Timestamp" + tdesc[4] + "Base";
-    //Read the template into a string;
-    String fileName = "Filter" + camelCaseOperandType + (tdesc[3].equals("Col") ? "Column" : tdesc[3]) + "Compare" + camelCaseOperandType +
-        tdesc[4];
-    File templateFile = new File(joinPath(this.expressionTemplateDirectory, fileName + ".txt"));
-    String templateString = readFile(templateFile);
-    templateString = templateString.replaceAll("<ClassName>", className);
-    templateString = templateString.replaceAll("<BaseClassName>", baseClassName);
+    String inputColumnVectorType = this.getColumnVectorType(operandType);
+    templateString = templateString.replaceAll("<InputColumnVectorType>", inputColumnVectorType);
+
     writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
         className, templateString);
   }
@@ -2287,9 +2203,9 @@ public class GenVectorCode extends Task {
 
   private String timestampLongDoubleMethod(String operandType) {
     if (operandType.equals("long")) {
-      return "getTimestampSeconds";
+      return "getTimestampAsLong";
     } else if (operandType.equals("double")) {
-      return "getTimestampSecondsWithFractionalNanos";
+      return "getDouble";
     } else {
       return "unknown";
     }
@@ -2314,35 +2230,26 @@ public class GenVectorCode extends Task {
   //
   // -----------------------------------------------------------------------------------------------
 
-  private void generateTimestampCompareTimestampBase(String[] tdesc) throws Exception {
+
+  private void generateTimestampCompareTimestamp(String[] tdesc) throws Exception {
     String operatorName = tdesc[1];
     String operatorSymbol = tdesc[2];
-    String className = "Timestamp" + tdesc[3] + operatorName + "Timestamp" + tdesc[4] + "Base";
+    String operandType = tdesc[3];
+    String camelOperandType = getCamelCaseType(operandType);
+    String className = camelOperandType + tdesc[4] + operatorName + camelOperandType + tdesc[5];
 
     //Read the template into a string;
-    String fileName = "Timestamp" + (tdesc[3].equals("Col") ? "Column" : tdesc[3]) + "CompareTimestamp" +
-        tdesc[4] + "Base";
+    String fileName = "Timestamp" + (tdesc[4].equals("Col") ? "Column" : tdesc[4]) + "CompareTimestamp" +
+        (tdesc[5].equals("Col") ? "Column" : tdesc[5]);
     File templateFile = new File(joinPath(this.expressionTemplateDirectory, fileName + ".txt"));
     String templateString = readFile(templateFile);
     templateString = templateString.replaceAll("<ClassName>", className);
     templateString = templateString.replaceAll("<OperatorSymbol>", operatorSymbol);
-    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
-        className, templateString);
-  }
+    templateString = templateString.replaceAll("<OperandType>", operandType);
+    templateString = templateString.replaceAll("<CamelOperandType>", camelOperandType);
+    templateString = templateString.replaceAll("<HiveOperandType>", getTimestampHiveType(operandType));
+    templateString = templateString.replaceAll("<InputColumnVectorType>", getColumnVectorType(operandType));
 
-  private void generateTimestampCompareTimestamp(String[] tdesc) throws Exception {
-    String operatorName = tdesc[1];
-    String operandType = tdesc[2];
-    String camelCaseOperandType = getCamelCaseType(operandType);
-    String className = camelCaseOperandType + tdesc[3] + operatorName + camelCaseOperandType + tdesc[4];
-    String baseClassName = "Timestamp" + tdesc[3] + operatorName + "Timestamp" + tdesc[4] + "Base";
-    //Read the template into a string;
-    String fileName = camelCaseOperandType + (tdesc[3].equals("Col") ? "Column" : tdesc[3]) + "Compare" + camelCaseOperandType +
-        tdesc[4];
-    File templateFile = new File(joinPath(this.expressionTemplateDirectory, fileName + ".txt"));
-    String templateString = readFile(templateFile);
-    templateString = templateString.replaceAll("<ClassName>", className);
-    templateString = templateString.replaceAll("<BaseClassName>", baseClassName);
     writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
         className, templateString);
   }
@@ -2851,6 +2758,7 @@ public class GenVectorCode extends Task {
     String templateString = readFile(templateFile);
     templateString = templateString.replaceAll("<ClassName>", className);
     templateString = templateString.replaceAll("<OperatorSymbol>", operatorSymbol);
+    templateString = templateString.replaceAll("<OperatorMethod>", operatorName.toLowerCase());
     writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
         className, templateString);
 
@@ -2924,30 +2832,6 @@ public class GenVectorCode extends Task {
     return templateString;
   }
 
-  // TimestampColumnArithmeticTimestampColumnBase.txt
-  // TimestampScalarArithmeticTimestampColumnBase.txt
-  // TimestampColumnArithmeticTimestampScalarBase.txt
-  //
-  private void generateTimestampArithmeticTimestampBase(String[] tdesc) throws Exception {
-    String operatorName = tdesc[1];
-    String colOrScalar1 = tdesc[2];
-    String colOrScalar2 = tdesc[3];
-
-    String baseClassName = "Timestamp" + colOrScalar1 + operatorName +
-        "Timestamp" + colOrScalar2 + "Base";
-
-    //Read the template into a string;
-    String fileName = "Timestamp" + (colOrScalar1.equals("Col") ? "Column" : colOrScalar1) + "Arithmetic" +
-        "Timestamp" + colOrScalar2 + "Base";
-    File templateFile = new File(joinPath(this.expressionTemplateDirectory, fileName + ".txt"));
-    String templateString = readFile(templateFile);
-    templateString = templateString.replaceAll("<BaseClassName>", baseClassName);
-    templateString = templateString.replaceAll("<OperatorMethod>", operatorName.toLowerCase());
-
-    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
-        baseClassName, templateString);
-  }
-
   // TimestampColumnArithmeticTimestampColumn.txt
   // TimestampScalarArithmeticTimestampColumn.txt
   // TimestampColumnArithmeticTimestampScalar.txt
@@ -2955,9 +2839,22 @@ public class GenVectorCode extends Task {
   private void generateTimestampArithmeticTimestamp(String[] tdesc) throws Exception {
     String operatorName = tdesc[1];
     String operandType1 = tdesc[2];
+    String camelOperandType1 = getCamelCaseType(operandType1);
     String colOrScalar1 = tdesc[3];
     String operandType2 = tdesc[4];
+    String camelOperandType2 = getCamelCaseType(operandType2);
     String colOrScalar2 = tdesc[5];
+
+    String returnType;
+    if (operandType1.equals(operandType2)) {
+      // timestamp - timestamp
+      // interval_day_time +/- interval_day_time
+      returnType = "interval_day_time";
+    } else {
+      // timestamp +/- interval_day_time
+      // interval_day_time + timestamp
+      returnType = "timestamp";
+    }
 
     String className = getCamelCaseType(operandType1) + colOrScalar1 + operatorName +
         getCamelCaseType(operandType2) + colOrScalar2;
@@ -2971,20 +2868,26 @@ public class GenVectorCode extends Task {
     String templateString = readFile(templateFile);
     templateString = templateString.replaceAll("<ClassName>", className);
     templateString = templateString.replaceAll("<BaseClassName>", baseClassName);
+    templateString = templateString.replaceAll("<OperatorMethod>", operatorName.toLowerCase());
     templateString = templateString.replaceAll("<OperandType1>", operandType1);
     templateString = templateString.replaceAll("<OperandType2>", operandType2);
-    if (colOrScalar1.equals("Scalar")) {
-      templateString = replaceTimestampScalar(templateString, 1, operandType1);
-    }
-    if (colOrScalar2.equals("Scalar")) {
-      templateString = replaceTimestampScalar(templateString, 2, operandType2);
-    }
+    templateString = templateString.replaceAll("<CamelOperandType1>", camelOperandType1);
+    templateString = templateString.replaceAll("<CamelOperandType2>", camelOperandType2);
+    templateString = templateString.replaceAll("<HiveOperandType1>", getTimestampHiveType(operandType1));
+    templateString = templateString.replaceAll("<HiveOperandType2>", getTimestampHiveType(operandType2));
+
+    String inputColumnVectorType1 = this.getColumnVectorType(operandType1);
+    templateString = templateString.replaceAll("<InputColumnVectorType1>", inputColumnVectorType1);
+    String inputColumnVectorType2 = this.getColumnVectorType(operandType2);
+    templateString = templateString.replaceAll("<InputColumnVectorType2>", inputColumnVectorType2);
+
+    String outputColumnVectorType = this.getColumnVectorType(returnType);
+    templateString = templateString.replaceAll("<OutputColumnVectorType>", outputColumnVectorType);
+    templateString = templateString.replaceAll("<CamelReturnType>", getCamelCaseType(returnType));
+    templateString = templateString.replaceAll("<ReturnType>", returnType);
 
     writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
         className, templateString);
-
-    String inputColumnVectorType1 = this.getColumnVectorType(operandType1);
-    String inputColumnVectorType2 = this.getColumnVectorType(operandType2);
 
     /* UNDONE: Col Col, vs Scalar Col vs Col Scalar
     testCodeGen.addColumnColumnOperationTestCases(
@@ -2993,30 +2896,6 @@ public class GenVectorCode extends Task {
           inputColumnVectorType2,
           "long");
     */
-  }
-
-  // DateColumnArithmeticTimestampColumnBase.txt
-  // DateScalarArithmeticTimestampColumnBase.txt
-  // DateColumnArithmeticTimestampScalarBase.txt
-  //
-  private void generateDateArithmeticTimestampBase(String[] tdesc) throws Exception {
-    String operatorName = tdesc[1];
-    String colOrScalar1 = tdesc[2];
-    String colOrScalar2 = tdesc[3];
-
-    String baseClassName = "Date" + colOrScalar1 + operatorName +
-        "Timestamp" + colOrScalar2 + "Base";
-
-    //Read the template into a string;
-    String fileName = "Date" + (colOrScalar1.equals("Col") ? "Column" : colOrScalar1) + "Arithmetic" +
-        "Timestamp" + colOrScalar2 + "Base";
-    File templateFile = new File(joinPath(this.expressionTemplateDirectory, fileName + ".txt"));
-    String templateString = readFile(templateFile);
-    templateString = templateString.replaceAll("<BaseClassName>", baseClassName);
-    templateString = templateString.replaceAll("<OperatorMethod>", operatorName.toLowerCase());
-
-    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
-        baseClassName, templateString);
   }
 
   // DateColumnArithmeticTimestampColumn.txt
@@ -3026,14 +2905,23 @@ public class GenVectorCode extends Task {
   private void generateDateArithmeticTimestamp(String[] tdesc) throws Exception {
     String operatorName = tdesc[1];
     String operandType1 = tdesc[2];
+    String camelOperandType1 = getCamelCaseType(operandType1);
     String colOrScalar1 = tdesc[3];
     String operandType2 = tdesc[4];
+    String camelOperandType2 = getCamelCaseType(operandType2);
     String colOrScalar2 = tdesc[5];
 
-    String className = getCamelCaseType(operandType1) + colOrScalar1 + operatorName +
-        getCamelCaseType(operandType2) + colOrScalar2;
-    String baseClassName = "Date" + colOrScalar1 + operatorName +
-        "Timestamp" + colOrScalar2 + "Base";
+    String returnType;
+    if (operandType1.equals("interval_day_time") || operandType2.equals("interval_day_time")) {
+      returnType = "timestamp";
+    } else if (operandType1.equals("timestamp") || operandType2.equals("timestamp")) {
+      returnType = "interval_day_time";
+    } else {
+      returnType = "unknown";
+    }
+
+    String className = camelOperandType1 + colOrScalar1 + operatorName +
+        camelOperandType2 + colOrScalar2;
 
     //Read the template into a string;
     String fileName = "Date" + (colOrScalar1.equals("Col") ? "Column" : colOrScalar1) + "Arithmetic" +
@@ -3041,21 +2929,26 @@ public class GenVectorCode extends Task {
     File templateFile = new File(joinPath(this.expressionTemplateDirectory, fileName + ".txt"));
     String templateString = readFile(templateFile);
     templateString = templateString.replaceAll("<ClassName>", className);
-    templateString = templateString.replaceAll("<BaseClassName>", baseClassName);
+    templateString = templateString.replaceAll("<OperatorMethod>", operatorName.toLowerCase());
     templateString = templateString.replaceAll("<OperandType1>", operandType1);
     templateString = templateString.replaceAll("<OperandType2>", operandType2);
-    if (colOrScalar1.equals("Scalar")) {
-      templateString = replaceTimestampScalar(templateString, 1, operandType1);
-    }
-    if (colOrScalar2.equals("Scalar")) {
-      templateString = replaceTimestampScalar(templateString, 2, operandType2);
-    }
+    templateString = templateString.replaceAll("<CamelOperandType1>", camelOperandType1);
+    templateString = templateString.replaceAll("<CamelOperandType2>", camelOperandType2);
+    templateString = templateString.replaceAll("<HiveOperandType1>", getTimestampHiveType(operandType1));
+    templateString = templateString.replaceAll("<HiveOperandType2>", getTimestampHiveType(operandType2));
+
+    String inputColumnVectorType1 = this.getColumnVectorType(operandType1);
+    templateString = templateString.replaceAll("<InputColumnVectorType1>", inputColumnVectorType1);
+    String inputColumnVectorType2 = this.getColumnVectorType(operandType2);
+    templateString = templateString.replaceAll("<InputColumnVectorType2>", inputColumnVectorType2);
+
+    String outputColumnVectorType = this.getColumnVectorType(returnType);
+    templateString = templateString.replaceAll("<OutputColumnVectorType>", outputColumnVectorType);
+    templateString = templateString.replaceAll("<CamelReturnType>", getCamelCaseType(returnType));
+    templateString = templateString.replaceAll("<ReturnType>", returnType);
 
     writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
         className, templateString);
-
-    String inputColumnVectorType1 = this.getColumnVectorType(operandType1);
-    String inputColumnVectorType2 = this.getColumnVectorType(operandType2);
 
     /* UNDONE: Col Col, vs Scalar Col vs Col Scalar
     testCodeGen.addColumnColumnOperationTestCases(
@@ -3066,30 +2959,6 @@ public class GenVectorCode extends Task {
     */
   }
 
-  // TimestampColumnArithmeticDateColumnBase.txt
-  // TimestampScalarArithmeticDateColumnBase.txt
-  // TimestampColumnArithmeticDateScalarBase.txt
-  //
-  private void generateTimestampArithmeticDateBase(String[] tdesc) throws Exception {
-    String operatorName = tdesc[1];
-    String colOrScalar1 = tdesc[2];
-    String colOrScalar2 = tdesc[3];
-
-    String baseClassName = "Timestamp" + colOrScalar1 + operatorName +
-        "Date" + colOrScalar2 + "Base";
-
-    //Read the template into a string;
-    String fileName = "Timestamp" + (colOrScalar1.equals("Col") ? "Column" : colOrScalar1) + "Arithmetic" +
-        "Date" + colOrScalar2 + "Base";
-    File templateFile = new File(joinPath(this.expressionTemplateDirectory, fileName + ".txt"));
-    String templateString = readFile(templateFile);
-    templateString = templateString.replaceAll("<BaseClassName>", baseClassName);
-    templateString = templateString.replaceAll("<OperatorMethod>", operatorName.toLowerCase());
-
-    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
-        baseClassName, templateString);
-  }
-
   // TimestampColumnArithmeticDateColumn.txt
   // TimestampScalarArithmeticDateColumn.txt
   // TimestampColumnArithmeticDateScalar.txt
@@ -3097,14 +2966,23 @@ public class GenVectorCode extends Task {
   private void generateTimestampArithmeticDate(String[] tdesc) throws Exception {
     String operatorName = tdesc[1];
     String operandType1 = tdesc[2];
+    String camelOperandType1 = getCamelCaseType(operandType1);
     String colOrScalar1 = tdesc[3];
     String operandType2 = tdesc[4];
+    String camelOperandType2 = getCamelCaseType(operandType2);
     String colOrScalar2 = tdesc[5];
 
-    String className = getCamelCaseType(operandType1) + colOrScalar1 + operatorName +
-        getCamelCaseType(operandType2) + colOrScalar2;
-    String baseClassName = "Timestamp" + colOrScalar1 + operatorName +
-        "Date" + colOrScalar2 + "Base";
+    String returnType;
+    if (operandType1.equals("interval_day_time") || operandType2.equals("interval_day_time")) {
+      returnType = "timestamp";
+    } else if (operandType1.equals("timestamp") || operandType2.equals("timestamp")) {
+      returnType = "interval_day_time";
+    } else {
+      returnType = "unknown";
+    }
+
+    String className = camelOperandType1 + colOrScalar1 + operatorName +
+        camelOperandType2 + colOrScalar2;
 
     //Read the template into a string;
     String fileName = "Timestamp" + (colOrScalar1.equals("Col") ? "Column" : colOrScalar1) + "Arithmetic" +
@@ -3112,21 +2990,26 @@ public class GenVectorCode extends Task {
     File templateFile = new File(joinPath(this.expressionTemplateDirectory, fileName + ".txt"));
     String templateString = readFile(templateFile);
     templateString = templateString.replaceAll("<ClassName>", className);
-    templateString = templateString.replaceAll("<BaseClassName>", baseClassName);
+    templateString = templateString.replaceAll("<OperatorMethod>", operatorName.toLowerCase());
     templateString = templateString.replaceAll("<OperandType1>", operandType1);
     templateString = templateString.replaceAll("<OperandType2>", operandType2);
-    if (colOrScalar1.equals("Scalar")) {
-      templateString = replaceTimestampScalar(templateString, 1, operandType1);
-    }
-    if (colOrScalar2.equals("Scalar")) {
-      templateString = replaceTimestampScalar(templateString, 2, operandType2);
-    }
+    templateString = templateString.replaceAll("<CamelOperandType1>", camelOperandType1);
+    templateString = templateString.replaceAll("<CamelOperandType2>", camelOperandType2);
+    templateString = templateString.replaceAll("<HiveOperandType1>", getTimestampHiveType(operandType1));
+    templateString = templateString.replaceAll("<HiveOperandType2>", getTimestampHiveType(operandType2));
+
+    String inputColumnVectorType1 = this.getColumnVectorType(operandType1);
+    templateString = templateString.replaceAll("<InputColumnVectorType1>", inputColumnVectorType1);
+    String inputColumnVectorType2 = this.getColumnVectorType(operandType2);
+    templateString = templateString.replaceAll("<InputColumnVectorType2>", inputColumnVectorType2);
+
+    String outputColumnVectorType = this.getColumnVectorType(returnType);
+    templateString = templateString.replaceAll("<OutputColumnVectorType>", outputColumnVectorType);
+    templateString = templateString.replaceAll("<CamelReturnType>", getCamelCaseType(returnType));
+    templateString = templateString.replaceAll("<ReturnType>", returnType);
 
     writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
         className, templateString);
-
-    String inputColumnVectorType1 = this.getColumnVectorType(operandType1);
-    String inputColumnVectorType2 = this.getColumnVectorType(operandType2);
 
     /* UNDONE: Col Col, vs Scalar Col vs Col Scalar
     testCodeGen.addColumnColumnOperationTestCases(
@@ -3272,8 +3155,10 @@ public class GenVectorCode extends Task {
         return "DecimalColumnVector";
     } else if (primitiveType.equals("string")) {
       return "BytesColumnVector";
-    } else if (isTimestampIntervalType(primitiveType)) {
+    } else if (primitiveType.equals("timestamp")) {
       return "TimestampColumnVector";
+    } else if (primitiveType.equals("interval_day_time")) {
+      return "IntervalDayTimeColumnVector";
     }
     throw new Exception("Unimplemented primitive column vector type: " + primitiveType);
   }

@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.*;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 
 public class CastDoubleToTimestamp extends VectorExpression {
   private static final long serialVersionUID = 1L;
@@ -37,9 +38,11 @@ public class CastDoubleToTimestamp extends VectorExpression {
     super();
   }
 
-  private void setSecondsWithFractionalNanoseconds(TimestampColumnVector timestampColVector,
+  private void setDouble(TimestampColumnVector timestampColVector,
       double[] vector, int elementNum) {
-    timestampColVector.setTimestampSecondsWithFractionalNanoseconds(elementNum, vector[elementNum]);
+    TimestampWritable.setTimestampFromDouble(
+        timestampColVector.getScratchTimestamp(), vector[elementNum]);
+    timestampColVector.setFromScratchTimestamp(elementNum);
   }
 
   @Override
@@ -66,7 +69,7 @@ public class CastDoubleToTimestamp extends VectorExpression {
     if (inputColVector.isRepeating) {
       //All must be selected otherwise size would be zero
       //Repeating property will not change.
-      setSecondsWithFractionalNanoseconds(outputColVector, vector, 0);
+      setDouble(outputColVector, vector, 0);
       // Even if there are no nulls, we always copy over entry 0. Simplifies code.
       outputIsNull[0] = inputIsNull[0];
       outputColVector.isRepeating = true;
@@ -74,11 +77,11 @@ public class CastDoubleToTimestamp extends VectorExpression {
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          setSecondsWithFractionalNanoseconds(outputColVector, vector, i);
+          setDouble(outputColVector, vector, i);
         }
       } else {
         for(int i = 0; i != n; i++) {
-          setSecondsWithFractionalNanoseconds(outputColVector, vector, i);
+          setDouble(outputColVector, vector, i);
         }
       }
       outputColVector.isRepeating = false;
@@ -86,12 +89,12 @@ public class CastDoubleToTimestamp extends VectorExpression {
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          setSecondsWithFractionalNanoseconds(outputColVector, vector, i);
+          setDouble(outputColVector, vector, i);
           outputIsNull[i] = inputIsNull[i];
         }
       } else {
         for(int i = 0; i != n; i++) {
-          setSecondsWithFractionalNanoseconds(outputColVector, vector, i);
+          setDouble(outputColVector, vector, i);
         }
         System.arraycopy(inputIsNull, 0, outputIsNull, 0, n);
       }

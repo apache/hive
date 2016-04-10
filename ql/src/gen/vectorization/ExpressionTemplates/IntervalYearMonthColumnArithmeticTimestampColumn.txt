@@ -18,7 +18,9 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
 
-import org.apache.hadoop.hive.common.type.PisaTimestamp;
+import java.sql.Timestamp;
+
+import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.NullUtil;
 import org.apache.hadoop.hive.ql.exec.vector.*;
@@ -37,14 +39,14 @@ public class <ClassName> extends VectorExpression {
   private int colNum1;
   private int colNum2;
   private int outputColumn;
-  private PisaTimestamp scratchPisaTimestamp;
+  private HiveIntervalYearMonth scratchIntervalYearMonth1;
   private DateTimeMath dtm = new DateTimeMath();
 
   public <ClassName>(int colNum1, int colNum2, int outputColumn) {
     this.colNum1 = colNum1;
     this.colNum2 = colNum2;
     this.outputColumn = outputColumn;
-    scratchPisaTimestamp = new PisaTimestamp();
+    scratchIntervalYearMonth1 = new HiveIntervalYearMonth();
   }
 
   public <ClassName>() {
@@ -57,10 +59,10 @@ public class <ClassName> extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    // Input #1 is type Interval_Year_Month (months).
+    // Input #1 is type Interval_Year_Month.
     LongColumnVector inputColVector1 = (LongColumnVector) batch.cols[colNum1];
 
-    // Input #2 is type Timestamp (PisaTimestamp).
+    // Input #2 is type Timestamp.
     TimestampColumnVector inputColVector2 = (TimestampColumnVector) batch.cols[colNum2];
 
     // Output is type Timestamp.
@@ -91,54 +93,59 @@ public class <ClassName> extends VectorExpression {
      * conditional checks in the inner loop.
      */
     if (inputColVector1.isRepeating && inputColVector2.isRepeating) {
-      outputColVector.set(0,
-          dtm.addMonthsToPisaTimestamp(inputColVector2.asScratchPisaTimestamp(0), <OperatorSymbol> (int) vector1[0],
-              scratchPisaTimestamp));
+      scratchIntervalYearMonth1.set((int) vector1[0]);
+      dtm.<OperatorMethod>(
+          scratchIntervalYearMonth1, inputColVector2.asScratchTimestamp(0), outputColVector.getScratchTimestamp());
+      outputColVector.setFromScratchTimestamp(0);
     } else if (inputColVector1.isRepeating) {
-      long value1 = vector1[0];
+      scratchIntervalYearMonth1.set((int) vector1[0]);
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          outputColVector.set(i,
-              dtm.addMonthsToPisaTimestamp(inputColVector2.asScratchPisaTimestamp(i), <OperatorSymbol> (int) value1,
-                  scratchPisaTimestamp));
+          dtm.<OperatorMethod>(
+              scratchIntervalYearMonth1, inputColVector2.asScratchTimestamp(i), outputColVector.getScratchTimestamp());
+          outputColVector.setFromScratchTimestamp(i);
         }
       } else {
         for(int i = 0; i != n; i++) {
-          outputColVector.set(i,
-              dtm.addMonthsToPisaTimestamp(inputColVector2.asScratchPisaTimestamp(i), <OperatorSymbol> (int) value1,
-                  scratchPisaTimestamp));
+          dtm.<OperatorMethod>(
+              scratchIntervalYearMonth1, inputColVector2.asScratchTimestamp(i), outputColVector.getScratchTimestamp());
+          outputColVector.setFromScratchTimestamp(i);
         }
       }
     } else if (inputColVector2.isRepeating) {
-      PisaTimestamp value2 = inputColVector2.asScratchPisaTimestamp(0);
+      Timestamp value2 = inputColVector2.asScratchTimestamp(0);
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          outputColVector.set(i,
-              dtm.addMonthsToPisaTimestamp(value2, <OperatorSymbol> (int) vector1[i],
-                  scratchPisaTimestamp));
+          scratchIntervalYearMonth1.set((int) vector1[i]);
+          dtm.<OperatorMethod>(
+              scratchIntervalYearMonth1, inputColVector2.asScratchTimestamp(i), outputColVector.getScratchTimestamp());
+          outputColVector.setFromScratchTimestamp(i);
         }
       } else {
         for(int i = 0; i != n; i++) {
-          outputColVector.set(i,
-              dtm.addMonthsToPisaTimestamp(value2, <OperatorSymbol> (int) vector1[i],
-                  scratchPisaTimestamp));
+          scratchIntervalYearMonth1.set((int) vector1[i]);
+          dtm.<OperatorMethod>(
+              scratchIntervalYearMonth1, inputColVector2.asScratchTimestamp(i), outputColVector.getScratchTimestamp());
+          outputColVector.setFromScratchTimestamp(i);
         }
       }
     } else {
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          outputColVector.set(i,
-              dtm.addMonthsToPisaTimestamp(inputColVector2.asScratchPisaTimestamp(i), <OperatorSymbol> (int) vector1[i],
-                  scratchPisaTimestamp));
+          scratchIntervalYearMonth1.set((int) vector1[i]);
+          dtm.<OperatorMethod>(
+              scratchIntervalYearMonth1, inputColVector2.asScratchTimestamp(i), outputColVector.getScratchTimestamp());
+          outputColVector.setFromScratchTimestamp(i);
         }
       } else {
         for(int i = 0; i != n; i++) {
-          outputColVector.set(i,
-             dtm.addMonthsToPisaTimestamp(inputColVector2.asScratchPisaTimestamp(i), <OperatorSymbol> (int) vector1[i],
-                  scratchPisaTimestamp));
+          scratchIntervalYearMonth1.set((int) vector1[i]);
+          dtm.<OperatorMethod>(
+              scratchIntervalYearMonth1, inputColVector2.asScratchTimestamp(i), outputColVector.getScratchTimestamp());
+          outputColVector.setFromScratchTimestamp(i);
         }
       }
     }

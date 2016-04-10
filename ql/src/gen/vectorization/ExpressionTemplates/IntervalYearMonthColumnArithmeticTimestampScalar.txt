@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
 
 import java.sql.Timestamp;
 
-import org.apache.hadoop.hive.common.type.PisaTimestamp;
+import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -38,16 +38,16 @@ public class <ClassName> extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
   private int colNum;
-  private PisaTimestamp value;
+  private Timestamp value;
   private int outputColumn;
-  private PisaTimestamp scratchPisaTimestamp;
+  private HiveIntervalYearMonth scratchIntervalYearMonth1;
   private DateTimeMath dtm = new DateTimeMath();
 
   public <ClassName>(int colNum, Timestamp value, int outputColumn) {
     this.colNum = colNum;
-    this.value = new PisaTimestamp(value);
+    this.value = value;
     this.outputColumn = outputColumn;
-    scratchPisaTimestamp = new PisaTimestamp();
+    scratchIntervalYearMonth1 = new HiveIntervalYearMonth();
   }
 
   public <ClassName>() {
@@ -60,7 +60,7 @@ public class <ClassName> extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    // Input #1 is type interval_year_month (epochMonths).
+    // Input #1 is type interval_year_month.
     LongColumnVector inputColVector1 = (LongColumnVector) batch.cols[colNum];
 
     // Output is type Timestamp.
@@ -81,41 +81,45 @@ public class <ClassName> extends VectorExpression {
     }
 
     if (inputColVector1.isRepeating) {
-      outputColVector.set(0,
-          dtm.addMonthsToPisaTimestamp(value, <OperatorSymbol> (int) vector1[0],
-              scratchPisaTimestamp));
-
+      scratchIntervalYearMonth1.set((int) vector1[0]);
+      dtm.<OperatorMethod>(
+          scratchIntervalYearMonth1, value, outputColVector.getScratchTimestamp());
+      outputColVector.setFromScratchTimestamp(0);
       // Even if there are no nulls, we always copy over entry 0. Simplifies code.
       outputIsNull[0] = inputIsNull[0];
     } else if (inputColVector1.noNulls) {
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          outputColVector.set(i,
-             dtm.addMonthsToPisaTimestamp(value, <OperatorSymbol> (int) vector1[i],
-                 scratchPisaTimestamp));
+          scratchIntervalYearMonth1.set((int) vector1[i]);
+          dtm.<OperatorMethod>(
+              scratchIntervalYearMonth1, value, outputColVector.getScratchTimestamp());
+          outputColVector.setFromScratchTimestamp(i);
         }
       } else {
         for(int i = 0; i != n; i++) {
-          outputColVector.set(i,
-             dtm.addMonthsToPisaTimestamp(value, <OperatorSymbol> (int) vector1[i],
-                 scratchPisaTimestamp));
+          scratchIntervalYearMonth1.set((int) vector1[i]);
+          dtm.<OperatorMethod>(
+              scratchIntervalYearMonth1, value, outputColVector.getScratchTimestamp());
+          outputColVector.setFromScratchTimestamp(i);
         }
       }
     } else /* there are nulls */ {
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          outputColVector.set(i,
-              dtm.addMonthsToPisaTimestamp(value, <OperatorSymbol> (int) vector1[i],
-                  scratchPisaTimestamp));
+          scratchIntervalYearMonth1.set((int) vector1[i]);
+          dtm.<OperatorMethod>(
+              scratchIntervalYearMonth1, value, outputColVector.getScratchTimestamp());
+          outputColVector.setFromScratchTimestamp(i);
           outputIsNull[i] = inputIsNull[i];
         }
       } else {
         for(int i = 0; i != n; i++) {
-          outputColVector.set(i,
-             dtm.addMonthsToPisaTimestamp(value, <OperatorSymbol> (int) vector1[i],
-                 scratchPisaTimestamp));
+          scratchIntervalYearMonth1.set((int) vector1[i]);
+          dtm.<OperatorMethod>(
+              scratchIntervalYearMonth1, value, outputColVector.getScratchTimestamp());
+          outputColVector.setFromScratchTimestamp(i);
         }
         System.arraycopy(inputIsNull, 0, outputIsNull, 0, n);
       }

@@ -1850,7 +1850,7 @@ public class TestInputOutputFormat {
       long millis = (long) i * MILLIS_IN_DAY;
       millis -= LOCAL_TIMEZONE.getOffset(millis);
       assertEquals("checking timestamp " + i, millis,
-          timestampColumn.getTimestampMilliseconds(i));
+          timestampColumn.getTime(i));
     }
     assertEquals(false, reader.next(key, value));
   }

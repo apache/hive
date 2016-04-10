@@ -44,7 +44,6 @@ public class CastDecimalToTimestamp extends FuncDecimalToTimestamp {
 
   @Override
   protected void func(TimestampColumnVector outV, DecimalColumnVector inV,  int i) {
-    Timestamp timestamp = TimestampWritable.decimalToTimestamp(inV.vector[i].getHiveDecimal());
-    outV.set(i, timestamp);
+    outV.set(i, TimestampWritable.decimalToTimestamp(inV.vector[i].getHiveDecimal()));
   }
 }

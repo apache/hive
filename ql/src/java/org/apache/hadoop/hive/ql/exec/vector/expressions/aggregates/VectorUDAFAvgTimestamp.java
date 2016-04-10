@@ -27,8 +27,6 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggreg
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationBufferRow;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
@@ -146,7 +144,8 @@ public class VectorUDAFAvgTimestamp extends VectorAggregateExpression {
         if (inputColVector.isRepeating) {
           iterateNoNullsRepeatingWithAggregationSelection(
             aggregationBufferSets, bufferIndex,
-            inputColVector.getTimestampSecondsWithFractionalNanos(0), batchSize);
+            inputColVector.getDouble(0),
+            batchSize);
         } else {
           if (batch.selectedInUse) {
             iterateNoNullsSelectionWithAggregationSelection(
@@ -163,11 +162,11 @@ public class VectorUDAFAvgTimestamp extends VectorAggregateExpression {
           if (batch.selectedInUse) {
             iterateHasNullsRepeatingSelectionWithAggregationSelection(
               aggregationBufferSets, bufferIndex,
-              inputColVector.getTimestampSecondsWithFractionalNanos(0), batchSize, batch.selected, inputColVector.isNull);
+              inputColVector.getDouble(0), batchSize, batch.selected, inputColVector.isNull);
           } else {
             iterateHasNullsRepeatingWithAggregationSelection(
               aggregationBufferSets, bufferIndex,
-              inputColVector.getTimestampSecondsWithFractionalNanos(0), batchSize, inputColVector.isNull);
+              inputColVector.getDouble(0), batchSize, inputColVector.isNull);
           }
         } else {
           if (batch.selectedInUse) {
@@ -210,7 +209,8 @@ public class VectorUDAFAvgTimestamp extends VectorAggregateExpression {
           aggregationBufferSets,
           bufferIndex,
           i);
-        myagg.sumValue(inputColVector.getTimestampSecondsWithFractionalNanos(selection[i]));
+        myagg.sumValue(
+            inputColVector.getDouble(selection[i]));
       }
     }
 
@@ -224,7 +224,7 @@ public class VectorUDAFAvgTimestamp extends VectorAggregateExpression {
           aggregationBufferSets,
           bufferIndex,
           i);
-        myagg.sumValue(inputColVector.getTimestampSecondsWithFractionalNanos(i));
+        myagg.sumValue(inputColVector.getDouble(i));
       }
     }
 
@@ -281,7 +281,7 @@ public class VectorUDAFAvgTimestamp extends VectorAggregateExpression {
             aggregationBufferSets,
             bufferIndex,
             j);
-          myagg.sumValue(inputColVector.getTimestampSecondsWithFractionalNanos(i));
+          myagg.sumValue(inputColVector.getDouble(i));
         }
       }
    }
@@ -296,10 +296,10 @@ public class VectorUDAFAvgTimestamp extends VectorAggregateExpression {
       for (int i=0; i < batchSize; ++i) {
         if (!isNull[i]) {
           Aggregation myagg = getCurrentAggregationBuffer(
-            aggregationBufferSets, 
+            aggregationBufferSets,
             bufferIndex,
             i);
-          myagg.sumValue(inputColVector.getTimestampSecondsWithFractionalNanos(i));
+          myagg.sumValue(inputColVector.getDouble(i));
         }
       }
    }
@@ -328,7 +328,7 @@ public class VectorUDAFAvgTimestamp extends VectorAggregateExpression {
               myagg.sum = 0;
               myagg.count = 0;
             }
-            myagg.sum += inputColVector.getTimestampSecondsWithFractionalNanos(0)*batchSize;
+            myagg.sum += inputColVector.getDouble(0)*batchSize;
             myagg.count += batchSize;
           }
           return;
@@ -358,7 +358,7 @@ public class VectorUDAFAvgTimestamp extends VectorAggregateExpression {
       for (int j=0; j< batchSize; ++j) {
         int i = selected[j];
         if (!isNull[i]) {
-          double value = inputColVector.getTimestampSecondsWithFractionalNanos(i);
+          double value = inputColVector.getDouble(i);
           if (myagg.isNull) {
             myagg.isNull = false;
             myagg.sum = 0;
@@ -381,24 +381,24 @@ public class VectorUDAFAvgTimestamp extends VectorAggregateExpression {
         myagg.sum = 0;
         myagg.count = 0;
       }
-      
+
       for (int i=0; i< batchSize; ++i) {
-        double value = inputColVector.getTimestampSecondsWithFractionalNanos(selected[i]);
+        double value = inputColVector.getDouble(selected[i]);
         myagg.sum += value;
         myagg.count += 1;
       }
     }
 
     private void iterateNoSelectionHasNulls(
-        Aggregation myagg, 
-        TimestampColumnVector inputColVector, 
+        Aggregation myagg,
+        TimestampColumnVector inputColVector,
         int batchSize,
         boolean[] isNull) {
-      
+
       for(int i=0;i<batchSize;++i) {
         if (!isNull[i]) {
-          double value = inputColVector.getTimestampSecondsWithFractionalNanos(i);
-          if (myagg.isNull) { 
+          double value = inputColVector.getDouble(i);
+          if (myagg.isNull) {
             myagg.isNull = false;
             myagg.sum = 0;
             myagg.count = 0;
@@ -420,7 +420,7 @@ public class VectorUDAFAvgTimestamp extends VectorAggregateExpression {
       }
 
       for (int i=0;i<batchSize;++i) {
-        double value = inputColVector.getTimestampSecondsWithFractionalNanos(i);
+        double value = inputColVector.getDouble(i);
         myagg.sum += value;
         myagg.count += 1;
       }
