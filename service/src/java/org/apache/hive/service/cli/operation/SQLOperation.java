@@ -555,6 +555,11 @@ public class SQLOperation extends ExecuteStatementOperation {
       }
     }
 
+    if (state == OperationState.FINISHED || state == OperationState.CANCELED || state == OperationState.ERROR) {
+      //update runtime
+      sqlOpDisplay.setRuntime(getOperationComplete() - getOperationStart());
+    }
+
     if (state == OperationState.CLOSED) {
       sqlOpDisplay.closed();
     } else {

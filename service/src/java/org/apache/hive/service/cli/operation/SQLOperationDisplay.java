@@ -32,6 +32,7 @@ public class SQLOperationDisplay {
   public final String executionEngine;
   public final long beginTime;
   public final String operationId;
+  public Long runtime;  //tracks only running portion of the query.
 
   public Long endTime;
   public OperationState state;
@@ -95,5 +96,13 @@ public class SQLOperationDisplay {
 
   public synchronized void closed() {
     this.endTime = System.currentTimeMillis();
+  }
+
+  public synchronized void setRuntime(long runtime) {
+    this.runtime = runtime;
+  }
+
+  public synchronized Long getRuntime() {
+    return runtime;
   }
 }
