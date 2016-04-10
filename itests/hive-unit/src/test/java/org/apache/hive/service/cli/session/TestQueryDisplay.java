@@ -133,8 +133,10 @@ public class TestQueryDisplay {
     if (finished) {
       Assert.assertTrue(display.getEndTime() > 0 && display.getEndTime() >= display.getBeginTime()
         && display.getEndTime() <= System.currentTimeMillis());
+      Assert.assertTrue(display.getRuntime() > 0);
     } else {
       Assert.assertNull(display.getEndTime());
+      //For runtime, query may have finished.
     }
 
     QueryDisplay qDisplay1 = display.getQueryDisplay();

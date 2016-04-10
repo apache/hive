@@ -129,7 +129,7 @@ org.apache.hive.service.cli.operation.SQLOperationDisplay;
             <td><% sod.getQueryDisplay() == null ? "Unknown" : sod.getQueryDisplay().getQueryString() %></td>
         </tr>
         <tr>
-            <td>Query Id</td>
+            <td>Id</td>
             <td><% sod.getQueryDisplay() == null ? "Unknown" : sod.getQueryDisplay().getQueryId() %></td>
         </tr>
         <tr>
@@ -141,23 +141,27 @@ org.apache.hive.service.cli.operation.SQLOperationDisplay;
             <td><% sod.getState() %></td>
         </tr>
         <tr>
-            <td>Begin Time</td>
+            <td>Opened Timestamp</td>
             <td><% new Date(sod.getBeginTime()) %></td>
         </tr>
         <tr>
-            <td>Elapsed Time (s)</td>
+            <td>Opened (s)</td>
             <td><% sod.getElapsedTime()/1000 %></td>
         </tr>
         <tr>
-            <td>End Time</td>
-            <td><% sod.getEndTime() == null ? "In Progress" : new Date(sod.getEndTime()) %></td>
+            <td>Closed Timestamp</td>
+            <td><% sod.getEndTime() == null ? "Open" : new Date(sod.getEndTime()) %></td>
         </tr>
         <%if sod.getQueryDisplay() != null && sod.getQueryDisplay().getErrorMessage() != null %>
             <tr>
                 <td>Error</td>
-                <td><% sod.getEndTime() == null ? "In Progress" : new Date(sod.getEndTime()) %></td>
+                <td><% sod.getQueryDisplay().getErrorMessage() %></td>
             </tr>
         </%if>
+        <tr>
+            <td>Latency (s)</td>
+            <td><% sod.getRuntime()/1000 %></td>
+        </tr>
     </table>
 </%def>
 
