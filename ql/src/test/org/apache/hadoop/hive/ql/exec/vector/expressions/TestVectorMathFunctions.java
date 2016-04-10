@@ -23,9 +23,11 @@ import java.util.Arrays;
 
 import junit.framework.Assert;
 
+import org.apache.hadoop.hive.common.type.PisaTimestamp;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncACosDoubleToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncASinDoubleToDouble;
@@ -130,6 +132,27 @@ public class TestVectorMathFunctions {
     return batch;
   }
 
+  public static VectorizedRowBatch getVectorizedRowBatchDoubleInTimestampOut() {
+    VectorizedRowBatch batch = new VectorizedRowBatch(2);
+    TimestampColumnVector tcv;
+    DoubleColumnVector dcv;
+    tcv = new TimestampColumnVector();
+    dcv = new DoubleColumnVector();
+    dcv.vector[0] = -1.5d;
+    dcv.vector[1] = -0.5d;
+    dcv.vector[2] = -0.1d;
+    dcv.vector[3] = 0d;
+    dcv.vector[4] = 0.5d;
+    dcv.vector[5] = 0.7d;
+    dcv.vector[6] = 1.5d;
+
+    batch.cols[0] = dcv;
+    batch.cols[1] = tcv;
+
+    batch.size = 7;
+    return batch;
+  }
+
   public static VectorizedRowBatch getVectorizedRowBatchDoubleInDoubleOut() {
     VectorizedRowBatch batch = new VectorizedRowBatch(2);
     DoubleColumnVector inV;
@@ -171,11 +194,62 @@ public class TestVectorMathFunctions {
     return batch;
   }
 
+  public static VectorizedRowBatch getVectorizedRowBatchTimestampInDoubleOut() {
+    VectorizedRowBatch batch = new VectorizedRowBatch(2);
+    TimestampColumnVector tcv;
+    DoubleColumnVector dcv;
+    tcv = new TimestampColumnVector();
+    dcv = new DoubleColumnVector();
+    tcv.set(0, new PisaTimestamp(0, -2));
+    tcv.set(1, new PisaTimestamp(0, -1));
+    tcv.set(2, new PisaTimestamp(0, 0));
+    tcv.set(3, new PisaTimestamp(0, 1));
+    tcv.set(4, new PisaTimestamp(0, 2));
+
+    batch.cols[0] = tcv;
+    batch.cols[1] = dcv;
+
+    batch.size = 5;
+    return batch;
+  }
+
   public static VectorizedRowBatch getVectorizedRowBatchLongInLongOut() {
     VectorizedRowBatch batch = new VectorizedRowBatch(2);
     LongColumnVector inV, outV;
     inV = new LongColumnVector();
     outV = new LongColumnVector();
+    inV.vector[0] = -2;
+    inV.vector[1] = 2;
+
+    batch.cols[0] = inV;
+    batch.cols[1] = outV;
+
+    batch.size = 2;
+    return batch;
+  }
+
+  public static VectorizedRowBatch getVectorizedRowBatchTimestampInLongOut() {
+    VectorizedRowBatch batch = new VectorizedRowBatch(2);
+    TimestampColumnVector inV;
+    LongColumnVector outV;
+    inV = new TimestampColumnVector();
+    outV = new LongColumnVector();
+    inV.setTimestampSeconds(0, 2);
+    inV.setTimestampSeconds(1, 2);
+
+    batch.cols[0] = inV;
+    batch.cols[1] = outV;
+
+    batch.size = 2;
+    return batch;
+  }
+
+  public static VectorizedRowBatch getVectorizedRowBatchLongInTimestampOut() {
+    VectorizedRowBatch batch = new VectorizedRowBatch(2);
+    LongColumnVector inV;
+    TimestampColumnVector outV;
+    inV = new LongColumnVector();
+    outV = new TimestampColumnVector();
     inV.vector[0] = -2;
     inV.vector[1] = 2;
 

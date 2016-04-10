@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.io.EOFException;
 import java.io.IOException;
-import java.sql.Timestamp;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -210,7 +209,14 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
     }
   }
 
-  private class TimestampReader extends AbstractLongReader {
+  private abstract class AbstractTimestampReader extends Reader<T> {
+
+    AbstractTimestampReader(int columnIndex) {
+      super(columnIndex);
+    }
+  }
+
+  private class TimestampReader extends AbstractTimestampReader {
 
     DeserializeRead.ReadTimestampResults readTimestampResults;
 
@@ -221,17 +227,17 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
 
     @Override
     void apply(VectorizedRowBatch batch, int batchIndex) throws IOException {
-      LongColumnVector colVector = (LongColumnVector) batch.cols[columnIndex];
+      TimestampColumnVector colVector = (TimestampColumnVector) batch.cols[columnIndex];
 
       if (deserializeRead.readCheckNull()) {
         VectorizedBatchUtil.setNullColIsNullValue(colVector, batchIndex);
       } else {
         deserializeRead.readTimestamp(readTimestampResults);
-        Timestamp t = readTimestampResults.getTimestamp();
-        colVector.vector[batchIndex] = TimestampUtils.getTimeNanoSec(t);
+        colVector.set(batchIndex, readTimestampResults.getTimestamp());
         colVector.isNull[batchIndex] = false;
       }
     }
+
   }
 
   private class IntervalYearMonthReader extends AbstractLongReader {
@@ -258,7 +264,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
     }
   }
 
-  private class IntervalDayTimeReader extends AbstractLongReader {
+  private class IntervalDayTimeReader extends AbstractTimestampReader {
 
     DeserializeRead.ReadIntervalDayTimeResults readIntervalDayTimeResults;
 
@@ -269,14 +275,14 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
 
     @Override
     void apply(VectorizedRowBatch batch, int batchIndex) throws IOException {
-      LongColumnVector colVector = (LongColumnVector) batch.cols[columnIndex];
+      TimestampColumnVector colVector = (TimestampColumnVector) batch.cols[columnIndex];
 
       if (deserializeRead.readCheckNull()) {
         VectorizedBatchUtil.setNullColIsNullValue(colVector, batchIndex);
       } else {
         deserializeRead.readIntervalDayTime(readIntervalDayTimeResults);
-        HiveIntervalDayTime hidt = readIntervalDayTimeResults.getHiveIntervalDayTime();
-        colVector.vector[batchIndex] = DateUtils.getIntervalDayTimeTotalNanos(hidt);
+        HiveIntervalDayTime idt = readIntervalDayTimeResults.getHiveIntervalDayTime();
+        colVector.set(batchIndex, idt.pisaTimestampUpdate(colVector.useScratchPisaTimestamp()));
         colVector.isNull[batchIndex] = false;
       }
     }

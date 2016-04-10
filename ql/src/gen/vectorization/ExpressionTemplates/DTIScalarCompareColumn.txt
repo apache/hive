@@ -34,6 +34,8 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
  */
 public class <ClassName> extends <BaseClassName> {
 
+  private static final long serialVersionUID = 1L;
+
   public <ClassName>(long value, int colNum, int outputColumn) {
     super(value, colNum, outputColumn);
   }

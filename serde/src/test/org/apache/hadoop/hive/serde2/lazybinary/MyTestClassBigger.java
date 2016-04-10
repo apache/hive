@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.common.type.RandomTypeUtil;
 import org.apache.hadoop.hive.serde2.binarysortable.MyTestClass;
 import org.apache.hadoop.hive.serde2.binarysortable.MyTestInnerStruct;
 import org.apache.hadoop.hive.serde2.binarysortable.MyTestPrimitiveClass;
@@ -93,7 +94,7 @@ public class MyTestClassBigger {
       myBinary = MyTestPrimitiveClass.getRandBinary(r, r.nextInt(1000));
       myDecimal = (randField == field++) ? null : MyTestPrimitiveClass.getRandHiveDecimal(r, extraTypeInfo);
       myDate = (randField == field++) ? null : MyTestPrimitiveClass.getRandDate(r);
-      myTimestamp = (randField == field++) ? null : MyTestPrimitiveClass.getRandTimestamp(r);
+      myTimestamp = (randField == field++) ? null : RandomTypeUtil.getRandTimestamp(r);
       myIntervalYearMonth = (randField == field++) ? null : MyTestPrimitiveClass.getRandIntervalYearMonth(r);
       myIntervalDayTime = (randField == field++) ? null : MyTestPrimitiveClass.getRandIntervalDayTime(r);
 

@@ -1,4 +1,4 @@
-Warning: Map Join MAPJOIN[33][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[34][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
 PREHOOK: query: -- HIVE-12738 -- We are checking if a MapJoin after a GroupBy will work properly.
 explain
 select *
@@ -148,7 +148,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[33][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[34][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
 PREHOOK: query: select *
 from src
 where not key in

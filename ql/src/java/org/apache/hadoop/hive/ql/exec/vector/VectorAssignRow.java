@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
-import java.sql.Timestamp;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -234,7 +233,26 @@ public abstract class VectorAssignRow {
     }
   }
 
-  private class TimestampAssigner extends AbstractLongAssigner {
+  private abstract class AbstractTimestampAssigner extends Assigner {
+
+    protected TimestampColumnVector colVector;
+
+    AbstractTimestampAssigner(int columnIndex) {
+      super(columnIndex);
+    }
+
+    @Override
+    void setColumnVector(VectorizedRowBatch batch) {
+      colVector = (TimestampColumnVector) batch.cols[columnIndex];
+    }
+
+    @Override
+    void forgetColumnVector() {
+      colVector = null;
+    }
+  }
+
+  private class TimestampAssigner extends AbstractTimestampAssigner {
 
     TimestampAssigner(int columnIndex) {
       super(columnIndex);
@@ -245,9 +263,7 @@ public abstract class VectorAssignRow {
       if (object == null) {
         VectorizedBatchUtil.setNullColIsNullValue(colVector, batchIndex);
       } else {
-        TimestampWritable tw = (TimestampWritable) object;
-        Timestamp t = tw.getTimestamp();
-        vector[batchIndex] = TimestampUtils.getTimeNanoSec(t);
+        colVector.set(batchIndex, ((TimestampWritable) object).getTimestamp());
         colVector.isNull[batchIndex] = false;
       }
     }
@@ -272,7 +288,7 @@ public abstract class VectorAssignRow {
     }
   }
 
-  private class IntervalDayTimeAssigner extends AbstractLongAssigner {
+  private class IntervalDayTimeAssigner extends AbstractTimestampAssigner {
 
     IntervalDayTimeAssigner(int columnIndex) {
       super(columnIndex);
@@ -285,7 +301,7 @@ public abstract class VectorAssignRow {
       } else {
         HiveIntervalDayTimeWritable idtw = (HiveIntervalDayTimeWritable) object;
         HiveIntervalDayTime idt = idtw.getHiveIntervalDayTime();
-        vector[batchIndex] = DateUtils.getIntervalDayTimeTotalNanos(idt);
+        colVector.set(batchIndex, idt.pisaTimestampUpdate(colVector.useScratchPisaTimestamp()));
         colVector.isNull[batchIndex] = false;
       }
     }

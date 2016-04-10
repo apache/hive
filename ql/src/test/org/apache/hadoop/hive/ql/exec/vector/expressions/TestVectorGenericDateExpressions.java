@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TestVectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.junit.Assert;
@@ -29,6 +30,7 @@ import org.junit.Test;
 
 import java.io.UnsupportedEncodingException;
 import java.sql.Date;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.List;
@@ -53,21 +55,21 @@ public class TestVectorGenericDateExpressions {
     return vector;
   }
 
-  private LongColumnVector toTimestamp(LongColumnVector date) {
-    LongColumnVector vector = new LongColumnVector(size);
+  private TimestampColumnVector toTimestamp(LongColumnVector date) {
+    TimestampColumnVector vector = new TimestampColumnVector(size);
     for (int i = 0; i < size; i++) {
       if (date.isNull[i]) {
         vector.isNull[i] = true;
         vector.noNulls = false;
       } else {
-        vector.vector[i] = toTimestamp(date.vector[i]);
+        vector.set(i, toTimestamp(date.vector[i]));
       }
     }
     return vector;
   }
 
-  private long toTimestamp(long date) {
-    return DateWritable.daysToMillis((int) date) * 1000000;
+  private Timestamp toTimestamp(long date) {
+    return new Timestamp(DateWritable.daysToMillis((int) date));
   }
 
   private BytesColumnVector toString(LongColumnVector date) {
@@ -474,7 +476,7 @@ public class TestVectorGenericDateExpressions {
     }
     VectorizedRowBatch batch = new VectorizedRowBatch(2, 1);
 
-    udf = new VectorUDFDateDiffScalarCol(0, 0, 1);
+    udf = new VectorUDFDateDiffScalarCol(new Timestamp(0), 0, 1);
     udf.setInputTypes(VectorExpression.Type.TIMESTAMP, VectorExpression.Type.STRING);
     batch.cols[0] = new BytesColumnVector(1);
     batch.cols[1] = new LongColumnVector(1);
@@ -615,7 +617,7 @@ public class TestVectorGenericDateExpressions {
 
     udf.setInputTypes(VectorExpression.Type.STRING, VectorExpression.Type.TIMESTAMP);
     batch.cols[0] = new BytesColumnVector(1);
-    batch.cols[1] = new LongColumnVector(1);
+    batch.cols[1] = new TimestampColumnVector(1);
     batch.cols[2] = new LongColumnVector(1);
     bcv = (BytesColumnVector) batch.cols[0];
     bcv.vector[0] = bytes;
@@ -625,7 +627,7 @@ public class TestVectorGenericDateExpressions {
     Assert.assertEquals(batch.cols[2].isNull[0], true);
 
     udf.setInputTypes(VectorExpression.Type.TIMESTAMP, VectorExpression.Type.STRING);
-    batch.cols[0] = new LongColumnVector(1);
+    batch.cols[0] = new TimestampColumnVector(1);
     batch.cols[1] = new BytesColumnVector(1);
     batch.cols[2] = new LongColumnVector(1);
     bcv = (BytesColumnVector) batch.cols[1];
@@ -640,6 +642,8 @@ public class TestVectorGenericDateExpressions {
     VectorExpression udf;
     if (colType == VectorExpression.Type.STRING) {
       udf = new VectorUDFDateString(0, 1);
+    } else if (colType == VectorExpression.Type.TIMESTAMP) {
+      udf = new VectorUDFDateTimestamp(0, 1);
     } else {
       udf = new VectorUDFDateLong(0, 1);
     }
@@ -708,6 +712,8 @@ public class TestVectorGenericDateExpressions {
         colType == VectorExpression.Type.CHAR ||
         colType == VectorExpression.Type.VARCHAR) {
       udf = new CastStringToDate(0, 1);
+    } else if (colType == VectorExpression.Type.TIMESTAMP) {
+      udf = new CastTimestampToDate(0, 1);
     } else {
       udf = new CastLongToDate(0, 1);
     }

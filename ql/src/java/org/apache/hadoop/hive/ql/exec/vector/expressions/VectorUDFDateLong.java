@@ -47,9 +47,6 @@ public class VectorUDFDateLong extends LongToStringUnaryUDF {
         date.setTime(DateWritable.daysToMillis((int) vector[i]));
         break;
 
-      case TIMESTAMP:
-        date.setTime(vector[i] / 1000000);
-        break;
       default:
         throw new Error("Unsupported input type " + inputTypes[0].name());
     }
@@ -68,7 +65,7 @@ public class VectorUDFDateLong extends LongToStringUnaryUDF {
     b.setMode(VectorExpressionDescriptor.Mode.PROJECTION)
         .setNumArguments(1)
         .setArgumentTypes(
-            VectorExpressionDescriptor.ArgumentType.DATETIME_FAMILY)
+            VectorExpressionDescriptor.ArgumentType.DATE)
         .setInputExpressionTypes(
             VectorExpressionDescriptor.InputExpressionType.COLUMN);
     return b.build();

@@ -165,6 +165,17 @@ public class VectorColumnAssignFactory {
     }
   }
 
+  private static abstract class VectorTimestampColumnAssign
+  extends VectorColumnAssignVectorBase<TimestampColumnVector> {
+
+    protected void assignTimestamp(Timestamp value, int index) {
+      outCol.set(index, value);
+    }
+    protected void assignTimestamp(TimestampWritable tw, int index) {
+      outCol.set(index, tw.getTimestamp());
+    }
+  }
+
 
   public static VectorColumnAssign[] buildAssigners(VectorizedRowBatch outputBatch)
       throws HiveException {
@@ -313,19 +324,17 @@ public class VectorColumnAssignFactory {
         }.init(outputBatch, (LongColumnVector) destCol);
         break;
       case TIMESTAMP:
-        outVCA = new VectorLongColumnAssign() {
+        outVCA = new VectorTimestampColumnAssign() {
           @Override
           public void assignObjectValue(Object val, int destIndex) throws HiveException {
             if (val == null) {
               assignNull(destIndex);
             }
             else {
-              TimestampWritable bw = (TimestampWritable) val;
-              Timestamp t = bw.getTimestamp();
-              assignLong(TimestampUtils.getTimeNanoSec(t), destIndex);
+              assignTimestamp((TimestampWritable) val, destIndex);
             }
           }
-        }.init(outputBatch, (LongColumnVector) destCol);
+        }.init(outputBatch, (TimestampColumnVector) destCol);
         break;
       case DATE:
         outVCA = new VectorLongColumnAssign() {

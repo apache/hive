@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 
 /**
  * Utility functions to handle null propagation.
@@ -81,6 +82,31 @@ public class NullUtil {
     }
   }
 
+  /**
+   * Set the data value for all NULL entries to the designated NULL_VALUE.
+   */
+  public static void setNullDataEntriesTimestamp(
+      TimestampColumnVector v, boolean selectedInUse, int[] sel, int n) {
+    if (v.noNulls) {
+      return;
+    } else if (v.isRepeating && v.isNull[0]) {
+      v.setNullValue(0);
+    } else if (selectedInUse) {
+      for (int j = 0; j != n; j++) {
+        int i = sel[j];
+        if(v.isNull[i]) {
+          v.setNullValue(i);
+        }
+      }
+    } else {
+      for (int i = 0; i != n; i++) {
+        if(v.isNull[i]) {
+          v.setNullValue(i);
+        }
+      }
+    }
+  }
+
   // for use by Column-Scalar and Scalar-Column arithmetic for null propagation
   public static void setNullOutputEntriesColScalar(
       ColumnVector v, boolean selectedInUse, int[] sel, int n) {
@@ -89,8 +115,11 @@ public class NullUtil {
       // No need to set null data entries because the input NaN values
       // will automatically propagate to the output.
       return;
+    } else if (v instanceof LongColumnVector) {
+      setNullDataEntriesLong((LongColumnVector) v, selectedInUse, sel, n);
+    } else if (v instanceof TimestampColumnVector){
+      setNullDataEntriesTimestamp((TimestampColumnVector) v, selectedInUse, sel, n);
     }
-    setNullDataEntriesLong((LongColumnVector) v, selectedInUse, sel, n);
   }
 
   /**

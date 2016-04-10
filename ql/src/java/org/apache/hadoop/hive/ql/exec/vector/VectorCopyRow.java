@@ -22,8 +22,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
@@ -199,6 +197,32 @@ public class VectorCopyRow {
     }
   }
 
+  private class TimestampCopyRow extends CopyRow {
+
+    TimestampCopyRow(int inColumnIndex, int outColumnIndex) {
+      super(inColumnIndex, outColumnIndex);
+    }
+
+    @Override
+    void copy(VectorizedRowBatch inBatch, int inBatchIndex, VectorizedRowBatch outBatch, int outBatchIndex) {
+      TimestampColumnVector inColVector = (TimestampColumnVector) inBatch.cols[inColumnIndex];
+      TimestampColumnVector outColVector = (TimestampColumnVector) outBatch.cols[outColumnIndex];
+
+      if (inColVector.isRepeating) {
+        if (inColVector.noNulls || !inColVector.isNull[0]) {
+          outColVector.setElement(outBatchIndex, 0, inColVector);
+        } else {
+          VectorizedBatchUtil.setNullColIsNullValue(outColVector, outBatchIndex);
+        }
+      } else {
+        if (inColVector.noNulls || !inColVector.isNull[inBatchIndex]) {
+          outColVector.setElement(outBatchIndex, inBatchIndex, inColVector);
+        } else {
+          VectorizedBatchUtil.setNullColIsNullValue(outColVector, outBatchIndex);
+        }
+      }
+    }
+  }
   private CopyRow[] subRowToBatchCopiersByValue;
   private CopyRow[] subRowToBatchCopiersByReference;
 
@@ -220,6 +244,10 @@ public class VectorCopyRow {
       switch (columnVectorType) {
       case LONG:
         copyRowByValue = new LongCopyRow(inputColumn, outputColumn);
+        break;
+
+      case TIMESTAMP:
+        copyRowByValue = new TimestampCopyRow(inputColumn, outputColumn);
         break;
 
       case DOUBLE:

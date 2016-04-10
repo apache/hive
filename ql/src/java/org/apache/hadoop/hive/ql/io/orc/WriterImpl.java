@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.exec.vector.ListColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.MapColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.UnionColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
@@ -187,11 +188,10 @@ public class WriterImpl extends org.apache.orc.impl.WriterImpl implements Writer
               break;
             }
             case TIMESTAMP: {
-              LongColumnVector vector = (LongColumnVector) column;
+              TimestampColumnVector vector = (TimestampColumnVector) column;
               Timestamp ts = ((TimestampObjectInspector) inspector)
                   .getPrimitiveJavaObject(obj);
-              vector.vector[rowId] = ts.getTime() * NANOS_PER_MILLI +
-                  (ts.getNanos() % NANOS_PER_MILLI);
+              vector.set(rowId, ts);
               break;
             }
             case DATE: {

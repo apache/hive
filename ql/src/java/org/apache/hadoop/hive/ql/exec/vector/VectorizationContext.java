@@ -50,22 +50,30 @@ import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor.InputExpressionType;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor.Mode;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.*;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.CastTimestampToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFAvgDecimal;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFAvgTimestamp;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFCount;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFCountMerge;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFCountStar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFStdPopTimestamp;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFStdSampTimestamp;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFSumDecimal;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFVarPopTimestamp;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFVarSampTimestamp;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFAvgDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFAvgLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMaxDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMaxDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMaxLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMaxString;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMaxTimestamp;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMinDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMinDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMinLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMinString;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMinTimestamp;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFStdPopDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFStdPopDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFStdPopLong;
@@ -929,20 +937,16 @@ public class VectorizationContext {
     case DATE:
       return new ConstantVectorExpression(outCol, DateWritable.dateToDays((Date) constantValue));
     case TIMESTAMP:
-      return new ConstantVectorExpression(outCol, TimestampUtils.getTimeNanoSec((Timestamp) constantValue));
+      return new ConstantVectorExpression(outCol, (Timestamp) constantValue);
     case INTERVAL_YEAR_MONTH:
       return new ConstantVectorExpression(outCol,
           ((HiveIntervalYearMonth) constantValue).getTotalMonths());
     case INTERVAL_DAY_TIME:
-      return new ConstantVectorExpression(outCol,
-          DateUtils.getIntervalDayTimeTotalNanos((HiveIntervalDayTime) constantValue));
+      return new ConstantVectorExpression(outCol, (HiveIntervalDayTime) constantValue);
     case FLOAT_FAMILY:
       return new ConstantVectorExpression(outCol, ((Number) constantValue).doubleValue());
     case DECIMAL:
-      VectorExpression ve = new ConstantVectorExpression(outCol, (HiveDecimal) constantValue);
-      // Set type name with decimal precision, scale, etc.
-      ve.setOutputType(typeName);
-      return ve;
+      return new ConstantVectorExpression(outCol, (HiveDecimal) constantValue, typeName);
     case STRING:
       return new ConstantVectorExpression(outCol, ((String) constantValue).getBytes());
     case CHAR:
@@ -1240,8 +1244,8 @@ public class VectorizationContext {
     VectorExpression ve = getVectorExpressionForUdf(udf, udf.getClass(), childExpr, mode, returnType);
 
     // Replace with the milliseconds conversion
-    if (!udf.isIntToTimestampInSeconds() && ve instanceof CastLongToTimestampViaLongToLong) {
-      ve = createVectorExpression(CastMillisecondsLongToTimestampViaLongToLong.class,
+    if (!udf.isIntToTimestampInSeconds() && ve instanceof CastLongToTimestamp) {
+      ve = createVectorExpression(CastMillisecondsLongToTimestamp.class,
           childExpr, Mode.PROJECTION, returnType);
     }
 
@@ -1526,13 +1530,13 @@ public class VectorizationContext {
       expr = createVectorExpression(cl, childExpr.subList(0, 1), Mode.PROJECTION, returnType);
       ((ILongInExpr) expr).setInListValues(inVals);
     } else if (isTimestampFamily(colType)) {
-      cl = (mode == Mode.FILTER ? FilterLongColumnInList.class : LongColumnInList.class);
-      long[] inVals = new long[childrenForInList.size()];
+      cl = (mode == Mode.FILTER ? FilterTimestampColumnInList.class : TimestampColumnInList.class);
+      Timestamp[] inVals = new Timestamp[childrenForInList.size()];
       for (int i = 0; i != inVals.length; i++) {
         inVals[i] = getTimestampScalar(childrenForInList.get(i));
       }
       expr = createVectorExpression(cl, childExpr.subList(0, 1), Mode.PROJECTION, returnType);
-      ((ILongInExpr) expr).setInListValues(inVals);
+      ((ITimestampInExpr) expr).setInListValues(inVals);
     } else if (isStringFamily(colType)) {
       cl = (mode == Mode.FILTER ? FilterStringColumnInList.class : StringColumnInList.class);
       byte[][] inVals = new byte[childrenForInList.size()][];
@@ -1834,7 +1838,7 @@ public class VectorizationContext {
     if (isIntFamily(inputType)) {
       return createVectorExpression(CastLongToDouble.class, childExpr, Mode.PROJECTION, returnType);
     } else if (inputType.equals("timestamp")) {
-      return createVectorExpression(CastTimestampToDoubleViaLongToDouble.class, childExpr, Mode.PROJECTION,
+      return createVectorExpression(CastTimestampToDouble.class, childExpr, Mode.PROJECTION,
           returnType);
     } else if (isFloatFamily(inputType)) {
 
@@ -1978,20 +1982,10 @@ public class VectorizationContext {
       cl = FilterCharColumnBetween.class;
     } else if (charTypePattern.matcher(colType).matches() && notKeywordPresent) {
       cl = FilterCharColumnNotBetween.class;
-    } else if (colType.equals("timestamp")) {
-
-      // Get timestamp boundary values as longs instead of the expected strings
-      long left = getTimestampScalar(childExpr.get(2));
-      long right = getTimestampScalar(childExpr.get(3));
-      childrenAfterNot = new ArrayList<ExprNodeDesc>();
-      childrenAfterNot.add(colExpr);
-      childrenAfterNot.add(new ExprNodeConstantDesc(left));
-      childrenAfterNot.add(new ExprNodeConstantDesc(right));
-      if (notKeywordPresent) {
-        cl = FilterLongColumnNotBetween.class;
-      } else {
-        cl = FilterLongColumnBetween.class;
-      }
+    } else if (colType.equals("timestamp") && !notKeywordPresent) {
+      cl = FilterTimestampColumnBetween.class;
+    } else if (colType.equals("timestamp") && notKeywordPresent) {
+      cl = FilterTimestampColumnNotBetween.class;
     } else if (isDecimalFamily(colType) && !notKeywordPresent) {
       cl = FilterDecimalColumnBetween.class;
     } else if (isDecimalFamily(colType) && notKeywordPresent) {
@@ -2056,6 +2050,7 @@ public class VectorizationContext {
 
     // Make vectorized operator
     String normalizedName = getNormalizedName(resultTypeName);
+
     VectorExpression ve = new VectorUDFAdaptor(expr, outputCol, normalizedName, argDescs);
 
     // Set child expressions
@@ -2173,21 +2168,17 @@ public class VectorizationContext {
     VectorExpression.Type type = VectorExpression.Type.getValue(t);
     Object scalarValue = getScalarValue(constDesc);
     switch (type) {
-      case TIMESTAMP:
-        return TimestampUtils.getTimeNanoSec((Timestamp) scalarValue);
       case DATE:
         return DateWritable.dateToDays((Date) scalarValue);
       case INTERVAL_YEAR_MONTH:
         return ((HiveIntervalYearMonth) scalarValue).getTotalMonths();
-      case INTERVAL_DAY_TIME:
-        return DateUtils.getIntervalDayTimeTotalNanos((HiveIntervalDayTime) scalarValue);
       default:
         return scalarValue;
     }
   }
 
-  // Get a timestamp as a long in number of nanos, from a string constant or cast
-  private long getTimestampScalar(ExprNodeDesc expr) throws HiveException {
+  // Get a timestamp from a string constant or cast
+  private Timestamp getTimestampScalar(ExprNodeDesc expr) throws HiveException {
     if (expr instanceof ExprNodeGenericFuncDesc &&
         ((ExprNodeGenericFuncDesc) expr).getGenericUDF() instanceof GenericUDFTimestamp) {
       return evaluateCastToTimestamp(expr);
@@ -2215,7 +2206,7 @@ public class VectorizationContext {
         + "Expecting string.");
   }
 
-  private long evaluateCastToTimestamp(ExprNodeDesc expr) throws HiveException {
+  private Timestamp evaluateCastToTimestamp(ExprNodeDesc expr) throws HiveException {
     ExprNodeGenericFuncDesc expr2 = (ExprNodeGenericFuncDesc) expr;
     ExprNodeEvaluator evaluator = ExprNodeEvaluatorFactory.get(expr2);
     ObjectInspector output = evaluator.initialize(null);
@@ -2226,7 +2217,7 @@ public class VectorizationContext {
       throw new HiveException("Udf: failed to convert to timestamp");
     }
     Timestamp ts = (Timestamp) java;
-    return TimestampUtils.getTimeNanoSec(ts);
+    return ts;
   }
 
   private Constructor<?> getConstructor(Class<?> cl) throws HiveException {
@@ -2315,7 +2306,7 @@ public class VectorizationContext {
     }
   }
 
-  public static ColumnVector.Type getColumnVectorTypeFromTypeInfo(TypeInfo typeInfo) throws HiveException {
+  public static ColumnVector.Type getColumnVectorTypeFromTypeInfo(TypeInfo typeInfo) {
     switch (typeInfo.getCategory()) {
       case STRUCT:
         return Type.STRUCT;
@@ -2336,10 +2327,12 @@ public class VectorizationContext {
           case INT:
           case LONG:
           case DATE:
-          case TIMESTAMP:
           case INTERVAL_YEAR_MONTH:
-          case INTERVAL_DAY_TIME:
             return ColumnVector.Type.LONG;
+
+          case INTERVAL_DAY_TIME:
+          case TIMESTAMP:
+            return ColumnVector.Type.TIMESTAMP;
 
           case FLOAT:
           case DOUBLE:
@@ -2369,47 +2362,58 @@ public class VectorizationContext {
   // TODO:   And, investigate if different reduce-side versions are needed for var* and std*, or if map-side aggregate can be used..  Right now they are conservatively
   //         marked map-side (HASH).
   static ArrayList<AggregateDefinition> aggregatesDefinition = new ArrayList<AggregateDefinition>() {{
-    add(new AggregateDefinition("min",         VectorExpressionDescriptor.ArgumentType.INT_DATETIME_INTERVAL_FAMILY,    null,                          VectorUDAFMinLong.class));
+    add(new AggregateDefinition("min",         VectorExpressionDescriptor.ArgumentType.INT_DATE_INTERVAL_YEAR_MONTH,    null,                          VectorUDAFMinLong.class));
     add(new AggregateDefinition("min",         VectorExpressionDescriptor.ArgumentType.FLOAT_FAMILY,           null,                          VectorUDAFMinDouble.class));
     add(new AggregateDefinition("min",         VectorExpressionDescriptor.ArgumentType.STRING_FAMILY,          null,                          VectorUDAFMinString.class));
     add(new AggregateDefinition("min",         VectorExpressionDescriptor.ArgumentType.DECIMAL,                null,                          VectorUDAFMinDecimal.class));
-    add(new AggregateDefinition("max",         VectorExpressionDescriptor.ArgumentType.INT_DATETIME_INTERVAL_FAMILY,    null,                          VectorUDAFMaxLong.class));
+    add(new AggregateDefinition("min",         VectorExpressionDescriptor.ArgumentType.TIMESTAMP_INTERVAL_DAY_TIME,     null,                          VectorUDAFMinTimestamp.class));
+    add(new AggregateDefinition("max",         VectorExpressionDescriptor.ArgumentType.INT_DATE_INTERVAL_YEAR_MONTH,    null,                          VectorUDAFMaxLong.class));
     add(new AggregateDefinition("max",         VectorExpressionDescriptor.ArgumentType.FLOAT_FAMILY,           null,                          VectorUDAFMaxDouble.class));
     add(new AggregateDefinition("max",         VectorExpressionDescriptor.ArgumentType.STRING_FAMILY,          null,                          VectorUDAFMaxString.class));
     add(new AggregateDefinition("max",         VectorExpressionDescriptor.ArgumentType.DECIMAL,                null,                          VectorUDAFMaxDecimal.class));
+    add(new AggregateDefinition("max",         VectorExpressionDescriptor.ArgumentType.TIMESTAMP_INTERVAL_DAY_TIME,     null,                          VectorUDAFMaxTimestamp.class));
     add(new AggregateDefinition("count",       VectorExpressionDescriptor.ArgumentType.NONE,                   GroupByDesc.Mode.HASH,         VectorUDAFCountStar.class));
-    add(new AggregateDefinition("count",       VectorExpressionDescriptor.ArgumentType.INT_DATETIME_INTERVAL_FAMILY,    GroupByDesc.Mode.HASH,         VectorUDAFCount.class));
+    add(new AggregateDefinition("count",       VectorExpressionDescriptor.ArgumentType.INT_DATE_INTERVAL_YEAR_MONTH,    GroupByDesc.Mode.HASH,         VectorUDAFCount.class));
     add(new AggregateDefinition("count",       VectorExpressionDescriptor.ArgumentType.INT_FAMILY,             GroupByDesc.Mode.MERGEPARTIAL, VectorUDAFCountMerge.class));
     add(new AggregateDefinition("count",       VectorExpressionDescriptor.ArgumentType.FLOAT_FAMILY,           GroupByDesc.Mode.HASH,         VectorUDAFCount.class));
     add(new AggregateDefinition("count",       VectorExpressionDescriptor.ArgumentType.STRING_FAMILY,          GroupByDesc.Mode.HASH,         VectorUDAFCount.class));
     add(new AggregateDefinition("count",       VectorExpressionDescriptor.ArgumentType.DECIMAL,                GroupByDesc.Mode.HASH,         VectorUDAFCount.class));
+    add(new AggregateDefinition("count",       VectorExpressionDescriptor.ArgumentType.TIMESTAMP_INTERVAL_DAY_TIME,     GroupByDesc.Mode.HASH,         VectorUDAFCount.class));
     add(new AggregateDefinition("sum",         VectorExpressionDescriptor.ArgumentType.INT_FAMILY,             null,                          VectorUDAFSumLong.class));
     add(new AggregateDefinition("sum",         VectorExpressionDescriptor.ArgumentType.FLOAT_FAMILY,           null,                          VectorUDAFSumDouble.class));
     add(new AggregateDefinition("sum",         VectorExpressionDescriptor.ArgumentType.DECIMAL,                null,                          VectorUDAFSumDecimal.class));
-    add(new AggregateDefinition("avg",         VectorExpressionDescriptor.ArgumentType.INT_TIMESTAMP_FAMILY,   GroupByDesc.Mode.HASH,         VectorUDAFAvgLong.class));
+    add(new AggregateDefinition("avg",         VectorExpressionDescriptor.ArgumentType.INT_FAMILY,             GroupByDesc.Mode.HASH,         VectorUDAFAvgLong.class));
     add(new AggregateDefinition("avg",         VectorExpressionDescriptor.ArgumentType.FLOAT_FAMILY,           GroupByDesc.Mode.HASH,         VectorUDAFAvgDouble.class));
     add(new AggregateDefinition("avg",         VectorExpressionDescriptor.ArgumentType.DECIMAL,                GroupByDesc.Mode.HASH,         VectorUDAFAvgDecimal.class));
-    add(new AggregateDefinition("variance",    VectorExpressionDescriptor.ArgumentType.INT_TIMESTAMP_FAMILY,   GroupByDesc.Mode.HASH,         VectorUDAFVarPopLong.class));
-    add(new AggregateDefinition("var_pop",     VectorExpressionDescriptor.ArgumentType.INT_TIMESTAMP_FAMILY,   GroupByDesc.Mode.HASH,         VectorUDAFVarPopLong.class));
+    add(new AggregateDefinition("avg",         VectorExpressionDescriptor.ArgumentType.TIMESTAMP,              GroupByDesc.Mode.HASH,         VectorUDAFAvgTimestamp.class));
+    add(new AggregateDefinition("variance",    VectorExpressionDescriptor.ArgumentType.INT_FAMILY,             GroupByDesc.Mode.HASH,         VectorUDAFVarPopLong.class));
+    add(new AggregateDefinition("var_pop",     VectorExpressionDescriptor.ArgumentType.INT_FAMILY,             GroupByDesc.Mode.HASH,         VectorUDAFVarPopLong.class));
     add(new AggregateDefinition("variance",    VectorExpressionDescriptor.ArgumentType.FLOAT_FAMILY,           GroupByDesc.Mode.HASH,         VectorUDAFVarPopDouble.class));
     add(new AggregateDefinition("var_pop",     VectorExpressionDescriptor.ArgumentType.FLOAT_FAMILY,           GroupByDesc.Mode.HASH,         VectorUDAFVarPopDouble.class));
     add(new AggregateDefinition("variance",    VectorExpressionDescriptor.ArgumentType.DECIMAL,                GroupByDesc.Mode.HASH,         VectorUDAFVarPopDecimal.class));
     add(new AggregateDefinition("var_pop",     VectorExpressionDescriptor.ArgumentType.DECIMAL,                GroupByDesc.Mode.HASH,         VectorUDAFVarPopDecimal.class));
-    add(new AggregateDefinition("var_samp",    VectorExpressionDescriptor.ArgumentType.INT_TIMESTAMP_FAMILY,   GroupByDesc.Mode.HASH,         VectorUDAFVarSampLong.class));
+    add(new AggregateDefinition("variance",    VectorExpressionDescriptor.ArgumentType.TIMESTAMP,              GroupByDesc.Mode.HASH,         VectorUDAFVarPopTimestamp.class));
+    add(new AggregateDefinition("var_pop",     VectorExpressionDescriptor.ArgumentType.TIMESTAMP,              GroupByDesc.Mode.HASH,         VectorUDAFVarPopTimestamp.class));
+    add(new AggregateDefinition("var_samp",    VectorExpressionDescriptor.ArgumentType.INT_FAMILY,             GroupByDesc.Mode.HASH,         VectorUDAFVarSampLong.class));
     add(new AggregateDefinition("var_samp" ,   VectorExpressionDescriptor.ArgumentType.FLOAT_FAMILY,           GroupByDesc.Mode.HASH,         VectorUDAFVarSampDouble.class));
     add(new AggregateDefinition("var_samp" ,   VectorExpressionDescriptor.ArgumentType.DECIMAL,                GroupByDesc.Mode.HASH,         VectorUDAFVarSampDecimal.class));
-    add(new AggregateDefinition("std",         VectorExpressionDescriptor.ArgumentType.INT_TIMESTAMP_FAMILY,   GroupByDesc.Mode.HASH,         VectorUDAFStdPopLong.class));
-    add(new AggregateDefinition("stddev",      VectorExpressionDescriptor.ArgumentType.INT_TIMESTAMP_FAMILY,   GroupByDesc.Mode.HASH,         VectorUDAFStdPopLong.class));
-    add(new AggregateDefinition("stddev_pop",  VectorExpressionDescriptor.ArgumentType.INT_TIMESTAMP_FAMILY,   GroupByDesc.Mode.HASH,         VectorUDAFStdPopLong.class));
+    add(new AggregateDefinition("var_samp" ,   VectorExpressionDescriptor.ArgumentType.TIMESTAMP,              GroupByDesc.Mode.HASH,         VectorUDAFVarSampTimestamp.class));
+    add(new AggregateDefinition("std",         VectorExpressionDescriptor.ArgumentType.INT_FAMILY,             GroupByDesc.Mode.HASH,         VectorUDAFStdPopLong.class));
+    add(new AggregateDefinition("stddev",      VectorExpressionDescriptor.ArgumentType.INT_FAMILY,             GroupByDesc.Mode.HASH,         VectorUDAFStdPopLong.class));
+    add(new AggregateDefinition("stddev_pop",  VectorExpressionDescriptor.ArgumentType.INT_FAMILY,             GroupByDesc.Mode.HASH,         VectorUDAFStdPopLong.class));
     add(new AggregateDefinition("std",         VectorExpressionDescriptor.ArgumentType.FLOAT_FAMILY,           GroupByDesc.Mode.HASH,         VectorUDAFStdPopDouble.class));
     add(new AggregateDefinition("stddev",      VectorExpressionDescriptor.ArgumentType.FLOAT_FAMILY,           GroupByDesc.Mode.HASH,         VectorUDAFStdPopDouble.class));
     add(new AggregateDefinition("stddev_pop",  VectorExpressionDescriptor.ArgumentType.FLOAT_FAMILY,           GroupByDesc.Mode.HASH,         VectorUDAFStdPopDouble.class));
     add(new AggregateDefinition("std",         VectorExpressionDescriptor.ArgumentType.DECIMAL,                GroupByDesc.Mode.HASH,         VectorUDAFStdPopDecimal.class));
     add(new AggregateDefinition("stddev",      VectorExpressionDescriptor.ArgumentType.DECIMAL,                GroupByDesc.Mode.HASH,         VectorUDAFStdPopDecimal.class));
     add(new AggregateDefinition("stddev_pop",  VectorExpressionDescriptor.ArgumentType.DECIMAL,                GroupByDesc.Mode.HASH,         VectorUDAFStdPopDecimal.class));
-    add(new AggregateDefinition("stddev_samp", VectorExpressionDescriptor.ArgumentType.INT_TIMESTAMP_FAMILY,   GroupByDesc.Mode.HASH,         VectorUDAFStdSampLong.class));
+    add(new AggregateDefinition("std",         VectorExpressionDescriptor.ArgumentType.TIMESTAMP,              GroupByDesc.Mode.HASH,         VectorUDAFStdPopTimestamp.class));
+    add(new AggregateDefinition("stddev",      VectorExpressionDescriptor.ArgumentType.TIMESTAMP,              GroupByDesc.Mode.HASH,         VectorUDAFStdPopTimestamp.class));
+    add(new AggregateDefinition("stddev_pop",  VectorExpressionDescriptor.ArgumentType.TIMESTAMP,              GroupByDesc.Mode.HASH,         VectorUDAFStdPopTimestamp.class));
+    add(new AggregateDefinition("stddev_samp", VectorExpressionDescriptor.ArgumentType.INT_FAMILY,             GroupByDesc.Mode.HASH,         VectorUDAFStdSampLong.class));
     add(new AggregateDefinition("stddev_samp", VectorExpressionDescriptor.ArgumentType.FLOAT_FAMILY,           GroupByDesc.Mode.HASH,         VectorUDAFStdSampDouble.class));
     add(new AggregateDefinition("stddev_samp", VectorExpressionDescriptor.ArgumentType.DECIMAL,                GroupByDesc.Mode.HASH,         VectorUDAFStdSampDecimal.class));
+    add(new AggregateDefinition("stddev_samp", VectorExpressionDescriptor.ArgumentType.TIMESTAMP,              GroupByDesc.Mode.HASH,         VectorUDAFStdSampTimestamp.class));
   }};
 
   public VectorAggregateExpression getAggregatorExpression(AggregationDesc desc, boolean isReduceMergePartial)

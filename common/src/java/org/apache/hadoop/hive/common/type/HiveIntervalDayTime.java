@@ -117,6 +117,12 @@ public class HiveIntervalDayTime implements Comparable<HiveIntervalDayTime> {
     normalizeSecondsAndNanos();
   }
 
+  public void set(PisaTimestamp pisaTimestamp) {
+    this.totalSeconds = pisaTimestamp.getEpochSeconds();
+    this.nanos = pisaTimestamp.getSignedNanos();
+    normalizeSecondsAndNanos();
+  }
+
   public void set(BigDecimal totalSecondsBd) {
     long totalSeconds = totalSecondsBd.longValue();
     BigDecimal fractionalSecs = totalSecondsBd.remainder(BigDecimal.ONE);
@@ -130,6 +136,11 @@ public class HiveIntervalDayTime implements Comparable<HiveIntervalDayTime> {
 
   public HiveIntervalDayTime negate() {
     return new HiveIntervalDayTime(-getTotalSeconds(), -getNanos());
+  }
+
+  public PisaTimestamp pisaTimestampUpdate(PisaTimestamp pisaTimestamp) {
+    // NOTE: Our nanos here are *SIGNED*.
+    return pisaTimestamp.updateFromEpochSecondsAndSignedNanos(totalSeconds, nanos);
   }
 
   @Override

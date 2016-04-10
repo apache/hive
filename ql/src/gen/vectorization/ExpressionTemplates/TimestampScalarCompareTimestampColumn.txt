@@ -15,30 +15,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
 
-import org.apache.hadoop.hive.ql.udf.UDFToString;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import java.sql.Timestamp;
-import org.apache.hadoop.hive.ql.exec.vector.TimestampUtils;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
-import org.apache.hadoop.io.LongWritable;
 
-import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
-import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
+import org.apache.hadoop.hive.common.type.PisaTimestamp;
+
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 
+
 /**
- * Generated from template TimestampScalarCompareTimestampColumn.txt, which covers comparison 
- * expressions between a timestamp column and a timestamp scalar. The boolean output
+ * Generated from template TimestampColumnCompareTimestampScalar.txt, which covers comparison
+ * expressions between a datetime/interval column and a scalar of the same type. The boolean output
  * is stored in a separate boolean column.
  */
 public class <ClassName> extends <BaseClassName> {
 
-  public <ClassName>(long value, int colNum, int outputColumn) {
-    super(value, colNum, outputColumn);
+  private static final long serialVersionUID = 1L;
+
+  public <ClassName>(Timestamp value, int colNum, int outputColumn) {
+    super(new PisaTimestamp(value), colNum, outputColumn);
   }
 
   public <ClassName>() {

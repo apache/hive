@@ -141,11 +141,12 @@ public class VectorizedBatchUtil {
           case SHORT:
           case INT:
           case LONG:
-          case TIMESTAMP:
           case DATE:
           case INTERVAL_YEAR_MONTH:
-          case INTERVAL_DAY_TIME:
             return new LongColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
+          case INTERVAL_DAY_TIME:
+          case TIMESTAMP:
+            return new TimestampColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
           case FLOAT:
           case DOUBLE:
             return new DoubleColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
@@ -393,13 +394,12 @@ public class VectorizedBatchUtil {
     }
       break;
     case TIMESTAMP: {
-      LongColumnVector lcv = (LongColumnVector) batch.cols[offset + colIndex];
+      TimestampColumnVector lcv = (TimestampColumnVector) batch.cols[offset + colIndex];
       if (writableCol != null) {
-        Timestamp t = ((TimestampWritable) writableCol).getTimestamp();
-        lcv.vector[rowIndex] = TimestampUtils.getTimeNanoSec(t);
+        lcv.set(rowIndex, ((TimestampWritable) writableCol).getTimestamp());
         lcv.isNull[rowIndex] = false;
       } else {
-        lcv.vector[rowIndex] = 1;
+        lcv.setNullValue(rowIndex);
         setNullColIsNullValue(lcv, rowIndex);
       }
     }
@@ -583,6 +583,8 @@ public class VectorizedBatchUtil {
       return new DecimalColumnVector(decColVector.vector.length,
           decColVector.precision,
           decColVector.scale);
+    } else if (source instanceof TimestampColumnVector) {
+      return new TimestampColumnVector(((TimestampColumnVector) source).getLength());
     } else if (source instanceof ListColumnVector) {
       ListColumnVector src = (ListColumnVector) source;
       ColumnVector child = cloneColumnVector(src.child);
@@ -682,6 +684,10 @@ public class VectorizedBatchUtil {
             }
           } else if (colVector instanceof DecimalColumnVector) {
             sb.append(((DecimalColumnVector) colVector).vector[index].toString());
+          } else if (colVector instanceof TimestampColumnVector) {
+            Timestamp timestamp = new Timestamp(0);
+            ((TimestampColumnVector) colVector).timestampUpdate(timestamp, index);
+            sb.append(timestamp.toString());
           } else {
             sb.append("Unknown");
           }

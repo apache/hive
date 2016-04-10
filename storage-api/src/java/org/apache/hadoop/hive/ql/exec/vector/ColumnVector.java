@@ -42,6 +42,7 @@ public abstract class ColumnVector {
     DOUBLE,
     BYTES,
     DECIMAL,
+    TIMESTAMP,
     STRUCT,
     LIST,
     MAP,

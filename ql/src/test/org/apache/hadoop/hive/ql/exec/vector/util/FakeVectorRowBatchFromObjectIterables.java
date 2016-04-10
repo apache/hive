@@ -27,12 +27,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.PisaTimestamp;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.TimestampUtils;
+import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 
@@ -101,16 +102,16 @@ public class FakeVectorRowBatchFromObjectIterables extends FakeVectorRowBatchBas
           }
         };
       } else if (types[i].equalsIgnoreCase("timestamp")) {
-        batch.cols[i] = new LongColumnVector(batchSize);
+        batch.cols[i] = new TimestampColumnVector(batchSize);
         columnAssign[i] = new ColumnVectorAssign() {
           @Override
           public void assign(
               ColumnVector columnVector,
               int row,
               Object value) {
-            LongColumnVector lcv = (LongColumnVector) columnVector;
+            TimestampColumnVector lcv = (TimestampColumnVector) columnVector;
             Timestamp t = (Timestamp) value;
-            lcv.vector[row] = TimestampUtils.getTimeNanoSec(t);
+            lcv.set(row, new PisaTimestamp(t));
           }
         };
 
