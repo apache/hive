@@ -1362,6 +1362,13 @@ public class Vectorizer implements PhysicalPlanResolver {
       LOG.info("Cannot vectorize map work value expression");
       return false;
     }
+    Byte[] order = desc.getTagOrder();
+    Byte posSingleVectorMapJoinSmallTable = (order[0] == posBigTable ? order[1] : order[0]);
+    List<ExprNodeDesc> smallTableExprs = desc.getExprs().get(posSingleVectorMapJoinSmallTable);
+    if (!validateExprNodeDesc(smallTableExprs)) {
+      LOG.info("Cannot vectorize map work small table expression");
+      return false;
+    }
     return true;
   }
 

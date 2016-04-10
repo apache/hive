@@ -255,7 +255,7 @@ public abstract class VectorMapJoinCommonOperator extends MapJoinOperator implem
     determineCommonInfo(isOuterJoin);
   }
 
-  protected void determineCommonInfo(boolean isOuter) {
+  protected void determineCommonInfo(boolean isOuter) throws HiveException {
 
     bigTableRetainedMapping = new VectorColumnOutputMapping("Big Table Retained Mapping");
 
