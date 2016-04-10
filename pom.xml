@@ -106,8 +106,8 @@
     <activemq.version>5.5.0</activemq.version>
     <ant.version>1.9.1</ant.version>
     <antlr.version>3.4</antlr.version>
-    <apache-directory-server.version>1.5.7</apache-directory-server.version>
-    <apache-directory-clientapi.version>0.1</apache-directory-clientapi.version>
+    <apache-directory-server.version>1.5.6</apache-directory-server.version>
+    <apache-directory-clientapi.version>1.0.0-M14</apache-directory-clientapi.version>
     <avro.version>1.7.7</avro.version>
     <bonecp.version>0.8.0.RELEASE</bonecp.version>
     <calcite.version>1.6.0</calcite.version>
@@ -230,6 +230,16 @@
        <url>https://oss.sonatype.org/content/repositories/snapshots</url>
        <releases>
          <enabled>false</enabled>
+       </releases>
+       <snapshots>
+         <enabled>false</enabled>
+       </snapshots>
+    </repository>
+     <repository>
+       <id>apache</id>
+       <url>https://repository.apache.org/service/local/repositories/releases/content</url>
+       <releases>
+         <enabled>true</enabled>
        </releases>
        <snapshots>
          <enabled>false</enabled>
