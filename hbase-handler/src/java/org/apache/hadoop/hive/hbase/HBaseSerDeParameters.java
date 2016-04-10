@@ -69,8 +69,8 @@ public class HBaseSerDeParameters {
     // Read configuration parameters
     columnMappingString = tbl.getProperty(HBaseSerDe.HBASE_COLUMNS_MAPPING);
     doColumnRegexMatching =
-        Boolean.valueOf(tbl.getProperty(HBaseSerDe.HBASE_COLUMNS_REGEX_MATCHING, "true"));
-    doColumnPrefixCut = Boolean.valueOf(tbl.getProperty(HBaseSerDe.HBASE_COLUMNS_PREFIX_HIDE, "false"));
+        Boolean.parseBoolean(tbl.getProperty(HBaseSerDe.HBASE_COLUMNS_REGEX_MATCHING, "true"));
+    doColumnPrefixCut = Boolean.parseBoolean(tbl.getProperty(HBaseSerDe.HBASE_COLUMNS_PREFIX_HIDE, "false"));
     // Parse and initialize the HBase columns mapping
     columnMappings = HBaseSerDe.parseColumnsMapping(columnMappingString, doColumnRegexMatching, doColumnPrefixCut);
 
@@ -95,7 +95,7 @@ public class HBaseSerDeParameters {
     }
 
     this.serdeParams = new LazySerDeParameters(job, tbl, serdeName);
-    this.putTimestamp = Long.valueOf(tbl.getProperty(HBaseSerDe.HBASE_PUT_TIMESTAMP, "-1"));
+    this.putTimestamp = Long.parseLong(tbl.getProperty(HBaseSerDe.HBASE_PUT_TIMESTAMP, "-1"));
 
     columnMappings.setHiveColumnDescription(serdeName, serdeParams.getColumnNames(),
         serdeParams.getColumnTypes());

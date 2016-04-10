@@ -567,7 +567,7 @@ public final class PlanUtils {
     List<FieldSchema> schemas = new ArrayList<FieldSchema>(cols.size());
     for (int i = 0; i < cols.size(); i++) {
       String name = cols.get(i).getInternalName();
-      if (name.equals(Integer.valueOf(i).toString())) {
+      if (name.equals(String.valueOf(i))) {
         name = fieldPrefix + name;
       }
       schemas.add(MetaStoreUtils.getFieldSchemaFromTypeInfo(name, cols.get(i)

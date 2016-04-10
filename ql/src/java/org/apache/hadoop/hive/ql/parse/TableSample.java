@@ -68,8 +68,8 @@ public class TableSample {
    *          The list of expressions in the ON part of the TABLESAMPLE clause
    */
   public TableSample(String num, String den, ArrayList<ASTNode> exprs) {
-    numerator = Integer.valueOf(num).intValue();
-    denominator = Integer.valueOf(den).intValue();
+    numerator = Integer.parseInt(num);
+    denominator = Integer.parseInt(den);
     this.exprs = exprs;
   }
 

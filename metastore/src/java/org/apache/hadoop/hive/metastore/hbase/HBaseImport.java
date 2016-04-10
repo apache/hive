@@ -206,7 +206,7 @@ public class HBaseImport {
       doAll = true;
     }
     if (cli.hasOption('b')) {
-      batchSize = Integer.valueOf(cli.getOptionValue('b'));
+      batchSize = Integer.parseInt(cli.getOptionValue('b'));
     }
     if (cli.hasOption('d')) {
       hasCmd = true;
@@ -217,7 +217,7 @@ public class HBaseImport {
       functionsToImport = Arrays.asList(cli.getOptionValues('f'));
     }
     if (cli.hasOption('p')) {
-      parallel = Integer.valueOf(cli.getOptionValue('p'));
+      parallel = Integer.parseInt(cli.getOptionValue('p'));
     }
     if (cli.hasOption('r')) {
       hasCmd = true;

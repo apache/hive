@@ -440,7 +440,7 @@ public class GenSparkUtils {
     if (fso != null) {
       String bucketCount = fso.getConf().getTableInfo().getProperties().getProperty(
           hive_metastoreConstants.BUCKET_COUNT);
-      if (bucketCount != null && Integer.valueOf(bucketCount) > 1) {
+      if (bucketCount != null && Integer.parseInt(bucketCount) > 1) {
         edgeProperty.setMRShuffle();
       }
     }

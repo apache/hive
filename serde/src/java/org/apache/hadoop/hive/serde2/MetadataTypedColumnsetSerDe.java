@@ -77,7 +77,7 @@ public class MetadataTypedColumnsetSerDe extends AbstractSerDe {
     if (altValue != null && altValue.length() > 0) {
       try {
         byte[] b = new byte[1];
-        b[0] = Byte.valueOf(altValue).byteValue();
+        b[0] = Byte.parseByte(altValue);
         return new String(b);
       } catch (NumberFormatException e) {
         return altValue;

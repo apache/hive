@@ -3185,12 +3185,12 @@ public class HiveConf extends Configuration {
 
   public static long toTime(String value, TimeUnit inputUnit, TimeUnit outUnit) {
     String[] parsed = parseNumberFollowedByUnit(value.trim());
-    return outUnit.convert(Long.valueOf(parsed[0].trim().trim()), unitFor(parsed[1].trim(), inputUnit));
+    return outUnit.convert(Long.parseLong(parsed[0].trim()), unitFor(parsed[1].trim(), inputUnit));
   }
 
   public static long toSizeBytes(String value) {
     String[] parsed = parseNumberFollowedByUnit(value.trim());
-    return Long.valueOf(parsed[0].trim()) * multiplierFor(parsed[1].trim());
+    return Long.parseLong(parsed[0].trim()) * multiplierFor(parsed[1].trim());
   }
 
   private static String[] parseNumberFollowedByUnit(String value) {

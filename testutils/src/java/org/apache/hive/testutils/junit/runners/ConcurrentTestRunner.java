@@ -40,7 +40,7 @@ public class ConcurrentTestRunner extends BlockJUnit4ClassRunner {
 
     String numThreadsProp = System.getProperty("test.concurrency.num.threads");
     if (numThreadsProp != null) {
-      numThreads = Integer.valueOf(numThreadsProp);
+      numThreads = Integer.parseInt(numThreadsProp);
     }
 
     setScheduler(new ConcurrentScheduler(newFixedThreadPool(numThreads, new ConcurrentTestRunnerThreadFactory())));

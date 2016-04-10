@@ -737,11 +737,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         int seedNum = conf.getIntVar(ConfVars.HIVESAMPLERANDOMNUM);
         sample = new SplitSample(percent, seedNum);
       } else if (type.getType() == HiveParser.TOK_ROWCOUNT) {
-        sample = new SplitSample(Integer.valueOf(value));
+        sample = new SplitSample(Integer.parseInt(value));
       } else {
         assert type.getType() == HiveParser.TOK_LENGTH;
         assertCombineInputFormat(numerator, "Total Length");
-        long length = Integer.valueOf(value.substring(0, value.length() - 1));
+        long length = Integer.parseInt(value.substring(0, value.length() - 1));
         char last = value.charAt(value.length() - 1);
         if (last == 'k' || last == 'K') {
           length <<= 10;
@@ -11384,12 +11384,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       case HiveParser.TOK_ALTERTABLE_BUCKETS:
         bucketCols = getColumnNames((ASTNode) child.getChild(0));
         if (child.getChildCount() == 2) {
-          numBuckets = (Integer.valueOf(child.getChild(1).getText()))
-              .intValue();
+          numBuckets = Integer.parseInt(child.getChild(1).getText());
         } else {
           sortCols = getColumnNamesOrder((ASTNode) child.getChild(1));
-          numBuckets = (Integer.valueOf(child.getChild(2).getText()))
-              .intValue();
+          numBuckets = Integer.parseInt(child.getChild(2).getText());
         }
         break;
       case HiveParser.TOK_TABLEROWFORMAT:

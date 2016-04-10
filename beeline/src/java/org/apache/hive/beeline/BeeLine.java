@@ -664,8 +664,8 @@ public class BeeLine implements Closeable {
     }
 
     dbName = commandLine.getOptionValue("database");
-    getOpts().setVerbose(Boolean.valueOf(commandLine.getOptionValue("verbose")));
-    getOpts().setSilent(Boolean.valueOf(commandLine.getOptionValue("slient")));
+    getOpts().setVerbose(Boolean.parseBoolean(commandLine.getOptionValue("verbose")));
+    getOpts().setSilent(Boolean.parseBoolean(commandLine.getOptionValue("slient")));
 
     int code = 0;
     if (commandLine.getOptionValues("e") != null) {

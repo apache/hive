@@ -210,8 +210,8 @@ public class HiveSQLException extends SQLException {
     String exceptionMessage = detail.substring(i1 + 1, i2);
     Throwable ex = newInstance(exceptionClass, exceptionMessage);
 
-    Integer length = Integer.valueOf(detail.substring(i2 + 1, i3));
-    Integer unique = Integer.valueOf(detail.substring(i3 + 1));
+    int length = Integer.parseInt(detail.substring(i2 + 1, i3));
+    int unique = Integer.parseInt(detail.substring(i3 + 1));
 
     int i = 0;
     StackTraceElement[] trace = new StackTraceElement[length];
@@ -226,7 +226,7 @@ public class HiveSQLException extends SQLException {
       if (fileName.isEmpty()) {
         fileName = null;
       }
-      int lineNumber = Integer.valueOf(detail.substring(j3 + 1));
+      int lineNumber = Integer.parseInt(detail.substring(j3 + 1));
       trace[i] = new StackTraceElement(className, methodName, fileName, lineNumber);
     }
     int common = trace.length - i;

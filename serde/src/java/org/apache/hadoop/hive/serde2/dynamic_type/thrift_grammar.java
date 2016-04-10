@@ -2052,7 +2052,7 @@ public class thrift_grammar/* @bgen(jjtree) */implements
       jjtree.closeNodeScope(jjtn000, true);
       jjtc000 = false;
       if (fidnum.length() > 0) {
-        int fidInt = Integer.valueOf(fidnum);
+        int fidInt = Integer.parseInt(fidnum);
         jjtn000.fieldid = fidInt;
       } else {
         jjtn000.fieldid = field_val--;

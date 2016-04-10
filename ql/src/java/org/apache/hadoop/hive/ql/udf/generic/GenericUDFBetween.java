@@ -75,7 +75,7 @@ public class GenericUDFBetween extends GenericUDF {
   public String getDisplayString(String[] children) {
     StringBuilder sb = new StringBuilder();
     sb.append(children[1]);
-    if (Boolean.valueOf(children[0])) {
+    if (Boolean.parseBoolean(children[0])) {
       sb.append(" NOT");
     }
     sb.append(" BETWEEN ");

@@ -199,7 +199,7 @@ public interface Validator {
     @Override
     public String validate(String value) {
       try {
-        float fvalue = Float.valueOf(value);
+        float fvalue = Float.parseFloat(value);
         if (fvalue < 0 || fvalue > 1) {
           return "Invalid ratio " + value + ", which should be in between 0 to 1";
         }

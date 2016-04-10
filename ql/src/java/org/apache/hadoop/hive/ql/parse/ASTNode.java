@@ -92,7 +92,7 @@ public class ASTNode extends CommonTree implements Node,Serializable {
    */
   @Override
   public String getName() {
-    return (Integer.valueOf(super.getToken().getType())).toString();
+    return String.valueOf(super.getToken().getType());
   }
 
   /**

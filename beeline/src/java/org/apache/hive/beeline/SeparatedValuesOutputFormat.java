@@ -108,7 +108,7 @@ class SeparatedValuesOutputFormat implements OutputFormat {
     }
     String parsedOptionStr = quotingDisabledStr.toLowerCase();
     if (parsedOptionStr.equals("false") || parsedOptionStr.equals("true")) {
-      return Boolean.valueOf(parsedOptionStr);
+      return Boolean.parseBoolean(parsedOptionStr);
     } else {
       beeLine.error("System Property disable.quoting.for.sv is now " + parsedOptionStr
           + " which only accepts boolean value");

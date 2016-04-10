@@ -126,7 +126,8 @@ public class ReplicationSpec {
     }
     this.eventId = keyFetcher.apply(ReplicationSpec.KEY.EVENT_ID.toString());
     this.currStateId = keyFetcher.apply(ReplicationSpec.KEY.CURR_STATE_ID.toString());
-    this.isNoop = Boolean.valueOf(keyFetcher.apply(ReplicationSpec.KEY.NOOP.toString())).booleanValue();
+    this.isNoop = Boolean.parseBoolean(
+        keyFetcher.apply(ReplicationSpec.KEY.NOOP.toString()));
   }
 
   /**

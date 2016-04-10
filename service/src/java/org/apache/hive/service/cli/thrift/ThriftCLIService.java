@@ -227,7 +227,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
               TimeUnit.SECONDS);
       portString = System.getenv("HIVE_SERVER2_THRIFT_HTTP_PORT");
       if (portString != null) {
-        portNum = Integer.valueOf(portString);
+        portNum = Integer.parseInt(portString);
       } else {
         portNum = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_THRIFT_HTTP_PORT);
       }
@@ -238,7 +238,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
           hiveConf.getTimeVar(ConfVars.HIVE_SERVER2_THRIFT_WORKER_KEEPALIVE_TIME, TimeUnit.SECONDS);
       portString = System.getenv("HIVE_SERVER2_THRIFT_PORT");
       if (portString != null) {
-        portNum = Integer.valueOf(portString);
+        portNum = Integer.parseInt(portString);
       } else {
         portNum = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_THRIFT_PORT);
       }

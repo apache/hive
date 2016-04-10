@@ -107,7 +107,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
     this.partitionsDiscovered = !dynamicPartitioningUsed;
     cachedStorageHandler = HCatUtil.getStorageHandler(context.getConfiguration(), jobInfo.getTableInfo().getStorerInfo());
     Table table = new Table(jobInfo.getTableInfo().getTable());
-    if (dynamicPartitioningUsed && Boolean.valueOf((String)table.getProperty("EXTERNAL"))
+    if (dynamicPartitioningUsed && Boolean.parseBoolean((String)table.getProperty("EXTERNAL"))
         && jobInfo.getCustomDynamicPath() != null
         && jobInfo.getCustomDynamicPath().length() > 0) {
       customDynamicLocationUsed = true;
@@ -355,7 +355,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
     if (customDynamicLocationUsed) {
       partPath = new Path(dynPartPath);
     } else if (!dynamicPartitioningUsed
-         && Boolean.valueOf((String)table.getProperty("EXTERNAL"))
+         && Boolean.parseBoolean((String)table.getProperty("EXTERNAL"))
          && jobInfo.getLocation() != null && jobInfo.getLocation().length() > 0) {
       // Now, we need to de-scratchify this location - i.e., get rid of any
       // _SCRATCH[\d].?[\d]+ from the location.

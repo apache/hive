@@ -169,7 +169,7 @@ public class UDFToDouble extends UDF {
         return null;
       }
       try {
-        doubleWritable.set(Double.valueOf(i.toString()));
+        doubleWritable.set(Double.parseDouble(i.toString()));
         return doubleWritable;
       } catch (NumberFormatException e) {
         // MySQL returns 0 if the string is not a well-formed double value.

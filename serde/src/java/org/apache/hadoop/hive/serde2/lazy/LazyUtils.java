@@ -490,7 +490,7 @@ public final class LazyUtils {
   public static byte getByte(String altValue, byte defaultVal) {
     if (altValue != null && altValue.length() > 0) {
       try {
-        return Byte.valueOf(altValue).byteValue();
+        return Byte.parseByte(altValue);
       } catch (NumberFormatException e) {
         return (byte) altValue.charAt(0);
       }

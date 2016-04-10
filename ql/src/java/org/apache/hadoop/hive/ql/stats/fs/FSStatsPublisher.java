@@ -83,7 +83,8 @@ public class FSStatsPublisher implements StatsPublisher {
     if (null != statMap) {
       // In case of LB, we might get called repeatedly.
       for (Entry<String, String> e : statMap.entrySet()) {
-        cpy.put(e.getKey(), String.valueOf(Long.valueOf(e.getValue()) + Long.valueOf(cpy.get(e.getKey()))));
+        cpy.put(e.getKey(),
+            String.valueOf(Long.parseLong(e.getValue()) + Long.parseLong(cpy.get(e.getKey()))));
       }
     }
     statsMap.put(partKV, cpy);

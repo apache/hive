@@ -1702,10 +1702,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       List<Order> sortCols = new ArrayList<Order>();
       int numBuckets = -1;
       if (buckets.getChildCount() == 2) {
-        numBuckets = (Integer.valueOf(buckets.getChild(1).getText())).intValue();
+        numBuckets = Integer.parseInt(buckets.getChild(1).getText());
       } else {
         sortCols = getColumnNamesOrder((ASTNode) buckets.getChild(1));
-        numBuckets = (Integer.valueOf(buckets.getChild(2).getText())).intValue();
+        numBuckets = Integer.parseInt(buckets.getChild(2).getText());
       }
       if (numBuckets <= 0) {
         throw new SemanticException(ErrorMsg.INVALID_BUCKET_NUMBER.getMsg());

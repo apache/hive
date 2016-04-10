@@ -295,7 +295,7 @@ public final class FileUtils {
       if (c == '%' && i + 2 < path.length()) {
         int code = -1;
         try {
-          code = Integer.valueOf(path.substring(i + 1, i + 3), 16);
+          code = Integer.parseInt(path.substring(i + 1, i + 3), 16);
         } catch (Exception e) {
           code = -1;
         }

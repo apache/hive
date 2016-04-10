@@ -170,7 +170,7 @@ public class UDFToFloat extends UDF {
         return null;
       }
       try {
-        floatWritable.set(Float.valueOf(i.toString()));
+        floatWritable.set(Float.parseFloat(i.toString()));
         return floatWritable;
       } catch (NumberFormatException e) {
         // MySQL returns 0 if the string is not a well-formed numeric value.

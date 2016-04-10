@@ -289,7 +289,7 @@ public abstract class HiveBaseResultSet implements ResultSet {
       } else if (obj == null) {
         return 0;
       } else if (String.class.isInstance(obj)) {
-        return Double.valueOf((String)obj);
+        return Double.parseDouble((String)obj);
       }
       throw new Exception("Illegal conversion");
     } catch (Exception e) {
@@ -318,7 +318,7 @@ public abstract class HiveBaseResultSet implements ResultSet {
       } else if (obj == null) {
         return 0;
       } else if (String.class.isInstance(obj)) {
-        return Float.valueOf((String)obj);
+        return Float.parseFloat((String)obj);
       }
       throw new Exception("Illegal conversion");
     } catch (Exception e) {
@@ -343,7 +343,7 @@ public abstract class HiveBaseResultSet implements ResultSet {
       } else if (obj == null) {
         return 0;
       } else if (String.class.isInstance(obj)) {
-        return Integer.valueOf((String)obj);
+        return Integer.parseInt((String)obj);
       }
       throw new Exception("Illegal conversion");
     } catch (Exception e) {
@@ -365,7 +365,7 @@ public abstract class HiveBaseResultSet implements ResultSet {
       } else if (obj == null) {
         return 0;
       } else if (String.class.isInstance(obj)) {
-        return Long.valueOf((String)obj);
+        return Long.parseLong((String)obj);
       }
       throw new Exception("Illegal conversion");
     } catch (Exception e) {
@@ -511,7 +511,7 @@ public abstract class HiveBaseResultSet implements ResultSet {
       } else if (obj == null) {
         return 0;
       } else if (String.class.isInstance(obj)) {
-        return Short.valueOf((String)obj);
+        return Short.parseShort((String)obj);
       }
       throw new Exception("Illegal conversion");
     } catch (Exception e) {

@@ -30,7 +30,7 @@ public class StartMiniHS2Cluster {
 
     MiniClusterType clusterType = MiniClusterType.valueOf(System.getProperty("miniHS2.clusterType", "MR").toUpperCase());
     String confFilesProperty = System.getProperty("miniHS2.conf", "../../data/conf/hive-site.xml");
-    boolean usePortsFromConf = Boolean.valueOf(System.getProperty("miniHS2.usePortsFromConf", "false"));
+    boolean usePortsFromConf = Boolean.parseBoolean(System.getProperty("miniHS2.usePortsFromConf", "false"));
 
     // Load conf files
     String[] confFiles = confFilesProperty.split(",");

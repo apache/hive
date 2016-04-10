@@ -328,13 +328,13 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
           RegistryTypeUtils.getAddressField(rpc.addresses.get(0),
               AddressTypes.ADDRESS_HOSTNAME_FIELD);
       this.rpcPort =
-          Integer.valueOf(RegistryTypeUtils.getAddressField(rpc.addresses.get(0),
+          Integer.parseInt(RegistryTypeUtils.getAddressField(rpc.addresses.get(0),
               AddressTypes.ADDRESS_PORT_FIELD));
       this.mngPort =
-          Integer.valueOf(RegistryTypeUtils.getAddressField(mng.addresses.get(0),
+          Integer.parseInt(RegistryTypeUtils.getAddressField(mng.addresses.get(0),
               AddressTypes.ADDRESS_PORT_FIELD));
       this.shufflePort =
-          Integer.valueOf(RegistryTypeUtils.getAddressField(shuffle.addresses.get(0),
+          Integer.parseInt(RegistryTypeUtils.getAddressField(shuffle.addresses.get(0),
               AddressTypes.ADDRESS_PORT_FIELD));
       this.serviceAddress =
           RegistryTypeUtils.getAddressField(services.addresses.get(0), AddressTypes.ADDRESS_URI);
@@ -383,8 +383,8 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
 
     @Override
     public Resource getResource() {
-      int memory = Integer.valueOf(srv.get(ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB.varname));
-      int vCores = Integer.valueOf(srv.get(ConfVars.LLAP_DAEMON_NUM_EXECUTORS.varname));
+      int memory = Integer.parseInt(srv.get(ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB.varname));
+      int vCores = Integer.parseInt(srv.get(ConfVars.LLAP_DAEMON_NUM_EXECUTORS.varname));
       return Resource.newInstance(memory, vCores);
     }
 

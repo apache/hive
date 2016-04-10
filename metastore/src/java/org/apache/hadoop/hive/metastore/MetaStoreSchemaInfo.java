@@ -193,8 +193,8 @@ public class MetaStoreSchemaInfo {
     }
 
     for (int i = 0; i < dbVerParts.length; i++) {
-      Integer dbVerPart = Integer.valueOf(dbVerParts[i]);
-      Integer hiveVerPart = Integer.valueOf(hiveVerParts[i]);
+      int dbVerPart = Integer.parseInt(dbVerParts[i]);
+      int hiveVerPart = Integer.parseInt(hiveVerParts[i]);
       if (dbVerPart > hiveVerPart) {
         return true;
       } else if (dbVerPart < hiveVerPart) {
