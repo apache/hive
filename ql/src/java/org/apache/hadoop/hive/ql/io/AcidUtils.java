@@ -26,7 +26,11 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatusWithId;
@@ -681,5 +685,35 @@ public class AcidUtils {
       resultStr = parameters.get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL.toUpperCase());
     }
     return resultStr != null && resultStr.equalsIgnoreCase("true");
+  }
+
+  public static boolean isTablePropertyTransactional(Configuration conf) {
+    String resultStr = conf.get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
+    if (resultStr == null) {
+      resultStr = conf.get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL.toUpperCase());
+    }
+    return resultStr != null && resultStr.equalsIgnoreCase("true");
+  }
+
+  public static void setTransactionalTableScan(Map<String, String> parameters, boolean isAcidTable) {
+    parameters.put(ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN.varname, Boolean.toString(isAcidTable));
+  }
+
+  public static void setTransactionalTableScan(Configuration conf, boolean isAcidTable) {
+    HiveConf.setBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN, isAcidTable);
+  }
+
+  // If someone is trying to read a table with transactional=true they must be using the
+  // right TxnManager.  We do not look at SessionState.get().getTxnMgr().supportsAcid().
+  public static boolean isAcidTable(Table table) {
+    if (table == null) {
+      return false;
+    }
+    String tableIsTransactional =
+        table.getProperty(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
+    if(tableIsTransactional == null) {
+      tableIsTransactional = table.getProperty(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL.toUpperCase());
+    }
+    return tableIsTransactional != null && tableIsTransactional.equalsIgnoreCase("true");
   }
 }

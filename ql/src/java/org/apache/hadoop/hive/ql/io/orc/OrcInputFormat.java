@@ -41,6 +41,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.codec.binary.Hex;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.BaseCharTypeInfo;
@@ -77,6 +78,7 @@ import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils.Directory;
 import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
+import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
 import org.apache.hadoop.hive.ql.io.LlapWrappableInputFormatInterface;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
@@ -88,6 +90,7 @@ import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDeStats;
@@ -168,6 +171,35 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     return (conf.get(AcidUtils.CONF_ACID_KEY) != null) || AcidUtils.isAcid(path, conf);
   }
 
+
+  /**
+   * We can derive if a split is ACID or not from the flags encoded in OrcSplit.
+   * If the file split is not instance of OrcSplit then its definitely not ACID.
+   * If file split is instance of OrcSplit and the flags contain hasBase or deltas then it's
+   * definitely ACID.
+   * Else fallback to configuration object/table property.
+   * @param conf
+   * @param inputSplit
+   * @return
+   */
+  public boolean isAcidRead(Configuration conf, InputSplit inputSplit) {
+    if (!(inputSplit instanceof OrcSplit)) {
+      return false;
+    }
+
+    /*
+     * If OrcSplit.isAcid returns true, we know for sure it is ACID.
+     */
+    // if (((OrcSplit) inputSplit).isAcid()) {
+    //   return true;
+    // }
+
+    /*
+     * Fallback for the case when OrcSplit flags do not contain hasBase and deltas
+     */
+    return HiveConf.getBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN);
+  }
+
   private static class OrcRecordReader
       implements org.apache.hadoop.mapred.RecordReader<NullWritable, OrcStruct>,
       StatsProvidingRecordReader {
@@ -245,15 +277,30 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     return isOriginal ? 0 : (OrcRecordUpdater.ROW + 1);
   }
 
+  public static void raiseAcidTablesMustBeReadWithAcidReaderException(Configuration conf)
+      throws IOException {
+    String hiveInputFormat = HiveConf.getVar(conf, ConfVars.HIVEINPUTFORMAT);
+    if (hiveInputFormat.equals(HiveInputFormat.class.getName())) {
+      throw new IOException(ErrorMsg.ACID_TABLES_MUST_BE_READ_WITH_ACID_READER.getErrorCodedMsg());
+    } else {
+      throw new IOException(ErrorMsg.ACID_TABLES_MUST_BE_READ_WITH_HIVEINPUTFORMAT.getErrorCodedMsg());
+    }
+  }
+
   public static RecordReader createReaderFromFile(Reader file,
                                                   Configuration conf,
                                                   long offset, long length
                                                   ) throws IOException {
 
+    boolean isTransactionalTableScan = HiveConf.getBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN);
+    if (isTransactionalTableScan) {
+      raiseAcidTablesMustBeReadWithAcidReaderException(conf);
+    }
+
     /**
      * Do we have schema on read in the configuration variables?
      */
-    TypeDescription schema = getDesiredRowTypeDescr(conf);
+    TypeDescription schema = getDesiredRowTypeDescr(conf, /* isAcidRead */ false);
 
     Reader.Options options = new Reader.Options().range(offset, length);
     options.schema(schema);
@@ -1489,16 +1536,16 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
   getRecordReader(InputSplit inputSplit, JobConf conf,
                   Reporter reporter) throws IOException {
     boolean vectorMode = Utilities.isVectorMode(conf);
+    boolean isAcidRead = isAcidRead(conf, inputSplit);
 
-    // if HiveCombineInputFormat gives us FileSplits instead of OrcSplits,
-    // we know it is not ACID. (see a check in CombineHiveInputFormat.getSplits() that assures this)
-    if (inputSplit.getClass() == FileSplit.class) {
+    if (!isAcidRead) {
       if (vectorMode) {
         return createVectorizedReader(inputSplit, conf, reporter);
+      } else {
+        return new OrcRecordReader(OrcFile.createReader(
+            ((FileSplit) inputSplit).getPath(),
+            OrcFile.readerOptions(conf)), conf, (FileSplit) inputSplit);
       }
-      return new OrcRecordReader(OrcFile.createReader(
-          ((FileSplit) inputSplit).getPath(),
-          OrcFile.readerOptions(conf)), conf, (FileSplit) inputSplit);
     }
 
     OrcSplit split = (OrcSplit) inputSplit;
@@ -1507,23 +1554,13 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     Options options = new Options(conf).reporter(reporter);
     final RowReader<OrcStruct> inner = getReader(inputSplit, options);
 
-
-    /*Even though there are no delta files, we still need to produce row ids so that an
-    * UPDATE or DELETE statement would work on a table which didn't have any previous updates*/
-    if (split.isOriginal() && split.getDeltas().isEmpty()) {
-      if (vectorMode) {
-        return createVectorizedReader(inputSplit, conf, reporter);
-      } else {
-        return new NullKeyRecordReader(inner, conf);
-      }
-    }
-
     if (vectorMode) {
       return (org.apache.hadoop.mapred.RecordReader)
           new VectorizedOrcAcidRowReader(inner, conf,
               Utilities.getMapWork(conf).getVectorizedRowBatchCtx(), (FileSplit) inputSplit);
+    } else {
+      return new NullKeyRecordReader(inner, conf);
     }
-    return new NullKeyRecordReader(inner, conf);
   }
   /**
    * Return a RecordReader that is compatible with the Hive 0.12 reader
@@ -1581,6 +1618,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
   public RowReader<OrcStruct> getReader(InputSplit inputSplit,
                                         Options options)
                                             throws IOException {
+
     final OrcSplit split = (OrcSplit) inputSplit;
     final Path path = split.getPath();
     Path root;
@@ -1600,7 +1638,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     /**
      * Do we have schema on read in the configuration variables?
      */
-    TypeDescription schema = getDesiredRowTypeDescr(conf);
+    TypeDescription schema = getDesiredRowTypeDescr(conf, /* isAcidRead */ true);
 
     final Reader reader;
     final int bucket;
@@ -2127,8 +2165,8 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     }
   }
 
-
-  public static TypeDescription getDesiredRowTypeDescr(Configuration conf) {
+  public static TypeDescription getDesiredRowTypeDescr(Configuration conf, boolean isAcidRead)
+      throws IOException {
 
     String columnNameProperty = null;
     String columnTypeProperty = null;
@@ -2137,7 +2175,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     ArrayList<TypeDescription> schemaEvolutionTypeDescrs = null;
 
     boolean haveSchemaEvolutionProperties = false;
-    if (HiveConf.getBoolVar(conf, ConfVars.HIVE_SCHEMA_EVOLUTION)) {
+    if (isAcidRead || HiveConf.getBoolVar(conf, ConfVars.HIVE_SCHEMA_EVOLUTION) ) {
 
       columnNameProperty = conf.get(IOConstants.SCHEMA_EVOLUTION_COLUMNS);
       columnTypeProperty = conf.get(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES);
@@ -2156,10 +2194,20 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
             haveSchemaEvolutionProperties = false;
           }
         }
+      } else if (isAcidRead) {
+        throw new IOException(ErrorMsg.SCHEMA_REQUIRED_TO_READ_ACID_TABLES.getErrorCodedMsg());
       }
     }
 
-    if (!haveSchemaEvolutionProperties) {
+    if (haveSchemaEvolutionProperties) {
+      if (LOG.isInfoEnabled()) {
+        LOG.info("Using schema evolution configuration variables schema.evolution.columns " +
+            schemaEvolutionColumnNames.toString() +
+            " / schema.evolution.columns.types " +
+            schemaEvolutionTypeDescrs.toString() +
+            " (isAcidRead " + isAcidRead + ")");
+      }
+    } else {
 
       // Try regular properties;
       columnNameProperty = conf.get(serdeConstants.LIST_COLUMNS);
@@ -2176,6 +2224,30 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
           typeDescriptionsFromHiveTypeProperty(columnTypeProperty);
       if (schemaEvolutionTypeDescrs.size() != schemaEvolutionColumnNames.size()) {
         return null;
+      }
+
+      // Find first virtual column and clip them off.
+      int virtualColumnClipNum = -1;
+      int columnNum = 0;
+      for (String columnName : schemaEvolutionColumnNames) {
+        if (VirtualColumn.VIRTUAL_COLUMN_NAMES.contains(columnName)) {
+          virtualColumnClipNum = columnNum;
+          break;
+        }
+        columnNum++;
+      }
+      if (virtualColumnClipNum != -1) {
+        schemaEvolutionColumnNames =
+            Lists.newArrayList(schemaEvolutionColumnNames.subList(0, virtualColumnClipNum));
+        schemaEvolutionTypeDescrs = Lists.newArrayList(schemaEvolutionTypeDescrs.subList(0, virtualColumnClipNum));
+      }
+
+      if (LOG.isInfoEnabled()) {
+        LOG.info("Using column configuration variables columns " +
+                schemaEvolutionColumnNames.toString() +
+                " / columns.types " +
+                schemaEvolutionTypeDescrs.toString() +
+                " (isAcidRead " + isAcidRead + ")");
       }
     }
 

@@ -1608,7 +1608,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
 
         // Disallow INSERT INTO on bucketized tables
-        boolean isAcid = isAcidTable(tab);
+        boolean isAcid = AcidUtils.isAcidTable(tab);
         boolean isTableWrittenTo = qb.getParseInfo().isInsertIntoTable(tab.getDbName(), tab.getTableName());
         if (isTableWrittenTo &&
             tab.getNumBuckets() > 0 && !isAcid) {
@@ -6139,7 +6139,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         order.append(sortOrder == BaseSemanticAnalyzer.HIVE_COLUMN_ORDER_ASC ? '+' : '-');
       }
       input = genReduceSinkPlan(input, partnCols, sortCols, order.toString(),  maxReducers,
-        (isAcidTable(dest_tab) ? getAcidType() : AcidUtils.Operation.NOT_ACID));
+        (AcidUtils.isAcidTable(dest_tab) ? getAcidType() : AcidUtils.Operation.NOT_ACID));
       reduceSinkOperatorsAddedByEnforceBucketingSorting.add((ReduceSinkOperator)input.getParentOperators().get(0));
       ctx.setMultiFileSpray(multiFileSpray);
       ctx.setNumFiles(numFiles);
@@ -6207,7 +6207,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     case QBMetaData.DEST_TABLE: {
 
       dest_tab = qbm.getDestTableForAlias(dest);
-      destTableIsAcid = isAcidTable(dest_tab);
+      destTableIsAcid = AcidUtils.isAcidTable(dest_tab);
       destTableIsTemporary = dest_tab.isTemporary();
 
       // Is the user trying to insert into a external tables
@@ -6352,7 +6352,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       dest_part = qbm.getDestPartitionForAlias(dest);
       dest_tab = dest_part.getTable();
-      destTableIsAcid = isAcidTable(dest_tab);
+      destTableIsAcid = AcidUtils.isAcidTable(dest_tab);
       if ((!conf.getBoolVar(HiveConf.ConfVars.HIVE_INSERT_INTO_EXTERNAL_TABLES)) &&
           dest_tab.getTableType().equals(TableType.EXTERNAL_TABLE)) {
         throw new SemanticException(
@@ -12198,14 +12198,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (isNonNativeTable) return WriteEntity.WriteType.INSERT_OVERWRITE;
     else return (ltd.getReplace() ? WriteEntity.WriteType.INSERT_OVERWRITE :
         WriteEntity.WriteType.INSERT);
-  }
-
-  // Even if the table is of Acid type, if we aren't working with an Acid compliant TxnManager
-  // then return false.
-  public static boolean isAcidTable(Table tab) {
-    if (tab == null) return false;
-    if (!SessionState.get().getTxnMgr().supportsAcid()) return false;
-    return AcidUtils.isTablePropertyTransactional(tab.getParameters());
   }
 
   private boolean isAcidOutputFormat(Class<? extends OutputFormat> of) {
