@@ -1788,6 +1788,8 @@ public class HiveConf extends Configuration {
         "Must be a subclass of org.apache.hadoop.hive.ql.log.PerfLogger"),
     HIVE_START_CLEANUP_SCRATCHDIR("hive.start.cleanup.scratchdir", false,
         "To cleanup the Hive scratchdir when starting the Hive Server"),
+    HIVE_SCRATCH_DIR_LOCK("hive.scratchdir.lock", false,
+        "To hold a lock file in scratchdir to prevent to be removed by cleardanglingscratchdir"),
     HIVE_INSERT_INTO_MULTILEVEL_DIRS("hive.insert.into.multilevel.dirs", false,
         "Where to insert into multilevel directories like\n" +
         "\"insert directory '/HIVEFT25686/chinna/' from table\""),
