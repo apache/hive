@@ -102,7 +102,6 @@ public class CliDriver {
   private final LogHelper console;
   protected ConsoleReader reader;
   private Configuration conf;
-  private final String originalThreadName;
 
   public CliDriver() {
     SessionState ss = SessionState.get();
@@ -112,7 +111,6 @@ public class CliDriver {
       LOG.debug("CliDriver inited with classpath {}", System.getProperty("java.class.path"));
     }
     console = new LogHelper(LOG);
-    originalThreadName = Thread.currentThread().getName();
   }
 
   public int processCmd(String cmd) {
@@ -190,7 +188,7 @@ public class CliDriver {
       }
     }
 
-    Thread.currentThread().setName(originalThreadName);
+    ss.resetThreadName();
     return ret;
   }
 
@@ -715,6 +713,7 @@ public class CliDriver {
     try {
       return executeDriver(ss, conf, oproc);
     } finally {
+      ss.resetThreadName();
       ss.close();
     }
   }
