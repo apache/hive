@@ -59,6 +59,7 @@ import org.apache.hadoop.service.CompositeService;
 import org.apache.hadoop.util.ExitUtil;
 import org.apache.hadoop.util.JvmPauseMonitor;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hadoop.yarn.api.ApplicationConstants;
 import org.apache.hive.common.util.ShutdownHookManager;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.slf4j.Logger;
@@ -353,6 +354,14 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
       // Cache settings will need to be setup in llap-daemon-site.xml - since the daemons don't read hive-site.xml
       // Ideally, these properties should be part of LlapDameonConf rather than HiveConf
       LlapDaemonConfiguration daemonConf = new LlapDaemonConfiguration();
+
+      String containerIdStr = System.getenv(ApplicationConstants.Environment.CONTAINER_ID.name());
+      if (containerIdStr != null && !containerIdStr.isEmpty()) {
+        daemonConf.set(ConfVars.LLAP_DAEMON_CONTAINER_ID.varname, containerIdStr);
+      } else {
+        daemonConf.unset(ConfVars.LLAP_DAEMON_CONTAINER_ID.varname);
+      }
+
       int numExecutors = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_DAEMON_NUM_EXECUTORS);
 
       String localDirList = LlapUtil.getDaemonLocalDirList(daemonConf);

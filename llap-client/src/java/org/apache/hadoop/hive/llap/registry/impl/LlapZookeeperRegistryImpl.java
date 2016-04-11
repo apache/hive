@@ -310,13 +310,19 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
     private final int rpcPort;
     private final int mngPort;
     private final int shufflePort;
+    private final String serviceAddress;
 
     public DynamicServiceInstance(ServiceRecord srv) throws IOException {
       this.srv = srv;
 
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Working with ServiceRecord: {}", srv);
+      }
+
       final Endpoint shuffle = srv.getInternalEndpoint(IPC_SHUFFLE);
       final Endpoint rpc = srv.getInternalEndpoint(IPC_LLAP);
       final Endpoint mng = srv.getInternalEndpoint(IPC_MNG);
+      final Endpoint services = srv.getExternalEndpoint(IPC_SERVICES);
 
       this.host =
           RegistryTypeUtils.getAddressField(rpc.addresses.get(0),
@@ -330,6 +336,8 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
       this.shufflePort =
           Integer.valueOf(RegistryTypeUtils.getAddressField(shuffle.addresses.get(0),
               AddressTypes.ADDRESS_PORT_FIELD));
+      this.serviceAddress =
+          RegistryTypeUtils.getAddressField(services.addresses.get(0), AddressTypes.ADDRESS_URI);
     }
 
     @Override
@@ -350,6 +358,11 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
     @Override
     public int getShufflePort() {
       return shufflePort;
+    }
+
+    @Override
+    public String getServicesAddress() {
+      return serviceAddress;
     }
 
     @Override
@@ -378,7 +391,8 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
     @Override
     public String toString() {
       return "DynamicServiceInstance [alive=" + alive + ", host=" + host + ":" + rpcPort +
-          " with resources=" + getResource() + "]";
+          " with resources=" + getResource() + ", shufflePort=" + getShufflePort() +
+          ", servicesAddress=" + getServicesAddress() +  ", mgmtPort=" + getManagementPort() + "]";
     }
 
     @Override

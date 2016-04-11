@@ -64,7 +64,7 @@ public class LlapOptionsProcessor {
   public static final String OPTION_OUTPUT_DIR = "output";
 
 
-  public class LlapOptions {
+  public static class LlapOptions {
     private final int instances;
     private final String directory;
     private final String name;

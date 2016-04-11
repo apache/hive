@@ -53,6 +53,12 @@ public interface ServiceInstance {
    */
   public int getShufflePort();
 
+
+  /**
+   * Address for services hosted on http
+   * @return
+   */
+  public String getServicesAddress();
   /**
    * Return the last known state (without refreshing)
    * 
