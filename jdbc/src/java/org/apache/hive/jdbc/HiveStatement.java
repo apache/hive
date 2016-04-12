@@ -18,6 +18,7 @@
 
 package org.apache.hive.jdbc;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.RowSetFactory;
 import org.apache.hive.service.rpc.thrift.TCLIService;
@@ -855,5 +856,22 @@ public class HiveStatement implements java.sql.Statement {
     } else {
       return TFetchOrientation.FETCH_FIRST;
     }
+  }
+
+  /**
+   * Returns the Yarn ATS GUID.
+   * This method is a public API for usage outside of Hive, although it is not part of the
+   * interface java.sql.Statement.
+   * @return Yarn ATS GUID or null if it hasn't been created yet.
+   */
+  public String getYarnATSGuid() {
+    if (stmtHandle != null) {
+      // Set on the server side.
+      // @see org.apache.hive.service.cli.operation.SQLOperation#prepare
+      String guid64 =
+          Base64.encodeBase64URLSafeString(stmtHandle.getOperationId().getGuid()).trim();
+      return guid64;
+    }
+    return null;
   }
 }

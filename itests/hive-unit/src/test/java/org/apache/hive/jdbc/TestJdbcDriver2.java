@@ -2343,6 +2343,15 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
   }
 
   /**
+   * Useful for modifying outer class context from anonymous inner class
+   */
+  public static interface Holder<T> {
+    public void set(T obj);
+
+    public T get();
+  }
+
+  /**
    * Test the cancellation of a query that is running.
    * We spawn 2 threads - one running the query and
    * the other attempting to cancel.
@@ -2391,6 +2400,75 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
     tCancel.start();
     tExecute.join();
     tCancel.join();
+    stmt.close();
+  }
+
+  /**
+   * Test the non-null value of the Yarn ATS GUID.
+   * We spawn 2 threads - one running the query and
+   * the other attempting to read the ATS GUID.
+   * We're using a dummy udf to simulate a query,
+   * that runs for a sufficiently long time.
+   * @throws Exception
+   */
+  @Test
+  public void testYarnATSGuid() throws Exception {
+    String udfName = SleepUDF.class.getName();
+    Statement stmt1 = con.createStatement();
+    stmt1.execute("create temporary function sleepUDF as '" + udfName + "'");
+    stmt1.close();
+    final Statement stmt = con.createStatement();
+    final Holder<Boolean> yarnATSGuidSet = new Holder<Boolean>() {
+      public Boolean b = false;
+
+      public void set(Boolean b) {
+        this.b = b;
+      }
+
+      public Boolean get() {
+        return this.b;
+      }
+    };
+
+    // Thread executing the query
+    Thread tExecute = new Thread(new Runnable() {
+      @Override
+      public void run() {
+        try {
+          System.out.println("Executing query: ");
+          stmt.executeQuery("select sleepUDF(t1.under_col) as u0, t1.under_col as u1, "
+              + "t2.under_col as u2 from " + tableName + " t1 join " + tableName
+              + " t2 on t1.under_col = t2.under_col");
+        } catch (SQLException e) {
+          // No op
+        }
+      }
+    });
+    // Thread reading the ATS GUID
+    Thread tGuid = new Thread(new Runnable() {
+      @Override
+      public void run() {
+        try {
+          Thread.sleep(10000);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+        String atsGuid = ((HiveStatement) stmt).getYarnATSGuid();
+        if (atsGuid != null) {
+          yarnATSGuidSet.set(true);
+          System.out.println("Yarn ATS GUID: " + atsGuid);
+        } else {
+          yarnATSGuidSet.set(false);
+        }
+      }
+    });
+    tExecute.start();
+    tGuid.start();
+    tExecute.join();
+    tGuid.join();
+    if (!yarnATSGuidSet.get()) {
+      fail("Failed to set the YARN ATS Guid");
+    }
     stmt.close();
   }
 
