@@ -18,13 +18,18 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import java.util.List;
+
 public class MaskAndFilterInfo {
+  List<String> colTypes;
   String additionalTabInfo;
   String alias;
   ASTNode astNode;
 
-  public MaskAndFilterInfo(String additionalTabInfo, String alias, ASTNode astNode) {
+  public MaskAndFilterInfo(List<String> colTypes, String additionalTabInfo, String alias,
+      ASTNode astNode) {
     super();
+    this.colTypes = colTypes;
     this.additionalTabInfo = additionalTabInfo;
     this.alias = alias;
     this.astNode = astNode;

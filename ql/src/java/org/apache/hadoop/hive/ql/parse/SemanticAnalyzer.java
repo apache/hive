@@ -10408,13 +10408,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           throw new SemanticException("Table " + tabIdName + " is not found.");
         }
 
-        List<String> columns = new ArrayList<>();
+        List<String> colNames = new ArrayList<>();
+        List<String> colTypes = new ArrayList<>();
         for (FieldSchema col : table.getAllCols()) {
-          columns.add(col.getName());
+          colNames.add(col.getName());
+          colTypes.add(col.getType());
         }
         
-        basicInfos.put(new HivePrivilegeObject(table.getDbName(), table.getTableName(), columns),
-            new MaskAndFilterInfo(additionalTabInfo.toString(), alias, astNode));
+        basicInfos.put(new HivePrivilegeObject(table.getDbName(), table.getTableName(), colNames),
+            new MaskAndFilterInfo(colTypes, additionalTabInfo.toString(), alias, astNode));
       }
       if (astNode.getChildCount() > 0 && !ignoredTokens.contains(astNode.getToken().getType())) {
         for (Node child : astNode.getChildren()) {

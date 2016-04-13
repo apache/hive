@@ -89,6 +89,7 @@ public class TableMask {
         throw new SemanticException("Expect " + privObject.getColumns().size() + " columns in "
             + privObject.getObjectName() + ", but only find " + exprs.size());
       }
+      List<String> colTypes = maskAndFilterInfo.colTypes;
       for (int index = 0; index < exprs.size(); index++) {
         String expr = exprs.get(index);
         if (expr == null) {
@@ -100,7 +101,13 @@ public class TableMask {
         } else {
           firstOne = false;
         }
-        sb.append(expr + " AS " + privObject.getColumns().get(index));
+        String colName = privObject.getColumns().get(index);
+        if (!expr.equals(colName)) {
+          // CAST(expr AS COLTYPE) AS COLNAME
+          sb.append("CAST(" + expr + " AS " + colTypes.get(index) + ") AS " + colName);
+        } else {
+          sb.append(expr);
+        }
       }
     } else {
       for (int index = 0; index < privObject.getColumns().size(); index++) {
