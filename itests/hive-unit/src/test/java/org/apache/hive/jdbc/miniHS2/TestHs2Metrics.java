@@ -28,6 +28,8 @@ import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hive.service.cli.CLIServiceClient;
 import org.apache.hive.service.cli.SessionHandle;
+import org.junit.Assert;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -43,7 +45,6 @@ public class TestHs2Metrics {
 
   private static MiniHS2 miniHS2;
   private static Map<String, String> confOverlay;
-  private static CodahaleMetrics metrics;
 
   //Check metrics during semantic analysis.
   public static class MetricCheckingHook implements HiveSemanticAnalyzerHook {
@@ -79,11 +80,14 @@ public class TestHs2Metrics {
     confOverlay.put(HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED.varname, "true");
     confOverlay.put(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
     miniHS2.start(confOverlay);
+  }
 
+
+  @Before
+  public void before() throws Exception {
     HiveConf conf = new HiveConf();
-
-
-    metrics = (CodahaleMetrics) MetricsFactory.getInstance();
+    MetricsFactory.close();
+    MetricsFactory.init(conf);
   }
 
   @Test
@@ -112,6 +116,35 @@ public class TestHs2Metrics {
     MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, "active_calls_api_compile", 0);
     MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, "active_calls_api_hs2_operation_RUNNING", 0);
     MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, "active_calls_api_hs2_sql_operation_RUNNING", 0);
+
+    serviceClient.closeSession(sessHandle);
+  }
+
+  @Test
+  public void testClosedScopes() throws Exception {
+    CLIServiceClient serviceClient = miniHS2.getServiceClient();
+    SessionHandle sessHandle = serviceClient.openSession("foo", "bar");
+
+    //this should error at analyze scope
+    Exception expectedException = null;
+    try {
+      serviceClient.executeStatement(sessHandle, "select aaa", confOverlay);
+    } catch (Exception e) {
+      expectedException = e;
+    }
+    Assert.assertNotNull("Expected semantic exception", expectedException);
+
+    //verify all scopes were recorded
+    CodahaleMetrics metrics = (CodahaleMetrics) MetricsFactory.getInstance();
+    String json = metrics.dumpJson();
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.TIMER, "api_parse", 1);
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.TIMER, "api_semanticAnalyze", 1);
+
+    //verify all scopes are closed.
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, "active_calls_api_parse", 0);
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, "active_calls_api_semanticAnalyze", 0);
+
+    serviceClient.closeSession(sessHandle);
   }
 
 }

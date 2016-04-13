@@ -1458,6 +1458,7 @@ public class Driver implements CommandProcessor {
   }
 
   private CommandProcessorResponse createProcessorResponse(int ret) {
+    SessionState.getPerfLogger().cleanupPerfLogMetrics();
     queryDisplay.setErrorMessage(errorMessage);
     return new CommandProcessorResponse(ret, errorMessage, SQLState, downstreamError);
   }

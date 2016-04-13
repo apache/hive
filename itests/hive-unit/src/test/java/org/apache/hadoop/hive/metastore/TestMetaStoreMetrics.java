@@ -42,7 +42,6 @@ public class TestMetaStoreMetrics {
 
   @BeforeClass
   public static void before() throws Exception {
-
     int port = MetaStoreUtils.findFreePort();
 
     hiveConf = new HiveConf(TestMetaStoreMetrics.class);
@@ -51,11 +50,16 @@ public class TestMetaStoreMetrics {
     hiveConf.setBoolVar(HiveConf.ConfVars.METASTORE_METRICS, true);
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
 
+    MetricsFactory.close();
+    MetricsFactory.init(hiveConf);
+    metrics = (CodahaleMetrics) MetricsFactory.getInstance();
+
+    //Increments one HMS connection
     MetaStoreUtils.startMetaStore(port, ShimLoader.getHadoopThriftAuthBridge(), hiveConf);
+
+    //Increments one HMS connection (Hive.get())
     SessionState.start(new CliSessionState(hiveConf));
     driver = new Driver(hiveConf);
-
-    metrics = (CodahaleMetrics) MetricsFactory.getInstance();
   }
 
 
@@ -63,8 +67,9 @@ public class TestMetaStoreMetrics {
   public void testMethodCounts() throws Exception {
     driver.run("show databases");
     String json = metrics.dumpJson();
-    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.TIMER, "api_get_all_databases", 1);
 
+    //one call by init, one called here.
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.TIMER, "api_get_all_databases", 2);
   }
 
   @Test
