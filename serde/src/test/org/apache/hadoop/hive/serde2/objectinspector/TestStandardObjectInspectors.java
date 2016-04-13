@@ -24,9 +24,13 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
+import org.apache.hadoop.hive.common.type.HiveChar;
+import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
+import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
@@ -118,8 +122,14 @@ public class TestStandardObjectInspectors extends TestCase {
             .getClass());
       }
 
-      assertEquals(PrimitiveObjectInspectorUtils
+      if (javaClass == HiveVarchar.class) {
+        assertEquals("varchar(65535)", oi1.getTypeName());
+      } else if (javaClass == HiveChar.class) {
+        assertEquals("char(255)", oi1.getTypeName());
+      } else {
+        assertEquals(PrimitiveObjectInspectorUtils
           .getTypeNameFromPrimitiveJava(javaClass), oi1.getTypeName());
+      }
     } catch (Throwable e) {
       e.printStackTrace();
       throw e;
@@ -143,6 +153,8 @@ public class TestStandardObjectInspectors extends TestCase {
       doTestJavaPrimitiveObjectInspector(DoubleWritable.class, Double.class,
           (double) 1);
       doTestJavaPrimitiveObjectInspector(Text.class, String.class, "a");
+      doTestJavaPrimitiveObjectInspector(HiveVarcharWritable.class, HiveVarchar.class, "a");
+      doTestJavaPrimitiveObjectInspector(HiveCharWritable.class, HiveChar.class, "a");
       doTestJavaPrimitiveObjectInspector(BytesWritable.class, byte[].class, new byte[]{'3'});
 
     } catch (Throwable e) {

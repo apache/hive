@@ -80,6 +80,7 @@ public class TestHiveBaseChar extends TestCase {
         assertEquals(strLen, enforcedString.codePointCount(0, enforcedString.length()));
       }
     }
+    assertNull(HiveBaseChar.enforceMaxLength(null, 0));
   }
 
   public void testGetPaddedValue() {
@@ -96,5 +97,6 @@ public class TestHiveBaseChar extends TestCase {
 
     assertEquals("abc       ", HiveBaseChar.getPaddedValue("abc", 10));
     assertEquals("abc       ", HiveBaseChar.getPaddedValue("abc ", 10));
+    assertNull(HiveBaseChar.getPaddedValue(null, 0));
   }
 }
