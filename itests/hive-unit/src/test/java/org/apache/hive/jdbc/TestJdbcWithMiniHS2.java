@@ -64,8 +64,10 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore("Disabling test until hanging issue is resolved.")
 public class TestJdbcWithMiniHS2 {
   private static MiniHS2 miniHS2 = null;
   private static String dataFileDir;
