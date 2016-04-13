@@ -23,12 +23,17 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
+import org.apache.hadoop.hive.common.metrics.common.MetricsScope;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.util.ReflectionUtils;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * PerfLogger.
@@ -163,7 +168,6 @@ public class PerfLogger {
     LOG.info(sb);
 
     endMetrics(method);
-
     return duration;
   }
 
@@ -201,11 +205,24 @@ public class PerfLogger {
     return duration;
   }
 
+
+  public ImmutableMap<String, Long> getStartTimes() {
+    return ImmutableMap.copyOf(startTimes);
+  }
+
+  public ImmutableMap<String, Long> getEndTimes() {
+    return ImmutableMap.copyOf(endTimes);
+  }
+
+  //Methods for metrics integration.  Each thread-local PerfLogger will open/close scope during each perf-log method.
+  Map<String, MetricsScope> openScopes = new HashMap<String, MetricsScope>();
+
   private void beginMetrics(String method) {
     Metrics metrics = MetricsFactory.getInstance();
     try {
       if (metrics != null) {
-        metrics.startStoredScope(method);
+        MetricsScope scope = metrics.createScope(method);
+        openScopes.put(method, scope);
       }
     } catch (IOException e) {
       LOG.warn("Error recording metrics", e);
@@ -216,18 +233,30 @@ public class PerfLogger {
     Metrics metrics = MetricsFactory.getInstance();
     try {
       if (metrics != null) {
-        metrics.endStoredScope(method);
+        MetricsScope scope = openScopes.remove(method);
+        if (scope != null) {
+          metrics.endScope(scope);
+        }
       }
     } catch (IOException e) {
       LOG.warn("Error recording metrics", e);
     }
   }
 
-  public ImmutableMap<String, Long> getStartTimes() {
-    return ImmutableMap.copyOf(startTimes);
-  }
-
-  public ImmutableMap<String, Long> getEndTimes() {
-    return ImmutableMap.copyOf(endTimes);
+  /**
+   * Cleans up any dangling perfLog metric call scopes.
+   */
+  public void cleanupPerfLogMetrics() {
+    Metrics metrics = MetricsFactory.getInstance();
+    try {
+      if (metrics != null) {
+        for (MetricsScope openScope : openScopes.values()) {
+          metrics.endScope(openScope);
+        }
+      }
+    } catch (IOException e) {
+      LOG.warn("Error cleaning up metrics", e);
+    }
+    openScopes.clear();
   }
 }
