@@ -64,7 +64,6 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class TestJdbcWithMiniHS2 {
@@ -131,7 +130,6 @@ public class TestJdbcWithMiniHS2 {
     stmt.close();
   }
 
-  @Ignore("Disabling test until hanging issue is resolved.")
   @Test
   public void testConcurrentStatements() throws Exception {
     String tableName = "testConcurrentStatements";
