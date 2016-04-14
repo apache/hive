@@ -17,23 +17,34 @@
  */
 package org.apache.hadoop.hive.cli;
 
+import com.google.common.base.Stopwatch;
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.concurrent.TimeUnit;
+
 public class $className {
+
+  private static final Logger LOG = LoggerFactory.getLogger(${className}.class);
 
   private static final String HIVE_ROOT = QTestUtil.ensurePathEndsInSlash(System.getProperty("hive.root"));
   private static QTestUtil qt;
 
   static {
 
+    Stopwatch stopwatch = new Stopwatch().start();
+    String message = "Starting TestCliDriver run at " + System.currentTimeMillis();
+    LOG.info(message);
+    System.err.println(message);
     MiniClusterType miniMR = MiniClusterType.valueForString("$clusterMode");
     String hiveConfDir = "$hiveConfDir";
     String initScript = "$initScript";
@@ -44,15 +55,29 @@ public class $className {
       if (!hiveConfDir.isEmpty()) {
         hiveConfDir = HIVE_ROOT + hiveConfDir;
       }
+      // TODO Is ZK startup required for TestCliDriver
+      // TODO Is LlapIo enabled required for TestCliDriver
       qt = new QTestUtil((HIVE_ROOT + "$resultsDir"), (HIVE_ROOT + "$logDir"), miniMR,
-      hiveConfDir, hadoopVer, initScript, cleanupScript, useHBaseMetastore, true);
+      hiveConfDir, hadoopVer, initScript, cleanupScript, useHBaseMetastore, true, "$className");
+      message = "QTestUtil instance created. ElapsedTimeSinceStart=" + stopwatch.elapsed(
+          TimeUnit.MILLISECONDS);
+      LOG.info(message);
+      System.err.println(message);
 
       // do a one time initialization
       qt.cleanUp();
+      message = "Initialization cleanup done. ElapsedTimeSinceStart=" + stopwatch.elapsed(TimeUnit.MILLISECONDS);
+      LOG.info(message);
+      System.err.println(message);
+
       qt.createSources();
+      message = "Initialization createSources done. ElapsedTimeSinceStart=" + stopwatch.elapsed(TimeUnit.MILLISECONDS);
+      LOG.info(message);
+      System.err.println(message);
 
     } catch (Exception e) {
-      System.err.println("Exception: " + e.getMessage());
+      System.err.println("Exception: " + e.getMessage() + ". ElapsedTimeSinceStart="
+          + stopwatch.elapsed(TimeUnit.MILLISECONDS));
       e.printStackTrace();
       System.err.flush();
       fail("Unexpected exception in static initialization: "+e.getMessage());
@@ -62,6 +87,7 @@ public class $className {
   @Before
   public void setUp() {
     try {
+      // TODO This restarts ZK for each test. Is that requried ?
       qt.clearTestSideEffects();
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
@@ -113,7 +139,9 @@ public class $className {
   private void runTest(String tname, String fname, String fpath) throws Exception {
     long startTime = System.currentTimeMillis();
     try {
-      System.err.println("Begin query: " + fname);
+      String message = "Begin query: " + fname + ", startTime=" + startTime;
+      System.err.println(message);
+      LOG.info(message);
 
       qt.addFile(fpath);
 
@@ -136,7 +164,9 @@ public class $className {
     }
 
     long elapsedTime = System.currentTimeMillis() - startTime;
-    System.err.println("Done query: " + fname + " elapsedTime=" + elapsedTime/1000 + "s");
+    String message = "Done query: " + fname + " elapsedTime=" + elapsedTime/1000 + "s";
+    System.err.println(message);
+    LOG.info(message);
     assertTrue("Test passed", true);
   }
 }

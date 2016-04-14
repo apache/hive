@@ -51,7 +51,6 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -63,6 +62,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.google.common.base.Preconditions;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -84,9 +84,7 @@ import org.apache.hadoop.hive.common.io.SortPrintStream;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.LlapItUtils;
-import org.apache.hadoop.hive.llap.configuration.LlapDaemonConfiguration;
 import org.apache.hadoop.hive.llap.daemon.MiniLlapCluster;
-import org.apache.hadoop.hive.llap.daemon.impl.LlapDaemon;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.Index;
@@ -99,6 +97,7 @@ import org.apache.hadoop.hive.ql.exec.tez.TezSessionState;
 import org.apache.hadoop.hive.ql.lockmgr.zookeeper.CuratorFrameworkSingleton;
 import org.apache.hadoop.hive.ql.lockmgr.zookeeper.ZooKeeperHiveLockManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
@@ -139,6 +138,8 @@ public class QTestUtil {
   // security property names
   private static final String SECURITY_KEY_PROVIDER_URI_NAME = "dfs.encryption.key.provider.uri";
   private static final String CRLF = System.getProperty("line.separator");
+  private static final String TEST_BUILD_DIR = System.getProperty("test.build.dir");
+  private static final String CACHED_DATA_DIR_NAME = "cachedData";
 
   private static final Logger LOG = LoggerFactory.getLogger("QTestUtil");
   private static final String QTEST_LEAVE_FILES = "QTEST_LEAVE_FILES";
@@ -182,6 +183,16 @@ public class QTestUtil {
   private final String initScript;
   private final String cleanupScript;
   private boolean useHBaseMetastore = false;
+
+  // Parameters which help tracking cached data generation.
+  private final String driverName;
+  private Path cachedDataPath;
+  private String metaStorePathString;
+  private Path metaStorePath;
+  private FileSystem localFs;
+  private boolean attemptingCacheUsage;
+
+  private boolean dbEtcSetup = false;
 
   public interface SuiteAddTestFunctor {
     public void addTestToSuite(TestSuite suite, Object setup, String tName);
@@ -378,11 +389,34 @@ public class QTestUtil {
   }
 
   public QTestUtil(String outDir, String logDir, MiniClusterType clusterType,
+                   String confDir, String hadoopVer, String initScript, String cleanupScript,
+                   boolean useHBaseMetastore, boolean withLlapIo) throws Exception {
+    // For now, to avoid changing multiple test templates, a null driver name avoids
+    // data generation optimizations.
+    this(outDir, logDir, clusterType, confDir, hadoopVer, initScript, cleanupScript,
+        useHBaseMetastore, withLlapIo, null);
+  }
+
+  public QTestUtil(String outDir, String logDir, MiniClusterType clusterType,
       String confDir, String hadoopVer, String initScript, String cleanupScript,
-      boolean useHBaseMetastore, boolean withLlapIo)
+      boolean useHBaseMetastore, boolean withLlapIo, String driverName)
     throws Exception {
+    this.attemptingCacheUsage = (StringUtils.isEmpty(TEST_BUILD_DIR) ||
+        StringUtils.isEmpty(driverName) || useHBaseMetastore) ? false : true;
+    this.driverName = driverName;
     this.outDir = outDir;
     this.logDir = logDir;
+    LOG.info("Creating QTestUtil with settings: "
+        + "driverName=" + driverName
+        + ", attemptingCacheUsage=" + attemptingCacheUsage
+        + ", test.build.dir=" + System.getProperty("test.build.dir")
+        + ", useHbaseMetaStore=" + useHBaseMetastore
+        + ", withLlapIo=" + withLlapIo
+        + ", confDir=" + confDir
+        + ", outDir=" + outDir
+        + ", logDir=" + logDir
+        + ", initScript=" + initScript
+        + ", cleanupScript=" + cleanupScript);
     this.useHBaseMetastore = useHBaseMetastore;
 
     if (confDir != null && !confDir.isEmpty()) {
@@ -471,6 +505,7 @@ public class QTestUtil {
     if (scriptsDir == null) {
       scriptsDir = new File(".").getAbsolutePath() + "/data/scripts";
     }
+    LOG.info("Using DataDir=" + dataDir + ", ScriptsDir=" + scriptsDir);
 
     this.initScript = scriptsDir + File.separator + initScript;
     this.cleanupScript = scriptsDir + File.separator + cleanupScript;
@@ -832,6 +867,17 @@ public class QTestUtil {
       return;
     }
 
+    if (!attemptingCacheUsage) {
+      cleanupNonCacheUsage();
+    } else {
+      cleanupCacheUsage();
+    }
+
+    FunctionRegistry.unregisterTemporaryUDF("test_udaf");
+    FunctionRegistry.unregisterTemporaryUDF("test_error");
+  }
+
+  private void cleanupNonCacheUsage() throws Exception {
     clearTablesCreatedDuringTests();
     clearKeysCreatedInTests();
 
@@ -849,21 +895,42 @@ public class QTestUtil {
       LOG.info("No cleanup script detected. Skipping.");
     }
 
+    cleanupWarehouseDir();
+  }
+
+  private void cleanupCacheUsage() throws IOException {
+    // Remove the Warehouse and metastore directories completely.
+    // Also close the current db, since files are going to come in to replace it soon.
+    Preconditions.checkState(attemptingCacheUsage);
+    Preconditions.checkNotNull(metaStorePath);
+    Preconditions.checkNotNull(localFs);
+    Hive.closeCurrent();
+    cleanupMetastoreDir();
+    cleanupWarehouseDir();
+  }
+
+  private void cleanupWarehouseDir() throws IOException {
     // delete any contents in the warehouse dir
     Path p = new Path(testWarehouse);
     FileSystem fs = p.getFileSystem(conf);
 
     try {
-      FileStatus [] ls = fs.listStatus(p);
-      for (int i=0; (ls != null) && (i<ls.length); i++) {
+      FileStatus[] ls = fs.listStatus(p);
+      for (int i = 0; (ls != null) && (i < ls.length); i++) {
         fs.delete(ls[i].getPath(), true);
       }
     } catch (FileNotFoundException e) {
       // Best effort
     }
+  }
 
-    FunctionRegistry.unregisterTemporaryUDF("test_udaf");
-    FunctionRegistry.unregisterTemporaryUDF("test_error");
+  private void cleanupMetastoreDir() throws IOException {
+    try {
+      LOG.info("Cleaning up metastore Dir: {}", metaStorePath);
+      localFs.delete(metaStorePath, true);
+    } catch (FileNotFoundException e) {
+      // Best effort
+    }
   }
 
   protected void runCreateTableCmd(String createTableCmd) throws Exception {
@@ -893,6 +960,10 @@ public class QTestUtil {
   }
 
   public void createSources(String tname) throws Exception {
+    createSources(tname, false);
+  }
+
+  public void createSources(String tname, boolean forceCreate) throws Exception {
     boolean canReuseSession = (tname == null) || !qNoSessionReuseQuerySet.contains(tname);
     if(!isSessionStateStarted) {
       startSessionState(canReuseSession);
@@ -901,34 +972,173 @@ public class QTestUtil {
     if(cliDriver == null) {
       cliDriver = new CliDriver();
     }
-    cliDriver.processLine("set test.data.dir=" + testFiles + ";");
+
     File scriptFile = new File(this.initScript);
     if (!scriptFile.isFile()) {
       LOG.info("No init script detected. Skipping");
+      if (attemptingCacheUsage) {
+        setupDbsEtc(true, true);
+      }
       return;
     }
-    conf.setBoolean("hive.test.init.phase", true);
 
-    String initCommands = readEntireFileIntoString(scriptFile);
-    LOG.info("Initial setup (" + initScript + "):\n" + initCommands);
-
-    cliDriver.processLine(initCommands);
+    if (!attemptingCacheUsage || forceCreate) {
+      LOG.info("Creating sources without data caching. attemptingCacheUsage={}, forceCreate={}",
+          attemptingCacheUsage, forceCreate);
+      cliDriver.processLine("set test.data.dir=" + testFiles + ";");
+      conf.setBoolean("hive.test.init.phase", true);
+      createSourcesNonCached(scriptFile);
+    } else {
+      LOG.info("Creating sources with data caching");
+      createSourcesCached(scriptFile);
+    }
 
     conf.setBoolean("hive.test.init.phase", false);
   }
 
-  public void init() throws Exception {
+  private void createSourcesNonCached(File scriptFile) throws IOException {
+    String initCommands = readEntireFileIntoString(scriptFile);
+    LOG.info("Initial setup (" + initScript + "):\n" + initCommands);
 
+    cliDriver.processLine(initCommands);
+  }
+
+  private void createSourcesCached(File scriptFile) throws IOException, HiveException {
+
+    // First check if the cache already exists. If it does just copy it over.
+    Path cachedWarehousePath = new Path(cachedDataPath, "warehouse");
+    Path cachedMetaStorePtah = new Path(cachedDataPath, "metastore");
+    if (localFs.exists(cachedDataPath)) {
+      if (localFs.exists(cachedWarehousePath) && localFs.exists(cachedMetaStorePtah)) {
+        LOG.info("Cached data found in {}. Attempting to use it", cachedDataPath);
+        // Data is alredy cached
+        // Copy the files over to where they should be
+        Path warehousePath = new Path(testWarehouse);
+        FileSystem warehouseFs = warehousePath.getFileSystem(conf);
+        try {
+          warehouseFs.delete(warehousePath, false);
+        } catch (FileNotFoundException e) {
+          // Does not matter if it does not exist.
+        }
+        warehouseFs.copyFromLocalFile(false, cachedWarehousePath, warehousePath);
+
+        try {
+          localFs.delete(metaStorePath, false);
+        } catch (IOException e) {
+          // Does not matter if it does not exist.
+        }
+        localFs.copyFromLocalFile(false, cachedMetaStorePtah, metaStorePath);
+        setupDbsEtc(true, false);
+        cliDriver.processLine("set test.data.dir=" + testFiles + ";");
+        conf.setBoolean("hive.test.init.phase", true);
+
+        return;
+      } else {
+        // Something is missing. Cleanup. Re-generate and cache
+        LOG.info("Partial or no cached data found at {}. Cache will be created", cachedDataPath);
+        localFs.delete(cachedDataPath, true);
+      }
+    } else {
+      LOG.info("No cached data found at {}. Cache will be created", cachedDataPath);
+      // No caching. Re-generate the data and cache it.
+    }
+
+    // Generate and cache the data
+    setupDbsEtc(true, true);
+    cliDriver.processLine("set test.data.dir=" + testFiles + ";");
+    conf.setBoolean("hive.test.init.phase", true);
+    createSourcesNonCached(scriptFile);
+
+    // Close the DB so that contents can be copied out safely.
+    Hive.closeCurrent();
+
+    // Cache the sources
+    localFs.mkdirs(cachedDataPath);
+
+    Path warehousePath = new Path(testWarehouse);
+    FileSystem warehouseFs = warehousePath.getFileSystem(conf);
+
+    warehouseFs.copyToLocalFile(false, warehousePath, cachedWarehousePath, true);
+    localFs.copyToLocalFile(false, metaStorePath, cachedMetaStorePtah, true);
+
+    // Re-open the DB etc.
+    setupDbsEtc(true, false);
+  }
+
+  private static final Pattern metaStoreUriPattern =
+      Pattern.compile("derby.*?databaseName=(.*?)(;|$)");
+
+  private String getDerbyDbPath(String jdbcConnectString) {
+    if (StringUtils.isEmpty(jdbcConnectString)) {
+      return null;
+    }
+    Matcher matcher = metaStoreUriPattern.matcher(jdbcConnectString);
+    if (matcher.find()) {
+      return matcher.group(1);
+    } else {
+      return null;
+    }
+  }
+
+  public void init() throws Exception {
+    LOG.info("init");
     testWarehouse = conf.getVar(HiveConf.ConfVars.METASTOREWAREHOUSE);
+    LOG.info("TestWarehouseDir set to: [{}]", testWarehouse);
+    if (attemptingCacheUsage) {
+      // The derby path comes from METASTORECONNECTURLKEY. Default ends up being target/junit_metastore_db
+      String metaStoreConnectUrl = conf.getVar(ConfVars.METASTORECONNECTURLKEY);
+      LOG.info("MetastoreConnectUrl: " + metaStoreConnectUrl);
+      metaStorePathString = getDerbyDbPath(metaStoreConnectUrl);
+
+      if (metaStorePathString == null) {
+        LOG.warn(
+            "Disabling attempted cache usage since metastore path cannot be determined from {}",
+            metaStoreConnectUrl);
+        attemptingCacheUsage = false;
+      } else {
+        LOG.info("Metastore url path: " + metaStorePathString);
+        metaStorePath = new Path(metaStorePathString);
+        if (metaStorePath.isAbsolute() && metaStorePathString.split(File.separator).length >= 3) {
+          // Turn this on only if the path is absolute, and is at least 3 deep - since we'll be deleting files later.
+          localFs = FileSystem.getLocal(conf).getRaw();
+          assert(TEST_BUILD_DIR != null);
+          cachedDataPath = new Path(TEST_BUILD_DIR, CACHED_DATA_DIR_NAME);
+          cachedDataPath = new Path(cachedDataPath, driverName);
+          LOG.info("Using cachedDataPath: " + cachedDataPath);
+        } else {
+          LOG.warn(
+              "Disableing attempted cache usage since metastore path may not be absolute, or depth is < 3. MetaStorePath={}",
+              metaStorePathString);
+          metaStorePath = null;
+          attemptingCacheUsage = false;
+        }
+
+      }
+    }
     String execEngine = conf.get("hive.execution.engine");
     conf.set("hive.execution.engine", "mr");
     SessionState.start(conf);
     conf.set("hive.execution.engine", execEngine);
-    db = Hive.get(conf);
-    drv = new Driver(conf);
-    drv.init();
-    pd = new ParseDriver();
-    sem = new SemanticAnalyzer(conf);
+
+    if (!attemptingCacheUsage) {
+      setupDbsEtc(true, true);
+    }
+  }
+
+  private void setupDbsEtc(boolean force, boolean isNewDb) throws HiveException {
+    if (!dbEtcSetup || force) {
+      if (isNewDb) {
+        db = Hive.get(conf);
+      } else {
+        db = Hive.getWithFastCheck(conf, false);
+      }
+      LOG.info("Obtained db");
+      drv = new Driver(conf);
+      drv.init();
+      pd = new ParseDriver();
+      sem = new SemanticAnalyzer(conf);
+      dbEtcSetup = true;
+    }
   }
 
   public void init(String tname) throws Exception {
@@ -944,8 +1154,9 @@ public class QTestUtil {
   public String cliInit(String tname, boolean recreate) throws Exception {
     if (recreate) {
       cleanUp(tname);
-      createSources(tname);
+      createSources(tname, true);
     }
+    setupDbsEtc(false, true);
 
     HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_AUTHENTICATOR_MANAGER,
     "org.apache.hadoop.hive.ql.security.DummyAuthenticator");
