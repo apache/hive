@@ -185,6 +185,10 @@ public class MiniLlapCluster extends AbstractService {
     conf.set(ConfVars.LLAP_DAEMON_SERVICE_HOSTS.varname, "@" + clusterNameTrimmed);
     conf.set(ConfVars.HIVE_ZOOKEEPER_QUORUM.varname, "localhost");
     conf.setInt(ConfVars.HIVE_ZOOKEEPER_CLIENT_PORT.varname, miniZooKeeperCluster.getClientPort());
+    // Also add ZK settings to clusterSpecificConf to make sure these get picked up by whoever started this.
+    clusterSpecificConfiguration.set(ConfVars.LLAP_DAEMON_SERVICE_HOSTS.varname, "@" + clusterNameTrimmed);
+    clusterSpecificConfiguration.set(ConfVars.HIVE_ZOOKEEPER_QUORUM.varname, "localhost");
+    clusterSpecificConfiguration.setInt(ConfVars.HIVE_ZOOKEEPER_CLIENT_PORT.varname, miniZooKeeperCluster.getClientPort());
   
     LOG.info("Initializing {} llap instances for MiniLlapCluster with name={}", numInstances, clusterNameTrimmed);
     for (int i = 0 ;i < numInstances ; i++) {
@@ -207,7 +211,6 @@ public class MiniLlapCluster extends AbstractService {
     // used by containers and LLAP
     clusterSpecificConfiguration
         .setBoolean(TezRuntimeConfiguration.TEZ_RUNTIME_OPTIMIZE_LOCAL_FETCH, false);
-    clusterSpecificConfiguration.set(ConfVars.LLAP_DAEMON_SERVICE_HOSTS.varname, "@" + clusterNameTrimmed);
   }
 
   @Override
