@@ -29,6 +29,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -69,7 +70,7 @@ public class TezWork extends AbstractOperatorDesc {
 
   private static transient final Logger LOG = LoggerFactory.getLogger(TezWork.class);
 
-  private static int counter;
+  private static final AtomicInteger counter = new AtomicInteger(1);
   private final String dagId;
   private final String queryName;
   private final Set<BaseWork> roots = new HashSet<BaseWork>();
@@ -80,8 +81,12 @@ public class TezWork extends AbstractOperatorDesc {
       new HashMap<Pair<BaseWork, BaseWork>, TezEdgeProperty>();
   private final Map<BaseWork, VertexType> workVertexTypeMap = new HashMap<BaseWork, VertexType>();
 
+  public TezWork(String queryId) {
+    this(queryId, null);
+  }
+
   public TezWork(String queryId, Configuration conf) {
-    this.dagId = queryId + ":" + (++counter);
+    this.dagId = queryId + ":" + counter.getAndIncrement();
     String queryName = (conf != null) ? DagUtils.getUserSpecifiedDagName(conf) : null;
     if (queryName == null) {
       queryName = this.dagId;
