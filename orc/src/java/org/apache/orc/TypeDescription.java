@@ -61,7 +61,7 @@ public class TypeDescription {
     LIST("array", false),
     MAP("map", false),
     STRUCT("struct", false),
-    UNION("union", false);
+    UNION("uniontype", false);
 
     Category(String name, boolean isPrimitive) {
       this.name = name;
@@ -256,6 +256,66 @@ public class TypeDescription {
       root.assignIds(0);
     }
     return id;
+  }
+
+  public TypeDescription clone() {
+    TypeDescription result = new TypeDescription(category);
+    result.maxLength = maxLength;
+    result.precision = precision;
+    result.scale = scale;
+    if (fieldNames != null) {
+      result.fieldNames.addAll(fieldNames);
+    }
+    if (children != null) {
+      for(TypeDescription child: children) {
+        TypeDescription clone = child.clone();
+        clone.parent = result;
+        result.children.add(clone);
+      }
+    }
+    return result;
+  }
+
+  @Override
+  public int hashCode() {
+    return getId();
+  }
+
+  @Override
+  public boolean equals(Object other) {
+    if (other == null || other.getClass() != TypeDescription.class) {
+      return false;
+    }
+    if (other == this) {
+      return true;
+    }
+    TypeDescription castOther = (TypeDescription) other;
+    if (category != castOther.category ||
+        getId() != castOther.getId() ||
+        getMaximumId() != castOther.getMaximumId() ||
+        maxLength != castOther.maxLength ||
+        scale != castOther.scale ||
+        precision != castOther.precision) {
+      return false;
+    }
+    if (children != null) {
+      if (children.size() != castOther.children.size()) {
+        return false;
+      }
+      for (int i = 0; i < children.size(); ++i) {
+        if (!children.get(i).equals(castOther.children.get(i))) {
+          return false;
+        }
+      }
+    }
+    if (category == Category.STRUCT) {
+      for(int i=0; i < fieldNames.size(); ++i) {
+        if (!fieldNames.get(i).equals(castOther.fieldNames.get(i))) {
+          return false;
+        }
+      }
+    }
+    return true;
   }
 
   /**

@@ -20,7 +20,7 @@ package org.apache.orc.impl;
 
 import java.io.IOException;
 
-import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 
 /**
  * Interface for reading integers.
@@ -57,9 +57,25 @@ public interface IntegerReader {
 
   /**
    * Return the next available vector for values.
-   * @return
+   * @param column the column being read
+   * @param data the vector to read into
+   * @param length the number of numbers to read
    * @throws IOException
    */
-   void nextVector(LongColumnVector previous, final int previousLen)
-      throws IOException;
-}
+   void nextVector(ColumnVector column,
+                   long[] data,
+                   int length
+                   ) throws IOException;
+
+  /**
+   * Return the next available vector for values. Does not change the
+   * value of column.isRepeating.
+   * @param column the column being read
+   * @param data the vector to read into
+   * @param length the number of numbers to read
+   * @throws IOException
+   */
+  void nextVector(ColumnVector column,
+                  int[] data,
+                  int length
+                  ) throws IOException;}

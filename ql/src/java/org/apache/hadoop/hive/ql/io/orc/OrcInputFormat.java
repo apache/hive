@@ -301,7 +301,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     /**
      * Do we have schema on read in the configuration variables?
      */
-    TypeDescription schema = getDesiredRowTypeDescr(conf, /* isAcidRead */ false);
+    TypeDescription schema = getDesiredRowTypeDescr(conf, false, Integer.MAX_VALUE);
 
     Reader.Options options = new Reader.Options().range(offset, length);
     options.schema(schema);
@@ -1743,7 +1743,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     /**
      * Do we have schema on read in the configuration variables?
      */
-    TypeDescription schema = getDesiredRowTypeDescr(conf, /* isAcidRead */ true);
+    TypeDescription schema = getDesiredRowTypeDescr(conf, true, Integer.MAX_VALUE);
 
     final Reader reader;
     final int bucket;
@@ -1994,10 +1994,13 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
   /**
    * Convert a Hive type property string that contains separated type names into a list of
    * TypeDescription objects.
+   * @param hiveTypeProperty the desired types from hive
+   * @param maxColumns the maximum number of desired columns
    * @return the list of TypeDescription objects.
    */
-  public static ArrayList<TypeDescription> typeDescriptionsFromHiveTypeProperty(
-      String hiveTypeProperty) {
+  public static ArrayList<TypeDescription>
+      typeDescriptionsFromHiveTypeProperty(String hiveTypeProperty,
+                                           int maxColumns) {
 
     // CONSDIER: We need a type name parser for TypeDescription.
 
@@ -2005,6 +2008,9 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     ArrayList<TypeDescription> typeDescrList =new ArrayList<TypeDescription>(typeInfoList.size());
     for (TypeInfo typeInfo : typeInfoList) {
       typeDescrList.add(convertTypeInfo(typeInfo));
+      if (typeDescrList.size() >= maxColumns) {
+        break;
+      }
     }
     return typeDescrList;
   }
@@ -2091,8 +2097,18 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     }
   }
 
-  public static TypeDescription getDesiredRowTypeDescr(Configuration conf, boolean isAcidRead)
-      throws IOException {
+  /**
+   * Generate the desired schema for reading the file.
+   * @param conf the configuration
+   * @param isAcidRead is this an acid format?
+   * @param dataColumns the desired number of data columns for vectorized read
+   * @return the desired schema or null if schema evolution isn't enabled
+   * @throws IOException
+   */
+  public static TypeDescription getDesiredRowTypeDescr(Configuration conf,
+                                                       boolean isAcidRead,
+                                                       int dataColumns
+                                                       ) throws IOException {
 
     String columnNameProperty = null;
     String columnTypeProperty = null;
@@ -2115,8 +2131,10 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
           haveSchemaEvolutionProperties = false;
         } else {
           schemaEvolutionTypeDescrs =
-              typeDescriptionsFromHiveTypeProperty(columnTypeProperty);
-          if (schemaEvolutionTypeDescrs.size() != schemaEvolutionColumnNames.size()) {
+              typeDescriptionsFromHiveTypeProperty(columnTypeProperty,
+                  dataColumns);
+          if (schemaEvolutionTypeDescrs.size() !=
+              Math.min(dataColumns, schemaEvolutionColumnNames.size())) {
             haveSchemaEvolutionProperties = false;
           }
         }
@@ -2147,8 +2165,9 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
         return null;
       }
       schemaEvolutionTypeDescrs =
-          typeDescriptionsFromHiveTypeProperty(columnTypeProperty);
-      if (schemaEvolutionTypeDescrs.size() != schemaEvolutionColumnNames.size()) {
+          typeDescriptionsFromHiveTypeProperty(columnTypeProperty, dataColumns);
+      if (schemaEvolutionTypeDescrs.size() !=
+          Math.min(dataColumns, schemaEvolutionColumnNames.size())) {
         return null;
       }
 
@@ -2162,7 +2181,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
         }
         columnNum++;
       }
-      if (virtualColumnClipNum != -1) {
+      if (virtualColumnClipNum != -1 && virtualColumnClipNum < dataColumns) {
         schemaEvolutionColumnNames =
             Lists.newArrayList(schemaEvolutionColumnNames.subList(0, virtualColumnClipNum));
         schemaEvolutionTypeDescrs = Lists.newArrayList(schemaEvolutionTypeDescrs.subList(0, virtualColumnClipNum));
@@ -2179,7 +2198,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
 
     // Desired schema does not include virtual columns or partition columns.
     TypeDescription result = TypeDescription.createStruct();
-    for (int i = 0; i < schemaEvolutionColumnNames.size(); i++) {
+    for (int i = 0; i < schemaEvolutionTypeDescrs.size(); i++) {
       result.addField(schemaEvolutionColumnNames.get(i), schemaEvolutionTypeDescrs.get(i));
     }
 
