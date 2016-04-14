@@ -51,7 +51,7 @@ import org.apache.hadoop.util.Progressable;
 
 import com.google.common.base.Preconditions;
 
-public class LlapInputFormat<V extends WritableComparable> implements InputFormat<NullWritable, V> {
+public class LlapBaseInputFormat<V extends WritableComparable> implements InputFormat<NullWritable, V> {
 
   private static String driverName = "org.apache.hive.jdbc.HiveDriver";
   private String url;  // "jdbc:hive2://localhost:10000/default"
@@ -59,24 +59,24 @@ public class LlapInputFormat<V extends WritableComparable> implements InputForma
   private String pwd;  // ""
   private String query;
 
-  public final String URL_KEY = "llap.if.hs2.connection";
-  public final String QUERY_KEY = "llap.if.query";
-  public final String USER_KEY = "llap.if.user";
-  public final String PWD_KEY = "llap.if.pwd";
+  public static final String URL_KEY = "llap.if.hs2.connection";
+  public static final String QUERY_KEY = "llap.if.query";
+  public static final String USER_KEY = "llap.if.user";
+  public static final String PWD_KEY = "llap.if.pwd";
 
   public final String SPLIT_QUERY = "select get_splits(\"%s\",%d)";
 
   private Connection con;
   private Statement stmt;
 
-  public LlapInputFormat(String url, String user, String pwd, String query) {
+  public LlapBaseInputFormat(String url, String user, String pwd, String query) {
     this.url = url;
     this.user = user;
     this.pwd = pwd;
     this.query = query;
   }
 
-  public LlapInputFormat() {}
+  public LlapBaseInputFormat() {}
 
 
   @Override

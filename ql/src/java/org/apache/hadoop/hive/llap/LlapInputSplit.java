@@ -20,7 +20,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import org.apache.hadoop.hive.metastore.api.Schema;
+import org.apache.hadoop.hive.llap.Schema;
 import org.apache.hadoop.mapred.InputSplitWithLocationInfo;
 import org.apache.hadoop.mapred.SplitLocationInfo;
 import org.apache.thrift.TDeserializer;
@@ -93,17 +93,7 @@ public class LlapInputSplit implements InputSplitWithLocationInfo {
       out.writeUTF(locations[i].getLocation());
     }
 
-    byte[] binarySchema;
-
-    try {
-      TSerializer serializer = new TSerializer();
-      byte[] serialzied = serializer.serialize(schema);
-      out.writeInt(serialzied.length);
-      out.write(serialzied);
-    } catch (Exception e) {
-      throw new IOException(e);
-    }
-
+    schema.write(out);
     out.writeUTF(llapUser);
   }
 
@@ -125,17 +115,8 @@ public class LlapInputSplit implements InputSplitWithLocationInfo {
       locations[i] = new SplitLocationInfo(in.readUTF(), false);
     }
 
-    length = in.readInt();
-
-    try {
-      byte[] schemaBytes = new byte[length];
-      in.readFully(schemaBytes);
-      TDeserializer tDeserializer = new TDeserializer();
-      schema = new Schema();
-      tDeserializer.deserialize(schema, schemaBytes);
-    } catch (Exception e) {
-      throw new IOException(e);
-    }
+    schema = new Schema();
+    schema.readFields(in);
     llapUser = in.readUTF();
   }
 

@@ -45,7 +45,10 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.LlapInputSplit;
 import org.apache.hadoop.hive.llap.LlapOutputFormat;
 import org.apache.hadoop.hive.llap.SubmitWorkInfo;
-import org.apache.hadoop.hive.metastore.api.Schema;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.llap.Schema;
+import org.apache.hadoop.hive.llap.FieldDesc;
+import org.apache.hadoop.hive.llap.TypeDesc;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Driver;
@@ -71,6 +74,12 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
@@ -220,7 +229,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
 
     QueryPlan plan = driver.getPlan();
     List<Task<?>> roots = plan.getRootTasks();
-    Schema schema = plan.getResultSchema();
+    Schema schema = convertSchema(plan.getResultSchema());
 
     if (roots == null || roots.size() != 1 || !(roots.get(0) instanceof TezTask)) {
       throw new HiveException("Was expecting a single TezTask.");
@@ -255,7 +264,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
 
       plan = driver.getPlan();
       roots = plan.getRootTasks();
-      schema = plan.getResultSchema();
+      schema = convertSchema(plan.getResultSchema());
 
       if (roots == null || roots.size() != 1 || !(roots.get(0) instanceof TezTask)) {
         throw new HiveException("Was expecting a single TezTask.");
@@ -414,6 +423,78 @@ public class GenericUDTFGetSplits extends GenericUDTF {
         is.close();
       }
     }
+  }
+
+  private TypeDesc convertTypeString(String typeString) throws HiveException {
+    TypeDesc typeDesc;
+    TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(typeString);
+    Preconditions.checkState(typeInfo.getCategory() == ObjectInspector.Category.PRIMITIVE,
+        "Unsupported non-primitive type " + typeString);
+
+    switch (((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory()) {
+      case BOOLEAN:
+        typeDesc = new TypeDesc(TypeDesc.Type.BOOLEAN);
+        break;
+      case BYTE:
+        typeDesc = new TypeDesc(TypeDesc.Type.TINYINT);
+        break;
+      case SHORT:
+        typeDesc = new TypeDesc(TypeDesc.Type.SMALLINT);
+        break;
+      case INT:
+        typeDesc = new TypeDesc(TypeDesc.Type.INT);
+        break;
+      case LONG:
+        typeDesc = new TypeDesc(TypeDesc.Type.BIGINT);
+        break;
+      case FLOAT:
+        typeDesc = new TypeDesc(TypeDesc.Type.FLOAT);
+        break;
+      case DOUBLE:
+        typeDesc = new TypeDesc(TypeDesc.Type.DOUBLE);
+        break;
+      case STRING:
+        typeDesc = new TypeDesc(TypeDesc.Type.STRING);
+        break;
+      case CHAR:
+        CharTypeInfo charTypeInfo = (CharTypeInfo) typeInfo;
+        typeDesc = new TypeDesc(TypeDesc.Type.CHAR, charTypeInfo.getLength());
+        break;
+      case VARCHAR:
+        VarcharTypeInfo varcharTypeInfo = (VarcharTypeInfo) typeInfo;
+        typeDesc = new TypeDesc(TypeDesc.Type.CHAR, varcharTypeInfo.getLength());
+        break;
+      case DATE:
+        typeDesc = new TypeDesc(TypeDesc.Type.DATE);
+        break;
+      case TIMESTAMP:
+        typeDesc = new TypeDesc(TypeDesc.Type.TIMESTAMP);
+        break;
+      case BINARY:
+        typeDesc = new TypeDesc(TypeDesc.Type.BINARY);
+        break;
+      case DECIMAL:
+        DecimalTypeInfo decimalTypeInfo = (DecimalTypeInfo) typeInfo;
+        typeDesc = new TypeDesc(TypeDesc.Type.DECIMAL, decimalTypeInfo.getPrecision(), decimalTypeInfo.getScale());
+        break;
+      default:
+        throw new HiveException("Unsupported type " + typeString);
+    }
+
+    return typeDesc;
+  }
+
+  private Schema convertSchema(Object obj) throws HiveException {
+    org.apache.hadoop.hive.metastore.api.Schema schema = (org.apache.hadoop.hive.metastore.api.Schema) obj;
+    List<FieldDesc> colDescs = new ArrayList<FieldDesc>();
+    for (FieldSchema fs : schema.getFieldSchemas()) {
+      String colName = fs.getName();
+      String typeString = fs.getType();
+      TypeDesc typeDesc = convertTypeString(typeString);
+      colDescs.add(new FieldDesc(colName, typeDesc));
+    }
+    Schema Schema = new Schema(colDescs);
+    return Schema;
   }
 
   @Override

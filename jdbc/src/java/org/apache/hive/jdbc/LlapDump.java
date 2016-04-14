@@ -49,10 +49,9 @@ import org.apache.hadoop.mapred.RecordWriter;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.InputSplit;
-import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
-import org.apache.hadoop.hive.llap.LlapRecordReader;
-import org.apache.hadoop.hive.metastore.api.Schema;
+import org.apache.hadoop.hive.llap.LlapBaseRecordReader;
+import org.apache.hadoop.hive.llap.Schema;
 
 public class LlapDump {
 
@@ -98,7 +97,7 @@ public class LlapDump {
     System.out.println("user: "+user);
     System.out.println("query: "+query);
 
-    LlapInputFormat format = new LlapInputFormat(url, user, pwd, query);
+    LlapBaseInputFormat format = new LlapBaseInputFormat(url, user, pwd, query);
     JobConf job = new JobConf();
 
     InputSplit[] splits = format.getSplits(job, Integer.parseInt(numSplits));
@@ -113,8 +112,8 @@ public class LlapDump {
         LOG.info("Processing input split s from " + Arrays.toString(s.getLocations()));
         RecordReader<NullWritable, Text> reader = format.getRecordReader(s, job, null);
 
-        if (reader instanceof LlapRecordReader && first) {
-          Schema schema = ((LlapRecordReader)reader).getSchema();
+        if (reader instanceof LlapBaseRecordReader && first) {
+          Schema schema = ((LlapBaseRecordReader)reader).getSchema();
           System.out.println(""+schema);
         }
 

@@ -25,7 +25,7 @@ import java.io.DataInputStream;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.ql.io.RCFile.Reader;
+import org.apache.hadoop.hive.llap.Schema;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.NullWritable;
@@ -33,13 +33,12 @@ import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.hive.metastore.api.Schema;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LlapRecordReader<V extends WritableComparable> implements RecordReader<NullWritable, V> {
-  private static final Logger LOG = LoggerFactory.getLogger(LlapRecordReader.class);
+public class LlapBaseRecordReader<V extends WritableComparable> implements RecordReader<NullWritable, V> {
+  private static final Logger LOG = LoggerFactory.getLogger(LlapBaseRecordReader.class);
 
   DataInputStream din;
   Schema schema;
@@ -49,7 +48,7 @@ public class LlapRecordReader<V extends WritableComparable> implements RecordRea
   protected Thread readerThread = null;
   protected LinkedBlockingQueue<ReaderEvent> readerEvents = new LinkedBlockingQueue<ReaderEvent>();
 
-  public LlapRecordReader(InputStream in, Schema schema, Class<V> clazz) {
+  public LlapBaseRecordReader(InputStream in, Schema schema, Class<V> clazz) {
     din = new DataInputStream(in);
     this.schema = schema;
     this.clazz = clazz;

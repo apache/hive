@@ -60,16 +60,16 @@ import org.apache.hadoop.mapred.RecordReader;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.llap.LlapRecordReader;
-import org.apache.hadoop.hive.metastore.ObjectStore;
-import org.apache.hadoop.hive.metastore.api.Schema;
-import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.llap.LlapRowRecordReader;
+import org.apache.hadoop.hive.llap.Row;
+import org.apache.hadoop.hive.llap.Schema;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.apache.hive.jdbc.miniHS2.MiniHS2.MiniClusterType;
-import org.apache.hive.jdbc.LlapInputFormat;
+import org.apache.hive.jdbc.LlapBaseInputFormat;
+import org.apache.hive.jdbc.LlapRowInputFormat;
 
 import org.datanucleus.ClassLoaderResolver;
 import org.datanucleus.NucleusContext;
@@ -109,8 +109,6 @@ public class TestJdbcWithMiniLlap {
 
     conf.addResource(new URL("file://" + new File(confDir).toURI().getPath()
         + "/tez-site.xml"));
-    conf.addResource(new URL("file://" + new File(confDir).toURI().getPath()
-        + "/llap-daemon-site.xml"));
 
     miniHS2 = new MiniHS2(conf, MiniClusterType.LLAP);
 
@@ -202,10 +200,14 @@ public class TestJdbcWithMiniLlap {
     String user = System.getProperty("user.name");
     String pwd = user;
 
-    LlapInputFormat inputFormat = new LlapInputFormat(url, user, pwd, query);
+    LlapRowInputFormat inputFormat = new LlapRowInputFormat();
 
     // Get splits
     JobConf job = new JobConf(conf);
+    job.set(LlapBaseInputFormat.URL_KEY, url);
+    job.set(LlapBaseInputFormat.USER_KEY, user);
+    job.set(LlapBaseInputFormat.PWD_KEY, pwd);
+    job.set(LlapBaseInputFormat.QUERY_KEY, query);
 
     InputSplit[] splits = inputFormat.getSplits(job, numSplits);
     assertTrue(splits.length > 0);
@@ -216,10 +218,12 @@ public class TestJdbcWithMiniLlap {
     for (InputSplit split : splits) {
       System.out.println("Processing split " + split.getLocations());
 
-      RecordReader<NullWritable, Text> reader = inputFormat.getRecordReader(split, job, null);
-      if (reader instanceof LlapRecordReader && first) {
-        Schema schema = ((LlapRecordReader)reader).getSchema();
+      int numColumns = 2;
+      RecordReader<NullWritable, Row> reader = inputFormat.getRecordReader(split, job, null);
+      if (reader instanceof LlapRowRecordReader && first) {
+        Schema schema = ((LlapRowRecordReader) reader).getSchema();
         System.out.println(""+schema);
+        assertEquals(numColumns, schema.getColumns().size());
       }
 
       if (first) {
@@ -228,9 +232,15 @@ public class TestJdbcWithMiniLlap {
         first = false;
       }
 
-      Text value = reader.createValue();
-      while (reader.next(NullWritable.get(), value)) {
-        System.out.println(value);
+      Row row = reader.createValue();
+      while (reader.next(NullWritable.get(), row)) {
+        for (int idx = 0; idx < numColumns; idx++) {
+          if (idx > 0) {
+            System.out.print(", ");
+          }
+          System.out.print(row.getValue(idx));
+        }
+        System.out.println("");
         ++rowCount;
       }
     }

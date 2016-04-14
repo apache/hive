@@ -30,7 +30,7 @@ import com.google.protobuf.ByteString;
 
 import org.apache.commons.collections4.ListUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.llap.LlapRecordReader.ReaderEvent;
+import org.apache.hadoop.hive.llap.LlapBaseRecordReader.ReaderEvent;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto;
 import org.apache.hadoop.hive.llap.ext.LlapTaskUmbilicalExternalClient;
@@ -73,7 +73,6 @@ import org.apache.tez.runtime.api.impl.TezHeartbeatResponse;
 public class LlapInputFormat<V extends WritableComparable> implements InputFormat<NullWritable, V> {
 
   private static final Logger LOG = LoggerFactory.getLogger(LlapInputFormat.class);
-
 
   public LlapInputFormat() {
   }
@@ -135,7 +134,7 @@ public class LlapInputFormat<V extends WritableComparable> implements InputForma
 
     LOG.info("Registered id: " + id);
 
-    LlapRecordReader recordReader = new LlapRecordReader(socket.getInputStream(), llapSplit.getSchema(), Text.class);
+    LlapBaseRecordReader recordReader = new LlapBaseRecordReader(socket.getInputStream(), llapSplit.getSchema(), Text.class);
     umbilicalResponder.setRecordReader(recordReader);
     return recordReader;
   }
@@ -276,7 +275,7 @@ public class LlapInputFormat<V extends WritableComparable> implements InputForma
   }
 
   private static class LlapRecordReaderTaskUmbilicalExternalResponder implements LlapTaskUmbilicalExternalResponder {
-    protected LlapRecordReader recordReader = null;
+    protected LlapBaseRecordReader recordReader = null;
     protected LinkedBlockingQueue<ReaderEvent> queuedEvents = new LinkedBlockingQueue<ReaderEvent>();
 
     public LlapRecordReaderTaskUmbilicalExternalResponder() {
@@ -285,7 +284,7 @@ public class LlapInputFormat<V extends WritableComparable> implements InputForma
     @Override
     public void submissionFailed(String fragmentId, Throwable throwable) {
       try {
-        sendOrQueueEvent(LlapRecordReader.ReaderEvent.errorEvent(
+        sendOrQueueEvent(ReaderEvent.errorEvent(
             "Received submission failed event for fragment ID " + fragmentId));
       } catch (Exception err) {
         LOG.error("Error during heartbeat responder:", err);
@@ -301,11 +300,11 @@ public class LlapInputFormat<V extends WritableComparable> implements InputForma
         try {
           switch (eventType) {
             case TASK_ATTEMPT_COMPLETED_EVENT:
-              sendOrQueueEvent(LlapRecordReader.ReaderEvent.doneEvent());
+              sendOrQueueEvent(ReaderEvent.doneEvent());
               break;
             case TASK_ATTEMPT_FAILED_EVENT:
               TaskAttemptFailedEvent taskFailedEvent = (TaskAttemptFailedEvent) tezEvent.getEvent();
-              sendOrQueueEvent(LlapRecordReader.ReaderEvent.errorEvent(taskFailedEvent.getDiagnostics()));
+              sendOrQueueEvent(ReaderEvent.errorEvent(taskFailedEvent.getDiagnostics()));
               break;
             case TASK_STATUS_UPDATE_EVENT:
               // If we want to handle counters
@@ -323,7 +322,7 @@ public class LlapInputFormat<V extends WritableComparable> implements InputForma
     @Override
     public void taskKilled(TezTaskAttemptID taskAttemptId) {
       try {
-        sendOrQueueEvent(LlapRecordReader.ReaderEvent.errorEvent(
+        sendOrQueueEvent(ReaderEvent.errorEvent(
             "Received task killed event for task ID " + taskAttemptId));
       } catch (Exception err) {
         LOG.error("Error during heartbeat responder:", err);
@@ -333,18 +332,18 @@ public class LlapInputFormat<V extends WritableComparable> implements InputForma
     @Override
     public void heartbeatTimeout(String taskAttemptId) {
       try {
-        sendOrQueueEvent(LlapRecordReader.ReaderEvent.errorEvent(
+        sendOrQueueEvent(ReaderEvent.errorEvent(
             "Timed out waiting for heartbeat for task ID " + taskAttemptId));
       } catch (Exception err) {
         LOG.error("Error during heartbeat responder:", err);
       }
     }
 
-    public synchronized LlapRecordReader getRecordReader() {
+    public synchronized LlapBaseRecordReader getRecordReader() {
       return recordReader;
     }
 
-    public synchronized void setRecordReader(LlapRecordReader recordReader) {
+    public synchronized void setRecordReader(LlapBaseRecordReader recordReader) {
       this.recordReader = recordReader;
 
       if (recordReader == null) {
@@ -353,7 +352,7 @@ public class LlapInputFormat<V extends WritableComparable> implements InputForma
 
       // If any events were queued by the responder, give them to the record reader now.
       while (!queuedEvents.isEmpty()) {
-        LlapRecordReader.ReaderEvent readerEvent = queuedEvents.poll();
+        ReaderEvent readerEvent = queuedEvents.poll();
         LOG.debug("Sending queued event to record reader: " + readerEvent.getEventType());
         recordReader.handleEvent(readerEvent);
       }
@@ -365,8 +364,8 @@ public class LlapInputFormat<V extends WritableComparable> implements InputForma
      * since we don't want to drop these events.
      * @param readerEvent
      */
-    protected synchronized void sendOrQueueEvent(LlapRecordReader.ReaderEvent readerEvent) {
-      LlapRecordReader recordReader = getRecordReader();
+    protected synchronized void sendOrQueueEvent(ReaderEvent readerEvent) {
+      LlapBaseRecordReader recordReader = getRecordReader();
       if (recordReader != null) {
         recordReader.handleEvent(readerEvent);
       } else {

@@ -52,6 +52,7 @@ import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.llap.LlapBaseRecordReader.ReaderEvent;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 
 
@@ -112,9 +113,12 @@ public class TestLlapOutputFormat {
       writer.close(null);
 
       InputStream in = socket.getInputStream();
-      RecordReader reader = new LlapRecordReader(in, null, Text.class);
+      LlapBaseRecordReader reader = new LlapBaseRecordReader(in, null, Text.class);
 
       LOG.debug("Have record reader");
+
+      // Send done event, which LlapRecordReader is expecting upon end of input
+      reader.handleEvent(ReaderEvent.doneEvent());
 
       int count = 0;
       while(reader.next(NullWritable.get(), text)) {

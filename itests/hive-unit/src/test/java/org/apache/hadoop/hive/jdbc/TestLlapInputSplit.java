@@ -10,8 +10,10 @@ import java.util.HashMap;
 
 import org.apache.hadoop.io.Text;
 
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.Schema;
+import org.apache.hadoop.hive.llap.Schema;
+import org.apache.hadoop.hive.llap.FieldDesc;
+import org.apache.hadoop.hive.llap.TypeDesc;
+
 import org.apache.hadoop.mapred.SplitLocationInfo;
 import org.junit.After;
 import org.junit.Before;
@@ -32,14 +34,11 @@ public class TestLlapInputSplit {
         new SplitLocationInfo("location1", false),
         new SplitLocationInfo("location2", false),
     };
-    ArrayList<FieldSchema> fields = new ArrayList<FieldSchema>();
-    fields.add(new FieldSchema("col1", "string", "comment1"));
-    fields.add(new FieldSchema("col2", "int", "comment2"));
-    HashMap<String, String> properties = new HashMap<String, String>();
-    properties.put("key1", "val1");
-    Schema schema = new Schema(
-        fields,
-        properties);
+
+    ArrayList<FieldDesc> colDescs = new ArrayList<FieldDesc>();
+    colDescs.add(new FieldDesc("col1", new TypeDesc(TypeDesc.Type.STRING)));
+    colDescs.add(new FieldDesc("col2", new TypeDesc(TypeDesc.Type.INT)));
+    Schema schema = new Schema(colDescs);
 
     org.apache.hadoop.hive.llap.LlapInputSplit split1 = new org.apache.hadoop.hive.llap.LlapInputSplit(
         splitNum,
@@ -94,7 +93,7 @@ public class TestLlapInputSplit {
       assertEquals(locationInfo1[idx].isOnDisk(), locationInfo2[idx].isOnDisk());
     }
     assertArrayEquals(split1.getLocations(), split2.getLocations());
-    assertEquals(split1.getSchema(), split2.getSchema());
+    assertEquals(split1.getSchema().toString(), split2.getSchema().toString());
     assertEquals(split1.getLlapUser(), split2.getLlapUser());
   }
 
