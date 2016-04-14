@@ -18,15 +18,9 @@
 package org.apache.hadoop.hive.ql.session;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.nio.channels.FileChannel;
 import java.util.UUID;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
@@ -45,36 +39,12 @@ public class TestClearDanglingScratchDir {
   private static HiveConf conf;
   private static Path scratchDir;
   private ByteArrayOutputStream stdout;
+  private ByteArrayOutputStream stderr;
   private PrintStream origStdoutPs;
-  private static File logFile;
+  private PrintStream origStderrPs;
 
   @BeforeClass
   static public void oneTimeSetup() throws Exception {
-    logFile = File.createTempFile("log", "");
-    File log4jConfig = File.createTempFile("config", ".properties");
-    log4jConfig.deleteOnExit();
-    PrintWriter pw = new PrintWriter(log4jConfig);
-    pw.println("appenders = console, file");
-    pw.println("appender.console.type = Console");
-    pw.println("appender.console.name = STDOUT");
-    pw.println("appender.console.layout.type = PatternLayout");
-    pw.println("appender.console.layout.pattern = %t %-5p %c{2} - %m%n");
-    pw.println("appender.file.type = File");
-    pw.println("appender.file.name = LOGFILE");
-    pw.println("appender.file.fileName = " + logFile.getAbsolutePath());
-    pw.println("appender.file.layout.type = PatternLayout");
-    pw.println("appender.file.layout.pattern = %t %-5p %c{2} - %m%n");
-    pw.println("rootLogger.level = debug");
-    pw.println("rootLogger.appenderRefs = stdout");
-    pw.println("rootLogger.appenderRef.stdout.ref = STDOUT");
-    pw.println("loggers = file");
-    pw.println("logger.file.name = SessionState");
-    pw.println("logger.file.level = debug");
-    pw.println("logger.file.appenderRefs = file");
-    pw.println("logger.file.appenderRef.file.ref = LOGFILE");
-    pw.close();
-    System.setProperty("log4j.configurationFile", log4jConfig.getAbsolutePath());
-
     m_dfs = new MiniDFSCluster.Builder(new Configuration()).numDataNodes(1).format(true).build();
     conf = new HiveConf();
     conf.set(HiveConf.ConfVars.HIVE_SCRATCH_DIR_LOCK.toString(), "true");
@@ -95,67 +65,67 @@ public class TestClearDanglingScratchDir {
     m_dfs.shutdown();
   }
 
-  public void redirectOutput() throws IOException {
+  public void redirectStdOutErr() {
     stdout = new ByteArrayOutputStream();
     PrintStream psStdout = new PrintStream(stdout);
     origStdoutPs = System.out;
     System.setOut(psStdout);
 
-    FileOutputStream fos = new FileOutputStream(logFile, true);
-    FileChannel outChan = fos.getChannel();
-    outChan.truncate(0);
-    outChan.close();
-    fos.close();
+    stderr = new ByteArrayOutputStream();
+    PrintStream psStderr = new PrintStream(stderr);
+    origStderrPs = System.err;
+    System.setErr(psStderr);
   }
 
-  public void rollbackOutput() {
+  public void rollbackStdOutErr() {
     System.setOut(origStdoutPs);
+    System.setErr(origStderrPs);
   }
 
   @Test
   public void testClearDanglingScratchDir() throws Exception {
 
     // No scratch dir initially
-    redirectOutput();
-    ClearDanglingScratchDir.main(new String[]{"-s",
+    redirectStdOutErr();
+    ClearDanglingScratchDir.main(new String[]{"-v", "-s",
         m_dfs.getFileSystem().getUri().toString() + scratchDir.toUri().toString()});
-    rollbackOutput();
-    Assert.assertTrue(FileUtils.readFileToString(logFile).contains("Cannot find any scratch directory to clear"));
+    rollbackStdOutErr();
+    Assert.assertTrue(stderr.toString().contains("Cannot find any scratch directory to clear"));
 
     // Create scratch dir without lock files
     m_dfs.getFileSystem().mkdirs(new Path(new Path(scratchDir, "dummy"), UUID.randomUUID().toString()));
-    redirectOutput();
-    ClearDanglingScratchDir.main(new String[]{"-s",
+    redirectStdOutErr();
+    ClearDanglingScratchDir.main(new String[]{"-v", "-s",
         m_dfs.getFileSystem().getUri().toString() + scratchDir.toUri().toString()});
-    rollbackOutput();
-    Assert.assertEquals(StringUtils.countMatches(FileUtils.readFileToString(logFile),
+    rollbackStdOutErr();
+    Assert.assertEquals(StringUtils.countMatches(stderr.toString(),
         "since it does not contain " + SessionState.LOCK_FILE_NAME), 1);
-    Assert.assertTrue(FileUtils.readFileToString(logFile).contains("Cannot find any scratch directory to clear"));
+    Assert.assertTrue(stderr.toString().contains("Cannot find any scratch directory to clear"));
 
     // One live session
     SessionState ss = SessionState.start(conf);
-    redirectOutput();
-    ClearDanglingScratchDir.main(new String[]{"-s",
+    redirectStdOutErr();
+    ClearDanglingScratchDir.main(new String[]{"-v", "-s",
         m_dfs.getFileSystem().getUri().toString() + scratchDir.toUri().toString()});
-    rollbackOutput();
-    Assert.assertEquals(StringUtils.countMatches(FileUtils.readFileToString(logFile), "is being used by live process"), 1);
+    rollbackStdOutErr();
+    Assert.assertEquals(StringUtils.countMatches(stderr.toString(), "is being used by live process"), 1);
 
     // One dead session with dry-run
     ss.releaseSessionLockFile();
-    redirectOutput();
-    ClearDanglingScratchDir.main(new String[]{"-r", "-s",
+    redirectStdOutErr();
+    ClearDanglingScratchDir.main(new String[]{"-r", "-v", "-s",
         m_dfs.getFileSystem().getUri().toString() + scratchDir.toUri().toString()});
-    rollbackOutput();
+    rollbackStdOutErr();
     // Find one session dir to remove
     Assert.assertFalse(stdout.toString().isEmpty());
 
     // Remove the dead session dir
-    redirectOutput();
-    ClearDanglingScratchDir.main(new String[]{"-s",
+    redirectStdOutErr();
+    ClearDanglingScratchDir.main(new String[]{"-v", "-s",
         m_dfs.getFileSystem().getUri().toString() + scratchDir.toUri().toString()});
-    rollbackOutput();
-    Assert.assertTrue(FileUtils.readFileToString(logFile).contains("Removing 1 scratch directories"));
-    Assert.assertEquals(StringUtils.countMatches(FileUtils.readFileToString(logFile), "removed"), 1);
+    rollbackStdOutErr();
+    Assert.assertTrue(stderr.toString().contains("Removing 1 scratch directories"));
+    Assert.assertEquals(StringUtils.countMatches(stderr.toString(), "removed"), 1);
     ss.close();
   }
 }
