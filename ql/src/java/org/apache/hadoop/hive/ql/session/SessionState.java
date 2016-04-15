@@ -614,7 +614,7 @@ public class SessionState {
     conf.set(HDFS_SESSION_PATH_KEY, hdfsSessionPath.toUri().toString());
     // 5. hold a lock file in HDFS session dir to indicate the it is in use
     if (conf.getBoolVar(HiveConf.ConfVars.HIVE_SCRATCH_DIR_LOCK)) {
-      FileSystem fs = FileSystem.get(conf);
+      FileSystem fs = hdfsSessionPath.getFileSystem(conf);
       hdfsSessionPathLockFile = fs.create(new Path(hdfsSessionPath, LOCK_FILE_NAME), true);
       hdfsSessionPathLockFile.writeUTF("hostname: " + InetAddress.getLocalHost().getHostName() + "\n");
       hdfsSessionPathLockFile.writeUTF("process: " + ManagementFactory.getRuntimeMXBean().getName() + "\n");
