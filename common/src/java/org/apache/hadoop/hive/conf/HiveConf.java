@@ -2304,6 +2304,8 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_SESSION_CHECK_INTERVAL("hive.server2.session.check.interval", "6h",
         new TimeValidator(TimeUnit.MILLISECONDS, 3000l, true, null, false),
         "The check interval for session/operation timeout, which can be disabled by setting to zero or negative value."),
+    HIVE_SERVER2_CLOSE_SESSION_ON_DISCONNECT("hive.server2.close.session.on.disconnect", true,
+      "Session will be closed when connection is closed. Set this to false to have session outlive its parent connection."),
     HIVE_SERVER2_IDLE_SESSION_TIMEOUT("hive.server2.idle.session.timeout", "7d",
         new TimeValidator(TimeUnit.MILLISECONDS),
         "Session will be closed when it's not accessed for this duration, which can be disabled by setting to zero or negative value."),
