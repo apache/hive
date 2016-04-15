@@ -20,7 +20,7 @@ package org.apache.orc.impl;
 import java.io.EOFException;
 import java.io.IOException;
 
-import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 
 /**
  * A reader that reads a sequence of bytes. A control byte is read before
@@ -92,16 +92,16 @@ public class RunLengthByteReader {
     return result;
   }
 
-  public void nextVector(ColumnVector previous, long[] data, long size)
+  public void nextVector(LongColumnVector previous, long previousLen)
       throws IOException {
     previous.isRepeating = true;
-    for (int i = 0; i < size; i++) {
+    for (int i = 0; i < previousLen; i++) {
       if (!previous.isNull[i]) {
-        data[i] = next();
+        previous.vector[i] = next();
       } else {
         // The default value of null for int types in vectorized
         // processing is 1, so set that if the value is null
-        data[i] = 1;
+        previous.vector[i] = 1;
       }
 
       // The default value for nulls in Vectorization for int types is 1
@@ -109,32 +109,8 @@ public class RunLengthByteReader {
       // when determining the isRepeating flag.
       if (previous.isRepeating
           && i > 0
-          && ((data[0] != data[i]) ||
-              (previous.isNull[0] != previous.isNull[i]))) {
+          && ((previous.vector[i - 1] != previous.vector[i]) || (previous.isNull[i - 1] != previous.isNull[i]))) {
         previous.isRepeating = false;
-      }
-    }
-  }
-
-  /**
-   * Read the next size bytes into the data array, skipping over any slots
-   * where isNull is true.
-   * @param isNull if non-null, skip any rows where isNull[r] is true
-   * @param data the array to read into
-   * @param size the number of elements to read
-   * @throws IOException
-   */
-  public void nextVector(boolean[] isNull, int[] data,
-                         long size) throws IOException {
-    if (isNull == null) {
-      for(int i=0; i < size; ++i) {
-        data[i] = next();
-      }
-    } else {
-      for(int i=0; i < size; ++i) {
-        if (!isNull[i]) {
-          data[i] = next();
-        }
       }
     }
   }
