@@ -14,50 +14,27 @@
 # -e will make the script exit if an error happens on any command executed
 set -ex
 
-# Script created by Cloudcat with useful environment information
-[ -f /opt/toolchain/toolchain.sh ] && . /opt/toolchain/toolchain.sh
+cd $(dirname $0)
 
-# Use JAVA7_HOME if exists
-export JAVA_HOME=${JAVA7_HOME:-$JAVA_HOME}
+HIVE_PTEST_DIR=".hive-ptest"
+HIVE_BRANCH="cdh5-1.1.0_dev"
 
-# If JDK_VERSION exists, then try to get the value from JAVAX_HOME
-if [ -n "$JDK_VERSION" ]; then
-  # Get JAVAX_HOME value, where X is the JDK version
-  java_home=`eval echo \\$JAVA${JDK_VERSION}_HOME`
-  if [ -n "$java_home" ]; then
-    export JAVA_HOME="$java_home"
-  else
-    echo "ERROR: USE_JDK_VERSION=$JDK_VERSION, but JAVA${JDK_VERSION}_HOME is not found."
-    exit 1
-  fi
-fi
+export PTEST_PROPERTIES_FILE="cdh5-1.1.x.properties"
+export JAVA7_BUILD="1"
 
-export PATH=${JAVA_HOME}/bin:${PATH}
+mkdir -p $HIVE_PTEST_DIR
+cd $HIVE_PTEST_DIR
 
-# WORKSPACE is an environment variable created by Jenkins, and it is the directory where the build is executed.
-# If not set, then default to $HOME
-MVN_REPO_LOCAL=${WORKSPACE:-$HOME}/.m2/repository
+rm -f parent_buildinfo
+wget http://unittest.jenkins.cloudera.com/job/CDH5-Unit-Tests-Aggregate/lastBuild/artifact/parent_buildinfo
 
-# Add any test to be excluded in alphabetical order to keep readability, starting with files, and
-# then directories.
-declare -a EXCLUDE_TESTS=(
-  ".*org/apache/hadoop/hive/ql/exec/.*"
-  ".*org/apache/hadoop/hive/ql/parse/.*"
-  ".*org/apache/hive/hcatalog/mapreduce/.*"
-  ".*org/apache/hive/hcatalog/pig/.*"
-)
+cat > buildinfo << EOF
+Job: $JOB_NAME
+Build ID: $BUILD_ID
+EOF
 
-function get_excluded_tests() {
-  local IFS="|"
-  echo -n "${EXCLUDE_TESTS[*]}"
-}
+rm -f execute-hive-ptest.sh
 
-function get_regex_excluded_tests() {
-  echo -n "%regex[`get_excluded_tests`]"
-}
+curl -O http://github.mtv.cloudera.com/raw/CDH/hive-ptest-conf/master/bin/execute-hive-ptest.sh
 
-regex_tests=`get_regex_excluded_tests`
-mvn clean install -Phadoop-2 -Dmaven.repo.local="$MVN_REPO_LOCAL" -Dtest.excludes.additional="$regex_tests"
-cd itests/
-rm -f thirdparty/spark-latest.tar.gz
-mvn clean install -Phadoop-2 -Dmaven.repo.local="$MVN_REPO_LOCAL" -DskipTests
+exec bash ./execute-hive-ptest.sh --branch $HIVE_BRANCH
