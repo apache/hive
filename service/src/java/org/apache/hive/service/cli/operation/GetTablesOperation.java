@@ -60,9 +60,9 @@ public class GetTablesOperation extends MetadataOperation {
   .addStringColumn("TYPE_CAT", "The types catalog.")
   .addStringColumn("TYPE_SCHEM", "The types schema.")
   .addStringColumn("TYPE_NAME", "Type name.")
-  .addStringColumn("SELF_REFERENCING_COL_NAME", 
+  .addStringColumn("SELF_REFERENCING_COL_NAME",
       "Name of the designated \"identifier\" column of a typed table.")
-  .addStringColumn("REF_GENERATION", 
+  .addStringColumn("REF_GENERATION",
       "Specifies how values in SELF_REFERENCING_COL_NAME are created.");
 
   protected GetTablesOperation(HiveSession parentSession,
@@ -102,7 +102,7 @@ public class GetTablesOperation extends MetadataOperation {
 
       String tablePattern = convertIdentifierPattern(tableName, true);
 
-      for (TableMeta tableMeta : 
+      for (TableMeta tableMeta :
           metastoreClient.getTableMeta(schemaPattern, tablePattern, tableTypeList)) {
         rowSet.addRow(new Object[] {
               DEFAULT_HIVE_CATALOG,
@@ -125,7 +125,7 @@ public class GetTablesOperation extends MetadataOperation {
    */
   @Override
   public TableSchema getResultSetSchema() throws HiveSQLException {
-    assertState(OperationState.FINISHED);
+    assertState(new ArrayList<OperationState>(Arrays.asList(OperationState.FINISHED)));
     return RESULT_SET_SCHEMA;
   }
 
@@ -134,7 +134,7 @@ public class GetTablesOperation extends MetadataOperation {
    */
   @Override
   public RowSet getNextRowSet(FetchOrientation orientation, long maxRows) throws HiveSQLException {
-    assertState(OperationState.FINISHED);
+    assertState(new ArrayList<OperationState>(Arrays.asList(OperationState.FINISHED)));
     validateDefaultFetchOrientation(orientation);
     if (orientation.equals(FetchOrientation.FETCH_FIRST)) {
       rowSet.setStartOffset(0);

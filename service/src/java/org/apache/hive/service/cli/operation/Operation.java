@@ -22,6 +22,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
@@ -199,9 +200,10 @@ public abstract class Operation {
     this.operationException = operationException;
   }
 
-  protected final void assertState(OperationState state) throws HiveSQLException {
-    if (this.state != state) {
-      throw new HiveSQLException("Expected state " + state + ", but found " + this.state);
+  protected final void assertState(List<OperationState> states) throws HiveSQLException {
+    if (!states.contains(state)) {
+      throw new HiveSQLException("Expected states: " + states.toString() + ", but found "
+          + this.state);
     }
     this.lastAccessTime = System.currentTimeMillis();
   }

@@ -343,7 +343,10 @@ public class SQLOperation extends ExecuteStatementOperation {
 
   @Override
   public TableSchema getResultSetSchema() throws HiveSQLException {
-    assertState(OperationState.FINISHED);
+    // Since compilation is always a blocking RPC call, and schema is ready after compilation,
+    // we can return when are in the RUNNING state.
+    assertState(new ArrayList<OperationState>(Arrays.asList(OperationState.RUNNING,
+        OperationState.FINISHED)));
     if (resultSchema == null) {
       resultSchema = new TableSchema(driver.getSchema());
     }
@@ -355,7 +358,7 @@ public class SQLOperation extends ExecuteStatementOperation {
   @Override
   public RowSet getNextRowSet(FetchOrientation orientation, long maxRows) throws HiveSQLException {
     validateDefaultFetchOrientation(orientation);
-    assertState(OperationState.FINISHED);
+    assertState(new ArrayList<OperationState>(Arrays.asList(OperationState.FINISHED)));
 
     RowSet rowSet = RowSetFactory.create(resultSchema, getProtocolVersion());
 
