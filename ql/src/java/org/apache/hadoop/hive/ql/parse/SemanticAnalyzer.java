@@ -566,7 +566,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       assert (expressionTree.getChildCount() != 0);
       if (expressionTree.getChild(expressionTree.getChildCount()-1).getType()
           == HiveParser.TOK_WINDOWSPEC) {
+        // If it is a windowing spec, we include it in the list
+        // Further, we will examine its children AST nodes to check whether
+        // there are aggregation functions within
         wdwFns.add(expressionTree);
+        doPhase1GetAllAggregations((ASTNode) expressionTree.getChild(expressionTree.getChildCount()-1),
+                aggregations, wdwFns);
         return;
       }
       if (expressionTree.getChild(0).getType() == HiveParser.Identifier) {
