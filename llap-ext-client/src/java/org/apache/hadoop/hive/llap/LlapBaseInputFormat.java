@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hive.jdbc;
+package org.apache.hadoop.hive.llap;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,6 +48,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.TokenIdentifier;
 import org.apache.hadoop.util.Progressable;
+import org.apache.hive.llap.ext.LlapInputSplit;
 
 import com.google.common.base.Preconditions;
 

@@ -1,4 +1,4 @@
-package org.apache.hive.jdbc;
+package org.apache.hive.llap.ext;
 
 import java.io.DataInput;
 import java.io.DataOutput;

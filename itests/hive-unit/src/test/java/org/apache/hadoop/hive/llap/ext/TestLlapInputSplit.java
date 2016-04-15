@@ -1,4 +1,4 @@
-package org.apache.hive.jdbc;
+package org.apache.hadoop.hive.llap.ext;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -61,13 +61,13 @@ public class TestLlapInputSplit {
     checkLlapSplits(split1, split2);
 
     // Try JDBC LlapInputSplits
-    org.apache.hive.jdbc.LlapInputSplit<Text> jdbcSplit1 =
-        new org.apache.hive.jdbc.LlapInputSplit<Text>(split1, "org.apache.hadoop.hive.llap.LlapInputFormat");
+    org.apache.hive.llap.ext.LlapInputSplit<Text> jdbcSplit1 =
+        new org.apache.hive.llap.ext.LlapInputSplit<Text>(split1, "org.apache.hadoop.hive.llap.LlapInputFormat");
     byteOutStream.reset();
     jdbcSplit1.write(dataOut);
     byteInStream = new ByteArrayInputStream(byteOutStream.toByteArray());
     dataIn = new DataInputStream(byteInStream);
-    org.apache.hive.jdbc.LlapInputSplit<Text> jdbcSplit2 = new org.apache.hive.jdbc.LlapInputSplit<Text>();
+    org.apache.hive.llap.ext.LlapInputSplit<Text> jdbcSplit2 = new org.apache.hive.llap.ext.LlapInputSplit<Text>();
     jdbcSplit2.readFields(dataIn);
 
     assertEquals(0, byteInStream.available());

@@ -68,8 +68,8 @@ import org.apache.hadoop.io.Text;
 
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.apache.hive.jdbc.miniHS2.MiniHS2.MiniClusterType;
-import org.apache.hive.jdbc.LlapBaseInputFormat;
-import org.apache.hive.jdbc.LlapRowInputFormat;
+import org.apache.hadoop.hive.llap.LlapBaseInputFormat;
+import org.apache.hadoop.hive.llap.LlapRowInputFormat;
 
 import org.datanucleus.ClassLoaderResolver;
 import org.datanucleus.NucleusContext;

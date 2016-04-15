@@ -15,8 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.apache.hive.jdbc;
+package org.apache.hadoop.hive.llap;
 
 import java.io.OutputStream;
 import java.io.InputStream;
@@ -52,6 +51,8 @@ import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.llap.LlapBaseRecordReader;
 import org.apache.hadoop.hive.llap.Schema;
+
+import org.apache.hadoop.hive.llap.LlapBaseInputFormat;
 
 public class LlapDump {
 

@@ -23,9 +23,9 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>hive-llap-client</artifactId>
+  <artifactId>hive-llap-ext-client</artifactId>
   <packaging>jar</packaging>
-  <name>Hive Llap Client</name>
+  <name>Hive Llap External Client</name>
 
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
@@ -36,14 +36,15 @@
     <!-- intra-project -->
     <dependency>
       <groupId>org.apache.hive</groupId>
-      <artifactId>hive-common</artifactId>
+      <artifactId>hive-jdbc</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
-      <artifactId>hive-llap-common</artifactId>
+      <artifactId>hive-llap-client</artifactId>
       <version>${project.version}</version>
     </dependency>
+
     <!-- inter-project -->
     <dependency>
       <groupId>org.apache.hadoop</groupId>
@@ -98,38 +99,6 @@
       <version>${hadoop.version}</version>
       <classifier>tests</classifier>
       <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-log4j12</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>commmons-logging</groupId>
-          <artifactId>commons-logging</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.tez</groupId>
-      <artifactId>tez-api</artifactId>
-      <version>${tez.version}</version>
-      <optional>true</optional>
-      <exclusions>
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-log4j12</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>commmons-logging</groupId>
-          <artifactId>commons-logging</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.tez</groupId>
-      <artifactId>tez-runtime-internals</artifactId>
-      <version>${tez.version}</version>
-      <optional>true</optional>
       <exclusions>
         <exclusion>
           <groupId>org.slf4j</groupId>

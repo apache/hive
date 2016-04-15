@@ -1,4 +1,4 @@
-package org.apache.hive.jdbc;
+package org.apache.hadoop.hive.llap;
 
 import java.io.IOException;
 
@@ -15,6 +15,8 @@ import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
+import org.apache.hive.llap.ext.LlapInputSplit;
+
 
 public class LlapRowInputFormat implements InputFormat<NullWritable, Row> {
   LlapBaseInputFormat<Text> baseInputFormat = new LlapBaseInputFormat<Text>();

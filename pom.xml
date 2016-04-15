@@ -50,6 +50,7 @@
     <module>service</module>
     <module>llap-common</module>
     <module>llap-client</module>
+    <module>llap-ext-client</module>
     <module>llap-tez</module>
     <module>llap-server</module>
     <module>shims</module>
