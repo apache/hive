@@ -395,12 +395,7 @@ public class SessionManager extends CompositeService {
     return operationManager;
   }
 
-  private static ThreadLocal<String> threadLocalIpAddress = new ThreadLocal<String>() {
-    @Override
-    protected String initialValue() {
-      return null;
-    }
-  };
+  private static ThreadLocal<String> threadLocalIpAddress = new ThreadLocal<String>();
 
   public static void setIpAddress(String ipAddress) {
     threadLocalIpAddress.set(ipAddress);
@@ -412,6 +407,20 @@ public class SessionManager extends CompositeService {
 
   public static String getIpAddress() {
     return threadLocalIpAddress.get();
+  }
+
+  private static ThreadLocal<List<String>> threadLocalForwardedAddresses = new ThreadLocal<List<String>>();
+
+  public static void setForwardedAddresses(List<String> ipAddress) {
+    threadLocalForwardedAddresses.set(ipAddress);
+  }
+
+  public static void clearForwardedAddresses() {
+    threadLocalForwardedAddresses.remove();
+  }
+
+  public static List<String> getForwardedAddresses() {
+    return threadLocalForwardedAddresses.get();
   }
 
   private static ThreadLocal<String> threadLocalUserName = new ThreadLocal<String>(){

@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.security.authorization.plugin;
 
+import java.util.List;
+
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
 
@@ -31,6 +33,7 @@ public final class QueryContext {
 
   public static class Builder {
     private String commandString;
+    private List<String> forwardedAddresses;
 
     public String getCommandString() {
       return commandString;
@@ -38,24 +41,38 @@ public final class QueryContext {
     public void setCommandString(String commandString) {
       this.commandString = commandString;
     }
+
+    public List<String> getForwardedAddresses() {
+      return forwardedAddresses;
+    }
+    public void setForwardedAddresses(List<String> forwardedAddresses) {
+      this.forwardedAddresses = forwardedAddresses;
+    }
+
     public QueryContext build(){
       return new QueryContext(this);
     }
   }
 
   private final String commandString;
+  private final List<String> forwardedAddresses;
 
   private QueryContext(Builder builder) {
     this.commandString = builder.commandString;
+    this.forwardedAddresses = builder.forwardedAddresses;
   }
 
   public String getCommandString() {
     return commandString;
   }
 
+  public List<String> getForwardedAddresses() {
+    return forwardedAddresses;
+  }
+
   @Override
   public String toString() {
-    return "QueryContext [commandString=" + commandString + "]";
+    return "QueryContext [commandString=" + commandString + ", forwardedAddresses=" + forwardedAddresses + "]";
   }
 
 }
