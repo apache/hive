@@ -554,6 +554,10 @@ public class SessionState {
     // Get the following out of the way when you start the session these take a
     // while and should be done when we start up.
     try {
+      // Hive object instance should be created with a copy of the conf object. If the conf is
+      // shared with SessionState, other parts of the code might update the config, but
+      // Hive.get(HiveConf) would not recognize the case when it needs refreshing
+      Hive.get(new HiveConf(startSs.conf)).getMSC();
       UserGroupInformation sessionUGI = Utils.getUGI();
       FileSystem.get(startSs.conf);
 
@@ -579,6 +583,10 @@ public class SessionState {
       }
     } catch (RuntimeException e) {
       throw e;
+    } catch (Hive.SchemaException e) {
+      RuntimeException ex = new RuntimeException(e.getMessage());
+      ex.setStackTrace(new StackTraceElement[0]);
+      throw ex;
     } catch (Exception e) {
       // Catch-all due to some exec time dependencies on session state
       // that would cause ClassNoFoundException otherwise

@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.metastore;
 
 import java.io.File;
 import java.lang.reflect.Field;
+import java.util.Random;
 
 import junit.framework.TestCase;
 
@@ -31,7 +32,6 @@ import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.ql.Driver;
-import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
@@ -96,9 +96,8 @@ public class TestMetastoreVersion extends TestCase {
     // session creation should fail since the schema didn't get created
     try {
       SessionState.start(new CliSessionState(hiveConf));
-      Hive.get(hiveConf).getMSC();
-      fail("An exception is expected since schema is not created.");
-    } catch (Exception re) {
+      fail("Expected exception");
+    } catch (RuntimeException re) {
       LOG.info("Exception in testVersionRestriction: " + re, re);
       String msg = HiveStringUtils.stringifyException(re);
       assertTrue("Expected 'Version information not found in metastore' in: " + msg, msg
