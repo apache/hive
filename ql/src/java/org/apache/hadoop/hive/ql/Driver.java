@@ -494,15 +494,16 @@ public class Driver implements CommandProcessor {
         }
       }
 
-      if (conf.getBoolVar(ConfVars.HIVE_LOG_EXPLAIN_OUTPUT) ||
-          conf.isWebUiQueryInfoCacheEnabled()) {
+      if (conf.getBoolVar(ConfVars.HIVE_LOG_EXPLAIN_OUTPUT)) {
         String explainOutput = getExplainOutput(sem, plan, tree.dump());
-        if (conf.getBoolVar(ConfVars.HIVE_LOG_EXPLAIN_OUTPUT)) {
-          LOG.info("EXPLAIN output for queryid " + queryId + " : "
-            + explainOutput);
-        }
-        if (conf.isWebUiQueryInfoCacheEnabled()) {
-          queryDisplay.setExplainPlan(explainOutput);
+        if (explainOutput != null) {
+          if (conf.getBoolVar(ConfVars.HIVE_LOG_EXPLAIN_OUTPUT)) {
+            LOG.info("EXPLAIN output for queryid " + queryId + " : "
+              + explainOutput);
+          }
+          if (conf.isWebUiQueryInfoCacheEnabled()) {
+            queryDisplay.setExplainPlan(explainOutput);
+          }
         }
       }
       return 0;
