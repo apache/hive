@@ -71,14 +71,29 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
         OrcInputFormat.raiseAcidTablesMustBeReadWithAcidReaderException(conf);
       }
 
+      rbCtx = Utilities.getVectorizedRowBatchCtx(conf);
       /**
        * Do we have schema on read in the configuration variables?
        */
-      TypeDescription schema = OrcInputFormat.getDesiredRowTypeDescr(conf, /* isAcidRead */ false);
-
       List<OrcProto.Type> types = file.getTypes();
-      Reader.Options options = new Reader.Options();
-      options.schema(schema);
+      int dataColumns = rbCtx.getDataColumnCount();
+      TypeDescription schema =
+          OrcInputFormat.getDesiredRowTypeDescr(conf, false, dataColumns);
+      if (schema == null) {
+        schema = file.getSchema();
+        // Even if the user isn't doing schema evolution, cut the schema
+        // to the desired size.
+        if (schema.getCategory() == TypeDescription.Category.STRUCT &&
+            schema.getChildren().size() > dataColumns) {
+          schema = schema.clone();
+          List<TypeDescription> children = schema.getChildren();
+          for(int c = children.size() - 1; c >= dataColumns; --c) {
+            children.remove(c);
+          }
+        }
+      }
+      Reader.Options options = new Reader.Options().schema(schema);
+
       this.offset = fileSplit.getStart();
       this.length = fileSplit.getLength();
       options.range(offset, length);
@@ -86,8 +101,6 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
       OrcInputFormat.setSearchArgument(options, types, conf, true);
 
       this.reader = file.rowsOptions(options);
-
-      rbCtx = Utilities.getVectorizedRowBatchCtx(conf);
 
       columnsToIncludeTruncated = rbCtx.getColumnsToIncludeTruncated(conf);
 
@@ -103,9 +116,6 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
     @Override
     public boolean next(NullWritable key, VectorizedRowBatch value) throws IOException {
 
-      if (!reader.hasNext()) {
-        return false;
-      }
       try {
         // Check and update partition cols if necessary. Ideally, this should be done
         // in CreateValue as the partition is constant per split. But since Hive uses
@@ -118,7 +128,9 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
           }
           addPartitionCols = false;
         }
-        reader.nextBatch(value);
+        if (!reader.nextBatch(value)) {
+          return false;
+        }
       } catch (Exception e) {
         throw new RuntimeException(e);
       }

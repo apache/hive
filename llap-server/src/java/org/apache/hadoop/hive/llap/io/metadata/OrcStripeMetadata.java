@@ -28,9 +28,9 @@ import org.apache.hadoop.hive.llap.cache.EvictionDispatcher;
 import org.apache.hadoop.hive.llap.cache.LlapCacheableBuffer;
 import org.apache.hadoop.hive.ql.io.SyntheticFileId;
 import org.apache.hadoop.hive.ql.io.orc.encoded.OrcBatchKey;
+import org.apache.orc.DataReader;
 import org.apache.orc.OrcProto;
 import org.apache.orc.StripeInformation;
-import org.apache.orc.impl.MetadataReader;
 import org.apache.orc.impl.OrcIndex;
 
 public class OrcStripeMetadata extends LlapCacheableBuffer {
@@ -54,7 +54,7 @@ public class OrcStripeMetadata extends LlapCacheableBuffer {
     SIZE_ESTIMATOR = SIZE_ESTIMATORS.get(OrcStripeMetadata.class);
   }
 
-  public OrcStripeMetadata(OrcBatchKey stripeKey, MetadataReader mr, StripeInformation stripe,
+  public OrcStripeMetadata(OrcBatchKey stripeKey, DataReader mr, StripeInformation stripe,
       boolean[] includes, boolean[] sargColumns) throws IOException {
     this.stripeKey = stripeKey;
     OrcProto.StripeFooter footer = mr.readStripeFooter(stripe);
@@ -95,7 +95,7 @@ public class OrcStripeMetadata extends LlapCacheableBuffer {
     return true;
   }
 
-  public void loadMissingIndexes(MetadataReader mr, StripeInformation stripe, boolean[] includes,
+  public void loadMissingIndexes(DataReader mr, StripeInformation stripe, boolean[] includes,
       boolean[] sargColumns) throws IOException {
     // TODO: should we save footer to avoid a read here?
     rowIndex = mr.readRowIndex(stripe, null, includes, rowIndex.getRowGroupIndex(),

@@ -23,7 +23,6 @@ import java.nio.ByteBuffer;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
-import org.apache.orc.impl.MetadataReader;
 
 /**
  * The interface for reading ORC files.
@@ -116,9 +115,15 @@ public interface Reader {
   ColumnStatistics[] getStatistics();
 
   /**
+   * Get the type of rows in this ORC file.
+   */
+  TypeDescription getSchema();
+
+  /**
    * Get the list of types contained in the file. The root type is the first
    * type in the list.
    * @return the list of flattened types
+   * @deprecated use getSchema instead
    */
   List<OrcProto.Type> getTypes();
 
@@ -144,6 +149,7 @@ public interface Reader {
     private Boolean useZeroCopy = null;
     private Boolean skipCorruptRecords = null;
     private TypeDescription schema = null;
+    private DataReader dataReader = null;
 
     /**
      * Set the list of columns to read.
@@ -197,6 +203,11 @@ public interface Reader {
       return this;
     }
 
+    public Options dataReader(DataReader value) {
+      this.dataReader = value;
+      return this;
+    }
+
     /**
      * Set whether to skip corrupt records.
      * @param value the new skip corrupt records flag
@@ -247,6 +258,10 @@ public interface Reader {
       return skipCorruptRecords;
     }
 
+    public DataReader getDataReader() {
+      return dataReader;
+    }
+
     public Options clone() {
       Options result = new Options();
       result.include = include;
@@ -257,6 +272,7 @@ public interface Reader {
       result.columnNames = columnNames;
       result.useZeroCopy = useZeroCopy;
       result.skipCorruptRecords = skipCorruptRecords;
+      result.dataReader = dataReader == null ? null : dataReader.clone();
       return result;
     }
 
@@ -321,11 +337,6 @@ public interface Reader {
   RecordReader rowsOptions(Options options) throws IOException;
 
   /**
-   * @return Metadata reader used to read file metadata.
-   */
-  MetadataReader metadata() throws IOException;
-
-  /**
    * @return List of integers representing version of the file, in order from major to minor.
    */
   List<Integer> getVersionList();
@@ -349,12 +360,6 @@ public interface Reader {
    * @return File statistics, in original protobuf form.
    */
   List<OrcProto.ColumnStatistics> getOrcProtoFileStatistics();
-
-  /**
-   * @param useZeroCopy Whether zero-copy read should be used.
-   * @return The default data reader that ORC is using to read bytes from disk.
-   */
-  DataReader createDefaultDataReader(boolean useZeroCopy);
 
   /**
    * @return Serialized file metadata read from disk for the purposes of caching, etc.

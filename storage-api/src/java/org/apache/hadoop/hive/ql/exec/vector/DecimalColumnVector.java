@@ -140,8 +140,8 @@ public class DecimalColumnVector extends ColumnVector {
 
   @Override
   public void ensureSize(int size, boolean preserveData) {
+    super.ensureSize(size, preserveData);
     if (size > vector.length) {
-      super.ensureSize(size, preserveData);
       HiveDecimalWritable[] oldArray = vector;
       vector = new HiveDecimalWritable[size];
       if (preserveData) {

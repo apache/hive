@@ -18,17 +18,26 @@
 
 package org.apache.orc;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import org.apache.hadoop.hive.common.io.DiskRangeList;
+import org.apache.orc.impl.OrcIndex;
 
 /** An abstract data reader that IO formats can use to read bytes from underlying storage. */
-public interface DataReader extends Closeable {
+public interface DataReader extends AutoCloseable {
 
   /** Opens the DataReader, making it ready to use. */
   void open() throws IOException;
+
+  OrcIndex readRowIndex(StripeInformation stripe,
+                        OrcProto.StripeFooter footer,
+                        boolean[] included, OrcProto.RowIndex[] indexes,
+                        boolean[] sargColumns,
+                        OrcProto.BloomFilterIndex[] bloomFilterIndices
+                        ) throws IOException;
+
+  OrcProto.StripeFooter readStripeFooter(StripeInformation stripe) throws IOException;
 
   /** Reads the data.
    *
@@ -53,4 +62,9 @@ public interface DataReader extends Closeable {
    * @param toRelease The buffer to release.
    */
   void releaseBuffer(ByteBuffer toRelease);
+
+  DataReader clone();
+
+  @Override
+  public void close() throws IOException;
 }
