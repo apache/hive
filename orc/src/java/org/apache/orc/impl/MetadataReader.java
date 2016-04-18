@@ -17,18 +17,17 @@
  */
 package org.apache.orc.impl;
 
+import java.io.Closeable;
 import java.io.IOException;
 
 import org.apache.orc.OrcProto;
 import org.apache.orc.StripeInformation;
 
-public interface MetadataReader {
+public interface MetadataReader extends Closeable {
   OrcIndex readRowIndex(StripeInformation stripe,
                                       OrcProto.StripeFooter footer,
       boolean[] included, OrcProto.RowIndex[] indexes, boolean[] sargColumns,
       OrcProto.BloomFilterIndex[] bloomFilterIndices) throws IOException;
 
   OrcProto.StripeFooter readStripeFooter(StripeInformation stripe) throws IOException;
-
-  void close() throws IOException;
 }

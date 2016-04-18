@@ -26,6 +26,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.orc.DataReaderFactory;
+import org.apache.orc.MetadataReaderFactory;
 import org.apache.orc.impl.BufferChunk;
 import org.apache.orc.ColumnStatistics;
 import org.apache.orc.impl.ColumnStatisticsImpl;
@@ -33,9 +35,11 @@ import org.apache.orc.CompressionCodec;
 import org.apache.orc.DataReader;
 import org.apache.orc.FileMetaInfo;
 import org.apache.orc.FileMetadata;
+import org.apache.orc.impl.DataReaderProperties;
+import org.apache.orc.impl.DefaultMetadataReaderFactory;
 import org.apache.orc.impl.InStream;
 import org.apache.orc.impl.MetadataReader;
-import org.apache.orc.impl.MetadataReaderImpl;
+import org.apache.orc.impl.MetadataReaderProperties;
 import org.apache.orc.StripeInformation;
 import org.apache.orc.StripeStatistics;
 import org.slf4j.Logger;
@@ -76,7 +80,8 @@ public class ReaderImpl implements Reader {
   private final List<StripeInformation> stripes;
   protected final int rowIndexStride;
   private final long contentLength, numberOfRows;
-
+  private final MetadataReaderFactory metadataReaderFactory = new DefaultMetadataReaderFactory();
+  private final DataReaderFactory dataReaderFactory = new DefaultDataReaderFactory();
 
   private final ObjectInspector inspector;
   private long deserializedSize = -1;
@@ -667,8 +672,20 @@ public class ReaderImpl implements Reader {
       Arrays.fill(include, true);
       options.include(include);
     }
-    return new RecordReaderImpl(this.getStripes(), fileSystem, path,
-        options, types, codec, bufferSize, rowIndexStride, conf);
+
+    return RecordReaderImpl.builder()
+        .withMetadataReaderFactory(metadataReaderFactory)
+        .withDataReaderFactory(dataReaderFactory)
+        .withStripes(this.getStripes())
+        .withFileSystem(fileSystem)
+        .withPath(path)
+        .withOptions(options)
+        .withTypes(types)
+        .withCodec(codec)
+        .withBufferSize(bufferSize)
+        .withStrideRate(rowIndexStride)
+        .withConf(conf)
+        .build();
   }
 
 
@@ -852,7 +869,13 @@ public class ReaderImpl implements Reader {
 
   @Override
   public MetadataReader metadata() throws IOException {
-    return new MetadataReaderImpl(fileSystem, path, codec, bufferSize, types.size());
+    return metadataReaderFactory.create(MetadataReaderProperties.builder()
+      .withBufferSize(bufferSize)
+      .withCodec(codec)
+      .withFileSystem(fileSystem)
+      .withPath(path)
+      .withTypeCount(types.size())
+      .build());
   }
 
   @Override
@@ -867,7 +890,12 @@ public class ReaderImpl implements Reader {
 
   @Override
   public DataReader createDefaultDataReader(boolean useZeroCopy) {
-    return RecordReaderUtils.createDefaultDataReader(fileSystem, path, useZeroCopy, codec);
+    return dataReaderFactory.create(DataReaderProperties.builder()
+      .withFileSystem(fileSystem)
+      .withPath(path)
+      .withCodec(codec)
+      .withZeroCopy(useZeroCopy)
+      .build());
   }
 
   @Override
