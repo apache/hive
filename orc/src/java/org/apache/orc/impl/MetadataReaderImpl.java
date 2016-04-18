@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
 
+import com.google.common.base.Preconditions;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -37,17 +38,11 @@ public class MetadataReaderImpl implements MetadataReader {
   private final int bufferSize;
   private final int typeCount;
 
-  public MetadataReaderImpl(FileSystem fileSystem, Path path,
-      CompressionCodec codec, int bufferSize, int typeCount) throws IOException {
-    this(fileSystem.open(path), codec, bufferSize, typeCount);
-  }
-
-  public MetadataReaderImpl(FSDataInputStream file,
-      CompressionCodec codec, int bufferSize, int typeCount) {
-    this.file = file;
-    this.codec = codec;
-    this.bufferSize = bufferSize;
-    this.typeCount = typeCount;
+  MetadataReaderImpl(MetadataReaderProperties properties) throws IOException {
+    this.file = properties.getFileSystem().open(properties.getPath());
+    this.codec = properties.getCodec();
+    this.bufferSize = properties.getBufferSize();
+    this.typeCount = properties.getTypeCount();
   }
 
   @Override

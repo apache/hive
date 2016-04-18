@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.shims.HadoopShims.ZeroCopyReaderShim;
 import org.apache.orc.impl.BufferChunk;
 import org.apache.orc.CompressionCodec;
 import org.apache.orc.DataReader;
+import org.apache.orc.impl.DataReaderProperties;
 import org.apache.orc.impl.DirectDecompressionCodec;
 import org.apache.orc.OrcProto;
 
@@ -60,12 +61,11 @@ public class RecordReaderUtils {
     private boolean useZeroCopy;
     private CompressionCodec codec;
 
-    public DefaultDataReader(
-        FileSystem fs, Path path, boolean useZeroCopy, CompressionCodec codec) {
-      this.fs = fs;
-      this.path = path;
-      this.useZeroCopy = useZeroCopy;
-      this.codec = codec;
+    private DefaultDataReader(DataReaderProperties properties) {
+      this.fs = properties.getFileSystem();
+      this.path = properties.getPath();
+      this.useZeroCopy = properties.getZeroCopy();
+      this.codec = properties.getCodec();
     }
 
     @Override
@@ -108,9 +108,8 @@ public class RecordReaderUtils {
 
   }
 
-  static DataReader createDefaultDataReader(
-      FileSystem fs, Path path, boolean useZeroCopy, CompressionCodec codec) {
-    return new DefaultDataReader(fs, path, useZeroCopy, codec);
+  static DataReader createDefaultDataReader(DataReaderProperties properties) {
+    return new DefaultDataReader(properties);
   }
 
   public static boolean[] findPresentStreamsByColumn(

@@ -18,19 +18,17 @@
 
 package org.apache.orc;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import org.apache.hadoop.hive.common.io.DiskRangeList;
 
 /** An abstract data reader that IO formats can use to read bytes from underlying storage. */
-public interface DataReader {
+public interface DataReader extends Closeable {
 
   /** Opens the DataReader, making it ready to use. */
   void open() throws IOException;
-
-  /** Closes the DataReader. */
-  void close() throws IOException;
 
   /** Reads the data.
    *
